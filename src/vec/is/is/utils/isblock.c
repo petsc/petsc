@@ -4,8 +4,6 @@
 #include <petscbt.h>
 #include <petscctable.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCompressIndicesGeneral"
 /*@
    ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
@@ -94,8 +92,6 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCompressIndicesSorted"
 PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
@@ -163,8 +159,6 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISExpandIndicesGeneral"
 /*@C
    ISExpandIndicesGeneral - convert the indices into non-block indices
    Input Parameters:

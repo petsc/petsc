@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-gcov=1',
-  '--download-mpich=1',
+  #'--download-mpich=1', use system MPI as elemental fails with this
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
@@ -24,6 +24,7 @@ configure_options = [
   '--download-ctetgen',
   '--download-netcdf',
   '--download-hdf5',
+  '--with-zlib=1',
   '--download-exodusii',
   '--download-party',
   '--download-yaml',

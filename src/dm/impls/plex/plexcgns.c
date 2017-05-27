@@ -1,13 +1,18 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
+#undef I /* Very old CGNS stupidly uses I as a variable, which fails when using complex. Curse you idiot package managers */
 #if defined(PETSC_HAVE_CGNS)
 #include <cgnslib.h>
 #include <cgns_io.h>
 #endif
+#if !defined(CGNS_ENUMT)
+#define CGNS_ENUMT(a) a
+#endif
+#if !defined(CGNS_ENUMV)
+#define CGNS_ENUMV(a) a
+#endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCGNSFromFile"
 /*@C
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
 
@@ -52,8 +57,6 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCGNS"
 /*@
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
 
@@ -134,20 +137,20 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
        CGNS standard requires that cells in a zone be numbered sequentially and be pairwise disjoint. */
     /* First set sizes */
     for (z = 1, c = 0; z <= nzones; ++z) {
-      ZoneType_t    zonetype;
-      int           nsections;
-      ElementType_t cellType;
-      cgsize_t      start, end;
-      int           nbndry, parentFlag;
-      PetscInt      numCorners;
+      CGNS_ENUMT( ZoneType_t )    zonetype;
+      int                         nsections;
+      CGNS_ENUMT( ElementType_t ) cellType;
+      cgsize_t                    start, end;
+      int                         nbndry, parentFlag;
+      PetscInt                    numCorners;
 
       ierr = cg_zone_type(cgid, 1, z, &zonetype);CHKERRQ(ierr);
-      if (zonetype == Structured) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
+      if (zonetype == CGNS_ENUMV( Structured )) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Can only handle Unstructured zones for CGNS");
       ierr = cg_nsections(cgid, 1, z, &nsections);CHKERRQ(ierr);
       if (nsections > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a single section, not %d\n",nsections);
       ierr = cg_section_read(cgid, 1, z, 1, buffer, &cellType, &start, &end, &nbndry, &parentFlag);CHKERRQ(ierr);
       /* This alone is reason enough to bludgeon every single CGNDS developer, this must be what they describe as the "idiocy of crowds" */
-      if (cellType == MIXED) {
+      if (cellType == CGNS_ENUMV( MIXED )) {
         cgsize_t elementDataSize, *elements;
         PetscInt off;
 
@@ -156,10 +159,10 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
         for (c_loc = start, off = 0; c_loc <= end; ++c_loc, ++c) {
           switch (elements[off]) {
-          case TRI_3:   numCorners = 3;break;
-          case QUAD_4:  numCorners = 4;break;
-          case TETRA_4: numCorners = 4;break;
-          case HEXA_8:  numCorners = 8;break;
+          case CGNS_ENUMV( TRI_3 ):   numCorners = 3;break;
+          case CGNS_ENUMV( QUAD_4 ):  numCorners = 4;break;
+          case CGNS_ENUMV( TETRA_4 ): numCorners = 4;break;
+          case CGNS_ENUMV( HEXA_8 ):  numCorners = 8;break;
           default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[off]);
           }
           ierr = DMPlexSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
@@ -168,10 +171,10 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         ierr = PetscFree(elements);CHKERRQ(ierr);
       } else {
         switch (cellType) {
-        case TRI_3:   numCorners = 3;break;
-        case QUAD_4:  numCorners = 4;break;
-        case TETRA_4: numCorners = 4;break;
-        case HEXA_8:  numCorners = 8;break;
+        case CGNS_ENUMV( TRI_3 ):   numCorners = 3;break;
+        case CGNS_ENUMV( QUAD_4 ):  numCorners = 4;break;
+        case CGNS_ENUMV( TETRA_4 ): numCorners = 4;break;
+        case CGNS_ENUMV( HEXA_8 ):  numCorners = 8;break;
         default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
         }
         for (c_loc = start; c_loc <= end; ++c_loc, ++c) {
@@ -181,10 +184,10 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (z = 1, c = 0; z <= nzones; ++z) {
-      ElementType_t cellType;
-      cgsize_t     *elements, elementDataSize, start, end;
-      int           nbndry, parentFlag;
-      PetscInt     *cone, numc, numCorners, maxCorners = 27;
+      CGNS_ENUMT( ElementType_t ) cellType;
+      cgsize_t                    *elements, elementDataSize, start, end;
+      int                          nbndry, parentFlag;
+      PetscInt                    *cone, numc, numCorners, maxCorners = 27;
 
       ierr = cg_section_read(cgid, 1, z, 1, buffer, &cellType, &start, &end, &nbndry, &parentFlag);CHKERRQ(ierr);
       numc = end - start;
@@ -192,14 +195,14 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
       ierr = PetscMalloc2(elementDataSize,&elements,maxCorners,&cone);CHKERRQ(ierr);
       ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
-      if (cellType == MIXED) {
+      if (cellType == CGNS_ENUMV( MIXED )) {
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           switch (elements[v]) {
-          case TRI_3:   numCorners = 3;break;
-          case QUAD_4:  numCorners = 4;break;
-          case TETRA_4: numCorners = 4;break;
-          case HEXA_8:  numCorners = 8;break;
+          case CGNS_ENUMV( TRI_3 ):   numCorners = 3;break;
+          case CGNS_ENUMV( QUAD_4 ):  numCorners = 4;break;
+          case CGNS_ENUMV( TETRA_4 ): numCorners = 4;break;
+          case CGNS_ENUMV( HEXA_8 ):  numCorners = 8;break;
           default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[v]);
           }
           ++v;
@@ -207,13 +210,13 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[v_loc] = elements[v]+numCells-1;
           }
           /* Tetrahedra are inverted */
-          if (elements[v] == TETRA_4) {
+          if (elements[v] == CGNS_ENUMV( TETRA_4 )) {
             PetscInt tmp = cone[0];
             cone[0] = cone[1];
             cone[1] = tmp;
           }
           /* Hexahedra are inverted */
-          if (elements[v] == HEXA_8) {
+          if (elements[v] == CGNS_ENUMV( HEXA_8 )) {
             PetscInt tmp = cone[5];
             cone[5] = cone[7];
             cone[7] = tmp;
@@ -223,10 +226,10 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         }
       } else {
         switch (cellType) {
-        case TRI_3:   numCorners = 3;break;
-        case QUAD_4:  numCorners = 4;break;
-        case TETRA_4: numCorners = 4;break;
-        case HEXA_8:  numCorners = 8;break;
+        case CGNS_ENUMV( TRI_3 ):   numCorners = 3;break;
+        case CGNS_ENUMV( QUAD_4 ):  numCorners = 4;break;
+        case CGNS_ENUMV( TETRA_4 ): numCorners = 4;break;
+        case CGNS_ENUMV( HEXA_8 ):  numCorners = 8;break;
         default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
         }
 
@@ -236,13 +239,13 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[v_loc] = elements[v]+numCells-1;
           }
           /* Tetrahedra are inverted */
-          if (cellType == TETRA_4) {
+          if (cellType == CGNS_ENUMV( TETRA_4 )) {
             PetscInt tmp = cone[0];
             cone[0] = cone[1];
             cone[1] = tmp;
           }
           /* Hexahedra are inverted, and they give the top first */
-          if (cellType == HEXA_8) {
+          if (cellType == CGNS_ENUMV( HEXA_8 )) {
             PetscInt tmp = cone[5];
             cone[5] = cone[7];
             cone[7] = tmp;
@@ -294,11 +297,11 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
 
     ierr = PetscMalloc3(numVertices,&x[0],numVertices,&x[1],numVertices,&x[2]);CHKERRQ(ierr);
     for (z = 1; z <= nzones; ++z) {
-      DataType_t datatype;
-      cgsize_t   sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
-      cgsize_t   range_min[3] = {1, 1, 1};
-      cgsize_t   range_max[3] = {1, 1, 1};
-      int        ngrids, ncoords;
+      CGNS_ENUMT( DataType_t ) datatype;
+      cgsize_t                 sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
+      cgsize_t                 range_min[3] = {1, 1, 1};
+      cgsize_t                 range_max[3] = {1, 1, 1};
+      int                      ngrids, ncoords;
 
 
       ierr = cg_zone_read(cgid, 1, z, buffer, sizes);CHKERRQ(ierr);
@@ -309,7 +312,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       if (ncoords != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d\n",ncoords);
       for (d = 0; d < dim; ++d) {
         ierr = cg_coord_info(cgid, 1, z, 1+d, &datatype, buffer);CHKERRQ(ierr);
-        ierr = cg_coord_read(cgid, 1, z, buffer, RealSingle, range_min, range_max, x[d]);CHKERRQ(ierr);
+        ierr = cg_coord_read(cgid, 1, z, buffer, CGNS_ENUMV( RealSingle ), range_min, range_max, x[d]);CHKERRQ(ierr);
       }
       if (dim > 0) {
         for (v = 0; v < sizes[0]; ++v) coords[(v+off)*dim+0] = x[0][v];
@@ -329,16 +332,16 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Read boundary conditions */
   if (!rank) {
-    DMLabel        label;
-    BCType_t       bctype;
-    DataType_t     datatype;
-    PointSetType_t pointtype;
-    cgsize_t      *points;
-    PetscReal     *normals;
-    int            normal[3];
-    char          *bcname = buffer;
-    cgsize_t       npoints, nnormals;
-    int            z, nbc, bc, c, ndatasets;
+    DMLabel                       label;
+    CGNS_ENUMT( BCType_t )        bctype;
+    CGNS_ENUMT( DataType_t )      datatype;
+    CGNS_ENUMT( PointSetType_t )  pointtype;
+    cgsize_t                     *points;
+    PetscReal                    *normals;
+    int                           normal[3];
+    char                         *bcname = buffer;
+    cgsize_t                      npoints, nnormals;
+    int                           z, nbc, bc, c, ndatasets;
 
     for (z = 1; z <= nzones; ++z) {
       ierr = cg_nbocos(cgid, 1, z, &nbc);CHKERRQ(ierr);
@@ -348,35 +351,35 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         ierr = DMGetLabel(*dm, bcname, &label);CHKERRQ(ierr);
         ierr = PetscMalloc2(npoints, &points, nnormals, &normals);CHKERRQ(ierr);
         ierr = cg_boco_read(cgid, 1, z, bc, points, (void *) normals);CHKERRQ(ierr);
-        if (pointtype == ElementRange) {
+        if (pointtype == CGNS_ENUMV( ElementRange )) {
           /* Range of cells: assuming half-open interval since the documentation sucks */
           for (c = points[0]; c < points[1]; ++c) {
             ierr = DMLabelSetValue(label, c - cellStart[z-1], 1);CHKERRQ(ierr);
           }
-        } else if (pointtype == ElementList) {
+        } else if (pointtype == CGNS_ENUMV( ElementList )) {
           /* List of cells */
           for (c = 0; c < npoints; ++c) {
             ierr = DMLabelSetValue(label, points[c] - cellStart[z-1], 1);CHKERRQ(ierr);
           }
-        } else if (pointtype == PointRange) {
-          GridLocation_t gridloc;
+        } else if (pointtype == CGNS_ENUMV( PointRange )) {
+          CGNS_ENUMT( GridLocation_t ) gridloc;
 
           /* List of points: Oh please, someone get the CGNS developers away from a computer. This is unconscionable. */
           ierr = cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end");CHKERRQ(ierr);
           ierr = cg_gridlocation_read(&gridloc);CHKERRQ(ierr);
           /* Range of points: assuming half-open interval since the documentation sucks */
           for (c = points[0]; c < points[1]; ++c) {
-            if (gridloc == Vertex) {ierr = DMLabelSetValue(label, c - vertStart[z-1], 1);CHKERRQ(ierr);}
-            else                   {ierr = DMLabelSetValue(label, c - cellStart[z-1], 1);CHKERRQ(ierr);}
+            if (gridloc == CGNS_ENUMV( Vertex )) {ierr = DMLabelSetValue(label, c - vertStart[z-1], 1);CHKERRQ(ierr);}
+            else                                 {ierr = DMLabelSetValue(label, c - cellStart[z-1], 1);CHKERRQ(ierr);}
           }
-        } else if (pointtype == PointList) {
-          GridLocation_t gridloc;
+        } else if (pointtype == CGNS_ENUMV( PointList )) {
+          CGNS_ENUMT( GridLocation_t ) gridloc;
 
           /* List of points: Oh please, someone get the CGNS developers away from a computer. This is unconscionable. */
           ierr = cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end");
           ierr = cg_gridlocation_read(&gridloc);
           for (c = 0; c < npoints; ++c) {
-            if (gridloc == Vertex) {ierr = DMLabelSetValue(label, points[c] - vertStart[z-1], 1);CHKERRQ(ierr);}
+            if (gridloc == CGNS_ENUMV( Vertex )) {ierr = DMLabelSetValue(label, points[c] - vertStart[z-1], 1);CHKERRQ(ierr);}
             else                   {ierr = DMLabelSetValue(label, points[c] - cellStart[z-1], 1);CHKERRQ(ierr);}
           }
         } else SETERRQ1(comm, PETSC_ERR_SUP, "Unsupported point set type %d", (int) pointtype);

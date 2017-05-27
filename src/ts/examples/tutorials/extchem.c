@@ -15,18 +15,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #  error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
 #endif
 /*
-    Obtain the three files into this directory
+    See extchem.example.1 for how to run an example
 
-       curl http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat > chem.inp
-       curl http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat > therm.dat
-
-       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/n_heptane_v3.1_therm.dat
-       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/nc7_ver3.1_mech.txt
-
-       cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
-
-    Run with
-   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_use_markers false -ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
+    See also h2_10sp.inp for another example
 
     Determine sensitivity of final tempature on each variables initial conditions
     -ts_dt 1.e-5 -ts_type cn -ts_adjoint_solve -ts_adjoint_view_solution draw
@@ -40,6 +31,12 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         molef[i] = massf[i]/(M[i]*(sum_j massf[j]/M[j]))
 
     FormMoleFraction(User,massf,molef) converts the mass fraction solution of each species to the mole fraction of each species.
+
+
+    These are other data sets for other possible runs
+       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/n_heptane_v3.1_therm.dat
+       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/nc7_ver3.1_mech.txt
+
 
 */
 typedef struct _User *User;
@@ -61,11 +58,12 @@ static PetscErrorCode MoleFractionToMassFraction(User,Vec,Vec*);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
+static PetscErrorCode ComputeMassConservation(Vec,PetscReal*,void*);
+static PetscErrorCode MonitorMassConservation(TS,PetscInt,PetscReal,Vec,void*);
+static PetscErrorCode MonitorTempature(TS,PetscInt,PetscReal,Vec,void*);
 
 #define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
@@ -80,6 +78,8 @@ int main(int argc,char **argv)
   TSConvergedReason reason;
   char              **snames,*names;
   PetscInt          i;
+  TSTrajectory      tj;
+  PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -89,9 +89,12 @@ int main(int argc,char **argv)
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1000;             /* Kelvin */
   ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-monitor_mass","Monitor the total mass at each timestep","",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-monitor_temp","Monitor the tempature each timestep","",tflg,&tflg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
+  TC_setThermoPres(user.pressure);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
   /*
@@ -124,6 +127,13 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user);CHKERRQ(ierr);
 
+  if (flg) {
+    ierr = TSMonitorSet(ts,MonitorMassConservation,NULL,NULL);CHKERRQ(ierr);
+  }
+  if (tflg) {
+    ierr = TSMonitorSet(ts,MonitorTempature,&user,NULL);CHKERRQ(ierr);
+  }
+
   ftime    = 1.0;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
@@ -154,6 +164,11 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);
 
+  ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
+  if (tj) {
+    ierr = TSTrajectorySetVariableNames(tj,(const char * const *)user.snames);CHKERRQ(ierr);
+    ierr = TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user);CHKERRQ(ierr);
+  }
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,17 +188,15 @@ int main(int argc,char **argv)
 
   {
     Vec                max;
-    const char * const *names;
     PetscInt           i;
     const PetscReal    *bmax;
 
     ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
     if (max) {
-      ierr = TSMonitorLGGetVariableNames(ts,&names);CHKERRQ(ierr);
       ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
       for (i=1; i<user.Nspec; i++) {
-        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]);CHKERRQ(ierr);}
       }
       ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
     }
@@ -208,8 +221,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
@@ -231,8 +242,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSJacobian"
 static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
@@ -264,31 +273,36 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    *x;
   PetscErrorCode ierr;
-  struct {const char *name; PetscReal molefrac;} initial[] = {
-    {"CH4", 0.0948178320887},
-    {"O2", 0.189635664177},
-    {"N2", 0.706766236705},
-    {"AR", 0.00878026702874}
-  };
-  PetscInt i;
-  Vec      y;
+  PetscInt       i;
+  Vec            y;
+  const PetscInt maxspecies = 10;
+  PetscInt       nmax = maxspecies;
+  char           *names[maxspecies];
+  PetscReal      molefracs[maxspecies],sum;
+  PetscBool      flg;
 
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(X);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
-  for (i=0; i<sizeof(initial)/sizeof(initial[0]); i++) {
-    int ispec = TC_getSpos(initial[i].name, strlen(initial[i].name));
-    if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[i].name);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,initial[i].name,initial[i].molefrac);CHKERRQ(ierr);
-    x[1+ispec] = initial[i].molefrac;
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&nmax,&flg);CHKERRQ(ierr);
+  sum = 0;
+  for (i=0; i<nmax; i++) sum += molefracs[i];
+  for (i=0; i<nmax; i++) molefracs[i] = molefracs[i]/sum;
+  for (i=0; i<nmax; i++) {
+    int ispec = TC_getSpos(names[i], strlen(names[i]));
+    if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
+    x[1+ispec] = molefracs[i];
+  }
+  for (i=0; i<nmax; i++) {
+    ierr = PetscFree(names[i]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PrintSpecies((User)ctx,X);CHKERRQ(ierr);
@@ -298,8 +312,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MassFractionToMoleFraction"
 /*
    Converts the input vector which is in mass fractions (used by tchem) to mole fractions
 */
@@ -320,8 +332,6 @@ PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MoleFractionToMassFraction"
 /*
    Converts the input vector which is in mole fractions to mass fractions (used by tchem)
 */
@@ -342,8 +352,43 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PrintSpecies"
+PetscErrorCode ComputeMassConservation(Vec x,PetscReal *mass,void* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSum(x,mass);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MonitorMassConservation(TS ts,PetscInt step,PetscReal time,Vec x,void* ctx)
+{
+  const PetscScalar  *T;
+  PetscReal          mass;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = ComputeMassConservation(x,&mass,ctx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&T);CHKERRQ(ierr);
+  mass -= PetscAbsScalar(T[0]);
+  ierr = VecRestoreArrayRead(x,&T);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g percent mass lost or gained %g\n",step,(double)time,(double)100.*(1.0 - mass));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* ctx)
+{
+  User               user = (User) ctx;
+  const PetscScalar  *T;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&T);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g tempature %g\n",step,(double)time,(double)T[0]*user->Tini);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&T);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    Prints out each species with its name
 */

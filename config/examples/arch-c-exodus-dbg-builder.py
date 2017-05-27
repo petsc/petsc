@@ -6,12 +6,16 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--download-suitesparse',
+    '--download-mumps',
+    '--download-scalapack',
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
     '--download-fiat',
     '--download-generator',
     '--download-hdf5',
+    '--download-zlib=1',
     '--download-metis',
     '--download-ml',
     '--download-netcdf',

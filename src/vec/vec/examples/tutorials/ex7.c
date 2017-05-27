@@ -8,6 +8,11 @@ and from Fortran to C\n\n";
   Ugly stuff to insure the function names match between Fortran
   and C. Sorry, but this is out of our PETSc hands to cleanup.
 */
+/*T
+   Concepts: vectors^fortran-c;
+   Processors: n
+   depends: ex7f.F
+T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define ex7f_ EX7F
@@ -19,8 +24,6 @@ and from Fortran to C\n\n";
 
 PETSC_EXTERN void PETSC_STDCALL ex7f_(Vec*,int*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -53,8 +56,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex7c_"
 PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 {
   MPI_Comm comm;

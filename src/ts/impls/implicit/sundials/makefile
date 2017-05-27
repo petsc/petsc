@@ -2,8 +2,6 @@
 ALL: lib
 
 #requirespackage   'PETSC_HAVE_SUNDIALS'
-#requiresprecision double
-#requiresscalar    real
 
 CFLAGS   =
 FFLAGS   =

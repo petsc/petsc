@@ -43,7 +43,7 @@ KSP Object:
   left preconditioning
 PC Object:
   type: ilu
-    ILU: 0 levels of fill
+    0 levels of fill
          out-of-place factorization
          matrix ordering: natural
   linear system matrix = precond matrix:

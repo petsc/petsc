@@ -45,6 +45,7 @@ typedef struct {
       vec1_global;
 
   PetscScalar * work_N;
+  VecScatter  N_to_D;             /* scattering context from all local nodes to local interior nodes */
   VecScatter  global_to_D;        /* scattering context from global to local interior nodes */
   VecScatter  N_to_B;             /* scattering context from all local nodes to local interface nodes */
   VecScatter  global_to_B;        /* scattering context from global to local interface nodes */
@@ -82,6 +83,5 @@ PETSC_EXTERN PetscErrorCode PCISCreate(PC pc);
 PETSC_EXTERN PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
 PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
 PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
-PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal);
 
 #endif /* __pcis_h */

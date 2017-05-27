@@ -11,25 +11,17 @@ class Configure(config.package.Package):
     self.functionsFortran = 1
     self.fc               = 1
     self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
+    self.precisions       = ['single','double']
     self.downloadonWindows= 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.flibs      = framework.require('config.packages.flibs',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi, self.blasLapack]
+    self.deps       = [self.mpi, self.blasLapack, self.flibs]
     return
-
-  # this code should be removed and a proper dependency on flibs should be somehow added to setupDependencies()
-  def generateLibList(self,dir):
-    '''scalapack can require -lgfortran when using f2cblaslapack'''
-    alllibs = config.package.Package.generateLibList(self,dir)
-    for a in alllibs[:]:
-      b=a[:]
-      b.extend(self.compilers.flibs)
-      alllibs.append(b)
-    return alllibs
 
   def Install(self):
     import os
@@ -39,14 +31,14 @@ class Configure(config.package.Package):
     g.write('MPIINC       = '+self.headers.toString(self.mpi.include)+'\n')
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
-      blah = 'f77IsF2C'
+      fdef = '-Df77IsF2C -DFortranIsF2C'
     elif self.compilers.fortranMangling == 'underscore':
-      blah = 'Add_'
+      fdef = '-DAdd_'
     elif self.compilers.fortranMangling == 'caps':
-      blah = 'UpCase'
+      fdef = '-DUpCase'
     else:
-      blah = 'NoChange'
-    g.write('CDEFS        =-D'+blah+'\n')
+      fdef = '-DNoChange'
+    g.write('CDEFS        = '+fdef+'\n')
     self.setCompilers.pushLanguage('FC')
     g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
     g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')

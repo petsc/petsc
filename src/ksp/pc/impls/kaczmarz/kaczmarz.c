@@ -5,8 +5,6 @@ typedef struct {
   PetscBool  symmetric; /* apply the projections symmetrically */
 } PC_Kaczmarz;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Kaczmarz"
 static PetscErrorCode PCDestroy_Kaczmarz(PC pc)
 {
   PetscErrorCode ierr;
@@ -16,8 +14,6 @@ static PetscErrorCode PCDestroy_Kaczmarz(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Kaczmarz"
 static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
 {
   PC_Kaczmarz       *jac = (PC_Kaczmarz*)pc->data;
@@ -82,8 +78,6 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Kaczmarz"
 PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
@@ -97,8 +91,6 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PetscOptionItems *PetscOptionsObject,PC
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Kaczmarz"
 PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
 {
   PC_Kaczmarz    *jac = (PC_Kaczmarz*)pc->data;
@@ -126,15 +118,13 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
    Notes: In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
-.  1. - S. Kaczmarz, “Angenaherte Auflosing von Systemen Linearer Gleichungen”,
+.  1. - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
    Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Kaczmarz"
 PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)
 {
   PetscErrorCode ierr;

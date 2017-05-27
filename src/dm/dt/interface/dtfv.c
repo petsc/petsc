@@ -15,8 +15,6 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
                                "  volume  = {490},\n"
                                "  year    = {2005}\n}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterRegister"
 /*@C
   PetscLimiterRegister - Adds a new PetscLimiter implementation
 
@@ -59,8 +57,6 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterSetType"
 /*@C
   PetscLimiterSetType - Builds a particular PetscLimiter
 
@@ -102,8 +98,6 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterGetType"
 /*@C
   PetscLimiterGetType - Gets the PetscLimiter type name (as a string) from the object.
 
@@ -132,8 +126,6 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView"
 /*@C
   PetscLimiterView - Views a PetscLimiter
 
@@ -158,8 +150,6 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterSetFromOptions"
 /*@
   PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
 
@@ -200,8 +190,6 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterSetUp"
 /*@C
   PetscLimiterSetUp - Construct data structures for the PetscLimiter
 
@@ -224,8 +212,6 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy"
 /*@
   PetscLimiterDestroy - Destroys a PetscLimiter object
 
@@ -254,8 +240,6 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate"
 /*@
   PetscLimiterCreate - Creates an empty PetscLimiter object. The type can then be set with PetscLimiterSetType().
 
@@ -288,8 +272,6 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit"
 /* Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
  *
  * The classical flux-limited formulation is psi(r) where
@@ -336,8 +318,6 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_Sin"
 PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim)
 {
   PetscLimiter_Sin *l = (PetscLimiter_Sin *) lim->data;
@@ -348,8 +328,6 @@ PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Sin_Ascii"
 PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -361,8 +339,6 @@ PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Sin"
 PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -376,8 +352,6 @@ PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Sin"
 PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -385,8 +359,6 @@ PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_Sin"
 PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -404,8 +376,6 @@ PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_Sin"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim)
 {
   PetscLimiter_Sin *l;
@@ -420,8 +390,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_Zero"
 PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim)
 {
   PetscLimiter_Zero *l = (PetscLimiter_Zero *) lim->data;
@@ -432,8 +400,6 @@ PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Zero_Ascii"
 PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -445,8 +411,6 @@ PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Zero"
 PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -460,8 +424,6 @@ PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Zero"
 PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -469,8 +431,6 @@ PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_Zero"
 PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -488,8 +448,6 @@ PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_Zero"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim)
 {
   PetscLimiter_Zero *l;
@@ -504,8 +462,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_None"
 PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim)
 {
   PetscLimiter_None *l = (PetscLimiter_None *) lim->data;
@@ -516,8 +472,6 @@ PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_None_Ascii"
 PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -529,8 +483,6 @@ PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_None"
 PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -544,8 +496,6 @@ PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_None"
 PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -553,8 +503,6 @@ PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_None"
 PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -572,8 +520,6 @@ PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_None"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim)
 {
   PetscLimiter_None *l;
@@ -588,8 +534,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_Minmod"
 PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim)
 {
   PetscLimiter_Minmod *l = (PetscLimiter_Minmod *) lim->data;
@@ -600,8 +544,6 @@ PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Minmod_Ascii"
 PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -613,8 +555,6 @@ PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Minmod"
 PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -628,8 +568,6 @@ PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Minmod"
 PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -637,8 +575,6 @@ PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_Minmod"
 PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -656,8 +592,6 @@ PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_Minmod"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim)
 {
   PetscLimiter_Minmod *l;
@@ -672,8 +606,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_VanLeer"
 PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim)
 {
   PetscLimiter_VanLeer *l = (PetscLimiter_VanLeer *) lim->data;
@@ -684,8 +616,6 @@ PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_VanLeer_Ascii"
 PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -697,8 +627,6 @@ PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_VanLeer"
 PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -712,8 +640,6 @@ PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_VanLeer"
 PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -721,8 +647,6 @@ PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_VanLeer"
 PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -740,8 +664,6 @@ PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_VanLeer"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim)
 {
   PetscLimiter_VanLeer *l;
@@ -756,8 +678,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_VanAlbada"
 PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim)
 {
   PetscLimiter_VanAlbada *l = (PetscLimiter_VanAlbada *) lim->data;
@@ -768,8 +688,6 @@ PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_VanAlbada_Ascii"
 PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -781,8 +699,6 @@ PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_VanAlbada"
 PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -796,8 +712,6 @@ PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_VanAlbada"
 PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -805,8 +719,6 @@ PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_VanAlbada"
 PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -824,8 +736,6 @@ PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_VanAlbada"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim)
 {
   PetscLimiter_VanAlbada *l;
@@ -840,8 +750,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_Superbee"
 PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim)
 {
   PetscLimiter_Superbee *l = (PetscLimiter_Superbee *) lim->data;
@@ -852,8 +760,6 @@ PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Superbee_Ascii"
 PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -865,8 +771,6 @@ PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_Superbee"
 PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -880,8 +784,6 @@ PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Superbee"
 PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
@@ -889,8 +791,6 @@ PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_Superbee"
 PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -908,8 +808,6 @@ PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_Superbee"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim)
 {
   PetscLimiter_Superbee *l;
@@ -924,8 +822,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterDestroy_MC"
 PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim)
 {
   PetscLimiter_MC *l = (PetscLimiter_MC *) lim->data;
@@ -936,8 +832,6 @@ PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_MC_Ascii"
 PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -949,8 +843,6 @@ PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterView_MC"
 PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -964,8 +856,6 @@ PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_MC"
 /* aka Barth-Jespersen */
 PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
@@ -974,8 +864,6 @@ PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *ph
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterInitialize_MC"
 PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim)
 {
   PetscFunctionBegin;
@@ -993,8 +881,6 @@ PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim)
 .seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterCreate_MC"
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim)
 {
   PetscLimiter_MC *l;
@@ -1014,8 +900,6 @@ PetscClassId PETSCFV_CLASSID = 0;
 PetscFunctionList PetscFVList              = NULL;
 PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVRegister"
 /*@C
   PetscFVRegister - Adds a new PetscFV implementation
 
@@ -1058,8 +942,6 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetType"
 /*@C
   PetscFVSetType - Builds a particular PetscFV
 
@@ -1101,8 +983,6 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetType"
 /*@C
   PetscFVGetType - Gets the PetscFV type name (as a string) from the object.
 
@@ -1131,8 +1011,6 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVView"
 /*@C
   PetscFVView - Views a PetscFV
 
@@ -1157,8 +1035,6 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetFromOptions"
 /*@
   PetscFVSetFromOptions - sets parameters in a PetscFV from the options database
 
@@ -1205,8 +1081,6 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetUp"
 /*@
   PetscFVSetUp - Construct data structures for the PetscFV
 
@@ -1230,8 +1104,6 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVDestroy"
 /*@
   PetscFVDestroy - Destroys a PetscFV object
 
@@ -1271,8 +1143,6 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVCreate"
 /*@
   PetscFVCreate - Creates an empty PetscFV object. The type can then be set with PetscFVSetType().
 
@@ -1312,8 +1182,6 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetLimiter"
 /*@
   PetscFVSetLimiter - Set the limiter object
 
@@ -1340,8 +1208,6 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetLimiter"
 /*@
   PetscFVGetLimiter - Get the limiter object
 
@@ -1366,8 +1232,6 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetNumComponents"
 /*@
   PetscFVSetNumComponents - Set the number of field components
 
@@ -1402,8 +1266,6 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetNumComponents"
 /*@
   PetscFVGetNumComponents - Get the number of field components
 
@@ -1428,8 +1290,6 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetComponentName"
 /*@C
   PetscFVSetComponentName - Set the name of a component (used in output and viewing)
 
@@ -1453,8 +1313,6 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetComponentName"
 /*@C
   PetscFVGetComponentName - Get the name of a component (used in output and viewing)
 
@@ -1477,8 +1335,6 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetSpatialDimension"
 /*@
   PetscFVSetSpatialDimension - Set the spatial dimension
 
@@ -1500,8 +1356,6 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetSpatialDimension"
 /*@
   PetscFVGetSpatialDimension - Get the spatial dimension
 
@@ -1526,8 +1380,6 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetComputeGradients"
 /*@
   PetscFVSetComputeGradients - Toggle computation of cell gradients
 
@@ -1549,8 +1401,6 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetComputeGradients"
 /*@
   PetscFVGetComputeGradients - Return flag for computation of cell gradients
 
@@ -1575,8 +1425,6 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetQuadrature"
 /*@
   PetscFVSetQuadrature - Set the quadrature object
 
@@ -1602,8 +1450,6 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetQuadrature"
 /*@
   PetscFVGetQuadrature - Get the quadrature object
 
@@ -1633,14 +1479,12 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
     ierr = PetscCalloc1(fvm->dim, &points);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &weights);CHKERRQ(ierr);
     weights[0] = 1.0;
-    ierr = PetscQuadratureSetData(fvm->quadrature, fvm->dim, 1, points, weights);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(fvm->quadrature, fvm->dim, 1, 1, points, weights);CHKERRQ(ierr);
   }
   *q = fvm->quadrature;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetDualSpace"
 /*@
   PetscFVGetDualSpace - Returns the PetscDualSpace used to define the inner product
 
@@ -1665,26 +1509,37 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
   PetscValidPointer(sp, 2);
   if (!fvm->dualSpace) {
     DM              K;
-    PetscQuadrature q;
-    PetscInt        dim;
+    PetscInt        dim, Nc, c;
     PetscErrorCode  ierr;
 
     ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
-    ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
+    ierr = PetscFVGetNumComponents(fvm, &Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = PetscDualSpaceSetNumComponents(fvm->dualSpace, Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, Nc);CHKERRQ(ierr);
+    /* Should we be using PetscFVGetQuadrature() here? */
+    for (c = 0; c < Nc; ++c) {
+      PetscQuadrature qc;
+      PetscReal      *points, *weights;
+      PetscErrorCode  ierr;
+
+      ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qc);CHKERRQ(ierr);
+      ierr = PetscCalloc1(dim, &points);CHKERRQ(ierr);
+      ierr = PetscCalloc1(Nc, &weights);CHKERRQ(ierr);
+      weights[c] = 1.0;
+      ierr = PetscQuadratureSetData(qc, dim, Nc, 1, points, weights);CHKERRQ(ierr);
+      ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, c, qc);CHKERRQ(ierr);
+      ierr = PetscQuadratureDestroy(&qc);CHKERRQ(ierr);
+    }
   }
   *sp = fvm->dualSpace;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetDualSpace"
 /*@
   PetscFVSetDualSpace - Sets the PetscDualSpace used to define the inner product
 
@@ -1713,8 +1568,6 @@ PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetDefaultTabulation"
 PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal **D, PetscReal **H)
 {
   PetscInt         npoints;
@@ -1726,7 +1579,7 @@ PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal
   if (B) PetscValidPointer(B, 2);
   if (D) PetscValidPointer(D, 3);
   if (H) PetscValidPointer(H, 4);
-  ierr = PetscQuadratureGetData(fvm->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(fvm->quadrature, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fvm->B) {ierr = PetscFVGetTabulation(fvm, npoints, points, &fvm->B, &fvm->D, NULL/*&fvm->H*/);CHKERRQ(ierr);}
   if (B) *B = fvm->B;
   if (D) *D = fvm->D;
@@ -1734,8 +1587,6 @@ PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVGetTabulation"
 PetscErrorCode PetscFVGetTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   PetscInt         pdim = 1; /* Dimension of approximation space P */
@@ -1761,8 +1612,6 @@ PetscErrorCode PetscFVGetTabulation(PetscFV fvm, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVRestoreTabulation"
 PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   PetscErrorCode ierr;
@@ -1775,8 +1624,6 @@ PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVComputeGradient"
 /*@C
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
@@ -1799,8 +1646,6 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVIntegrateRHSFunction"
 /*C
   PetscFVIntegrateRHSFunction - Produce the cell residual vector for a chunk of elements by quadrature integration
 
@@ -1831,8 +1676,6 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVRefine"
 /*@
   PetscFVRefine - Create a "refined" PetscFV object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
@@ -1884,16 +1727,16 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
     PetscQuadrature  qs;
     const PetscReal *points, *weights;
     PetscReal       *p, *w;
-    PetscInt         dim, npoints, np;
+    PetscInt         dim, Nc, npoints, np;
 
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qs);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q, &dim, &Nc, &npoints, &points, &weights);CHKERRQ(ierr);
     np   = npoints/numSubelements;
     ierr = PetscMalloc1(np*dim,&p);CHKERRQ(ierr);
-    ierr = PetscMalloc1(np,&w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(np*Nc,&w);CHKERRQ(ierr);
     ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscMemcpy(w, &weights[s*np],    np     * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscQuadratureSetData(qs, dim, np, p, w);CHKERRQ(ierr);
+    ierr = PetscMemcpy(w, &weights[s*np*Nc], np*Nc  * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(qs, dim, Nc, np, p, w);CHKERRQ(ierr);
     ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
     ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
   }
@@ -1904,8 +1747,6 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVDestroy_Upwind"
 PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm)
 {
   PetscFV_Upwind *b = (PetscFV_Upwind *) fvm->data;
@@ -1916,8 +1757,6 @@ PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVView_Upwind_Ascii"
 PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
 {
   PetscInt          Nc, c;
@@ -1937,8 +1776,6 @@ PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVView_Upwind"
 PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -1952,16 +1789,12 @@ PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetUp_Upwind"
 PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVIntegrateRHSFunction_Upwind"
 /*
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
@@ -1969,11 +1802,12 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                   PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
-  void          *rctx;
-  PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, totDim, Nc, off, f, d;
-  PetscErrorCode ierr;
+  void             (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
+  void              *rctx;
+  PetscScalar       *flux = fvm->fluxWork;
+  const PetscScalar *constants;
+  PetscInt           dim, numConstants, pdim, totDim, Nc, off, f, d;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
@@ -1981,10 +1815,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, Pet
   ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], numConstants, constants, flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
@@ -1993,8 +1828,6 @@ PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVInitialize_Upwind"
 PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
 {
   PetscFunctionBegin;
@@ -2014,8 +1847,6 @@ PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
 .seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVCreate_Upwind"
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm)
 {
   PetscFV_Upwind *b;
@@ -2032,8 +1863,6 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm)
 
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVDestroy_LeastSquares"
 PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
 {
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *) fvm->data;
@@ -2046,8 +1875,6 @@ PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVView_LeastSquares_Ascii"
 PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
 {
   PetscInt          Nc, c;
@@ -2067,8 +1894,6 @@ PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVView_LeastSquares"
 PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -2082,16 +1907,12 @@ PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVSetUp_LeastSquares"
 PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVLeastSquaresPseudoInverse_Static"
 /* Overwrites A. Can only handle full-rank problems with m>=n */
 static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
@@ -2141,8 +1962,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVLeastSquaresPseudoInverseSVD_Static"
 /* Overwrites A. Can handle degenerate problems and m<n. */
 static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
@@ -2205,8 +2024,6 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 }
 
 #if 0
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVLeastSquaresDebugCell_Static"
 static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt cell, DM dm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
 {
   PetscReal       grad[2] = {0, 0};
@@ -2239,8 +2056,6 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVComputeGradient_LeastSquares"
 /*
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
@@ -2279,8 +2094,6 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVIntegrateRHSFunction_LeastSquares"
 /*
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
@@ -2288,11 +2101,12 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
 PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                         PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
-  void          *rctx;
-  PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, Nc, totDim, off, f, d;
-  PetscErrorCode ierr;
+  void             (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
+  void              *rctx;
+  PetscScalar       *flux = fvm->fluxWork;
+  const PetscScalar *constants;
+  PetscInt           dim, numConstants, pdim, Nc, totDim, off, f, d;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
@@ -2300,10 +2114,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS pro
   ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], numConstants, constants, flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
@@ -2312,8 +2127,6 @@ PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS pro
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVLeastSquaresSetMaxFaces_LS"
 static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces)
 {
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *) fvm->data;
@@ -2334,8 +2147,6 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVInitialize_LeastSquares"
 PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
 {
   PetscFunctionBegin;
@@ -2356,8 +2167,6 @@ PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
 .seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVCreate_LeastSquares"
 PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
 {
   PetscFV_LeastSquares *ls;
@@ -2381,8 +2190,6 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVLeastSquaresSetMaxFaces"
 /*@
   PetscFVLeastSquaresSetMaxFaces - Set the maximum number of cell faces for gradient reconstruction
 

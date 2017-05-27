@@ -24,8 +24,6 @@ typedef struct {
     in one particular set of coordinates. It is a callback
     called from PetscDrawZoom()
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
 PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx           *zctx = (ZoomCtx*)ctx;
@@ -113,8 +111,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Draw_DA2d"
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DM                 da,dac,dag;
@@ -167,6 +163,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
          create a special DMDA to handle one level of ghost points for graphics
       */
       ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
+      ierr = DMSetUp(dac);CHKERRQ(ierr);
       ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
@@ -233,6 +230,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   if (!xcoorl) {
     /* create DMDA to get local version of graphics */
     ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
+    ierr = DMSetUp(dag);CHKERRQ(ierr);
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
@@ -312,8 +310,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "VecGetHDF5ChunkSize"
 static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension, PetscInt timestep, hsize_t *chunkDims)
 {
   PetscMPIInt    comm_size;
@@ -413,8 +409,6 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_HDF5_DA"
 PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
   DM                dm;
@@ -504,6 +498,8 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   filescalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
+#elif defined(PETSC_USE_REAL___FP16)
+#error "HDF5 output with 16 bit floats not supported."
 #else
   memscalartype = H5T_NATIVE_DOUBLE;
   if (spoutput == PETSC_TRUE) filescalartype = H5T_NATIVE_FLOAT;
@@ -585,8 +581,6 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 #if defined(PETSC_HAVE_MPIIO)
-#undef __FUNCT__
-#define __FUNCT__ "DMDAArrayMPIIO"
 static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool write)
 {
   PetscErrorCode    ierr;
@@ -654,8 +648,6 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DM                da;
@@ -684,9 +676,8 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
-  } else if (isvtk) {           /* Duplicate the Vec and hold a reference to the DM */
+  } else if (isvtk) {           /* Duplicate the Vec */
     Vec Y;
-    ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
     ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
     if (((PetscObject)xin)->name) {
       /* If xin was named, copy the name over to Y. The duplicate names are safe because nobody else will ever see Y. */
@@ -767,8 +758,6 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_HDF5_DA"
 PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
@@ -792,6 +781,8 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
+#elif defined(PETSC_USE_REAL___FP16)
+#error "HDF5 output with 16 bit floats not supported."
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
@@ -898,8 +889,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Binary_DA"
 PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
@@ -940,8 +929,6 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Default_DA"
 PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
   PetscErrorCode ierr;

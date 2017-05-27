@@ -1,7 +1,5 @@
 #include <petsc/private/drawimpl.h>                        /*I  "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCoordinateToPixel_Null"
 static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscFunctionBegin;
@@ -9,8 +7,6 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw,PetscReal x
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPixelToCoordinate_Null"
 static PetscErrorCode PetscDrawPixelToCoordinate_Null(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscFunctionBegin;
@@ -18,24 +14,18 @@ static PetscErrorCode PetscDrawPixelToCoordinate_Null(PetscDraw draw,int i,int j
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPoint_Null"
 static PetscErrorCode PetscDrawPoint_Null(PetscDraw draw,PetscReal x,PetscReal y,int c)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPointPixel_Null"
 static PetscErrorCode PetscDrawPointPixel_Null(PetscDraw draw,int x,int y,int c)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLineGetWidth_Null"
 static PetscErrorCode PetscDrawLineGetWidth_Null(PetscDraw draw,PetscReal *width)
 {
   PetscFunctionBegin;
@@ -43,48 +33,36 @@ static PetscErrorCode PetscDrawLineGetWidth_Null(PetscDraw draw,PetscReal *width
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLine_Null"
 static PetscErrorCode PetscDrawLine_Null(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawArrow_Null"
 static PetscErrorCode PetscDrawArrow_Null(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRectangle_Null"
 static PetscErrorCode PetscDrawRectangle_Null(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawEllipse_Null"
 static PetscErrorCode PetscDrawEllipse_Null(PetscDraw Win,PetscReal x,PetscReal y,PetscReal a,PetscReal b,int c)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawTriangle_Null"
 static PetscErrorCode PetscDrawTriangle_Null(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize_Null"
 static PetscErrorCode PetscDrawStringGetSize_Null(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscFunctionBegin;
@@ -93,24 +71,18 @@ static PetscErrorCode PetscDrawStringGetSize_Null(PetscDraw draw,PetscReal *x,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString_Null"
 static PetscErrorCode PetscDrawString_Null(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical_Null"
 static PetscErrorCode PetscDrawStringVertical_Null(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringBoxed_Null"
 static PetscErrorCode PetscDrawStringBoxed_Null(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscFunctionBegin;
@@ -119,8 +91,6 @@ static PetscErrorCode PetscDrawStringBoxed_Null(PetscDraw draw,PetscReal sxl,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetSingleton_Null"
 static PetscErrorCode PetscDrawGetSingleton_Null(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
@@ -129,8 +99,6 @@ static PetscErrorCode PetscDrawGetSingleton_Null(PetscDraw draw,PetscDraw *sdraw
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRestoreSingleton_Null"
 static PetscErrorCode PetscDrawRestoreSingleton_Null(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
@@ -187,8 +155,6 @@ static struct _PetscDrawOps DvOps = { NULL,/* PetscDrawSetDoubleBuffer_Null */
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_Null"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 {
   PetscErrorCode ierr;
@@ -205,8 +171,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenNull"
 /*@
    PetscDrawOpenNull - Opens a null drawing context. All draw commands to
    it are ignored.
@@ -226,8 +190,6 @@ PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawIsNull"
 /*@
    PetscDrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 

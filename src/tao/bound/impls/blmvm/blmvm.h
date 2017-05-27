@@ -1,5 +1,10 @@
-#ifndef __TAO_BLMVM_H
+/*
+  Private data structure used for blmvm method.
+*/
+
+#if !defined(__TAO_BLMVM_H)
 #define __TAO_BLMVM_H
+
 #include <petsc/private/taoimpl.h>
 
 /*
@@ -7,7 +12,6 @@
  optimization.
 */
 typedef struct {
-
   Mat M;
 
   Vec unprojected_gradient;
@@ -22,4 +26,4 @@ typedef struct {
   Mat      H0;
 } TAO_BLMVM;
 
-#endif  /* ifndef __TAO_BLMVM_H */
+#endif  /* if !defined(__TAO_BLMVM_H) */

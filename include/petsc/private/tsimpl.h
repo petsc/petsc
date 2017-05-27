@@ -50,6 +50,11 @@ struct _TSOps {
   PetscErrorCode (*adjointsetup)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardintegral)(TS);
+  PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
+  PetscErrorCode (*getauxsolution)(TS,Vec*);
+  PetscErrorCode (*gettimeerror)(TS,PetscInt,Vec*);
+  PetscErrorCode (*settimeerror)(TS,Vec);
+  PetscErrorCode (*startingmethod) (TS);
 };
 
 /*
@@ -70,10 +75,15 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
-  PetscInt setupcalled;             /* true if setup has been called */
-  PetscInt recomps;                 /* counter for recomputations in the adjoint run */
-  PetscInt diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
-  void *data;
+  PetscViewer    monitor;
+  PetscInt       setupcalled;             /* true if setup has been called */
+  PetscInt       recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt       diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  char           **names;                 /* the name of each variable; each process has only the local names */
+  PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
+  void*          transformctx;
+  void           *data;
 };
 
 struct _p_TS {
@@ -85,6 +95,7 @@ struct _p_TS {
   Vec            vec_sol; /* solution vector in first and second order equations */
   Vec            vec_dot; /* time derivative vector in second order equations */
   TSAdapt        adapt;
+  TSAdaptType    default_adapt_type;
   TSEvent        event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
@@ -100,6 +111,7 @@ struct _p_TS {
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
+  PetscErrorCode (*postevaluate)(TS);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*functiondomainerror)(TS,PetscReal,Vec,PetscBool*);
 
@@ -192,7 +204,7 @@ struct _p_TS {
 };
 
 struct _TSAdaptOps {
-  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*);
+  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*,PetscReal*,PetscReal*);
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
@@ -213,10 +225,14 @@ struct _p_TSAdapt {
     PetscReal  ccfl[16];         /* stability limit relative to explicit Euler */
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
-  PetscReal   dt_min,dt_max;
-  PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
-  PetscViewer monitor;
+  PetscBool   always_accept;
+  PetscReal   safety;             /* safety factor relative to target error/stability goal */
+  PetscReal   reject_safety;      /* extra safety factor if the last step was rejected */
+  PetscReal   clip[2];            /* admissible time step decrease/increase factors */
+  PetscReal   dt_min,dt_max;      /* admissible minimum and maximum time step */
+  PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   NormType    wnormtype;
+  PetscViewer monitor;
 };
 
 typedef struct _p_DMTS *DMTS;
@@ -310,6 +326,7 @@ struct _n_TSEvent {
     PetscInt  **eventidx; /* Local indices of the events in the event list */
   } recorder;
   PetscInt  recsize; /* Size of recorder stack */
+  PetscInt  refct; /* reference count */
 };
 
 PETSC_EXTERN PetscErrorCode TSEventInitialize(TSEvent,TS,PetscReal,Vec);
@@ -341,6 +358,22 @@ struct _n_TSMonitorLGCtx {
 struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
+
+/*
+    Checks if the user provide a TSSetIFunction() but an explicit method is called; generate an error in that case
+*/
+PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
+{
+  TSIFunction      ifunction;
+  DM               dm;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
+  if (ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
+  PetscFunctionReturn(0);
+}
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 

@@ -1,6 +1,6 @@
 DM Object: 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+Mesh in 2 dimensions:
   0-cells: 14
   1-cells: 20
   2-cells: 19 (12)
@@ -46,7 +46,7 @@ TS Object: 1 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI processes
       type: lu
-        LU: out-of-place factorization
+        out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5, needed 1

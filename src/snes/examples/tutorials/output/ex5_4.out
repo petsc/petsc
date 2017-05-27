@@ -70,7 +70,7 @@ SNES Object: 2 MPI processes
             using NONE norm type for convergence test
           PC Object: (mg_coarse_redundant_) 1 MPI processes
             type: lu
-              LU: out-of-place factorization
+              out-of-place factorization
               tolerance for zero pivot 2.22045e-14
               using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
               matrix ordering: nd
@@ -99,7 +99,8 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.129683, max = 1.42652
+          Chebyshev: eigenvalue estimates used:  min = 0.129683, max = 1.42652
+          Chebyshev: eigenvalues estimate via gmres min 0.152538, max 1.29683
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 2 MPI processes
             type: gmres
@@ -128,7 +129,8 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.126645, max = 1.3931
+          Chebyshev: eigenvalue estimates used:  min = 0.126645, max = 1.3931
+          Chebyshev: eigenvalues estimate via gmres min 0.0474425, max 1.26645
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 2 MPI processes
             type: gmres

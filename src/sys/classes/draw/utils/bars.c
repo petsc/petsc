@@ -2,9 +2,9 @@
 /*
   Contains the data structure for plotting a bargraph in a window with an axis.
 */
-#include <petscdraw.h>         /*I "petscdraw.h" I*/
+#include <petscdraw.h>                       /*I "petscdraw.h" I*/
 #include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
-#include <petscviewer.h>         /*I "petscviewer.h" I*/
+#include <petscviewer.h>                     /*I "petscviewer.h" I*/
 #include <../src/sys/classes/draw/utils/axisimpl.h>   /* so we can directly modify axis xticks */
 
 PetscClassId PETSC_DRAWBAR_CLASSID = 0;
@@ -26,8 +26,6 @@ struct _p_PetscDrawBar {
 
 #define CHUNKSIZE 100
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarCreate"
 /*@C
    PetscDrawBarCreate - Creates a bar graph data structure.
 
@@ -39,12 +37,20 @@ struct _p_PetscDrawBar {
    Output Parameters:
 .  bar - The bar graph context
 
+   Notes: Call PetscDrawBarSetData() to provide the bins to be plotted and then PetscDrawBarDraw() to display the new plot
+
+  The difference between a bar chart, PetscDrawBar, and a histogram, PetscDrawHG, is explained here http://stattrek.com/statistics/charts/histogram.aspx?Tutorial=AP
+
+   The MPI communicator that owns the PetscDraw owns this PetscDrawBar, but the calls to set options and add data are ignored on all processes except the
+   zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawBarDraw() to display the updated graph.
+
    Level: intermediate
 
    Concepts: bar graph^creating
 
-.seealso: PetscDrawBarDestroy()
-
+.seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarDestroy(), PetscDrawBarSetData(),
+          PetscDrawBar, PetscDrawBarDraw(), PetscDrawBarSave(), PetscDrawBarSetColor(), PetscDrawBarSort(), PetscDrawBarSetLimits(), PetscDrawBarGetAxis(), PetscDrawAxis,
+          PetscDrawBarGetDraw(), PetscDrawBarSetFromOptions() 
 @*/
 PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 {
@@ -75,8 +81,6 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetData"
 /*@C
    PetscDrawBarSetData
 
@@ -90,6 +94,9 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 
    Level: intermediate
 
+   Notes: Call PetscDrawBarDraw() after this call to display the new plot
+
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarDraw()
 
 @*/
 PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscReal data[],const char *const *labels)
@@ -112,8 +119,6 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarDestroy"
 /*@C
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
@@ -143,8 +148,6 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarDraw"
 /*@
   PetscDrawBarDraw - Redraws a bar graph.
 
@@ -154,6 +157,8 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
 . bar - The bar graph context
 
   Level: intermediate
+
+.seealso: PetscDrawBar, PetscDrawBarCreate(), PetscDrawBarSetData()
 
 @*/
 PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
@@ -245,8 +250,6 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSave"
 /*@
   PetscDrawBarSave - Saves a drawn image
 
@@ -259,7 +262,7 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 
   Concepts: bar graph^saving
 
-.seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave()
+.seealso:  PetscDrawBarCreate(), PetscDrawBarGetDraw(), PetscDrawSetSave(), PetscDrawSave(), PetscDrawBarSetData()
 @*/
 PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 {
@@ -271,8 +274,6 @@ PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetColor"
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.
 
@@ -285,6 +286,8 @@ PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 
   Level: intermediate
 
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
+
 @*/
 PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
 {
@@ -294,8 +297,6 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSort"
 /*@
   PetscDrawBarSort - Sorts the values before drawing the bar chart
 
@@ -309,6 +310,8 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
   Level: intermediate
 
   Concepts: bar graph^setting axis
+
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarSetData(), PetscDrawBarSetColor(), PetscDrawBarDraw(), PetscDrawBarGetAxis()
 @*/
 PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance)
 {
@@ -319,8 +322,6 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetLimits"
 /*@
   PetscDrawBarSetLimits - Sets the axis limits for a bar graph. If more
   points are added after this call, the limits will be adjusted to
@@ -335,6 +336,8 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
   Level: intermediate
 
   Concepts: bar graph^setting axis
+
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarGetAxis(), PetscDrawBarSetData(), PetscDrawBarDraw()
 @*/
 PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscReal y_max)
 {
@@ -345,8 +348,6 @@ PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarGetAxis"
 /*@C
   PetscDrawBarGetAxis - Gets the axis context associated with a bar graph.
   This is useful if one wants to change some axis property, such as
@@ -363,6 +364,7 @@ PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRe
 
   Level: intermediate
 
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawAxis, PetscDrawAxisCreate()
 @*/
 PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
 {
@@ -373,8 +375,6 @@ PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarGetDraw"
 /*@C
   PetscDrawBarGetDraw - Gets the draw context associated with a bar graph.
 
@@ -388,6 +388,7 @@ PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
 
   Level: intermediate
 
+.seealso: PetscDrawBarCreate(), PetscDrawBar, PetscDrawBarDraw(), PetscDraw
 @*/
 PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
 {
@@ -398,8 +399,6 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetFromOptions"
 /*@
     PetscDrawBarSetFromOptions - Sets options related to the PetscDrawBar
 
@@ -411,7 +410,7 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
     Level: intermediate
 
 
-.seealso:  PetscDrawBarDestroy(), PetscDrawBarCreate()
+.seealso:  PetscDrawBarDestroy(), PetscDrawBarCreate(), PetscDrawBarSort()
 @*/
 PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
 {

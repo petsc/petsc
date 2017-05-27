@@ -3,11 +3,9 @@
 !  Tests PescOffsetFortran()
 !  duplicated
       program main
-       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+       implicit none
 
       PetscErrorCode ierr
       PetscInt  n
@@ -20,6 +18,10 @@
 
       n=8
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .gt. 1) then
         print*,'Example for one processor only'

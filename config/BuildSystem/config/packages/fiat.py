@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.liblist           = [['Lagrange.py']]
     self.libdir            = os.path.join('lib', 'python', 'site-packages')
     self.altlibdir         = os.path.join('lib', 'python'+'.'.join(map(str, sys.version_info[0:2])), 'site-packages')
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):
@@ -45,7 +46,6 @@ class Configure(config.package.Package):
     self.log.write('==================================================================================\n')
     self.log.write('Checking for a functional '+self.name+'\n')
 
-    self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])

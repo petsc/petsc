@@ -3,7 +3,8 @@
 
 #include <petscdmlabel.h>
 #include <petscbt.h>
-#include <../src/sys/utils/hash.h>
+#include <petscistypes.h>
+#include <petsc/private/hash.h>
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -29,4 +30,5 @@ struct _n_DMLabel {
   PetscBT     bt;             /* A bit-wise index */
 };
 
+PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);
 #endif

@@ -1,13 +1,11 @@
 !
 !  Include file for Fortran use of the FAS nonlinear solvers in PETSc
 !
-#include "petsc/finclude/petscsnesfasdef.h"
+#if !defined (__PETSCSNESFASDEF_H)
+#define __PETSCSNESFASDEF_H
 
-!  SNESFASType
-      PetscEnum SNES_FAS_MULTIPLICATIVE
-      PetscEnum SNES_FAS_ADDITIVE
-      parameter (SNES_FAS_MULTIPLICATIVE=0,SNES_FAS_ADDITIVE=1)
+#include "petsc/finclude/petscsnes.h"
 
-!
-!     End of Fortran include file for the  MG include file in PETSc
+#define SNESFASType PetscEnum
 
+#endif

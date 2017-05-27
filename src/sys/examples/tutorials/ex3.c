@@ -1,7 +1,7 @@
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\
-following options to generate logging information:  -log, -log_summary,\n\
+following options to generate logging information:  -log, -log_view,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
 codes.\n\n";
@@ -14,14 +14,14 @@ codes.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
 #include <petscsys.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -74,3 +74,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

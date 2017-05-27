@@ -24,29 +24,29 @@ PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line
   b1[2] = -(PetscMPIInt)hash(func); b1[3] = -b1[2];
   b1[4] = -(PetscMPIInt)ctn;        b1[5] = -b1[4];
   err = MPI_Allreduce(b1,b2,6,MPI_INT,MPI_MAX,comm);
-  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduced() failed");
+  if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_LIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() failed with error code %d",err);
   if (-b2[0] != b2[1]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called in different locations (code lines) on different processors");
   if (-b2[2] != b2[3]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called in different locations (functions) on different processors");
   if (-b2[4] != b2[5]) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"MPI_Allreduce() called with different counts %d on different processors",ctn);
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBarrier"
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
-                   processors owning the object A.
+                   processors owning the object obj.
 
    Input Parameters:
-.  A - PETSc object  (Mat, Vec, IS, SNES etc...)
-        Must be caste with a (PetscObject), can use NULL (for MPI_COMM_WORLD)
+.  obj - PETSc object  (Mat, Vec, IS, SNES etc...)
+        The object be caste with a (PetscObject). NULL can be used to indicate the barrier should be across MPI_COMM_WORLD
 
   Level: intermediate
 
   Notes:
-  This routine calls MPI_Barrier with the communicator of the PETSc Object "A".
+  This routine calls MPI_Barrier with the communicator of the PETSc Object obj
 
-  With fortran Use NULL_OBJECT (instead of NULL)
+  Fortran Usage:
+    You may pass PETSC_NULL_VEC or any other PETSc null object, such as PETSC_NULL_MAT, to indicate the barrier should be
+    across MPI_COMM_WORLD.
 
    Concepts: barrier
 

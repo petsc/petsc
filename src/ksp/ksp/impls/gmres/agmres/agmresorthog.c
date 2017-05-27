@@ -18,8 +18,6 @@
  */
 static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal*, PetscReal*, PetscReal*, PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddecInitNeighboor"
 PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
 {
   MPI_Comm       comm;
@@ -55,8 +53,6 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddecGivens"
 static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, PetscReal * r, PetscInt make_r)
 {
   PetscReal a, b, t;
@@ -117,8 +113,6 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
  *  - agmres->tloc : scalar factors of the elementary reflectors.
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddec"
 PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*) ksp->data;
@@ -176,7 +170,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       Qloc[j*nloc+j] = rho;
     }
   }
-  /*annihilate undesirable Rloc, diagonal by diagonal*/
+  /* annihilate undesirable Rloc, diagonal by diagonal*/
   for (d = 0; d < nvec; d++) {
     len = nvec - d;
     if (rank == First) {
@@ -184,11 +178,11 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       ierr = MPI_Send(&(wbufptr[d]), len, MPIU_SCALAR, rank + 1, agmres->tag, comm);CHKERRQ(ierr);
     } else {
       ierr = MPI_Recv(&(wbufptr[d]), len, MPIU_SCALAR, rank - 1, agmres->tag, comm, &status);CHKERRQ(ierr);
-      /*Elimination of Rloc(1,d)*/
+      /* Elimination of Rloc(1,d)*/
       c    = wbufptr[d];
       s    = Qloc[d*nloc];
       ierr = KSPAGMRESRoddecGivens(&c, &s, &rho, 1);CHKERRQ(ierr);
-      /*Apply Givens Rotation*/
+      /* Apply Givens Rotation*/
       for (k = d; k < nvec; k++) {
         old          = wbufptr[k];
         wbufptr[k]   =  c * old - s * Qloc[k*nloc];
@@ -227,7 +221,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
       PetscStackCallBLAS("BLASscal",BLASscal_(&bpos, &(sgn[d]), RLOC(d,d), &N));
     }
   }
-  /*BroadCast Rloc to all other processes
+  /* BroadCast Rloc to all other processes
    * NWD : should not be needed
    */
   ierr = MPI_Bcast(agmres->Rloc,N*N,MPIU_SCALAR,Last,comm);CHKERRQ(ierr);
@@ -244,8 +238,6 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
  *  Output :
  *   - Out : Petsc vector (distributed as the basis vectors)
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRodvec"
 PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
 {
   KSP_AGMRES     *agmres  = (KSP_AGMRES*) ksp->data;

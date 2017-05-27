@@ -3,8 +3,6 @@ static char help[] = "Tests 1D cell-based discretization tools.\n\n";
 #include <petscdt.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -54,3 +52,8 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+  test:
+    suffix: 1
+    args: -degrees 1,2,3 -target_points -0.3,0,.2 -src_points -1,-.3,0,.2,1
+TEST*/

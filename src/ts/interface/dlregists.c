@@ -2,8 +2,6 @@
 #include <petsc/private/tsimpl.h>
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "TSFinalizePackage"
 /*@C
   TSFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
   called from PetscFinalize().
@@ -25,8 +23,6 @@ PetscErrorCode  TSFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInitializePackage"
 /*@C
   TSInitializePackage - This function initializes everything in the TS package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate()
@@ -50,6 +46,7 @@ PetscErrorCode  TSInitializePackage(void)
   /* Inialize subpackages */
   ierr = TSGLLEInitializePackage();CHKERRQ(ierr);
   ierr = TSRKInitializePackage();CHKERRQ(ierr);
+  ierr = TSGLEEInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);
@@ -93,8 +90,6 @@ PetscErrorCode  TSInitializePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

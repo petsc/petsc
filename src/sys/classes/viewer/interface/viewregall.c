@@ -8,7 +8,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer);
@@ -16,8 +15,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 
 PetscBool PetscViewerRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRegisterAll"
 /*@C
   PetscViewerRegisterAll - Registers all of the graphics methods in the PetscViewer package.
 

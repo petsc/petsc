@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGMRESSetPreAllocateVectors"
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES and FGMRES to preallocate all its
     needed work vectors at initial setup rather than the default, which

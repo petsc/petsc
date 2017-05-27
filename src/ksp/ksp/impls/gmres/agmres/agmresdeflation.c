@@ -13,8 +13,6 @@
  * size - Number of eigenvalues (with complex conjugates)
  * perm - contains on exit the permutation vector to reorder the vectors val_r and val_i.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESQuickSort"
 #define  DEPTH  500
 static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i, PetscInt size, PetscInt *perm)
 {
@@ -92,8 +90,6 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
  * the smallest eigenvalues (with complex conjugates)
  * CurNeig - Number of extracted eigenvalues
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESSchurForm"
 static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
@@ -175,7 +171,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
-  /*Extract the Schur vectors associated to the r smallest eigenvalues */
+  /* Extract the Schur vectors associated to the r smallest eigenvalues */
   ierr = PetscMemzero(Sr,(N+1)*r*sizeof(PetscScalar));CHKERRQ(ierr);
   for (j = 0; j < r; j++) {
     for (i = 0; i < KspSize; i++) {
@@ -199,8 +195,6 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
  * This function form the matrices for the generalized eigenvalue problem,
  * it then compute the Schur vectors needed to augment the Newton basis.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESComputeDeflationData"
 PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 {
   KSP_AGMRES     *agmres  = (KSP_AGMRES*)ksp->data;
@@ -213,7 +207,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscInt       i,j;
   PetscErrorCode ierr;
   PetscInt       max_k = agmres->max_k;     /* size of the non - augmented subspace */
-  PetscInt       CurNeig;       /* CUrrent number of extracted eigenvalues */
+  PetscInt       CurNeig;       /* Current number of extracted eigenvalues */
   PetscInt       N        = MAXKSPSIZE;
   PetscBLASInt   bN;
   PetscInt       lC       = N + 1;

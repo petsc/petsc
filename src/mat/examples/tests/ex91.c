@@ -1,10 +1,8 @@
 
-static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for sequential MatSBAIJ format. Derived from ex51.c\n";
+static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for sequential MatSBAIJ format. Derived from ex51.c\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,Atrans,sA,*submatA,*submatsA;
@@ -136,8 +134,8 @@ int main(int argc,char **args)
     if (!flg) SETERRQ1(PETSC_COMM_SELF,1,"i=%d, is1 != is2",i);
   }
 
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
@@ -161,9 +159,9 @@ int main(int argc,char **args)
     ierr = VecDestroy(&s2);CHKERRQ(ierr);
   }
 
-  /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
+  /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {

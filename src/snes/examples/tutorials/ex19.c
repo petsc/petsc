@@ -91,8 +91,6 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
@@ -113,7 +111,9 @@ int main(int argc,char **argv)
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
   ierr = SNESSetNGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
 
@@ -181,9 +181,6 @@ int main(int argc,char **argv)
 
 /* ------------------------------------------------------------------- */
 
-
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -243,8 +240,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
@@ -373,9 +368,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 {
   DMDALocalInfo  info;

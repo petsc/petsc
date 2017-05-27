@@ -7,8 +7,8 @@
 #define petscdrawopenx_           petscdrawopenx
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscdrawopenx_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
-                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
+PETSC_EXTERN void PETSC_STDCALL petscdrawopenx_(MPI_Comm *comm,char* display PETSC_MIXED_LEN(len1),
+                    char* title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;

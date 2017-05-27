@@ -5,13 +5,14 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://software.lanl.gov/ascem/tpls/ascem-io-2.2.tar.gz']
-    self.downloaddirname  = 'ascem-io'
+    self.downloaddirnames = ['ascem-io']
     self.includes         = ['ascemio_util.h']
     self.liblist          = [['libparallelio.a']]
     self.functions        = []
     self.requirescxx11    = 0
     self.downloadonWindows= 0
     self.hastests         = 1
+    self.useddirectly     = 0
     return
 
   def setupDependencies(self, framework):

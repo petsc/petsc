@@ -1,0 +1,151 @@
+[0]Point 0 (0.5, 0.75, 0.25)
+[0]Point 1 (0.5, 0.25, 0.75)
+[1]Point 0 (0.75, 0.5, 0.25)
+[2]Point 0 (0.75, 0.25, 0.5)
+[3]Point 0 (0.25, 0.75, 0.5)
+[4]Point 0 (0.25, 0.5, 0.75)
+[0]Point 0 is in Cell 0
+[0]Point 1 is in Cell 1
+[1]Point 0 is in Cell 0
+[2]Point 0 is in Cell 0
+[3]Point 0 is in Cell 0
+[4]Point 0 is in Cell 0
+Vec Object: 5 MPI processes
+  type: mpi
+Process [0]
+0.5
+0.75
+0.25
+0.5
+0.25
+0.75
+Process [1]
+0.75
+0.5
+0.25
+Process [2]
+0.75
+0.25
+0.5
+Process [3]
+0.25
+0.75
+0.5
+Process [4]
+0.25
+0.5
+0.75
+[0]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+2.
+2.
+2.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[1]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[2]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[3]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[4]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[0]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+[1]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+[2]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+[3]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+[4]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5

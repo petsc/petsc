@@ -6,11 +6,8 @@ Input arguments are:\n\
 #include <petscksp.h>
 #include <petsclog.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-#if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscInt       its;
   PetscLogStage  stage1,stage2;
@@ -21,12 +18,8 @@ int main(int argc,char **args)
   PetscViewer    fd;
   PetscBool      table = PETSC_FALSE,flg;
   KSP            ksp;
-#endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
-#else
   ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
@@ -111,7 +104,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-#endif
   ierr = PetscFinalize();
   return ierr;
 }

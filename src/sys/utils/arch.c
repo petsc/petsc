@@ -1,8 +1,6 @@
 
 #include <petscsys.h>         /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
      that is executing this routine.

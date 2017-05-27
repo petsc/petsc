@@ -8,8 +8,6 @@
 
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_TCQMR"
 static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 {
   PetscReal      rnorm0,rnorm,dp1,Gamma;
@@ -139,8 +137,6 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_TCQMR"
 static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -173,8 +169,6 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_TCQMR"
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
 {
   PetscErrorCode ierr;

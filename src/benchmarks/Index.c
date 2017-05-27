@@ -7,8 +7,6 @@ extern int BlastCache(void);
 extern int test1(void);
 extern int test2(void);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -20,8 +18,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test1"
 int test1(void)
 {
   PetscLogDouble t1,t2;
@@ -112,8 +108,6 @@ int test1(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test2"
 int test2(void)
 {
   PetscLogDouble t1,t2;
@@ -186,8 +180,6 @@ int test2(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BlastCache"
 int BlastCache(void)
 {
   int         i,ierr,n = 1000000;

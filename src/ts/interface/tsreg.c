@@ -3,8 +3,6 @@
 PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetType"
 /*@C
   TSSetType - Sets the method to be used as the timestepping solver.
 
@@ -51,6 +49,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -58,10 +57,9 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
-
-    ts->ops->destroy = NULL;
   }
   ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
+  ts->default_adapt_type = TSADAPTNONE;
 
   ts->setupcalled = PETSC_FALSE;
 
@@ -70,8 +68,6 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetType"
 /*@C
   TSGetType - Gets the TS method type (as a string).
 
@@ -99,8 +95,6 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRegister"
 /*@C
   TSRegister - Adds a creation method to the TS package.
 

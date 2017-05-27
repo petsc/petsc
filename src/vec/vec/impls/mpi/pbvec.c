@@ -5,8 +5,6 @@
 #include <petscoptions.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_MPI"
 static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -19,8 +17,6 @@ static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_MPI"
 static PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -35,8 +31,6 @@ static PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
 extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray_MPI"
 static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -52,10 +46,6 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt[],PetscScalar[]);
-
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_MPI"
 static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -97,8 +87,6 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetOption_MPI"
 static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 {
   Vec_MPI        *v = (Vec_MPI*)V->data;
@@ -115,8 +103,6 @@ static PetscErrorCode VecSetOption_MPI(Vec V,VecOption op,PetscBool flag)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_MPI"
 static PetscErrorCode VecResetArray_MPI(Vec vin)
 {
   Vec_MPI        *v = (Vec_MPI*)vin->data;
@@ -131,8 +117,6 @@ static PetscErrorCode VecResetArray_MPI(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblySend_MPI_Private"
 static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rankid,PetscMPIInt rank,void *sdata,MPI_Request req[],void *ctx)
 {
   Vec X = (Vec)ctx;
@@ -155,8 +139,6 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyRecv_MPI_Private"
 static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rank,void *rdata,MPI_Request req[],void *ctx)
 {
   Vec X = (Vec)ctx;
@@ -195,8 +177,6 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyBegin_MPI_BTS"
 static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 {
   Vec_MPI        *x = (Vec_MPI*)X->data;
@@ -282,8 +262,6 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyEnd_MPI_BTS"
 static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 {
   Vec_MPI *x = (Vec_MPI*)X->data;
@@ -379,8 +357,6 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyReset_MPI"
 PetscErrorCode VecAssemblyReset_MPI(Vec X)
 {
   Vec_MPI *x = (Vec_MPI*)X->data;
@@ -401,8 +377,6 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetFromOptions_MPI"
 static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
 {
   PetscErrorCode ierr;
@@ -492,8 +466,6 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPI_Private"
 /*
     VecCreate_MPI_Private - Basic create routine called by VecCreate_MPI() (i.e. VecCreateMPI()),
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
@@ -557,8 +529,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMpi()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPI"
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
@@ -579,8 +549,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
 .seealso: VecCreateSeq(), VecCreateMPI()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_Standard"
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 {
   PetscErrorCode ierr;
@@ -596,8 +564,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateMPIWithArray"
 /*@C
    VecCreateMPIWithArray - Creates a parallel, array-style vector,
    where the user provides the array space to store the vector values.
@@ -646,8 +612,6 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateGhostWithArray"
 /*@C
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space.
@@ -733,8 +697,6 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateGhost"
 /*@
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
@@ -775,8 +737,6 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMPISetGhost"
 /*@
    VecMPISetGhost - Sets the ghost points for an MPI ghost vector
 
@@ -863,8 +823,6 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
 
 /* ------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateGhostBlockWithArray"
 /*@C
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space. Indices in the ghost region are based on blocks.
@@ -954,8 +912,6 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateGhostBlock"
 /*@
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.

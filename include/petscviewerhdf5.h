@@ -15,8 +15,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer, const char[], 
 #define PETSC_HDF5_INT_MAX  2147483647
 #define PETSC_HDF5_INT_MIN -2147483647
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHDF5IntCast"
 PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 {
   PetscFunctionBegin;
@@ -58,9 +56,5 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer,PetscBo
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer,PetscBool*);
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

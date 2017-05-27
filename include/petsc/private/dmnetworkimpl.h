@@ -25,6 +25,22 @@ typedef struct {
   PetscInt size;
 } DMNetworkComponent PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
+
+/* Indexing data structures for vertex and edges */
+typedef struct {
+  PetscSection                      DofSection;
+  PetscSection                      GlobalDofSection;
+  ISLocalToGlobalMapping            mapping;
+  PetscSF                           sf;
+} DMNetworkVertexInfo;
+
+typedef struct {
+  PetscSection                      DofSection;
+  PetscSection                      GlobalDofSection;
+  ISLocalToGlobalMapping            mapping;
+  PetscSF                           sf;
+} DMNetworkEdgeInfo;
+
 typedef struct {
   PetscInt                          refct;  /* reference count */
   PetscInt                          NEdges; /* Number of global edges */
@@ -39,6 +55,10 @@ typedef struct {
   PetscSection                      DataSection; /* Section for managing parameter distribution */
   PetscSection                      DofSection;  /* Section for managing data distribution */
   PetscSection                      GlobalDofSection; /* Global Dof section */
+
+  DMNetworkVertexInfo               vertex;
+  DMNetworkEdgeInfo                 edge;
+
   PetscInt                          ncomponent; /* Number of components */
   DMNetworkComponent                component[10]; /* List of components */
   DMNetworkComponentHeader          header;

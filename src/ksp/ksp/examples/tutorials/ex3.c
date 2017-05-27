@@ -22,10 +22,8 @@ T*/
 
 /* Declare user-defined routines */
 extern PetscErrorCode FormElementStiffness(PetscReal,PetscScalar*);
-extern PetscErrorCode FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
+extern PetscErrorCode FormElementRhs(PetscScalar,PetscScalar,PetscReal,PetscScalar*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            u,b,ustar; /* approx solution, RHS, exact solution */
@@ -39,8 +37,7 @@ int main(int argc,char **args)
   PetscScalar    r[4];        /* element vector */
   PetscReal      h;           /* mesh width */
   PetscReal      norm;        /* norm of solution error */
-  PetscReal      x,y;
-  PetscScalar    val;
+  PetscScalar    x,y;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
@@ -71,10 +68,8 @@ int main(int argc,char **args)
   /*
      Assemble matrix
   */
-  ierr = FormElementStiffness(h*h,Ke);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -124,10 +119,9 @@ int main(int argc,char **args)
   count = 2*m; /* left side */
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   for (i=0; i<4*m; i++) {
-    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-    val  = y;
-    ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    y = h*(rows[i]/(m+1));
+    ierr = VecSetValues(u,1,&rows[i],&y,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(b,1,&rows[i],&y,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatZeroRows(A,4*m,rows,1.0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
@@ -159,9 +153,8 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    x    = h*(i % (m+1)); y = h*(i/(m+1));
-    val  = y;
-    ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+    y = h*(i/(m+1));
+    ierr = VecSetValues(ustar,1,&i,&y,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
@@ -182,15 +175,13 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormElementStiffness"
 /* element stiffness for Laplacian */
 PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
@@ -202,9 +193,7 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormElementRhs"
-PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
+PetscErrorCode FormElementRhs(PetscScalar x,PetscScalar y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBeginUser;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;

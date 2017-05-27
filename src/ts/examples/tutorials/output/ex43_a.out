@@ -6,10 +6,10 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of linear solver iterations=12
   total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5, Beta=0.25
   TSAdapt Object: 1 MPI processes
     type: none
-    number of candidates 0
   SNES Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000

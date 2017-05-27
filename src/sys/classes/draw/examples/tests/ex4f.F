@@ -8,6 +8,9 @@
       subroutine zoomfunction(draw,dummy,ierr)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
+      use petscsys
+      implicit none
+
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
@@ -21,8 +24,9 @@
       end
 
       program main
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscdraw.h>
+      use petscsys
+      implicit none
+
       PetscDraw draw
       PetscErrorCode ierr
       integer  x,y,width,height
@@ -33,6 +37,10 @@
       height = 256
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      & 'Title',x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)

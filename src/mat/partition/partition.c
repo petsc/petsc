@@ -7,8 +7,6 @@ PetscClassId MAT_PARTITIONING_CLASSID;
 /*
    Simplest partitioning, keeps the current partitioning.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Current"
 static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
 /*
    partition an index to rebalance the computation
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Average"
 static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -68,8 +64,6 @@ static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *part
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Square"
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -96,8 +90,6 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Current"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -107,8 +99,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Average"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -118,8 +108,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Square"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -136,8 +124,6 @@ PetscFunctionList MatPartitioningList              = 0;
 PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningRegister"
 /*@C
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
@@ -172,8 +158,6 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*func
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningGetType"
 /*@C
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string)
         from the partitioning context.
@@ -201,8 +185,6 @@ PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartition
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetNParts"
 /*@C
    MatPartitioningSetNParts - Set how many partitions need to be created;
         by default this is one per processor. Certain partitioning schemes may
@@ -229,8 +211,6 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply"
 /*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
@@ -285,8 +265,6 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetAdjacency"
 /*@
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
@@ -312,8 +290,6 @@ PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy"
 /*@
    MatPartitioningDestroy - Destroys the partitioning context.
 
@@ -346,8 +322,6 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetVertexWeights"
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
@@ -380,8 +354,6 @@ PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetPartitionWeights"
 /*@C
    MatPartitioningSetPartitionWeights - Sets the weights for each partition.
 
@@ -419,8 +391,6 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate"
 /*@
    MatPartitioningCreate - Creates a partitioning context.
 
@@ -461,8 +431,6 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView"
 /*@C
    MatPartitioningView - Prints the partitioning data structure.
 
@@ -517,8 +485,6 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
 
@@ -573,8 +539,6 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions"
 /*@
    MatPartitioningSetFromOptions - Sets various partitioning options from the
         options database.
@@ -588,6 +552,10 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
 $  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
+
+
+   Notes: If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
+   no installed partitioners it uses current which means no repartioning.
 
    Level: beginner
 
@@ -605,6 +573,12 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
     def = MATPARTITIONINGPARMETIS;
+#elif defined(PETSC_HAVE_CHACO)
+    def = MATPARTITIONINGCHACO;
+#elif defined(PETSC_HAVE_PARTY)
+    def = MATPARTITIONINGPARTY;
+#elif defined(PETSC_HAVE_PTSCOTCH)
+    def = MATPARTITIONINGPTSCOTCH;
 #else
     def = MATPARTITIONINGCURRENT;
 #endif

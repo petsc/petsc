@@ -4,8 +4,6 @@ static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       M = 10,N = 8,dof=1,s=1,bx=0,by=0,i,n,j,k,m,wrap,xs,ys;
@@ -33,6 +31,8 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMBoundaryType)bx,(DMBoundaryType)by,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",(int)i);

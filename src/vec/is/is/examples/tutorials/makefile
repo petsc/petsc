@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/vec/is/is/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c
-EXAMPLESF        = ex1f.F ex1f90.F ex2f.F ex3f90.F
+EXAMPLESF        = ex1f.F ex1f90.F90 ex2f.F ex3f90.F90
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -92,6 +92,12 @@ runex4:
 	-@${MPIEXEC} -n 1 ./ex4  > ex4.tmp 2>&1;\
 	   if (${DIFF} output/ex4_1.out ex4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex4.tmp
+
+runex4_2:
+	-@${MPIEXEC} -n 1 ./ex4 -islocaltoglobalmapping_type hash  > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4_2.out ex4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex4.tmp
 
 runex5:

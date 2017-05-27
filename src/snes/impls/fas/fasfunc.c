@@ -1,12 +1,8 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 
-extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
-
 /* -------------- functions called on the fine level -------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetType"
 /*@
     SNESFASSetType - Sets the update and correction type used for FAS.
 
@@ -36,8 +32,6 @@ PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetType"
 /*@
 SNESFASGetType - Sets the update and correction type used for FAS.
 
@@ -64,8 +58,6 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetLevels"
 /*@C
    SNESFASSetLevels - Sets the number of levels to use with FAS.
    Must be called before any other FAS routine.
@@ -74,8 +66,7 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 +  snes   - the snes context
 .  levels - the number of levels
 -  comms  - optional communicators for each level; this is to allow solving the coarser
-            problems on smaller sets of processors. Use NULL_OBJECT for default in
-            Fortran.
+            problems on smaller sets of processors. 
 
    Level: intermediate
 
@@ -139,8 +130,6 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetLevels"
 /*@
    SNESFASGetLevels - Gets the number of levels in a FAS, including fine and coarse grids
 
@@ -166,8 +155,6 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetCycleSNES"
 /*@
    SNESFASGetCycleSNES - Gets the SNES corresponding to a particular
    level of the FAS hierarchy.
@@ -201,8 +188,6 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetNumberSmoothUp"
 /*@
    SNESFASSetNumberSmoothUp - Sets the number of post-smoothing steps to
    use on all levels.
@@ -241,8 +226,6 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetNumberSmoothDown"
 /*@
    SNESFASSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels.
@@ -281,8 +264,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetContinuation"
 /*@
    SNESFASSetContinuation - Sets the FAS cycle to default to exact Newton solves on the upsweep
 
@@ -328,8 +309,6 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetCycles"
 /*@
    SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use SNESFASSetCyclesOnLevel() for more
    complicated cycling.
@@ -369,8 +348,6 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetMonitor"
 /*@
    SNESFASSetMonitor - Sets the method-specific cycle monitoring
 
@@ -415,8 +392,6 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetLog"
 /*@
    SNESFASSetLog - Sets or unsets time logging for various FAS stages on all levels
 
@@ -469,8 +444,6 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleCreateSmoother_Private"
 /*
 Creates the default smoother type.
 
@@ -514,8 +487,6 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 
 /* ------------- Functions called on a particular level ----------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleSetCycles"
 /*@
    SNESFASCycleSetCycles - Sets the number of cycles on a particular level.
 
@@ -544,8 +515,6 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetSmoother"
 /*@
    SNESFASCycleGetSmoother - Gets the smoother on a particular cycle level.
 
@@ -573,8 +542,6 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetSmootherUp"
 /*@
    SNESFASCycleGetSmootherUp - Gets the up smoother on a particular cycle level.
 
@@ -608,8 +575,6 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetSmootherDown"
 /*@
    SNESFASCycleGetSmootherDown - Gets the down smoother on a particular cycle level.
 
@@ -639,8 +604,6 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetCorrection"
 /*@
    SNESFASCycleGetCorrection - Gets the coarse correction FAS context for this level
 
@@ -672,8 +635,6 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetInterpolation"
 /*@
    SNESFASCycleGetInterpolation - Gets the interpolation on this level
 
@@ -703,8 +664,6 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetRestriction"
 /*@
    SNESFASCycleGetRestriction - Gets the restriction on this level
 
@@ -734,8 +693,6 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetInjection"
 /*@
    SNESFASCycleGetInjection - Gets the injection on this level
 
@@ -764,8 +721,6 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleGetRScale"
 /*@
    SNESFASCycleGetRScale - Gets the injection on this level
 
@@ -794,8 +749,6 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleIsFine"
 /*@
    SNESFASCycleIsFine - Determines if a given cycle is the fine level.
 
@@ -827,8 +780,6 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
 
 /* ---------- functions called on the finest level that return level-specific information ---------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetInterpolation"
 /*@
    SNESFASSetInterpolation - Sets the function to be used to calculate the
    interpolation from l-1 to the lth level
@@ -867,8 +818,6 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetInterpolation"
 /*@
    SNESFASGetInterpolation - Gets the matrix used to calculate the
    interpolation from l-1 to the lth level
@@ -899,8 +848,6 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetRestriction"
 /*@
    SNESFASSetRestriction - Sets the function to be used to restrict the defect
    from level l to l-1.
@@ -942,8 +889,6 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetRestriction"
 /*@
    SNESFASGetRestriction - Gets the matrix used to calculate the
    restriction from l to the l-1th level
@@ -975,8 +920,6 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetInjection"
 /*@
    SNESFASSetInjection - Sets the function to be used to inject the solution
    from level l to l-1.
@@ -1013,8 +956,6 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetInjection"
 /*@
    SNESFASGetInjection - Gets the matrix used to calculate the
    injection from l-1 to the lth level
@@ -1045,8 +986,6 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetRScale"
 /*@
    SNESFASSetRScale - Sets the scaling factor of the restriction
    operator from level l to l-1.
@@ -1081,8 +1020,6 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetSmoother"
 /*@
    SNESFASGetSmoother - Gets the default smoother on a level.
 
@@ -1115,8 +1052,6 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetSmootherDown"
 /*@
    SNESFASGetSmootherDown - Gets the downsmoother on a level.
 
@@ -1153,8 +1088,6 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetSmootherUp"
 /*@
    SNESFASGetSmootherUp - Gets the upsmoother on a level.
 
@@ -1191,8 +1124,6 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetCoarseSolve"
 /*@
   SNESFASGetCoarseSolve - Gets the coarsest solver.
 
@@ -1224,8 +1155,6 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASFullSetDownSweep"
 /*@
    SNESFASFullSetDownSweep - Smooth during the initial downsweep for SNESFAS
 

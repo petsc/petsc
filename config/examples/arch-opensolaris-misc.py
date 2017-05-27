@@ -11,7 +11,6 @@ configure_options = [
   '--with-ctable=0',
   '--with-is-color-value-type=short',
   '--with-single-library=0',
-  '--with-fortran-datatypes=1',
 
   '--with-c2html=0',
   '--with-mpi-dir=/export/home/petsc/soft/mpich-3.1.3',

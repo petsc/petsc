@@ -5,8 +5,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
@@ -48,8 +46,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs_MPIAIJCUSP"
 PetscErrorCode  MatCreateVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
@@ -74,9 +70,6 @@ PetscErrorCode  MatCreateVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIAIJCUSP"
 PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
@@ -108,8 +101,6 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPSetFormat_MPIAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
   Mat_MPIAIJ     *a           = (Mat_MPIAIJ*)A->data;
@@ -133,8 +124,6 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   MatCUSPStorageFormat format;
@@ -169,8 +158,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJCUSP"
 PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
@@ -191,8 +178,6 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJCUSP"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
@@ -273,8 +258,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 
 .seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ(), MATMPIAIJCUSP, MATAIJCUSP
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAIJCUSP"
 PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;

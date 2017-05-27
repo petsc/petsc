@@ -1,0 +1,137 @@
+
+
+      type DMDALocalInfof90
+        PetscInt ::       dim,dof,sw
+        PetscInt ::       mx,my,mz
+        PetscInt ::       xs,ys,zs
+        PetscInt ::       xm,ym,zm
+        PetscInt ::       gxs,gys,gzs
+        PetscInt ::       gxm,gym,gzm
+        DMBoundaryType :: pt
+        DMDAStencilType  :: st
+        DM ::        da
+      end type DMDALocalInfof90
+
+      Interface DMDAVecGetArrayF90
+        Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF902(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF903(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF904(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecGetArrayF90
+
+      Interface DMDAVecRestoreArrayF90
+        Subroutine DMDAVecRestoreArrayF901(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF902(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF903(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF904(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecRestoreArrayF90
+
+      Interface DMDAVecGetArrayReadF90
+        Subroutine DMDAVecGetArrayReadF901(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF902(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF903(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayReadF904(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecGetArrayReadF90
+
+      Interface DMDAVecRestoreArrayReadF90
+        Subroutine DMDAVecRestoreArrayReadF901(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF902(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF903(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayReadF904(da1, v,d1,ierr)
+          use petscdmdef
+          DM da1
+          Vec v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecRestoreArrayReadF90

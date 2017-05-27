@@ -12,8 +12,6 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal
 #define KSPFCG_DEFAULT_VECB 5           /* number of search directions to allocate each time new direction vectors are needed */
 #define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAllocateVectors_FCG"
 static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
   PetscErrorCode  ierr;
@@ -41,8 +39,6 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_FCG"
 static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -83,8 +79,6 @@ static PetscErrorCode    KSPSetUp_FCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_FCG"
 static PetscErrorCode KSPSolve_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -266,8 +260,6 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_FCG"
 static PetscErrorCode KSPDestroy_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -295,8 +287,6 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_FCG"
 static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 {
   KSP_FCG        *fcg = (KSP_FCG*)ksp->data;
@@ -322,8 +312,6 @@ static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGSetMmax"
 /*@
   KSPFCGSetMmax - set the maximum number of previous directions FCG will store for orthogonalization
 
@@ -355,8 +343,6 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGGetMmax"
 /*@
   KSPFCGGetMmax - get the maximum number of previous directions FCG will store
 
@@ -390,8 +376,6 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGSetNprealloc"
 /*@
   KSPFCGSetNprealloc - set the number of directions to preallocate with FCG
 
@@ -420,8 +404,6 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGGetNprealloc"
 /*@
   KSPFCGGetNprealloc - get the number of directions preallocate by FCG
 
@@ -449,8 +431,6 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGSetTruncationType"
 /*@
   KSPFCGSetTruncationType - specify how many of its stored previous directions FCG uses during orthoganalization
 
@@ -481,8 +461,6 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstrat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFCGGetTruncationType"
 /*@
   KSPFCGGetTruncationType - get the truncation strategy employed by FCG
 
@@ -510,8 +488,6 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncstrat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_FCG"
 static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -557,8 +533,6 @@ static PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject
  .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_FCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -583,6 +557,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_FCG;
   ksp->ops->solve          = KSPSolve_FCG;

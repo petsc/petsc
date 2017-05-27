@@ -5,8 +5,6 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_FBCGS"
 static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -18,8 +16,6 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 
 /* Only need a few hacks from KSPSolve_BCGS */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_FBCGS"
 static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -165,8 +161,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_FBCGS"
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -186,5 +180,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

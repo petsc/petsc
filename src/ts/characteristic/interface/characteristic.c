@@ -20,8 +20,6 @@ PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar []);
 PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
 PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicView"
 PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -44,8 +42,6 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicDestroy"
 PetscErrorCode CharacteristicDestroy(Characteristic *c)
 {
   PetscErrorCode ierr;
@@ -73,8 +69,6 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicCreate"
 PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 {
   Characteristic newC;
@@ -85,7 +79,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   *c = NULL;
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(newC, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newC, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   *c   = newC;
 
   newC->structured          = PETSC_TRUE;
@@ -126,8 +120,6 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetType"
 /*@C
    CharacteristicSetType - Builds Characteristic for a particular solver.
 
@@ -190,8 +182,6 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetUp"
 /*@
    CharacteristicSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
@@ -229,8 +219,6 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicRegister"
 /*@C
   CharacteristicRegister -  Adds a solver to the method of characteristics package.
 
@@ -273,8 +261,6 @@ PetscErrorCode CharacteristicRegister(const char sname[],PetscErrorCode (*functi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetVelocityInterpolation"
 PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void*), void *ctx)
 {
   PetscFunctionBegin;
@@ -288,8 +274,6 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetVelocityInterpolationLocal"
 PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void*, PetscReal [], PetscInt, PetscInt[], PetscScalar[], void*), void *ctx)
 {
   PetscFunctionBegin;
@@ -303,8 +287,6 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetFieldInterpolation"
 PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void*), void *ctx)
 {
   PetscFunctionBegin;
@@ -320,8 +302,6 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetFieldInterpolationLocal"
 PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void*, PetscReal[], PetscInt, PetscInt[], PetscScalar [], void*), void *ctx)
 {
   PetscFunctionBegin;
@@ -337,8 +317,6 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSolve"
 PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 {
   CharacteristicPointDA2D Qi;
@@ -574,8 +552,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetNeighbors"
 PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbors, PetscMPIInt neighbors[])
 {
   PetscErrorCode ierr;
@@ -588,8 +564,6 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicAddPoint"
 PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point)
 {
   PetscFunctionBegin;
@@ -598,8 +572,6 @@ PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSendCoordinatesBegin"
 int CharacteristicSendCoordinatesBegin(Characteristic c)
 {
   PetscMPIInt    rank, tag = 121;
@@ -649,8 +621,6 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSendCoordinatesEnd"
 PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
 {
 #if 0
@@ -670,8 +640,6 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicGetValuesBegin"
 PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
 {
   PetscMPIInt    tag = 121;
@@ -689,8 +657,6 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicGetValuesEnd"
 PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
 {
   PetscErrorCode ierr;
@@ -703,8 +669,6 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicHeapSort"
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
@@ -743,8 +707,6 @@ PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, PetscInt si
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSiftDown"
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
@@ -771,8 +733,6 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNeighborsRank"
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
@@ -835,8 +795,6 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNeighborRelative"
 /*
   SUBDOMAIN NEIGHBORHOOD PROCESS MAP:
     2 | 3 | 4

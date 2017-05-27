@@ -1,45 +1,6 @@
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!             Include file for program ex5f.F
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/petsc/finclude.  This
-!  convention enables use of the CPP preprocessor, which allows the use
-!  of the #include statements that define PETSc objects and variables.
-!
-!  Use of the conventional Fortran include statements is also supported
-!  In this case, the PETsc include files are located in the directory
-!  petsc/include/foldinclude.
-!
-!  Since one must be very careful to include each file no more than once
-!  in a Fortran routine, application programmers must explicitly list
-!  each file needed for the various PETSc components within their
-!  program (unlike the C/C++ interface).
 !
 !  See the Fortran section of the PETSc users manual for details.
 !
-!  The following include statements are generally used in SNES Fortran
-!  programs:
-!     petscsys.h  - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!     petscsnes.h   - SNES interface
-!  In addition, we need the following for use of distributed arrays
-!     petscdm.h       - boundary specification for DM
-!     petscdmda.h     - distributed arrays (DMDAs)
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormJacobian() and

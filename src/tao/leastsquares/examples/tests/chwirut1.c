@@ -61,8 +61,6 @@ PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
 
 
 /*--------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
@@ -140,8 +138,6 @@ int main(int argc,char **argv)
 }
 
 /*--------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateFunction"
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
@@ -164,8 +160,6 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 
 /*------------------------------------------------------------*/
 /* J[i][j] = df[i]/dt[j] */
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateJacobian"
 PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
@@ -195,8 +189,6 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 }
 
 /* ------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormStartingPoint"
 PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
@@ -212,8 +204,6 @@ PetscErrorCode FormStartingPoint(Vec X)
 }
 
 /* ---------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitializeData"
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *t=user->t,*y=user->y;

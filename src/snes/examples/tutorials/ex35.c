@@ -66,8 +66,6 @@ extern PetscErrorCode MyComputeFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                                 /* nonlinear solver */
@@ -100,7 +98,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (use_ngs) {
@@ -144,8 +144,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MyComputeFunction"
 PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -167,8 +165,6 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyComputeJacobian"
 PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
 {
   PetscErrorCode ierr;
@@ -180,8 +176,6 @@ PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormMatrix"
 PetscErrorCode FormMatrix(DM da,Mat jac)
 {
   PetscErrorCode ierr;
@@ -249,8 +243,6 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 

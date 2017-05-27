@@ -7,8 +7,6 @@ typedef struct  {
   size_t curlen,maxlen;
 } PetscViewer_String;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_String"
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -19,8 +17,6 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerStringSPrintf"
 /*@C
     PetscViewerStringSPrintf - Prints information to a PetscViewer string.
 
@@ -68,8 +64,6 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerStringOpen"
 /*@C
     PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very
     simple PetscViewer; information on the object is simply stored into
@@ -105,8 +99,6 @@ PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],size_t len,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSubViewer_String"
 PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -117,8 +109,6 @@ PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer,MPI_Comm comm,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSubViewer_String"
 PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode     ierr;
@@ -132,8 +122,18 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_String"
+/*MC
+   PETSCVIEWERSTRING - A viewer that writes to a string
+
+
+.seealso:  PetscViewerStringOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+  Level: beginner
+M*/
+
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
@@ -151,8 +151,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerStringSetString"
 /*@C
 
    PetscViewerStringSetString - sets the string that a string viewer will print to

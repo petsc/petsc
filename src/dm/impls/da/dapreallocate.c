@@ -2,8 +2,6 @@
 #include <petsc/private/isimpl.h>
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetAdjacency_Internal"
 static PetscErrorCode DMDAGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useClosure, const PetscInt *tmpClosure, PetscInt *adjSize, PetscInt adj[])
 {
   const PetscInt *star  = tmpClosure;
@@ -18,7 +16,7 @@ static PetscErrorCode DMDAGetAdjacency_Internal(DM dm, PetscInt p, PetscBool use
 
     ierr = DMDAGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
     for (c = 0; c < closureSize*2; c += 2) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
+      for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
@@ -29,8 +27,6 @@ static PetscErrorCode DMDAGetAdjacency_Internal(DM dm, PetscInt p, PetscBool use
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetPreallocationCenterDimension"
 /*@
   DMDASetPreallocationCenterDimension - Determine the topology used to determine adjacency
 
@@ -57,8 +53,6 @@ PetscErrorCode DMDASetPreallocationCenterDimension(DM dm, PetscInt preallocCente
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetPreallocationCenterDimension"
 /*@
   DMDAGetPreallocationCenterDimension - Return the topology used to determine adjacency
 
@@ -88,8 +82,6 @@ PetscErrorCode DMDAGetPreallocationCenterDimension(DM dm, PetscInt *preallocCent
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAPreallocateOperator"
 PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   MPI_Comm           comm;

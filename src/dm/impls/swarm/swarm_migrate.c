@@ -9,8 +9,6 @@
 /*
  User loads desired location (MPI rank) into field DMSwarm_rank
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_Push_Basic"
 PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -55,21 +53,34 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
     }
   }
   ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
 
   if (remove_sent_points) {
+    DataField gfield;
+
+    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&gfield);CHKERRQ(ierr);
+    ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
+    ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+
     /* remove points which left processor */
     ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {
       nrank = rankval[p];
       if (nrank != rank) {
         /* kill point */
+        ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
+        
         ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+
+        ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
+        ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
         p--; /* check replacement point */
       }
     }
+    ierr = DataFieldRestoreEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
@@ -86,8 +97,6 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_DMNeighborScatter"
 PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove_sent_points,PetscInt *npoints_prior_migration)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -174,8 +183,6 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_CellDMScatter"
 PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -303,8 +310,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_CellDMExact"
 PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points)
 {
   PetscFunctionBegin;
@@ -314,8 +319,6 @@ PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points)
 /*
  Redundant as this assumes points can only be sent to a single rank
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_GlobalToLocal_Basic"
 PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -387,8 +390,6 @@ typedef struct {
   PetscReal min[3],max[3];
 } CollectBBox;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollect_DMDABoundingBox"
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -547,8 +548,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
    collect(swarm,context,n,list)
  }
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollect_General"
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collect)(DM,void*,PetscInt*,PetscInt**),size_t ctx_size,void *ctx,PetscInt *globalsize)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;

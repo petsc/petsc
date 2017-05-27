@@ -6,6 +6,7 @@ contains
   !
   subroutine get_boundary_cond(b_x,b_y,b_z)
 #include <petsc/finclude/petscdm.h>
+    use petscdm
     DMBoundaryType,intent(inout) :: b_x,b_y,b_z
     
     ! Here you may set the BC types you want
@@ -34,8 +35,7 @@ contains
   !
   ! The standard Forward Euler time-stepping method.
   !
-  recursive subroutine forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,&
-                                     imax,jmax,kmax,neq,y,dfdt)
+  recursive subroutine forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,neq,y,dfdt)
     PetscReal, intent(in) :: t,dt
     PetscInt, intent(in) :: ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,neq
     PetscReal, dimension(neq,ib1:ibn,jb1:jbn,kb1:kbn), intent(inout) :: y
@@ -65,11 +65,7 @@ contains
   ! 1 to the (local) imax. 
   !
   subroutine petsc_to_local(da,vec,array,f,dof,stw)
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
+    use petscdmda
     DM                                                            :: da
     Vec,intent(in)                                                :: vec
     PetscReal, pointer                                            :: array(:,:,:,:)
@@ -77,7 +73,7 @@ contains
     PetscReal, intent(inout), dimension(:,1-stw:,1-stw:,1-stw:) :: f
     PetscErrorCode                                                :: ierr
     !
-    call DMDAVecGetArrayF90(da,vec,array,ierr) 
+    call DMDAVecGetArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
     call transform_petsc_us(array,f,stw)
   end subroutine petsc_to_local
   subroutine transform_petsc_us(array,f,stw)
@@ -88,11 +84,7 @@ contains
     f(:,:,:,:) = array(:,:,:,:)
   end subroutine transform_petsc_us
   subroutine local_to_petsc(da,vec,array,f,dof,stw)
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
+    use petscdmda
     DM                                                    :: da
     Vec,intent(inout)                                     :: vec
     PetscReal, pointer                                    :: array(:,:,:,:)
@@ -100,7 +92,7 @@ contains
     PetscReal,intent(inout),dimension(:,1-stw:,1-stw:,1-stw:)  :: f
     PetscErrorCode                                        :: ierr
     call transform_us_petsc(array,f,stw)
-    call DMDAVecRestoreArrayF90(da,vec,array,ierr)
+    call DMDAVecRestoreArrayF90(da,vec,array,ierr);CHKERRQ(ierr); 
   end subroutine local_to_petsc
   subroutine transform_us_petsc(array,f,stw)
     !Note: this assumed shape-array is what does the "coordinate transformation"

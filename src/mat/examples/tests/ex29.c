@@ -1,10 +1,8 @@
-static char help[] = "Tests PetscHeapCreate)_\n\n";
+static char help[] = "Tests PetscHeapCreate()\n\n";
 
-#include <../src/mat/utils/petscheap.h>
+#include <petscsys.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

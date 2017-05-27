@@ -18,14 +18,10 @@
 !T*/
 ! -----------------------------------------------------------------------
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscviewer.h>
-#include <petsc/finclude/petscviewer.h90>
+      use petscksp
+      implicit none
+
       Vec              xvec,bvec,uvec
       Mat              Amat
       KSP              ksp
@@ -33,7 +29,7 @@
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
-      PetscInt f2,f9,f6
+      PetscInt f2,f9,f6, one
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
       PetscMPIInt size,rank
@@ -49,6 +45,10 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,20 +59,20 @@
       f9 = 9
       f6 = 6
       ne = 9
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
       h = 2.0/real(ne)
       M = (ne+1)*(ne+1)
       theta = 90.0
 !     theta is input in degrees
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                         '-theta',theta,flg,ierr)
       theta = theta / 57.2957795
       eps = 1.0
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                         '-epsilon',eps,flg,ierr)
       ki = 2
-      call PetscOptionsGetRealArray(PETSC_NULL_OBJECT,                     &
+      call PetscOptionsGetRealArray(PETSC_NULL_OPTIONS,                     &
      &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
          blb(1) = 0.0
@@ -81,7 +81,7 @@
          print *, 'error: ', ki,                                            &
      &        ' arguments read for -blob_center.  Needs to be two.'
       endif
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                         '-out_matlab',out_matlab,flg,ierr)
       if (.not.flg) out_matlab = PETSC_FALSE;
 
@@ -107,7 +107,8 @@
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatCreateVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
+      xvec = tVec(0)
+      call MatCreateVecs( Amat, PETSC_NULL_VEC, xvec, ierr )
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
       call VecDuplicate( xvec, uvec, ierr )
@@ -173,7 +174,8 @@
 
             val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*                            &
      &           exp(-100*((y+h/2)-blb(2))**2)
-            call VecSetValues(bvec,1,geq,val,INSERT_VALUES,ierr)
+            one = 1
+            call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
       call MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY,ierr)
@@ -275,11 +277,9 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     thfx2d - compute material tensor
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
-
 !     Compute thermal gradient and flux
 
+      subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
       implicit  none
 
       PetscInt   ndm,ndf,nel,i

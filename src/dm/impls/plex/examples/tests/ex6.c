@@ -10,8 +10,6 @@ typedef struct {
   PetscInt  size;         /* The number of set values */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestSetup"
 PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
 {
   PetscRandom    r;
@@ -60,12 +56,10 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
   }
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = DMLabelCreateIndex(label, user->pStart, user->pEnd);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%d, %d) and set %d values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%D, %D) and set %D values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestLookup"
 PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 {
   const PetscInt pStart = user->pStart;
@@ -80,16 +74,14 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 
     ierr = DMLabelGetValue(label, p, &val);CHKERRQ(ierr);
     ierr = DMLabelHasPoint(label, p, &has);CHKERRQ(ierr);
-    if (((val >= 0) && !has) || ((val < 0) && has)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %d does not match contains check %d for point %d", val, (PetscInt) has, p);
+    if (((val >= 0) && !has) || ((val < 0) && has)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %D does not match contains check %D for point %D", val, (PetscInt) has, p);
     if (has) ++n;
   }
-  if (n != user->size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %d does not match number set %d", n, user->size);
+  if (n != user->size) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of label points detected %D does not match number set %D", n, user->size);
   /* Also put in timing code */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestClear"
 PetscErrorCode TestClear(DMLabel label, AppCtx *user)
 {
   PetscInt       pStart = user->pStart, pEnd = user->pEnd, p;
@@ -114,8 +106,6 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DMLabel        label;
@@ -132,3 +122,20 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    args: -malloc_dump
+  test:
+    suffix: 1
+    args: -malloc_dump -pend 10000
+  test:
+    suffix: 2
+    args: -malloc_dump -pend 10000 -fill 0.05
+  test:
+    suffix: 3
+    args: -malloc_dump -pend 10000 -fill 0.25
+
+TEST*/

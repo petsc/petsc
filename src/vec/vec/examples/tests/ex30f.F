@@ -3,11 +3,9 @@
 !  Tests parallel to parallel scatter where a to from index are
 !  duplicated
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
       PetscErrorCode ierr
       PetscInt  nlocal, n, row
@@ -22,6 +20,10 @@
       n=8
       nlocal=2
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_COMM_RANK(PETSC_COMM_WORLD,rank,ierr)
       call MPI_COMM_SIZE(PETSC_COMM_WORLD,size,ierr)
       if (size.ne.4) then

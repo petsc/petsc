@@ -4,8 +4,6 @@ static char help[]="This program illustrates the use of parallel real 2D fft usi
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   const ptrdiff_t N0=2056,N1=2056;

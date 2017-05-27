@@ -8,8 +8,6 @@
 
 #define SWAP(a,b) {PetscInt _t; _t = a; a = b; b = _t; }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatReorderForNonzeroDiagonal"
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
     zeros from diagonal. This may help in the LU factorization to
@@ -64,8 +62,6 @@ PETSC_INTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt
 
 #include <../src/vec/is/is/impls/general/general.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
 PETSC_INTERN PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
   PetscErrorCode ierr;

@@ -51,8 +51,6 @@ PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PetscErrorCode PostStep(TS);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
@@ -67,6 +65,8 @@ int main(int argc, char **argv)
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0,0);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(user.da,0,"X - the angle");CHKERRQ(ierr);
@@ -103,8 +103,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostStep"
 PetscErrorCode PostStep(TS ts)
 {
   PetscErrorCode ierr;
@@ -142,8 +140,6 @@ PetscErrorCode PostStep(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ini_bou"
 PetscErrorCode ini_bou(Vec X,AppCtx* user)
 {
   PetscErrorCode ierr;
@@ -202,8 +198,6 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 }
 
 /* First advection term */
-#undef __FUNCT__
-#define __FUNCT__ "adv1"
 PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt M,PetscScalar *p1,AppCtx *user)
 {
   PetscScalar f,fpos,fneg;
@@ -222,8 +216,6 @@ PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt
 }
 
 /* Second advection term */
-#undef __FUNCT__
-#define __FUNCT__ "adv2"
 PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt N,PetscScalar *p2,AppCtx *user)
 {
   PetscScalar f,fpos,fneg;
@@ -242,8 +234,6 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 }
 
 /* Diffusion term */
-#undef __FUNCT__
-#define __FUNCT__ "diffuse"
 PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscScalar *p_diff,AppCtx * user)
 {
   PetscFunctionBeginUser;
@@ -257,8 +247,6 @@ PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -310,8 +298,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
@@ -365,8 +351,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "Parameter_settings"
 PetscErrorCode Parameter_settings(AppCtx *user)
 {
   PetscErrorCode ierr;

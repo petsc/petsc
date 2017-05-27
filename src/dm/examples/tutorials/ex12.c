@@ -12,11 +12,9 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt         M = -10,N = -8;
+  PetscInt         M = 10,N = 8;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
@@ -30,6 +28,8 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);

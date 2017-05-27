@@ -11,8 +11,6 @@ typedef struct {
   PetscBool monitor_short;
 } Ctx;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* time integration context */
@@ -98,8 +96,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorObjective"
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)
 {
   Ctx               *ctx = (Ctx*)ictx;
@@ -141,8 +137,6 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 /*
    FormIFunction - Evaluates nonlinear function, F(X,Xdot) = Xdot + grad(objective(X))
 
@@ -192,8 +186,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 /*
    FormIJacobian - Evaluates Jacobian matrix.
 

@@ -2,8 +2,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 #include <petscmat.h>
 #include <fftw3-mpi.h>
 /*extern PetscErrorCode MatCreateVecsFFT(Mat,Vec *,Vec *,Vec *);*/
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode ierr;

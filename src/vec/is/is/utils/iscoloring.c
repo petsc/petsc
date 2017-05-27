@@ -5,8 +5,6 @@
 
 const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringReference"
 PetscErrorCode ISColoringReference(ISColoring coloring)
 {
   PetscFunctionBegin;
@@ -14,8 +12,6 @@ PetscErrorCode ISColoringReference(ISColoring coloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringSetType"
 PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
 {
   PetscFunctionBegin;
@@ -23,8 +19,6 @@ PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringDestroy"
 /*@
    ISColoringDestroy - Destroys a coloring context.
 
@@ -59,8 +53,6 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringViewFromOptions"
 /*
   ISColoringViewFromOptions - Processes command line options to determine if/how an ISColoring object is to be viewed. 
 
@@ -96,8 +88,6 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,PetscObject bobj,const c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringView"
 /*@C
    ISColoringView - Views a coloring context.
 
@@ -148,8 +138,6 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringGetIS"
 /*@C
    ISColoringGetIS - Extracts index sets from the coloring context
 
@@ -199,7 +187,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
-      } else if (iscoloring->ctype == IS_COLORING_GHOSTED) {
+      } else if (iscoloring->ctype == IS_COLORING_LOCAL) {
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 
@@ -218,8 +206,6 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringRestoreIS"
 /*@C
    ISColoringRestoreIS - Restores the index sets extracted from the coloring context
 
@@ -243,8 +229,6 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ISColoringCreate"
 /*@
     ISColoringCreate - Generates an ISColoring context from lists (provided
     by each processor) of colors for each node.
@@ -334,8 +318,6 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBuildTwoSided"
 /*@
     ISBuildTwoSided - Takes an IS that describes where we will go. Generates an IS that contains new numbers from remote or local
     on the IS.
@@ -372,7 +354,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
    /* why we do not have ISGetLayout? */
    isrmap = ito->map;
-   ierr = PetscLayoutGetRange(isrmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
+   ierr = PetscLayoutGetRange(isrmap,&rstart,NULL);CHKERRQ(ierr);
    ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
    for(i=0; i<ito_ln; i++){
@@ -434,7 +416,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
      }
    }
    ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-   ierr = PetscSFSetGraph(sf,nsends,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+   ierr = PetscSFSetGraph(sf,nsends,nrecvs,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
    ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
    /* how to put a prefix ? */
    ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
@@ -455,8 +437,6 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ISPartitioningToNumbering"
 /*@
     ISPartitioningToNumbering - Takes an ISPartitioning and on each processor
     generates an IS that contains a new global node number for each index based
@@ -524,8 +504,6 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISPartitioningCount"
 /*@
     ISPartitioningCount - Takes a ISPartitioning and determines the number of
     resulting elements on each (partition) process
@@ -597,8 +575,6 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISAllGather"
 /*@
     ISAllGather - Given an index set (IS) on each processor, generates a large
     index set (same on each processor) by concatenating together each
@@ -674,8 +650,6 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISAllGatherColors"
 /*@C
     ISAllGatherColors - Given a a set of colors on each processor, generates a large
     set (same on each processor) by concatenating together each processors colors
@@ -728,8 +702,6 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISComplement"
 /*@
     ISComplement - Given an index set (IS) generates the complement index set. That is all
        all indices that are NOT in the given set.

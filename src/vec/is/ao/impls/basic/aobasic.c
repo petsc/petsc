@@ -14,8 +14,6 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-#undef __FUNCT__
-#define __FUNCT__ "AOView_Basic"
 PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,6 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AODestroy_Basic"
 PetscErrorCode AODestroy_Basic(AO ao)
 {
   AO_Basic       *aobasic = (AO_Basic*)ao->data;
@@ -53,8 +49,6 @@ PetscErrorCode AODestroy_Basic(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOBasicGetIndices_Private"
 PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
@@ -65,8 +59,6 @@ PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplication_Basic"
 PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscInt i,N=ao->N;
@@ -83,8 +75,6 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetsc_Basic"
 PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscInt i,N=ao->N;
@@ -101,8 +91,6 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
 PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
@@ -120,8 +108,6 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
 PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
@@ -139,8 +125,6 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
 PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
@@ -158,8 +142,6 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
 PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
   AO_Basic       *aobasic = (AO_Basic*) ao->data;
@@ -188,8 +170,6 @@ static struct _AOOps AOOps_Basic = {
   AOApplicationToPetscPermuteReal_Basic
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreate_Basic"
 PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
@@ -300,8 +280,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreateBasic"
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -347,8 +325,6 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreateBasicIS"
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 

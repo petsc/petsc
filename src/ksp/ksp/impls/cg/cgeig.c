@@ -7,8 +7,6 @@
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>
 static PetscErrorCode LINPACKcgtql1(PetscInt*,PetscReal*,PetscReal*,PetscInt*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvalues_CG"
 PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
@@ -39,8 +37,6 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
 PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
@@ -79,8 +75,6 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscR
 
 static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "LINPACKcgtql1"
 static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscInt *ierr)
 {
   /* System generated locals */
@@ -159,12 +153,15 @@ static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscI
   i__1 = *n;
   for (l = 1; l <= i__1; ++l) {
     j = 0;
-    h = (d__1 = d[l],PetscAbsReal(d__1)) + (d__2 = e[l],PetscAbsReal(d__2));
+    d__1 = d[l];
+    d__2 = e[l];
+    h = PetscAbsReal(d__1) + PetscAbsReal(d__2);
     if (tst1 < h) tst1 = h;
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
     i__2 = *n;
     for (m = l; m <= i__2; ++m) {
-      tst2 = tst1 + (d__1 = e[m],PetscAbsReal(d__1));
+      d__1 = e[m];
+      tst2 = tst1 + PetscAbsReal(d__1);
       if (tst2 == tst1) goto L120;
 /*     .......... E(N) IS ALWAYS ZERO,SO THERE IS NO EXIT */
 /*                THROUGH THE BOTTOM OF THE LOOP .......... */
@@ -219,7 +216,8 @@ L145:
     p    = -s * s2 * c3 * el1 * e[l] / dl1;
     e[l] = s * p;
     d[l] = c * p;
-    tst2 = tst1 + (d__1 = e[l],PetscAbsReal(d__1));
+    d__1 = e[l];
+    tst2 = tst1 + PetscAbsReal(d__1);
     if (tst2 > tst1) goto L130;
 L210:
     p = d[l] + f;
@@ -248,8 +246,6 @@ L1001:
   PetscFunctionReturn(0);
 } /* cgtql1_ */
 
-#undef __FUNCT__
-#define __FUNCT__ "LINPACKcgpthy"
 static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 {
   /* System generated locals */
@@ -263,11 +259,13 @@ static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 
 
 /* Computing MAX */
-  d__1 = PetscAbsReal(*a),d__2 = PetscAbsReal(*b);
+  d__1 = PetscAbsReal(*a);
+  d__2 = PetscAbsReal(*b);
   p    = PetscMax(d__1,d__2);
   if (!p) goto L20;
 /* Computing MIN */
-  d__2 = PetscAbsReal(*a),d__3 = PetscAbsReal(*b);
+  d__2 = PetscAbsReal(*a);
+  d__3 = PetscAbsReal(*b);
 /* Computing 2nd power */
   d__1 = PetscMin(d__2,d__3) / p;
   r    = d__1 * d__1;

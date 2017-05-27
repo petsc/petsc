@@ -79,8 +79,6 @@ extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
@@ -240,14 +238,12 @@ int main(int argc,char **argv)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time.
 
@@ -298,8 +294,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -338,8 +332,6 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at
    each timestep.  This example plots the solution and computes the
@@ -423,8 +415,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSMatrixHeat"
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
    matrix for the heat equation.

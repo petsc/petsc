@@ -5,8 +5,6 @@
 const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
 const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NGMRES"
 PetscErrorCode SNESReset_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -19,8 +17,6 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NGMRES"
 PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 {
   PetscErrorCode ierr;
@@ -31,7 +27,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   ierr = PetscFree5(ngmres->h,ngmres->beta,ngmres->xi,ngmres->fnorms,ngmres->q);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
-#if PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree(ngmres->rwork);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(ngmres->work);CHKERRQ(ierr);
@@ -39,8 +35,6 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NGMRES"
 PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -79,7 +73,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     ierr          = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr          = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ngmres->lwork = 12*msize;
-#if PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
     ierr = PetscMalloc1(ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
 #endif
     ierr = PetscMalloc1(ngmres->lwork,&ngmres->work);CHKERRQ(ierr);
@@ -101,8 +95,6 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NGMRES"
 PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -142,8 +134,6 @@ PetscErrorCode SNESSetFromOptions_NGMRES(PetscOptionItems *PetscOptionsObject,SN
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NGMRES"
 PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -161,8 +151,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NGMRES"
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES          *ngmres = (SNES_NGMRES*) snes->data;
@@ -350,8 +338,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetRestartFmRise"
 /*@
  SNESNGMRESSetRestartFmRise - Increase the restart count if the step x_M increases the residual F_M
 
@@ -384,8 +370,6 @@ PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes,PetscBool flg)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetRestartFmRise_NGMRES"
 PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes,PetscBool flg)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
@@ -395,8 +379,6 @@ PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESGetRestartFmRise"
 PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes,PetscBool *flg)
 {
     PetscErrorCode (*f)(SNES,PetscBool*);
@@ -408,8 +390,6 @@ PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes,PetscBool *flg)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESGetRestartFmRise_NGMRES"
 PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes,PetscBool *flg)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
@@ -420,8 +400,6 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes,PetscBool *flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetRestartType"
 /*@
     SNESNGMRESSetRestartType - Sets the restart type for SNESNGMRES.
 
@@ -457,8 +435,6 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetSelectType"
 /*@
     SNESNGMRESSetSelectType - Sets the selection type for SNESNGMRES.  This determines how the candidate solution and
     combined solution are used to create the next iterate.
@@ -494,8 +470,6 @@ PetscErrorCode SNESNGMRESSetSelectType(SNES snes,SNESNGMRESSelectType stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetSelectType_NGMRES"
 PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes,SNESNGMRESSelectType stype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
@@ -505,8 +479,6 @@ PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes,SNESNGMRESSelectType sty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESSetRestartType_NGMRES"
 PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType rtype)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
@@ -553,8 +525,6 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NGMRES"
 PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres;

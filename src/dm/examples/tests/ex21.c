@@ -5,8 +5,6 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "test1_DAInjection3d"
 PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 {
   PetscErrorCode   ierr;
@@ -32,15 +30,10 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
     bz = DM_BOUNDARY_PERIODIC;
   }
 
-  ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,
-                      mx+1, my+1,mz+1,
-                      PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL,NULL,NULL,
-                      &daf);CHKERRQ(ierr);
-
+  ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
+                      1, /* stencil = 1 */NULL,NULL,NULL,&daf);CHKERRQ(ierr);
   ierr = DMSetFromOptions(daf);CHKERRQ(ierr);
+  ierr = DMSetUp(daf);CHKERRQ(ierr);
 
   ierr = DMCoarsen(daf,MPI_COMM_NULL,&dac);CHKERRQ(ierr);
 
@@ -106,8 +99,6 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

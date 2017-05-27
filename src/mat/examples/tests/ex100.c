@@ -3,8 +3,6 @@ static char help[] = "Tests vatious routines in MatMAIJ format.\n";
 
 #include <petscmat.h>
 #define IMAX 15
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,B,MA;

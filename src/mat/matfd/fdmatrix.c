@@ -7,8 +7,6 @@
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 #include <petsc/private/isimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetF"
 PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscErrorCode ierr;
@@ -24,8 +22,6 @@ PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringView_Draw_Zoom"
 static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   MatFDColoring  fd = (MatFDColoring)Aa;
@@ -48,8 +44,6 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringView_Draw"
 static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -72,8 +66,6 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -139,10 +131,12 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"      %D\n",c->columns[i][j]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %D\n",c->nrows[i]);CHKERRQ(ierr);
-        for (j=0; j<c->nrows[i]; j++) {
-          row  = c->matentry[nz].row;
-          col  = c->matentry[nz++].col;
-          ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
+        if (c->matentry) {
+          for (j=0; j<c->nrows[i]; j++) {
+            row  = c->matentry[nz].row;
+            col  = c->matentry[nz++].col;
+            ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
+          }
         }
       }
     }
@@ -151,8 +145,6 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
@@ -190,8 +182,6 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetBlockSize"
 /*@
    MatFDColoringSetBlockSize - Sets block size for efficient inserting entries of Jacobian matrix.
 
@@ -220,8 +210,6 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd,PetscInt brows,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUp"
 /*@
    MatFDColoringSetUp - Sets up the internal data structures of matrix coloring context for the later use.
 
@@ -257,8 +245,6 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringGetFunction"
 /*@C
    MatFDColoringGetFunction - Gets the function to use for computing the Jacobian.
 
@@ -287,8 +273,6 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
@@ -327,8 +311,6 @@ PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from
    the options database.
@@ -392,8 +374,6 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetType"
 /*@C
    MatFDColoringSetType - Sets the approach for computing the finite difference parameter
 
@@ -431,8 +411,6 @@ PetscErrorCode  MatFDColoringSetType(MatFDColoring matfd,MatMFFDType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringViewFromOptions"
 PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
@@ -455,8 +433,6 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate"
 /*@
    MatFDColoringCreate - Creates a matrix coloring context for finite difference
    computation of Jacobians.
@@ -516,8 +492,6 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringDestroy"
 /*@
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
@@ -561,8 +535,6 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringGetPerturbedColumns"
 /*@C
     MatFDColoringGetPerturbedColumns - Returns the indices of the columns that
       that are currently being perturbed.
@@ -594,8 +566,6 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringApply"
 /*@
     MatFDColoringApply - Given a matrix for which a MatFDColoring context
     has been created, computes the Jacobian for a function via finite differences.
@@ -648,5 +618,9 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sct
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,sctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  if (!coloring->viewed) {
+    ierr = MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view");CHKERRQ(ierr);
+    coloring->viewed = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }

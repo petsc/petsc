@@ -25,10 +25,6 @@
 !   Processors: n
 !T*/
 
-
-
-      implicit none
-
 #include "plate2f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +60,10 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
 ! Specify default dimensions of the problem
       mx = 10
@@ -72,23 +72,23 @@
 
 ! Check for any command line arguments that override defaults
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-mx',mx,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-my',my,flg,ierr)
       CHKERRQ(ierr)
 
       bmx = mx/2
       bmy = my/2
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-bmx',bmx,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-bmy',bmy,flg,ierr)
       CHKERRQ(ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                         '-bheight',bheight,flg,ierr)
       CHKERRQ(ierr)
 
@@ -109,7 +109,8 @@
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
       CHKERRQ(ierr)
-
+      call DMSetFromOptions(dm,ierr)
+      call DMSetUp(dm,ierr)
 
 ! Extract global and local vectors from DM; The local vectors are
 ! used solely as work space for the evaluation of the function,
@@ -155,18 +156,18 @@
 !     Set minimization function and gradient, hessian evaluation functions
 
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
-     &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
+     &     FormFunctionGradient,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
-     &     PETSC_NULL_OBJECT, ierr)
+     &     0, ierr)
       CHKERRQ(ierr)
 
 ! Set Variable bounds
       call MSA_BoundaryConditions(ierr)
       CHKERRQ(ierr)
       call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
-     &     PETSC_NULL_OBJECT,ierr)
+     &     0,ierr)
       CHKERRQ(ierr)
 
 ! Set the initial solution guess
@@ -222,9 +223,6 @@
 
 
       subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
-      implicit none
-
-! dm, localX, localG, Top, Bottom, Left, Right defined in plate2f.h
 #include "plate2f.h"
 
 ! Input/output variables
@@ -262,13 +260,13 @@
 
       ft = 0.0
       zero = 0.0
-      hx = 1.0/(mx + 1)
-      hy = 1.0/(my + 1)
+      hx = 1.0/real(mx + 1)
+      hy = 1.0/real(my + 1)
       hydhx = hy/hx
       hxdhy = hx/hy
       area = 0.5 * hx * hy
-      rhx = mx + 1.0
-      rhy = my + 1.0
+      rhx = real(mx) + 1.0
+      rhy = real(my) + 1.0
 
 
 ! Get local mesh boundaries
@@ -491,9 +489,6 @@
 !           by calling MatSetValuesLocal()
 
       subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
-      implicit none
-
-! dm,Top,Left,Right,Bottom,mx,my,localX defined in plate2f.h
 #include "plate2f.h"
 
       Tao     tao
@@ -554,8 +549,8 @@
       if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,ierr)
 
 
-      rhx = mx + 1.0
-      rhy = my + 1.0
+      rhx = real(mx + 1.0)
+      rhy = real(my + 1.0)
       hx = 1.0/rhx
       hy = 1.0/rhy
       hydhx = hy/hx
@@ -741,9 +736,6 @@
 !*/
 
       subroutine MSA_BoundaryConditions(ierr)
-      implicit none
-
-! Top,Left,Right,Bottom,bheight,mx,my,bmx,bmy defined in plate2f.h
 #include "plate2f.h"
 
       PetscErrorCode   ierr
@@ -873,28 +865,28 @@
 
 
 ! Scale the boundary if desired
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
      &                         '-bottom',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(scl,Bottom,ierr)
+         call VecScale(Bottom,scl,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
      &                         '-top',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(scl,Top,ierr)
+         call VecScale(Top,scl,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
      &                         '-right',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(scl,Right,ierr)
+         call VecScale(Right,scl,ierr)
       endif
 
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,          &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,          &
      &                         '-left',scl,flg,ierr)
       if (flg .eqv. PETSC_TRUE) then
-         call VecScale(scl,Left,ierr)
+         call VecScale(Left,scl,ierr)
       endif
 
 
@@ -913,9 +905,8 @@
 !*/
 
       subroutine MSA_Plate(tao,xl,xu,dummy,ierr)
-      implicit none
-! mx,my,bmx,bmy,dm,bheight defined in plate2f.h
 #include "plate2f.h"
+
       Tao        tao
       Vec              xl,xu
       PetscErrorCode   ierr
@@ -988,10 +979,8 @@
 !*/
 
       subroutine MSA_InitialPoint(X, ierr)
-      implicit none
-
-! mx,my,localX,dm,Top,Left,Bottom,Right defined in plate2f.h
 #include "plate2f.h"
+
       Vec               X
       PetscErrorCode    ierr
       PetscInt          start,i,j
@@ -1016,7 +1005,7 @@
       zero = 0.0
       np5 = -0.5
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
      &                        '-start', start,flg,ierr)
 
       if ((flg .eqv. PETSC_TRUE) .and. (start .eq. 0)) then  ! the zero vector is reasonable

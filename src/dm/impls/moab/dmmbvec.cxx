@@ -10,8 +10,6 @@ static PetscErrorCode DMVecUserDestroy_Moab(void *user);
 static PetscErrorCode DMVecDuplicate_Moab(Vec x,Vec *y);
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,char** tag_name);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateVector"
 /*@C
   DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
 
@@ -45,8 +43,6 @@ PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,const moab::Range* range,P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetVecTag"
 /*@C
   DMMoabGetVecTag - Get the MOAB tag associated with this Vec
 
@@ -80,8 +76,6 @@ PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetVecRange"
 /*@C
   DMMoabGetVecRange - Get the MOAB entities associated with this Vec
 
@@ -115,8 +109,6 @@ PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabVecGetArray"
 /*@C
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
@@ -202,8 +194,6 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabVecRestoreArray"
 /*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
@@ -286,8 +276,6 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec vec,void* array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabVecGetArrayRead"
 /*@C
   DMMoabVecGetArrayRead - Returns the read-only direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
@@ -370,8 +358,6 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabVecRestoreArrayRead"
 /*@C
   DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
@@ -428,8 +414,6 @@ PetscErrorCode  DMMoabVecRestoreArrayRead(DM dm,Vec vec,void* array)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateVector_Moab_Private"
 PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range* userrange,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
 {
   PetscErrorCode    ierr;
@@ -468,7 +452,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
     merr = mbiface->tag_get_name(tag, ttname);
     if (!ttname.length() && merr !=moab::MB_SUCCESS) {
       /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
-      char *tag_name = PETSC_NULL;
+      char *tag_name = NULL;
       ierr = DMVecCreateTagName_Moab_Private(pcomm,&tag_name);CHKERRQ(ierr);
       is_newtag = PETSC_TRUE;
 
@@ -559,8 +543,6 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMVecCreateTagName_Moab_Private"
 /*  DMVecCreateTagName_Moab_Private
  *
  *  Creates a unique tag name that will be shared across processes. If
@@ -607,8 +589,6 @@ PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,char** 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Moab"
 PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
 {
   PetscErrorCode  ierr;
@@ -617,13 +597,11 @@ PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,dmmoab->vowned,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,dmmoab->vowned,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Moab"
 PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
 {
   PetscErrorCode  ierr;
@@ -632,13 +610,11 @@ PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(lvec,2);
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMVecDuplicate_Moab"
 PetscErrorCode DMVecDuplicate_Moab(Vec x,Vec *y)
 {
   PetscErrorCode ierr;
@@ -657,14 +633,12 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x,Vec *y)
   ierr = VecGetDM(x, &dm);CHKERRQ(ierr);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,vmoab->tag_range,vmoab->is_global_vec,PETSC_TRUE,y);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,vmoab->tag_range,vmoab->is_global_vec,PETSC_TRUE,y);CHKERRQ(ierr);
   ierr = VecSetDM(*y, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMVecUserDestroy_Moab"
 PetscErrorCode DMVecUserDestroy_Moab(void *user)
 {
   Vec_MOAB        *vmoab=(Vec_MOAB*)user;
@@ -677,16 +651,14 @@ PetscErrorCode DMVecUserDestroy_Moab(void *user)
     merr = vmoab->mbiface->tag_delete(vmoab->tag);MBERRNM(merr);
   }
   delete vmoab->tag_range;
-  vmoab->tag = PETSC_NULL;
-  vmoab->mbiface = PETSC_NULL;
-  vmoab->pcomm = PETSC_NULL;
+  vmoab->tag = NULL;
+  vmoab->mbiface = NULL;
+  vmoab->pcomm = NULL;
   ierr = PetscFree(vmoab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Moab"
 PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode    ierr;  
@@ -698,8 +670,6 @@ PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Moab"
 PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode    ierr;  
@@ -711,8 +681,6 @@ PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_Moab"
 PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode    ierr;  
@@ -724,8 +692,6 @@ PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_Moab"
 PetscErrorCode  DMLocalToGlobalEnd_Moab(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode    ierr;  

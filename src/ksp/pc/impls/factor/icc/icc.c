@@ -1,8 +1,6 @@
 
 #include <../src/ksp/pc/impls/factor/icc/icc.h>   /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ICC"
 static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC                 *icc = (PC_ICC*)pc->data;
@@ -13,6 +11,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   MatFactorError         err;
 
   PetscFunctionBegin;
+  pc->failedreason = PC_NOERROR;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
@@ -26,8 +25,8 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     ierr = MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   }
-  ierr            = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-  icc->actualfill = info.fill_ratio_needed;
+  ierr                = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+  icc->hdr.actualfill = info.fill_ratio_needed;
 
   ierr = ISDestroy(&cperm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
@@ -53,8 +52,6 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ICC"
 static PetscErrorCode PCReset_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -65,8 +62,6 @@ static PetscErrorCode PCReset_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ICC"
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -80,8 +75,6 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ICC"
 static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -92,8 +85,6 @@ static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricLeft_ICC"
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -104,8 +95,6 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricRight_ICC"
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -116,8 +105,6 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ICC"
 static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -143,8 +130,6 @@ static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_ICC"
 static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -155,15 +140,6 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 }
 
 extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,PetscInt);
-
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetUseInPlace_ICC"
-PetscErrorCode  PCFactorGetUseInPlace_ICC(PC pc,PetscBool *flg)
-{
-  PetscFunctionBegin;
-  *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
 
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners.
@@ -201,32 +177,22 @@ PetscErrorCode  PCFactorGetUseInPlace_ICC(PC pc,PetscBool *flg)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ICC"
 PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;
   PC_ICC         *icc;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&icc);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&icc);CHKERRQ(ierr);
+  pc->data = (void*)icc;
+  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
+  ierr     = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
 
-  ((PC_Factor*)icc)->fact = 0;
+  ((PC_Factor*)icc)->factortype     = MAT_FACTOR_ICC;
+  ((PC_Factor*)icc)->info.fill      = 1.0;
+  ((PC_Factor*)icc)->info.dtcol     = PETSC_DEFAULT;
+  ((PC_Factor*)icc)->info.shifttype = (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE;
 
-  ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
-  ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
-
-  ((PC_Factor*)icc)->factortype  = MAT_FACTOR_ICC;
-  ((PC_Factor*)icc)->info.levels = 0.;
-  ((PC_Factor*)icc)->info.fill   = 1.0;
-  icc->implctx                   = 0;
-
-  ((PC_Factor*)icc)->info.dtcol       = PETSC_DEFAULT;
-  ((PC_Factor*)icc)->info.shifttype   = (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE;
-  ((PC_Factor*)icc)->info.shiftamount = 100.0*PETSC_MACHINE_EPSILON;
-  ((PC_Factor*)icc)->info.zeropivot   = 100.0*PETSC_MACHINE_EPSILON;
-
-  pc->data                     = (void*)icc;
   pc->ops->apply               = PCApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
   pc->ops->setup               = PCSetUp_ICC;
@@ -234,22 +200,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->destroy             = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
   pc->ops->view                = PCView_ICC;
-  pc->ops->getfactoredmatrix   = PCFactorGetMatrix_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
-
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -23,7 +23,7 @@ T*/
 
      Programming model: Combination of
         1) MPI message passing for PETSc routines
-        2) automatic loop parallism (using shared memory) for user
+        2) automatic loop parallelism (using shared memory) for user
            provided function.
 
        While the user function is being evaluated all MPI processes except process
@@ -94,8 +94,6 @@ typedef struct {
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
 extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 /*
     The main program is written in C while the user provided function
  is given in both Fortran and C. The main program could also be written
@@ -265,8 +263,6 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -340,8 +336,6 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -430,8 +424,6 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 #endif
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionFortran"
 /*
    FormFunctionFortran - Evaluates nonlinear function, F(x) in Fortran.
 

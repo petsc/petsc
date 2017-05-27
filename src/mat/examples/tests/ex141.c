@@ -4,8 +4,6 @@ static char help[] = "Tests converting a SBAIJ matrix to BAIJ format with MatCov
 #include <petscmat.h>
 /* Usage: ./ex141 -mat_view */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C,B;

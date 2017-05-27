@@ -15,8 +15,6 @@
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_NN"
 static PetscErrorCode PCSetUp_NN(PC pc)
 {
   PetscErrorCode ierr;
@@ -44,8 +42,6 @@ static PetscErrorCode PCSetUp_NN(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_NN"
 static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
@@ -111,8 +107,6 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_NN"
 static PetscErrorCode PCDestroy_NN(PC pc)
 {
   PC_NN          *pcnn = (PC_NN*)pc->data;
@@ -169,8 +163,6 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_NN"
 PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
@@ -213,8 +205,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
 /*
    PCNNCreateCoarseMatrix -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCNNCreateCoarseMatrix"
 PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 {
   MPI_Request    *send_request, *recv_request;
@@ -415,8 +405,6 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 .  vec2_D  - garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCNNApplySchurToChunk"
 PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
@@ -454,8 +442,6 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCNNApplyInterfacePreconditioner"
 PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar *work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
@@ -526,8 +512,6 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
 .  work_N - Array of all local nodes (interior and interface). Workspace.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCNNBalancing"
 PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
   PetscErrorCode ierr;
@@ -592,7 +576,6 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
 
 
 

@@ -6,8 +6,6 @@
 extern MPI_Op MPIU_MAXINDEX_OP;
 extern MPI_Op MPIU_MININDEX_OP;
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideSet"
 /*@
    VecStrideSet - Sets a subvector of a vector defined
    by a starting point and a stride with a given value
@@ -58,8 +56,6 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideScale"
 /*@
    VecStrideScale - Scales a subvector of a vector defined
    by a starting point and a stride.
@@ -110,8 +106,6 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideNorm"
 /*@
    VecStrideNorm - Computes the norm of subvector of a vector defined
    by a starting point and a stride.
@@ -190,8 +184,6 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideMax"
 /*@
    VecStrideMax - Computes the maximum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
@@ -272,8 +264,6 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideMin"
 /*@
    VecStrideMin - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
@@ -354,8 +344,6 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideScaleAll"
 /*@
    VecStrideScaleAll - Scales the subvectors of a vector defined
    by a starting point and a stride.
@@ -403,8 +391,6 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideNormAll"
 /*@
    VecStrideNormAll - Computes the norms of subvectors of a vector defined
    by a starting point and a stride.
@@ -489,8 +475,6 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideMaxAll"
 /*@
    VecStrideMaxAll - Computes the maximums of subvectors of a vector defined
    by a starting point and a stride and optionally its location.
@@ -554,8 +538,6 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideMinAll"
 /*@
    VecStrideMinAll - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
@@ -620,8 +602,6 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 }
 
 /*----------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideGatherAll"
 /*@
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
    separate vectors.
@@ -722,8 +702,6 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideScatterAll"
 /*@
    VecStrideScatterAll - Scatters all the single components from separate vectors into
      a multi-component vector.
@@ -818,8 +796,6 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
    another vector.
@@ -867,8 +843,6 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideScatter"
 /*@
    VecStrideScatter - Scatters a single component from a vector into a multi-component vector.
 
@@ -912,8 +886,6 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideSubSetGather"
 /*@
    VecStrideSubSetGather - Gathers a subset of components from a multi-component vector into
    another vector.
@@ -959,8 +931,6 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideSubSetScatter"
 /*@
    VecStrideSubSetScatter - Scatters components from a vector into a subset of components of a multi-component vector.
 
@@ -1004,8 +974,6 @@ PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideGather_Default"
 PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
   PetscErrorCode ierr;
@@ -1039,8 +1007,6 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideScatter_Default"
 PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -1074,8 +1040,6 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideSubSetGather_Default"
 PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt idxv[],const PetscInt idxs[],Vec s,InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -1141,8 +1105,6 @@ PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideSubSetScatter_Default"
 PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscInt idxs[],const PetscInt idxv[],Vec v,InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -1208,8 +1170,6 @@ PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecReciprocal_Default"
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
   PetscErrorCode ierr;
@@ -1226,8 +1186,6 @@ PetscErrorCode VecReciprocal_Default(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecExp"
 /*@
   VecExp - Replaces each component of a vector by e^x_i
 
@@ -1264,8 +1222,6 @@ PetscErrorCode  VecExp(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLog"
 /*@
   VecLog - Replaces each component of a vector by log(x_i), the natural logarithm
 
@@ -1302,8 +1258,6 @@ PetscErrorCode  VecLog(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSqrtAbs"
 /*@
   VecSqrtAbs - Replaces each component of a vector by the square root of its magnitude.
 
@@ -1342,8 +1296,6 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2"
 /*@
   VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
 
@@ -1412,8 +1364,6 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSum"
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
@@ -1449,8 +1399,6 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecShift"
 /*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
@@ -1481,7 +1429,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   VecLocked(v,1);
 
   if (v->ops->shift) {
-    ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
+    ierr = (*v->ops->shift)(v,shift);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -1491,8 +1439,6 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAbs"
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
@@ -1527,8 +1473,6 @@ PetscErrorCode  VecAbs(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPermute"
 /*@
   VecPermute - Permutes a vector in place using the given ordering.
 
@@ -1574,8 +1518,6 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecEqual"
 /*@
    VecEqual - Compares two vectors. Returns true if the two vectors are either pointing to the same memory buffer,
    or if the two vectors have the same local and global layout as well as bitwise equality of all entries.
@@ -1630,8 +1572,6 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecUniqueEntries"
 /*@
    VecUniqueEntries - Compute the number of unique entries, and those entries
 

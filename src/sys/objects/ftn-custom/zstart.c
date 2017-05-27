@@ -21,6 +21,7 @@ extern cublasHandle_t cublasv2handle;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
+#define petscinitializenoarguments_   PETSCINITIALIZENOARGUMENTS
 #define petscfinalize_                PETSCFINALIZE
 #define petscend_                     PETSCEND
 #define iargc_                        IARGC
@@ -31,6 +32,7 @@ extern cublasHandle_t cublasv2handle;
 #define petscgetcommandargument_      PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
+#define petscinitializenoarguments_   petscinitializenoarguments
 #define petscfinalize_                petscfinalize
 #define petscend_                     petscend
 #define mpi_init_                     mpi_init
@@ -88,9 +90,23 @@ extern cublasHandle_t cublasv2handle;
   contained any _.
 */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#undef mpi_init_
 #define mpi_init_             mpi_init__
 #endif
+
+#if defined(PETSC_HAVE_MPIUNI)
+#if defined(mpi_init_)
+#undef mpi_init_
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpi_init_             PETSC_MPI_INIT
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init__
+#endif
+#else    /* mpi_init_ */
+#define mpi_init_             petsc_mpi_init_
+#endif   /* mpi_init_ */
+#endif   /* PETSC_HAVE_MPIUNI */
 
 PETSC_EXTERN void PETSC_STDCALL mpi_init_(int*);
 PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
@@ -99,7 +115,7 @@ PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
      Different Fortran compilers handle command lines in different ways
 */
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003  - same as 'else' case */
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 #elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS();
@@ -124,13 +140,13 @@ PETSC_EXTERN void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 extern MPI_Op MPIU_SUM;
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 #endif
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
@@ -155,7 +171,7 @@ extern char **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line argments and sends them to
-  all processors and adds them to Options database.
+  all processors.
 */
 
 PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
@@ -248,15 +264,11 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
       Since this is called from Fortran it does not return error codes
 
 */
-PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+static void petscinitialize_internal(char* filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
+  int            j,i;
 #if defined (PETSC_USE_NARGS)
-  short          flg,i;
-#else
-  int            i;
-#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) && !defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT)
-  int            j;
-#endif
+  short          flg;
 #endif
 #if defined(PETSC_HAVE_CUDA)
   PetscBool      flg2;
@@ -267,7 +279,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   char           *t1,name[256],hostname[64];
   PetscMPIInt    f_petsc_comm_world;
 
-  *ierr = PetscMemzero(name,256); if (*ierr) return;
+  *ierr = PetscMemzero(name,sizeof(name)); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
 
   /* this must be initialized in a routine, not as a constant declaration*/
@@ -283,7 +295,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) return;
   i = 0;
 #if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
-  getarg_(&i,name,256);
+  getarg_(&i,name,sizeof(name));
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
   { int ilen,sierr;
     getarg_(&i,name,&ilen,&sierr,256);
@@ -294,15 +306,15 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   GETARG(&i,name,256,&flg);
 #else
   getarg_(&i,name,256);
+#endif
   /* Eliminate spaces at the end of the string */
-  for (j=254; j>=0; j--) {
+  for (j=sizeof(name)-2; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;
     }
   }
   if (j<0) PetscStrncpy(name,"Unknown Name",256);
-#endif
   *ierr = PetscSetProgramName(name);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetProgramName()\n");return;}
 
@@ -313,12 +325,7 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
     PetscMPIInt mierr;
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
-    /* MPI requires calling Fortran mpi_init() if main program is Fortran */
-#if defined(PETSC_HAVE_MPIUNI) && defined(MPIUNI_AVOID_MPI_NAMESPACE)
-    mierr = MPI_Init((int*)0, (char***)0);
-#else
     mpi_init_(&mierr);
-#endif
     if (mierr) {
       *ierr = mierr;
       (*PetscErrorPrintf)("PetscInitialize: Calling Fortran MPI_Init()\n");
@@ -396,6 +403,17 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+#elif defined(PETSC_USE_REAL___FP16)
+  *ierr = MPI_Type_contiguous(2,MPI_CHAR,&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_commit(&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
 #endif
 
   /*
@@ -429,11 +447,13 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
      below.
   */
   PetscInitializeFortran();
-  PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
-  FIXCHAR(filename,len,t1);
-  *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
-  FREECHAR(filename,t1);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
+  if(readarguments == PETSC_TRUE) {
+    PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
+    FIXCHAR(filename,len,t1);
+    *ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,t1);
+    FREECHAR(filename,t1);
+    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
+  }
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
   *ierr = PetscCitationsInitialize();
@@ -482,6 +502,17 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   }
 #endif
 }
+
+PETSC_EXTERN void PETSC_STDCALL petscinitialize_(char* filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscinitializenoarguments_(PetscErrorCode *ierr)
+{
+  petscinitialize_internal(NULL, (PetscInt) 0, PETSC_FALSE, ierr);
+}
+
 
 PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
 {

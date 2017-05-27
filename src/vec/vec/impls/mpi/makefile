@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PNETCDF_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
 SOURCEF  =

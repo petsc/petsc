@@ -28,8 +28,6 @@ typedef struct {
   PetscBool     norms;          /* Compute norms, usually only for monitoring purposes */
 } SNES_MS;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSRegisterAll"
 /*@C
   SNESMSRegisterAll - Registers all of the multi-stage methods in SNESMS
 
@@ -105,8 +103,6 @@ PetscErrorCode SNESMSRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSRegisterDestroy"
 /*@C
    SNESMSRegisterDestroy - Frees the list of schemes that were registered by TSRosWRegister().
 
@@ -135,8 +131,6 @@ PetscErrorCode SNESMSRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSInitializePackage"
 /*@C
   SNESMSInitializePackage - This function initializes everything in the SNESMS package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate_MS()
@@ -160,8 +154,6 @@ PetscErrorCode SNESMSInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSFinalizePackage"
 /*@C
   SNESMSFinalizePackage - This function destroys everything in the SNESMS package. It is
   called from PetscFinalize().
@@ -182,8 +174,6 @@ PetscErrorCode SNESMSFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSRegister"
 /*@C
    SNESMSRegister - register a multistage scheme
 
@@ -237,8 +227,6 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSStep_3Sstar"
 /*
   X - initial state, updated in-place.
   F - residual, computed at the initial X on input
@@ -281,8 +269,6 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_MS"
 static PetscErrorCode SNESSolve_MS(SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
@@ -360,8 +346,6 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_MS"
 static PetscErrorCode SNESSetUp_MS(SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
@@ -374,8 +358,6 @@ static PetscErrorCode SNESSetUp_MS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_MS"
 static PetscErrorCode SNESReset_MS(SNES snes)
 {
 
@@ -383,8 +365,6 @@ static PetscErrorCode SNESReset_MS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_MS"
 static PetscErrorCode SNESDestroy_MS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -395,8 +375,6 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_MS"
 static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -412,8 +390,6 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_MS"
 static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
@@ -442,8 +418,6 @@ static PetscErrorCode SNESSetFromOptions_MS(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSSetType_MS"
 PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
 {
   PetscErrorCode    ierr;
@@ -468,8 +442,6 @@ PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMSSetType"
 /*@C
   SNESMSSetType - Set the type of multistage smoother
 
@@ -520,8 +492,6 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESMS, SNESFAS, KSPCHEBYSHEV
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_MS"
 PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 {
   PetscErrorCode ierr;

@@ -18,8 +18,6 @@ typedef struct {
   PetscBool variant;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
@@ -135,8 +133,6 @@ PetscErrorCode  OtherFunctionForDifferencing(void *dummy,Vec x,Vec f)
 
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
   PetscErrorCode ierr;
@@ -144,8 +140,6 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
   ierr = VecSet(x,pfive);CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
     jacobian. In this case, the explict preconditioner matrix is
@@ -186,8 +180,6 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 }
 /* --------------------  User-defined monitor ----------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;

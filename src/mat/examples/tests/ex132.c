@@ -2,13 +2,11 @@
 static char help[] = "Test MatAXPY(), and illustrate how to reduce number of mallocs used during MatSetValues() calls \n\
                       Matrix C is copied from ~petsc/src/ksp/ksp/examples/tutorials/ex5.c\n\n";
 /*
-  Example: ./ex132 -mat_view ::ascii_info
+  Example: ./ex132 -mat_view ascii::ascii_info
 */
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C,C1,C2;           /* matrix */

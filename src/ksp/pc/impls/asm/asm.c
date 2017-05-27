@@ -30,14 +30,13 @@ typedef struct {
   PetscBool  sort_indices;        /* flag to sort subdomain indices */
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
+  MatType    sub_mat_type;        /* the type of Mat used for subdomain solves (can be MATSAME or NULL) */
   /* For multiplicative solve */
   Mat       *lmats;               /* submatrices for overlapping multiplicative (process) subdomain */
   Vec        lx, ly;              /* work vectors */
   IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_ASM"
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -56,6 +55,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
     if (osm->n > 0) {ierr = PetscSNPrintf(blocks,sizeof(blocks),"total subdomain blocks = %D",osm->n);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: %s, %s\n",blocks,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: restriction/interpolation type - %s\n",PCASMTypes[osm->type]);CHKERRQ(ierr);
+    if (osm->dm_subdomains) {ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: using DM to define subdomains\n");CHKERRQ(ierr);}
     if (osm->loctype != PC_COMPOSITE_ADDITIVE) {ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: local solve composition type - %s\n",PCCompositeTypes[osm->loctype]);CHKERRQ(ierr);}
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
     if (osm->same_local_solves) {
@@ -97,8 +97,6 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMPrintSubdomains"
 static PetscErrorCode PCASMPrintSubdomains(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -174,8 +172,6 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ASM"
 static PetscErrorCode PCSetUp_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -207,6 +203,10 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         char      **domain_names;
         IS        *inner_domain_is, *outer_domain_is;
         ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm);CHKERRQ(ierr);
+        osm->overlap = -1; /* We do not want to increase the overlap of the IS. 
+                              A future improvement of this code might allow one to use 
+                              DM-defined subdomains and also increase the overlap, 
+                              but that is not currently supported */
         if (num_domains) {
           ierr = PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is);CHKERRQ(ierr);
         }
@@ -226,11 +226,19 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     { /* determine the global and max number of subdomains */
       struct {PetscInt max,sum;} inwork,outwork;
+      PetscMPIInt size;
+
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
       ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
+
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      if (outwork.max == 1 && outwork.sum == size) {
+        /* osm->n_local_true = 1 on all processes, set this option may enable use of optimized MatCreateSubMatrices() implementation */
+        ierr = MatSetOption(pc->pmat,MAT_SUBMAT_SINGLEIS,PETSC_TRUE);CHKERRQ(ierr);
+      } 
     }
     if (!osm->is) { /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);
@@ -264,7 +272,75 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         }
       }
     }
-    /* Create the local work vectors and scatter contexts */
+
+    if (!osm->ksp) {
+      /* Create the local solvers */
+      ierr = PetscMalloc1(osm->n_local_true,&osm->ksp);CHKERRQ(ierr);
+      if (domain_dm) {
+        ierr = PetscInfo(pc,"Setting up ASM subproblems using the embedded DM\n");CHKERRQ(ierr);
+      }
+      for (i=0; i<osm->n_local_true; i++) {
+        ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+        ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+        ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
+        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
+        if (domain_dm) {
+          ierr = KSPSetDM(ksp, domain_dm[i]);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
+          ierr = DMDestroy(&domain_dm[i]);CHKERRQ(ierr);
+        }
+        osm->ksp[i] = ksp;
+      }
+      if (domain_dm) {
+        ierr = PetscFree(domain_dm);CHKERRQ(ierr);
+      }
+    }
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+      PetscInt m;
+
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
+      ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
+      ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
+    }
+    scall = MAT_INITIAL_MATRIX;
+  } else {
+    /*
+       Destroy the blocks from the previous iteration
+    */
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+      scall = MAT_INITIAL_MATRIX;
+    }
+  }
+
+  /*
+     Extract out the submatrices
+  */
+  ierr = MatCreateSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
+    for (i=0; i<osm->n_local_true; i++) {
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
+    }
+  }
+
+  /* Convert the types of the submatrices (if needbe) */
+  if (osm->sub_mat_type) {
+    for (i=0; i<osm->n_local_true; i++) {
+      ierr = MatConvert(osm->pmat[i],osm->sub_mat_type,MAT_INPLACE_MATRIX,&(osm->pmat[i]));CHKERRQ(ierr);
+    }
+  }
+
+  if(!pc->setupcalled){
+    /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->restriction);CHKERRQ(ierr);
     if (osm->is_local) {ierr = PetscMalloc1(osm->n_local,&osm->localization);CHKERRQ(ierr);}
@@ -274,7 +350,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     ierr = PetscMalloc1(osm->n_local,&osm->y_local);CHKERRQ(ierr);
     for (i=0; i<osm->n_local_true; ++i) {
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
+      ierr = MatCreateVecs(osm->pmat[i],&osm->x[i],NULL);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,osm->is[i],osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&isl);CHKERRQ(ierr);
@@ -329,72 +405,15 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = ISDestroy(&isl);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&vec);CHKERRQ(ierr);
-
-    if (!osm->ksp) {
-      /* Create the local solvers */
-      ierr = PetscMalloc1(osm->n_local_true,&osm->ksp);CHKERRQ(ierr);
-      if (domain_dm) {
-        ierr = PetscInfo(pc,"Setting up ASM subproblems using the embedded DM\n");CHKERRQ(ierr);
-      }
-      for (i=0; i<osm->n_local_true; i++) {
-        ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-        ierr = KSPSetErrorIfNotConverged(ksp,pc->erroriffailure);CHKERRQ(ierr);
-        ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
-        ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-        ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-        ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
-        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-        ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
-        ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-        if (domain_dm) {
-          ierr = KSPSetDM(ksp, domain_dm[i]);CHKERRQ(ierr);
-          ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = DMDestroy(&domain_dm[i]);CHKERRQ(ierr);
-        }
-        osm->ksp[i] = ksp;
-      }
-      if (domain_dm) {
-        ierr = PetscFree(domain_dm);CHKERRQ(ierr);
-      }
-    }
-    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-      PetscInt m;
-
-      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
-      ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
-      ierr = VecDuplicate(osm->lx, &osm->ly);CHKERRQ(ierr);
-    }
-    scall = MAT_INITIAL_MATRIX;
-  } else {
-    /*
-       Destroy the blocks from the previous iteration
-    */
-    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
-      scall = MAT_INITIAL_MATRIX;
-    }
   }
 
-  /*
-     Extract out the submatrices
-  */
-  ierr = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
-    for (i=0; i<osm->n_local_true; i++) {
-      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
-    }
-  }
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
     IS      *cis;
     PetscInt c;
 
     ierr = PetscMalloc1(osm->n_local_true, &cis);CHKERRQ(ierr);
     for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
-    ierr = MatGetSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
     ierr = PetscFree(cis);CHKERRQ(ierr);
   }
 
@@ -414,8 +433,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUpOnBlocks_ASM"
 static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM             *osm = (PC_ASM*)pc->data;
@@ -434,8 +451,6 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ASM"
 static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -526,8 +541,6 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_ASM"
 static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -577,8 +590,6 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ASM"
 static PetscErrorCode PCReset_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -593,7 +604,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) {
-      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
     }
   }
   if (osm->restriction) {
@@ -620,13 +631,13 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(osm->sub_mat_type);CHKERRQ(ierr);
+
   osm->is       = 0;
   osm->is_local = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ASM"
 static PetscErrorCode PCDestroy_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -645,8 +656,6 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ASM"
 static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -655,6 +664,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   PetscBool      symset,flg;
   PCASMType      asmtype;
   PCCompositeType loctype;
+  char           sub_mat_type[256];
 
   PetscFunctionBegin;
   /* set the type to symmetric if matrix is symmetric */
@@ -680,14 +690,16 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_asm_local_type","Type of local solver composition","PCASMSetLocalType",PCCompositeTypes,(PetscEnum)osm->loctype,(PetscEnum*)&loctype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetLocalType(pc,loctype);CHKERRQ(ierr); }
+  ierr = PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg);CHKERRQ(ierr);
+  if(flg){
+    ierr = PCASMSetSubMatType(pc,sub_mat_type);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
 static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -736,8 +748,6 @@ static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
 static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -767,8 +777,6 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetOverlap_ASM"
 static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -780,8 +788,6 @@ static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetType_ASM"
 static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -792,8 +798,6 @@ static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetType_ASM"
 static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -803,8 +807,6 @@ static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalType_ASM"
 static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -814,8 +816,6 @@ static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalType_ASM"
 static PetscErrorCode  PCASMGetLocalType_ASM(PC pc, PCCompositeType *type)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -825,8 +825,6 @@ static PetscErrorCode  PCASMGetLocalType_ASM(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSortIndices_ASM"
 static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -836,8 +834,6 @@ static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubKSP_ASM"
 static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -860,8 +856,29 @@ static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *firs
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalSubdomains"
+static PetscErrorCode  PCASMGetSubMatType_ASM(PC pc,MatType *sub_mat_type)
+{
+  PC_ASM         *osm = (PC_ASM*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(sub_mat_type,2);
+  *sub_mat_type = osm->sub_mat_type;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
+{
+  PetscErrorCode    ierr;
+  PC_ASM            *osm = (PC_ASM*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscFree(osm->sub_mat_type);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(sub_mat_type,(char**)&osm->sub_mat_type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner.
 
@@ -899,8 +916,6 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetTotalSubdomains"
 /*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processors for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -950,8 +965,6 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -1003,8 +1016,6 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetType"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -1042,8 +1053,6 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetType"
 /*@
     PCASMGetType - Gets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -1083,8 +1092,6 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalType"
 /*@
   PCASMSetLocalType - Sets the type of composition used for local problems in the additive Schwarz method.
 
@@ -1116,8 +1123,6 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalType"
 /*@
   PCASMGetLocalType - Gets the type of composition used for local problems in the additive Schwarz method.
 
@@ -1151,8 +1156,6 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSortIndices"
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
 
@@ -1180,8 +1183,6 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubKSP"
 /*@C
    PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
@@ -1206,7 +1207,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    You must call KSPSetUp() before calling PCASMGetSubKSP().
 
    Fortran note:
-   The output argument 'ksp' must be an array of sufficient length or NULL_OBJECT. The latter can be used to learn the necessary length.
+   The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_KSP. The latter can be used to learn the necessary length.
 
    Level: advanced
 
@@ -1266,8 +1267,6 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ASM"
 PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
 {
   PetscErrorCode ierr;
@@ -1296,6 +1295,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   osm->same_local_solves = PETSC_TRUE;
   osm->sort_indices      = PETSC_TRUE;
   osm->dm_subdomains     = PETSC_FALSE;
+  osm->sub_mat_type      = NULL;
 
   pc->data                 = (void*)osm;
   pc->ops->apply           = PCApply_ASM;
@@ -1317,11 +1317,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetLocalType_C",PCASMGetLocalType_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",PCASMSetSortIndices_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubMatType_C",PCASMGetSubMatType_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSubMatType_C",PCASMSetSubMatType_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMCreateSubdomains"
 /*@C
    PCASMCreateSubdomains - Creates the index sets for the overlapping Schwarz
    preconditioner for a any problem on a general grid.
@@ -1350,8 +1350,7 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 {
   MatPartitioning mpart;
   const char      *prefix;
-  PetscErrorCode  (*f)(Mat,Mat*);
-  PetscMPIInt     size;
+  void            (*f)(void);
   PetscInt        i,j,rstart,rend,bs;
   PetscBool       isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat             Ad     = NULL, adj;
@@ -1370,12 +1369,9 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   if (rstart/bs*bs != rstart || rend/bs*bs != rend) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"bad row distribution [%D,%D) for matrix block size %D",rstart,rend,bs);
 
   /* Get diagonal block from matrix if possible */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
+  ierr = MatShellGetOperation(A,MATOP_GET_DIAGONAL_BLOCK,&f);CHKERRQ(ierr);
   if (f) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
-  } else if (size == 1) {
-    Ad = A;
   }
   if (Ad) {
     ierr = PetscObjectTypeCompare((PetscObject)Ad,MATSEQBAIJ,&isbaij);CHKERRQ(ierr);
@@ -1505,8 +1501,6 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMDestroySubdomains"
 /*@C
    PCASMDestroySubdomains - Destroys the index sets created with
    PCASMCreateSubdomains(). Should be called after setting subdomains
@@ -1545,8 +1539,6 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
    preconditioner for a two-dimensional problem on a regular grid.
@@ -1631,8 +1623,6 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalSubdomains"
 /*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner.
@@ -1676,8 +1666,6 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalSubmatrices"
 /*@C
     PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
     only) for the additive Schwarz preconditioner.
@@ -1726,8 +1714,6 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetDMSubdomains"
 /*@
     PCASMSetDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Logically Collective
@@ -1767,8 +1753,6 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetDMSubdomains"
 /*@
     PCASMGetDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Not Collective
@@ -1799,5 +1783,59 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
   if (match) {
     if (flg) *flg = osm->dm_subdomains;
   }
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the PC
+
+   Output Parameter:
+.  sub_mat_type - name of matrix type
+
+   Level: advanced
+
+.keywords: PC, PCASM, MatType, set
+
+.seealso: PCASMSetSubMatType(), PCASM, PCSetType(), VecSetType(), MatType, Mat
+@*/
+PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type){
+  PetscErrorCode ierr;
+
+  ierr = PetscTryMethod(pc,"PCASMGetSubMatType_C",(PC,MatType*),(pc,sub_mat_type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+ PCASMSetSubMatType - Set the type of matrix used for ASM subsolves
+
+   Collective on Mat
+
+   Input Parameters:
++  pc             - the PC object
+-  sub_mat_type   - matrix type
+
+   Options Database Key:
+.  -pc_asm_sub_mat_type  <sub_mat_type> - Sets the matrix type used for subsolves, for example, seqaijviennacl. If you specify a base name like aijviennacl, the corresponding sequential type is assumed.
+
+   Notes:
+   See "${PETSC_DIR}/include/petscmat.h" for available types
+
+  Level: advanced
+
+.keywords: PC, PCASM, MatType, set
+
+.seealso: PCASMGetSubMatType(), PCASM, PCSetType(), VecSetType(), MatType, Mat
+@*/
+PetscErrorCode PCASMSetSubMatType(PC pc,MatType sub_mat_type)
+{
+  PetscErrorCode ierr;
+
+  ierr = PetscTryMethod(pc,"PCASMSetSubMatType_C",(PC,MatType),(pc,sub_mat_type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

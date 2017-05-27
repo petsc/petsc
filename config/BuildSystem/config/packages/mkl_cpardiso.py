@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.includes     = ['mkl.h']
     self.functions    = ['pardisoinit']
     self.liblist      = [[]] # use MKL detected by BlasLapack.py
+    self.precisions   = ['single','double']
     return
 
   def setupDependencies(self, framework):
@@ -19,5 +20,5 @@ class Configure(config.package.Package):
     config.package.Package.consistencyChecks(self)
     if self.argDB['with-'+self.package]:
       if not self.blasLapack.mkl:
-        raise RuntimeError('MKL_CParadiso requires Intel MKL. Please rerun configure using --with-blas-lapack-dir=LOCATION_OF_INTEL_MKL')
+        raise RuntimeError('MKL_CParadiso requires Intel MKL. Please rerun configure using --with-blaslapack-dir=LOCATION_OF_INTEL_MKL')
     return

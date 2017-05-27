@@ -9,8 +9,6 @@ PetscClassId  MATMFFD_CLASSID;
 PetscLogEvent MATMFFD_Mult;
 
 static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDFinalizePackage"
 /*@C
   MatMFFDFinalizePackage - This function destroys everything in the MatMFFD package. It is
   called from PetscFinalize().
@@ -18,7 +16,7 @@ static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
   Level: developer
 
 .keywords: Petsc, destroy, package
-.seealso: PetscFinalize()
+.seealso: PetscFinalize(), MatCreateMFFD(), MatCreateSNESMF()
 @*/
 PetscErrorCode  MatMFFDFinalizePackage(void)
 {
@@ -31,8 +29,6 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDInitializePackage"
 /*@C
   MatMFFDInitializePackage - This function initializes everything in the MatMFFD package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate_MFFD()
@@ -80,8 +76,6 @@ PetscErrorCode  MatMFFDInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetType"
 /*@C
     MatMFFDSetType - Sets the method that is used to compute the
     differencing parameter for finite differene matrix-free formulations.
@@ -101,7 +95,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction()
+.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction(), MatCreateMFFD()
 @*/
 PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 {
@@ -133,8 +127,6 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 }
 
 typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to not be extern C*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctioniBase_MFFD"
 static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
@@ -145,8 +137,6 @@ static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 }
 
 typedef PetscErrorCode (*FCN2)(void*,PetscInt,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctioni_MFFD"
 static PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
@@ -156,8 +146,6 @@ static PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDResetHHistory_MFFD"
 static PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 {
   MatMFFD ctx = (MatMFFD)J->data;
@@ -167,8 +155,6 @@ static PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDRegister"
 /*@C
    MatMFFDRegister - Adds a method to the MatMFFD registry.
 
@@ -207,8 +193,6 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
 }
 
 /* ----------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MFFD"
 static PetscErrorCode MatDestroy_MFFD(Mat mat)
 {
   PetscErrorCode ierr;
@@ -237,8 +221,6 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MFFD"
 /*
    MatMFFDView_MFFD - Views matrix-free parameters.
 
@@ -281,8 +263,6 @@ static PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MFFD"
 /*
    MatAssemblyEnd_MFFD - Resets the ctx->ncurrenth to zero. This
    allows the user to indicate the beginning of a new linear solve by calling
@@ -305,8 +285,6 @@ PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MFFD"
 /*
   MatMult_MFFD - Default matrix-free form for Jacobian-vector product, y = F'(u)*a:
 
@@ -398,8 +376,6 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_MFFD"
 /*
   MatGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix
 
@@ -454,8 +430,6 @@ static PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_MFFD"
 static PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
 {
   MatMFFD        aij = (MatMFFD)mat->data;
@@ -477,8 +451,6 @@ static PetscErrorCode MatDiagonalScale_MFFD(Mat mat,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_MFFD"
 static PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
 {
   MatMFFD        aij = (MatMFFD)mat->data;
@@ -493,8 +465,6 @@ static PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_MFFD"
 static PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
@@ -504,8 +474,6 @@ static PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_MFFD"
 static PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 {
   MatMFFD shell = (MatMFFD)Y->data;
@@ -515,8 +483,6 @@ static PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetBase_MFFD"
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
@@ -544,8 +510,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 
 typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetCheckh_MFFD"
 static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 {
   MatMFFD ctx = (MatMFFD)J->data;
@@ -556,8 +520,6 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetOptionsPrefix"
 /*@C
    MatMFFDSetOptionsPrefix - Sets the prefix used for searching for all
    MatMFFD options in the database.
@@ -576,7 +538,7 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatSetFromOptions(), MatCreateSNESMF()
+.seealso: MatSetFromOptions(), MatCreateSNESMF(), MatCreateMFFD()
 @*/
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
@@ -591,8 +553,6 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_MFFD"
 static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
@@ -624,8 +584,6 @@ static PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetPeriod_MFFD"
 static PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
@@ -636,8 +594,6 @@ static PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunction_MFFD"
 static PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
@@ -648,8 +604,6 @@ static PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctionError_MFFD"
 static PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
@@ -660,8 +614,6 @@ static PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_MFFD"
 static PetscErrorCode MatMissingDiagonal_MFFD(Mat A,PetscBool  *missing,PetscInt *d)
 {
   PetscFunctionBegin;
@@ -674,10 +626,11 @@ static PetscErrorCode MatMissingDiagonal_MFFD(Mat A,PetscBool  *missing,PetscInt
 
   Level: advanced
 
-.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction()
+.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction(), MatMFFDSetType(),  
+          MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
+          MatMFFDGetH(),
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MFFD"
 PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 {
   MatMFFD        mfctx;
@@ -749,8 +702,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMFFD"
 /*@
    MatCreateMFFD - Creates a matrix-free matrix. See also MatCreateSNESMF()
 
@@ -829,8 +780,6 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDGetH"
 /*@
    MatMFFDGetH - Gets the last value that was used as the differencing
    parameter.
@@ -863,8 +812,6 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunction"
 /*@C
    MatMFFDSetFunction - Sets the function used in applying the matrix free.
 
@@ -904,8 +851,6 @@ PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctioni"
 /*@C
    MatMFFDSetFunctioni - Sets the function for a single component
 
@@ -938,8 +883,6 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctioniBase"
 /*@C
    MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation
 
@@ -971,8 +914,6 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetPeriod"
 /*@
    MatMFFDSetPeriod - Sets how often h is recomputed, by default it is everytime
 
@@ -1002,8 +943,6 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFunctionError"
 /*@
    MatMFFDSetFunctionError - Sets the error_rel for the approximation of
    matrix-vector products using finite differences.
@@ -1042,8 +981,6 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetHHistory"
 /*@
    MatMFFDSetHHistory - Sets an array to collect a history of the
    differencing values (h) computed for the matrix-free product.
@@ -1084,8 +1021,6 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDResetHHistory"
 /*@
    MatMFFDResetHHistory - Resets the counter to zero to begin
    collecting a new set of differencing histories.
@@ -1116,8 +1051,6 @@ PetscErrorCode  MatMFFDResetHHistory(Mat J)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetBase"
 /*@
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
         Jacobian are computed
@@ -1149,8 +1082,6 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetCheckh"
 /*@C
     MatMFFDSetCheckh - Sets a function that checks the computed h and adjusts
         it to satisfy some criteria
@@ -1167,10 +1098,13 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 
     Level: advanced
 
-    Notes: For example, MatMFFDSetCheckPositivity() insures that all entries
+    Notes: For example, MatMFFDCheckPositivity() insures that all entries
        of U + h*a are non-negative
 
-.seealso:  MatMFFDSetCheckPositivity()
+     The function you provide is called after the default h has been computed and allows you to
+     modify it.
+
+.seealso:  MatMFFDCheckPositivity()
 @*/
 PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void *ctx)
 {
@@ -1182,8 +1116,6 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetCheckPositivity"
 /*@
     MatMFFDCheckPositivity - Checks that all entries in U + h*a are positive or
         zero, decreases h until this is satisfied.

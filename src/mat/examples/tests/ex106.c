@@ -4,8 +4,6 @@ static char help[] = "Test repeated LU factorizations. Used for checking memory 
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 #include <petscmat.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C,F;                /* matrix */
@@ -130,7 +128,6 @@ int main(int argc,char **args)
   ierr    = MatGetOrdering(C,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
   its_max = 2000;
   for (i=0; i<its_max; i++) {
-    /* printf(" it %d\n",i); */
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(F,C,perm,iperm,&factinfo);CHKERRQ(ierr);
     for (j=0; j<1; j++) {

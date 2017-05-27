@@ -1,0 +1,4 @@
+PetscAtan2Real(1.0,1.0) = 0.785398
+PetscAtan2Real(1.0,0.0) = 1.5708
+PetscAtan2Real(0.0,1.0) = 0.
+PetscAtan2Real(0.0,0.0) = 0.

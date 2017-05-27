@@ -24,8 +24,6 @@
 /*    UPDATED PARAMETER -*/
 /*       ADJNCY - BECOMES THE ADJNCY OF THE QUOTIENT GRAPH.*/
 /***************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKqmdqt"
 PetscErrorCode SPARSEPACKqmdqt(const PetscInt *root,const PetscInt *xadj,const PetscInt *inadjncy,PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd)
 {
   PetscInt *adjncy = (PetscInt*)inadjncy; /* Used as temporary and reset within this function */

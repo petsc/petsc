@@ -19,8 +19,6 @@
 
 /* -----------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortInt_Private"
 /*
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -50,8 +48,6 @@ static void PetscSortInt_Private(PetscInt *v,PetscInt right)
   PetscSortInt_Private(v+j+1,right-(j+1));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortInt"
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 
@@ -86,8 +82,6 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortRemoveDupsInt"
 /*@
    PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
 
@@ -122,8 +116,6 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFindInt"
 /*@
   PetscFindInt - Finds integer in a sorted array of integers
 
@@ -164,8 +156,6 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
 /* -----------------------------------------------------------------------*/
 #define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithArray_Private"
 /*
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -195,8 +185,6 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithArray"
 /*@
    PetscSortIntWithArray - Sorts an array of integers in place in increasing order;
        changes a second array to match the sorted first array.
@@ -239,8 +227,6 @@ PetscErrorCode  PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 
 #define SWAP3(a,b,c,d,e,f,t) {t=a;a=b;b=t;t=c;c=d;d=t;t=e;e=f;f=t;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithArrayPair_Private"
 /*
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -270,8 +256,6 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithArrayPair"
 /*@
    PetscSortIntWithArrayPair - Sorts an array of integers in place in increasing order;
        changes a pair of integer arrays to match the sorted first array.
@@ -290,7 +274,7 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J,
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, PetscInt *K)
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt L[],PetscInt J[], PetscInt K[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -312,8 +296,6 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortMPIInt_Private"
 /*
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -344,8 +326,6 @@ static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
   PetscSortMPIInt_Private(v+j+1,right-(j+1));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortMPIInt"
 /*@
    PetscSortMPIInt - Sorts an array of MPI integers in place in increasing order.
 
@@ -381,8 +361,6 @@ PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortRemoveDupsMPIInt"
 /*@
    PetscSortRemoveDupsMPIInt - Sorts an array of MPI integers in place in increasing order removes all duplicate entries
 
@@ -417,8 +395,6 @@ PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt ii[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortMPIIntWithArray_Private"
 /*
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -448,8 +424,6 @@ static PetscErrorCode PetscSortMPIIntWithArray_Private(PetscMPIInt *v,PetscMPIIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortMPIIntWithArray"
 /*@
    PetscSortMPIIntWithArray - Sorts an array of integers in place in increasing order;
        changes a second array to match the sorted first array.
@@ -492,8 +466,6 @@ PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt n,PetscMPIInt i[],PetscMPII
 /* -----------------------------------------------------------------------*/
 #define SWAP2IntScalar(a,b,c,d,t,ts) {t=a;a=b;b=t;ts=c;c=d;d=ts;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithScalarArray_Private"
 /*
    Modified from PetscSortIntWithArray_Private().
 */
@@ -522,8 +494,6 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithScalarArray"
 /*@
    PetscSortIntWithScalarArray - Sorts an array of integers in place in increasing order;
        changes a second SCALAR array to match the sorted first INTEGER array.
@@ -573,8 +543,6 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   _ierr = PetscMemcpy(d,td,siz);CHKERRQ(_ierr); \
 } while(0)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithDataArray_Private"
 /*
    Modified from PetscSortIntWithArray_Private().
 */
@@ -602,9 +570,7 @@ static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortIntWithDataArray"
-/*@
+/*@C
    PetscSortIntWithDataArray - Sorts an array of integers in place in increasing order;
        changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
        provide workspace (the size of an element in the data array) to use when sorting.
@@ -648,8 +614,6 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMergeIntArray"
 /*@
    PetscMergeIntArray -     Merges two SORTED integer arrays, removes duplicate elements.
 
@@ -663,7 +627,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
    Output Parameters:
 +  n   - number of values in the merged array
--  I   - merged sorted array, this is allocated if an array is not provided
+-  L   - merged sorted array, this is allocated if an array is not provided
 
    Level: intermediate
 
@@ -671,7 +635,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, const PetscInt *bI,  PetscInt *n, PetscInt **L)
+PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn, const PetscInt bI[],  PetscInt *n, PetscInt **L)
 {
   PetscErrorCode ierr;
   PetscInt       *L_ = *L, ak, bk, k;
@@ -709,8 +673,6 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMergeIntArrayPair"
 /*@
    PetscMergeIntArrayPair -     Merges two SORTED integer arrays that share NO common values along with an additional array of integers.
                                 The additional arrays are the same length as sorted arrays and are merged
@@ -738,7 +700,7 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J)
+PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J)
 {
   PetscErrorCode ierr;
   PetscInt       n_, *L_, *J_, ak, bk, k;
@@ -782,8 +744,6 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMergeMPIIntArray"
 /*@
    PetscMergeMPIIntArray -     Merges two SORTED integer arrays.
 
@@ -823,9 +783,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscProcessTree"
-/*@
+/*@C
    PetscProcessTree - Prepares tree data to be displayed graphically
 
    Not Collective
@@ -842,8 +800,9 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
 .  Idbylevel - a list of ids on each of the levels, first level followed by second etc
 -  Column - for each id tells its column index
 
-   Level: intermediate
+   Level: developer
 
+   Notes: This code is not currently used
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/

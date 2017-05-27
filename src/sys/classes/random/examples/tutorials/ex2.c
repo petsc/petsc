@@ -29,8 +29,6 @@ PetscInt divWork(PetscMPIInt, PetscInt, PetscMPIInt);
      mpiexec -n 4 ./ex2 -num_of_stocks 30 -interest_rate 0.4 -time_interval 0.01 -num_of_simulations 10000
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscReal      r,dt;
@@ -139,8 +137,6 @@ PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r
   return payoff;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "readData"
 PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 {
   PetscInt       i;
@@ -157,7 +153,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
     for (i=0;i<num;i++) {
       double vv,tt;
-      fscanf(fd,"%s%lf%lf",temp,&vv,&tt);
+      if (fscanf(fd,"%s%lf%lf",temp,&vv,&tt) != 3) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
       v[i] = vv;
       t[i] = tt;
     }

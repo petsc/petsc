@@ -1,0 +1,87 @@
+
+Local Vector: processor 0
+Vec Object: 1 MPI processes
+  type: seq
+1.
+1.
+1.
+2.
+-1.
+-1.
+-2.
+
+Local Vector: processor 1
+Vec Object: 1 MPI processes
+  type: seq
+1.
+2.
+2.
+2.
+3.
+-1.
+-2.
+-2.
+-3.
+
+Local Vector: processor 2
+Vec Object: 1 MPI processes
+  type: seq
+2.
+3.
+3.
+-2.
+-3.
+-3.
+Vec Object: 3 MPI processes
+  type: mpi
+Process [0]
+1.
+1.
+1.
+-1.
+-1.
+Process [1]
+2.
+2.
+2.
+-2.
+-2.
+Process [2]
+3.
+3.
+-3.
+-3.
+
+Local Vector: processor 0
+Vec Object: 1 MPI processes
+  type: seq
+1.
+1.
+1.
+2.
+-1.
+-1.
+-2.
+
+Local Vector: processor 1
+Vec Object: 1 MPI processes
+  type: seq
+1.
+2.
+2.
+2.
+3.
+-1.
+-2.
+-2.
+-3.
+
+Local Vector: processor 2
+Vec Object: 1 MPI processes
+  type: seq
+2.
+3.
+3.
+-2.
+-3.
+-3.

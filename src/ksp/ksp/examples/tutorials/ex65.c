@@ -49,8 +49,6 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm,DM da,DM *shell)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -60,7 +58,9 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-129,1,1,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,129,1,1,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = MyDMShellCreate(PETSC_COMM_WORLD,da,&shell);CHKERRQ(ierr);
   /* these two lines are not needed but allow PCMG to automatically know how many multigrid levels the user wants */
   ierr = DMGetRefineLevel(da,&levels);CHKERRQ(ierr);
@@ -79,8 +79,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMatrix"
 static PetscErrorCode CreateMatrix(DM shell,Mat *A)
 {
   PetscErrorCode ierr;
@@ -91,8 +89,6 @@ static PetscErrorCode CreateMatrix(DM shell,Mat *A)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateInterpolation"
 static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   DM             da1,da2;
@@ -104,21 +100,20 @@ static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateRestriction"
 static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
 {
   DM             da1,da2;
   PetscErrorCode ierr;
+  Mat            tmat;
 
   ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
   ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(da1,da2,mat,NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da1,da2,&tmat,NULL);CHKERRQ(ierr);
+  ierr = MatTranspose(tmat,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateGlobalVector"
 static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
 {
   PetscErrorCode ierr;
@@ -130,8 +125,6 @@ static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateLocalVector"
 static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
 {
   PetscErrorCode ierr;
@@ -143,8 +136,6 @@ static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Refine"
 static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
 {
   PetscErrorCode ierr;
@@ -156,8 +147,6 @@ static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Coarsen"
 static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
 {
   PetscErrorCode ierr;
@@ -171,8 +160,6 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
@@ -194,8 +181,6 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   PetscErrorCode ierr;

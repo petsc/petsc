@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/stability_9bus/
-EXAMPLESC       = ex9bus.c ex9busadj.c ex9busopt.c ex9busopt_fd.c
+EXAMPLESC       = ex9bus.c ex9busadj.c ex9busopt.c ex9busopt_fd.c ex9busdmnetwork.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
@@ -27,8 +27,26 @@ ex9busopt: ex9busopt.o  chkopts
 ex9busopt_fd: ex9busopt_fd.o  chkopts
 	-${CLINKER} -o ex9busopt_fd ex9busopt_fd.o  ${PETSC_LIB}
 
-runex9bus:
-	-@${MPIEXEC} -n 1 ./ex9bus
+ex9busdmnetwork: ex9busdmnetwork.o  chkopts
+	-${CLINKER} -o ex9busdmnetwork ex9busdmnetwork.o  ${PETSC_TS_LIB}
+
+#---------------------------------------------------------------------------------
+runex9bus_implicit:
+	-@${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short > ex9bus_1.tmp 2>&1;    \
+	   ${DIFF} output/ex9bus_1.out ex9bus_1.tmp || printf "${PWD}\nPossible problem with ex9bus_implicit, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus_1.tmp
+
+runex9bus_semiexplicit:
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a > ex9bus_2.tmp 2>&1;   \
+           if (${DIFF} output/ex9bus_2.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex9bus_2.out ex9bus_2.tmp ; ${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp ; printf "${PWD}\nPossible problem with ex9bus_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex9bus_2.tmp
+
+runex9bus_steprestart:
+	-@${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -ts_type arkimex > ex9bus_3.tmp 2>&1;    \
+	   ${DIFF} output/ex9bus_3.out ex9bus_3.tmp || printf "${PWD}\nPossible problem with ex9bus_steprestart, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus_3.tmp
 
 runex9busadj:
 	-@${MPIEXEC} -n 1 ./ex9busadj -viewer_binary_skip_info > ex9busadj_1.tmp 2>&1;	  \
@@ -45,10 +63,22 @@ runex9busopt_fd:
 	   ${DIFF} output/ex9busopt_fd_1.out ex9busopt_fd_1.tmp || printf "${PWD}\nPossible problem with ex9busopt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9busopt_fd_1.tmp
 
+runex9busdmnetwork:
+	-@${MPIEXEC} -n 1 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
+	   ${DIFF} output/ex9busdmnetwork_1.out ex9bus.tmp || printf "${PWD}\nPossible problem with ex9busdmnetwork, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus.tmp
+
+runex9busdmnetwork_2:
+	-@${MPIEXEC} -n 2 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
+	   ${DIFF} output/ex9busdmnetwork_2.out ex9bus.tmp || printf "${PWD}\nPossible problem with ex9busdmnetwork_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus.tmp
+
 clean_files:
 	${RM} ex9busopt.o
 	-@${RM} ex9bus-SA-*
 
-TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
+TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit runex9bus_steprestart ex9bus.rm \
+                           ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm \
+                           ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

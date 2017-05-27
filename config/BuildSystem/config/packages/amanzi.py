@@ -6,13 +6,14 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'origin/master'
     self.download         = ['hg://https://software.lanl.gov/ascem/hg/amanzi-ideas']
-    self.downloaddirname  = 'amanzi-ideas'
+    self.downloaddirnames = ['amanzi-ideas']
     self.includes         = []
     self.functions        = []
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
+    self.useddirectly     = 0
     return
 
   def setupDependencies(self, framework):

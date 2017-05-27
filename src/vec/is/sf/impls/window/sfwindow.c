@@ -27,8 +27,6 @@ struct _n_PetscSFWinLink {
 
 const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWindowSyncType","PETSCSF_WINDOW_SYNC_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowOpTranslate"
 /* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPIU_Allreduce) */
 static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
 {
@@ -40,8 +38,6 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowGetDataTypes"
 /*@C
    PetscSFWindowGetDataTypes - gets composite local and remote data types for each rank
 
@@ -115,8 +111,6 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowSetSyncType"
 /*@C
    PetscSFWindowSetSyncType - set synchrozitaion type for PetscSF communication
 
@@ -144,8 +138,6 @@ PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf,PetscSFWindowSyncType sync)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowSetSyncType_Window"
 static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSyncType sync)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -155,8 +147,6 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSy
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowGetSyncType"
 /*@C
    PetscSFWindowGetSyncType - get synchrozitaion type for PetscSF communication
 
@@ -183,8 +173,6 @@ PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf,PetscSFWindowSyncType *sync)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFWindowGetSyncType_Window"
 static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSyncType *sync)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -194,8 +182,6 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSy
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetWindow"
 /*@C
    PetscSFGetWindow - Get a window for use with a given data type
 
@@ -266,8 +252,6 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFindWindow"
 /*@C
    PetscSFFindWindow - Finds a window that is already in use
 
@@ -302,8 +286,6 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFRestoreWindow"
 /*@C
    PetscSFRestoreWindow - Restores a window obtained with PetscSFGetWindow()
 
@@ -363,8 +345,6 @@ found:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetUp_Window"
 static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -381,8 +361,6 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetFromOptions_Window"
 static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -395,8 +373,6 @@ static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReset_Window"
 static PetscErrorCode PetscSFReset_Window(PetscSF sf)
 {
   PetscSF_Window  *w = (PetscSF_Window*)sf->data;
@@ -427,8 +403,6 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDestroy_Window"
 static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
 {
   PetscErrorCode ierr;
@@ -441,8 +415,6 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFView_Window"
 static PetscErrorCode PetscSFView_Window(PetscSF sf,PetscViewer viewer)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -457,8 +429,6 @@ static PetscErrorCode PetscSFView_Window(PetscSF sf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDuplicate_Window"
 static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf,PetscSFDuplicateOption opt,PetscSF newsf)
 {
   PetscSF_Window        *w = (PetscSF_Window*)sf->data;
@@ -475,8 +445,6 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf,PetscSFDuplicateOption 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastBegin_Window"
 static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscSF_Window     *w = (PetscSF_Window*)sf->data;
@@ -498,8 +466,6 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf,MPI_Datatype unit,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastEnd_Window"
 PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscErrorCode ierr;
@@ -511,8 +477,6 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf,MPI_Datatype unit,const void *r
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceBegin_Window"
 PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window*)sf->data;
@@ -535,8 +499,6 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf,MPI_Datatype unit,const void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceEnd_Window"
 static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
@@ -550,8 +512,6 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf,MPI_Datatype unit,const
   ierr = PetscSFRestoreWindow(sf,unit,rootdata,PETSC_TRUE,MPI_MODE_NOSUCCEED,&win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpBegin_Window"
 static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode     ierr;
@@ -574,8 +534,6 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf,MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpEnd_Window"
 static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
@@ -588,8 +546,6 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreate_Window"
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;

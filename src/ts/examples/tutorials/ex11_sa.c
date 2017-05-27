@@ -181,8 +181,6 @@ typedef struct {
 
 static const struct FieldDescription PhysicsFields_Advect[] = {{"U",1},{NULL,0}};
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundary_Advect_Inflow"
 static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   Physics        phys    = (Physics)ctx;
@@ -193,8 +191,6 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundary_Advect_Outflow"
 static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
@@ -202,8 +198,6 @@ static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsRiemann_Advect"
 static PetscErrorCode PhysicsRiemann_Advect(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Advect *advect = (Physics_Advect*)phys->data;
@@ -227,8 +221,6 @@ static PetscErrorCode PhysicsRiemann_Advect(const PetscReal *qp, const PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsSolution_Advect"
 static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
 {
   Physics        phys    = (Physics)ctx;
@@ -266,8 +258,6 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsFunctional_Advect"
 static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const PetscScalar *x,const PetscScalar *y,PetscReal *f,void *ctx)
 {
   Physics        phys    = (Physics)ctx;
@@ -281,8 +271,6 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Advect *advect;
@@ -355,8 +343,6 @@ typedef struct {
 
 static const struct FieldDescription PhysicsFields_SW[] = {{"Height",1},{"Momentum",DIM},{NULL,0}};
 
-#undef __FUNCT__
-#define __FUNCT__ "SWFlux"
 /*
  * h_t + div(uh) = 0
  * (uh)_t + div (u\otimes uh + g h^2 / 2 I) = 0
@@ -376,8 +362,6 @@ static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWN
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundary_SW_Wall"
 static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
@@ -387,8 +371,6 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsRiemann_SW"
 static PetscErrorCode PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_SW   *sw = (Physics_SW*)phys->data;
@@ -411,8 +393,6 @@ static PetscErrorCode PhysicsRiemann_SW(const PetscReal *qp, const PetscReal *n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsSolution_SW"
 static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
 {
   PetscReal dx[2],r,sigma;
@@ -429,8 +409,6 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsFunctional_SW"
 static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscReal *coord,const PetscScalar *xx,PetscReal *f,void *ctx)
 {
   Physics      phys = (Physics)ctx;
@@ -448,8 +426,6 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsCreate_SW"
 static PetscErrorCode PhysicsCreate_SW(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_SW     *sw;
@@ -503,8 +479,6 @@ typedef struct {
 
 static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
-#undef __FUNCT__
-#define __FUNCT__ "Pressure_PG"
 static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *p)
 {
   PetscScalar ru2;
@@ -517,8 +491,6 @@ static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SpeedOfSound_PG"
 static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *c)
 {
   PetscScalar p;
@@ -532,8 +504,6 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EulerFlux"
 /*
  * x = (rho,rho*(u_1),...,rho*e)^T
  * x_t+div(f_1(x))+...+div(f_DIM(x)) = 0
@@ -560,8 +530,6 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
 }
 
 /* PetscReal* => EulerNode* conversion */
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundary_Euler_Wall"
 static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscInt    i;
@@ -576,8 +544,6 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
 }
 
 /* PetscReal* => EulerNode* conversion */
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
 static PetscErrorCode PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux, Physics phys)
 {
   Physics_Euler   *eu = (Physics_Euler*)phys->data;
@@ -597,8 +563,6 @@ static PetscErrorCode PhysicsRiemann_Euler_Rusanov(const PetscReal *qp, const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsSolution_Euler"
 static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
 {
   PetscInt i;
@@ -611,8 +575,6 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsFunctional_Euler"
 static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const PetscReal *coord,const PetscScalar *xx,PetscReal *f,void *ctx)
 {
   Physics         phys = (Physics)ctx;
@@ -630,8 +592,6 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysicsCreate_Euler"
 static PetscErrorCode PhysicsCreate_Euler(PetscDS prob, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Euler   *eu;
@@ -666,8 +626,6 @@ static PetscErrorCode PhysicsCreate_Euler(PetscDS prob, Model mod,Physics phys,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ConstructCellBoundary"
 PetscErrorCode ConstructCellBoundary(DM dm, User user)
 {
   const char     *name   = "Cell Sets";
@@ -739,8 +697,6 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SplitFaces"
 /* Right now, I have just added duplicate faces, which see both cells. We can
 - Add duplicate vertices and decouple the face cones
 - Disconnect faces from cells across the rotation gap
@@ -917,9 +873,9 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   const PetscInt    *localPoints;
   PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
   PetscInt          numRoots, numLeaves;
-  PetscMPIInt       numProcs;
+  PetscMPIInt       size;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
@@ -944,8 +900,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreatePartitionVec"
 PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 {
   PetscSF        sfPoint;
@@ -988,8 +942,6 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMassMatrix"
 PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 {
   DM                dmMass, dmFace, dmCell, dmCoord;
@@ -1065,8 +1017,6 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetUpLocalSpace"
 PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
@@ -1116,8 +1066,6 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 }
 
 #if 0
-#undef __FUNCT__
-#define __FUNCT__ "SetUpBoundaries"
 PetscErrorCode SetUpBoundaries(DM dm, User user)
 {
   Model          mod = user->model;
@@ -1146,8 +1094,6 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelSolutionSetDefault"
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
 static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,void *ctx)
 {
@@ -1157,8 +1103,6 @@ static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelFunctionalRegister"
 static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscInt *offset,FunctionalFunction func,void *ctx)
 {
   PetscErrorCode ierr;
@@ -1178,8 +1122,6 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelFunctionalSetFromOptions"
 static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
@@ -1224,8 +1166,6 @@ next_name:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FunctionalLinkDestroy"
 static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 {
   PetscErrorCode ierr;
@@ -1243,8 +1183,6 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialCondition"
 PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 {
   DM                 dmCell;
@@ -1275,8 +1213,6 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OutputVTK"
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -1288,8 +1224,6 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorVTK"
 static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
   User           user = (User)ctx;
@@ -1397,8 +1331,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
 static PetscErrorCode OutputBIN(DM dm, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -1411,8 +1343,6 @@ static PetscErrorCode OutputBIN(DM dm, const char *filename, PetscViewer *viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestMonitor"
 static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal time)
 {
   Vec            odesolution;
@@ -1445,8 +1375,6 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorBIN"
 static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
   User           user = (User)ctx;
@@ -1468,8 +1396,6 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm          comm;

@@ -4,8 +4,6 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJ_MatMatMatMult"
 PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
 {
   Mat_SeqAIJ        *a            = (Mat_SeqAIJ*)A->data;
@@ -19,8 +17,6 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
 {
   PetscErrorCode ierr;
@@ -32,13 +28,11 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C
     ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(A,B,C,*D);CHKERRQ(ierr);
+  ierr = ((*D)->ops->matmatmultnumeric)(A,B,C,*D);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
   PetscErrorCode    ierr;
@@ -72,8 +66,6 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode    ierr;

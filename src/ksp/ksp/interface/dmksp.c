@@ -2,8 +2,6 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPDestroy"
 static PetscErrorCode DMKSPDestroy(DMKSP *kdm)
 {
   PetscErrorCode ierr;
@@ -17,8 +15,6 @@ static PetscErrorCode DMKSPDestroy(DMKSP *kdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPCreate"
 static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 {
   PetscErrorCode ierr;
@@ -30,8 +26,6 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_DMKSP"
 /* Attaches the DMKSP to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
@@ -44,8 +38,6 @@ static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHook_DMKSP"
 /* Attaches the DMKSP to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
@@ -58,8 +50,6 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPCopy"
 /*@C
    DMKSPCopy - copies the information in a DMKSP to another DMKSP
 
@@ -100,8 +90,6 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMKSP"
 /*@C
    DMGetDMKSP - get read-only private DMKSP context from a DM
 
@@ -137,8 +125,6 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMKSPWrite"
 /*@C
    DMGetDMKSPWrite - get write access to private DMKSP context from a DM
 
@@ -175,8 +161,6 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCopyDMKSP"
 /*@C
    DMCopyDMKSP - copies a DM context to a new DM
 
@@ -208,8 +192,6 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPSetComputeOperators"
 /*@C
    DMKSPSetComputeOperators - set KSP matrix evaluation function
 
@@ -242,8 +224,6 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPGetComputeOperators"
 /*@C
    DMKSPGetComputeOperators - get KSP matrix evaluation function
 
@@ -273,8 +253,6 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPSetComputeRHS"
 /*@C
    DMKSPSetComputeRHS - set KSP right hand side evaluation function
 
@@ -307,8 +285,6 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPSetComputeInitialGuess"
 /*@C
    DMKSPSetComputeInitialGuess - set KSP initial guess evaluation function
 
@@ -340,8 +316,6 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPGetComputeRHS"
 /*@C
    DMKSPGetComputeRHS - get KSP right hand side evaluation function
 
@@ -371,8 +345,6 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMKSPGetComputeInitialGuess"
 /*@C
    DMKSPGetComputeInitialGuess - get KSP initial guess evaluation function
 

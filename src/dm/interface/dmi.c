@@ -1,13 +1,12 @@
 #include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Section_Private"
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   gSection;
   PetscInt       localSize, bs, blockSize = -1, pStart, pEnd, p;
   PetscErrorCode ierr;
+  PetscInt       in[2],out[2];
 
   PetscFunctionBegin;
   ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
@@ -17,15 +16,32 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 
     ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(gSection, p, &cdof);CHKERRQ(ierr);
-    if ((blockSize < 0) && (dof > 0) && (dof-cdof > 0)) blockSize = dof-cdof;
-    if ((dof > 0) && (dof-cdof != blockSize)) {
-      blockSize = 1;
-      break;
+
+    if (dof > 0) {
+      if (blockSize < 0 && dof-cdof > 0) {
+        /* set blockSize */
+        blockSize = dof-cdof;
+      } else if (dof-cdof != blockSize) {
+        /* non-identical blockSize, set it as 1 */
+        blockSize = 1;
+        break;
+      }
     }
   }
-  if (blockSize < 0) blockSize = PETSC_MAX_INT;
-  ierr = MPIU_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  if (blockSize == PETSC_MAX_INT) blockSize = 1; /* Everyone was empty */
+
+  in[0] = -blockSize;
+  in[1] = blockSize;
+  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  /* -out[0] = min(blockSize), out[1] = max(blockSize) */
+  if (-out[0] == out[1]) {
+    bs = out[1];
+  } else bs = 1;
+
+  if (bs < 0) { /* Everyone was empty */
+    blockSize = 1;
+    bs        = 1;
+  }
+
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), vec);CHKERRQ(ierr);
@@ -37,8 +53,6 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Section_Private"
 PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   section;
@@ -67,8 +81,6 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Section_Private"
 /* This assumes that the DM has been cloned prior to the call */
 PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {

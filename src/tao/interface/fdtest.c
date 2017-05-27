@@ -10,8 +10,6 @@ typedef struct {
      TaoSolve_Test - Tests whether a hand computed Hessian
      matches one compute via finite differences.
 */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_Test"
 PetscErrorCode TaoSolve_Test(Tao tao)
 {
   Mat            A = tao->hessian,B;
@@ -115,8 +113,6 @@ PetscErrorCode TaoSolve_Test(Tao tao)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_Test"
 PetscErrorCode TaoDestroy_Test(Tao tao)
 {
   PetscErrorCode ierr;
@@ -126,8 +122,6 @@ PetscErrorCode TaoDestroy_Test(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_Test"
 static PetscErrorCode TaoSetFromOptions_Test(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   Tao_Test        *fd = (Tao_Test *)tao->data;
@@ -157,8 +151,6 @@ static PetscErrorCode TaoSetFromOptions_Test(PetscOptionItems *PetscOptionsObjec
 .seealso:  TaoCreate(), TaoSetType()
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_Test"
 PETSC_EXTERN PetscErrorCode  TaoCreate_Test(Tao  tao)
 {
   Tao_Test        *fd;

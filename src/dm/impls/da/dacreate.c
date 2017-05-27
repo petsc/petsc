@@ -1,38 +1,24 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_DA"
 PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd    = (DM_DA*)da->data;
   PetscInt       refine = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
-  PetscBool      bM     = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
-  if (dd->M < 0) {
-    dd->M           = -dd->M;
-    bM              = PETSC_TRUE;
-    dd->negativeMNP = PETSC_TRUE;
-  }
-  if (da->dim > 1 && dd->N < 0) {
-    dd->N           = -dd->N;
-    bN              = PETSC_TRUE;
-    dd->negativeMNP = PETSC_TRUE;
-  }
-  if (da->dim > 2 && dd->P < 0) {
-    dd->P           = -dd->P;
-    bP              = PETSC_TRUE;
-    dd->negativeMNP = PETSC_TRUE;
-  }
+  if (dd->M < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  if (dd->N < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
+  if (dd->P < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Dimension must be non-negative, call DMSetFromOptions() if you want to change the value at runtime");
 
   ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
-  if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);}
-  if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
-  if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetOverlap(da,dd->xol,dd->xol,dd->xol);CHKERRQ(ierr);}
@@ -61,23 +47,35 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
     refz[i] = refz[0];
   }
   n    = maxnlevels;
-  ierr = PetscOptionsIntArray("-da_refine_hierarchy_x","Refinement factor for each level","None",refx,&n,NULL);CHKERRQ(ierr);
-  if (da->levelup - da->leveldown >= 0) dd->refine_x = refx[da->levelup - da->leveldown];
-  if (da->levelup - da->leveldown >= 1) dd->coarsen_x = refx[da->levelup - da->leveldown - 1];
+  ierr = PetscOptionsIntArray("-da_refine_hierarchy_x","Refinement factor for each level","None",refx,&n,&flg);CHKERRQ(ierr);
+  if (flg) {
+    dd->refine_x = refx[0];
+    dd->refine_x_hier_n = n;
+    ierr = PetscMalloc1(n,&dd->refine_x_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd->refine_x_hier,refx,n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   if (dim > 1) {
     n    = maxnlevels;
-    ierr = PetscOptionsIntArray("-da_refine_hierarchy_y","Refinement factor for each level","None",refy,&n,NULL);CHKERRQ(ierr);
-    if (da->levelup - da->leveldown >= 0) dd->refine_y = refy[da->levelup - da->leveldown];
-    if (da->levelup - da->leveldown >= 1) dd->coarsen_y = refy[da->levelup - da->leveldown - 1];
+    ierr = PetscOptionsIntArray("-da_refine_hierarchy_y","Refinement factor for each level","None",refy,&n,&flg);CHKERRQ(ierr);
+    if (flg) {
+      dd->refine_y = refy[0];
+      dd->refine_y_hier_n = n;
+      ierr = PetscMalloc1(n,&dd->refine_y_hier);CHKERRQ(ierr);
+      ierr = PetscMemcpy(dd->refine_y_hier,refy,n*sizeof(PetscInt));CHKERRQ(ierr);
+    }
   }
   if (dim > 2) {
     n    = maxnlevels;
-    ierr = PetscOptionsIntArray("-da_refine_hierarchy_z","Refinement factor for each level","None",refz,&n,NULL);CHKERRQ(ierr);
-    if (da->levelup - da->leveldown >= 0) dd->refine_z = refz[da->levelup - da->leveldown];
-    if (da->levelup - da->leveldown >= 1) dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
+    ierr = PetscOptionsIntArray("-da_refine_hierarchy_z","Refinement factor for each level","None",refz,&n,&flg);CHKERRQ(ierr);
+    if (flg) {
+      dd->refine_z = refz[0];
+      dd->refine_z_hier_n = n;
+      ierr = PetscMalloc1(n,&dd->refine_z_hier);CHKERRQ(ierr);
+      ierr = PetscMemcpy(dd->refine_z_hier,refz,n*sizeof(PetscInt));CHKERRQ(ierr);
+    }
   }
 
-  if (dd->negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
@@ -135,8 +133,6 @@ extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char***,IS**,IS**,DM**);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLoad_DA"
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -177,8 +173,6 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_DA"
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
@@ -235,8 +229,6 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldDecomposition_DA"
 PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM **dmlist)
 {
   PetscInt       i;
@@ -286,8 +278,6 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone_DA"
 PetscErrorCode DMClone_DA(DM dm, DM *newdm)
 {
   DM_DA         *da = (DM_DA *) dm->data;
@@ -307,8 +297,6 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDimPoints_DA"
 static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscErrorCode ierr;
@@ -318,8 +306,6 @@ static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNeighbors_DA"
 static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
   PetscErrorCode ierr;
@@ -367,8 +353,6 @@ extern PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(Pets
 extern PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_DA"
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 {
   PetscErrorCode ierr;
@@ -465,8 +449,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate"
 /*@
   DMDACreate - Creates a DMDA object.
 

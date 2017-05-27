@@ -3,8 +3,6 @@ static char help[] = "Demonstrates scattering with the indices specified by a pr
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

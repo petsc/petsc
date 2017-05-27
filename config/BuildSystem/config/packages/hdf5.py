@@ -4,43 +4,51 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.12/src/hdf5-1.8.12.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.12.tar.gz']
+    #hdf5-1.10.0-patch1 breaks with default MPI on ubuntu 12.04 [and freebsd/opensolaris]. So use hdf5-1.8.18 for now.
+    self.download  = ['https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz',
+                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.18.tar.gz']
+# David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
+#   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
-    self.needsMath = 1
-    self.needsCompression = 0
     self.complex          = 1
     self.hastests         = 1
+    self.precisions       = ['single','double'];
     return
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi            = framework.require('config.packages.MPI',self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.zlib           = framework.require('config.packages.zlib',self)
+    self.szlib          = framework.require('config.packages.szlib',self)
+    self.deps           = [self.mpi,self.mathlib]
+    self.odeps          = [self.zlib,self.szlib]
     return
-
-  def generateLibList(self, framework):
-    '''First try library list without compression libraries (zlib) then try with'''
-    list = []
-    for l in self.liblist:
-      list.append(l)
-    if self.libraries.compression:
-      for l in self.liblist:
-        list.append(l + self.libraries.compression)
-    self.liblist = list
-    return config.package.Package.generateLibList(self,framework)
 
   def formGNUConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--with-default-api-version=v18') # for hdf-1.10
     args.append('--enable-parallel')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       args.append('--enable-fortran')
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
+    if self.zlib.found:
+      args.append('--with-zlib=yes')
+    else:
+      args.append('--with-zlib=no')
+    if self.szlib.found:
+      args.append('--with-szlib=yes')
+    else:
+      args.append('--with-szlib=no')
+
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
+
     return args
 
   def configureLibrary(self):

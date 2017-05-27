@@ -34,8 +34,6 @@ struct pUserCtx {
 };
 typedef pUserCtx* UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "Initialize_AppContext"
 PetscErrorCode Initialize_AppContext(UserCtx *puser)
 {
   UserCtx           user;
@@ -75,8 +73,6 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Destroy_AppContext"
 PetscErrorCode Destroy_AppContext(UserCtx *user)
 {
   PetscErrorCode ierr;
@@ -97,8 +93,6 @@ static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*
  *     MAIN     *
  *              *
  ****************/
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS                ts;         /* nonlinear solver */
@@ -220,8 +214,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   UserCtx           user = (UserCtx)ptr;
@@ -265,8 +257,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
@@ -345,8 +335,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   UserCtx           user = (UserCtx)ctx;
@@ -391,8 +379,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   UserCtx         user = (UserCtx)ctx;

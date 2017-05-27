@@ -2,80 +2,15 @@
 % LATEX version of the PETSc developers manual.
 %
 
-\documentclass[twoside,11pt]{../sty/report_petsc}
+% A common preamble shared between the dev manual and the manual
+\input{manualpreamble.tex}
 
-\usepackage{makeidx,xspace}
-\usepackage[bookmarksopen,colorlinks]{hyperref}
-\usepackage[all]{hypcap}
-\usepackage{color}
-\input pdfcolor.tex
-
-\usepackage[pdftex]{graphicx}
-\usepackage{../sty/verbatim}
-\usepackage{../sty/tpage}
-\usepackage{../sty/here}
-\usepackage{../sty/anlhelper}
-
-% trl is used to refer to URLs, command line arguments, and other "mentions"
-\usepackage[obeyspaces]{../sty/trl}
-
-% Listings are used to refer to literal C code
-%   see \lstset below
-\usepackage{listings}
-\usepackage{xcolor}
-\definecolor{verylightgray}{gray}{0.95}
-\definecolor{somewhatdarkgray}{gray}{0.3}
-
-% Define a tighter itemize and enumerate
-\newenvironment{tightitemize}
-{ \begin{itemize}
-  \setlength{\itemsep}{1pt}
-  \setlength{\parskip}{1pt}
-  \setlength{\parsep}{1pt} }
-{ \end{itemize} } 
-\newenvironment{tightenumerate}
-{ \begin{enumerate}
-  \setlength{\itemsep}{1pt}
-  \setlength{\parskip}{1pt}
-  \setlength{\parsep}{1pt} }
-{ \end{enumerate} } 
-
-
-\setlength{\textwidth}{6.5in}
-\setlength{\oddsidemargin}{0.0in}
-\setlength{\evensidemargin}{0.0in}
-\setlength{\textheight}{9.2in}
-\setlength{\topmargin}{-.8in}
-
-\newcommand{\findex}[1]{\index{FUNCTION #1}}
-\newcommand{\sindex}[1]{\index{#1}}
-\newcommand{\F}{\mbox{\boldmath \(F\)}}
-\newcommand{\x}{\mbox{\boldmath \(x\)}}
-\newcommand{\rr}{\mbox{\boldmath \(r\)}}
-
-\usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
 \rhead{PETSc Developer's Manual \today}
 
 \makeindex
 
-
 \begin{document}
-
-\lstset{
-  language=C,
-  basicstyle=\ttfamily,
-  commentstyle=\color{somewhatdarkgray}\ttfamily,
-  showstringspaces=false,
-  escapechar=\$,        % Also hardcoded in /bin/main/mapnameslatex.py
-  basewidth=0.5em,      % For consistent spacing with inline listings
-  breaklines=true,
-  backgroundcolor=\color{verylightgray},
-  frame=single,
-  framexleftmargin= 3px,
-  framexrightmargin= 3px,
-  rulecolor=\color{lightgray}
-}
 
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
@@ -150,7 +85,7 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \item Apologize for the problem when it is appropriate (but not otherwise).
 \item Thank the person for their patience if it is more than six hours since the report came in.
 \item If the person drops the \trl{petsc-maint} or \trl{petsc-users} from the reply list, add it back in.
-\item Often, it pays to not ask too many questions or give to many suggestions in the same email. The user often only responds to the first of them.
+\item Often, it pays to not ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them.
 \end{tightitemize}
 
 \chapter{Style Guide}\label{chapter:styleguide}
@@ -188,7 +123,7 @@ We use several conventions:
       \lstinline{multtranspose()}.
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
-\item Functions that PETSc provides as defaults for user provideable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
+\item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
 \item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get''.
 For example, \trl{-ksp_gmres_restart}.
 \item \lstinline{XXXTypes} (for example \lstinline{KSPType}) do not have an underscore in them, unless they refer to another package that uses an underscore, for example \lstinline{MATSOLVERSUPERLU_DIST}.
@@ -283,9 +218,9 @@ never
 See item \ref{styleitem:bracenextline} for an exception.
  The closing brace should {\em always} be on its own line.
 \item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments. 
-  This is an exception to item \ref{styleitem:bracesameline}.
+  This is an exception to item \ref{styleitem:bracesameline}. 
 \item Do not leave chunks of commented-out code in the source files.
-\item Do not use C++-style comments (\lstinline{\\ Comment}). Use only C-style comments (\lstinline{\* Comment *\}).
+\item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
 \item Do not include a space after a \lstinline{(} or before a \lstinline{)}. Do not write
 \begin{lstlisting}
 ierr = PetscMalloc1( 10,&a );CHKERRQ(ierr); /* Incorrect */
@@ -294,8 +229,8 @@ but instead write
 \begin{lstlisting}
 ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \end{lstlisting}
-\item Do not use a space after the \lstinline{)} in a cast, or between the type and the \lstinline{*} in a caste.
-\item Do not include a  space before or after a comma in lists
+\item Do not use a space after the \lstinline{)} in a cast, or between the type and the \lstinline{*} in a cast.
+\item Do not include a  space before or after a comma in lists.
 That is, do not write
 \begin{lstlisting}
 int a,b,c;
@@ -312,7 +247,7 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \begin{enumerate}
 \item Array and pointer arguments where the array values are not changed should be labeled as \lstinline{const} arguments.
 \item Scalar values passed to functions should {\em never} be labeled as \lstinline{const}.
-\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be protyped as as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
+\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} cast in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
 \item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
@@ -327,13 +262,6 @@ Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg
 \item Public PETSc includes, \trl{petsc*.h}, should not include private PETSc \trl{petsc/private/*impl.h} includes.
 \item Public and private PETSc includes cannot include include files in the PETSc source tree.
 \item The first line of the executable statements in a function must be \lstinline{PetscFunctionBegin;}
-\item The following text should precede each function:
-\begin{lstlisting}
-#undef __FUNCT__
-#define __FUNCT__ "FunctionName"
-\end{lstlisting}
-This is used by various macros (such as the error handlers) to always know
-which function the process is in.
 \item Use \lstinline{PetscFunctionReturn(returnvalue);} not \lstinline{return(returnvalue);}
 \item {\em Never} put a function call in a \lstinline{return} statement; do not do
 \begin{lstlisting}
@@ -400,7 +328,7 @@ Documentation for Sowing and the formatting may be found at \href{http://wgropp.
       \trl{/*E}\\     a formatted comment of an enum used for documentation only, note that
         each of these needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as
         a native and defined in the corresponding
-        \trl{include/petsc/finclude/petscxxxdef.h} fortran include file and the values
+        \trl{include/petsc/finclude/petscxxx.h} fortran include file and the values
         set as parameters in the file \trl{include/petsc/finclude/petscxxx.h}
     \item
       \trl{/*S}\\     a formatted comment for a data type such as \lstinline{KSP}, note that each of these
@@ -470,7 +398,7 @@ generally not used in source code. Rather it has:
   \item \lstinline{PetscMPIInt}
   \item \lstinline{PetscBLASInt}
   \item \lstinline{PetscBool}
-  \item \lstinline{PetscBT} - bit storate of logical true and false
+  \item \lstinline{PetscBT} - bit storage of logical true and false
 \end{tightitemize}
 \lstinline{PetscInt} can be set using \trl{./configure} to be either \trl{int} (32 bit, the default) or \trl{long long}
 (64 bit, with \trl{configure --with-64-bit-indices}) to allow indexing into very large arrays. 
@@ -507,7 +435,7 @@ The simplified C/C++ macro-based interface consists of the following two calls:
 
 The macro \lstinline{SETERRQ()} is given by
 \begin{lstlisting}
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,error code,error type,"Error message");
+  return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,error code,error type,"Error message");
 \end{lstlisting}
 It calls the error handler with the current function name and location: line number,
 file and directory, plus an error code and an error message. 
@@ -535,11 +463,12 @@ of arguments.
 The error handling function \lstinline{PetscError()} calls the ``current'' error handler
 with the code
 \begin{lstlisting}
-PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char* file,
-                          const char *dir,error code, error type,
+PetscErrorCode PetscError(MPI_Comm,int line,const char *func,const char *file,
+                          const char *dir,error code,error type,
                           const char *mess)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (!eh) ierr = PetscTraceBackErrorHandler(line,func,file,dir,error code,
                                              error type,mess,0);
@@ -553,8 +482,8 @@ The variable \lstinline{eh} is the current error handler context and is defined 
 \begin{lstlisting}
 typedef struct _EH* EH;
 struct _EH {
-  PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char *,
-                         PetscErrorCode,PetscErrorType,const char*,void *);
+  PetscErrorCode handler(MPI_Comm,int,const char*,const char*,const char*,
+                         PetscErrorCode,PetscErrorType,const char*,void*);
   void           *ctx;
   EH             previous;
 };
@@ -747,22 +676,22 @@ defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private
 
 \begin{lstlisting}[caption=Function table common to all PETSc compatible classes]
 typedef struct { 
-  PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
+  PetscErrorCode (*getcomm)(PetscObject,MPI_Comm*);
   PetscErrorCode (*view)(PetscObject,Viewer);
   PetscErrorCode (*destroy)(PetscObject);
-  PetscErrorCode (*query)(PetscObject,const char *,PetscObject *);
+  PetscErrorCode (*query)(PetscObject,const char*,PetscObject*);
   PetscErrorCode (*compose)(PetscObject,const char*,PetscObject);
-  PetscErrorCode (*composefunction)(PetscObject,const char *,void(*)(void));
-  PetscErrorCode (*queryfunction)(PetscObject,const char *,void (**)(void));
+  PetscErrorCode (*composefunction)(PetscObject,const char*,void(*)(void));
+  PetscErrorCode (*queryfunction)(PetscObject,const char*,void (**)(void));
 } PetscOps;
 \end{lstlisting}
 \begin{lstlisting}[caption=Data structure header common to all PETSc compatible classes]
 struct _p_<class> {
   PetscClassId     classid;                                  
   PetscOps         *bops;                                   
-  <class>Ops   *ops;                                    
+  <class>Ops       *ops;                                    
   MPI_Comm         comm;                                    
-  PetscLogDouble  flops,time,mem;                          
+  PetscLogDouble   flops,time,mem;                          
   int              id;                                      
   int              refct;                                   
   int              tag;                                     
@@ -783,7 +712,7 @@ contains the function pointers for the operations specific to that class.
 For example, the PETSc vector class object operations in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/vecimple.h.html}{\trl{include/petsc/private/vecimpl.h}} include the following:
 
 \begin{lstlisting}[caption=Function table common to all PETSc compatible vector objects (truncated)]
-typedef struct _VecOps *VecOps;
+typedef struct _VecOps* VecOps;
 struct _VecOps {
   PetscErrorCode (*duplicate)(Vec,Vec*); /* get single vector */
   PetscErrorCode (*duplicatevecs)(Vec,PetscInt,Vec**); /* get array of vectors */
@@ -805,21 +734,21 @@ struct _VecOps {
 \end{lstlisting}
 \begin{lstlisting}[caption= Data structure header common to all PETSc vector classes]
 struct _p_Vec {
-  PetscClassId           classid;                                  
-  PetscOps               *bops;                                   
-  VecOps                 *ops;                                    
+  PetscClassId           classid;
+  PetscOps               *bops;
+  VecOps                 *ops;
   MPI_Comm               comm;
-  PetscLogDouble         flops,time,mem;                          
-  int                    id;                                      
-  int                    refct;                                   
-  int                    tag;                                     
-  DLList                 qlist;                                   
-  OList                  olist;                                   
-  char                   *type_name;                              
-  PetscObject            parent;                                  
-  char*                  name;                                    
-  char                   *prefix;                                 
-  void**                 fortran_func_pointers;       
+  PetscLogDouble         flops,time,mem;
+  int                    id;
+  int                    refct;
+  int                    tag;
+  DLList                 qlist;
+  OList                  olist;
+  char                   *type_name;
+  PetscObject            parent;
+  char                   *name;
+  char                   *prefix;
+  void                   **fortran_func_pointers;
   void                   *data;     /* implementation-specific data */
   PetscLayout            map;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
@@ -837,7 +766,7 @@ For example,
 \begin{lstlisting}
 ierr = PetscClassIdRegister("index set",&IS_CLASSID);CHKERRQ(ierr);
 \end{lstlisting}
-One can verify that an object is valid of a particular class with \lstinline{PetscvalidHeaderSpecific}, for example
+One can verify that an object is valid of a particular class with \lstinline{PetscValidHeaderSpecific}, for example
 \begin{lstlisting}
 PetscValidHeaderSpecific(x,VEC_CLASSID,1);
 \end{lstlisting}
@@ -855,7 +784,7 @@ Several routines are provided for manipulating data within the header.
 These include the specific functions in the PETSc common function table.
 
 \begin{tightitemize}
-\item \lstinline{getcomm(PetscObject,MPI_Comm *)} obtains the MPI communicator associated
+\item \lstinline{getcomm(PetscObject,MPI_Comm*)} obtains the MPI communicator associated
       with this object.
 
 \item \lstinline{view(PetscObject,Viewer)} allows one to store or visualize the data inside
@@ -869,7 +798,7 @@ These include the specific functions in the PETSc common function table.
       If the object has any other objects composed with it then they are each sent a
       \lstinline{destroy()}, i.e. the \lstinline{destroy()} function is called on them also.
 
-\item \lstinline{compose(PetscObject,const char *name, PetscObject)} associates the second object with
+\item \lstinline{compose(PetscObject,const char *name,PetscObject)} associates the second object with
       the first object and increases the reference count of the second object. If an
       object with the
       same name was previously composed, that object is dereferenced and replaced with
@@ -879,8 +808,8 @@ These include the specific functions in the PETSc common function table.
       it, and that object is removed from the first object); i.e. this is a way to
       remove, by name, an object that was previously composed.
 
-\item \lstinline{query(PetscObject,const char *name, PetscObject *)} retrieves an object that was
-      previously composed with the first object. Retreives a null if no object with
+\item \lstinline{query(PetscObject,const char *name,PetscObject*)} retrieves an object that was
+      previously composed with the first object. Retrieves a null if no object with
       that name was previously composed.
 
 \item \lstinline{composefunction(PetscObject,const char *name,const char *fname,void *func)} associates a function
@@ -895,7 +824,7 @@ These include the specific functions in the PETSc common function table.
       For example, \lstinline{fname} may be \trl{libpetscksp:PCCreate_LU} or
       \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate_LU}.
 
-\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retreives a function pointer that
+\item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retrieves a function pointer that
       was associated with the object. If dynamic libraries are used, the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
       \lstinline{composefunction()} routine was called.
@@ -903,7 +832,7 @@ These include the specific functions in the PETSc common function table.
 \end{tightitemize}
 
 Since the object composition allows one to {\em only} compose PETSc objects
-with PETSc objects rather than any arbitrary pointer, PETsc provides
+with PETSc objects rather than any arbitrary pointer, PETSc provides
 the convenience object \lstinline{PetscContainer}, created with the
 routine \lstinline{PetscContainerCreate(MPI_Comm,PetscContainer*)}
 to allow one to wrap any kind of data into a PETSc object that can then be
@@ -921,7 +850,7 @@ not have to ``reinvent the wheel.''
 \subsection{Compose and Query}
 In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
 \begin{lstlisting}
-  typedef struct _PetscObjectList *PetscObjectList;
+  typedef struct _PetscObjectList* PetscObjectList;
   struct _PetscObjectList {
       char             name[128];
       PetscObject      obj;
@@ -931,10 +860,10 @@ In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\tr
 from which linked lists of composed objects may be constructed. The routines
 to manipulate these elementary objects are
 \begin{lstlisting}
-int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj );
-int PetscObjectListDestroy(PetscObjectList fl );
-int PetscObjectListFind(PetscObjectList fl, const char *name, PetscObject *obj)
-int PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl);
+int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj);
+int PetscObjectListDestroy(PetscObjectList fl);
+int PetscObjectListFind(PetscObjectList fl,const char *name,PetscObject *obj)
+int PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl);
 \end{lstlisting}
 The function \lstinline{PetscObjectListAdd()} will create the initial PetscObjectList if the argument
 \trl{fl} points to a null.
@@ -980,7 +909,7 @@ Each PETSc object contains a \lstinline{PetscFunctionList} object.
 The \lstinline{composefunction()} and \lstinline{queryfunction()} are given by
 
 \begin{lstlisting}
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name, void *ptr)
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name,void *ptr)
 {
   PetscErrorCode ierr;
 
@@ -1090,9 +1019,9 @@ of techniques for blocking, including
    storing additional information about adjacent rows with identical
    nonzero structure (so called I-nodes); this I-node information is
    used in the key computational routines to improve performance
-    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats);
+    (the default for the \lstinline{MATSEQAIJ} and \lstinline{MATMPIAIJ} formats); and
 \item storing the matrices using a fixed (problem dependent) block size
-  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats); and
+  (via the \lstinline{MATSEQBAIJ} and \lstinline{MATMPIBAIJ} formats);
 \end{itemize}
 
 The advantage of the first approach is that it is a minimal change
@@ -1176,7 +1105,7 @@ and column indices begin at zero.
 The routine for creating a sequential block AIJ matrix with \trl{m}
 rows, \trl{n} columns, and a block size of \trl{nb} is
 \begin{lstlisting}
-ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
+ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
 \end{lstlisting}
 The arguments \lstinline{nz} and \lstinline{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
@@ -1196,7 +1125,7 @@ Parallel block AIJ matrices with block size {\t nb} can be created with
 the command \lstinline{MatCreateBAIJ()}
 \begin{lstlisting}
 ierr = MatCreateBAIJ(MPIComm comm,int nb,int m,int n,int M,int N,int d_nz,
-                     int *d_nnz, int o_nz,int *o_nnz,Mat *A);
+                     int *d_nnz,int o_nz,int *o_nnz,Mat *A);
 \end{lstlisting}
 \lstinline{A} is the newly created matrix, while the arguments \lstinline{m}, \lstinline{n},
 \lstinline{M}, and \lstinline{N}, indicate the number of local rows and columns and
@@ -1240,6 +1169,649 @@ usual Fortran77 style.
 The parallel dense matrices are partitioned by rows across the
 processors, so that each local rectangular submatrix is stored in the
 dense format described above.
+
+
+\chapter{PETSc Testing System}
+  \label{petsc-testing-system}
+
+
+The PETSc test system consists of:
+%
+\begin{quote}
+\newcounter{listcnt0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item A language contained within the source files that describes the
+tests to be run
+
+\item The \emph{test generator} (\lstinline{config/gmakegentest.py}) that at the
+\lstinline{make} step parses the source files and generates the makefiles
+and shell scripts that compose:
+
+\item The \emph{petsc test harness}: a harness consisting of makefile and
+shell scripts that runs the executables with several
+logging and reporting features.
+\end{list}
+
+\end{quote}
+
+
+\section{PETSc Test description language%
+  \label{petsc-test-description-language}%
+}
+
+PETSc tests and tutorials contain within their file a simple language to
+describe tests and subtests required to run executables associated with
+compilation of that file.  The general skeleton of the file is:
+%
+\begin{lstlisting}
+      static char help[] = "A simple MOAB example\n\
+
+      /*T
+         Concepts: Demonstrate MOAB bindings for DM
+         requires: moab
+      T*/
+      
+      ...
+      <source code>
+      ...
+
+      /*TESTS
+         testset:
+           suffix: 1
+           requires: !complex
+         testset:
+           suffix: 2
+           args: -debug -fields v1,v2,v3 
+           test:
+           test:
+             args: -foo bar
+      TESTS*/
+
+\end{lstlisting}
+
+For our language, a \emph{test} is associated with a:
+\begin{itemize}
+  \item[] Single shell script
+  \item[] Single makefile 
+  \item[] Single output file that represents the \emph{expected
+        results}.
+  \item[] Two or more command tests.  Usually, one (or more) mpiexec
+        test that runs the executable, and one (or more) diff tests to
+        compare output with the expected result.
+\end{itemize}
+Our language also supports that a \emph{testset} that specifies
+specifies either a new test entirely, or multiple executable/diff tests
+within a single test.  At the core, the executable/diff test combination
+will look something like this:
+%
+\begin{lstlisting}
+      mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
+      diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+\end{lstlisting}
+
+In practice, we want to do various logging and counting by the test
+harness, but this is explained further below.  The input language
+supports a simple, yet flexible, tests control and we begin by
+describing this language.
+
+
+\subsection{Runtime language options%
+  \label{runtime-language-options}%
+}
+
+At the end of each test, a marked comment block that uses YAML is
+inserted that describes the test to be run.  The elements of the
+test are done with a set of supported key words that sets up the test.
+%
+\begin{description}
+\item[{The goals of the language are to:}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item Be as minimal as possible with the simplest test requiring only one
+keyword
+
+\item Be independent of the filename such that a file can be renamed
+without rewriting the tests
+
+\item Be intuitive
+\end{list}
+
+\end{description}
+
+To enable the second bullet, the \emph{basestring} of the filename is defined
+as the filename without the extention; i.e., if the filename is \lstinline{ex1.c}
+then \lstinline{basestring=ex1}.f
+
+\noindent
+With this background, these keywords are are:
+
+\begin{itemize}
+
+  \item[] \textbf{testset} or \textbf{test}: (\emph{Required})
+
+    \begin{itemize}
+
+      \item[] At the top level, either a single test, or a testset must
+            be specified.   All other are subsets of this keyword.
+
+    \end{itemize}
+
+  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
+    \begin{itemize}
+
+      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and by \texttt{ testname=`run'+basestring+`\_'+suffix}
+
+
+      \item This can only be specified for top level test nodes
+
+     \end{itemize}
+
+
+   \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
+                 \lstinline{output_file=testname+`.out'})
+      \begin{itemize}
+
+      \item The output of the test is to be compared to an \emph{expected result}
+      whose name is given by output\_file.
+
+      \item This file is described relative to the source directory of the
+      source file and should be in the output subdirectory (e.g.,
+      \lstinline{output/ex1.out})
+
+      \end{itemize}
+
+
+    \item[]  \textbf{nsize}: (\emph{Optional}; \emph{Default:} \lstinline{nsize=1})
+      \begin{itemize}
+
+      \item The integer that is passed to mpiexec; i.e., \lstinline{mpiexec -n nsize}
+
+      \end{itemize}
+
+
+    \item[]  \textbf{args}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item The arguments to pass to the executable
+
+      \end{itemize}
+
+    \item[]  \textbf{TODO}: (\emph{Optional}; \emph{Default:} \lstinline{False})
+      \begin{itemize}
+
+      \item Setting this boolean to True will tell the test to appear in the test harness, but
+      report only TODO per the TAP standard.
+
+      \item A runscript will be generated and can easily be modified by hand to run
+
+      \end{itemize}
+
+    \item[]  \textbf{filter}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item Sometimes only a subset of the output is meant to be tested
+      against the expected result.  If this keyword is used, it
+      processes the executable output and puts it into the file
+      to be actually compared with output\_file.
+
+      \item The value of this is the command to be run; e.g., \lstinline{grep foo} or
+      \lstinline{sort -nr}
+
+      \item A skeleton example of the resultant commands to be run is:
+      %
+      \begin{lstlisting}
+                 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
+                 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+      \end{lstlisting}
+
+      \end{itemize}
+
+    \item[]  \textbf{filter\_output}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item Sometimes filtering the output is useful for standardizing
+            tests; for example, to handle the issues related to parallel
+            output.  This works the same as filter to implement this
+            feature
+
+      \end{itemize}
+
+    \item[]  \textbf{localrunfiles}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item The tests are run under \lstinline{PETSC_ARCH/tests}, but
+            some tests require runtime files that are maintained in the
+            source tree.  Files in this (space-delimited) list will be
+            copied over.
+
+      \item The copying is done by the file generator and not by
+            creating makefile dependencies.
+
+      \end{itemize}
+
+    \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+      \begin{itemize}
+
+        \item A space-delimited list of requirements of run requirements (not
+        build requirements. See Build requirements below)
+
+        \item In general, the language supports \lstinline{and} and \lstinline{not} constructs
+        using \lstinline{! => not} and \lstinline{, => and}
+
+        \item MPIUNI should work for all -n 1 examples so this need not be in the requirements list
+
+        \item Inputs sometimes include external matrices that are found in the
+        DATAFILES path.  \lstinline{requires: DATAFILES} can be specifed for these
+        tests.
+
+        \item Packages are specified with lower case specification; e.g.,
+        \lstinline{requires: superlu\_dist}
+
+        \item Any defined variable in petscconf.h can be specified with the
+        \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
+
+      \end{itemize}
+
+\end{itemize}
+
+
+
+\subsection{Additional specifications%
+  \label{additional-specifications}%
+}
+
+In addition to the above keywords, other language features are
+supported:
+%
+\begin{quote}
+%
+\begin{itemize}
+
+\item for loops:  Specifying $\{\{ ... \}shared output\} $ 
+      or $\{\{ ... \}separate output\} $ 
+      will create for loops over enclosed space-delmited list.  
+      If the loop causes a different output, then separate output would
+      be used.  If the loop does not cause separate output, then the
+      shared (or $\{\{ ... \}\} $) syntax must be used.
+
+For loops are supported within nsize and args.  An example would be:
+%
+\begin{lstlisting}
+             args: -matload_block_size {{2,3}}
+\end{lstlisting}
+
+In this case, two execution lines would be addded with two different
+arguments.  Associated \lstinline{diff} lines would be added as well
+automatically.  See examples below for how it works in practice.
+
+\end{itemize}
+
+\end{quote}
+
+
+\subsection{Test block examples%
+  \label{test-block-examples}%
+}
+
+This is the simplest test block:
+%
+\begin{lstlisting}
+      /*TESTS
+        test: 
+      TESTS*/
+\end{lstlisting}
+which is equivalent to:
+\begin{lstlisting}
+      /*TESTS
+        testset: 
+          test: 
+      TESTS*/
+\end{lstlisting}
+which is equivalent to:
+\begin{lstlisting}
+      /*TESTS
+        testset: 
+      TESTS*/
+\end{lstlisting}
+
+
+If this block is in ex1.c, then it will create a \lstinline{runex1} test that
+requires only one processor/thread, with no arguments, and diff the
+resultant output with \lstinline{output/ex1.out}.
+
+For fortran, the equivalent is:
+%
+\begin{lstlisting}
+      !/*TESTS
+      !  test: 
+      !TESTS*/
+\end{lstlisting}
+
+A fuller example would be:
+%
+\begin{lstlisting}
+      /*TESTS
+        test: 
+        test:
+          suffix: 1
+          nsize: 2
+          args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+          requires: x
+      */TESTS
+\end{lstlisting}
+
+This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
+be \lstinline{runex1} and \lstinline{runex1\_1}.
+
+
+An example of how one tests a permutuation of arguments against the same
+output file:
+%
+\begin{lstlisting}
+      /*TESTS
+        testset:
+            suffix: 19
+            requires: datafilespath
+            args: -f0 ${DATAFILESPATH}/matrices/poisson1
+            args: -ksp\_type cg -pc\_type icc -pc\_factor\_levels 2
+            test:
+            test:
+               args: -mat\_type seqsbaij 
+      */TESTS
+\end{lstlisting}
+
+Assuming that this is \lstinline{ex10.c}, there would be two
+mpiexec/diff invocations in \lstinline{runex10_19.sh}.
+
+Here is a similar example, but the permation of arguments create
+different output:
+
+\begin{lstlisting}
+      /*TESTS
+         testset:
+            requires: datafilespath
+            args: -f0 ${DATAFILESPATH}/matrices/medium
+            args: -ksp\_type bicg
+            test:
+               suffix: 4
+               args: -pc\_type lu
+            test:
+               suffix: 5 
+      */TESTS
+\end{lstlisting}
+Assuming that this is \lstinline{ex10.c}, there would be two shell
+scripts created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
+
+An example using a for loop would be:
+%
+\begin{lstlisting}
+
+      /*TESTS
+        testset:
+             suffix: 1
+             args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
+             requires: datafilespath
+         testset:
+             suffix: 2
+             output\_file: output/ex138\_1.out
+             args: -f ${DATAFILESPATH}/matrices/small
+             args: -mat\_type baij -matload\_block\_size {{2,3}shared output}
+             requires: datafilespath
+      */TESTS
+
+\end{lstlisting}
+
+In this example, runex138\_2 will invoke ex138 twice with two different
+arguments, but both are diffed with the same file.
+
+An example for showing the hierarchial nature of the test specification is:
+%
+\begin{lstlisting}
+      testset: 
+        suffix:2
+        output\_file: output/ex138\_1.out
+        args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
+        test:
+             args: -matload\_block\_size 2
+        test:
+             args: -matload\_block\_size 3
+\end{lstlisting}
+This is functionally equivalent to the for loop shown above.
+
+Here is a more complex example using for loops:
+\begin{lstlisting}
+   testset:
+      suffix: 19
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp\_type cg -pc\_type icc 
+      args: -pc\_factor\_levels {{0 2 4}separate output}
+      test:
+      test:
+         args: -mat\_type seqsbaij
+\end{lstlisting}
+If this is in \lstinline{ex10.c}, then the shell scripts generated would
+be:
+\begin{lstlisting}
+      runex10\_19\_pc\_factor\_levels-0.sh
+      runex10\_19\_pc\_factor\_levels-2.sh
+      runex10\_19\_pc\_factor\_levels-4.sh
+\end{lstlisting}
+Each shell script would invoke mpiexec twice.
+ 
+\subsection{Build language options%
+  \label{build-language-options}%
+}
+
+It is possible to specify issues related to the compilation of the
+source file.  The language is:
+%
+\begin{quote}
+%
+\begin{itemize}
+
+\item %
+\begin{description}
+\item[{requires: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item Same as the runtime requirements (e.g., can include requires: fftw)
+but also requirements related to types:
+A. Precision types: single, double, quad, int32
+B. Scalar types: complex  (and !complex)
+\end{list}
+
+\end{description}
+
+\item %
+\begin{description}
+\item[{depends: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item List any dependencies required to compile the file
+\end{list}
+
+\end{description}
+
+\end{itemize}
+
+\end{quote}
+
+A typical example for compiling for real/double only is:
+%
+\begin{lstlisting}
+      /*T
+        requires: !complex
+      T*/
+\end{lstlisting}
+
+
+\section{PETSC Test Harness%
+  \label{petsc-test-harness}%
+}
+
+The goals of the PETSc Test Harness are to:
+%
+\begin{tightitemize}
+\item Provide standard output used by other testing tools
+
+\item Lightweight as possible and easily fit within the PETSc build chain
+
+\item Provide information on all tests, even those that are not built or
+run because they do not meet the configuration requirements
+\end{tightitemize}
+
+Before understanding the test harness, it is first important to
+understand the desired requirements for reporting and logging.
+
+
+\subsection{Testing the parsing%
+  \label{testing-the-parsing}%
+}
+
+After inserting the language into the file, one can test the parsing
+by executuing:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+     ${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+\end{verbatim}
+%\end{lstlisting}
+
+A dictionary will be pretty-printed out.  From this dictionary
+print-out, it is usually obvious if there is a problem in the parsing.
+This python file is used by 
+\begin{verbatim}
+      ${PETSC_DIR}/config/gmakegentest.py
+\end{verbatim}
+in generating the test harness.
+
+
+\section{Test output standards: TAP}%
+  \label{test-output-standards-tap}%
+
+The PETSc test system is designed to be compliant with the Test Anything
+Protocal (TAP): See \url{https://testanything.org/tap-specification.html}
+
+This is a very simple standard designed to allow testing tools to work
+together easily.  There are libraries to enable the output to be used
+easily including sharness, which is used by the git team.  However, the
+simplicity of the petsc tests and TAP specification means that we use
+our own simple harness given by a single shell script that each file
+sources: \lstinline{petsc\_harness.sh}.
+
+As an example, consider this test input:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+     test:
+         suffix: 2
+         output_file: output/ex138.out
+         args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
+         requires: datafilespath
+\end{verbatim}
+%\end{lstlisting}
+
+A sample output would be:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+      ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+      ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+      ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+      ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+      ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+      ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+      ...
+
+      ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
+      ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+
+
+
+\end{verbatim}
+%\end{lstlisting}
+
+
+\section{Test harness implementation%
+  \label{test-harness-implementation}%
+}
+
+Most of the requirements for being TAP-compliant lie in the shell
+scripts so we focus on that description.
+
+A sample shell script is given by:
+%
+\begin{verbatim}
+      #!/bin/sh
+      . petsc_harness.sh
+
+      petsc_testrun ./ex1 ex1.tmp ex1.err
+      petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
+
+      petsc_testend
+\end{verbatim}
+
+\texttt{petsc\_harness.sh} is a small shell script that provides the logging and
+reporting functions \texttt{petsc\_testrun} and \texttt{petsc\_testend}.
+
+A small sample of the output from the test harness would be:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+
+      ok 1 ./ex1
+      ok 2 diff ex1.tmp output/ex1.out
+      not ok 4 ./ex2
+      #	ex2: Error: cannot read file
+      not ok 5 diff ex2.tmp output/ex2.out
+      ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
+      ok 8 diff ex3.tmp output/ex3.out
+      ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
+      ok 10 diff ex3.tmp output/ex3.out
+      ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
+      ok 12 diff ex3.tmp output/ex3.out
+      ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
+      ok 14 diff ex3.tmp output/ex3.out
+      ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
+      ok 16 diff ex3.tmp output/ex3.out
+      ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
+      ok 18 diff ex3.tmp output/ex3.out
+      # FAILED   4 5
+      # failed 2/16 tests; 87.500% ok
+\end{verbatim}
+%\end{lstlisting}
+
+For developers, modifying the lines that get written to the file can be
+done by modifying:
+\begin{bashlisting}
+   ${PETSC_DIR}/config/example_template.py
+\end{bashlisting}
+To modify the test harness,  one can modify this file
+\begin{bashlisting}
+   ${PETSC_DIR}/config/petsc_harness.sh
+\end{bashlisting}
 
 \bibliographystyle{plain}
 \bibliography{../petsc}

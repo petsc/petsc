@@ -3,8 +3,6 @@ static char help[] = "Tests using MatShift() to create a constant diagonal matri
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,F;

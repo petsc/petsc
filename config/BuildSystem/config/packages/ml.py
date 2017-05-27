@@ -11,36 +11,23 @@ class Configure(config.package.GNUPackage):
     self.liblist           = [['libml.a']]
     self.license           = 'http://trilinos.sandia.gov/'
     self.fc                = 0
-    self.double            = 1
+    self.precisions        = ['double']
     self.complex           = 0
     self.downloadonWindows = 1
     self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
-    self.needsMath         = 1   # ml test needs the system math library
     self.hastests          = 1
-    self.downloaddirname   = 'petsc-pkg-ml'
+    self.downloaddirnames  = ['petsc-pkg-ml']
     return
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
     return
-
-  def generateLibList(self,dir):
-    import os
-    '''Normally the one in package.py is used, but ML requires the extra C++ library'''
-    libs = ['libml']
-    alllibs = []
-    for l in libs:
-      alllibs.append(l+'.a')
-    # Now specify -L ml-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
-    import config.setCompilers
-    if self.getDefaultLanguage() == 'C':
-      alllibs.extend(self.compilers.cxxlibs)
-    return [alllibs]
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)

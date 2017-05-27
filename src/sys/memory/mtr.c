@@ -68,8 +68,6 @@ static size_t     PetscLogMallocThreshold = 0;
 static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocFile,**PetscLogMallocFunction;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetUseTrMalloc_Private"
 PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
   PetscErrorCode ierr;
@@ -89,8 +87,6 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocValidate"
 /*@C
    PetscMallocValidate - Test the memory for corruption.  This can be used to
    check for memory overwrites.
@@ -113,7 +109,6 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
     routine.
 
     The line, function, file are given by the C preprocessor as
-    __LINE__, __FUNCT__, __FILE__
 
     The Fortran calling sequence is simply PetscMallocValidate(ierr)
 
@@ -157,15 +152,12 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
     Input Parameters:
 +   a   - number of bytes to allocate
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNCT__ for this
 -   filename  - file name where used.  Use __FILE__ for this
 
     Returns:
@@ -243,15 +235,12 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
    Input Parameters:
 .   a    - pointer to a block allocated with PetscTrMalloc
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNCT__ for this
 .   file  - file name where used.  Use __FILE__ for this
  */
 PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const char file[])
@@ -323,15 +312,12 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTrReallocDefault"
 /*
   PetscTrReallocDefault - Realloc with tracing.
 
   Input Parameters:
 + len      - number of bytes to allocate
 . lineno   - line number where used.  Use __LINE__ for this
-. function - function calling routine. Use __FUNCT__ for this
 . filename - file name where used.  Use __FILE__ for this
 - result   - double aligned pointer to initial storage.
 
@@ -352,8 +338,12 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Do not try to handle empty blocks */
-  if (!len) {*result = NULL; PetscFunctionReturn(0);}
+  /* Realloc to zero = free */
+  if (!len) {
+    ierr = PetscTrFreeDefault(*result,lineno,function,filename);CHKERRQ(ierr);
+    *result = NULL;
+    PetscFunctionReturn(0);
+  }
 
   if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
 
@@ -449,8 +439,6 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemoryView"
 /*@C
     PetscMemoryView - Shows the amount of memory currently being used
         in a communicator.
@@ -537,9 +525,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetCurrentUsage"
-/*@C
+/*@
     PetscMallocGetCurrentUsage - gets the current amount of memory used that was PetscMalloc()ed
 
     Not Collective
@@ -561,9 +547,7 @@ PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetMaximumUsage"
-/*@C
+/*@
     PetscMallocGetMaximumUsage - gets the maximum amount of memory used that was PetscMalloc()ed at any time
         during this run.
 
@@ -587,8 +571,6 @@ PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
 }
 
 #if defined(PETSC_USE_DEBUG)
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetStack"
 /*@C
    PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to PetscMalloc() was used to obtain that memory
 
@@ -614,8 +596,6 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,PetscStack **stack)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetStack"
 PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
 {
   PetscFunctionBegin;
@@ -624,8 +604,6 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocDump"
 /*@C
    PetscMallocDump - Dumps the allocated memory blocks to a file. The information
    printed is: size of space (in bytes), address of space, id of space,
@@ -692,9 +670,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
 /* ---------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocSetDumpLog"
-/*@C
+/*@
     PetscMallocSetDumpLog - Activates logging of all calls to PetscMalloc().
 
     Not Collective
@@ -718,9 +694,7 @@ PetscErrorCode PetscMallocSetDumpLog(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocSetDumpLogThreshold"
-/*@C
+/*@
     PetscMallocSetDumpLogThreshold - Activates logging of all calls to PetscMalloc().
 
     Not Collective
@@ -747,9 +721,7 @@ PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble logmin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetDumpLog"
-/*@C
+/*@
     PetscMallocGetDumpLog - Determine whether all calls to PetscMalloc() are being logged
 
     Not Collective
@@ -772,8 +744,6 @@ PetscErrorCode PetscMallocGetDumpLog(PetscBool *logging)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocDumpLog"
 /*@C
     PetscMallocDumpLog - Dumps the log of all calls to PetscMalloc(); also calls
        PetscMemoryGetMaximumUsage()
@@ -870,9 +840,7 @@ foundit:;
 
 /* ---------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocDebug"
-/*@C
+/*@
     PetscMallocDebug - Turns on/off debugging for the memory management routines.
 
     Not Collective
@@ -891,9 +859,7 @@ PetscErrorCode  PetscMallocDebug(PetscBool level)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocGetDebug"
-/*@C
+/*@
     PetscMallocGetDebug - Indicates if any PETSc is doing ANY memory debugging.
 
     Not Collective

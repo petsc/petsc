@@ -2,8 +2,6 @@
 #include "data_bucket.h"
 
 /* string helpers */
-#undef __FUNCT__
-#define __FUNCT__ "StringInList"
 PetscErrorCode StringInList(const char name[],const PetscInt N,const DataField gfield[],PetscBool *val)
 {
   PetscInt       i;
@@ -22,8 +20,6 @@ PetscErrorCode StringInList(const char name[],const PetscInt N,const DataField g
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StringFindInList"
 PetscErrorCode StringFindInList(const char name[],const PetscInt N,const DataField gfield[],PetscInt *index)
 {
   PetscInt       i;
@@ -42,8 +38,6 @@ PetscErrorCode StringFindInList(const char name[],const PetscInt N,const DataFie
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldCreate"
 PetscErrorCode DataFieldCreate(const char registeration_function[],const char name[],const size_t size,const PetscInt L,DataField *DF)
 {
   DataField      df;
@@ -64,8 +58,6 @@ PetscErrorCode DataFieldCreate(const char registeration_function[],const char na
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldDestroy"
 PetscErrorCode DataFieldDestroy(DataField *DF)
 {
   DataField      df = *DF;
@@ -81,8 +73,6 @@ PetscErrorCode DataFieldDestroy(DataField *DF)
 }
 
 /* data bucket */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketCreate"
 PetscErrorCode DataBucketCreate(DataBucket *DB)
 {
   DataBucket     db;
@@ -103,8 +93,6 @@ PetscErrorCode DataBucketCreate(DataBucket *DB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketDestroy"
 PetscErrorCode DataBucketDestroy(DataBucket *DB)
 {
   DataBucket     db = *DB;
@@ -125,8 +113,6 @@ PetscErrorCode DataBucketDestroy(DataBucket *DB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketQueryForActiveFields"
 PetscErrorCode DataBucketQueryForActiveFields(DataBucket db,PetscBool *any_active_fields)
 {
   PetscInt f;
@@ -142,8 +128,6 @@ PetscErrorCode DataBucketQueryForActiveFields(DataBucket db,PetscBool *any_activ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketRegisterField"
 PetscErrorCode DataBucketRegisterField(
                               DataBucket db,
                               const char registeration_function[],
@@ -186,8 +170,6 @@ PetscErrorCode DataBucketRegisterField(
  }
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketGetDataFieldByName"
 PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
   PetscInt       idx;
@@ -202,8 +184,6 @@ PetscErrorCode DataBucketGetDataFieldByName(DataBucket db,const char name[],Data
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketQueryDataFieldByName"
 PetscErrorCode DataBucketQueryDataFieldByName(DataBucket db,const char name[],PetscBool *found)
 {
   PetscErrorCode ierr;
@@ -214,8 +194,6 @@ PetscErrorCode DataBucketQueryDataFieldByName(DataBucket db,const char name[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketFinalize"
 PetscErrorCode DataBucketFinalize(DataBucket db)
 {
   PetscFunctionBegin;
@@ -223,8 +201,6 @@ PetscErrorCode DataBucketFinalize(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldGetNumEntries"
 PetscErrorCode DataFieldGetNumEntries(DataField df,PetscInt *sum)
 {
   PetscFunctionBegin;
@@ -232,8 +208,6 @@ PetscErrorCode DataFieldGetNumEntries(DataField df,PetscInt *sum)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldSetBlockSize"
 PetscErrorCode DataFieldSetBlockSize(DataField df,PetscInt blocksize)
 {
   PetscFunctionBegin;
@@ -241,8 +215,6 @@ PetscErrorCode DataFieldSetBlockSize(DataField df,PetscInt blocksize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldSetSize"
 PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L)
 {
   PetscErrorCode ierr;
@@ -262,8 +234,6 @@ PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldZeroBlock"
 PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscInt end)
 {
   PetscErrorCode ierr;
@@ -279,8 +249,6 @@ PetscErrorCode DataFieldZeroBlock(DataField df,const PetscInt start,const PetscI
 /*
  A negative buffer value will simply be ignored and the old buffer value will be used.
  */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketSetSizes"
 PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt buffer)
 {
   PetscInt       current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
@@ -331,8 +299,6 @@ PetscErrorCode DataBucketSetSizes(DataBucket db,const PetscInt L,const PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketSetInitialSizes"
 PetscErrorCode DataBucketSetInitialSizes(DataBucket db,const PetscInt L,const PetscInt buffer)
 {
   PetscInt       f;
@@ -347,8 +313,6 @@ PetscErrorCode DataBucketSetInitialSizes(DataBucket db,const PetscInt L,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketGetSizes"
 PetscErrorCode DataBucketGetSizes(DataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated)
 {
   PetscFunctionBegin;
@@ -358,8 +322,6 @@ PetscErrorCode DataBucketGetSizes(DataBucket db,PetscInt *L,PetscInt *buffer,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketGetGlobalSizes"
 PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm,DataBucket db,PetscInt *L,PetscInt *buffer,PetscInt *allocated)
 {
   PetscInt _L,_buffer,_allocated;
@@ -376,8 +338,6 @@ PetscErrorCode DataBucketGetGlobalSizes(MPI_Comm comm,DataBucket db,PetscInt *L,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketGetDataFields"
 PetscErrorCode DataBucketGetDataFields(DataBucket db,PetscInt *L,DataField *fields[])
 {
   PetscFunctionBegin;
@@ -386,8 +346,6 @@ PetscErrorCode DataBucketGetDataFields(DataBucket db,PetscInt *L,DataField *fiel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldGetAccess"
 PetscErrorCode DataFieldGetAccess(const DataField gfield)
 {
   PetscFunctionBegin;
@@ -396,11 +354,10 @@ PetscErrorCode DataFieldGetAccess(const DataField gfield)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldAccessPoint"
 PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,void **ctx_p)
 {
   PetscFunctionBegin;
+  *ctx_p = NULL;
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
   /* debug mode */
   /* check point is valid */
@@ -412,8 +369,6 @@ PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldAccessPointOffset"
 PetscErrorCode DataFieldAccessPointOffset(const DataField gfield,const size_t offset,const PetscInt pid,void **ctx_p)
 {
   PetscFunctionBegin;
@@ -432,8 +387,6 @@ PetscErrorCode DataFieldAccessPointOffset(const DataField gfield,const size_t of
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldRestoreAccess"
 PetscErrorCode DataFieldRestoreAccess(DataField gfield)
 {
   PetscFunctionBegin;
@@ -442,8 +395,6 @@ PetscErrorCode DataFieldRestoreAccess(DataField gfield)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldVerifyAccess"
 PetscErrorCode DataFieldVerifyAccess(const DataField gfield,const size_t size)
 {
   PetscFunctionBegin;
@@ -453,8 +404,6 @@ PetscErrorCode DataFieldVerifyAccess(const DataField gfield,const size_t size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldGetAtomicSize"
 PetscErrorCode DataFieldGetAtomicSize(const DataField gfield,size_t *size)
 {
   PetscFunctionBegin;
@@ -462,8 +411,6 @@ PetscErrorCode DataFieldGetAtomicSize(const DataField gfield,size_t *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldGetEntries"
 PetscErrorCode DataFieldGetEntries(const DataField gfield,void **data)
 {
   PetscFunctionBegin;
@@ -471,8 +418,6 @@ PetscErrorCode DataFieldGetEntries(const DataField gfield,void **data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldRestoreEntries"
 PetscErrorCode DataFieldRestoreEntries(const DataField gfield,void **data)
 {
   PetscFunctionBegin;
@@ -481,8 +426,6 @@ PetscErrorCode DataFieldRestoreEntries(const DataField gfield,void **data)
 }
 
 /* y = x */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketCopyPoint"
 PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,
                          const DataBucket yb,const PetscInt pid_y)
 {
@@ -505,8 +448,6 @@ PetscErrorCode DataBucketCopyPoint(const DataBucket xb,const PetscInt pid_x,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketCreateFromSubset"
 PetscErrorCode DataBucketCreateFromSubset(DataBucket DBIn,const PetscInt N,const PetscInt list[],DataBucket *DB)
 {
   PetscInt nfields;
@@ -532,8 +473,6 @@ PetscErrorCode DataBucketCreateFromSubset(DataBucket DBIn,const PetscInt N,const
 }
 
 /* insert into an exisitng location */
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldInsertPoint"
 PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,const void *ctx)
 {
   PetscErrorCode ierr;
@@ -549,8 +488,6 @@ PetscErrorCode DataFieldInsertPoint(const DataField field,const PetscInt index,c
 }
 
 /* remove data at index - replace with last point */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketRemovePointAtIndex"
 PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt index)
 {
   PetscInt       f;
@@ -584,8 +521,6 @@ PetscErrorCode DataBucketRemovePointAtIndex(const DataBucket db,const PetscInt i
 }
 
 /* copy x into y */
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldCopyPoint"
 PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,
                         const PetscInt pid_y,const DataField field_y )
 {
@@ -608,8 +543,6 @@ PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,
 
 
 /* zero only the datafield at this point */
-#undef __FUNCT__
-#define __FUNCT__ "DataFieldZeroPoint"
 PetscErrorCode DataFieldZeroPoint(const DataField field,const PetscInt index)
 {
   PetscErrorCode ierr;
@@ -625,8 +558,6 @@ PetscErrorCode DataFieldZeroPoint(const DataField field,const PetscInt index)
 }
 
 /* zero ALL data for this point */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketZeroPoint"
 PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 {
   PetscInt f;
@@ -644,8 +575,6 @@ PetscErrorCode DataBucketZeroPoint(const DataBucket db,const PetscInt index)
 }
 
 /* increment */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketAddPoint"
 PetscErrorCode DataBucketAddPoint(DataBucket db)
 {
   PetscErrorCode ierr;
@@ -656,8 +585,6 @@ PetscErrorCode DataBucketAddPoint(DataBucket db)
 }
 
 /* decrement */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketRemovePoint"
 PetscErrorCode DataBucketRemovePoint(DataBucket db)
 {
   PetscErrorCode ierr;
@@ -667,221 +594,6 @@ PetscErrorCode DataBucketRemovePoint(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DataFieldViewBinary"
-PetscErrorCode _DataFieldViewBinary(DataField field,FILE *fp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"<DataField>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%D\n", field->L);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%zu\n",field->atomic_size);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%s\n", field->registeration_function);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%s\n", field->name);CHKERRQ(ierr);
-  fwrite(field->data, field->atomic_size, field->L, fp);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"\n</DataField>\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "_DataBucketRegisterFieldFromFile"
-PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
-{
-  PetscBool      val;
-  DataField      gfield;
-  char           dummy[100];
-  char           registeration_function[5000];
-  char           field_name[5000];
-  PetscInt       L;
-  size_t         atomic_size,strL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* check we haven't finalised the registration of fields */
-  /*
-   if(db->finalised==PETSC_TRUE) {
-   printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
-   ERROR();
-   }
-   */
-  /* read file contents */
-  fgets(dummy,99,fp);
-  fscanf(fp, "%" PetscInt_FMT "\n",&L);
-  fscanf(fp, "%zu\n",&atomic_size);
-  fgets(registeration_function,4999,fp);
-  strL = strlen(registeration_function);
-  if (strL > 1) {
-    registeration_function[strL-1] = 0;
-  }
-  fgets(field_name,4999,fp);
-  strL = strlen(field_name);
-  if (strL > 1) {
-    field_name[strL-1] = 0;
-  }
-
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read L=%D; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);CHKERRQ(ierr);
-#endif
-  /* check for repeated name */
-  ierr = StringInList( field_name, db->nfields, (const DataField*)db->field, &val );CHKERRQ(ierr);
-  if (val == PETSC_TRUE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot add same field twice");
-  /* create new space for data */
-  ierr = PetscRealloc(sizeof(DataField)*(db->nfields+1), &db->field);CHKERRQ(ierr);
-  /* add field */
-  ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
-  /* copy contents of file */
-  fread(gfield->data, gfield->atomic_size, gfield->L, fp);
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name);CHKERRQ(ierr);
-#endif
-  /* finish reading meta data */
-  fgets(dummy,99,fp);
-  fgets(dummy,99,fp);
-  db->field[db->nfields] = gfield;
-  db->nfields++;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "_DataBucketViewAscii_HeaderWrite_v00"
-PetscErrorCode _DataBucketViewAscii_HeaderWrite_v00(FILE *fp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"<DataBucketHeader>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"type=DataBucket\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"format=ascii\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"version=0.0\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"options=\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"</DataBucketHeader>\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "_DataBucketViewAscii_HeaderRead_v00"
-PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
-{
-  char           dummy[100];
-  size_t         strL;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* header open */
-  fgets(dummy,99,fp);
-
-  /* type */
-  fgets(dummy,99,fp);
-  strL = strlen(dummy);
-  if (strL > 1) {dummy[strL-1] = 0;}
-  ierr = PetscStrcmp(dummy, "type=DataBucket", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Data file doesn't contain a DataBucket type");
-  /* format */
-  fgets(dummy,99,fp);
-  /* version */
-  fgets(dummy,99,fp);
-  strL = strlen(dummy);
-  if (strL > 1) { dummy[strL-1] = 0; }
-  ierr = PetscStrcmp(dummy, "version=0.0", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"DataBucket file must be parsed with version=0.0 : You tried %s", dummy);
-  /* options */
-  fgets(dummy,99,fp);
-  /* header close */
-  fgets(dummy,99,fp);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "_DataBucketLoadFromFileBinary_SEQ"
-PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucket *_db)
-{
-  DataBucket db;
-  FILE *fp;
-  PetscInt L,buffer,f,nfields;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");CHKERRQ(ierr);
-#endif
-  /* open file */
-  fp = fopen(filename,"rb");
-  if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
-  /* read header */
-  ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
-  fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields);
-  ierr = DataBucketCreate(&db);CHKERRQ(ierr);
-  for (f = 0; f < nfields; ++f) {
-    ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);
-  }
-  fclose(fp);
-  ierr = DataBucketFinalize(db);CHKERRQ(ierr);
-  /*
-   DataBucketSetSizes(db,L,buffer);
-   */
-  db->L = L;
-  db->buffer = buffer;
-  db->allocated = L + buffer;
-  *_db = db;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketLoadFromFile"
-PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[],DataBucketViewType type,DataBucket *db)
-{
-  PetscMPIInt    nproc,rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");CHKERRQ(ierr);
-#endif
-  if (type == DATABUCKET_VIEW_STDOUT) {
-  } else if (type == DATABUCKET_VIEW_ASCII) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
-  } else if (type == DATABUCKET_VIEW_BINARY) {
-    if (nproc == 1) {
-      ierr = _DataBucketLoadFromFileBinary_SEQ(filename,db);CHKERRQ(ierr);
-    } else {
-      char name[PETSC_MAX_PATH_LEN];
-
-      ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "%s_p%1.5d", filename, rank);CHKERRQ(ierr);
-      ierr = _DataBucketLoadFromFileBinary_SEQ(name, db);CHKERRQ(ierr);
-    }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown viewer requested");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "_DataBucketViewBinary"
-PetscErrorCode _DataBucketViewBinary(DataBucket db,const char filename[])
-{
-  FILE          *fp = NULL;
-  PetscInt       f;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  fp = fopen(filename,"wb");
-  if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file with name %s", filename);
-  /* db header */
-  ierr =_DataBucketViewAscii_HeaderWrite_v00(fp);CHKERRQ(ierr);
-  /* meta-data */
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp, "%D\n%D\n%D\n", db->L,db->buffer,db->nfields);CHKERRQ(ierr);
-  /* load datafields */
-  for (f = 0; f < db->nfields; ++f) {
-    ierr = _DataFieldViewBinary(db->field[f],fp);CHKERRQ(ierr);
-  }
-  fclose(fp);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketView_SEQ"
 PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
 {
   PetscErrorCode ierr;
@@ -914,27 +626,19 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
   }
   break;
   case DATABUCKET_VIEW_ASCII:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
+    break;
   case DATABUCKET_VIEW_BINARY:
-  {
-    ierr = _DataBucketViewBinary(db,filename);CHKERRQ(ierr);
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
+    break;
   case DATABUCKET_VIEW_HDF5:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No HDF5 support");
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
+    break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketView_MPI"
 PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
   PetscErrorCode ierr;
@@ -968,33 +672,19 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
   }
   break;
   case DATABUCKET_VIEW_ASCII:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying data structure");
-  }
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
   break;
   case DATABUCKET_VIEW_BINARY:
-  {
-    char        name[PETSC_MAX_PATH_LEN];
-    PetscMPIInt rank;
-
-    /* create correct extension */
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "%s_p%1.5d", filename, rank);CHKERRQ(ierr);
-    ierr = _DataBucketViewBinary(db, name);CHKERRQ(ierr);
-  }
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
   break;
   case DATABUCKET_VIEW_HDF5:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5");
-  }
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
   break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketView"
 PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
   PetscMPIInt nproc;
@@ -1010,8 +700,6 @@ PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketDuplicateFields"
 PetscErrorCode DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 {
   DataBucket db2;
@@ -1041,8 +729,6 @@ PetscErrorCode DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
  Insert points from db2 into db1
  db1 <<== db2
  */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketInsertValues"
 PetscErrorCode DataBucketInsertValues(DataBucket db1,DataBucket db2)
 {
   PetscInt n_mp_points1,n_mp_points2;
@@ -1062,8 +748,6 @@ PetscErrorCode DataBucketInsertValues(DataBucket db1,DataBucket db2)
 }
 
 /* helpers for parallel send/recv */
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketCreatePackedArray"
 PetscErrorCode DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **buf)
 {
   PetscInt       f;
@@ -1084,8 +768,6 @@ PetscErrorCode DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **bu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketDestroyPackedArray"
 PetscErrorCode DataBucketDestroyPackedArray(DataBucket db,void **buf)
 {
   PetscErrorCode ierr;
@@ -1098,8 +780,6 @@ PetscErrorCode DataBucketDestroyPackedArray(DataBucket db,void **buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketFillPackedArray"
 PetscErrorCode DataBucketFillPackedArray(DataBucket db,const PetscInt index,void *buf)
 {
   PetscInt       f;
@@ -1121,8 +801,6 @@ PetscErrorCode DataBucketFillPackedArray(DataBucket db,const PetscInt index,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataBucketInsertPackedArray"
 PetscErrorCode DataBucketInsertPackedArray(DataBucket db,const PetscInt idx,void *data)
 {
   PetscInt f;

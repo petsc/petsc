@@ -15,7 +15,7 @@
 #define petscviewerhdf5readattribute_   petscviewerhdf5readattribute
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm, CHAR name PETSC_MIXED_LEN(len), PetscFileMode *type,
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm, char* name PETSC_MIXED_LEN(len), PetscFileMode *type,
     PetscViewer *binv, PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
@@ -25,7 +25,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm, CHAR name P
   FREECHAR(name, c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5pushgroup_(PetscViewer *viewer, CHAR name PETSC_MIXED_LEN(len),
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5pushgroup_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len),
     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
@@ -35,7 +35,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5pushgroup_(PetscViewer *viewer, C
   FREECHAR(name, c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5getgroup_(PetscViewer *viewer, CHAR name PETSC_MIXED_LEN(len),
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5getgroup_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len),
     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *c1;
@@ -45,8 +45,8 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5getgroup_(PetscViewer *viewer, CH
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer, CHAR parent PETSC_MIXED_LEN(plen),
-    CHAR name PETSC_MIXED_LEN(nlen), PetscBool *has, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer, char* parent PETSC_MIXED_LEN(plen),
+    char* name PETSC_MIXED_LEN(nlen), PetscBool *has, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
 {
    char *c1, *c2;
 
@@ -57,8 +57,8 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5hasattribute_(PetscViewer *viewer
    FREECHAR(name, c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *viewer, CHAR parent PETSC_MIXED_LEN(plen),
-    CHAR name PETSC_MIXED_LEN(nlen), PetscDataType *datatype, const void *value, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *viewer, char* parent PETSC_MIXED_LEN(plen),
+    char* name PETSC_MIXED_LEN(nlen), PetscDataType *datatype, const void *value, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
 {
    char *c1, *c2;
 
@@ -69,8 +69,8 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5writeattribute_(PetscViewer *view
    FREECHAR(name, c2);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readattribute_(PetscViewer *viewer, CHAR parent PETSC_MIXED_LEN(plen),
-    CHAR name PETSC_MIXED_LEN(nlen), PetscDataType *datatype, void *value, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5readattribute_(PetscViewer *viewer, char* parent PETSC_MIXED_LEN(plen),
+    char* name PETSC_MIXED_LEN(nlen), PetscDataType *datatype, void *value, PetscErrorCode *ierr PETSC_END_LEN(plen) PETSC_END_LEN(nlen))
 {
    char *c1, *c2;
 

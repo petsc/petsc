@@ -2,8 +2,6 @@ static char help[] = "Define a simple field over the mesh\n\n";
 
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm, dmDist = NULL;
@@ -68,3 +66,15 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: triangle
+  test:
+    suffix: 1
+    requires: ctetgen
+    args: -dim 3
+
+TEST*/

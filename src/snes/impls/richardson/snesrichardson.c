@@ -1,8 +1,6 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
@@ -17,8 +15,6 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NRichardson"
 PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
@@ -39,8 +35,6 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 
    Application Interface Routine: SNESSetUp()
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NRichardson"
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
@@ -57,8 +51,6 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NRichardson"
 static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
@@ -83,8 +75,6 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(PetscOptionItems *PetscOpti
 
   Application Interface Routine: SNESView()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NRichardson"
 static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -108,8 +98,6 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 
   Application Interface Routine: SNESSolve()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NRichardson"
 PetscErrorCode SNESSolve_NRichardson(SNES snes)
 {
   Vec                  X, Y, F;
@@ -257,10 +245,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
+     Only supports left non-linear preconditioning.
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NRichardson"
 PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode   ierr;

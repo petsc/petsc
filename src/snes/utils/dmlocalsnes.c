@@ -10,8 +10,6 @@ typedef struct {
   void *boundarylocalctx;
 } DMSNES_Local;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESDestroy_DMLocal"
 static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESDuplicate_DMLocal"
 static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm,DMSNES sdm)
 {
   PetscErrorCode ierr;
@@ -35,8 +31,6 @@ static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm,DMSNES sdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalSNESGetContext"
 static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlocalsnes)
 {
   PetscErrorCode ierr;
@@ -53,8 +47,6 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunction_DMLocal"
 static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -85,8 +77,6 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobian_DMLocal"
 static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -145,8 +135,6 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetFunctionLocal"
 /*@C
    DMSNESSetFunctionLocal - set a local residual evaluation function. This function is called with local vector
       containing the local vector information PLUS ghost point information. It should compute a result for all local
@@ -184,8 +172,6 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetBoundaryLocal"
 /*@C
    DMSNESSetBoundaryLocal - set a local boundary value function. This function is called with local vector
       containing the local vector information PLUS ghost point information. It should insert values into the local
@@ -219,8 +205,6 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm,PetscErrorCode (*func)(DM,Vec,void*)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetJacobianLocal"
 /*@C
    DMSNESSetJacobianLocal - set a local Jacobian evaluation function
 

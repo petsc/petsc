@@ -20,8 +20,6 @@ typedef struct {
   PetscReal maxVecClosureTime; /* Max time per run for DMPlexVecGetClosure() */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
@@ -81,8 +79,6 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_2D"
 static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -108,8 +104,6 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_3D"
 static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -135,8 +129,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateQuad_2D"
 static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -162,8 +154,6 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateHex_3D"
 static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -191,8 +181,6 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
 {
   PetscInt       dim         = user->dim;
@@ -245,8 +233,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestCone"
 static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -283,8 +269,6 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestTransitiveClosure"
 static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -323,8 +307,6 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestVecClosure"
 static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
 {
   PetscSection       s;
@@ -394,8 +376,6 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CleanupContext"
 static PetscErrorCode CleanupContext(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -406,8 +386,6 @@ static PetscErrorCode CleanupContext(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -431,3 +409,66 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # 2D Simplex P_1 scalar tests
+  test:
+    suffix: 0
+    requires: performance
+    TODO: missing output file
+    args: -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7
+  test:
+    suffix: 1
+    requires: performance
+    TODO: missing output file
+    args: -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7
+  test:
+    suffix: 2
+    requires: performance
+    TODO: missing output file
+    args: -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7
+  test:
+    suffix: 3
+    requires: performance
+    TODO: missing output file
+    args: -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7
+  test:
+    suffix: 4
+    requires: performance
+    TODO: missing output file
+    args: -interpolate -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
+  test:
+    suffix: 5
+    requires: performance
+    TODO: missing output file
+    args: -interpolate -refinement_limit 1.0e-4 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
+  test:
+    suffix: 6
+    requires: performance
+    TODO: missing output file
+    args: -interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6
+  test:
+    suffix: 7
+    requires: performance
+    TODO: missing output file
+    args: -interpolate -refinement_limit 1.0e-4 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6
+
+  # 2D Simplex P_1 vector tests
+  # 2D Simplex P_2 scalar tests
+  # 2D Simplex P_2 vector tests
+  # 2D Simplex P_2/P_1 vector/scalar tests
+  # 2D Quad P_1 scalar tests
+  # 2D Quad P_1 vector tests
+  # 2D Quad P_2 scalar tests
+  # 2D Quad P_2 vector tests
+  # 3D Simplex P_1 scalar tests
+  # 3D Simplex P_1 vector tests
+  # 3D Simplex P_2 scalar tests
+  # 3D Simplex P_2 vector tests
+  # 3D Hex P_1 scalar tests
+  # 3D Hex P_1 vector tests
+  # 3D Hex P_2 scalar tests
+  # 3D Hex P_2 vector tests
+
+TEST*/

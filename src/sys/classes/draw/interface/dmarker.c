@@ -5,8 +5,6 @@
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE","PetscDrawMarkerType","PETSC_DRAW_MARKER_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawMarker"
 /*@
    PetscDrawMarker - PetscDraws a marker onto a drawable.
 
@@ -22,7 +20,7 @@ const char *const PetscDrawMarkerTypes[]     = {"CROSS","POINT","PLUS","CIRCLE",
    Concepts: marker^drawing
    Concepts: drawing^marker
 
-.seealso: PetscDrawPoint(), PetscDrawString(), PetscDrawSetMarkerType()
+.seealso: PetscDrawPoint(), PetscDrawString(), PetscDrawSetMarkerType(), PetscDrawGetMarkerType()
 
 @*/
 PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
@@ -72,8 +70,6 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetMarkerType"
 /*@
    PetscDrawSetMarkerType - sets the type of marker to display with PetscDrawMarker()
 
@@ -91,7 +87,7 @@ PetscErrorCode  PetscDrawMarker(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
    Concepts: marker^drawing
    Concepts: drawing^marker
 
-.seealso: PetscDrawPoint(), PetscDrawMarker()
+.seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawGetMarkerType()
 
 @*/
 PetscErrorCode  PetscDrawSetMarkerType(PetscDraw draw,PetscDrawMarkerType mtype)
@@ -102,8 +98,6 @@ PetscErrorCode  PetscDrawSetMarkerType(PetscDraw draw,PetscDrawMarkerType mtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetMarkerType"
 /*@
    PetscDrawGetMarkerType - gets the type of marker to display with PetscDrawMarker()
 
@@ -118,7 +112,7 @@ PetscErrorCode  PetscDrawSetMarkerType(PetscDraw draw,PetscDrawMarkerType mtype)
    Concepts: marker^drawing
    Concepts: drawing^marker
 
-.seealso: PetscDrawPoint(), PetscDrawMarker()
+.seealso: PetscDrawPoint(), PetscDrawMarker(), PetscDrawSetMarkerType()
 
 @*/
 PetscErrorCode  PetscDrawGetMarkerType(PetscDraw draw,PetscDrawMarkerType *mtype)

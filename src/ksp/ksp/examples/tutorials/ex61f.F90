@@ -57,8 +57,10 @@
       end module assert_mod
 
       program tpetsc
+#include <petsc/finclude/petsc.h>
       use assert_mod
       use omp_module
+      use petsc
       implicit none
 !     ----------------------------
 !     test concurrent petsc solver
@@ -69,8 +71,6 @@
       real(8), parameter :: tol = 1.0d-6
 
       integer, dimension(MAXTHREADS) :: ibeg,iend
-
-#include <petsc/finclude/petsc.h90>
 
 !$   integer, external :: omp_get_num_threads
 
@@ -99,7 +99,6 @@
 
       PetscInt nrow
       PetscInt ncol
-      PetscInt blocksize
       PetscScalar, dimension(0:(n*n-1)) :: x, b
       real(8) :: err(NCASES)
 
@@ -133,12 +132,10 @@
          col_f_ksp => Mcol_f_ksp(ith)
 
 
-         call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,     &
-     &           PETSC_NULL_INTEGER, col_f_mat, ierr)
+         call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr)
          call assert(ierr.eq.0,'matcreateseqaij return ',ierr)
 
-         call VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,       &
-     &           PETSC_NULL_SCALAR, col_f_vecb, ierr)
+         call VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR, col_f_vecb, ierr)
          call assert(ierr.eq.0,'veccreateseqwitharray return ierr',ierr)
 
          call VecDuplicate(col_f_vecb, col_f_vecx,ierr)
@@ -170,9 +167,9 @@
              ilist(nz) = ij
              jlist(nz) = ij2
              if (is_diag) then
-               aij = 4.0d0
+               aij = 4.0
              else
-               aij = -1.0d0
+               aij = -1.0
              endif
              alist(nz) = aij
            endif
@@ -211,8 +208,8 @@
            ii = ilist(ip)
            jj = jlist(ip)
            aij = alist(ip)
-           call MatSetValues(col_f_mat,1,ii,1,jj,aij,INSERT_VALUES,ierr)
-           call assert(ierr.eq.0,'matsetvalues return ierr',ierr)
+           call MatSetValue(col_f_mat,ii,jj,aij,INSERT_VALUES,ierr)
+           call assert(ierr.eq.0,'matsetvalue return ierr',ierr)
          enddo
          call MatAssemblyBegin(col_f_mat,MAT_FINAL_ASSEMBLY,ierr)
          call assert(ierr.eq.0,'matassemblybegin return ierr',ierr)
@@ -322,5 +319,4 @@
        call PetscFinalize(ierr)
        call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
 
-       stop 'all done'
        end program tpetsc

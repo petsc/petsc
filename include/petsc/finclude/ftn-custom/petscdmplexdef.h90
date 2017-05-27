@@ -1,2 +1,0 @@
-#if defined(PETSC_USE_FORTRAN_DATATYPES)
-#endif

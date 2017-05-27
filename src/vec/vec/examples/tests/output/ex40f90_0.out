@@ -1,4 +1,5 @@
-PetscSection
+PetscSection Object: 1 MPI processes
+  type not yet set
 Process 0:
   (   0) dim  3 offset   0
   (   1) dim  3 offset   3

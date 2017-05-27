@@ -1,8 +1,6 @@
 #include <petscmat.h> /*I <petscmat.h> I*/
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateLaplacian"
 /*@
   MatCreateLaplacian - Create the matrix Laplacian, with all values in the matrix less than the tolerance set to zero
 
@@ -100,8 +98,6 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 /*
   MatGetOrdering_Spectral - Find the symmetric reordering of the graph by .
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_Spectral"
 PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
 {
   Mat             L;
@@ -166,7 +162,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     if ((realpart[evInd] < 1.0e-12) && (imagpart[evInd] < 1.0e-12)) SETERRQ(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have only one zero eigenvalue");
     evInd = perm[0];
     for (i = 0; i < n; ++i) {
-      if (fabs(eigvec[evInd*n+i] - eigvec[evInd*n+0]) > 1.0e-10) SETERRQ3(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%d %g != ev_0 %g", i, eigvec[evInd*n+i], eigvec[evInd*n+0]);
+      if (PetscAbsReal(eigvec[evInd*n+i] - eigvec[evInd*n+0]) > 1.0e-10) SETERRQ3(PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have constant lowest eigenvector ev_%d %g != ev_0 %g", i, eigvec[evInd*n+i], eigvec[evInd*n+0]);
     }
     /* Construct Fiedler partition */
     evInd = perm[1];

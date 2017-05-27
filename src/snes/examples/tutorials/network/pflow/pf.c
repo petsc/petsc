@@ -10,9 +10,8 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include "pf.h"
+#include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "GetListofEdges"
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
   PetscInt       i, fbus,tbus;
@@ -29,10 +28,9 @@ PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 
 typedef struct{
   PetscScalar  Sbase;
+  PetscBool    jac_error; /* introduce error in the jacobian */
 }UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
@@ -171,8 +169,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
@@ -341,6 +337,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	if (!ghostvtex && bus->ide == PV_BUS) {
 	  row[0] = goffset+1; col[0] = goffset+1;
 	  values[0]  = 1.0;
+    if (User->jac_error) values[0] = 50.0;
 	  ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
       }
@@ -354,8 +351,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialValues"
 PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 {
   PetscErrorCode ierr;
@@ -407,8 +402,6 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode ierr;
@@ -460,6 +453,10 @@ int main(int argc,char ** argv)
       ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
       ierr = GetListofEdges(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
     }
+
+    /* If external option activated. Introduce error in jacobian */
+    ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &User.jac_error);CHKERRQ(ierr);
+
     PetscLogStagePop();
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
@@ -513,7 +510,13 @@ int main(int argc,char ** argv)
     
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 1) {
-      DM distnetworkdm;
+      DM               distnetworkdm;
+      DM               plex;
+      PetscPartitioner part;
+
+      ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+      ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
       /* Network partitioning and distribution of data */
       ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
       ierr = DMDestroy(&networkdm);CHKERRQ(ierr);

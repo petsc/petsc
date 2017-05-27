@@ -28,8 +28,6 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKfn1wd"
 PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
                                PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *
                                xls, PetscInt *ls)
@@ -95,7 +93,8 @@ L400:
   for (j = lvlbeg; j <= i__1; ++j) {
     node  = ls[j];
     kstrt = xadj[node];
-    kstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
+    i__2  = xadj[node + 1];
+    kstop = (PetscInt)PetscAbsInt(i__2) - 1;
     i__2  = kstop;
     for (k = kstrt; k <= i__2; ++k) {
       nbr = adjncy[k];

@@ -83,8 +83,6 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
 #define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
@@ -122,7 +120,9 @@ int main(int argc,char **argv)
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
 
-  ierr    = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr    = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,10,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr    = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr    = DMSetUp(user.dm);CHKERRQ(ierr);
   ierr    = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   user.dx = 1.0/ncells;  /* Set the coordinates of the cell centers; note final ghost cell is at x coordinate 1.0 */
   ierr    = DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -239,8 +239,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormDiffusionFunction"
 /*
    Applies the second order centered difference diffusion operator on a one dimensional periodic domain
 */
@@ -277,8 +275,6 @@ static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormDiffusionJacobian"
 /*
    Produces the second order centered difference diffusion operator on a one dimensional periodic domain
 */
@@ -314,8 +310,6 @@ static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
@@ -350,8 +344,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSJacobian"
 static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
@@ -395,8 +387,6 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    **x,*xc;
@@ -439,8 +429,6 @@ typedef struct {
   User     user;
 } UserLGCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormMoleFraction"
 static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
 {
   User              user = ctx->user;
@@ -467,8 +455,6 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx,Vec massf,Vec *molef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorCellDestroy"
 static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
 {
   PetscErrorCode ierr;
@@ -478,8 +464,6 @@ static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorCell"
 /*
    Use TSMonitorLG to monitor the reactions in a particular cell
 */

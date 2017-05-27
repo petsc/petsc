@@ -7,7 +7,7 @@ MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex15.c ex16.c  ex18.c ex19.c ex42.c ex42a.c ex21.c
-EXAMPLESF	 = ex1f.F ex1f90.F ex2f.F ex3f.F ex4f.F ex4f90.F ex7f.F ex9f.F ex11f.F ex14f.F ex20f90.F90 ex21f90.F
+EXAMPLESF	 = ex1f.F ex1f90.F90 ex2f.F ex3f.F ex4f.F ex4f90.F90 ex7f.F ex9f.F ex11f.F ex14f.F ex20f90.F90 ex21f90.F90
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -317,11 +317,11 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm  \
                               ex16.rm
 TESTEXAMPLES_C_X	    = ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm ex4f.PETSc \
-                              runex4f ex4f.rm ex3f.PETSc ex3f.rm ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f \
-                              runex9f_2 ex9f.rm ex11f.PETSc runex11f ex11f.rm ex14f.PETSc ex14f.rm ex21f90.PETSc runex21f90 ex21f90.rm
+                              runex4f ex4f.rm printdot ex3f.PETSc ex3f.rm ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f \
+                              runex9f_2 ex9f.rm ex11f.PETSc runex11f ex11f.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm ex7.PETSc ex7.rm
-TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
+TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm ex21f90.PETSc runex21f90 ex21f90.rm
 TESTEXAMPLES_VECCUDA        = ex1.PETSc runex1_cuda runex1_2_cuda ex1.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

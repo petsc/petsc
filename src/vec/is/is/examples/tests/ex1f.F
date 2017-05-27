@@ -3,10 +3,9 @@
 !  Formatted test for IS general routines
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscis.h>
-
+      use petscis
+      implicit none
 
        PetscErrorCode ierr
        PetscInt i,n,indices(1000),ii(1)
@@ -16,7 +15,10 @@
        PetscBool   flag
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-           CHKERRQ(ierr)
+       if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+       endif
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
        call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 

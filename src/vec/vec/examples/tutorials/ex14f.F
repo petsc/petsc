@@ -15,17 +15,9 @@
 !T*/
 
       program main
-      implicit none
-
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
       PetscMPIInt size,rank
       PetscInt nlocal,nghost,ifrom(2)
@@ -41,11 +33,15 @@
       nlocal = bs*nlocal
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
       if (size .ne. 2) then
-       SETERRQ(PETSC_COMM_SELF,1,'Must run with two processors',ierr)
+       SETERRQ(PETSC_COMM_SELF,1,'Must run with two processors')
       endif
 
 !
@@ -81,7 +77,7 @@
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-allocate',flag,ierr)
       if (flag) then
         call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
@@ -94,37 +90,37 @@
 
 !      Test VecDuplicate
 
-       call VecDuplicate(gxs,gx,ierr)
-       call VecDestroy(gxs,ierr)
+      call VecDuplicate(gxs,gx,ierr)
+      call VecDestroy(gxs,ierr)
 
 !      Access the local Form
 
-       call VecGhostGetLocalForm(gx,lx,ierr)
+      call VecGhostGetLocalForm(gx,lx,ierr)
 
 !     Set the values from 0 to 12 into the "global" vector
 
-       call VecGetOwnershipRange(gx,rstart,rend,ierr)
+      call VecGetOwnershipRange(gx,rstart,rend,ierr)
 
-       ione = 1
-       do 10, i=rstart,rend-1
-         value = i
-         call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr)
- 10    continue
+      ione = 1
+      do 10, i=rstart,rend-1
+        value = i
+        call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr)
+ 10   continue
 
-       call VecAssemblyBegin(gx,ierr)
-       call VecAssemblyEnd(gx,ierr)
+      call VecAssemblyBegin(gx,ierr)
+      call VecAssemblyEnd(gx,ierr)
 
-       call VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
-       call VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
+      call VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
+      call VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr)
 
 !     Print out each vector, including the ghost padding region.
 
-       call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+      call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
 
-       call VecGhostRestoreLocalForm(gx,lx,ierr)
-       call VecDestroy(gx,ierr)
-       call PetscFinalize(ierr)
-       end
+      call VecGhostRestoreLocalForm(gx,lx,ierr)
+      call VecDestroy(gx,ierr)
+      call PetscFinalize(ierr)
+      end
 
 
 

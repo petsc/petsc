@@ -19,8 +19,6 @@
 #endif
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayReadWrite"
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -33,8 +31,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayReadWrite"
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -46,8 +42,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVect
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayRead"
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -60,16 +54,12 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayRead"
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayWrite"
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -82,8 +72,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayWrite"
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector **a)
 {
   PetscErrorCode ierr;
@@ -97,8 +85,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViennaCLInit"
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 {
   PetscErrorCode       ierr;
@@ -190,8 +176,6 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLAllocateCheckHost"
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscViennaCLFlag for the vector
@@ -217,8 +201,6 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLAllocateCheck"
 /*
     Allocates space for the vector array on the GPU if it does not exist.
     Does NOT change the PetscViennaCLFlag for the vector
@@ -246,8 +228,6 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyToGPU"
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
 PetscErrorCode VecViennaCLCopyToGPU(Vec v)
 {
@@ -274,8 +254,6 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyFromGPU"
 /*
      VecViennaCLCopyFromGPU - Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU
 */
@@ -302,8 +280,6 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
 
 
 /* Copy on CPU */
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqViennaCL_Private"
 static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
@@ -323,8 +299,6 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqViennaCL_Private"
 static PetscErrorCode VecSetRandom_SeqViennaCL_Private(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -338,8 +312,6 @@ static PetscErrorCode VecSetRandom_SeqViennaCL_Private(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqViennaCL_Private"
 static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
@@ -355,8 +327,6 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqViennaCL_Private"
 static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
 {
   Vec_Seq *v = (Vec_Seq*)vin->data;
@@ -380,8 +350,6 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAYPX_SeqViennaCL"
 PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 {
   const ViennaCLVector  *xgpu;
@@ -408,8 +376,6 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPY_SeqViennaCL"
 PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
 {
   const ViennaCLVector  *xgpu;
@@ -434,8 +400,6 @@ PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPointwiseDivide_SeqViennaCL"
 PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
 {
   const ViennaCLVector  *xgpu,*ygpu;
@@ -462,8 +426,6 @@ PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWAXPY_SeqViennaCL"
 PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
   const ViennaCLVector  *xgpu,*ygpu;
@@ -514,8 +476,6 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
  * ViennaCL supports a fast evaluation of x += alpha * y and x += alpha * y + beta * z,
  * hence there is an iterated application of these until the final result is obtained
  */
-#undef __FUNCT__
-#define __FUNCT__ "VecMAXPY_SeqViennaCL"
 PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y)
 {
   PetscErrorCode ierr;
@@ -535,8 +495,6 @@ PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv,const PetscScalar *alph
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_SeqViennaCL"
 PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
   const ViennaCLVector  *xgpu,*ygpu;
@@ -568,8 +526,6 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
  *
  * We use an iterated application of dot() for each j. For small ranges of j this is still faster than an allocation of extra memory in order to use gemv().
  */
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_SeqViennaCL"
 PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode       ierr;
@@ -603,8 +559,6 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMTDot_SeqViennaCL"
 PetscErrorCode VecMTDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode ierr;
@@ -617,8 +571,6 @@ PetscErrorCode VecMTDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscSca
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSet_SeqViennaCL"
 PetscErrorCode VecSet_SeqViennaCL(Vec xin,PetscScalar alpha)
 {
   ViennaCLVector *xgpu;
@@ -638,8 +590,6 @@ PetscErrorCode VecSet_SeqViennaCL(Vec xin,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScale_SeqViennaCL"
 PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
 {
   ViennaCLVector *xgpu;
@@ -664,8 +614,6 @@ PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_SeqViennaCL"
 PetscErrorCode VecTDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscErrorCode ierr;
@@ -678,8 +626,6 @@ PetscErrorCode VecTDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqViennaCL"
 PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
 {
   const ViennaCLVector *xgpu;
@@ -745,8 +691,6 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSwap_SeqViennaCL"
 PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
@@ -771,8 +715,6 @@ PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
 
 
 // y = alpha * x + beta * y
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBY_SeqViennaCL"
 PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
   PetscErrorCode       ierr;
@@ -817,8 +759,6 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,V
 
 
 /* operation  z = alpha * x + beta *y + gamma *z*/
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBYPCZ_SeqViennaCL"
 PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
   PetscErrorCode       ierr;
@@ -889,8 +829,6 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar bet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPointwiseMult_SeqViennaCL"
 PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
 {
   PetscErrorCode       ierr;
@@ -918,8 +856,6 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm_SeqViennaCL"
 PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
 {
   PetscErrorCode       ierr;
@@ -976,8 +912,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqViennaCL"
 PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -988,8 +922,6 @@ PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqViennaCL"
 PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
 {
   PetscErrorCode ierr;
@@ -1001,8 +933,6 @@ PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray_SeqViennaCL"
 PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -1015,8 +945,6 @@ PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecReplaceArray_SeqViennaCL"
 PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -1029,8 +957,6 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeqViennaCL"
 /*@
    VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
@@ -1069,8 +995,6 @@ PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
  *
  *  Simply reuses VecDot() and VecNorm(). Performance improvement through custom kernel (kernel generator) possible.
  */
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2_SeqViennaCL"
 PetscErrorCode VecDotNorm2_SeqViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
   PetscErrorCode                         ierr;
@@ -1082,8 +1006,6 @@ PetscErrorCode VecDotNorm2_SeqViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_SeqViennaCL"
 PetscErrorCode VecDuplicate_SeqViennaCL(Vec win,Vec *V)
 {
   PetscErrorCode ierr;
@@ -1097,8 +1019,6 @@ PetscErrorCode VecDuplicate_SeqViennaCL(Vec win,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqViennaCL"
 PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
 {
   PetscErrorCode ierr;
@@ -1117,8 +1037,6 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_SeqViennaCL"
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 {
   PetscErrorCode ierr;

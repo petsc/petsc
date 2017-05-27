@@ -2,8 +2,6 @@
 #include <petsc/private/petscimpl.h>        /*I    "petscsys.h"   I*/
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetName"
 /*@C
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
@@ -32,8 +30,6 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectPrintClassNamePrefixType"
 /*@C
       PetscObjectPrintTypeNamePrefix - used in the XXXView() methods to display information about the class, name, prefix and type of an object
 
@@ -90,8 +86,6 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectName"
 /*@C
    PetscObjectName - Gives an object a name if it does not have one
 
@@ -143,8 +137,6 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectChangeTypeName"
 PetscErrorCode  PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {
   PetscErrorCode ierr;

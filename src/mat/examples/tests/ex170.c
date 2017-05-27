@@ -38,8 +38,6 @@ tree for the graph on supervertices defined over local components, which is
 bounded by p. In practice, this should be very fast.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateGraph"
 /* Only isolated vertices get a 1 on the diagonal */
 PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
 {
@@ -129,8 +127,6 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;

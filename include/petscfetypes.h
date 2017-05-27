@@ -35,7 +35,7 @@ S*/
 typedef struct _p_PetscFE *PetscFE;
 
 /*MC
-  PetscFEJacobianType - indicated which pointwise functions should be used to fill the Jacobian matrix
+  PetscFEJacobianType - indicates which pointwise functions should be used to fill the Jacobian matrix
 
   Level: intermediate
 

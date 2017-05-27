@@ -14,8 +14,6 @@ typedef struct {
   void *modifypc_ctx;                                        /* user defined data for the modifypc function */
 } KSP_GCR;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_GCR_cycle"
 static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -71,7 +69,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     ierr = KSPLogResidualHistory(ksp,norm_r);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,norm_r);CHKERRQ(ierr);
 
-    if (ksp->its > ksp->chknorm) {
+    if (ksp->its-1 > ksp->chknorm) {
       ierr = (*ksp->converged)(ksp,ksp->its,norm_r,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
@@ -85,8 +83,6 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_GCR"
 static PetscErrorCode KSPSolve_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -123,8 +119,6 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_GCR"
 static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -141,8 +135,6 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_GCR"
 static PetscErrorCode KSPSetUp_GCR(KSP ksp)
 {
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -163,8 +155,6 @@ static PetscErrorCode KSPSetUp_GCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_GCR"
 static PetscErrorCode KSPReset_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -181,8 +171,6 @@ static PetscErrorCode KSPReset_GCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_GCR"
 static PetscErrorCode KSPDestroy_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -193,8 +181,6 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_GCR"
 static PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -214,8 +200,6 @@ static PetscErrorCode KSPSetFromOptions_GCR(PetscOptionItems *PetscOptionsObject
 typedef PetscErrorCode (*KSPGCRModifyPCFunction)(KSP,PetscInt,PetscReal,void*);
 typedef PetscErrorCode (*KSPGCRDestroyFunction)(void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGCRSetModifyPC_GCR"
 static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
 {
   KSP_GCR *ctx = (KSP_GCR*)ksp->data;
@@ -228,8 +212,6 @@ static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction func
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGCRSetModifyPC"
 /*@C
  KSPGCRSetModifyPC - Sets the routine used by GCR to modify the preconditioner.
 
@@ -266,8 +248,6 @@ PetscErrorCode  KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGCRSetRestart_GCR"
 static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp,PetscInt restart)
 {
   KSP_GCR *ctx;
@@ -278,8 +258,6 @@ static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp,PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGCRSetRestart"
 PetscErrorCode  KSPGCRSetRestart(KSP ksp, PetscInt restart)
 {
   PetscErrorCode ierr;
@@ -289,8 +267,6 @@ PetscErrorCode  KSPGCRSetRestart(KSP ksp, PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_GCR"
 static PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
@@ -307,8 +283,6 @@ static PetscErrorCode  KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildResidual_GCR"
 static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
@@ -363,8 +337,6 @@ static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
            KSPGCRSetRestart(), KSPGCRSetModifyPC(), KSPGMRES, KSPFGMRES
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_GCR"
 PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
 {
   PetscErrorCode ierr;

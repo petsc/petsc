@@ -2,8 +2,6 @@
 #include <petsc/private/taoimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoVecGetSubVec"
 /*@C
   TaoVecGetSubVec - Gets a subvector using the IS
 
@@ -93,8 +91,6 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoMatGetSubMat"
 /*@C
   TaoMatGetSubMat - Gets a submatrix using the IS
 
@@ -120,7 +116,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   ierr = MatDestroy(Msub);CHKERRQ(ierr);
   switch (subset_type) {
   case TAO_SUBSET_SUBVEC:
-    ierr = MatGetSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub);CHKERRQ(ierr);
     break;
 
   case TAO_SUBSET_MASK:

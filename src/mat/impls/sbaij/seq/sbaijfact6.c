@@ -3,8 +3,6 @@
 #include <petsc/private/kernels/blockinvert.h>
 
 /* Version for when blocks are 4 by 4  */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_4"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a   = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
@@ -183,7 +181,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat C,Mat A,const MatFactorIn
 
     if (pivotinblocks) {
       ierr = PetscKernel_A_gets_inverse_A_4(diag,shift, allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
     } else {
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
     }

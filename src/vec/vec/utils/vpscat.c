@@ -7,8 +7,6 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterView_MPI"
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
@@ -68,8 +66,8 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Indices for local part of scatter\n",rank);CHKERRQ(ierr);
-        for (i=0; i<to->local.n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] From %D to %D \n",rank,from->local.vslots[i],to->local.vslots[i]);CHKERRQ(ierr);
+        for (i=0; i<to->local.n; i++) {  /* the to and from have the opposite meaning from what you would expect */
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] From %D to %D \n",rank,to->local.vslots[i],from->local.vslots[i]);CHKERRQ(ierr);
         }
       }
 
@@ -90,8 +88,6 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
      This is currently not used but would speed up, for example DMLocalToLocalBegin/End()
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterLocalOptimize_Private"
 PetscErrorCode VecScatterLocalOptimize_Private(VecScatter scatter,VecScatter_Seq_General *to,VecScatter_Seq_General *from)
 {
   PetscInt       n = to->n,n_nonmatching = 0,i,*to_slots = to->vslots,*from_slots = from->vslots;
@@ -136,8 +132,6 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter scatter,VecScatter_Seq
 /* --------------------------------------------------------------------------------------*/
 
 /* -------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterDestroy_PtoP"
 PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 {
   VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
@@ -254,8 +248,6 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     a copy. The scatter routines call PetscMemcpy() instead.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterLocalOptimizeCopy_Private"
 PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter scatter,VecScatter_Seq_General *to,VecScatter_Seq_General *from,PetscInt bs)
 {
   PetscInt       n = to->n,i,*to_slots = to->vslots,*from_slots = from->vslots;
@@ -284,8 +276,6 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter scatter,VecScatter
 
 /* --------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCopy_PtoP_X"
 PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
@@ -414,8 +404,6 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCopy_PtoP_AllToAll"
 PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
@@ -506,8 +494,6 @@ PETSC_STATIC_INLINE void Pack_1(PetscInt n,const PetscInt *indicesx,const PetscS
   for (i=0; i<n; i++) y[i] = x[indicesx[i]];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_1"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i;
@@ -536,8 +522,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_1"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i;
@@ -579,8 +563,6 @@ PETSC_STATIC_INLINE void Pack_2(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_2"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -624,8 +606,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_2"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -681,8 +661,6 @@ PETSC_STATIC_INLINE void Pack_3(PetscInt n,const PetscInt *indicesx,const PetscS
     y   += 3;
   }
 }
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_3"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -729,8 +707,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_3"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -790,8 +766,6 @@ PETSC_STATIC_INLINE void Pack_4(PetscInt n,const PetscInt *indicesx,const PetscS
     y   += 4;
   }
 }
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_4"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -841,8 +815,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_4"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -907,8 +879,6 @@ PETSC_STATIC_INLINE void Pack_5(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_5"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -961,8 +931,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_5"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1031,8 +999,6 @@ PETSC_STATIC_INLINE void Pack_6(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_6"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1088,8 +1054,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_6"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1162,8 +1126,6 @@ PETSC_STATIC_INLINE void Pack_7(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_7"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1222,8 +1184,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_7"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1300,8 +1260,6 @@ PETSC_STATIC_INLINE void Pack_8(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_8"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1363,8 +1321,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_8"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1445,8 +1401,6 @@ PETSC_STATIC_INLINE void Pack_9(PetscInt n,const PetscInt *indicesx,const PetscS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_9"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_9(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1511,8 +1465,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_9(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_9"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_9(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1597,8 +1549,6 @@ PETSC_STATIC_INLINE void Pack_10(PetscInt n,const PetscInt *indicesx,const Petsc
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_10"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_10(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1666,8 +1616,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_10(PetscInt n,const PetscScalar *x,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_10"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_10(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1756,8 +1704,6 @@ PETSC_STATIC_INLINE void Pack_11(PetscInt n,const PetscInt *indicesx,const Petsc
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_11"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_11(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1828,8 +1774,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_11(PetscInt n,const PetscScalar *x,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_11"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_11(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -1923,8 +1867,6 @@ PETSC_STATIC_INLINE void Pack_12(PetscInt n,const PetscInt *indicesx,const Petsc
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_12"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy;
@@ -1998,8 +1940,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_12"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy;
@@ -2085,8 +2025,6 @@ PETSC_STATIC_INLINE void Pack_bs(PetscInt n,const PetscInt *indicesx,const Petsc
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UnPack_bs"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_bs(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idy,j;
@@ -2127,8 +2065,6 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_bs(PetscInt n,const PetscScalar *x,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_bs"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv,PetscInt bs)
 {
   PetscInt i,idx,idy,j;
@@ -2203,8 +2139,6 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
 
 PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreateLocal"
 /*@
      VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send and receive.
 
@@ -2301,8 +2235,6 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
    contains check that PetscMPIInt can handle the sizes needed
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreate_PtoS"
 PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
@@ -2506,8 +2438,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 /*
    bs indicates how many elements there are in each block. Normally this would be 1.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreateCommon_PtoS"
 PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
 {
   MPI_Comm       comm;
@@ -2597,7 +2527,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       for (i=0; i<size; i++) from->types[i] = MPIU_SCALAR;
 
       if (from->contiq) {
-        PetscInfo(ctx,"Scattered vector entries are stored contiquously, taking advantage of this with -vecscatter_alltoall\n");
+        PetscInfo(ctx,"Scattered vector entries are stored contiguously, taking advantage of this with -vecscatter_alltoall\n");
         for (i=0; i<from->n; i++) from->wcounts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
 
         if (from->n) from->wdispls[from->procs[0]] = sizeof(PetscScalar)*from->indices[0];
@@ -2792,8 +2722,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
          Reverses the order of the arguments, calls VecScatterCreate_PtoS() then
          reverses the result.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreate_StoP"
 PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode         ierr;
@@ -2823,8 +2751,6 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt 
 }
 
 /* ---------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreate_PtoP"
 PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode ierr;
@@ -2995,8 +2921,6 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateFromZero"
 /*@
   PetscSFCreateFromZero - Create a PetscSF that maps a Vec from sequential to distributed
 

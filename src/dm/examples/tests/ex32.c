@@ -3,8 +3,6 @@ static char help[] = "Tests DMDA ghost coordinates\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CompareGhostedCoords"
 static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestQ2Q1DA"
 static PetscErrorCode TestQ2Q1DA(void)
 {
   DM             Q2_da,Q1_da,cda;
@@ -34,9 +30,13 @@ static PetscErrorCode TestQ2Q1DA(void)
   my   = 11;
   mz   = 13;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,2,0,0,0,&Q2_da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(Q2_da);CHKERRQ(ierr);
+  ierr = DMSetUp(Q2_da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(Q2_da,-1.0,1.0,-2.0,2.0,-3.0,3.0);CHKERRQ(ierr);
   ierr = DMGetCoordinates(Q2_da,&coords);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,0,&Q1_da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(Q1_da);CHKERRQ(ierr);
+  ierr = DMSetUp(Q1_da);CHKERRQ(ierr);
   ierr = DMSetCoordinates(Q1_da,coords);CHKERRQ(ierr);
 
   /* Get ghost coordinates one way */
@@ -62,8 +62,6 @@ static PetscErrorCode TestQ2Q1DA(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

@@ -11,19 +11,9 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Macro definitions
@@ -51,6 +41,10 @@
        Vec         x,y
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'PetscInitialize failed'
+         stop
+       endif
        n = 6
        isix = 6
 

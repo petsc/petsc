@@ -4,8 +4,6 @@ static char help[] = "Tests DMDA interpolation for coarse DM on a subset of proc
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       M = 14,dof = 1,s = 1,ratio = 2,dim = 2;
@@ -31,7 +29,11 @@ int main(int argc,char **argv)
     ierr = DMDACreate2d(comm_c,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c);CHKERRQ(ierr);
     M    = ratio*(M-1) + 1;
     ierr = DMDACreate2d(comm_f,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f);CHKERRQ(ierr);
-  } 
+  }
+  ierr = DMSetFromOptions(da_c);CHKERRQ(ierr);
+  ierr = DMSetUp(da_c);CHKERRQ(ierr)
+  ierr = DMSetFromOptions(da_f);CHKERRQ(ierr);
+  ierr = DMSetUp(da_f);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);

@@ -1,11 +1,11 @@
 DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
-  0 SNES Function norm 17.8197 
-    0 KSP Residual norm 17.8197 
-    1 KSP Residual norm 6.13491e-05 
-    2 KSP Residual norm 2.875e-10 
+  0 SNES Function norm 18.1358 
+    0 KSP Residual norm 18.1358 
+    1 KSP Residual norm 4.47755e-05 
+    2 KSP Residual norm 1.255e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 2.875e-10 
+  1 SNES Function norm 1.255e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
@@ -49,11 +49,14 @@ SNES Object: 2 MPI processes
           type: gamg
             MG: type is MULTIPLICATIVE, levels=2 cycles=v
               Cycles per PCApply=1
-              Using Galerkin computed coarse grid matrices
+              Using externally compute Galerkin coarse grid matrices
               GAMG specific options
-                Threshold for dropping small values from graph 0.
+                Threshold for dropping small values in graph on each level =          
+                Threshold scaling factor for each level not specified = 1.
                 AGG specific options
                   Symmetric graph false
+                  Number of levels to square graph 1
+                  Number smoothing steps 1
           Coarse grid solver -- level -------------------------------
             KSP Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
               type: preonly
@@ -73,37 +76,38 @@ SNES Object: 2 MPI processes
                 using NONE norm type for convergence test
               PC Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                 type: lu
-                  LU: out-of-place factorization
+                  out-of-place factorization
                   tolerance for zero pivot 2.22045e-14
                   using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                   matrix ordering: nd
-                  factor fill ratio given 5., needed 1.496
+                  factor fill ratio given 5., needed 1.28044
                     Factored matrix follows:
                       Mat Object: 1 MPI processes
                         type: seqaij
-                        rows=44, cols=44, bs=2
+                        rows=46, cols=46, bs=2
                         package used to perform factorization: petsc
-                        total: nonzeros=1496, allocated nonzeros=1496
+                        total: nonzeros=1388, allocated nonzeros=1388
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 15 nodes, limit used is 5
+                          using I-node routines: found 17 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=44, cols=44, bs=2
-                  total: nonzeros=1000, allocated nonzeros=1000
+                  rows=46, cols=46, bs=2
+                  total: nonzeros=1084, allocated nonzeros=1084
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 22 nodes, limit used is 5
+                    using I-node routines: found 23 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: 2 MPI processes
                 type: mpiaij
-                rows=44, cols=44, bs=2
-                total: nonzeros=1000, allocated nonzeros=1000
+                rows=46, cols=46, bs=2
+                total: nonzeros=1084, allocated nonzeros=1084
                 total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 22 nodes, limit used is 5
+                  using I-node (on process 0) routines: found 23 nodes, limit used is 5
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
+                Chebyshev: eigenvalue estimates used:  min = 0.139499, max = 1.53449
+                Chebyshev: eigenvalues estimate via gmres min 0.0274179, max 1.39499
                 Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                   type: gmres
@@ -182,11 +186,14 @@ SNES Object: 2 MPI processes
                   type: gamg
                     MG: type is MULTIPLICATIVE, levels=2 cycles=v
                       Cycles per PCApply=1
-                      Using Galerkin computed coarse grid matrices
+                      Using externally compute Galerkin coarse grid matrices
                       GAMG specific options
-                        Threshold for dropping small values from graph 0.
+                        Threshold for dropping small values in graph on each level =                  
+                        Threshold scaling factor for each level not specified = 1.
                         AGG specific options
                           Symmetric graph false
+                          Number of levels to square graph 1
+                          Number smoothing steps 1
                   Coarse grid solver -- level -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
                       type: preonly
@@ -206,37 +213,38 @@ SNES Object: 2 MPI processes
                         using NONE norm type for convergence test
                       PC Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                         type: lu
-                          LU: out-of-place factorization
+                          out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
                           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                           matrix ordering: nd
-                          factor fill ratio given 5., needed 1.496
+                          factor fill ratio given 5., needed 1.28044
                             Factored matrix follows:
                               Mat Object: 1 MPI processes
                                 type: seqaij
-                                rows=44, cols=44, bs=2
+                                rows=46, cols=46, bs=2
                                 package used to perform factorization: petsc
-                                total: nonzeros=1496, allocated nonzeros=1496
+                                total: nonzeros=1388, allocated nonzeros=1388
                                 total number of mallocs used during MatSetValues calls =0
-                                  using I-node routines: found 15 nodes, limit used is 5
+                                  using I-node routines: found 17 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object: 1 MPI processes
                           type: seqaij
-                          rows=44, cols=44, bs=2
-                          total: nonzeros=1000, allocated nonzeros=1000
+                          rows=46, cols=46, bs=2
+                          total: nonzeros=1084, allocated nonzeros=1084
                           total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 22 nodes, limit used is 5
+                            using I-node routines: found 23 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: 2 MPI processes
                         type: mpiaij
-                        rows=44, cols=44, bs=2
-                        total: nonzeros=1000, allocated nonzeros=1000
+                        rows=46, cols=46, bs=2
+                        total: nonzeros=1084, allocated nonzeros=1084
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node (on process 0) routines: found 22 nodes, limit used is 5
+                          using I-node (on process 0) routines: found 23 nodes, limit used is 5
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
+                        Chebyshev: eigenvalue estimates used:  min = 0.139499, max = 1.53449
+                        Chebyshev: eigenvalues estimate via gmres min 0.0274179, max 1.39499
                         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                           type: gmres
@@ -293,7 +301,7 @@ SNES Object: 2 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 240 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.61e-10 [1.8e-11, 1.6e-10]
+L_2 Error: 5.9e-11 [4.78e-12, 5.88e-11]
 Timestep: 0 Np: 64
 Timestep: 0 Np: 80
 Timestep: 1 Np: 64

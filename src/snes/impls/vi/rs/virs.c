@@ -3,8 +3,6 @@
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/vecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIGetInactiveSet"
 /*
    SNESVIGetInactiveSet - Gets the global indices for the inactive set variables (these correspond to the degrees of freedom the linear
      system is solved on)
@@ -43,8 +41,6 @@ typedef struct {
   DM dm;                                                  /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_SNESVI"
 /*
      DMCreateGlobalVector_SNESVI - Creates global vector of the size of the reduced space
 
@@ -63,8 +59,6 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_SNESVI"
 /*
      DMCreateInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
 
@@ -85,7 +79,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
 
   ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,NULL);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
   *vec = 0;
   PetscFunctionReturn(0);
@@ -93,8 +87,6 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
 extern PetscErrorCode  DMSetVI(DM,IS);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_SNESVI"
 /*
      DMCoarsen_SNESVI - Computes the regular coarsened DM then computes additional information about its inactive set
 
@@ -176,8 +168,6 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_SNESVI"
 PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 {
   PetscErrorCode ierr;
@@ -196,8 +186,6 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetVI"
 /*
      DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
                be restricted to only those variables NOT associated with active constraints.
@@ -241,8 +229,6 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroyVI"
 /*
      DMDestroyVI - Frees the DM_SNESVI object contained in the DM
          - also resets the function pointers in the DM for createinterpolation() etc to use the original DM
@@ -260,8 +246,6 @@ PetscErrorCode  DMDestroyVI(DM dm)
 /* --------------------------------------------------------------------------------------------------------*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreateIndexSets_VINEWTONRSLS"
 PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS *ISact,IS *ISinact)
 {
   PetscErrorCode ierr;
@@ -273,8 +257,6 @@ PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS *ISact,
 }
 
 /* Create active and inactive set vectors. The local size of this vector is set and petsc computes the global size */
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreateSubVectors_VINEWTONRSLS"
 PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec *newv)
 {
   PetscErrorCode ierr;
@@ -289,8 +271,6 @@ PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec *newv)
 }
 
 /* Resets the snes PC and KSP when the active set sizes change */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIResetPCandKSP"
 PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 {
   PetscErrorCode ierr;
@@ -327,8 +307,6 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
    implemented in this algorithm. It basically identifies the active constraints and does
    a linear solve on the other variables (those not associated with the active constraints). */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_VINEWTONRSLS"
 PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS    *vi = (SNES_VINEWTONRSLS*)snes->data;
@@ -345,7 +323,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PC_MG_GALERKIN_BOTH);CHKERRQ(ierr);
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -421,7 +399,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
 
     /* Create inactive set submatrix */
-    ierr = MatGetSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
 
     if (0) {                    /* Dead code (temporary developer hack) */
       IS keptrows;
@@ -447,7 +425,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),cnt,nrows,PETSC_OWN_POINTER,&vi->IS_inact);CHKERRQ(ierr);
         ierr = ISComplement(vi->IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
-        ierr = MatGetSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(snes->jacobian,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
       }
     }
     ierr = DMSetVI(snes->dm,vi->IS_inact);CHKERRQ(ierr);
@@ -487,7 +465,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     /* Active set direction = 0 */
     ierr = VecSet(Y_act,0);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
-      ierr = MatGetSubMatrix(snes->jacobian_pre,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(snes->jacobian_pre,vi->IS_inact,vi->IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
     } else prejac_inact_inact = jac_inact_inact;
 
     ierr = ISEqual(vi->IS_inact_prev,vi->IS_inact,&isequal);CHKERRQ(ierr);
@@ -626,8 +604,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESVISetRedundancyCheck"
 PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*),void *ctx)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS*)snes->data;
@@ -644,8 +620,6 @@ PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS
 #include <mex.h>
 typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIRedundancyCheck_Matlab"
 PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS *is_redact,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -683,8 +657,6 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS *is_redact,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESVISetRedundancyCheckMatlab"
 PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
@@ -716,8 +688,6 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_VINEWTONRSLS"
 PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 {
   PetscErrorCode    ierr;
@@ -746,8 +716,6 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_VINEWTONRSLS"
 PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 {
   SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS*) snes->data;
@@ -776,8 +744,6 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSetType(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_VINEWTONRSLS"
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 {
   PetscErrorCode    ierr;

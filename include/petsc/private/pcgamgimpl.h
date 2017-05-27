@@ -9,13 +9,13 @@ struct _PCGAMGOps {
   PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
   PetscErrorCode (*prolongator)(PC, Mat, Mat, PetscCoarsenData*, Mat*);
   PetscErrorCode (*optprolongator)(PC, Mat, Mat*);
-  PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *);
+  PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *, PetscBool);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PC);
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC,PetscViewer);
 };
-
+#define PETSC_GAMG_MAXLEVELS 30
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
   PCGAMGType type;
@@ -23,11 +23,13 @@ typedef struct gamg_TAG {
   PetscInt  setup_count;
   PetscBool repart;
   PetscBool reuse_prol;
-  PetscBool use_aggs_in_gasm;
+  PetscBool use_aggs_in_asm;
+  PetscBool use_parallel_coarse_grid_solver;
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
-  PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */
+  PetscReal threshold_scale;
   PetscInt  current_level; /* stash construction state */
+  PetscReal threshold[PETSC_GAMG_MAXLEVELS]; /* common quatity to many AMG methods so keep it up here */
 
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt  data_sz;      /* nloc*data_rows*data_cols */
@@ -41,7 +43,6 @@ typedef struct gamg_TAG {
   struct _PCGAMGOps *ops;
   char *gamg_type_name;
 
-  PetscRandom  random;   /* used to generate any random numbers needed by GAMG */
   void *subctx;
 } PC_GAMG;
 
@@ -86,8 +87,6 @@ PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable*);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable*,PetscInt,PetscInt);
 
 #define GAMG_HASH(key) ((((PetscInt)7)*key)%a_tab->size)
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGHashTableFind"
 PETSC_STATIC_INLINE PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
 {
   PetscInt kk,idx;

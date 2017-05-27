@@ -21,7 +21,7 @@ foreach TEST ($*)
     $SCP -r -q $USR@${MACH}:${LOC}/analyzer-ex-results/ ${LOGDIR}/analyzer-ex_${BRANCH}.log &
   endif
 end
-sleep 60
+sleep 40
 /bin/chmod a+r ${LOGDIR}/*
 wait
 /bin/chmod a+r ${LOGDIR}/*

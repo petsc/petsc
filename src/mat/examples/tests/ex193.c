@@ -12,8 +12,6 @@
 
 static char help[] = "Illustrates use of hierarchical partitioning.\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat             A;                      /* matrix */

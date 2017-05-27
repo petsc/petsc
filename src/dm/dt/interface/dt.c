@@ -26,8 +26,6 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
                                    "  pages   = {221--230},\n"
                                    "  year    = {1969}\n}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureCreate"
 /*@
   PetscQuadratureCreate - Create a PetscQuadrature object
 
@@ -50,9 +48,10 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
   PetscFunctionBegin;
   PetscValidPointer(q, 2);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*q,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
+  (*q)->Nc        =  1;
   (*q)->order     = -1;
   (*q)->numPoints = 0;
   (*q)->points    = NULL;
@@ -60,8 +59,6 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureDuplicate"
 /*@
   PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
 
@@ -80,7 +77,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 @*/
 PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 {
-  PetscInt         order, dim, Nq;
+  PetscInt         order, dim, Nc, Nq;
   const PetscReal *points, *weights;
   PetscReal       *p, *w;
   PetscErrorCode   ierr;
@@ -90,17 +87,15 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject) q), r);CHKERRQ(ierr);
   ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetOrder(*r, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &Nq, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &Nc, &Nq, &points, &weights);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nq*dim, &p);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nq, &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*Nc, &w);CHKERRQ(ierr);
   ierr = PetscMemcpy(p, points, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemcpy(w, weights, Nq * sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*r, dim, Nq, p, w);CHKERRQ(ierr);
+  ierr = PetscMemcpy(w, weights, Nc * Nq * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*r, dim, Nc, Nq, p, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureDestroy"
 /*@
   PetscQuadratureDestroy - Destroys a PetscQuadrature object
 
@@ -131,10 +126,8 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureGetOrder"
 /*@
-  PetscQuadratureGetOrder - Return the quadrature information
+  PetscQuadratureGetOrder - Return the order of the method
 
   Not collective
 
@@ -143,8 +136,6 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 
   Output Parameter:
 . order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
-
-  Output Parameter:
 
   Level: intermediate
 
@@ -159,10 +150,8 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureSetOrder"
 /*@
-  PetscQuadratureSetOrder - Return the quadrature information
+  PetscQuadratureSetOrder - Return the order of the method
 
   Not collective
 
@@ -182,8 +171,55 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureGetData"
+/*@
+  PetscQuadratureGetNumComponents - Return the number of components for functions to be integrated
+
+  Not collective
+
+  Input Parameter:
+. q - The PetscQuadrature object
+
+  Output Parameter:
+. Nc - The number of components
+
+  Note: We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+
+  Level: intermediate
+
+.seealso: PetscQuadratureSetNumComponents(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidPointer(Nc, 2);
+  *Nc = q->Nc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscQuadratureSetNumComponents - Return the number of components for functions to be integrated
+
+  Not collective
+
+  Input Parameters:
++ q  - The PetscQuadrature object
+- Nc - The number of components
+
+  Note: We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+
+  Level: intermediate
+
+.seealso: PetscQuadratureGetNumComponents(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  q->Nc = Nc;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscQuadratureGetData - Returns the data defining the quadrature
 
@@ -194,6 +230,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 
   Output Parameters:
 + dim - The spatial dimension
+, Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
@@ -203,7 +240,7 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
 @*/
-PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
+PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
@@ -211,23 +248,25 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
     PetscValidPointer(dim, 2);
     *dim = q->dim;
   }
+  if (Nc) {
+    PetscValidPointer(Nc, 3);
+    *Nc = q->Nc;
+  }
   if (npoints) {
-    PetscValidPointer(npoints, 3);
+    PetscValidPointer(npoints, 4);
     *npoints = q->numPoints;
   }
   if (points) {
-    PetscValidPointer(points, 4);
+    PetscValidPointer(points, 5);
     *points = q->points;
   }
   if (weights) {
-    PetscValidPointer(weights, 5);
+    PetscValidPointer(weights, 6);
     *weights = q->weights;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureSetData"
 /*@C
   PetscQuadratureSetData - Sets the data defining the quadrature
 
@@ -236,6 +275,7 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   Input Parameters:
 + q  - The PetscQuadrature object
 . dim - The spatial dimension
+, Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
@@ -245,11 +285,12 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 .keywords: PetscQuadrature, quadrature
 .seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
 @*/
-PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
+PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
   if (dim >= 0)     q->dim       = dim;
+  if (Nc >= 0)      q->Nc        = Nc;
   if (npoints >= 0) q->numPoints = npoints;
   if (points) {
     PetscValidPointer(points, 4);
@@ -262,8 +303,6 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureView"
 /*@C
   PetscQuadratureView - Views a PetscQuadrature object
 
@@ -280,24 +319,32 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
 @*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 {
-  PetscInt       q, d;
+  PetscInt       q, d, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %d points\n  (", quad->numPoints);CHKERRQ(ierr);
+  if (quad->Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %D points with %D components\n  (", quad->numPoints, quad->Nc);CHKERRQ(ierr);}
+  else              {ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %D points\n  (", quad->numPoints);CHKERRQ(ierr);}
   for (q = 0; q < quad->numPoints; ++q) {
     for (d = 0; d < quad->dim; ++d) {
       if (d) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "%g\n", (double)quad->points[q*quad->dim+d]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", (double)quad->weights[q]);CHKERRQ(ierr);
+    if (quad->Nc > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer, ") (");CHKERRQ(ierr);
+      for (c = 0; c < quad->Nc; ++c) {
+        if (c) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%g", (double)quad->weights[q*quad->Nc+c]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, ")\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", (double)quad->weights[q]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureExpandComposite"
 /*@C
   PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
 
@@ -322,7 +369,7 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 {
   const PetscReal *points,    *weights;
   PetscReal       *pointsRef, *weightsRef;
-  PetscInt         dim, order, npoints, npointsRef, c, p, d, e;
+  PetscInt         dim, Nc, order, npoints, npointsRef, c, p, cp, d, e;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -332,10 +379,10 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
   PetscValidPointer(qref, 5);
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
   ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &Nc, &npoints, &points, &weights);CHKERRQ(ierr);
   npointsRef = npoints*numSubelements;
   ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointsRef*Nc, &weightsRef);CHKERRQ(ierr);
   for (c = 0; c < numSubelements; ++c) {
     for (p = 0; p < npoints; ++p) {
       for (d = 0; d < dim; ++d) {
@@ -345,16 +392,14 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
         }
       }
       /* Could also use detJ here */
-      weightsRef[c*npoints+p] = weights[p]/numSubelements;
+      for (cp = 0; cp < Nc; ++cp) weightsRef[(c*npoints+p)*Nc+cp] = weights[p*Nc+cp]/numSubelements;
     }
   }
   ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*qref, dim, Nc, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTLegendreEval"
 /*@
    PetscDTLegendreEval - evaluate Legendre polynomial at points
 
@@ -420,8 +465,6 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussQuadrature"
 /*@
    PetscDTGaussQuadrature - create Gauss quadrature
 
@@ -478,8 +521,6 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussTensorQuadrature"
 /*@
   PetscDTGaussTensorQuadrature - creates a tensor-product Gauss quadrature
 
@@ -487,6 +528,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 
   Input Arguments:
 + dim     - The spatial dimension
+. Nc      - The number of components
 . npoints - number of points in one dimension
 . a       - left end of interval (often-1)
 - b       - right end of interval (often +1)
@@ -498,27 +540,30 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 
 .seealso: PetscDTGaussQuadrature(), PetscDTLegendreEval()
 @*/
-PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
+PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints, i, j, k;
+  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints, i, j, k, c;
   PetscReal     *x, *w, *xw, *ww;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(totpoints*dim,&x);CHKERRQ(ierr);
-  ierr = PetscMalloc1(totpoints,&w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints*Nc,&w);CHKERRQ(ierr);
   /* Set up the Golub-Welsch system */
   switch (dim) {
   case 0:
     ierr = PetscFree(x);CHKERRQ(ierr);
     ierr = PetscFree(w);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
-    ierr = PetscMalloc1(1, &w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc, &w);CHKERRQ(ierr);
     x[0] = 0.0;
-    w[0] = 1.0;
+    for (c = 0; c < Nc; ++c) w[c] = 1.0;
     break;
   case 1:
-    ierr = PetscDTGaussQuadrature(npoints, a, b, x, w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(npoints,&ww);CHKERRQ(ierr);
+    ierr = PetscDTGaussQuadrature(npoints, a, b, x, ww);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = ww[i];
+    ierr = PetscFree(ww);CHKERRQ(ierr);
     break;
   case 2:
     ierr = PetscMalloc2(npoints,&xw,npoints,&ww);CHKERRQ(ierr);
@@ -527,7 +572,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
       for (j = 0; j < npoints; ++j) {
         x[(i*npoints+j)*dim+0] = xw[i];
         x[(i*npoints+j)*dim+1] = xw[j];
-        w[i*npoints+j]         = ww[i] * ww[j];
+        for (c = 0; c < Nc; ++c) w[(i*npoints+j)*Nc+c] = ww[i] * ww[j];
       }
     }
     ierr = PetscFree2(xw,ww);CHKERRQ(ierr);
@@ -541,7 +586,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
           x[((i*npoints+j)*npoints+k)*dim+0] = xw[i];
           x[((i*npoints+j)*npoints+k)*dim+1] = xw[j];
           x[((i*npoints+j)*npoints+k)*dim+2] = xw[k];
-          w[(i*npoints+j)*npoints+k]         = ww[i] * ww[j] * ww[k];
+          for (c = 0; c < Nc; ++c) w[((i*npoints+j)*npoints+k)*Nc+c] = ww[i] * ww[j] * ww[k];
         }
       }
     }
@@ -551,13 +596,11 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*q, dim, totpoints, x, w);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTFactorial_Internal"
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscReal *factorial)
@@ -571,8 +614,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTComputeJacobi"
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
@@ -603,8 +644,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTComputeJacobiDerivative"
 /* Evaluates the first derivative of P_{n}^{a,b} at a point x. */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
 {
@@ -618,8 +657,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTMapSquareToTriangle_Internal"
 /* Maps from [-1,1]^2 to the (-1,1) reference triangle */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal x, PetscReal y, PetscReal *xi, PetscReal *eta)
 {
@@ -629,8 +666,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTMapCubeToTetrahedron_Internal"
 /* Maps from [-1,1]^2 to the (-1,1) reference triangle */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscReal x, PetscReal y, PetscReal z, PetscReal *xi, PetscReal *eta, PetscReal *zeta)
 {
@@ -641,8 +676,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussJacobiQuadrature1D_Internal"
 static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscReal *x, PetscReal *w)
 {
   PetscInt       maxIter = 100;
@@ -659,7 +692,19 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   a3      = PetscTGamma(b + npoints + 1);
   a4      = PetscTGamma(a + b + npoints + 1);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
+  {
+    PetscInt ia, ib;
+
+    ia = (PetscInt) a;
+    ib = (PetscInt) b;
+    if (ia == a && ib == b && ia + npoints + 1 > 0 && ib + npoints + 1 > 0 && ia + ib + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
+      ierr = PetscDTFactorial_Internal(ia + npoints, &a2);CHKERRQ(ierr);
+      ierr = PetscDTFactorial_Internal(ib + npoints, &a3);CHKERRQ(ierr);
+      ierr = PetscDTFactorial_Internal(ia + ib + npoints, &a4);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
+    }
+  }
 #endif
 
   ierr = PetscDTFactorial_Internal(npoints, &a5);CHKERRQ(ierr);
@@ -689,18 +734,17 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussJacobiQuadrature"
 /*@C
   PetscDTGaussJacobiQuadrature - create Gauss-Jacobi quadrature for a simplex
 
   Not Collective
 
   Input Arguments:
-+ dim   - The simplex dimension
-. order - The number of points in one dimension
-. a     - left end of interval (often-1)
-- b     - right end of interval (often +1)
++ dim     - The simplex dimension
+. Nc      - The number of components
+. npoints - The number of points in one dimension
+. a       - left end of interval (often-1)
+- b       - right end of interval (often +1)
 
   Output Argument:
 . q - A PetscQuadrature object
@@ -712,51 +756,54 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
 .seealso: PetscDTGaussTensorQuadrature(), PetscDTGaussQuadrature()
 @*/
-PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscReal a, PetscReal b, PetscQuadrature *q)
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt       npoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints;
   PetscReal     *px, *wx, *py, *wy, *pz, *wz, *x, *w;
-  PetscInt       i, j, k;
+  PetscInt       i, j, k, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
-  ierr = PetscMalloc1(npoints*dim, &x);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npoints, &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints*Nc, &w);CHKERRQ(ierr);
   switch (dim) {
   case 0:
     ierr = PetscFree(x);CHKERRQ(ierr);
     ierr = PetscFree(w);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
-    ierr = PetscMalloc1(1, &w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc, &w);CHKERRQ(ierr);
     x[0] = 0.0;
-    w[0] = 1.0;
+    for (c = 0; c < Nc; ++c) w[c] = 1.0;
     break;
   case 1:
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(npoints,&wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, x, wx);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = wx[i];
+    ierr = PetscFree(wx);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = PetscMalloc4(order,&px,order,&wx,order,&py,order,&wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    for (i = 0; i < order; ++i) {
-      for (j = 0; j < order; ++j) {
-        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*order+j)*2+0], &x[(i*order+j)*2+1]);CHKERRQ(ierr);
-        w[i*order+j] = 0.5 * wx[i] * wy[j];
+    ierr = PetscMalloc4(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*npoints+j)*2+0], &x[(i*npoints+j)*2+1]);CHKERRQ(ierr);
+        for (c = 0; c < Nc; ++c) w[(i*npoints+j)*Nc+c] = 0.5 * wx[i] * wy[j];
       }
     }
     ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = PetscMalloc6(order,&px,order,&wx,order,&py,order,&wy,order,&pz,order,&wz);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
-    for (i = 0; i < order; ++i) {
-      for (j = 0; j < order; ++j) {
-        for (k = 0; k < order; ++k) {
-          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*order+j)*order+k)*3+0], &x[((i*order+j)*order+k)*3+1], &x[((i*order+j)*order+k)*3+2]);CHKERRQ(ierr);
-          w[(i*order+j)*order+k] = 0.125 * wx[i] * wy[j] * wz[k];
+    ierr = PetscMalloc6(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy,npoints,&pz,npoints,&wz);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        for (k = 0; k < npoints; ++k) {
+          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*npoints+j)*npoints+k)*3+0], &x[((i*npoints+j)*npoints+k)*3+1], &x[((i*npoints+j)*npoints+k)*3+2]);CHKERRQ(ierr);
+          for (c = 0; c < Nc; ++c) w[((i*npoints+j)*npoints+k)*Nc+c] = 0.125 * wx[i] * wy[j] * wz[k];
         }
       }
     }
@@ -766,13 +813,11 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhTensorQuadrature"
 /*@C
   PetscDTTanhSinhTensorQuadrature - create tanh-sinh quadrature for a tensor product cell
 
@@ -820,18 +865,16 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   w[0] = 0.5*alpha*PETSC_PI;
   for (k = 1; k < K; ++k) {
     wk = 0.5*alpha*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
-    xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
+    xk = PetscTanhReal(0.5*PETSC_PI*PetscSinhReal(k*h));
     x[2*k-1] = -alpha*xk+beta;
     w[2*k-1] = wk;
     x[2*k+0] =  alpha*xk+beta;
     w[2*k+0] = wk;
   }
-  ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*q, dim, 1, npoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrate"
 PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  p     = 16;        /* Digits of precision in the evaluation */
@@ -896,8 +939,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 }
 
 #ifdef PETSC_HAVE_MPFR
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
@@ -1012,16 +1053,13 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
+
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTPseudoInverseQR"
 /* Overwrites A. Can only handle full-rank problems with m>=n
  * A in column-major format
  * Ainv in row-major format
@@ -1082,8 +1120,6 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTLegendreIntegrate"
 /* Computes integral of L_p' over intervals {(x0,x1),(x1,x2),...} */
 static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscReal *x,PetscInt ndegree,const PetscInt *degrees,PetscBool Transpose,PetscReal *B)
 {
@@ -1106,8 +1142,6 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTReconstructPoly"
 /*@
    PetscDTReconstructPoly - create matrix representing polynomial reconstruction using cell intervals and evaluation at target intervals
 

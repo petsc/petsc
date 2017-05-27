@@ -8,8 +8,6 @@
 #include <petsc/private/matimpl.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlapSplit_Single"
 
 /*
  * Increase overlap for the sub-matrix across sub communicator
@@ -143,18 +141,18 @@ PetscErrorCode  MatIncreaseOverlapSplit_Single(Mat mat,IS *is,PetscInt ov)
   ierr = PetscSFCreate(scomm,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nroots,nleaves,PETSC_NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,nroots,nleaves,NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPIU_INT,indices_ov_rd,indices_recv,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sf,MPIU_INT,indices_ov_rd,indices_recv,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = PetscFree2(indices_ov_rd,sources_sc_rd);CHKERRQ(ierr);
   ierr = ISCreateGeneral(scomm,nroots,indices_recv,PETSC_OWN_POINTER,&is_sc);CHKERRQ(ierr);
-  ierr = MatGetSubMatricesMPI(mat,1,&is_sc,&is_sc,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatricesMPI(mat,1,&is_sc,&is_sc,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
   ierr = ISDestroy(&allis_sc);CHKERRQ(ierr);
   /* create a partitioner to repartition the sub-matrix */
   ierr = MatPartitioningCreate(scomm,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,smat[0]);CHKERRQ(ierr);
-#if PETSC_HAVE_PARMETIS
+#if defined(PETSC_HAVE_PARMETIS)
   /* if there exists a ParMETIS installation, we try to use ParMETIS
    * because a repartition routine possibly work better
    * */

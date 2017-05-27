@@ -4,8 +4,44 @@
 #include <petscsys.h>
 #include <petscctable.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableCreate"
+static PetscErrorCode PetscTableCreateHashSize(PetscInt sz, PetscInt *hsz)
+{
+  PetscFunctionBegin;
+  if (sz < 100)          *hsz = 139;
+  else if (sz < 200)     *hsz = 283;
+  else if (sz < 400)     *hsz = 577;
+  else if (sz < 800)     *hsz = 1103;
+  else if (sz < 1600)    *hsz = 2239;
+  else if (sz < 3200)    *hsz = 4787;
+  else if (sz < 6400)    *hsz = 9337;
+  else if (sz < 12800)   *hsz = 17863;
+  else if (sz < 25600)   *hsz = 37649;
+  else if (sz < 51200)   *hsz = 72307;
+  else if (sz < 102400)  *hsz = 142979;
+  else if (sz < 204800)  *hsz = 299983;
+  else if (sz < 409600)  *hsz = 599869;
+  else if (sz < 819200)  *hsz = 1193557;
+  else if (sz < 1638400) *hsz = 2297059;
+  else if (sz < 3276800) *hsz = 4902383;
+  else if (sz < 6553600) *hsz = 9179113;
+  else if (sz < 13107200)*hsz = 18350009;
+  else if (sz < 26214400)*hsz = 36700021;
+  else if (sz < 52428800)*hsz = 73400279;
+  else if (sz < 104857600)*hsz = 146800471;
+  else if (sz < 209715200)*hsz = 293601569;
+  else if (sz < 419430400)*hsz = 587202269;
+  else if (sz < 838860800)*hsz = 1175862839;
+  else if (sz < 1677721600)*hsz = 2147321881;
+#if defined(PETSC_USE_64BIT_INDICES)
+  else if (sz < 3355443200l)*hsz = 4695452647l;
+  else if (sz < 6710886400l)*hsz = 9384888067l;
+  else if (sz < 13421772800l)*hsz = 18787024237l;
+  else if (sz < 26843545600l)*hsz = 32416190071l;
+#endif
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"A really huge hash is being requested.. cannot process: %D",sz);
+  PetscFunctionReturn(0);
+}
+
 /*
    PetscTableCreate  Creates a PETSc look up table
 
@@ -23,8 +59,8 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
-  ierr          = PetscNew(&ta);CHKERRQ(ierr);
-  ta->tablesize = 17 + PetscIntMultTruncate(3,n/2);
+  ierr       = PetscNew(&ta);CHKERRQ(ierr);
+  ierr       = PetscTableCreateHashSize(n,&ta->tablesize);CHKERRQ(ierr);
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr       = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head   = 0;
@@ -34,8 +70,6 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableCreateCopy"
 /* PetscTableCreate() ********************************************
  *
  * hash table for non-zero data and keys
@@ -66,8 +100,6 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableDestroy"
 /* PetscTableDestroy() ********************************************
  *
  *
@@ -84,8 +116,6 @@ PetscErrorCode  PetscTableDestroy(PetscTable *ta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
  */
 PetscErrorCode  PetscTableGetCount(const PetscTable ta,PetscInt *count)
@@ -95,8 +125,6 @@ PetscErrorCode  PetscTableGetCount(const PetscTable ta,PetscInt *count)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableIsEmpty"
 /* PetscTableIsEmpty() ********************************************
  */
 PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
@@ -106,8 +134,6 @@ PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableAddExpand"
 /*
     PetscTableAddExpand - called by PetscTableAdd() if more space is needed
 
@@ -120,9 +146,7 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   PetscInt       *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
   PetscFunctionBegin;
-  ta->tablesize = PetscIntMultTruncate(2,ta->tablesize);
-  if (tsize == ta->tablesize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
-
+  ierr = PetscTableCreateHashSize(ta->tablesize,&ta->tablesize);CHKERRQ(ierr);
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
 
@@ -146,8 +170,6 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableRemoveAll"
 /* PetscTableRemoveAll() ********************************************
  *
  *
@@ -168,8 +190,6 @@ PetscErrorCode  PetscTableRemoveAll(PetscTable ta)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableGetHeadPosition"
 /* PetscTableGetHeadPosition() ********************************************
  *
  */
@@ -192,8 +212,6 @@ PetscErrorCode  PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableGetNext"
 /* PetscTableGetNext() ********************************************
  *
  *  - iteration - PetscTablePosition is always valid (points to a data)
@@ -229,8 +247,6 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableAddCountExpand"
 PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;

@@ -3,8 +3,6 @@ static char help[] = "Reads a PETSc vector from a socket connection, then sends 
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            b;

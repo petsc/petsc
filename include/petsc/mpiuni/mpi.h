@@ -195,38 +195,41 @@ typedef int    MPI_Offset;
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
-#define MPI_Datatype         int
-#define MPI_FLOAT            (1 << 16 | sizeof(float))
-#define MPI_DOUBLE           (1 << 16 | sizeof(double))
-#define MPI_LONG_DOUBLE      (1 << 16 | sizeof(long double))
+#define MPI_Datatype           int
+#define MPI_FLOAT              (1 << 16 | (int)sizeof(float))
+#define MPI_DOUBLE             (1 << 16 | (int)sizeof(double))
+#define MPI_LONG_DOUBLE        (1 << 16 | (int)sizeof(long double))
 
-#define MPI_COMPLEX          (2 << 16 | 2*sizeof(float))
-#define MPI_C_COMPLEX        (2 << 16 | 2*sizeof(float))
-#define MPI_C_DOUBLE_COMPLEX (2 << 16 | 2*sizeof(double))
+#define MPI_COMPLEX            (2 << 16 | 2*(int)sizeof(float))
+#define MPI_C_COMPLEX          (2 << 16 | 2*(int)sizeof(float))
+#define MPI_C_DOUBLE_COMPLEX   (2 << 16 | 2*(int)sizeof(double))
 
-#define MPI_CHAR             (3 << 16 | sizeof(char))
-#define MPI_BYTE             (3 << 16 | sizeof(char))
-#define MPI_UNSIGNED_CHAR    (3 << 16 | sizeof(unsigned char))
+#define MPI_CHAR               (3 << 16 | (int)sizeof(char))
+#define MPI_BYTE               (3 << 16 | (int)sizeof(char))
+#define MPI_UNSIGNED_CHAR      (3 << 16 | (int)sizeof(unsigned char))
 
-#define MPI_INT              (4 << 16 | sizeof(int))
-#define MPI_LONG             (4 << 16 | sizeof(long))
-#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(MPIUNI_INT64))
-#define MPI_SHORT            (4 << 16 | sizeof(short))
+#define MPI_INT                (4 << 16 | (int)sizeof(int))
+#define MPI_LONG               (4 << 16 | (int)sizeof(long))
+#define MPI_LONG_LONG_INT      (4 << 16 | (int)sizeof(MPIUNI_INT64))
+#define MPI_SHORT              (4 << 16 | (int)sizeof(short))
 
-#define MPI_UNSIGNED_SHORT   (5 << 16 | sizeof(unsigned short))
-#define MPI_UNSIGNED         (5 << 16 | sizeof(unsigned))
-#define MPI_UNSIGNED_LONG    (5 << 16 | sizeof(unsigned long))
-#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(MPIUNI_UINT64))
+#define MPI_UNSIGNED_SHORT     (5 << 16 | (int)sizeof(unsigned short))
+#define MPI_UNSIGNED           (5 << 16 | (int)sizeof(unsigned))
+#define MPI_UNSIGNED_LONG      (5 << 16 | (int)sizeof(unsigned long))
+#define MPI_UNSIGNED_LONG_LONG (5 << 16 | (int)sizeof(MPIUNI_UINT64))
 
-#define MPI_FLOAT_INT        (10 << 16 | (sizeof(float) + sizeof(int)))
-#define MPI_DOUBLE_INT       (11 << 16 | (sizeof(double) + sizeof(int)))
-#define MPI_LONG_INT         (12 << 16 | (sizeof(long) + sizeof(int)))
-#define MPI_SHORT_INT        (13 << 16 | (sizeof(short) + sizeof(int)))
-#define MPI_2INT             (14 << 16 | (2* sizeof(int)))
+#define MPI_FLOAT_INT          (10 << 16 | (int)(sizeof(float) + sizeof(int)))
+#define MPI_DOUBLE_INT         (11 << 16 | (int)(sizeof(double) + sizeof(int)))
+#define MPI_LONG_INT           (12 << 16 | (int)(sizeof(long) + sizeof(int)))
+#define MPI_SHORT_INT          (13 << 16 | (int)(sizeof(short) + sizeof(int)))
+#define MPI_2INT               (14 << 16 | (int)(2*sizeof(int)))
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FP16)
+extern MPI_Datatype MPIU___FP16;
+#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2*sizeof(char)) : (datatype) & 0xff)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : (datatype) & 0xff)
+#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? (int)(2*sizeof(double)) : (datatype) & 0xff)
 #else
 #define MPI_sizeof(datatype) ((datatype) & 0xff)
 #endif
@@ -237,7 +240,7 @@ MPIUni_PETSC_EXTERN int MPIUNI_Memcpy(void*,const void*,int);
 #define MPI_REQUEST_NULL     ((MPI_Request)0)
 #define MPI_GROUP_NULL       ((MPI_Group)0)
 #define MPI_INFO_NULL        ((MPI_Info)0)
-#define MPI_BOTTOM           (void *)0
+#define MPI_BOTTOM           ((void *)0)
 typedef int MPI_Op;
 
 #define MPI_MODE_RDONLY   0
@@ -279,9 +282,8 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
   For C functions below (that get compiled into petsc library) - we map
   the 'MPI' functions to use 'Petsc_MPI' namespace.
 
-  However we cannot do such maping for fortran MPIUNI functions. One
-  can use the configure option --with-mpiuni-fortran-binding=0 to
-  prevent compiling MPIUNI fortran interface.
+  With fortran we use similar mapping - thus requiring the use of
+  c-preprocessor with mpif.h
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get

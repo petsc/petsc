@@ -10,8 +10,9 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
 #include <petsc/finclude/petscsys.h>
+      use petscsys
+      implicit none
       PetscErrorCode ierr
       PetscMPIInt    rank, size
 
@@ -29,7 +30,11 @@
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call PetscInitializeNoArguments(ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.
@@ -46,7 +51,7 @@
 !     Always call PetscFinalize() before exiting a program.  This
 !     routine - finalizes the PETSc libraries as well as MPI - provides
 !     summary and diagnostic information if certain runtime options are
-!     chosen (e.g., -log_summary).  See PetscFinalize() manpage for more
+!     chosen (e.g., -log_view).  See PetscFinalize() manpage for more
 !     information.
 
       call PetscFinalize(ierr)
@@ -58,3 +63,13 @@
 
       call  MPI_Finalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 5
+!      filter: sort -b
+!      filter_output: sort -b
+!
+!TEST*/

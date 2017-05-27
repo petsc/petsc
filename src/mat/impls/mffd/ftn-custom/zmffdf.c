@@ -21,7 +21,6 @@ static PetscErrorCode ourmatmffdfunction(void *ctx,Vec x,Vec f)
 
 PETSC_EXTERN void PETSC_STDCALL matmffdsetfunction_(Mat *mat,void (PETSC_STDCALL *func)(void*,Vec*,Vec*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(ctx);
   PetscObjectAllocateFortranPointers(*mat,2);
   ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)func;
   ((PetscObject)*mat)->fortran_func_pointers[1] = (PetscVoidFunction)(PETSC_UINTPTR_T)ctx;
@@ -29,7 +28,7 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsetfunction_(Mat *mat,void (PETSC_STDCALL
   *ierr = MatMFFDSetFunction(*mat,ourmatmffdfunction,*mat);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matmffdsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matmffdsettype_(Mat *mat,char* ftype PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(ftype,len,t);
@@ -37,7 +36,7 @@ PETSC_EXTERN void PETSC_STDCALL matmffdsettype_(Mat *mat,CHAR ftype PETSC_MIXED_
   FREECHAR(ftype,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matmffdsetoptionsprefix_(Mat *mat,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);

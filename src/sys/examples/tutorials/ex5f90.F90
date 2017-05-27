@@ -1,7 +1,11 @@
 #define PETSC_USE_FORTRAN_MODULES 1
-#include <petsc/finclude/petscsysdef.h>
-#include <petsc/finclude/petscbagdef.h>
-#include <petsc/finclude/petscviewerdef.h>
+!/*T
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
+!T*/
+
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscbag.h>
+#include <petsc/finclude/petscviewer.h>
 
       module Bag_data_module
 !     Data structure used to contain information about the problem
@@ -55,6 +59,10 @@
       PetscScalar svalue
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
       list(1) = 'a123'
       list(2) = 'b456'
       list(3) = 'c789'
@@ -70,41 +78,30 @@
 
 
 ! create the bag
-      call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr)
-      call PetscBagGetData(bag,data,ierr)
-      call PetscBagSetName(bag,'demo parameters',                        &
-     &      'super secret demo parameters in a bag',ierr)
-      call PetscBagSetOptionsPrefix(bag, 'pbag_', ierr)
+      call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr);CHKERRQ(ierr)
+      call PetscBagGetData(bag,data,ierr);CHKERRQ(ierr)
+      call PetscBagSetName(bag,'demo parameters','super secret demo parameters in a bag',ierr);CHKERRQ(ierr)
+      call PetscBagSetOptionsPrefix(bag, 'pbag_', ierr);CHKERRQ(ierr)
 
 ! register the data within the bag, grabbing values from the options database
 !     Need to put the value into a variable for 64 bit indices
       int56 = 56
-      call PetscBagRegisterInt(bag,data%nxc ,int56,'nxc',                   &
-     &      'nxc_variable help message',ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
-     &      'rarray help message',ierr)
+      call PetscBagRegisterInt(bag,data%nxc ,int56,'nxc','nxc_variable help message',ierr);CHKERRQ(ierr)
+      call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray','rarray help message',ierr);CHKERRQ(ierr)
 !     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
       svalue = 103.20
-      call PetscBagRegisterScalar(bag,data%x ,svalue,'x',                &
-     &      'x variable help message',ierr)
-      call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
-     &      't boolean help message',ierr)
-      call PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray',         &
-     &      'tarray help message',ierr)
-      call PetscBagRegisterString(bag,data%c,'hello','c',                &
-     &      'string help message',ierr)
+      call PetscBagRegisterScalar(bag,data%x ,svalue,'x','x variable help message',ierr);CHKERRQ(ierr)
+      call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t','t boolean help message',ierr);CHKERRQ(ierr)
+      call PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray','tarray help message',ierr);CHKERRQ(ierr)
+      call PetscBagRegisterString(bag,data%c,'hello','c','string help message',ierr);CHKERRQ(ierr)
       value = -11.00
-      call PetscBagRegisterReal(bag,data%y ,value,'y',                   &
-     &       'y variable help message',ierr)
+      call PetscBagRegisterReal(bag,data%y ,value,'y','y variable help message',ierr);CHKERRQ(ierr)
       value = 1.00
-      call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1',         &
-     &      'tuple value 1 help message',ierr)
+      call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1','tuple value 1 help message',ierr);CHKERRQ(ierr)
       value = 2.00
-      call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2',         &
-     &      'tuple value 2 help message',ierr)
-      call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum',            &
-     &      'tuple value 2 help message',ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2','tuple value 2 help message',ierr);CHKERRQ(ierr)
+      call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum','tuple value 2 help message',ierr);CHKERRQ(ierr)
+      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr)
 
       data%nxc = 23
       data%rarray(1) = -1.0
@@ -114,17 +111,24 @@
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
       data%tarray   = (/PETSC_TRUE,PETSC_FALSE,PETSC_TRUE/)
-      call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr)
+      call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr);CHKERRQ(ierr)
 
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',        &
-     &      FILE_MODE_READ,viewer,ierr)
-      call PetscBagLoad(viewer,bag,ierr)
-      call PetscViewerDestroy(viewer,ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr);CHKERRQ(ierr)
+      call PetscBagLoad(viewer,bag,ierr);CHKERRQ(ierr)
+      call PetscViewerDestroy(viewer,ierr);CHKERRQ(ierr)
+      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr)
 
-      call PetscBagSetFromOptions(bag,ierr)
-      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      call PetscBagDestroy(bag,ierr)
+      call PetscBagSetFromOptions(bag,ierr);CHKERRQ(ierr)
+      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr)
+      call PetscBagDestroy(bag,ierr);CHKERRQ(ierr)
 
       call PetscFinalize(ierr)
       end program ex5f90
+
+!
+!/*TEST
+!
+!   test:
+!      args: -pbag_rarray 4,5,88
+!
+!TEST*/

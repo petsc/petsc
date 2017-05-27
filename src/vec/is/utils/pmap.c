@@ -6,8 +6,6 @@
 #include <petscis.h> /*I "petscis.h" I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutCreate"
 /*@
   PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
 
@@ -59,8 +57,6 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutDestroy"
 /*@
   PetscLayoutDestroy - Frees a map object and frees its range if that exists.
 
@@ -94,8 +90,6 @@ PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetUp"
 /*@
   PetscLayoutSetUp - given a map where you have set either the global or local
                      size sets up the map so that it may be used.
@@ -156,8 +150,6 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutDuplicate"
 /*@
   PetscLayoutDuplicate - creates a new PetscLayout with the same information as a given one. If the PetscLayout already exists it is destroyed first.
 
@@ -193,8 +185,6 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutReference"
 /*@
   PetscLayoutReference - Causes a PETSc Vec or Mat to share a PetscLayout with one that already exists. Used by Vec/MatDuplicate_XXX()
 
@@ -225,8 +215,6 @@ PetscErrorCode PetscLayoutReference(PetscLayout in,PetscLayout *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetISLocalToGlobalMapping"
 /*@
   PetscLayoutSetISLocalToGlobalMapping - sets a ISLocalGlobalMapping into a PetscLayout
 
@@ -259,8 +247,6 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlob
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetLocalSize"
 /*@
   PetscLayoutSetLocalSize - Sets the local size for a PetscLayout object.
 
@@ -309,8 +295,6 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutGetLocalSize"
 PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
 {
   PetscFunctionBegin;
@@ -318,8 +302,6 @@ PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetSize"
 /*@
   PetscLayoutSetSize - Sets the global size for a PetscLayout object.
 
@@ -344,8 +326,6 @@ PetscErrorCode PetscLayoutSetSize(PetscLayout map,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutGetSize"
 /*@
   PetscLayoutGetSize - Gets the global size for a PetscLayout object.
 
@@ -372,8 +352,6 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetBlockSize"
 /*@
   PetscLayoutSetBlockSize - Sets the block size for a PetscLayout object.
 
@@ -396,20 +374,19 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
   PetscFunctionBegin;
   if (bs < 0) PetscFunctionReturn(0);
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
-  if (map->range && map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
   if (map->mapping) {
-    PetscInt       lbs;
+    PetscInt       obs;
     PetscErrorCode ierr;
 
-    ierr = ISLocalToGlobalMappingGetBlockSize(map->mapping,&lbs);CHKERRQ(ierr);
-    if (lbs != bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Blocksize of localtoglobalmapping %D must match that of layout %D",lbs,bs);
+    ierr = ISLocalToGlobalMappingGetBlockSize(map->mapping,&obs);CHKERRQ(ierr);
+    if (obs > 1) {
+      ierr = ISLocalToGlobalMappingSetBlockSize(map->mapping,bs);CHKERRQ(ierr);
+    }
   }
   map->bs = bs;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutGetBlockSize"
 /*@
   PetscLayoutGetBlockSize - Gets the block size for a PetscLayout object.
 
@@ -436,8 +413,6 @@ PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutGetRange"
 /*@
   PetscLayoutGetRange - gets the range of values owned by this process
 
@@ -490,8 +465,6 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *re
           PetscLayoutGetSize(), PetscLayoutGetRange(), PetscLayoutSetBlockSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutGetRanges"
 PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 {
   PetscFunctionBegin;
@@ -499,8 +472,6 @@ PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetGraphLayout"
 /*@C
    PetscSFSetGraphLayout - Set a parallel star forest via global indices and a PetscLayout
 
@@ -536,8 +507,6 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutCompare"
 /*@
   PetscLayoutCompare - Compares two layouts
 

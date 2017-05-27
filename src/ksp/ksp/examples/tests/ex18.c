@@ -6,8 +6,6 @@ Input arguments are:\n\
 #include <petscmat.h>
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

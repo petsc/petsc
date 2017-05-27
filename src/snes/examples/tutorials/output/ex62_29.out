@@ -1,37 +1,3 @@
-0 SNES Function norm 13.3457 
-    0 KSP Residual norm 2.61037 
-    1 KSP Residual norm 1.1058 
-    2 KSP Residual norm 0.694597 
-    3 KSP Residual norm 0.421115 
-    4 KSP Residual norm 0.283943 
-    5 KSP Residual norm 0.200007 
-    6 KSP Residual norm 0.132885 
-    7 KSP Residual norm 0.0938276 
-    8 KSP Residual norm 0.0783396 
-    9 KSP Residual norm 0.075 
-   10 KSP Residual norm 0.0689161 
-   11 KSP Residual norm 0.0441371 
-   12 KSP Residual norm 0.0193091 
-   13 KSP Residual norm 0.0129113 
-   14 KSP Residual norm 0.0104855 
-   15 KSP Residual norm 0.010151 
-   16 KSP Residual norm 0.00952533 
-   17 KSP Residual norm 0.00835051 
-   18 KSP Residual norm 0.00705831 
-   19 KSP Residual norm 0.00525371 
-   20 KSP Residual norm 0.00517801 
-   21 KSP Residual norm 0.00439643 
-   22 KSP Residual norm 0.00258432 
-   23 KSP Residual norm 0.00228274 
-   24 KSP Residual norm 0.000332991 
-   25 KSP Residual norm 0.000118315 
-   26 KSP Residual norm 2.77994e-05 
-   27 KSP Residual norm 2.75256e-05 
-   28 KSP Residual norm 2.68251e-05 
-   29 KSP Residual norm 2.221e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 29
-  1 SNES Function norm 1.08286e-09 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -65,75 +31,75 @@ SNES Object: 5 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 1 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 2.31e-11 [1.25e-11, 1.94e-11]
+L_2 Error: 6.27e-11 [1.54e-11, 6.08e-11]
 Solution
 Vec Object: 5 MPI processes
   type: mpi
 Process [0]
-0.40625
--0.125
-0.3125
--0.125
+0.15625
+-0.0625
 Process [1]
+0.
+0.78125
+1.3125
+1.15625
+0.4375
+Process [2]
 -1.
--0.5
+0.
 0.125
 0.
 -0.5
 0.03125
 0.
-0.15625
--0.0625
+0.78125
+-0.1875
 0.28125
 0.
-0.3125
-0.25
 0.15625
 0.1875
-Process [2]
+Process [3]
 -0.5
-0.
+-0.5
 0.625
-0.75
+-0.25
 0.
-0.78125
-1.3125
-0.90625
-0.875
+0.40625
+-0.125
+0.3125
+-0.125
 0.40625
 0.625
-0.53125
+0.90625
+-0.375
 0.3125
-Process [3]
-0.5
-1.
-1.15625
-0.4375
-1.53125
-0.
-0.8125
-0.375
+0.25
+0.53125
+-0.1875
 Process [4]
 0.5
 0.
 0.
-0.
 0.5
+0.5
+1.
 0.625
--0.25
+0.75
 0.
 1.125
 0.
 0.5
-0.78125
--0.1875
+0.90625
+0.875
+1.53125
+0.
 0.78125
 0.
-0.90625
--0.375
+0.8125
+0.375
 0.8125
 -0.25
 0.53125
--0.1875
+0.3125
 1.15625
 -0.3125

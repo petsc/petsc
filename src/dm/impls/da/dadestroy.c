@@ -8,8 +8,6 @@
 /* Logging support */
 PetscLogEvent DMDA_LocalADFunction;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Private"
 /*
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
 
@@ -50,8 +48,6 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_DA"
 PetscErrorCode  DMDestroy_DA(DM da)
 {
   PetscErrorCode ierr;
@@ -77,6 +73,10 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
   ierr = PetscFree(dd->lz);CHKERRQ(ierr);
+
+  ierr = PetscFree(dd->refine_x_hier);CHKERRQ(ierr);
+  ierr = PetscFree(dd->refine_y_hier);CHKERRQ(ierr);
+  ierr = PetscFree(dd->refine_z_hier);CHKERRQ(ierr);
 
   if (dd->fieldname) {
     for (i=0; i<dd->w; i++) {

@@ -12,45 +12,14 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/petsc/finclude.  This
-!  convention enables use of the CPP preprocessor, which allows the use
-!  of the #include statements that define PETSc objects and variables.
-!
-!  Use of the conventional Fortran include statements is also supported
-!  In this case, the PETsc include files are located in the directory
-!  petsc/include/foldinclude.
-!
-!  Since one must be very careful to include each file no more than once
-!  in a Fortran routine, application programmers must exlicitly list
-!  each file needed for the various PETSc components within their
-!  program (unlike the C/C++ interface).
-!
-!  See the Fortran section of the PETSc users manual for details.
-!
-!  The following include statements are required for KSP Fortran programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscpc.h     - preconditioners
-!     petscksp.h    - Krylov subspace methods
-!  Additional include statements may be needed if using additional
-!  PETSc routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscksp
+      implicit none
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+      external PETSC_NULL_FUNCTION
+      external KSPMONITORDEFAULT
+      external PETSCVIEWERANDFORMATDESTROY
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -102,14 +71,18 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       m = 3
       n = 3
       one  = 1.0
       neg_one = -1.0
       ione    = 1
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -200,7 +173,7 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
      &             '-random_exact_sol',flg,ierr)
       if (flg) then
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
@@ -214,7 +187,7 @@
 
 !  View the exact solution vector if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
      &             '-view_exact_sol',flg,ierr)
       if (flg) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -254,10 +227,10 @@
 
 !  Set user-defined monitoring routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                         '-my_ksp_monitor',flg,ierr)
       if (flg) then
-        call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
+        call KSPMonitorSet(ksp,MyKSPMonitor,0,                            &
      &        PETSC_NULL_FUNCTION,ierr)
 !
 !     Also use the default KSP monitor routine showing how it may be used from Fortran
@@ -279,11 +252,11 @@
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                         '-my_ksp_convergence',flg,ierr)
       if (flg) then
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
-     &          PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,ierr)
+     &          0,PETSC_NULL_FUNCTION,ierr)
       endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -322,7 +295,7 @@
 !  Always call PetscFinalize() before exiting a program.  This routine
 !    - finalizes the PETSc libraries as well as MPI
 !    - provides summary and diagnostic information if certain runtime
-!      options are chosen (e.g., -log_summary).  See PetscFinalize()
+!      options are chosen (e.g., -log_view).  See PetscFinalize()
 !      manpage for more information.
 
       call PetscFinalize(ierr)
@@ -340,12 +313,8 @@
 !    dummy - optional user-defined monitor context (unused here)
 !
       subroutine MyKSPMonitor(ksp,n,rnorm,dummy,ierr)
-
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscksp.h>
 
       KSP              ksp
       Vec              x
@@ -355,8 +324,8 @@
       PetscReal rnorm
 
 !  Build the solution vector
-
-      call KSPBuildSolution(ksp,PETSC_NULL_OBJECT,x,ierr)
+      x = tVec(0)
+      call KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr)
 
 !  Write the solution vector and residual norm to stdout
 !   - Note that the parallel viewer PETSC_VIEWER_STDOUT_WORLD
@@ -385,12 +354,8 @@
 !    dummy - optional user-defined monitor context (unused here)
 !
       subroutine MyKSPConverged(ksp,n,rnorm,flag,dummy,ierr)
-
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscksp.h>
 
       KSP              ksp
       PetscErrorCode ierr

@@ -8,44 +8,10 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscksp.h>
+      use petscksp
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/petsc/finclude.  This
-!  convention enables use of the CPP preprocessor, which allows the use
-!  of the #include statements that define PETSc objects and variables.
-!
-!  Use of the conventional Fortran include statements is also supported
-!  In this case, the PETsc include files are located in the directory
-!  petsc/include/foldinclude.
-!
-!  Since one must be very careful to include each file no more than once
-!  in a Fortran routine, application programmers must exlicitly list
-!  each file needed for the various PETSc components within their
-!  program (unlike the C/C++ interface).
-!
-!  See the Fortran section of the PETSc users manual for details.
-!
-!  The following include statements are required for KSP Fortran programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!  Other include statements may be needed if using additional PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -76,13 +42,17 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
+         SETERRQ(PETSC_COMM_WORLD,1,' ')
       endif
       none = -1.0
       one  = 1.0
@@ -90,7 +60,7 @@
       i1 = 1
       i2 = 2
       i3 = 3
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
      &                        '-n',n,flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

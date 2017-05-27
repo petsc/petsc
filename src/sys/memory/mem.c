@@ -28,8 +28,6 @@
 #include <fcntl.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemoryGetCurrentUsage"
 /*@
    PetscMemoryGetCurrentUsage - Returns the current resident set size (memory used)
    for the program.
@@ -116,8 +114,6 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 PetscBool      PetscMemoryCollectMaximumUsage = PETSC_FALSE;
 PetscLogDouble PetscMemoryMaximumUsage        = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemoryGetMaximumUsage"
 /*@
    PetscMemoryGetMaximumUsage - Returns the maximum resident set size (memory used)
    for the program.
@@ -155,9 +151,7 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemorySetGetMaximumUsage"
-/*@C
+/*@
    PetscMemorySetGetMaximumUsage - Tells PETSc to monitor the maximum memory usage so that
        PetscMemoryGetMaximumUsage() will work.
 

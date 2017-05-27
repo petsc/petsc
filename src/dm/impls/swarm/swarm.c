@@ -31,8 +31,6 @@ const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
 . seealso: DMSwarmRegisterPetscDatatypeField()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmVectorDefineField"
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[])
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -57,8 +55,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Swarm"
 PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -82,8 +78,6 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Swarm"
 PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -106,8 +100,6 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmDestroyVectorFromField_Private"
 static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fieldname[], Vec *vec)
 {
   DM_Swarm      *swarm = (DM_Swarm *) dm->data;
@@ -131,8 +123,6 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCreateVectorFromField_Private"
 static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fieldname[], MPI_Comm comm, Vec *vec)
 {
   DM_Swarm      *swarm = (DM_Swarm *) dm->data;
@@ -180,8 +170,6 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
 
 . seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCreateGlobalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
   MPI_Comm       comm = PetscObjectComm((PetscObject) dm);
@@ -208,8 +196,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
 
 . seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmDestroyGlobalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
   PetscErrorCode ierr;
@@ -235,8 +221,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
 
 . seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCreateLocalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
   MPI_Comm       comm = PETSC_COMM_SELF;
@@ -263,8 +247,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char f
 
 . seealso: DMSwarmRegisterPetscDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmDestroyLocalVectorFromField"
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
   PetscErrorCode ierr;
@@ -303,8 +285,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
  . seealso: DMSwarmFinalizeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
  DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmInitializeFieldRegister"
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 {
   DM_Swarm      *swarm = (DM_Swarm *) dm->data;
@@ -337,8 +317,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
  . seealso: DMSwarmInitializeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
  DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmFinalizeFieldRegister"
 PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -368,8 +346,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
  . seealso: DMSwarmGetLocalSize()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmSetLocalSizes"
 PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -398,8 +374,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
 
 .seealso: DMSwarmGetCellDM(), DMSwarmMigrate()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmSetCellDM"
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -429,8 +403,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 
 .seealso: DMSwarmSetCellDM()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmGetCellDM"
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -456,8 +428,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 
 .seealso: DMSwarmSetLocalSizes()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmGetLocalSize"
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -487,8 +457,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 
 .seealso: DMSwarmGetLocalSize()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmGetSize"
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -521,8 +489,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 
 .seealso: DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRegisterPetscDatatypeField"
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],PetscInt blocksize,PetscDataType type)
 {
   PetscErrorCode ierr;
@@ -570,8 +536,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRegisterUserStructField"
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fieldname[],size_t size)
 {
   PetscErrorCode ierr;
@@ -602,8 +566,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fiel
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRegisterUserDatatypeField"
 PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fieldname[],size_t size,PetscInt blocksize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -643,8 +605,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fi
 
 .seealso: DMSwarmRestoreField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmGetField"
 PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -683,8 +643,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
 
 .seealso: DMSwarmGetField()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRestoreField"
 PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],PetscInt *blocksize,PetscDataType *type,void **data)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -714,8 +672,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
 
 .seealso: DMSwarmAddNPoints()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmAddPoint"
 PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -744,8 +700,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
 
 .seealso: DMSwarmAddPoint()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmAddNPoints"
 PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -772,8 +726,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
 
 .seealso: DMSwarmRemovePointAtIndex()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRemovePoint"
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -797,8 +749,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm)
 
 .seealso: DMSwarmRemovePoint()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmRemovePointAtIndex"
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -809,8 +759,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_Basic"
 PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 {
   PetscErrorCode ierr;
@@ -839,8 +787,6 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 
 .seealso: DMSwarmSetMigrateType()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate"
 PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -900,8 +846,6 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
 
 .seealso: DMSwarmCollectViewDestroy(), DMSwarmSetCollectType()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollectViewCreate"
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 {
   PetscErrorCode ierr;
@@ -949,8 +893,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 
 .seealso: DMSwarmCollectViewCreate(), DMSwarmSetCollectType()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollectViewDestroy"
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
 {
   PetscErrorCode ierr;
@@ -963,8 +905,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmSetUpPIC"
 PetscErrorCode DMSwarmSetUpPIC(DM dm)
 {
   PetscInt dim;
@@ -992,8 +932,6 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
 
 .seealso: DMSwarmSetMigrateType(), DMSwarmSetCollectType()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmSetType"
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -1007,8 +945,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM dm,DMSwarmType stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetup_Swarm"
 PetscErrorCode DMSetup_Swarm(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -1063,8 +999,6 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Swarm"
 PetscErrorCode DMDestroy_Swarm(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -1076,8 +1010,6 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmView_Draw"
 PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
 {
   DM             cdm;
@@ -1108,8 +1040,6 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Swarm"
 PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -1190,8 +1120,6 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 
 .seealso: DMType, DMCreate(), DMSetType()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Swarm"
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
 {
   DM_Swarm      *swarm;

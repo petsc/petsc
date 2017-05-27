@@ -88,8 +88,6 @@ typedef struct {
   PetscScalar *B, *Binv, *tau, *work;
 } PetscFV_LeastSquares;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVInterpolate_Static"
 PETSC_STATIC_INLINE PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
 {
   PetscInt       Nc, fc;

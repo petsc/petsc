@@ -2,8 +2,6 @@
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/vecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_IBCGS"
 static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,6 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 #define qn_1 qn
 #define Zn_1 Zn
 #define zn_1 zn
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -72,6 +68,13 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   PetscFunctionBegin;
   if (!ksp->vec_rhs->petscnative) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
+
+ #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+  /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
+     valgrind won't detect MPI_Allreduce() with uninitialized data */
+  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
+  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
+#endif
 
   ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
@@ -315,8 +318,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_IBCGS"
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;

@@ -12,8 +12,6 @@ typedef struct  {
   void       *ctx;
 } DM_Shell;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBeginDefaultShell"
 /*@
    DMGlobalToLocalBeginDefaultShell - Uses the GlobalToLocal VecScatter context set by the user to begin a global to local scatter
    Collective
@@ -41,8 +39,6 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEndDefaultShell"
 /*@
    DMGlobalToLocalEndDefaultShell - Uses the GlobalToLocal VecScatter context set by the user to end a global to local scatter
    Collective
@@ -68,8 +64,6 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBeginDefaultShell"
 /*@
    DMLocalToGlobalBeginDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to begin a local to global scatter
    Collective
@@ -97,8 +91,6 @@ PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm,Vec l,InsertMode mode,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEndDefaultShell"
 /*@
    DMLocalToGlobalEndDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to end a local to global scatter
    Collective
@@ -124,8 +116,6 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalBeginDefaultShell"
 /*@
    DMLocalToLocalBeginDefaultShell - Uses the LocalToLocal VecScatter context set by the user to begin a local to local scatter
    Collective
@@ -155,8 +145,6 @@ PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec l
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalEndDefaultShell"
 /*@
    DMLocalToLocalEndDefaultShell - Uses the LocalToLocal VecScatter context set by the user to end a local to local scatter
    Collective
@@ -184,8 +172,6 @@ PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Shell"
 static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
@@ -230,8 +216,6 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Shell"
 PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
 {
   PetscErrorCode ierr;
@@ -256,8 +240,6 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Shell"
 PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
 {
   PetscErrorCode ierr;
@@ -282,8 +264,6 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetContext"
 /*@
    DMShellSetContext - set some data to be usable by this DM
 
@@ -311,8 +291,6 @@ PetscErrorCode DMShellSetContext(DM dm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellGetContext"
 /*@
    DMShellGetContext - set some data to be usable by this DM
 
@@ -342,8 +320,6 @@ PetscErrorCode DMShellGetContext(DM dm,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetMatrix"
 /*@
    DMShellSetMatrix - sets a template matrix associated with the DMShell
 
@@ -374,8 +350,6 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateMatrix"
 /*@C
    DMShellSetCreateMatrix - sets the routine to create a matrix associated with the shell DM
 
@@ -398,8 +372,6 @@ PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,Mat*))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetGlobalVector"
 /*@
    DMShellSetGlobalVector - sets a template global vector associated with the DMShell
 
@@ -418,20 +390,31 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
   PetscBool      isshell;
+  DM             vdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
+  ierr           = VecGetDM(X,&vdm);CHKERRQ(ierr);
+  /*
+      if the vector proposed as the new base global vector for the DM is a DM vector associated
+      with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
+      we get a circular dependency that prevents the DM from being destroy when it should be.
+      This occurs when SNESSet/GetNPC() is used with a SNES that does not have a user provided
+      DM attached to it since the inner SNES (which shares the DM with the outer SNES) tries
+      to set its input vector (which is associated with the DM) as the base global vector.
+      Thanks to Juan P. Mendez Granado Re: [petsc-maint] Nonlinear conjugate gradien
+      for pointing out the problem.
+   */
+  if (vdm == dm) PetscFunctionReturn(0);
   ierr           = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr           = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   shell->Xglobal = X;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateGlobalVector"
 /*@C
    DMShellSetCreateGlobalVector - sets the routine to create a global vector associated with the shell DM
 
@@ -454,8 +437,6 @@ PetscErrorCode DMShellSetCreateGlobalVector(DM dm,PetscErrorCode (*func)(DM,Vec*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetLocalVector"
 /*@
    DMShellSetLocalVector - sets a template local vector associated with the DMShell
 
@@ -474,20 +455,31 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
   DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
   PetscBool      isshell;
+  DM             vdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
+  ierr           = VecGetDM(X,&vdm);CHKERRQ(ierr);
+  /*
+      if the vector proposed as the new base global vector for the DM is a DM vector associated
+      with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
+      we get a circular dependency that prevents the DM from being destroy when it should be.
+      This occurs when SNESSet/GetNPC() is used with a SNES that does not have a user provided
+      DM attached to it since the inner SNES (which shares the DM with the outer SNES) tries
+      to set its input vector (which is associated with the DM) as the base global vector.
+      Thanks to Juan P. Mendez Granado Re: [petsc-maint] Nonlinear conjugate gradien
+      for pointing out the problem.
+   */
+  if (vdm == dm) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
   shell->Xlocal = X;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateLocalVector"
 /*@C
    DMShellSetCreateLocalVector - sets the routine to create a local vector associated with the shell DM
 
@@ -510,8 +502,6 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetGlobalToLocal"
 /*@C
    DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
 
@@ -536,8 +526,6 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetLocalToGlobal"
 /*@C
    DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
 
@@ -562,8 +550,6 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetLocalToLocal"
 /*@C
    DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
 
@@ -588,8 +574,6 @@ PetscErrorCode DMShellSetLocalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inser
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetGlobalToLocalVecScatter"
 /*@
    DMShellSetGlobalToLocalVecScatter - Sets a VecScatter context for global to local communication
 
@@ -616,8 +600,6 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetLocalToGlobalVecScatter"
 /*@
    DMShellSetLocalToGlobalVecScatter - Sets a VecScatter context for local to global communication
 
@@ -644,8 +626,6 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetLocalToLocalVecScatter"
 /*@
    DMShellSetLocalToLocalVecScatter - Sets a VecScatter context for local to local communication
 
@@ -672,8 +652,6 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCoarsen"
 /*@C
    DMShellSetCoarsen - Set the routine used to coarsen the shell DM
 
@@ -700,8 +678,6 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetRefine"
 /*@C
    DMShellSetRefine - Set the routine used to refine the shell DM
 
@@ -728,8 +704,6 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateInterpolation"
 /*@C
    DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
 
@@ -756,8 +730,6 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateRestriction"
 /*@C
    DMShellSetCreateRestriction - Set the routine used to create the restriction operator
 
@@ -784,8 +756,6 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateInjection"
 /*@C
    DMShellSetCreateInjection - Set the routine used to create the injection operator
 
@@ -812,8 +782,6 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateFieldDecomposition"
 /*@C
    DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
 
@@ -841,6 +809,58 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 }
 
 /*@C
+   DMShellSetCreateDomainDecomposition - Set the routine used to create a domain decomposition for the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  decomp - the routine to create the decomposition
+
+   Level: advanced
+
+.seealso: DMCreateDomainDecomposition(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decomp)(DM,PetscInt*,char***, IS**,IS**,DM**))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createdomaindecomposition = decomp;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMShellSetCreateDomainDecompositionScatters - Set the routine used to create the scatter contexts for domain decomposition with a shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  scatter - the routine to create the scatters
+
+   Level: advanced
+
+.seealso: DMCreateDomainDecompositionScatters(), DMShellSetContext(), DMShellGetContext()
+@*/
+PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode (*scatter)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createddscatters = scatter;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMShellSetCreateSubDM - Set the routine used to create a sub DM from the shell DM
 
    Logically Collective on DM
@@ -853,8 +873,6 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 
 .seealso: DMCreateSubDM(), DMShellSetContext(), DMShellGetContext()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMShellSetCreateSubDM"
 PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,PetscInt[],IS*,DM*))
 {
   PetscErrorCode ierr;
@@ -868,8 +886,6 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
   PetscErrorCode ierr;
@@ -887,8 +903,6 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Shell"
 static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -899,8 +913,6 @@ static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLoad_Shell"
 static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -912,8 +924,6 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Shell"
 PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
@@ -924,8 +934,6 @@ PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, PetscInt fields[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Shell"
 PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 {
   PetscErrorCode ierr;
@@ -953,8 +961,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellCreate"
 /*@
     DMShellCreate - Creates a shell DM object, used to manage user-defined problem data
 

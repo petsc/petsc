@@ -10,8 +10,6 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
          1 2 3
          0 0 3
 */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

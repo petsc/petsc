@@ -4,13 +4,26 @@
 
 #include <../src/ksp/ksp/impls/fcg/pipefcg/pipefcgimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEFCG_DEFAULT_MMAX 15
 #define KSPPIPEFCG_DEFAULT_NPREALLOC 5
 #define KSPPIPEFCG_DEFAULT_VECB 5
 #define KSPPIPEFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAllocateVectors_PIPEFCG"
 static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
   PetscErrorCode  ierr;
@@ -46,8 +59,6 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEFCG"
 static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -82,8 +93,6 @@ static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFCG_cycle"
 static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -266,8 +275,6 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFCG"
 static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -280,6 +287,8 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   pipefcg       = (KSP_PIPEFCG*)ksp->data;
   X             = ksp->vec_sol;
   B             = ksp->vec_rhs;
@@ -342,8 +351,6 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEFCG"
 static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -374,8 +381,6 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEFCG"
 static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFCG    *pipefcg = (KSP_PIPEFCG*)ksp->data;
@@ -408,8 +413,6 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetMmax"
 /*@
   KSPPIPEFCGSetMmax - set the maximum number of previous directions PIPEFCG will store for orthogonalization
 
@@ -441,8 +444,6 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetMmax"
 /*@
   KSPPIPEFCGGetMmax - get the maximum number of previous directions PIPEFCG will store
 
@@ -475,8 +476,6 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetNprealloc"
 /*@
   KSPPIPEFCGSetNprealloc - set the number of directions to preallocate with PIPEFCG
 
@@ -504,8 +503,6 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetNprealloc"
 /*@
   KSPPIPEFCGGetNprealloc - get the number of directions to preallocate by PIPEFCG
 
@@ -536,8 +533,6 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetTruncationType"
 /*@
   KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions PIPEFCG uses during orthoganalization
 
@@ -553,7 +548,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipefcg_truncation, -ksp_pipefcg_truncation_restart
+.  -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType, KSPFCDTruncationType
 @*/
@@ -568,8 +563,6 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetTruncationType"
 /*@
   KSPPIPEFCGGetTruncationType - get the truncation strategy employed by PIPEFCG
 
@@ -582,7 +575,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipefcg_truncation, -ksp_pipefcg_truncation_restart
+. -ksp_pipefcg_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
@@ -600,8 +593,6 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEFCG"
 static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -622,28 +613,32 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
 
 /*MC
 
- KSPPIPEFCG - A Pipelined, Flexible Conjugate Gradient method
+  KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method.
 
-    The natural norm for this method is (u,Au). This norm is available at no computational costs. Choosing norm types preconditioned or unpreconditioned involves an extra blocking global reduction, thus removing any benefit from pipelining.
+  Options Database Keys:
+.   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
+.   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
+.   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
- Supports left preconditioning only.
+  Notes:
+   Supports left preconditioning only.
+
+   The natural "norm" for this method is (u,Au), where u is the preconditioned residual. As with standard CG, this norm is available at no additional computational cost. Choosing preconditioned or unpreconditioned norms involve an extra blocking global reduction, thus removing any benefit from pipelining.
+
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
   Reference:
-    Pipelined, Flexible Krylov Subspace Methods
-    Patrick Sanan, Sascha M. Schnepp, Dave A. May
-
- Options Database Keys:
-+ -ksp_pipefcg_mmax <N>
-. -ksp_pipefcg_nprealloc <N>
-. -ksp_pipefcg_truncation
-- -ksp_pipefcg_trancation_restart
+    P. Sanan, S.M. Schnepp, and D.A. May,
+    "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
+    DOI: 10.1137/15M1049130
 
   Level: intermediate
 
-.seealso : KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
+.seealso: KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEFCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -669,6 +664,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPEFCG;
   ksp->ops->solve          = KSPSolve_PIPEFCG;

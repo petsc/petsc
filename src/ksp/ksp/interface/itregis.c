@@ -8,9 +8,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP);
-PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_CGNASH(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_CGGLTR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP);
@@ -18,6 +18,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP);
@@ -44,15 +45,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 
-/*
-    This is used by KSPSetType() to make sure that at least one
-    KSPRegisterAll() is called. In general, if there is more than one
-    DLL, then KSPRegisterAll() may be called several times.
-*/
-extern PetscBool KSPRegisterAllCalled;
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPRegisterAll"
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 
@@ -77,9 +69,9 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPPIPECG,      KSPCreate_PIPECG);CHKERRQ(ierr);
   ierr = KSPRegister(KSPPIPECGRR,    KSPCreate_PIPECGRR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGNE,        KSPCreate_CGNE);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPNASH,        KSPCreate_NASH);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPSTCG,        KSPCreate_STCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGLTR,        KSPCreate_GLTR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGNASH,      KSPCreate_CGNASH);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGSTCG,      KSPCreate_CGSTCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGGLTR,      KSPCreate_CGGLTR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPRICHARDSON,  KSPCreate_Richardson);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCHEBYSHEV,   KSPCreate_Chebyshev);CHKERRQ(ierr);
   ierr = KSPRegister(KSPGMRES,       KSPCreate_GMRES);CHKERRQ(ierr);
@@ -89,6 +81,7 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPBCGS,        KSPCreate_BCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPIBCGS,       KSPCreate_IBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGS,       KSPCreate_FBCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPEBCGS,    KSPCreate_PIPEBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGSR,      KSPCreate_FBCGSR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPBCGSL,       KSPCreate_BCGSL);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGS,         KSPCreate_CGS);CHKERRQ(ierr);

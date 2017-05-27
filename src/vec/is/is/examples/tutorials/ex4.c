@@ -12,8 +12,6 @@ T*/
 #include <petscis.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode         ierr;
@@ -28,6 +26,7 @@ int main(int argc,char **argv)
      creates a mapping
   */
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetFromOptions(mapping);CHKERRQ(ierr);
 
   /*
      Map a set of local indices to their global values
@@ -48,6 +47,7 @@ int main(int argc,char **argv)
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  ierr = ISLocalToGlobalMappingView(mapping,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /*
      Free the space used by the local to global mapping
   */

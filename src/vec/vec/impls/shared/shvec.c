@@ -8,8 +8,6 @@
 
 extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_Shared"
 PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -38,8 +36,6 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_Shared"
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
@@ -80,8 +76,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
 static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DeleteShared"
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -98,8 +92,6 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *att
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSharedMalloc"
 /*
 
     This routine is still incomplete and needs work.
@@ -155,10 +147,6 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 
 #else
 
-PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_Shared"
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
@@ -173,8 +161,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateShared"
 /*@
    VecCreateShared - Creates a parallel vector that uses shared memory.
 

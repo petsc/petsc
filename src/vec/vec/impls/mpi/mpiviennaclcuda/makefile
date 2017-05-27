@@ -3,7 +3,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PNETCDF_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCECU = mpiviennaclcuda.cu
 SOURCEF  =

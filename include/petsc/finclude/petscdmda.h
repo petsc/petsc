@@ -1,38 +1,50 @@
 
 !
-!  Include file for Fortran use of the DM (distributed array) package in PETSc
+!  Include file for Fortran use of the DMDA (distributed array) package in PETSc
 !
-#include "petsc/finclude/petscdmdadef.h"
+#if !defined (__PETSCDMDADEF_H)
+#define __PETSCDMDADEF_H
 
-!
-!  Types of stencils
-!
-      PetscEnum DMDA_STENCIL_STAR
-      PetscEnum DMDA_STENCIL_BOX
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscdm.h"
 
-      parameter (DMDA_STENCIL_STAR = 0,DMDA_STENCIL_BOX = 1)
+#define DMDAStencilType PetscEnum
+#define DMDADirection PetscEnum
 
+#define DMDALocalInfo PetscInt
 !
-! DMDAInterpolationType
+!   DMDA_LOCAL_INFO_SIZE is one large than the size incase the DA is larger than an integer (on 64 bit systems).
+!   non-int fields are not accessiable from fortran.
 !
-      PetscEnum DMDA_Q0
-      PetscEnum DMDA_Q1
-      parameter (DMDA_Q0=0,DMDA_Q1=1)
+#define DMDA_LOCAL_INFO_SIZE 25
+#define DMDA_LOCAL_INFO_DIM 1
+#define DMDA_LOCAL_INFO_DOF 2
+#define DMDA_LOCAL_INFO_MX 4
+#define DMDA_LOCAL_INFO_MY 5
+#define DMDA_LOCAL_INFO_MZ 6
+#define DMDA_LOCAL_INFO_XS 7
+#define DMDA_LOCAL_INFO_YS 8
+#define DMDA_LOCAL_INFO_ZS 9
+#define DMDA_LOCAL_INFO_XM 10
+#define DMDA_LOCAL_INFO_YM 11
+#define DMDA_LOCAL_INFO_ZM 12
+#define DMDA_LOCAL_INFO_GXS 13
+#define DMDA_LOCAL_INFO_GYS 14
+#define DMDA_LOCAL_INFO_GZS 15
+#define DMDA_LOCAL_INFO_GXM 16
+#define DMDA_LOCAL_INFO_GYM 17
+#define DMDA_LOCAL_INFO_GZM 18
 
-!
-!     DMDAElementType
-!
-      PetscEnum DMDA_ELEMENT_P1
-      PetscEnum DMDA_ELEMENT_Q1
-      parameter(DMDA_ELEMENT_P1=0,DMDA_ELEMENT_Q1=1)
-!
-! DMDA Directions
-!
-      PetscEnum DMDA_X
-      PetscEnum DMDA_Y
-      PetscEnum DMDA_Z
+#define XG_RANGE in(DMDA_LOCAL_INFO_GXS)+1:in(DMDA_LOCAL_INFO_GXS)+in(DMDA_LOCAL_INFO_GXM)
+#define YG_RANGE in(DMDA_LOCAL_INFO_GYS)+1:in(DMDA_LOCAL_INFO_GYS)+in(DMDA_LOCAL_INFO_GYM)
+#define ZG_RANGE in(DMDA_LOCAL_INFO_GZS)+1:in(DMDA_LOCAL_INFO_GZS)+in(DMDA_LOCAL_INFO_GZM)
+#define X_RANGE in(DMDA_LOCAL_INFO_XS)+1:in(DMDA_LOCAL_INFO_XS)+in(DMDA_LOCAL_INFO_XM)
+#define Y_RANGE in(DMDA_LOCAL_INFO_YS)+1:in(DMDA_LOCAL_INFO_YS)+in(DMDA_LOCAL_INFO_YM)
+#define Z_RANGE in(DMDA_LOCAL_INFO_ZS)+1:in(DMDA_LOCAL_INFO_ZS)+in(DMDA_LOCAL_INFO_ZM)
 
-      parameter (DMDA_X = 0,DMDA_Y = 1,DMDA_Z = 2)
-!
-!  End of Fortran include file for the DM package in PETSc
+#define DMDAInterpolationType PetscEnum
+#define DMDAElementType PetscEnum
 
+#endif

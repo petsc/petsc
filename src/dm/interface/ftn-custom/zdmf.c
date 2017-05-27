@@ -5,6 +5,8 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmview_                      DMVIEW
 #define dmsetoptionsprefix_          DMSETOPTIONSPREFIX
+#define dmsettype_                   DMSETTYPE
+#define dmgettype_                   DMGETTYPE
 #define dmsetmattype_                DMSETMATTYPE
 #define dmsetvectype_                DMSETVECTYPE
 #define dmgetmattype_                DMGETMATTYPE
@@ -24,6 +26,8 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmview_                      dmview
 #define dmsetoptionsprefix_          dmsetoptionsprefix
+#define dmsettype_                   dmsettype
+#define dmgettype_                   dmgettype
 #define dmsetmattype_                dmsetmattype
 #define dmsetvectype_                dmsetvectype
 #define dmgetmattype_                dmgetmattype
@@ -42,7 +46,7 @@
 #define dmremovelabel_               dmremovelabel
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL dmgetmattype_(DM *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmgetmattype_(DM *mm,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -53,7 +57,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetmattype_(DM *mm,CHAR name PETSC_MIXED_LEN(l
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetvectype_(DM *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmgetvectype_(DM *mm,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -71,7 +75,7 @@ PETSC_EXTERN void PETSC_STDCALL dmview_(DM *da,PetscViewer *vin,PetscErrorCode *
   *ierr = DMView(*da,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsetoptionsprefix_(DM *dm,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmsetoptionsprefix_(DM *dm,char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -80,7 +84,28 @@ PETSC_EXTERN void PETSC_STDCALL dmsetoptionsprefix_(DM *dm,CHAR prefix PETSC_MIX
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsetmattype_(DM *dm,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmsettype_(DM *x,char* type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type_name,len,t);
+  *ierr = DMSetType(*x,t);
+  FREECHAR(type_name,t);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmgettype_(DM *mm,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *tname;
+
+  *ierr = DMGetType(*mm,&tname);if (*ierr) return;
+  if (name != PETSC_NULL_CHARACTER_Fortran) {
+    *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
+  }
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
+
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmsetmattype_(DM *dm,char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -90,7 +115,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetmattype_(DM *dm,CHAR prefix PETSC_MIXED_LEN
 }
 
 
-PETSC_EXTERN void PETSC_STDCALL dmsetvectype_(DM *dm,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmsetvectype_(DM *dm,char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -99,7 +124,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetvectype_(DM *dm,CHAR prefix PETSC_MIXED_LEN
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmcreatelabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmcreatelabel_(DM *dm, char* name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -108,7 +133,7 @@ PETSC_EXTERN void PETSC_STDCALL dmcreatelabel_(DM *dm, CHAR name PETSC_MIXED_LEN
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmhaslabel_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -117,7 +142,7 @@ PETSC_EXTERN void PETSC_STDCALL dmhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(le
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetlabelvalue_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -126,7 +151,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_L
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmsetlabelvalue_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -135,7 +160,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_L
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetlabelsize_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -144,7 +169,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LE
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, char* name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -153,7 +178,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LE
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetlabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetlabel_(DM *dm, char* name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -162,7 +187,7 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabel_(DM *dm, CHAR name PETSC_MIXED_LEN(le
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetstratumsize_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -171,16 +196,17 @@ PETSC_EXTERN void PETSC_STDCALL dmgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmgetstratumis_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
   FIXCHAR(name, lenN, lname);
   *ierr = DMGetStratumIS(*dm, lname, *value, is);
+  if (is && !*is) *is = (IS)-1;
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmsetstratumis_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -189,7 +215,7 @@ PETSC_EXTERN void PETSC_STDCALL dmsetstratumis_(DM *dm, CHAR name PETSC_MIXED_LE
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmremovelabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmremovelabel_(DM *dm, char* name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 

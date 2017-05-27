@@ -17,8 +17,6 @@ static PetscErrorCode solve(TAO_DF*);
    Regularizer assumed to be L2 norm = lambda*0.5*W'W ()
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "make_grad_node"
 static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
 {
   PetscErrorCode ierr;
@@ -31,8 +29,6 @@ static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "destroy_grad_list"
 static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 {
   PetscErrorCode ierr;
@@ -50,8 +46,6 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_BMRM"
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
   PetscErrorCode     ierr;
@@ -200,8 +194,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
 /* ---------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_BMRM"
 static PetscErrorCode TaoSetup_BMRM(Tao tao)
 {
 
@@ -216,8 +208,6 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_BMRM"
 static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 {
   PetscErrorCode ierr;
@@ -227,8 +217,6 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_BMRM"
 static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
@@ -242,8 +230,6 @@ static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_BMRM"
 static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 {
   PetscBool      isascii;
@@ -268,8 +254,6 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_BMRM"
 PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
@@ -295,8 +279,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "init_df_solver"
 PetscErrorCode init_df_solver(TAO_DF *df)
 {
   PetscInt       i, n = INCRE_DIM;
@@ -338,8 +320,6 @@ PetscErrorCode init_df_solver(TAO_DF *df)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ensure_df_space"
 PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -433,8 +413,6 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "destroy_df_solver"
 PetscErrorCode destroy_df_solver(TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -468,8 +446,6 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
 }
 
 /* Piecewise linear monotone target function for the Dai-Fletcher projector */
-#undef __FUNCT__
-#define __FUNCT__ "phi"
 PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u)
 {
   PetscReal r = 0.0;
@@ -492,8 +468,6 @@ PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,
  *
  *  \param c The point to be projected onto feasible set
  */
-#undef __FUNCT__
-#define __FUNCT__ "project"
 PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u,PetscReal *x,PetscReal *lam_ext,TAO_DF *df)
 {
   PetscReal      lambda, lambdal, lambdau, dlambda, lambda_new;
@@ -524,7 +498,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     if (r < TOL_R) return 0;
   } else  {
     /* equality constraint ,i.e., without \xi >= 0 constraint */
-    if (fabs(r) < TOL_R) return 0;
+    if (PetscAbsReal(r) < TOL_R) return 0;
   }
 
   if (r < 0.0){
@@ -561,7 +535,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     rl      = r;
   }
 
-  if(fabs(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  if(PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if(ru == 0){
     return innerIter;
@@ -573,8 +547,8 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   lambda  = lambdau - dlambda;
   r       = phi(x, n, lambda, a, b, c, l, u);
 
-  while (fabs(r) > TOL_R
-         && dlambda > TOL_LAM * (1.0 + fabs(lambda))
+  while (PetscAbsReal(r) > TOL_R
+         && dlambda > TOL_LAM * (1.0 + PetscAbsReal(lambda))
          && innerIter < df->maxProjIter){
     innerIter++;
     if (r > 0.0){
@@ -627,8 +601,6 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "solve"
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -664,7 +636,7 @@ PetscErrorCode solve(TAO_DF *df)
 
   it = 0;
   for (i = 0; i < dim; i++) {
-    if (fabs(x[i]) > ProdDELTAsv) ipt[it++] = i;
+    if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
   }
 
   ierr = PetscMemzero(t, dim*sizeof(PetscReal));CHKERRQ(ierr);
@@ -689,7 +661,7 @@ PetscErrorCode solve(TAO_DF *df)
   max = ALPHA_MIN;
   for (i = 0; i < dim; i++){
     y[i] = tempv[i] - x[i];
-    if (fabs(y[i]) > max) max = fabs(y[i]);
+    if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
   }
 
   if (max < tol*1e-3){
@@ -735,10 +707,10 @@ PetscErrorCode solve(TAO_DF *df)
 
     it = it2 = 0;
     for (i = 0; i < dim; i++){
-      if (fabs(d[i]) > (ProdDELTAsv*1.0e-2)) ipt[it++]   = i;
+      if (PetscAbsReal(d[i]) > (ProdDELTAsv*1.0e-2)) ipt[it++]   = i;
     }
     for (i = 0; i < dim; i++) {
-      if (fabs(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
+      if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
     }
 
     ierr = PetscMemzero(Qd, dim*sizeof(PetscReal));CHKERRQ(ierr);
@@ -852,7 +824,7 @@ PetscErrorCode solve(TAO_DF *df)
         kktlam = kktlam/it;
         info   = 1;
         for (i = 0; i < it; i++) {
-          if (fabs(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
+          if (PetscAbsReal(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
             info = 0;
             break;
           }

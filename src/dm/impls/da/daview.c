@@ -8,8 +8,6 @@
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mat.h>   /* MATLAB include file */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_Matlab"
 PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -43,8 +41,6 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_Binary"
 PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -82,8 +78,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_VTK"
 PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
@@ -116,8 +110,6 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetInfo"
 /*@C
    DMDAGetInfo - Gets information about a given distributed array.
 
@@ -176,8 +168,6 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLocalInfo"
 /*@C
    DMDAGetLocalInfo - Gets information about a given distributed array and this processors location in it
 
@@ -191,9 +181,15 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
    Level: beginner
 
+   Notes: See DMDALocalInfo for the information that is returned
+
+   Fortran Notes: In Fortran the routine is DMDAGetLocalInfoF90(), see DMDALocalInfo for how to access the values
+
+   Developer Notes: Not sure why the Fortran function has a F90() in the name since it does not utilize F90 constructs.
+
 .keywords: distributed array, get, information
 
-.seealso: DMDAGetInfo(), DMDAGetCorners()
+.seealso: DMDAGetInfo(), DMDAGetCorners(), DMDALocalInfo
 @*/
 PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
 {

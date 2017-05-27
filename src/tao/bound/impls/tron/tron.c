@@ -5,8 +5,6 @@
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(Tao,TAO_TRON*);
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_TRON"
 static PetscErrorCode TaoDestroy_TRON(Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -28,8 +26,6 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_TRON"
 static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -46,8 +42,6 @@ static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_TRON"
 static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
 {
   TAO_TRON         *tron = (TAO_TRON *)tao->data;
@@ -67,8 +61,6 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
 
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_TRON"
 static PetscErrorCode TaoSetup_TRON(Tao tao)
 {
   PetscErrorCode ierr;
@@ -96,8 +88,6 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
@@ -169,7 +159,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     while (1) {
 
       /* Approximately solve the reduced linear system */
-      ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      ierr = KSPCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
 
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
@@ -220,9 +210,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
           delta=PetscMin(xdiff,delta)*tron->sigma2;
         }
         ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
-        if (tron->Free_Local) {
-          ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-        }
+        ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
         ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
         f=f_new;
         ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
@@ -247,8 +235,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TronGradientProjections"
 static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
   PetscErrorCode                 ierr;
@@ -263,9 +249,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
-  if (tron->Free_Local) {
-    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
 
   for (i=0;i<tron->maxgpits;i++){
@@ -287,17 +271,13 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
     actred = f_new - tron->f;
     actred_max = PetscMax(actred_max,-(f_new - tron->f));
     tron->f = f_new;
-    if (tron->Free_Local) {
-      ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-    }
+    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDual_TRON"
 static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -333,8 +313,6 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_TRON"
 PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
@@ -342,26 +320,20 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  tao->ops->setup = TaoSetup_TRON;
-  tao->ops->solve = TaoSolve_TRON;
-  tao->ops->view = TaoView_TRON;
+  tao->ops->setup          = TaoSetup_TRON;
+  tao->ops->solve          = TaoSolve_TRON;
+  tao->ops->view           = TaoView_TRON;
   tao->ops->setfromoptions = TaoSetFromOptions_TRON;
-  tao->ops->destroy = TaoDestroy_TRON;
-  tao->ops->computedual = TaoComputeDual_TRON;
+  tao->ops->destroy        = TaoDestroy_TRON;
+  tao->ops->computedual    = TaoComputeDual_TRON;
 
   ierr = PetscNewLog(tao,&tron);CHKERRQ(ierr);
   tao->data = (void*)tron;
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;
-
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->steptol_changed) tao->steptol = 1.0e-6;
-#else
-  if (!tao->steptol_changed) tao->steptol = 1.0e-12;
-#endif
-
   if (!tao->trust0_changed) tao->trust0 = 1.0;
+  if (!tao->steptol_changed) tao->steptol = 0.0;
 
   /* Initialize pointers and variables */
   tron->n            = 0;
@@ -398,7 +370,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

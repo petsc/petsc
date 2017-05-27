@@ -6,8 +6,6 @@
 #define PETSC_PYTHON_EXE "python"
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonFindExecutable"
 static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LEN])
 {
   PetscBool      flag;
@@ -23,8 +21,6 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonFindLibrary"
 static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
 {
   const char     cmdline[] = "-c 'import sys; print(sys.exec_prefix); print(sys.version[:3])'";
@@ -126,8 +122,6 @@ static void      (*PyErr_Restore)(PyObject*,PyObject*,PyObject*);
 #define PetscDLPyLibClose(comm) \
   do { } while (0)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonLoadLibrary"
 static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
 {
   PetscErrorCode ierr;
@@ -170,8 +164,6 @@ static char      PetscPythonExe[PETSC_MAX_PATH_LEN] = { 0 };
 static char      PetscPythonLib[PETSC_MAX_PATH_LEN] = { 0 };
 static PetscBool PetscBeganPython = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonFinalize"
 /*@C
   PetscPythonFinalize - Finalize Python.
 
@@ -187,8 +179,6 @@ PetscErrorCode  PetscPythonFinalize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonInitialize"
 /*@C
   PetscPythonInitialize - Initialize Python and import petsc4py.
 
@@ -270,8 +260,6 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonPrintError"
 /*@C
   PetscPythonPrintError - Print Python errors.
 
@@ -301,8 +289,6 @@ PetscErrorCode  PetscPythonPrintError(void)
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
 PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonMonitorSet"
 /*@C
   PetscPythonMonitorSet - Set Python monitor
 

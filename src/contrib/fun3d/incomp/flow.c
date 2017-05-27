@@ -73,8 +73,6 @@ REAL dxtran[max_nbtran];
 /*                                                                           */
 /*===========================================================================*/
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   AppCtx      user;
@@ -317,8 +315,6 @@ int main(int argc,char **args)
 
 /*---------------------------------------------------------------------*/
 /* ---------------------  Form initial approximation ----------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,GRID *grid)
 /*---------------------------------------------------------------------*/
 {
@@ -334,8 +330,6 @@ int FormInitialGuess(SNES snes,GRID *grid)
 
 /*---------------------------------------------------------------------*/
 /* ---------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 {
@@ -443,8 +437,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
 /*---------------------------------------------------------------------*/
 {
@@ -488,8 +480,6 @@ int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Update"
 int Update(SNES snes,void *ctx)
 /*---------------------------------------------------------------------*/
 {
@@ -622,8 +612,6 @@ int Update(SNES snes,void *ctx)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ComputeTimeStep"
 int ComputeTimeStep(SNES snes,int iter,void *ctx)
 /*---------------------------------------------------------------------*/
 {
@@ -664,8 +652,6 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "GetLocalOrdering"
 int GetLocalOrdering(GRID *grid)
 /*---------------------------------------------------------------------*/
 {
@@ -894,7 +880,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(ierr);
   k    = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
@@ -1837,8 +1823,6 @@ void *base64_encodeblock(void *vout,const void *vin,int len)
   return (void*)(out+4);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFWrite_FUN3D"
 /* Write binary data, does not do byte swapping. */
 static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscInt n,PetscDataType dtype,PetscBool base64)
 {
@@ -1913,8 +1897,6 @@ static void SortInt2(PetscInt *a,PetscInt *b)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IntersectInt"
 /* b = intersection(a,b) */
 static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,PetscInt *b)
 {
@@ -1934,8 +1916,6 @@ static PetscErrorCode IntersectInt(PetscInt na,const PetscInt *a,PetscInt *nb,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InferLocalCellConnectivity"
 /*
   This function currently has a semantic bug: it only produces cells containing all local edges.  Since the local mesh
   does not even store edges between unowned nodes, primal cells that are effectively shared between processes will not
@@ -2041,8 +2021,6 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GridCompleteOverlap"
 static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscInt *inedgeOv,PetscInt **ieptrOv)
 {
   PetscErrorCode ierr;
@@ -2207,8 +2185,6 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WritePVTU"
 static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 {
   GRID              *grid  = user->grid;
@@ -2374,8 +2350,6 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "SetPetscDS"
 int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
@@ -2561,8 +2535,6 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*                                                                           */
 /*===========================================================================*/
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "f77CLINK"
 void PETSC_STDCALL f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
 {
   c_info  = p1;
@@ -2576,8 +2548,6 @@ EXTERN_C_END
 /* Allocates the memory for the fine grid                                   */
 /*                                                                          */
 /*==========================================================================*/
-#undef __FUNCT__
-#define __FUNCT__ "set_up_grid"
 int set_up_grid(GRID *grid)
 {
   int nnodes,nedge;
@@ -2783,8 +2753,6 @@ int set_up_grid(GRID *grid)
 /* Write memory locations and other information for the fine grid            */
 /*                                                                           */
 /*===========================================================================*/
-#undef __FUNCT__
-#define __FUNCT__ "write_fine_grid"
 int write_fine_grid(GRID *grid)
 {
   FILE *output;

@@ -4,8 +4,6 @@ static char help[] = "Tests mirror boundary conditions in 1-d.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -19,6 +17,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,0,"-dof",&dof,0);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xstart,0,0,&m,0,0);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

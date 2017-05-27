@@ -7,8 +7,6 @@
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESNEWTONLSCheckLocalMin_Private"
 static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,PetscReal fnorm,PetscBool  *ismin)
 {
   PetscReal      a1;
@@ -48,8 +46,6 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Pe
 /*
      Checks if J^T(F - J*X) = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESNEWTONLSCheckResidual_Private"
 static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X)
 {
   PetscReal      a1,a2;
@@ -135,8 +131,6 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Ve
    Unconstrained Optimization and Nonlinear Equations" by Dennis
    and Schnabel.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NEWTONLS"
 PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 {
   PetscErrorCode       ierr;
@@ -294,8 +288,6 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NEWTONLS"
 PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -307,8 +299,6 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NEWTONLS"
 PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
@@ -324,8 +314,6 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 
    Application Interface Routine: SNESDestroy()
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NEWTONLS"
 PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -346,8 +334,6 @@ PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 
    Application Interface Routine: SNESView()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NEWTONLS"
 static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -369,8 +355,6 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NEWTONLS"
 static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
@@ -391,7 +375,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptions
    Options Database:
 +   -snes_linesearch_type <bt> - bt,basic.  Select line search type
 .   -snes_linesearch_order <3> - 2, 3. Selects the order of the line search for bt
-.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch
+.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch (SNESLineSearchSetComputeNorms())
 .   -snes_linesearch_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
 .   -snes_linesearch_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
 .   -snes_linesearch_minlambda <minlambda>  - Sets the minimum lambda the line search will tolerate
@@ -406,8 +390,6 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionItems *PetscOptions
            SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck() SNESLineSearchSetComputeNorms()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NEWTONLS"
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;

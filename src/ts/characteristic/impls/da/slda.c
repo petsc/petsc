@@ -2,8 +2,6 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicView_DA"
 PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
   Characteristic_DA *da = (Characteristic_DA*) c->data;
@@ -22,8 +20,6 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicDestroy_DA"
 PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
 {
   Characteristic_DA *da = (Characteristic_DA*) c->data;
@@ -34,8 +30,6 @@ PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicSetUp_DA"
 PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 {
   PetscMPIInt    blockLen[2];
@@ -72,8 +66,6 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicCreate_DA"
 PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 {
   Characteristic_DA *da;
@@ -93,8 +85,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAMapCoordsToPeriodicDomain"
 /* -----------------------------------------------------------------------------
    Checks for periodicity of a DM and Maps points outside of a domain back onto the domain
    using appropriate periodicity. At the moment assumes only a 2-D DMDA.

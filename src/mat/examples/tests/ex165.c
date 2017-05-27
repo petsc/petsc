@@ -6,8 +6,6 @@ static char help[] = "Tests C=A^T*B via MatTranspose() and MatMatMult(). \n\
  */
 
 #include <petscmat.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

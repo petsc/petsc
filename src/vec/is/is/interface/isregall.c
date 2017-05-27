@@ -4,8 +4,6 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS);
 PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS);
 PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRegisterAll"
 /*@C
   ISRegisterAll - Registers all of the index set components in the IS package.
 
@@ -14,7 +12,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
   Level: advanced
 
 .keywords: IS, register, all
-.seealso:  ISRegister(), ISRegisterDestroy()
+.seealso:  ISRegister()
 @*/
 PetscErrorCode  ISRegisterAll(void)
 {

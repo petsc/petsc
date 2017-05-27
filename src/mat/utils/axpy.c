@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -57,8 +55,6 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPY_Basic"
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscInt          i,start,end,j,ncols,m,n;
@@ -93,8 +89,6 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPY_BasicWithPreallocation"
 PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscInt          i,start,end,j,ncols,m,n;
@@ -137,8 +131,6 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
 
@@ -193,8 +185,6 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_Default"
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
@@ -213,8 +203,6 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet"
 /*@
    MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
    that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
@@ -256,8 +244,6 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAYPX"
 /*@
    MatAYPX - Computes Y = a*Y + X.
 
@@ -294,8 +280,6 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatComputeExplicitOperator"
 /*@
     MatComputeExplicitOperator - Computes the explicit matrix
 
@@ -375,8 +359,6 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatChop"
 /*@
   MatChop - Set all values in the matrix less than the tolerance to zero
 

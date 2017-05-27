@@ -1,0 +1,43 @@
+PetscBag Object:  ParameterBag (pbag_) contains parameters for simulations of top-secret, dangerous physics
+  filename = secretfile.txt; Name of secret file
+  rho = 1. ; Density, kg/m^3
+  W = 3. ; Vertical velocity, m/sec
+  modes_x = 2 ; Number of modes in x-direction
+  int_array = 1 2 3 ; Int array with 3 locations
+  real_array = 1. -1. ; Real array with 2 locations
+  do_output =  FALSE; Write output file (yes/no)
+  bool_array =  TRUE FALSE FALSE; Bool array with 3 locations
+  dt = LONG; (PetscDataType) meaningless datatype
+  x1 = 1. ; x position
+  x2 = 0.9 ; y position
+  choose = THE_OTHER; (EnumeratedChoices) Express yourself by choosing among enumerated things
+PetscBag Object:  ParameterBag (pbag_) contains parameters for simulations of top-secret, dangerous physics
+  filename = secretfile.txt; Name of secret file
+  rho = 1. ; Density, kg/m^3
+  W = 3. ; Vertical velocity, m/sec
+  modes_x = 2 ; Number of modes in x-direction
+  int_array = 1 2 3 ; Int array with 3 locations
+  real_array = 1. -1. ; Real array with 2 locations
+  do_output =  FALSE; Write output file (yes/no)
+  bool_array =  TRUE FALSE FALSE; Bool array with 3 locations
+  dt = LONG; (PetscDataType) meaningless datatype
+  x1 = 1. ; x position
+  x2 = 0.9 ; y position
+  choose = THE_OTHER; (EnumeratedChoices) Express yourself by choosing among enumerated things
+The value of rho after loading is: 1.000000
+#PETSc Option Table entries:
+-options_file_yaml bag.yml
+-options_view
+-pbag_W 3.
+-pbag_bool_array yes,0,false
+-pbag_choose THE_OTHER
+-pbag_do_output no
+-pbag_dt LONG
+-pbag_filename secretfile.txt
+-pbag_int_array 1,2,3
+-pbag_modes_x 2
+-pbag_real_array 1.0,-1.0
+-pbag_rho 1.0
+-pbag_x1 1.
+-pbag_x2 .9
+#End of PETSc Option Table entries

@@ -22,8 +22,6 @@ static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ e
 #include <petscmat.h>
 #include <petscis.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A, *S;
@@ -116,7 +114,7 @@ int main(int argc,char **args)
     }
   }
   ierr = PetscMalloc1(nsub, &S);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
 
   show_inversions = PETSC_FALSE;
 

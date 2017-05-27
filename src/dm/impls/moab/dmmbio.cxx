@@ -1,8 +1,6 @@
 #include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 #include <petscdmmoab.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_GetWriteOptions_Private"
 static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** write_opts)
 {
   PetscErrorCode ierr;
@@ -35,8 +33,6 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabOutput"
 /*@C
   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags 
   along with the complete mesh data structure in the native H5M or VTK format. The H5M output file

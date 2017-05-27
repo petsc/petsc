@@ -1,6 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscdmplex.h>
-#include <../src/sys/f90-src/f90impl.h>
+#include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmplexcomputecellgeometryaffinefem_   DMPLEXCOMPUTECELLGEOMETRYAFFINEFEM
@@ -22,7 +22,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryaffinefem_(DM *dm, Pets
   *ierr = DMPlexComputeCellGeometryAffineFEM(*dm, *cell, v0, J, invJ, detJ);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfem_(DM *dm, PetscInt *cell, PetscFE *fe, F90Array1d *ptrV, F90Array1d *ptrJ, F90Array1d *ptrIJ, PetscReal *detJ, int *ierr PETSC_F90_2PTR_PROTO(ptrVd) PETSC_F90_2PTR_PROTO(ptrJd) PETSC_F90_2PTR_PROTO(ptrIJd))
+PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfem_(DM *dm, PetscInt *cell, PetscQuadrature *quad, F90Array1d *ptrV, F90Array1d *ptrJ, F90Array1d *ptrIJ, PetscReal *detJ, int *ierr PETSC_F90_2PTR_PROTO(ptrVd) PETSC_F90_2PTR_PROTO(ptrJd) PETSC_F90_2PTR_PROTO(ptrIJd))
 {
   PetscReal *v0;
   PetscReal *J;
@@ -31,7 +31,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfem_(DM *dm, PetscInt *
   *ierr = F90Array1dAccess(ptrV,  PETSC_REAL, (void**) &v0 PETSC_F90_2PTR_PARAM(ptrVd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
-  *ierr = DMPlexComputeCellGeometryFEM(*dm, *cell, *fe, v0, J, invJ, detJ);
+  *ierr = DMPlexComputeCellGeometryFEM(*dm, *cell, *quad, v0, J, invJ, detJ);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfvm_(DM *dm, PetscInt *cell, PetscReal *vol, F90Array1d *ptrCentroid, F90Array1d *ptrNormal, int *ierr PETSC_F90_2PTR_PROTO(ptrCentroidd) PETSC_F90_2PTR_PROTO(ptrNormald))

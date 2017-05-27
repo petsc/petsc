@@ -2,8 +2,6 @@ static char help[] = " * Example code testing SeqDense matrices with an LDA (lea
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            solver;
@@ -75,7 +73,7 @@ int main(int argc,char **argv)
   ierr = KSPSolve(solver,X,Z);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test1; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",nrm);CHKERRQ(ierr);
 
   /* Free spaces */
   ierr = PetscFree(b);CHKERRQ(ierr);

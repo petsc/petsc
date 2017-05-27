@@ -4,10 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.20-pre2.tar.gz']
-    self.gitcommit         = 'v1.1.20-pre2'
+    self.gitcommit         = 'v1.1.25-p1'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames  = ['petsc-pkg-sowing']
     self.complex           = 1
-    self.double            = 0
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np
@@ -25,6 +25,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.petscclone = framework.require('PETSc.options.petscclone', None)
     return
 
   def formGNUConfigureArgs(self):
@@ -47,16 +48,17 @@ class Configure(config.package.GNUPackage):
     self.checkDownload()
 
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']) or \
-          (self.framework.clArgDB.has_key('download-sowing') and not self.argDB['download-sowing']):
-      self.logPrint("Not checking sowing on user request\n")
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+      if hasattr(self.compilers, 'FC') and self.petscclone.isClone:
+        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran and git repository for PETSc')
+      self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
     if self.framework.batchBodies:
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing'):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 

@@ -73,8 +73,6 @@ extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode SetBounds(Vec,Vec,PetscScalar,PetscScalar,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
@@ -116,8 +114,9 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,
-                      &appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(appctx.da);CHKERRQ(ierr);
+  ierr = DMSetUp(appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -229,14 +228,12 @@ int main(int argc,char **argv)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time.
 
@@ -297,8 +294,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SetBounds"
 /*
   SetBounds - Sets the lower and uper bounds on the interior points
 
@@ -339,8 +334,6 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -385,8 +378,6 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at
    each timestep.  This example plots the solution and computes the
@@ -464,8 +455,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 /*
    RHSFunction - User-provided routine that evalues the right-hand-side
    function of the ODE.  This routine is set in the main program by
@@ -569,8 +558,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 /*
    RHSJacobian - User-provided routine to compute the Jacobian of
    the nonlinear right-hand-side function of the ODE.

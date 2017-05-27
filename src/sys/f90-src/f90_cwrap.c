@@ -1,4 +1,4 @@
-#include <../src/sys/f90-src/f90impl.h>
+#include <petsc/private/f90impl.h>
 
 /*************************************************************************/
 
@@ -43,8 +43,6 @@ PETSC_EXTERN void PETSC_STDCALL f90array1dcreatefortranaddr_(void *,PetscInt *,P
 PETSC_EXTERN void PETSC_STDCALL f90array1daccessfortranaddr_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void PETSC_STDCALL f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array1dCreate"
 PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -63,8 +61,6 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array1dAccess"
 PetscErrorCode  F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -83,8 +79,6 @@ PetscErrorCode  F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array1dDestroy"
 PetscErrorCode  F90Array1dDestroy(F90Array1d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -143,8 +137,6 @@ PETSC_EXTERN void PETSC_STDCALL f90array2dcreatefortranaddr_(void *,PetscInt *,P
 PETSC_EXTERN void PETSC_STDCALL f90array2daccessfortranaddr_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void PETSC_STDCALL f90array2ddestroyfortranaddr_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array2dCreate"
 PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -160,8 +152,6 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array2dAccess"
 PetscErrorCode  F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -177,8 +167,6 @@ PetscErrorCode  F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array2dDestroy"
 PetscErrorCode  F90Array2dDestroy(F90Array2d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -237,8 +225,6 @@ PETSC_EXTERN void PETSC_STDCALL f90array3dcreatefortranaddr_(void *,PetscInt *,P
 PETSC_EXTERN void PETSC_STDCALL f90array3daccessfortranaddr_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void PETSC_STDCALL f90array3ddestroyfortranaddr_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array3dCreate"
 PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,F90Array3d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -254,8 +240,6 @@ PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array3dAccess"
 PetscErrorCode  F90Array3dAccess(F90Array3d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -271,8 +255,6 @@ PetscErrorCode  F90Array3dAccess(F90Array3d *ptr,PetscDataType type,void **array
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array3dDestroy"
 PetscErrorCode  F90Array3dDestroy(F90Array3d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -330,8 +312,6 @@ PETSC_EXTERN void PETSC_STDCALL f90array4dcreatefortranaddr_(void *,PetscInt *,P
 PETSC_EXTERN void PETSC_STDCALL f90array4daccessfortranaddr_(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void PETSC_STDCALL f90array4ddestroyfortranaddr_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array4dCreate"
 PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array4d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -341,8 +321,6 @@ PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array4dAccess"
 PetscErrorCode  F90Array4dAccess(F90Array4d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -358,8 +336,6 @@ PetscErrorCode  F90Array4dAccess(F90Array4d *ptr,PetscDataType type,void **array
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F90Array4dDestroy"
 PetscErrorCode  F90Array4dDestroy(F90Array4d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;

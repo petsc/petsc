@@ -40,7 +40,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_INTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscBool*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -52,6 +52,5 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat,Mat
 
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
 #endif

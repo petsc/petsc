@@ -4,8 +4,6 @@ Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,RHS,C,F,X,S;
@@ -255,6 +253,26 @@ int main(int argc,char **args)
       if (norm > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
       }
+    }
+    if (isolver == 0) {
+      Mat spRHS,spRHST,RHST;
+
+      ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
+      ierr = MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
+      ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+      for (nsolve = 0; nsolve < 2; nsolve++) {
+        ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+
+        /* Check the error */
+        ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        if (norm > tol) {
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
+        }
+      }
+      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+      ierr = MatDestroy(&RHST);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&S);CHKERRQ(ierr);
     ierr = VecDestroy(&xschur);CHKERRQ(ierr);

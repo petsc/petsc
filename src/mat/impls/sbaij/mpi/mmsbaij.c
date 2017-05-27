@@ -4,11 +4,6 @@
 */
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
 PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ*)mat->data;
@@ -147,8 +142,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPISBAIJ_2comm"
 PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)mat->data;
@@ -281,8 +274,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
    Kind of slow! But that's what application programmers get when
    they are sloppy.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatDisAssemble_MPISBAIJ"
 PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ   *baij  = (Mat_MPISBAIJ*)A->data;

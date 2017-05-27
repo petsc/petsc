@@ -138,7 +138,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
         <li><a href="#petsc-options">PETSc has so many options for my program that it is hard to keep them straight.</a></li>
         <li><a href="#petsc-log-info">PETSc automatically handles many of the details in parallel PDE solvers.  How can I understand what is really happening within my program? </a></li>
         <li><a href="#efficient-assembly">Assembling large sparse matrices takes a long time. What can I do make this process faster? or MatSetValues() is <b>so slow</b>, what can I do to make it faster?</a></li>
-        <li><a href="#log-summary">How can I generate performance summaries with PETSc?</a></li>
+        <li><a href="#log-view">How can I generate performance summaries with PETSc?</a></li>
         <li><a href="#parallel-roundoff">Why do I get different answers on a different numbers of processors?</a></li>
         <li><a href="#mg-log">How do I know the amount of time spent on each level of the solver in multigrid (PCType of PCMG) -pc_type mg.</a></li>
         <li><a href="#datafiles">Where do I get the input matrices for the examples?</a></li>
@@ -1250,7 +1250,7 @@ PETSC_COMM_WORLD = NewComm;
       <h3><a name="petsc-log-info">PETSc automatically handles many of the details in parallel PDE solvers. How can I understand what is really happening within my program?</a></h3>
 
       You can use the option -info to get more details about the solution
-      process. The option -log_summary provides details about the distribution of
+      process. The option -log_view provides details about the distribution of
       time spent in the various phases of the solution process. You can run with
       -ts_view or -snes_view or -ksp_view to see what solver options are being
       used. Run with -ts_monitor -snes_monitor or -ksp_monitor to watch
@@ -1297,9 +1297,9 @@ PETSC_COMM_WORLD = NewComm;
         just not many.
       </p>
 
-      <h3><a name="log-summary">How can I generate performance summaries with PETSc?</a></h3>
+      <h3><a name="log-view">How can I generate performance summaries with PETSc?</a></h3>
 
-      Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      Use these options at runtime: -log_view. See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
       for information on interpreting the summary data. If using the PETSc
       (non)linear solvers, one can also specify -snes_view or -ksp_view for
       a printout of solver info. Only the highest level PETSc object used needs
@@ -1316,7 +1316,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="mg-log">How do I know the amount of time spent on each level of the multigrid solver/preconditioner?</a></h3>
 
-      Run with <code>-log_summary</code> and <code>-pc_mg_log</code>
+      Run with <code>-log_view</code> and <code>-pc_mg_log</code>
 
       <h3><a name="datafiles">Where do I get the input matrices for the examples?</a></h3>
 
@@ -1341,7 +1341,7 @@ PETSC_COMM_WORLD = NewComm;
       <ul>
         <li>
           First make sure it is truely the time in KSPSolve() that is slower (by
-          running the code with <a href="#log-summary">-log_summary</a>).
+          running the code with <a href="#log-view">-log_view</a>).
           Often the slower time is in <a href="#slow">generating the matrix</a>
           or some other operation.
         </li>
@@ -1592,7 +1592,7 @@ PETSC_COMM_WORLD = NewComm;
         <li>
           You are using geometric multigrid, but some equations (often boundary
           conditions) are not scaled compatibly between levels. Try
-          <code>-pc_mg_galerkin</code> to algebraically construct a correctly
+          <code>-pc_mg_galerkin both</code> to algebraically construct a correctly
           scaled coarse operator or make sure that all the equations are scaled
           in the same way if you want to use rediscretized coarse levels.
         </li>
@@ -1870,8 +1870,8 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
         <li>
           Do not use the -log, -log_mpe, or -log_all option, or use
-          PLogEventDeactivate() or PLogEventDeactivateClass(),
-          PLogEventMPEDeactivate() to turn off logging of specific events.
+          PLogEventDeactivate() or PLogEventDeactivateClass()
+          to turn off logging of specific events.
         </li>
 
         <li>Make sure you do not link with the MPI profiling libraries.</li>

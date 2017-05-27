@@ -7,8 +7,6 @@
     This routine is shared by SeqAIJ and SeqBAIJ matrices,
     since it operators only on the nonzero structure of the elements or blocks.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_SeqXAIJ"
 PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
@@ -45,7 +43,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   c->m       = mat->rmap->N/bs;
   c->rstart  = 0;
   c->ncolors = nis;
-  c->ctype   = IS_COLORING_GHOSTED;
+  c->ctype   = iscoloring->ctype;
   PetscFunctionReturn(0);
 }
 
@@ -56,8 +54,6 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 .  color - the coloring context
 -  nz - number of local non-zeros in mat
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUpBlocked_AIJ_Private"
 PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,PetscInt nz)
 {
   PetscErrorCode ierr;
@@ -67,7 +63,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   PetscFunctionBegin;
   if (brows < 1 || brows > mbs) brows = mbs;
   ierr = PetscMalloc2(bcols+1,&color_start,bcols,&row_start);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nis,&nrows_new);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nis,&nrows_new);CHKERRQ(ierr);
   ierr = PetscMalloc1(bcols*mat->rmap->n,&c->dy);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)c,bcols*mat->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
 
@@ -168,8 +164,6 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUp_SeqXAIJ"
 PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;

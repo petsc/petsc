@@ -34,13 +34,13 @@ T*/
       This example shows how geometric multigrid can be run transparently with a nonlinear solver so long
       as SNESSetDM() is provided. Example usage
 
-      ./ex5 -pc_type mg -ksp_monitor  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17
+      ./ex5 -pc_type mg -ksp_monitor  -snes_view -pc_mg_levels 3 -pc_mg_galerkin pmat -da_grid_x 17 -da_grid_y 17
              -mg_levels_ksp_monitor -snes_monitor -mg_levels_pc_type sor -pc_mg_type full
 
       or to run with grid sequencing on the nonlinear problem (note that you do not need to provide the number of
          multigrid levels, it will be determined automatically based on the number of refinements done)
 
-      ./ex5 -pc_type mg -ksp_monitor  -snes_view -pc_mg_galerkin -snes_grid_sequence 3
+      ./ex5 -pc_type mg -ksp_monitor  -snes_view -pc_mg_galerkin pmat -snes_grid_sequence 3
              -mg_levels_ksp_monitor -snes_monitor -mg_levels_pc_type sor -pc_mg_type full
 
   ------------------------------------------------------------------------- */
@@ -85,8 +85,6 @@ extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
 #endif
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                         /* nonlinear solver */
@@ -136,7 +134,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -232,8 +232,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -298,8 +296,6 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution1"
 /*
   FormExactSolution1 - Forms initial approximation.
 
@@ -338,8 +334,6 @@ PetscErrorCode FormExactSolution1(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution2"
 /*
   FormExactSolution2 - Forms initial approximation.
 
@@ -378,8 +372,6 @@ PetscErrorCode FormExactSolution2(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution3"
 /*
   FormExactSolution3 - Forms initial approximation.
 
@@ -424,8 +416,6 @@ PetscErrorCode FormExactSolution3(DM da, AppCtx *user, Vec U)
 }
 /* ------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution4"
 /*
   FormExactSolution4 - Forms initial approximation.
 
@@ -468,8 +458,6 @@ PetscErrorCode FormExactSolution4(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
 
@@ -518,8 +506,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS1"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS1 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -575,7 +561,7 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*exp(x*(1 - x)*y*(1 - y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*PetscExpReal(x*(1 - x)*y*(1 - y)));
       }
     }
   }
@@ -586,8 +572,6 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS2"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS2 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -643,7 +627,7 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*exp(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*PetscExpReal(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
       }
     }
   }
@@ -654,8 +638,6 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS3"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS3 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -724,8 +706,6 @@ PetscErrorCode FormFunctionLocalMMS3(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS4"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS4 - Evaluates nonlinear function, F(x) on local process patch
 
@@ -792,8 +772,6 @@ PetscErrorCode FormFunctionLocalMMS4(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormObjectiveLocal"
 /* FormObjectiveLocal - Evaluates nonlinear function, F(x) on local process patch */
 PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
 {
@@ -845,8 +823,6 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
@@ -938,8 +914,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionMatlab"
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
@@ -987,8 +961,6 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 #endif
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
@@ -1100,3 +1072,60 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+/*TEST
+  # ASM vs MSM
+  test:
+    suffix: asm_0
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu
+  test:
+    suffix: msm_0
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu
+  test:
+    suffix: asm_1
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_1
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_2
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 3 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_2
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 3 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_3
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_3
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_4
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_4
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_5
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_5
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+
+TEST*/

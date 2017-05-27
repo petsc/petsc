@@ -29,8 +29,6 @@ typedef struct {
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Parmetis"
 static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis*)part->data;
@@ -135,8 +133,6 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView_Parmetis"
 PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis*)part->data;
@@ -162,8 +158,6 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningParmetisSetCoarseSequential"
 /*@
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
          do the partitioning of the coarse grid.
@@ -185,8 +179,6 @@ PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningParmetisSetRepartition"
 /*@
      MatPartitioningParmetisSetRepartition - Repartition
      current mesh to rebalance computation.
@@ -208,8 +200,6 @@ PetscErrorCode  MatPartitioningParmetisSetRepartition(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningParmetisGetEdgeCut"
 /*@
   MatPartitioningParmetisGetEdgeCut - Returns the number of edge cuts in the vertex partition.
 
@@ -231,8 +221,6 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode ierr;
@@ -253,8 +241,6 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptionItems *PetscOpt
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_Parmetis"
 PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis*)part->data;
@@ -287,8 +273,6 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Parmetis"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode           ierr;
@@ -312,8 +296,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMeshToVertexGraph"
 /*@
  MatMeshToVertexGraph -   This routine does not exist because ParMETIS does not provide the functionality.  Uses the ParMETIS package to
                        convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
@@ -348,8 +330,6 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMeshToCellGraph"
 /*@
      MatMeshToCellGraph -   Uses the ParMETIS package to convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
                        between cells (the "dual" graph) and is suitable for partitioning with the MatPartitioning object. Use this to partition
@@ -368,8 +348,11 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is
-     number of cells, the number of columns is the number of vertices.
+$     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadralaterials 4 entries,
+$         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
+$         mix  tetrahedrals and hexahedrals
+$     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that row's cell.
+$     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
 
 
    Level: advanced

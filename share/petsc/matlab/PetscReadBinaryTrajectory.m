@@ -12,16 +12,31 @@ function [varargout] = PetscBinaryReadTrajectory(inarg)
 if nargin < 1
   if exist('SA-data','dir')
     inarg = 'SA-data';
-  else if exist('Visualization-data','dir')
+  elseif exist('Visualization-data','dir')
     inarg = 'Visualization-data';
   else
     error('Can not find the folder of trajectory files!');
+  end
+end
 
 indices = 'int32';
 precision = 'float64';
 maxsteps = 10000;
 
 t = zeros(1,maxsteps);
+
+foundnames = 0;
+fullname = fullfile(inarg,'variablenames');
+if exist(fullname,'file') == 2
+  fd = PetscOpenFile(fullname);
+  n     = read(fd,1,indices);
+  sizes = read(fd,n,indices);
+  names = {'  '};
+  for i=1:n,
+    names{i} = deblank(char(read(fd,sizes(i),'uchar')))';
+  end
+  foundnames = 1;
+end
 
 for stepnum=1:maxsteps
   filename = sprintf('SA-%06d.bin',stepnum-1);
@@ -54,12 +69,14 @@ for stepnum=1:maxsteps
   close(fd);
 end
 
-if size > 1
-  varargout{1} = {t(1:steps)};
-  varargout{2} = {x(:,1:steps)};
+if steps > 1
+  varargout{1} = t(1:steps);
+  varargout{2} = x(:,1:steps);
+  if foundnames == 1
+    varargout{3} = names;
+  end
 end
 
-end
 
 
 

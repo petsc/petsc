@@ -8,8 +8,6 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJToMatlab"
 PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 {
   PetscErrorCode ierr;
@@ -29,8 +27,6 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
   PetscFunctionReturn(mat);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatlabEnginePut_SeqAIJ"
 PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
@@ -43,8 +39,6 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJFromMatlab"
 /*@C
     MatSeqAIJFromMatlab - Given a MATLAB sparse matrix, fills a SeqAIJ matrix with its transpose.
 
@@ -105,8 +99,6 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatlabEngineGet_SeqAIJ"
 PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
@@ -119,8 +111,6 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_Matlab"
 PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -142,8 +132,6 @@ PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_Matlab"
 PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
@@ -185,8 +173,6 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_Matlab"
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
@@ -196,8 +182,6 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_matlab"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -205,8 +189,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPack
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_matlab"
 PetscErrorCode MatDestroy_matlab(Mat A)
 {
   PetscErrorCode ierr;
@@ -218,8 +200,6 @@ PetscErrorCode MatDestroy_matlab(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_matlab"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
@@ -245,8 +225,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_Matlab"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
 {
   PetscErrorCode ierr;
@@ -258,8 +236,6 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
 
 /* --------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_Matlab"
 PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -269,8 +245,6 @@ PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_Matlab"
 PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;

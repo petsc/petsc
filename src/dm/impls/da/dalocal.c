@@ -15,8 +15,6 @@
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
-#undef __FUNCT__
-#define __FUNCT__ "VecMatlabEnginePut_DA2d"
 static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
@@ -47,8 +45,6 @@ static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 #endif
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_DA"
 PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 {
   PetscErrorCode ierr;
@@ -74,8 +70,6 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNumCells"
 /*@
   DMDAGetNumCells - Get the number of cells in the local piece of the DMDA. This includes ghost cells.
 
@@ -120,8 +114,6 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCellPoint"
 /*@
   DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the DMDA
 
@@ -147,14 +139,12 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscValidIntPointer(point,5);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   if (dim > 0) {if ((i < info.gxs) || (i >= info.gxs+info.gxm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);}
-  if (dim > 1) {if ((i < info.gys) || (i >= info.gys+info.gym)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", i, info.gys, info.gys+info.gym);}
-  if (dim > 2) {if ((i < info.gzs) || (i >= info.gzs+info.gzm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", i, info.gzs, info.gzs+info.gzm);}
+  if (dim > 1) {if ((j < info.gys) || (j >= info.gys+info.gym)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", j, info.gys, info.gys+info.gym);}
+  if (dim > 2) {if ((k < info.gzs) || (k >= info.gzs+info.gzm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", k, info.gzs, info.gzs+info.gzm);}
   *point = i + (dim > 1 ? (j + (dim > 2 ? k*info.gym : 0))*info.gxm : 0);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNumVertices"
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
 {
   DM_DA          *da = (DM_DA*) dm->data;
@@ -185,8 +175,6 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNumFaces"
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
 {
   DM_DA          *da = (DM_DA*) dm->data;
@@ -227,8 +215,6 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetHeightStratum"
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
 {
   const PetscInt dim = dm->dim;
@@ -261,8 +247,6 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetDepthStratum"
 PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
 {
   const PetscInt dim = dm->dim;
@@ -295,8 +279,6 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetConeSize"
 PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
 {
   const PetscInt dim = dm->dim;
@@ -327,8 +309,6 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCone"
 PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
 {
   const PetscInt dim = dm->dim;
@@ -375,8 +355,6 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestoreCone"
 PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 {
   PetscErrorCode ierr;
@@ -386,8 +364,6 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreateSection"
 /*@C
   DMDACreateSection - Create a PetscSection inside the DMDA that describes data layout. This allows multiple fields with
   different numbers of dofs on vertices, cells, and faces in each direction.
@@ -1153,8 +1129,6 @@ PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetVertexCoordinates"
 PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
 {
   DM_DA         *da = (DM_DA *) dm->data;
@@ -1213,8 +1187,6 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFunctionLocal_DA"
 PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscDS         prob;
@@ -1223,7 +1195,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, numComp, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, Nc, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1239,7 +1211,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscFECellGeom geom;
 
@@ -1250,12 +1222,11 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, time, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
-        v += numComp;
+        ierr = PetscDualSpaceApply(sp, d, time, &geom, Nc, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
       }
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
@@ -1264,8 +1235,6 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2Diff_DA"
 PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
@@ -1306,19 +1275,20 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
       void * const ctx = ctxs ? ctxs[field] : NULL;
       const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basis;
-      PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
+      PetscInt         qNc, Nq, Nb, Nc, q, d, e, fc, f;
 
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe, &numBasisFuncs);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe, &numBasisComps);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      if (qNc != Nc) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Quadrature components %D != %D field components\n", qNc, Nc);
       ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb, &x[fieldOffset]);CHKERRQ(ierr);
       }
-      for (q = 0; q < numQuadPoints; ++q) {
+      for (q = 0; q < Nq; ++q) {
         for (d = 0; d < dim; d++) {
           coords[d] = v0[d];
           for (e = 0; e < dim; e++) {
@@ -1326,19 +1296,18 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
           }
         }
         ierr = (*funcs[field])(dim, time, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
-        for (fc = 0; fc < numBasisComps; ++fc) {
+        for (fc = 0; fc < Nc; ++fc) {
           PetscScalar interpolant = 0.0;
 
-          for (f = 0; f < numBasisFuncs; ++f) {
-            const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
+          for (f = 0; f < Nb; ++f) {
+            interpolant += x[fieldOffset+f]*basis[(q*Nb+f)*Nc+fc];
           }
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+fc]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ;
         }
       }
-      comp        += numBasisComps;
-      fieldOffset += numBasisFuncs*numBasisComps;
+      comp        += Nc;
+      fieldOffset += Nb;
     }
     ierr = DMDAVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
@@ -1351,8 +1320,6 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2GradientDiff_DA"
 PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
@@ -1393,12 +1360,13 @@ PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode 
       void * const ctx = ctxs ? ctxs[field] : NULL;
       const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basisDer;
-      PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
+      PetscInt         qNc, Nq, Nb, Nc, q, d, e, fc, f, g;
 
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      if (qNc != Nc) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Quadrature components %D != %D field components\n", qNc, Nc);
       ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
@@ -1418,19 +1386,17 @@ PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode 
 
           for (d = 0; d < dim; ++d) interpolantVec[d] = 0.0;
           for (f = 0; f < Nb; ++f) {
-            const PetscInt fidx = f*Nc+fc;
-
             for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
               for (g = 0; g < dim; ++g) {
-                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Nc+fidx)*dim+g];
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb+f)*dim+g];
               }
-              interpolantVec[d] += x[fieldOffset+fidx]*realSpaceDer[d];
+              interpolantVec[d] += x[fieldOffset+f]*realSpaceDer[d];
             }
           }
           for (d = 0; d < dim; ++d) interpolant += interpolantVec[d]*n[d];
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ;
         }
       }
       comp        += Nc;
@@ -1449,8 +1415,6 @@ PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode 
 
 /* ------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetArray"
 /*@C
      DMDAGetArray - Gets a work array for a DMDA
 
@@ -1577,8 +1541,6 @@ done:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestoreArray"
 /*@C
      DMDARestoreArray - Restores an array of derivative types for a DMDA
 

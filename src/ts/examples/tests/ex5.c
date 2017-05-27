@@ -6,7 +6,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
     mpiexec -n <np> ./ex5 [options]
     ./ex5 -help  [view petsc options]
     ./ex5 -ts_type sundials -ts_view
-    ./ex5 -da_grid_x 20 -da_grid_y 20 -log_summary
+    ./ex5 -da_grid_x 20 -da_grid_y 20 -log_view
     ./ex5 -da_grid_x 20 -da_grid_y 20 -ts_type rosw -ts_atol 1.e-6 -ts_rtol 1.e-6
     ./ex5 -drawcontours -draw_pause 0.1 -draw_fields 0,1,2,3,4
 */
@@ -144,8 +144,6 @@ extern PetscErrorCode potential_temperature(PetscScalar, PetscScalar, PetscScala
 extern PetscErrorCode latentflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);             /* calculates latent heat flux */
 extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar*);                                       /* calculates flux between top soil layer and underlying earth */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -221,8 +219,9 @@ int main(int argc,char **argv)
   /*------------------------------------------*/
 
   /* Create grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
-                      PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,20,20,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
   /* Define output window for each variable of interest */
@@ -334,8 +333,6 @@ int main(int argc,char **argv)
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "calcfluxs"
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
 {
   PetscFunctionBeginUser;
@@ -343,8 +340,6 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "calcfluxa"
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar *flux)   /* this function is not currently called upon */
 {
   PetscScalar emm = 0.001;
@@ -353,8 +348,6 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   *flux = SIG*(-emm*(PetscPowScalarInt(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "sensibleflux"
 PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
 {
   PetscScalar density = 1;    /* air density */
@@ -367,8 +360,6 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "latentflux"
 PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat)
 {
   PetscScalar density = 1;   /* density of dry air */
@@ -394,8 +385,6 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "potential_temperature"
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
 {
   PetscScalar kdry;     /* poisson constant for dry atmosphere */
@@ -434,8 +423,6 @@ extern PetscScalar calc_q(PetscScalar rv)
   return specific_humidity;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "calc_gflux"
 PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar* Gflux)
 {
   PetscScalar k;                       /* thermal conductivity parameter */
@@ -448,13 +435,11 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
   *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
   PetscFunctionReturn(0);
 }
-/* #undef __FUNCT__ */
-/* #define __FUNCT__ "emission" */
 extern PetscScalar emission(PetscScalar pwat)
 {
   PetscScalar emma;
 
-  emma = 0.725 + 0.17*log10(pwat);
+  emma = 0.725 + 0.17*PetscLog10Real(PetscRealPart(pwat));
 
   return emma;
 }
@@ -502,51 +487,49 @@ void readinput(struct in *put)
 
   ifp = fopen("ex5_control.txt", "r");
 
-  for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<110; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ts = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Td = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ta = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp)!= 1) abort();
   put->Tc = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->fr = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->wnd = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->pwt = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->wndDir = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->time = tmp;
 
-  for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<63; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->init = tmp;
 
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
 {
   PetscErrorCode ierr;
@@ -595,8 +578,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RhsFunc"
 /*
    RhsFunc - Evaluates nonlinear function F(u).
 
@@ -730,8 +711,6 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
   PetscErrorCode    ierr;

@@ -35,8 +35,8 @@ PETSC_INTERN PetscErrorCode MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
 PETSC_INTERN PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 PETSC_INTERN PetscErrorCode MatScale_SeqSBAIJ(Mat,PetscScalar);
 PETSC_INTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscBool*);
@@ -122,16 +122,6 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_7_inplace(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatSolves_SeqSBAIJ_1_inplace(Mat,Vecs,Vecs);
 PETSC_INTERN PetscErrorCode MatSolves_SeqSBAIJ_1(Mat,Vecs,Vecs);
-
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering_inplace(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering_inplace(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqSBAIJ_2(Mat,Vec,Vec);

@@ -2,8 +2,6 @@ static char help[] = "Tests for DMLabel\n\n";
 
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInsertion"
 static PetscErrorCode TestInsertion()
 {
   DMLabel        label, label2;
@@ -60,8 +58,6 @@ static PetscErrorCode TestInsertion()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestEmptyStrata"
 static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 {
   DM             dm, dmDist;
@@ -165,13 +161,11 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestDistribution"
 static PetscErrorCode TestDistribution(MPI_Comm comm)
 {
   DM             dm, dmDist;
   DMLabel        label;
-  const char     filename[2048];
+  char           filename[2048];
   const char    *name    = "test label";
   PetscInt       overlap = 0, cStart, cEnd, c;
   PetscMPIInt    rank;
@@ -205,8 +199,6 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
@@ -219,3 +211,15 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+  test:
+    suffix: 1
+    nsize: 2
+    requires: chaco exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2Dgrd.exo -overlap 1
+
+TEST*/

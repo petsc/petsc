@@ -4,6 +4,21 @@
 
 #include <../src/ksp/ksp/impls/gmres/pipefgmres/pipefgmresimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define PIPEFGMRES_DELTA_DIRECTIONS 10
 #define PIPEFGMRES_DEFAULT_MAXK     30
 
@@ -20,8 +35,6 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
     but can be called directly by KSPSetUp().
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEFGMRES"
 static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -77,8 +90,6 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESCycle"
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
@@ -95,13 +106,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
   Vec            *redux = pipefgmres->redux; /* workspace for single reduction */
 
   PetscFunctionBegin;
-
-  /* We have not checked these routines for use with complex numbers. The inner products
-     are likely not defined correctly for that case */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
-#endif
-
   if (itcount) *itcount = 0;
 
   /* Assign simpler names to these vectors, allocated as pipelining workspace */
@@ -353,8 +357,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 .     outits - number of iterations used
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFGMRES"
 static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -363,6 +365,15 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
+
+  /* We have not checked these routines for use with complex numbers. The inner products
+     are likely not defined correctly for that case */
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+#endif
+
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   if (ksp->calc_sings && !pipefgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -384,8 +395,6 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEFGMRES"
 static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -409,8 +418,6 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 
      This is an internal routine that knows about the PIPEFGMRES internals.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESBuildSoln"
 static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
@@ -466,8 +473,6 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vde
 .        res - the new residual
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESUpdateHessenberg"
 /*
 .  it - column of the Hessenberg that is complete, PIPEFGMRES is actually computing two columns ahead of this
  */
@@ -558,8 +563,6 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBoo
    calls directly.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_PIPEFGMRES"
 PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -584,8 +587,6 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEFGMRES"
 PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -602,8 +603,6 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEFGMRES"
 PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -633,8 +632,6 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_PIPEFGMRES"
 PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -658,13 +655,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 /*MC
    KSPPIPEFGMRES - Implements the Pipelined Generalized Minimal Residual method.
 
-   A Flexible, 1-stage pipelined variant of GMRES
-
-   This variant is not "explicitly normalized" like PGMRES, and requires a shift parameter.
-
-   A heuristic for choosing the shift parameter is the largest eigenvalue of the preconditioned operator.
-
-   Only right preconditioning is supported (but this preconditioner may be nonlinear, as with FGMRES)
+   A flexible, 1-stage pipelined variant of GMRES.
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -675,20 +666,30 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
+
+   This variant is not "explicitly normalized" like KSPPGMRES, and requires a shift parameter.
+
+   A heuristic for choosing the shift parameter is the largest eigenvalue of the preconditioned operator.
+
+   Only right preconditioning is supported (but this preconditioner may be nonlinear/variable/inexact, as with KSPFGMRES).
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
    See the FAQ on the PETSc website for details.
 
-   Developer Notes: This object is subclassed off of KSPGMRES
+   Developer Notes: This class is subclassed off of KSPGMRES.
+
+   Reference:
+    P. Sanan, S.M. Schnepp, and D.A. May,
+    "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
+    DOI: 10.1137/15M1049130
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLGMRES, KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPFGMRES
-           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESMonitorKrylov(), KSPPIPEGMRESSetShift()
+           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESMonitorKrylov(), KSPPIPEFGMRESSetShift()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEFGMRES"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres;
@@ -729,8 +730,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESGetNewVectors"
 static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -778,8 +777,6 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
   pipefgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESSetShift"
 /*@
   KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined GMRES solver.
 

@@ -7,8 +7,6 @@
  */
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESLejafmaxarray"
 static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, PetscInt n,PetscInt *pos)
 {
   PetscInt    i;
@@ -26,8 +24,6 @@ static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESLejaCfpdMax"
 static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, PetscInt *spos, PetscInt nbre, PetscInt n, PetscInt *rpos)
 {
   PetscScalar rd, id, pd, max;
@@ -52,8 +48,6 @@ static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESLejaOrdering"
 PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScalar *rre, PetscScalar *rim, PetscInt m)
 {
   PetscInt       *spos;

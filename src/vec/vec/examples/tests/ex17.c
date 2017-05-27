@@ -4,8 +4,6 @@ this case each local vector is as long as the entire parallel vector.\n\n";
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

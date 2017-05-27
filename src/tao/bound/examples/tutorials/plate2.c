@@ -61,8 +61,6 @@ PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat, Mat,void*);
 PetscErrorCode MyMatMult(Mat,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
   PetscErrorCode         ierr;                 /* used to check for functions returning nonzeros */
@@ -105,7 +103,8 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
-
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
   /*
      Extract global and local vectors from DM; The local vectors are
      used solely as work space for the evaluation of the function,
@@ -187,8 +186,6 @@ int main( int argc, char **argv )
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*  FormFunctionGradient - Evaluates f(x) and gradient g(x).
 
     Input Parameters:
@@ -399,8 +396,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Evaluates Hessian matrix.
 
@@ -613,8 +608,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_BoundaryConditions"
 /*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
@@ -744,8 +737,6 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_Plate"
 /*
    MSA_Plate -  Calculates an obstacle for surface to stretch over.
 
@@ -768,7 +759,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
-  bmy=user->bmy, bmx=user->bmx;
+  bmy=user->bmy; bmx=user->bmx;
 
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
@@ -810,8 +801,6 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_InitialPoint"
 /*
    MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
@@ -886,8 +875,6 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 }
 
 /* For testing matrix free submatrices */
-#undef __FUNCT__
-#define __FUNCT__ "MatrixFreeHessian"
 PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   PetscErrorCode ierr;
@@ -896,8 +883,6 @@ PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
   ierr = FormHessian(tao,x,user->H,user->H,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MyMatMult"
 PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;

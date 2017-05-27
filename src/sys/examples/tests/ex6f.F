@@ -1,8 +1,12 @@
 !
 !  Progran to test random number generation routines from fortran.
 !
-       program main
+      program main
+
 #include <petsc/finclude/petscsys.h>
+       use petscsys
+       implicit none
+
       PetscErrorCode  ierr
       PetscRandom     r
       PetscScalar     rand
@@ -20,3 +24,11 @@
       call PetscRandomDestroy(r,ierr)
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      requires: !complex
+!
+!TEST*/

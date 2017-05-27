@@ -36,7 +36,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
    we do not recommend ever using PetscTime()
-   The options database command  -log_summary activate
+   The options database command  -log_view activate
    PETSc library timing. See Users-Manual: ch_profiling for more details.
 
 .seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
@@ -65,7 +65,7 @@ M*/
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
    we do not every recommend using PetscTimeSubtract()
-   The options database command  -log_summary activates
+   The options database command  -log_view activates
    PETSc library timing.  See Users-Manual: ch_profiling for more details, also
    see PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd() for how to register
    stages and events in application codes. 
@@ -95,7 +95,7 @@ M*/
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
    we do not ever recommend using PetscTimeAdd().
-   The options database command -log_summary activate
+   The options database command -log_view activate
    PETSc library timing. See Users-Manual: ch_profiling for more details.
 
 .seealso:  PetscTime(), PetscTimeSubtract(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()

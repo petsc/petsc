@@ -45,8 +45,6 @@ extern PetscErrorCode FormPsiAndExactSoln(DM);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,ObsCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,ObsCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode      ierr;
@@ -60,16 +58,11 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR,
-                      -11,-11,                   /* default to 10x10 grid */
-                      PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */
-                      1,                         /* dof = 1 */
-                      1,                         /* s = 1; stencil extends out one cell */
-                      NULL,NULL,                 /* do not specify processor decomposition */
-                      &da);CHKERRQ(ierr);
-
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,11,11,/* default to 10x10 grid */
+                      PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */1,/* dof = 1 */1,/* s = 1; stencil extends out one cell */
+                      NULL,NULL,/* do not specify processor decomposition */&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&(user.uexact));CHKERRQ(ierr);
   ierr = VecDuplicate(u,&(user.psi));CHKERRQ(ierr);
@@ -123,8 +116,6 @@ int main(int argc,char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormPsiAndExactSoln"
 PetscErrorCode FormPsiAndExactSoln(DM da) {
   ObsCtx         *user;
   PetscErrorCode ierr;
@@ -162,8 +153,6 @@ PetscErrorCode FormPsiAndExactSoln(DM da) {
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /* FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,ObsCtx *user) {
   PetscErrorCode ierr;
@@ -194,8 +183,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /* FormJacobianLocal - Evaluates Jacobian matrix on local process patch */
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, ObsCtx *user)
 {

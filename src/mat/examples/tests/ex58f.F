@@ -3,22 +3,26 @@
 !   This program demonstrates use of MatGetRow() and MatGetRowMaxAbs() from Fortran
 !
       program main
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       Mat      A
       PetscErrorCode ierr
-      PetscInt i,cols(500),ncols,row,M,N
-      PetscScalar   values(500)
+      PetscInt M,N
       PetscViewer   v
       Vec           rowmax
+      PetscBool flg
       character*(256)  f
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
-      call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,                           &
+     &      PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,v,          &
      &                           ierr)
 
@@ -27,20 +31,6 @@
       call MatLoad(A,v,ierr)
 
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
-
-      row = 2
-      call MatGetRow(A,row,ncols,cols,values,ierr)
-      do 10, i=1,ncols
-        print*,i,cols(i),values(i)
- 10   continue
-      call MatRestoreRow(A,row,ncols,cols,values,ierr)
-
-      row = 5
-      call MatGetRow(A,row,ncols,cols,values,ierr)
-      do 20, i=1,ncols
-        print*,i,cols(i),values(i)
- 20   continue
-      call MatRestoreRow(A,row,ncols,cols,values,ierr)
 
 !
 !     Test MatGetRowMaxAbs()

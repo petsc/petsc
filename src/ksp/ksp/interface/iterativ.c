@@ -8,8 +8,6 @@
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdmshell.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetResidualNorm"
 /*@
    KSPGetResidualNorm - Gets the last (approximate preconditioned)
    residual norm that has been computed.
@@ -37,8 +35,6 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetIterationNumber"
 /*@
    KSPGetIterationNumber - Gets the current iteration number; if the
          KSPSolve() is complete, returns the number of iterations
@@ -69,8 +65,6 @@ PetscErrorCode  KSPGetIterationNumber(KSP ksp,PetscInt *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetTotalIterations"
 /*@
    KSPGetTotalIterations - Gets the total number of iterations this KSP object has performed since was created, counted over all linear solves
 
@@ -100,8 +94,6 @@ PetscErrorCode  KSPGetTotalIterations(KSP ksp,PetscInt *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSingularValue"
 /*@C
     KSPMonitorSingularValue - Prints the two norm of the true residual and
     estimation of the extreme singular values of the preconditioned problem
@@ -151,8 +143,6 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSolution"
 /*@C
    KSPMonitorSolution - Monitors progress of the KSP solvers by calling
    VecView() for the approximate solution at each iteration.
@@ -190,8 +180,6 @@ PetscErrorCode  KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorDefault"
 /*@C
    KSPMonitorDefault - Print the residual norm at each iteration of an
    iterative solver.
@@ -228,8 +216,6 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscViewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorTrueResidualNorm"
 /*@C
    KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
@@ -281,8 +267,6 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorTrueResidualMaxNorm"
 /*@C
    KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm each iteration of an iterative solver.
 
@@ -333,8 +317,6 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorRange_Private"
 PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 {
   PetscErrorCode ierr;
@@ -358,8 +340,6 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorRange"
 /*@C
    KSPMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
 
@@ -406,8 +386,6 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,PetscViewerA
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorDynamicTolerance"
 /*@C
    KSPMonitorDynamicTolerance - Recompute the inner tolerance in every
    outer iteration in an adaptive way.
@@ -476,8 +454,6 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorDynamicToleranceDestroy"
 /*
   Destroy the dummy context used in KSPMonitorDynamicTolerance()
 */
@@ -490,8 +466,6 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorDefaultShort"
 /*
   Default (short) KSP Monitor, same as KSPMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -524,8 +498,6 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedSkip"
 /*@C
    KSPConvergedSkip - Convergence test that do not return as converged
    until the maximum number of iterations is reached.
@@ -565,8 +537,6 @@ PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedDefaultCreate"
 /*@C
    KSPConvergedDefaultCreate - Creates and initializes the space used by the KSPConvergedDefault() function context
 
@@ -593,8 +563,6 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedDefaultSetUIRNorm"
 /*@
    KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
       instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
@@ -637,8 +605,6 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedDefaultSetUMIRNorm"
 /*@
    KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
       In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
@@ -675,8 +641,6 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedDefault"
 /*@C
    KSPConvergedDefault - Determines convergence of the linear iterative solvers by default
 
@@ -808,8 +772,6 @@ PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergedDefaultDestroy"
 /*@C
    KSPConvergedDefaultDestroy - Frees the space used by the KSPConvergedDefault() function context
 
@@ -836,8 +798,6 @@ PetscErrorCode  KSPConvergedDefaultDestroy(void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolutionDefault"
 /*
    KSPBuildSolutionDefault - Default code to create/move the solution.
 
@@ -891,8 +851,6 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildResidualDefault"
 /*
    KSPBuildResidualDefault - Default code to compute the residual.
 
@@ -927,8 +885,6 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreateVecs"
 /*@C
   KSPCreateVecs - Gets a number of work vectors.
 
@@ -1025,8 +981,6 @@ PetscErrorCode KSPCreateVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetWorkVecs"
 /*@C
   KSPSetWorkVecs - Sets a number of work vectors into a KSP object
 
@@ -1053,8 +1007,6 @@ PetscErrorCode KSPSetWorkVecs(KSP ksp,PetscInt nw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroyDefault"
 /*
   KSPDestroyDefault - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
@@ -1075,8 +1027,6 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetConvergedReason"
 /*@
    KSPGetConvergedReason - Gets the reason the KSP iteration was stopped.
 
@@ -1092,16 +1042,23 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
 $  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
 $  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
 $  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence test routine is set.
-$  KSP_CONVERGED_CG_NEG_CURVE
-$  KSP_CONVERGED_CG_CONSTRAINED
-$  KSP_CONVERGED_STEP_LENGTH
+$  KSP_CONVERGED_CG_NEG_CURVE (see note below)
+$  KSP_CONVERGED_CG_CONSTRAINED (see note below)
+$  KSP_CONVERGED_STEP_LENGTH (see note below)
+$  KSP_CONVERGED_ITERATING (returned if the solver is not yet finished)
 $  KSP_DIVERGED_ITS  (required more than its to reach convergence)
 $  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
 $  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
 $  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
 $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial residual. Try a different preconditioner, or a different initial Level.)
 
-   Notes: Can only be called after the call the KSPSolve() is complete.
+   Options Database:
+.   -ksp_converged_reason - prints the reason to standard out
+
+   Notes: If this routine is called before or doing the KSPSolve() the value of KSP_CONVERGED_ITERATING is returned
+
+   The values  KSP_CONVERGED_CG_NEG_CURVE, KSP_CONVERGED_CG_CONSTRAINED, and KSP_CONVERGED_STEP_LENGTH are returned only by the special KSPCGNASH, KSPCGSTCG, and KSPCGGLTR
+   solvers which are used by the SNESNEWTONTR (trust region) solver.
 
    Level: intermediate
 
@@ -1119,8 +1076,6 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 }
 
 #include <petsc/private/dmimpl.h>
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetDM"
 /*@
    KSPSetDM - Sets the DM that may be used by some preconditioners
 
@@ -1164,8 +1119,6 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetDMActive"
 /*@
    KSPSetDMActive - Indicates the DM should be used to generate the linear system matrix and right hand side
 
@@ -1191,8 +1144,6 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetDM"
 /*@
    KSPGetDM - Gets the DM that may be used by some preconditioners
 
@@ -1223,8 +1174,6 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetApplicationContext"
 /*@
    KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
@@ -1256,8 +1205,6 @@ PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetApplicationContext"
 /*@
    KSPGetApplicationContext - Gets the user-defined context for the linear solver.
 

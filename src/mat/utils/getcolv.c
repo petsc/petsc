@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnVector"
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 
@@ -77,8 +75,6 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnNorms"
 /*@
     MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
 
@@ -94,7 +90,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
    Notes: Each process has ALL the column norms after the call. Because of the way this is computed each process gets all the values,
     if each process wants only some of the values it should extract the ones it wants from the array.
 
-.seealso: MatGetColumns()
+.seealso: NormType, MatNorm()
 
 @*/
 PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])

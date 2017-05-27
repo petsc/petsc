@@ -11,8 +11,6 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
    return -2.0*a*b / (PetscSqrtReal(a*a + b*b) + (a + b));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecFischer"
 /*@
    VecFischer - Evaluates the Fischer-Burmeister function for complementarity
    problems.
@@ -112,8 +110,6 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
    return 2.0*(c*c - a*b) / (PetscSqrtReal(a*a + b*b + 2.0*c*c) + (a + b));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSFischer"
 /*@
    VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
    complementarity problems.
@@ -217,8 +213,6 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
   return PetscSqrtReal(a*a + b*b + 2.0*c*c);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDFischer"
 /*@
    MatDFischer - Calculates an element of the B-subdifferential of the
    Fischer-Burmeister function for complementarity problems.
@@ -364,8 +358,6 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDSFischer"
 /*@
    MatDSFischer - Calculates an element of the B-subdifferential of the
    smoothed Fischer-Burmeister function for complementarity problems.

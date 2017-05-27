@@ -6,8 +6,6 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_MPIViennaCL"
 PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
 {
   PetscErrorCode ierr;
@@ -25,8 +23,6 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm_MPIViennaCL"
 PetscErrorCode VecNorm_MPIViennaCL(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
@@ -59,8 +55,6 @@ PetscErrorCode VecNorm_MPIViennaCL(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_MPIViennaCL"
 PetscErrorCode VecDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -73,8 +67,6 @@ PetscErrorCode VecDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_MPIViennaCL"
 PetscErrorCode VecTDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -87,8 +79,6 @@ PetscErrorCode VecTDot_MPIViennaCL(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_MPIViennaCL"
 PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
@@ -118,8 +108,6 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_MPIViennaCL"
 PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -161,8 +149,6 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2_MPIViennaCL"
 PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode ierr;
@@ -176,8 +162,6 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPIViennaCL"
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
 {
   PetscErrorCode ierr;
@@ -222,8 +206,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_ViennaCL"
 PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 {
   PetscErrorCode ierr;

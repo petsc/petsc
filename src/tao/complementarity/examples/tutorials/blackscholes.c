@@ -126,8 +126,6 @@ PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode ComputeVariableBounds(Tao, Vec, Vec, void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;    /* used to check for functions returning nonzeros */
@@ -175,6 +173,8 @@ int main(int argc, char **argv)
 
   user.ms++;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.ms,1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
   /* Create appropriate vectors and matrices */
 
   ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
@@ -273,8 +273,6 @@ int main(int argc, char **argv)
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeVariableBounds"
 PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void*ctx)
 {
   AppCtx         *user = (AppCtx *) ctx;
@@ -309,8 +307,6 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void*ctx)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormConstraints"
 
 /*
     FormFunction - Evaluates gradient of f.
@@ -388,8 +384,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateCoordinateDM_DA"
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
@@ -15,8 +13,6 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetFieldName"
 /*@C
    DMDASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DMDA.
@@ -48,8 +44,6 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetFieldNames"
 /*@C
    DMDAGetFieldNames - Gets the name of each component in the vector associated with the DMDA
 
@@ -76,8 +70,6 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetFieldNames"
 /*@C
    DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
 
@@ -104,8 +96,6 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetFieldName"
 /*@C
    DMDAGetFieldName - Gets the names of individual field components in multicomponent
    vectors associated with a DMDA.
@@ -138,8 +128,6 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinateName"
 /*@C
    DMDASetCoordinateName - Sets the name of the coordinate directions associated with a DMDA, for example "x" or "y"
 
@@ -169,8 +157,6 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCoordinateName"
 /*@C
    DMDAGetCoordinateName - Gets the name of a coodinate direction associated with a DMDA.
 
@@ -201,8 +187,6 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCorners"
 /*@C
    DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner and size of the local region, excluding ghost points.
@@ -251,8 +235,6 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLocalBoundingBox"
 /*@
    DMDAGetLocalBoundingBox - Returns the local bounding box for the DMDA.
 
@@ -310,8 +292,6 @@ PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetBoundingBox"
 /*@
    DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
 
@@ -345,8 +325,6 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetReducedDMDA"
 /*@
    DMDAGetReducedDMDA - Gets the DMDA with the same layout but with fewer or more fields
 
@@ -399,9 +377,9 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   } else if (dim == 3) {
     ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
   }
+  ierr = DMSetUp(*nda);CHKERRQ(ierr);
   if (da->coordinates) {
     ierr = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
-
     (*nda)->coordinates = da->coordinates;
   }
 
@@ -418,8 +396,6 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCoordinateArray"
 /*@C
    DMDAGetCoordinateArray - Gets an array containing the coordinates of the DMDA
 
@@ -451,8 +427,6 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestoreCoordinateArray"
 /*@C
    DMDARestoreCoordinateArray - Sets an array containing the coordinates of the DMDA
 

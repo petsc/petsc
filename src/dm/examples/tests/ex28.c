@@ -12,8 +12,6 @@ static char help[] = "Test sequential USFFT interface on a 3-dof field over a un
 #include <petscmat.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
@@ -35,9 +33,6 @@ PetscInt main(PetscInt argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
@@ -50,24 +45,20 @@ PetscInt main(PetscInt argc,char **args)
   ierr     = PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
   /* DMDA with the correct fiber dimension */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      dim[0], dim[1], dim[2],
-                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                      dof, stencil,
-                      NULL, NULL, NULL,
-                      &da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                      dof,stencil,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   /* DMDA with fiber dimension 1 for split fields */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      dim[0], dim[1], dim[2],
-                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                      1, stencil,
-                      NULL, NULL, NULL,
-                      &da1);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0],dim[1],dim[2],PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                      1,stencil,NULL,NULL,NULL,&da1);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
+  ierr = DMSetUp(da1);CHKERRQ(ierr);
 
   /* Coordinates */
-  ierr = DMGetCoordinateDM(da, &coordsda);
-  ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&coordsda);
+  ierr = DMGetGlobalVector(coordsda,&coords);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coords,"Grid coordinates");CHKERRQ(ierr);
   for (i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
     PetscScalar *a;

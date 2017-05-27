@@ -9,8 +9,6 @@ static char help[] = "Plots a simple line graph.\n";
 #include <petscdraw.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscDraw          draw;

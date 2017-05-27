@@ -1340,7 +1340,7 @@ can also install additional packages that are used by the FASTMath packages."""
         elif reply == 2:
            reply = diropenbox("Directory of BLAS and LAPACK libraries","Directory of BLAS and LAPACK libraries")
            if not reply: sys.exit()
-           args.append('--with-blas-lapack-dir='+reply)
+           args.append('--with-blaslapack-dir='+reply)
 
         reply = indexbox('Which version of MPI do you wish to use?',title,['Have installer locate it', 'Install MPICH-2','Install OpenMPI','None',"I'll indicate its location"])
         if reply == 3: args.append( '--with-mpi=0')

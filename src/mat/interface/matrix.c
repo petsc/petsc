@@ -18,9 +18,9 @@ PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
+PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_CreateSubMats, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction, MAT_GetSubMatrix;
+PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction, MAT_CreateSubMat;
 PetscLogEvent MAT_TransposeColoringCreate;
 PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
@@ -39,8 +39,6 @@ PetscLogEvent MATCOLORING_Apply,MATCOLORING_Comm,MATCOLORING_Local,MATCOLORING_I
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetRandom"
 /*@
    MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated it randomly selects appropriate locations
 
@@ -95,8 +93,37 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetError"
+/*@
+   MatFactorGetErrorZeroPivot - returns the pivot value that was determined to be zero and the row it occurred in
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the factored matrix
+
+   Output Parameter:
++  pivot - the pivot value computed
+-  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
+         the share the matrix
+
+   Level: advanced
+
+   Notes: This routine does not work for factorizations done with external packages.
+   This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
+
+   This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
+@*/
+PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *pivot = mat->factorerror_zeropivot_value;
+  *row   = mat->factorerror_zeropivot_row;
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatFactorGetError - gets the error code from a factorization
 
@@ -110,19 +137,43 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Level: advanced
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic()
+   Notes:    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
 PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  *err = mat->errortype;
+  *err = mat->factorerrortype;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatFactorClearError - clears the error code in a factorization
+
+   Logically Collective on Mat
+
+   Input Parameter:
+.  mat - the factored matrix
+
+   Level: developer
+
+   Notes: This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorGetError(), MatFactorGetErrorZeroPivot()
+@*/
+PetscErrorCode MatFactorClearError(Mat mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  mat->factorerrortype             = MAT_FACTOR_NOERROR;
+  mat->factorerror_zeropivot_value = 0.0;
+  mat->factorerror_zeropivot_row   = 0;
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindNonzeroRows"
 /*@
       MatFindNonzeroRows - Locate all rows that are not completely zero in the matrix
 
@@ -131,6 +182,8 @@ PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 
   Output Parameter:
 .    keptrows - the rows that are not completely zero
+
+  Notes: keptrows is set to NULL if all rows are nonzero.
 
   Level: intermediate
 
@@ -148,8 +201,43 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonalBlock"
+/*@
+      MatFindZeroRows - Locate all rows that are completely zero in the matrix
+
+  Input Parameter:
+.    A  - the matrix
+
+  Output Parameter:
+.    zerorows - the rows that are completely zero
+
+  Notes: zerorows is set to NULL if no rows are zero.
+
+  Level: intermediate
+
+ @*/
+PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
+{
+  PetscErrorCode ierr;
+  IS keptrows;
+  PetscInt m, n;
+
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+
+  ierr = MatFindNonzeroRows(mat, &keptrows);CHKERRQ(ierr);
+  /* MatFindNonzeroRows sets keptrows to NULL if there are no zero rows.
+     In keeping with this convention, we set zerorows to NULL if there are no zero
+     rows. */
+  if (keptrows == NULL) {
+    *zerorows = NULL;
+  } else {
+    ierr = MatGetOwnershipRange(mat,&m,&n);CHKERRQ(ierr);
+    ierr = ISComplement(keptrows,m,n,zerorows);CHKERRQ(ierr);
+    ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatGetDiagonalBlock - Returns the part of the matrix associated with the on-process coupling
 
@@ -170,31 +258,25 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 @*/
 PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
-  PetscMPIInt    size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(a,3);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,a);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (size == 1) {
-    *a = A;
-  } else {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix type %s does not support getting diagonal block",mattype);
+  if (!A->ops->getdiagonalblock) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+    if (size == 1) {
+      *a = A;
+      PetscFunctionReturn(0);
+    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
   }
+  ierr = (*A->ops->getdiagonalblock)(A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetTrace"
 /*@
    MatGetTrace - Gets the trace of a matrix. The sum of the diagonal entries.
 
@@ -222,8 +304,6 @@ PetscErrorCode MatGetTrace(Mat mat,PetscScalar *trace)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRealPart"
 /*@
    MatRealPart - Zeros out the imaginary part of the matrix
 
@@ -265,8 +345,6 @@ PetscErrorCode MatRealPart(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetGhosts"
 /*@C
    MatGetGhosts - Get the global index of all ghost nodes defined by the sparse matrix
 
@@ -303,8 +381,6 @@ PetscErrorCode MatGetGhosts(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatImaginaryPart"
 /*@
    MatImaginaryPart - Moves the imaginary part of the matrix to the real part and zeros the imaginary part
 
@@ -346,19 +422,17 @@ PetscErrorCode MatImaginaryPart(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal"
 /*@
    MatMissingDiagonal - Determine if sparse matrix is missing a diagonal entry (or block entry for BAIJ matrices)
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
 +  missing - is any diagonal missing
--  dd - first diagonal entry that is missing (optional)
+-  dd - first diagonal entry that is missing (optional) on this process
 
    Level: advanced
 
@@ -379,8 +453,6 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRow"
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
    for each row that you get to ensure that your application does
@@ -415,8 +487,8 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    You can only have one call to MatGetRow() outstanding for a particular
    matrix at a time, per processor. MatGetRow() can only obtain rows
    associated with the given processor, it cannot get rows from the
-   other processors; for that we suggest using MatGetSubMatrices(), then
-   MatGetRow() on the submatrix. The row indix passed to MatGetRows()
+   other processors; for that we suggest using MatCreateSubMatrices(), then
+   MatGetRow() on the submatrix. The row index passed to MatGetRows()
    is in the global number of rows.
 
    Fortran Notes:
@@ -440,7 +512,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
 
    Concepts: matrices^row access
 
-.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubMatrices(), MatGetDiagonal()
+.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatCreateSubMatrices(), MatGetDiagonal()
 @*/
 PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
@@ -461,8 +533,6 @@ PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConjugate"
 /*@
    MatConjugate - replaces the matrix values with their complex conjugates
 
@@ -504,8 +574,6 @@ PetscErrorCode MatConjugate(Mat mat)
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRow"
 /*@C
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().
 
@@ -559,8 +627,6 @@ PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowUpperTriangular"
 /*@
    MatGetRowUpperTriangular - Sets a flag to enable calls to MatGetRow() for matrix in MATSBAIJ format.
    You should call MatRestoreRowUpperTriangular() after calling MatGetRow/MatRestoreRow() to disable the flag.
@@ -594,8 +660,6 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRowUpperTriangular"
 /*@
    MatRestoreRowUpperTriangular - Disable calls to MatGetRow() for matrix in MATSBAIJ format.
 
@@ -624,8 +688,6 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOptionsPrefix"
 /*@C
    MatSetOptionsPrefix - Sets the prefix used for searching for all
    Mat options in the database.
@@ -656,8 +718,6 @@ PetscErrorCode MatSetOptionsPrefix(Mat A,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAppendOptionsPrefix"
 /*@C
    MatAppendOptionsPrefix - Appends to the prefix used for searching for all
    Mat options in the database.
@@ -688,8 +748,6 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOptionsPrefix"
 /*@C
    MatGetOptionsPrefix - Sets the prefix used for searching for all
    Mat options in the database.
@@ -721,8 +779,6 @@ PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp"
 /*@
    MatSetUp - Sets up the internal matrix data structures for the later use.
 
@@ -776,8 +832,6 @@ PetscErrorCode MatSetUp(Mat A)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
-#undef __FUNCT__
-#define __FUNCT__ "MatView"
 /*@C
    MatView - Visualizes a matrix object.
 
@@ -820,7 +874,7 @@ PetscErrorCode MatSetUp(Mat A)
          the matrix structure
 
    Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatEndAssembly()
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatAssemblyEnd()
 .  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
@@ -956,8 +1010,6 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
@@ -1058,8 +1110,6 @@ PetscErrorCode MatLoad(Mat newmat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Redundant"
 PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
 {
   PetscErrorCode ierr;
@@ -1068,7 +1118,7 @@ PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
 
   PetscFunctionBegin;
   if (redund){
-    if (redund->matseq) { /* via MatGetSubMatrices()  */
+    if (redund->matseq) { /* via MatCreateSubMatrices()  */
       ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
       ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
       ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
@@ -1092,8 +1142,6 @@ PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy"
 /*@
    MatDestroy - Frees space taken by a matrix.
 
@@ -1131,9 +1179,7 @@ PetscErrorCode MatDestroy(Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues"
-/*@
+/*@C
    MatSetValues - Inserts or adds a block of values into a matrix.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd()
    MUST be called after all calls to MatSetValues() have been completed.
@@ -1172,6 +1218,9 @@ PetscErrorCode MatDestroy(Mat *A)
    for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
 
    Level: beginner
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting entries in
 
@@ -1237,8 +1286,6 @@ PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesRowLocal"
 /*@
    MatSetValuesRowLocal - Inserts a row (block row for BAIJ matrices) of nonzero
         values into a matrix
@@ -1293,8 +1340,6 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesRow"
 /*@
    MatSetValuesRow - Inserts a row (block row for BAIJ matrices) of nonzero
         values into a matrix
@@ -1304,14 +1349,14 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
    Input Parameters:
 +  mat - the matrix
 .  row - the (block) row to set
--  v - a logically two-dimensional array of values
+-  v - a logically two-dimensional (column major) array of values for  block matrices with blocksize larger than one, otherwise a one dimensional array of values
 
    Notes:
    The values, v, are column-oriented for the block version.
 
    All the nonzeros in the row must be provided
 
-   THE MATRIX MUSAT HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
+   THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
 
    The row must belong to this process
 
@@ -1361,8 +1406,6 @@ PetscErrorCode MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesStencil"
 /*@
    MatSetValuesStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
@@ -1480,8 +1523,6 @@ PetscErrorCode MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBlockedStencil"
 /*@
    MatSetValuesBlockedStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
@@ -1606,8 +1647,6 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetStencil"
 /*@
    MatSetStencil - Sets the grid information for setting values into a matrix via
         MatSetValuesStencil()
@@ -1655,9 +1694,7 @@ PetscErrorCode MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBlocked"
-/*@
+/*@C
    MatSetValuesBlocked - Inserts or adds a block of values into a matrix.
 
    Not Collective
@@ -1794,8 +1831,6 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetValues"
 /*@
    MatGetValues - Gets a block of values from a matrix.
 
@@ -1827,7 +1862,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
    Concepts: matrices^accessing values
 
-.seealso: MatGetRow(), MatGetSubMatrices(), MatSetValues()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues()
 @*/
 PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
@@ -1851,8 +1886,6 @@ PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBatch"
 /*@
   MatSetValuesBatch - Adds (ADD_VALUES) many blocks of values into a matrix at once. The blocks must all be square and
   the same size. Currently, this can only be called once and creates the given matrix.
@@ -1902,8 +1935,6 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetLocalToGlobalMapping"
 /*@
    MatSetLocalToGlobalMapping - Sets a local-to-global numbering for use by
    the routine MatSetValuesLocal() to allow users to insert matrix entries
@@ -1943,8 +1974,6 @@ PetscErrorCode MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalToGlobalMapping"
 /*@
    MatGetLocalToGlobalMapping - Gets the local-to-global numbering set by MatSetLocalToGlobalMapping()
 
@@ -1976,8 +2005,6 @@ PetscErrorCode MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLayouts"
 /*@
    MatGetLayouts - Gets the PetscLayout objects for rows and columns
 
@@ -2006,16 +2033,14 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesLocal"
-/*@
+/*@C
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes.
 
    Not Collective
 
    Input Parameters:
-+  x - the matrix
++  mat - the matrix
 .  nrow, irow - number of rows and their local indices
 .  ncol, icol - number of columns and their local indices
 .  y -  a logically two-dimensional array of values
@@ -2039,6 +2064,9 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
    Level: intermediate
 
    Concepts: matrices^putting entries in with local numbering
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
@@ -2101,9 +2129,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBlockedLocal"
-/*@
+/*@C
    MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes a block at a time.
 
@@ -2133,6 +2159,9 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
    MUST be called after all calls to MatSetValuesBlockedLocal() have been completed.
 
    Level: intermediate
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting blocked values in with local numbering
 
@@ -2197,8 +2226,6 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultDiagonalBlock"
 /*@
    MatMultDiagonalBlock - Computes the matrix-vector product, y = Dx. Where D is defined by the inode or block structure of the diagonal
 
@@ -2243,8 +2270,6 @@ PetscErrorCode MatMultDiagonalBlock(Mat mat,Vec x,Vec y)
 }
 
 /* --------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMult"
 /*@
    MatMult - Computes the matrix-vector product, y = Ax.
 
@@ -2298,8 +2323,6 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose"
 /*@
    MatMultTranspose - Computes matrix transpose times a vector.
 
@@ -2356,8 +2379,6 @@ PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTranspose"
 /*@
    MatMultHermitianTranspose - Computes matrix Hermitian transpose times a vector.
 
@@ -2422,8 +2443,6 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd"
 /*@
     MatMultAdd -  Computes v3 = v2 + A * v1.
 
@@ -2477,8 +2496,6 @@ PetscErrorCode MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd"
 /*@
    MatMultTransposeAdd - Computes v3 = v2 + A' * v1.
 
@@ -2530,8 +2547,6 @@ PetscErrorCode MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTransposeAdd"
 /*@
    MatMultHermitianTransposeAdd - Computes v3 = v2 + A^H * v1.
 
@@ -2595,8 +2610,6 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultConstrained"
 /*@
    MatMultConstrained - The inner multiplication routine for a
    constrained matrix P^T A P.
@@ -2643,8 +2656,6 @@ PetscErrorCode MatMultConstrained(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeConstrained"
 /*@
    MatMultTransposeConstrained - The inner multiplication routine for a
    constrained matrix P^T A^T P.
@@ -2688,8 +2699,6 @@ PetscErrorCode MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactorType"
 /*@C
    MatGetFactorType - gets the type of factorization it is
 
@@ -2716,8 +2725,6 @@ PetscErrorCode MatGetFactorType(Mat mat,MatFactorType *t)
 }
 
 /* ------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo"
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
@@ -2795,10 +2802,8 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_External"
 /*
-   This is used by external packages where it is not easy to get the info from the actual 
+   This is used by external packages where it is not easy to get the info from the actual
    matrix factorization.
 */
 PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
@@ -2812,8 +2817,6 @@ PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
 
 /* ----------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactor"
 /*@C
    MatLUFactor - Performs in-place LU factorization of matrix.
 
@@ -2874,8 +2877,6 @@ PetscErrorCode MatLUFactor(Mat mat,IS row,IS col,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactor"
 /*@C
    MatILUFactor - Performs in-place ILU factorization of matrix.
 
@@ -2932,8 +2933,6 @@ PetscErrorCode MatILUFactor(Mat mat,IS row,IS col,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic"
 /*@C
    MatLUFactorSymbolic - Performs symbolic LU factorization of matrix.
    Call this routine before calling MatLUFactorNumeric().
@@ -2993,8 +2992,6 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric"
 /*@C
    MatLUFactorNumeric - Performs numeric LU factorization of a matrix.
    Call this routine after first calling MatLUFactorSymbolic().
@@ -3046,8 +3043,6 @@ PetscErrorCode MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactor"
 /*@C
    MatCholeskyFactor - Performs in-place Cholesky factorization of a
    symmetric matrix.
@@ -3100,8 +3095,6 @@ PetscErrorCode MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic"
 /*@C
    MatCholeskyFactorSymbolic - Performs symbolic Cholesky factorization
    of a symmetric matrix.
@@ -3163,8 +3156,6 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric"
 /*@C
    MatCholeskyFactorNumeric - Performs numeric Cholesky factorization
    of a symmetric matrix. Call this routine after first calling
@@ -3217,8 +3208,6 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *in
 }
 
 /* ----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve"
 /*@
    MatSolve - Solves A x = b, given a factored matrix.
 
@@ -3267,8 +3256,8 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->errortype) {
-    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+  if (mat->factorerrortype) {
+    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->solve)(mat,b,x);CHKERRQ(ierr);
@@ -3278,8 +3267,6 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_Basic"
 PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
 {
   PetscErrorCode ierr;
@@ -3313,8 +3300,6 @@ PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve"
 /*@
    MatMatSolve - Solves A X = B, given a factored matrix.
 
@@ -3381,8 +3366,6 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatForwardSolve"
 /*@
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
                             U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
@@ -3444,8 +3427,6 @@ PetscErrorCode MatForwardSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatBackwardSolve"
 /*@
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
                              D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
@@ -3508,8 +3489,6 @@ PetscErrorCode MatBackwardSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveAdd"
 /*@
    MatSolveAdd - Computes x = y + inv(A)*b, given a factored matrix.
 
@@ -3583,8 +3562,6 @@ PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose"
 /*@
    MatSolveTranspose - Solves A' x = b, given a factored matrix.
 
@@ -3629,8 +3606,8 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
   if (mat->cmap->N != b->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->cmap->N,b->map->N);
   MatCheckPreallocated(mat,1);
   ierr = PetscLogEventBegin(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->errortype) {
-    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+  if (mat->factorerrortype) {
+    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
@@ -3640,8 +3617,6 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTransposeAdd"
 /*@
    MatSolveTransposeAdd - Computes x = y + inv(Transpose(A)) b, given a
                       factored matrix.
@@ -3695,8 +3670,8 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
   ierr = PetscLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
   if (mat->ops->solvetransposeadd) {
-    if (mat->errortype) {
-      ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+    if (mat->factorerrortype) {
+      ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
       ierr = VecSetInf(x);CHKERRQ(ierr);
     } else {
       ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
@@ -3721,8 +3696,6 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 }
 /* ----------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSOR"
 /*@
    MatSOR - Computes relaxation (SOR, Gauss-Seidel) sweeps.
 
@@ -3811,8 +3784,6 @@ PetscErrorCode MatSOR(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal sh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy_Basic"
 /*
       Default matrix copy routine.
 */
@@ -3839,8 +3810,6 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy"
 /*@
    MatCopy - Copys a matrix to another matrix.
 
@@ -3904,8 +3873,6 @@ PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert"
 /*@C
    MatConvert - Converts a matrix to another matrix, either of the same
    or different type.
@@ -3917,8 +3884,8 @@ PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 .  newtype - new matrix type.  Use MATSAME to create a new matrix of the
    same type as the original matrix.
 -  reuse - denotes if the destination matrix is to be created or reused.
-   Use MAT_INPLACE_MATRIX for inplace conversion, otherwise use
-   MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX.
+   Use MAT_INPLACE_MATRIX for inplace conversion (that is when you want the input mat to be changed to contain the matrix in the new format), otherwise use
+   MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX (can only be used after the first call was made with MAT_INITIAL_MATRIX, causes the matrix space in M to be reused).
 
    Output Parameter:
 .  M - pointer to place new matrix
@@ -3961,6 +3928,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse == MAT_INPLACE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires same input and output matrix");
+  if ((reuse == MAT_REUSE_MATRIX) && (mat == *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
 
   if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
 
@@ -4037,8 +4005,6 @@ foundconv:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage"
 /*@C
    MatFactorGetSolverPackage - Returns name of the package providing the factorization routines
 
@@ -4091,8 +4057,6 @@ struct _MatSolverPackageHolder {
 
 static MatSolverPackageHolder MatSolverPackageHolders = NULL;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister"
 /*@C
    MatSolvePackageRegister - Registers a MatSolverPackage that works for a particular matrix type
 
@@ -4152,8 +4116,6 @@ PetscErrorCode MatSolverPackageRegister(const MatSolverPackage package,const Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageGet"
 /*@C
    MatSolvePackageGet - Get's the function that creates the factor matrix if it exist
 
@@ -4220,8 +4182,6 @@ PetscErrorCode MatSolverPackageGet(const MatSolverPackage package,const MatType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageDestroy"
 PetscErrorCode MatSolverPackageDestroy(void)
 {
   PetscErrorCode                 ierr;
@@ -4246,8 +4206,6 @@ PetscErrorCode MatSolverPackageDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor"
 /*@C
    MatGetFactor - Returns a matrix suitable to calls to MatXXFactorSymbolic()
 
@@ -4291,7 +4249,7 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
       SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver package. Perhaps you must ./configure with --download-<package>");
     }
   }
-  
+
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
   if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
@@ -4299,8 +4257,6 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactorAvailable"
 /*@C
    MatGetFactorAvailable - Returns a a flag if matrix supports particular package and factor type
 
@@ -4345,8 +4301,6 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, const MatSolverPackage type,MatFac
 
 #include <petscdmtypes.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate"
 /*@
    MatDuplicate - Duplicates a matrix including the non-zero structure.
 
@@ -4408,8 +4362,6 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal"
 /*@
    MatGetDiagonal - Gets the diagonal of a matrix.
 
@@ -4429,7 +4381,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 {
@@ -4448,8 +4400,6 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMin"
 /*@C
    MatGetRowMin - Gets the minimum value (of the real part) of each
         row of the matrix
@@ -4472,7 +4422,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(),
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(),
           MatGetRowMax()
 @*/
 PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
@@ -4492,8 +4442,6 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMinAbs"
 /*@C
    MatGetRowMinAbs - Gets the minimum value (in absolute value) of each
         row of the matrix
@@ -4516,7 +4464,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4536,8 +4484,6 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMax"
 /*@C
    MatGetRowMax - Gets the maximum value (of the real part) of each
         row of the matrix
@@ -4560,7 +4506,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4579,8 +4525,6 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMaxAbs"
 /*@C
    MatGetRowMaxAbs - Gets the maximum value (in absolute value) of each
         row of the matrix
@@ -4603,7 +4547,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4623,8 +4567,6 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowSum"
 /*@
    MatGetRowSum - Gets the sum of each row of the matrix
 
@@ -4642,7 +4584,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row sums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
@@ -4676,8 +4618,6 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTranspose"
 /*@
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
@@ -4685,13 +4625,15 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 
    Input Parameter:
 +  mat - the matrix to transpose
--  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  reuse - either MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX, or MAT_INPLACE_MATRIX
 
    Output Parameters:
 .  B - the transpose
 
    Notes:
-     If you  pass in &mat for B the transpose will be done in place, for example MatTranspose(mat,MAT_REUSE_MATRIX,&mat);
+     If you use MAT_INPLACE_MATRIX then you must pass in &mat for B
+
+     MAT_REUSE_MATRIX causes the B matrix from a previous call to this function with MAT_INITIAL_MATRIX to be used
 
      Consider using MatCreateTranspose() instead if you only need a matrix that behaves like the transpose, but don't need the storage to be changed.
 
@@ -4711,6 +4653,8 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->transpose) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (reuse == MAT_INPLACE_MATRIX && mat != *B) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires last matrix to match first");
+  if (reuse == MAT_REUSE_MATRIX && mat == *B) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Perhaps you mean MAT_INPLACE_MATRIX");
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
@@ -4720,8 +4664,6 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsTranspose"
 /*@
    MatIsTranspose - Test whether a matrix is another one's transpose,
         or its own, in which case it tests symmetry.
@@ -4773,8 +4715,6 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHermitianTranspose"
 /*@
    MatHermitianTranspose - Computes an in-place or out-of-place transpose of a matrix in complex conjugate.
 
@@ -4782,13 +4722,10 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
 
    Input Parameter:
 +  mat - the matrix to transpose and complex conjugate
--  reuse - store the transpose matrix in the provided B
+-  reuse - MAT_INITIAL_MATRIX to create a new matrix, MAT_INPLACE_MATRIX to reuse the first argument to store the transpose
 
    Output Parameters:
 .  B - the Hermitian
-
-   Notes:
-     If you  pass in &mat for B the Hermitian will be done in place
 
    Level: intermediate
 
@@ -4808,8 +4745,6 @@ PetscErrorCode MatHermitianTranspose(Mat mat,MatReuse reuse,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsHermitianTranspose"
 /*@
    MatIsHermitianTranspose - Test whether a matrix is another one's Hermitian transpose,
 
@@ -4851,8 +4786,6 @@ PetscErrorCode MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPermute"
 /*@
    MatPermute - Creates a new matrix with rows and columns permuted from the
    original.
@@ -4898,8 +4831,6 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatEqual"
 /*@
    MatEqual - Compares two matrices.
 
@@ -4940,9 +4871,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale"
-/*@
+/*@C
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
    matrices can be NULL.
@@ -5000,8 +4929,6 @@ PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale"
 /*@
     MatScale - Scales all elements of a matrix by a given number.
 
@@ -5055,8 +4982,6 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNorm"
 /*@
    MatNorm - Calculates various norms of a matrix.
 
@@ -5097,8 +5022,6 @@ PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
    are called from within a MatAssemblyEnd().
 */
 static PetscInt MatAssemblyEnd_InUse = 0;
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyBegin"
 /*@
    MatAssemblyBegin - Begins assembling the matrix.  This routine should
    be called after completing all calls to MatSetValues().
@@ -5153,8 +5076,6 @@ PetscErrorCode MatAssemblyBegin(Mat mat,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssembled"
 /*@
    MatAssembled - Indicates if a matrix has been assembled and is ready for
      use; for example, in matrix-vector product.
@@ -5183,8 +5104,6 @@ PetscErrorCode MatAssembled(Mat mat,PetscBool  *assembled)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after MatAssemblyBegin().
@@ -5289,8 +5208,6 @@ PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption"
 /*@
    MatSetOption - Sets a parameter option for a matrix. Some options
    may be specific to certain storage formats.  Some options
@@ -5460,6 +5377,9 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   case MAT_SYMMETRY_ETERNAL:
     mat->symmetric_eternal = flg;
     break;
+  case MAT_STRUCTURE_ONLY:
+    mat->structure_only = flg;
+    break;
   default:
     break;
   }
@@ -5469,8 +5389,6 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOption"
 /*@
    MatGetOption - Gets a parameter option that has been set for a matrix.
 
@@ -5526,8 +5444,6 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries"
 /*@
    MatZeroEntries - Zeros all entries of a matrix.  For sparse matrices
    this routine retains the old nonzero structure.
@@ -5578,8 +5494,6 @@ PetscErrorCode MatZeroEntries(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumns"
 /*@C
    MatZeroRowsColumns - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
@@ -5615,7 +5529,8 @@ PetscErrorCode MatZeroEntries(Mat mat)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumnsIS()
+.seealso: MatZeroRowsIS(), MatZeroRows(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5649,8 +5564,6 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumnsIS"
 /*@C
    MatZeroRowsColumnsIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
@@ -5685,7 +5598,8 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumns()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRows(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -5705,8 +5619,6 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRows"
 /*@C
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
@@ -5749,7 +5661,8 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5783,8 +5696,6 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsIS"
 /*@C
    MatZeroRowsIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
@@ -5826,7 +5737,8 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRows(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -5845,8 +5757,6 @@ PetscErrorCode MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsStencil"
 /*@C
    MatZeroRowsStencil - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix. These rows must be local to the process.
@@ -5905,7 +5815,8 @@ $    idxm(MatStencil_c,1) = c
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsl(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5947,8 +5858,6 @@ PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumnsStencil"
 /*@C
    MatZeroRowsColumnsStencil - Zeros all row and column entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix.
@@ -6007,7 +5916,8 @@ $    idxm(MatStencil_c,1) = c
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRows()
 @*/
 PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -6049,8 +5959,6 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocal"
 /*@C
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
@@ -6088,7 +5996,8 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRows(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -6134,8 +6043,6 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocalIS"
 /*@C
    MatZeroRowsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
@@ -6172,7 +6079,8 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRows(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -6195,8 +6103,6 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumnsLocal"
 /*@C
    MatZeroRowsColumnsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix; using local numbering of rows.
@@ -6223,7 +6129,8 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRows(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -6264,8 +6171,6 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumnsLocalIS"
 /*@C
    MatZeroRowsColumnsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows and columns of a matrix; using local numbering of rows.
@@ -6291,7 +6196,8 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRows(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -6314,9 +6220,7 @@ PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSize"
-/*@
+/*@C
    MatGetSize - Returns the numbers of rows and columns in a matrix.
 
    Not Collective
@@ -6345,9 +6249,7 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalSize"
-/*@
+/*@C
    MatGetLocalSize - Returns the number of rows and columns in a matrix
    stored locally.  This information may be implementation dependent, so
    use with care.
@@ -6380,8 +6282,6 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOwnershipRangeColumn"
 /*@
    MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
    this processor. (The columns of the "diagonal block")
@@ -6417,8 +6317,6 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOwnershipRange"
 /*@
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
@@ -6459,8 +6357,6 @@ PetscErrorCode MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOwnershipRanges"
 /*@C
    MatGetOwnershipRanges - Returns the range of matrix rows owned by
    each process
@@ -6492,8 +6388,6 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOwnershipRangesColumn"
 /*@C
    MatGetOwnershipRangesColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
    this processor. (The columns of the "diagonal blocks" for each process)
@@ -6525,8 +6419,6 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOwnershipIS"
 /*@C
    MatGetOwnershipIS - Get row and column ownership as index sets
 
@@ -6559,8 +6451,6 @@ PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic"
 /*@C
    MatILUFactorSymbolic - Performs symbolic ILU factorization of a matrix.
    Uses levels of fill only, not drop tolerance. Use MatLUFactorNumeric()
@@ -6628,8 +6518,6 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatICCFactorSymbolic"
 /*@C
    MatICCFactorSymbolic - Performs symbolic incomplete
    Cholesky factorization for a symmetric matrix.  Use
@@ -6691,10 +6579,8 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices"
 /*@C
-   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
+   MatCreateSubMatrices - Extracts several submatrices from a matrix. If submat
    points to an array of valid matrices, they may be reused to store the new
    submatrices.
 
@@ -6710,8 +6596,8 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
 .  submat - the array of submatrices
 
    Notes:
-   MatGetSubMatrices() can extract ONLY sequential submatrices
-   (from both sequential and parallel matrices). Use MatGetSubMatrix()
+   MatCreateSubMatrices() can extract ONLY sequential submatrices
+   (from both sequential and parallel matrices). Use MatCreateSubMatrix()
    to extract a parallel submatrix.
 
    Some matrix types place restrictions on the row and column
@@ -6727,7 +6613,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    them with MatDestroyMatrices().
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the
-   original matrix has not changed from that last call to MatGetSubMatrices().
+   original matrix has not changed from that last call to MatCreateSubMatrices().
 
    This routine creates the matrices in submat; you should NOT create them before
    calling it. It also allocates the array of matrix pointers submat.
@@ -6746,9 +6632,9 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    Concepts: matrices^accessing submatrices
    Concepts: submatrices
 
-.seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+.seealso: MatDestroySubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
-PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -6768,14 +6654,14 @@ PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ico
     PetscValidPointer(*submat,6);
     PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
   }
-  if (!mat->ops->getsubmatrices) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->createsubmatrices) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     (*submat)[i]->factortype = MAT_FACTOR_NONE;  /* in case in place factorization was previously done on submatrix */
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
@@ -6794,9 +6680,28 @@ PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ico
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatricesMPI"
-PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+/*@C
+   MatCreateSubMatricesMPI - Extracts MPI submatrices across a sub communicator of mat (by pairs of IS that may live on subcomms).
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  n   - the number of submatrixes to be extracted
+.  irow, icol - index sets of rows and columns to extract
+-  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.  submat - the array of submatrices
+
+   Level: advanced
+
+   Concepts: matrices^accessing submatrices
+   Concepts: submatrices
+
+.seealso: MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+@*/
+PetscErrorCode MatCreateSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -6816,14 +6721,14 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
     PetscValidPointer(*submat,6);
     PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
   }
-  if (!mat->ops->getsubmatricesmpi) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->createsubmatricesmpi) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
@@ -6841,24 +6746,21 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroyMatrices"
 /*@C
-   MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
+   MatDestroyMatrices - Destroys an array of matrices.
 
    Collective on Mat
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
-                       sequence of MatGetSubMatrices())
+-  mat - the matrices (note that this is a pointer to the array of matrices)
 
    Level: advanced
 
     Notes: Frees not only the matrices, but also the array that contains the matrices
            In Fortran will not free the array.
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices() MatDestroySubMatrices()
 @*/
 PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 {
@@ -6869,17 +6771,62 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
   if (!*mat) PetscFunctionReturn(0);
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
+
   for (i=0; i<n; i++) {
     ierr = MatDestroy(&(*mat)[i]);CHKERRQ(ierr);
   }
+
   /* memory is allocated even if n = 0 */
   ierr = PetscFree(*mat);CHKERRQ(ierr);
-  *mat = NULL;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSeqNonzeroStructure"
+/*@C
+   MatDestroySubMatrices - Destroys a set of matrices obtained with MatCreateSubMatrices().
+
+   Collective on Mat
+
+   Input Parameters:
++  n - the number of local matrices
+-  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
+                       sequence of MatCreateSubMatrices())
+
+   Level: advanced
+
+    Notes: Frees not only the matrices, but also the array that contains the matrices
+           In Fortran will not free the array.
+
+.seealso: MatCreateSubMatrices()
+@*/
+PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*mat) PetscFunctionReturn(0);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
+  PetscValidPointer(mat,2);
+
+  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
+  if ((*mat)[n]) {
+    PetscBool      isdummy;
+    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
+    if (isdummy) {
+      Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+
+      if (smat && !smat->singleis) {
+        PetscInt i,nstages=smat->nstages;
+        for (i=0; i<nstages; i++) {
+          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+
+  ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    MatGetSeqNonzeroStructure - Extracts the sequential nonzero structure from a matrix.
 
@@ -6893,7 +6840,7 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 
   Level: intermediate
 
-.seealso: MatDestroySeqNonzeroStructure(), MatGetSubMatrices(), MatDestroyMatrices()
+.seealso: MatDestroySeqNonzeroStructure(), MatCreateSubMatrices(), MatDestroyMatrices()
 @*/
 PetscErrorCode MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct)
 {
@@ -6914,8 +6861,6 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroySeqNonzeroStructure"
 /*@C
    MatDestroySeqNonzeroStructure - Destroys matrix obtained with MatGetSeqNonzeroStructure().
 
@@ -6941,8 +6886,6 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap"
 /*@
    MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
    replaces the index sets by larger ones that represent submatrices with
@@ -6964,7 +6907,7 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
    Concepts: overlap
    Concepts: ASM^computing overlap
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 {
@@ -6993,8 +6936,6 @@ PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 
 PetscErrorCode MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlapSplit"
 /*@
    MatIncreaseOverlapSplit - Given a set of submatrices indicated by index sets across
    a sub communicator, replaces the index sets by larger ones that represent submatrices with
@@ -7016,7 +6957,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
    Concepts: overlap
    Concepts: ASM^computing overlap
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
 {
@@ -7046,8 +6987,6 @@ PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetBlockSize"
 /*@
    MatGetBlockSize - Returns the matrix block size.
 
@@ -7079,8 +7018,6 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetBlockSizes"
 /*@
    MatGetBlockSizes - Returns the matrix block row and column sizes.
 
@@ -7091,7 +7028,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 
    Output Parameter:
 .  rbs - row block size
-.  cbs - coumn block size
+.  cbs - column block size
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
@@ -7116,8 +7053,6 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetBlockSize"
 /*@
    MatSetBlockSize - Sets the matrix block size.
 
@@ -7129,8 +7064,10 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
+    This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later.
 
-     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+    For MATMPIAIJ and MATSEQAIJ matrix formats, this function can be called at a later stage, provided that the specified block size
+    is compatible with the matrix local sizes.
 
    Level: intermediate
 
@@ -7145,13 +7082,10 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(mat,bs,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetBlockSizes"
 /*@
    MatSetBlockSizes - Sets the matrix block row and column sizes.
 
@@ -7165,8 +7099,10 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
     If you pass a different block size for the columns than the rows, the row block size determines the square block storage.
-
     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+
+    For MATMPIAIJ and MATSEQAIJ matrix formats, this function can be called at a later stage, provided that the specified block sizes
+    are compatible with the matrix local sizes.
 
     The row and column block size determine the blocksize of the "row" and "column" vectors returned by MatCreateVecs().
 
@@ -7184,13 +7120,38 @@ PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
+  if (mat->ops->setblocksizes) {
+    ierr = (*mat->ops->setblocksizes)(mat,rbs,cbs);CHKERRQ(ierr);
+  }
+  if (mat->rmap->refcnt) {
+    ISLocalToGlobalMapping l2g = NULL;
+    PetscLayout            nmap = NULL;
+
+    ierr = PetscLayoutDuplicate(mat->rmap,&nmap);CHKERRQ(ierr);
+    if (mat->rmap->mapping) {
+      ierr = ISLocalToGlobalMappingDuplicate(mat->rmap->mapping,&l2g);CHKERRQ(ierr);
+    }
+    ierr = PetscLayoutDestroy(&mat->rmap);CHKERRQ(ierr);
+    mat->rmap = nmap;
+    mat->rmap->mapping = l2g;
+  }
+  if (mat->cmap->refcnt) {
+    ISLocalToGlobalMapping l2g = NULL;
+    PetscLayout            nmap = NULL;
+
+    ierr = PetscLayoutDuplicate(mat->cmap,&nmap);CHKERRQ(ierr);
+    if (mat->cmap->mapping) {
+      ierr = ISLocalToGlobalMappingDuplicate(mat->cmap->mapping,&l2g);CHKERRQ(ierr);
+    }
+    ierr = PetscLayoutDestroy(&mat->cmap);CHKERRQ(ierr);
+    mat->cmap = nmap;
+    mat->cmap->mapping = l2g;
+  }
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetBlockSizesFromMats"
 /*@
    MatSetBlockSizesFromMats - Sets the matrix block row and column sizes to match a pair of matrices
 
@@ -7220,8 +7181,6 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat,Mat fromRow,Mat fromCol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatResidual"
 /*@
    MatResidual - Default routine to calculate the residual.
 
@@ -7263,8 +7222,6 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowIJ"
 /*@C
     MatGetRowIJ - Returns the compressed row storage i and j indices for sequential matrices.
 
@@ -7316,10 +7273,10 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(n,4);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  PetscValidIntPointer(n,5);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidIntPointer(done,8);
   MatCheckPreallocated(mat,1);
   if (!mat->ops->getrowij) *done = PETSC_FALSE;
   else {
@@ -7331,8 +7288,6 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ"
 /*@C
     MatGetColumnIJ - Returns the compressed column storage i and j indices for sequential matrices.
 
@@ -7382,8 +7337,6 @@ PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRowIJ"
 /*@C
     MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with
     MatGetRowIJ().
@@ -7421,9 +7374,9 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidIntPointer(done,8);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->restorerowij) *done = PETSC_FALSE;
@@ -7437,8 +7390,6 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ"
 /*@C
     MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with
     MatGetColumnIJ().
@@ -7487,8 +7438,6 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringPatch"
 /*@C
     MatColoringPatch -Used inside matrix coloring routines that
     use MatGetRowIJ() and/or MatGetColumnIJ().
@@ -7529,8 +7478,6 @@ PetscErrorCode MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringVa
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUnfactored"
 /*@
    MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
@@ -7711,10 +7658,8 @@ M*/
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix"
 /*@
-    MatGetSubMatrix - Gets a single submatrix on the same number of processors
+    MatCreateSubMatrix - Gets a single submatrix on the same number of processors
                       as the original matrix.
 
     Collective on Mat
@@ -7739,7 +7684,7 @@ M*/
     The index sets may not have duplicate entries.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
-   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
+   the MatCreateSubMatrix() routine will create the newmat for you. Any additional calls
    to this routine with a mat of the same nonzero structure and with a call of MAT_REUSE_MATRIX
    will reuse the matrix generated the first time.  You should call MatDestroy() on newmat when
    you are finished using it.
@@ -7783,9 +7728,9 @@ M*/
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
-PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -7840,44 +7785,42 @@ PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newma
   }
 
   /* if original matrix is on just one processor then use submatrix generated */
-  if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
+  if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
+    ierr = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  } else if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1) {
-    ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+  } else if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1) {
+    ierr    = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  } else if (!mat->ops->getsubmatrix) {
+  } else if (!mat->ops->createsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
-    ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
     switch (cll) {
     case MAT_INITIAL_MATRIX:
-      ierr = MatCreateSubMatrix(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrixVirtual(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
       break;
     case MAT_REUSE_MATRIX:
-      ierr = MatSubMatrixUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
+      ierr = MatSubMatrixVirtualUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
-    ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
-  if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
   if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   if (*newmat && cll == MAT_INITIAL_MATRIX) {ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashSetInitialSize"
 /*@
    MatStashSetInitialSize - sets the sizes of the matrix stash, that is
    used during the assembly process to store values that belong to
@@ -7924,8 +7867,6 @@ PetscErrorCode MatStashSetInitialSize(Mat mat,PetscInt size, PetscInt bsize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInterpolateAdd"
 /*@
    MatInterpolateAdd - w = y + A*x or A'*x depending on the shape of
      the matrix
@@ -7972,8 +7913,6 @@ PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInterpolate"
 /*@
    MatInterpolate - y = A*x or A'*x depending on the shape of
      the matrix
@@ -8016,8 +7955,6 @@ PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestrict"
 /*@
    MatRestrict - y = A*x or A'*x
 
@@ -8060,8 +7997,6 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetNullSpace"
 /*@
    MatGetNullSpace - retrieves the null space to a matrix.
 
@@ -8087,8 +8022,6 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetNullSpace"
 /*@
    MatSetNullSpace - attaches a null space to a matrix.
 
@@ -8117,6 +8050,9 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 
       Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
 
+    If the matrix is known to be symmetric because it is an SBAIJ matrix or one as called MatSetOption(mat,MAT_SYMMETRIC or MAT_SYMMETRIC_ETERNAL,PETSC_TRUE); this
+    routine also automatically calls MatSetTransposeNullSpace().
+
    Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
@@ -8133,11 +8069,12 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
   mat->nullsp = nullsp;
+  if (mat->symmetric_set && mat->symmetric) {
+    ierr = MatSetTransposeNullSpace(mat,nullsp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetTransposeNullSpace"
 /*@
    MatGetTransposeNullSpace - retrieves the null space of the transpose of a matrix.
 
@@ -8163,8 +8100,6 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetTransposeNullSpace"
 /*@
    MatSetTransposeNullSpace - attaches a null space to a matrix.
 
@@ -8208,8 +8143,6 @@ PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetNearNullSpace"
 /*@
    MatSetNearNullSpace - attaches a null space to a matrix, which is often the null space (rigid body modes) of the operator without boundary conditions
         This null space will be used to provide near null space vectors to a multigrid preconditioner built from this matrix.
@@ -8246,8 +8179,6 @@ PetscErrorCode MatSetNearNullSpace(Mat mat,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetNearNullSpace"
 /*@
    MatGetNearNullSpace -Get null space attached with MatSetNearNullSpace()
 
@@ -8276,8 +8207,6 @@ PetscErrorCode MatGetNearNullSpace(Mat mat,MatNullSpace *nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatICCFactor"
 /*@C
    MatICCFactor - Performs in-place incomplete Cholesky factorization of matrix.
 
@@ -8327,47 +8256,6 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdifor"
-/*@
-   MatSetValuesAdifor - Sets values computed with automatic differentiation into a matrix.
-
-   Not Collective
-
-   Input Parameters:
-+  mat - the matrix
-.  nl - leading dimension of v
--  v - the values compute with ADIFOR
-
-   Level: developer
-
-   Notes:
-     Must call MatSetColoring() before using this routine. Also this matrix must already
-     have its nonzero pattern determined.
-
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          MatSetValues(), MatSetColoring()
-@*/
-PetscErrorCode MatSetValuesAdifor(Mat mat,PetscInt nl,void *v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(v,3);
-
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
-  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesadifor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesadifor)(mat,nl,v);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScaleLocal"
 /*@
    MatDiagonalScaleLocal - Scales columns of a matrix given the scaling values including the
          ghosted ones.
@@ -8412,8 +8300,6 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInertia"
 /*@
    MatGetInertia - Gets the inertia from a factored matrix
 
@@ -8448,8 +8334,6 @@ PetscErrorCode MatGetInertia(Mat mat,PetscInt *nneg,PetscInt *nzero,PetscInt *np
 }
 
 /* ----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatSolves"
 /*@C
    MatSolves - Solves A x = b, given a factored matrix, for a collection of vectors
 
@@ -8496,8 +8380,6 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsSymmetric"
 /*@
    MatIsSymmetric - Test whether a matrix is symmetric
 
@@ -8556,8 +8438,6 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsHermitian"
 /*@
    MatIsHermitian - Test whether a matrix is Hermitian
 
@@ -8615,8 +8495,6 @@ PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsSymmetricKnown"
 /*@
    MatIsSymmetricKnown - Checks the flag on the matrix to see if it is symmetric.
 
@@ -8653,8 +8531,6 @@ PetscErrorCode MatIsSymmetricKnown(Mat A,PetscBool  *set,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsHermitianKnown"
 /*@
    MatIsHermitianKnown - Checks the flag on the matrix to see if it is hermitian.
 
@@ -8691,8 +8567,6 @@ PetscErrorCode MatIsHermitianKnown(Mat A,PetscBool  *set,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsStructurallySymmetric"
 /*@
    MatIsStructurallySymmetric - Test whether a matrix is structurally symmetric
 
@@ -8727,9 +8601,6 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashGetInfo"
-extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
 /*@
    MatStashGetInfo - Gets how many values are currently in the matrix stash, i.e. need
        to be communicated to other processors during the MatAssemblyBegin/End() process
@@ -8760,8 +8631,6 @@ PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs"
 /*@C
    MatCreateVecs - Get vector(s) compatible with the matrix, i.e. with the same
      parallel layout
@@ -8816,8 +8685,6 @@ PetscErrorCode MatCreateVecs(Mat mat,Vec *right,Vec *left)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfoInitialize"
 /*@C
    MatFactorInfoInitialize - Initializes a MatFactorInfo data structure
      with default values.
@@ -8849,8 +8716,6 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorSetSchurIS"
 /*@
    MatFactorSetSchurIS - Set indices corresponding to the Schur complement
 
@@ -8886,8 +8751,6 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorCreateSchurComplement"
 /*@
   MatFactorCreateSchurComplement - Create a Schur complement matrix object using Schur data computed during the factorization step
 
@@ -8917,8 +8780,6 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSchurComplement"
 /*@
   MatFactorGetSchurComplement - Get a Schur complement matrix object using the current Schur data
 
@@ -8949,8 +8810,6 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorRestoreSchurComplement"
 /*@
   MatFactorRestoreSchurComplement - Restore the Schur complement matrix object obtained from a call to MatFactorGetSchurComplement
 
@@ -8979,8 +8838,6 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorSolveSchurComplementTranspose"
 /*@
   MatFactorSolveSchurComplementTranspose - Solve the transpose of the Schur complement system computed during the factorization step
 
@@ -9014,8 +8871,6 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorSolveSchurComplement"
 /*@
   MatFactorSolveSchurComplement - Solve the Schur complement system computed during the factorization step
 
@@ -9049,8 +8904,6 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInvertSchurComplement"
 /*@
   MatFactorInvertSchurComplement - Invert the raw Schur data computed during the factorization step
 
@@ -9077,9 +8930,63 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
   PetscFunctionReturn(0);
 }
 
+/*@
+  MatFactorFactorizeSchurComplement - Factorize the raw Schur data computed during the factorization step
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP"
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+
+   Notes:
+   The routine uses the pointer to the raw data of the Schur Complement stored within the solver.
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatMumpsSetSchurIS()
+@*/
+PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  MatFactorSetSchurComplementSolverType - Set type of solver for Schur complement
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+-  type - either 0 (non-symmetric), 1 (symmetric positive definite) or 2 (symmetric indefinite)
+
+   Notes:
+   The parameter is used to compute the correct factorization of the Schur complement matrices
+   This could be useful in case the nature of the Schur complement is different from that of the matrix to be factored
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS()
+@*/
+PetscErrorCode MatFactorSetSchurComplementSolverType(Mat F, PetscInt type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(F,type,2);
+  ierr = PetscTryMethod(F,"MatFactorSetSchurComplementSolverType_C",(Mat,PetscInt),(F,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    MatPtAP - Creates the matrix product C = P^T * A * P
 
@@ -9120,6 +9027,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(P,MAT_CLASSID,2);
@@ -9200,8 +9108,6 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric"
 /*@
    MatPtAPNumeric - Computes the matrix product C = P^T * A * P
 
@@ -9255,8 +9161,6 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic"
 /*@
    MatPtAPSymbolic - Creates the (i,j) structure of the matrix product C = P^T * A * P
 
@@ -9308,8 +9212,6 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRARt"
 /*@
    MatRARt - Creates the matrix product C = R * A * R^T
 
@@ -9342,6 +9244,7 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(R,MAT_CLASSID,2);
@@ -9367,8 +9270,6 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRARtNumeric"
 /*@
    MatRARtNumeric - Computes the matrix product C = R * A * R^T
 
@@ -9422,8 +9323,6 @@ PetscErrorCode MatRARtNumeric(Mat A,Mat R,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRARtSymbolic"
 /*@
    MatRARtSymbolic - Creates the (i,j) structure of the matrix product C = R * A * R^T
 
@@ -9475,8 +9374,6 @@ PetscErrorCode MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMult"
 /*@
    MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
 
@@ -9530,6 +9427,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidPointer(C,3);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (B->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
@@ -9566,8 +9464,6 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic"
 /*@
    MatMatMultSymbolic - Performs construction, preallocation, and computes the ij structure
    of the matrix-matrix product C=A*B.  Call this routine before calling MatMatMultNumeric().
@@ -9647,8 +9543,6 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric"
 /*@
    MatMatMultNumeric - Performs the numeric matrix-matrix product.
    Call this routine after first calling MatMatMultSymbolic().
@@ -9683,8 +9577,6 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatTransposeMult"
 /*@
    MatMatTransposeMult - Performs Matrix-Matrix Multiplication C=A*B^T.
 
@@ -9722,6 +9614,7 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -9754,8 +9647,6 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMult"
 /*@
    MatTransposeMatMult - Performs Matrix-Matrix Multiplication C=A^T*B.
 
@@ -9795,6 +9686,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -9830,8 +9722,6 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMult"
 /*@
    MatMatMatMult - Performs Matrix-Matrix-Matrix Multiplication D=A*B*C.
 
@@ -9875,6 +9765,7 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -9925,8 +9816,6 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateRedundantMatrix"
 /*@
    MatCreateRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
 
@@ -9969,21 +9858,23 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   PetscBool      newsubcomm=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  if (size == 1 || nsubcomm == 1) {
-    if (reuse == MAT_INITIAL_MATRIX) {
-      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
-  }
-
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
     PetscValidPointer(*matredundant,5);
     PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
+
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+  if (size == 1 || nsubcomm == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
+    } else {
+      if (*matredundant == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
+      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
@@ -10017,6 +9908,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
   } else { /* reuse == MAT_REUSE_MATRIX */
+    if (*matredundant == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
     /* retrieve subcomm */
     ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
     redund = (*matredundant)->redundant;
@@ -10024,7 +9916,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     iscol  = redund->iscol;
     matseq = redund->matseq;
   }
-  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
 
   /* get matredundant over subcomm */
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -10048,8 +9940,6 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetMultiProcBlock"
 /*@C
    MatGetMultiProcBlock - Create multiple [bjacobi] 'parallel submatrices' from
    a given 'mat' object. Each submatrix can span multiple procs.
@@ -10081,7 +9971,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   Concepts: subcommunicator
   Concepts: submatrices
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
@@ -10093,14 +9983,13 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
   if (subCommSize > commsize) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
 
+  if (scall == MAT_REUSE_MATRIX && *subMat == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
   ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getmultiprocblock)(mat,subComm,scall,subMat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalSubMatrix"
 /*@
    MatGetLocalSubMatrix - Gets a reference to a submatrix specified in local numbering
 
@@ -10125,8 +10014,8 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    The submat always implements MatSetValuesLocal().  If isrow and iscol have the same block size, then
    MatSetValuesBlockedLocal() will also be implemented.
 
-   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that 
-   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.   
+   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that
+   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.
 
 .seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef(), MatSetLocalToGlobalMapping()
 @*/
@@ -10141,7 +10030,7 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
   if (!mat->rmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
-                                 
+
   if (mat->ops->getlocalsubmatrix) {
     ierr = (*mat->ops->getlocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
   } else {
@@ -10150,8 +10039,6 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreLocalSubMatrix"
 /*@
    MatRestoreLocalSubMatrix - Restores a reference to a submatrix specified in local numbering
 
@@ -10191,10 +10078,8 @@ PetscErrorCode MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 }
 
 /* --------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatFindZeroDiagonals"
 /*@
-   MatFindZeroDiagonals - Finds all the rows of a matrix that have zero or no entry in the matrix
+   MatFindZeroDiagonals - Finds all the rows of a matrix that have zero or no diagonal entry in the matrix
 
    Collective on Mat
 
@@ -10243,8 +10128,6 @@ PetscErrorCode MatFindZeroDiagonals(Mat mat,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindOffBlockDiagonalEntries"
 /*@
    MatFindOffBlockDiagonalEntries - Finds all the rows of a matrix that have entries outside of the main diagonal block (defined by the matrix block size)
 
@@ -10277,8 +10160,6 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInvertBlockDiagonal"
 /*@C
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
@@ -10308,8 +10189,6 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeColoringDestroy"
 /*@C
     MatTransposeColoringDestroy - Destroys a coloring context for matrix product C=A*B^T that was created
     via MatTransposeColoringCreate().
@@ -10344,8 +10223,6 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransColoringApplySpToDen"
 /*@C
     MatTransColoringApplySpToDen - Given a symbolic matrix product C=A*B^T for which
     a MatTransposeColoring context has been created, computes a dense B^T by Apply
@@ -10361,14 +10238,11 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     Output Parameter:
 .   Btdense - dense matrix B^T
 
-    Options Database Keys:
-+    -mat_transpose_coloring_view - Activates basic viewing or coloring
-.    -mat_transpose_coloring_view_draw - Activates drawing of coloring
--    -mat_transpose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
-.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy()
+.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplyDenToSp()
 
 .keywords: coloring
 @*/
@@ -10386,8 +10260,6 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransColoringApplyDenToSp"
 /*@C
     MatTransColoringApplyDenToSp - Given a symbolic matrix product Csp=A*B^T for which
     a MatTransposeColoring context has been created and a dense matrix Cden=A*Btdense
@@ -10403,12 +10275,9 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
     Output Parameter:
 .   Csp - sparse matrix
 
-    Options Database Keys:
-+    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
-.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
--    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
@@ -10428,8 +10297,6 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeColoringCreate"
 /*@C
    MatTransposeColoringCreate - Creates a matrix coloring context for matrix product C=A*B^T.
 
@@ -10444,8 +10311,8 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
     Level: intermediate
 
-.seealso: MatTransposeColoringDestroy(), MatTransposeColoringSetFromOptions(), MatTransColoringApplySpToDen(),
-           MatTransColoringApplyDenToSp(), MatTransposeColoringView(),
+.seealso: MatTransposeColoringDestroy(),  MatTransColoringApplySpToDen(),
+           MatTransColoringApplyDenToSp()
 @*/
 PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTransposeColoring *color)
 {
@@ -10468,8 +10335,6 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTrans
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetNonzeroState"
 /*@
       MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the
         matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the
@@ -10497,8 +10362,6 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat"
 /*@
       MatCreateMPIMatConcatenateSeqMat - Creates a single large PETSc matrix by concatenating sequential
                  matrices from each processor
@@ -10522,28 +10385,17 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    if (reuse == MAT_INITIAL_MATRIX) {
-      ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
-  }
-
   if (!seqmat->ops->creatempimatconcatenateseqmat) SETERRQ1(PetscObjectComm((PetscObject)seqmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)seqmat)->type_name);
+  if (reuse == MAT_REUSE_MATRIX && seqmat == *mpimat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
+
   ierr = PetscLogEventBegin(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
   ierr = (*seqmat->ops->creatempimatconcatenateseqmat)(comm,seqmat,n,reuse,mpimat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSubdomainsCreateCoalesce"
 /*@
      MatSubdomainsCreateCoalesce - Creates index subdomains by coalescing adjacent
                  ranks' ownership ranges.
@@ -10583,5 +10435,67 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,iss[0]);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatGalerkin - Constructs the coarse grid problem via Galerkin projection.
+
+   If the interpolation and restriction operators are the same, uses MatPtAP.
+   If they are not the same, use MatMatMatMult.
+
+   Once the coarse grid problem is constructed, correct for interpolation operators
+   that are not of full rank, which can legitimately happen in the case of non-nested
+   geometric multigrid.
+
+   Input Parameters:
++  restrct - restriction operator
+.  dA - fine grid matrix
+.  interpolate - interpolation operator
+.  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill, use PETSC_DEFAULT if you do not have a good estimate
+
+   Output Parameters:
+.  A - the Galerkin coarse matrix
+
+   Options Database Key:
+.  -pc_mg_galerkin <both,pmat,mat,none>
+
+   Level: developer
+
+.keywords: MG, multigrid, Galerkin
+
+.seealso: MatPtAP(), MatMatMatMult()
+@*/
+PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
+{
+  PetscErrorCode ierr;
+  IS             zerorows;
+  Vec            diag;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
+  /* Construct the coarse grid matrix */
+  if (interpolate == restrct) {
+    ierr = MatPtAP(dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMatMult(restrct,dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  }
+
+  /* If the interpolation matrix is not of full rank, A will have zero rows.
+     This can legitimately happen in the case of non-nested geometric multigrid.
+     In that event, we set the rows of the matrix to the rows of the identity,
+     ignoring the equations (as the RHS will also be zero). */
+
+  ierr = MatFindZeroRows(*A, &zerorows);CHKERRQ(ierr);
+
+  if (zerorows != NULL) { /* if there are any zero rows */
+    ierr = MatCreateVecs(*A, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(*A, diag);CHKERRQ(ierr);
+    ierr = VecISSet(diag, zerorows, 1.0);CHKERRQ(ierr);
+    ierr = MatDiagonalSet(*A, diag, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    ierr = ISDestroy(&zerorows);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

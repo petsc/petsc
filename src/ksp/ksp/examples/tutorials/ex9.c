@@ -27,8 +27,6 @@ T*/
 extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscReal,PetscLogEvent);
 extern PetscErrorCode MyKSPMonitor(KSP,PetscInt,PetscReal,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
@@ -349,8 +347,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
-#undef __FUNCT__
-#define __FUNCT__ "CheckError"
 /* ------------------------------------------------------------- */
 /*
     CheckError - Checks the error of the solution.
@@ -396,8 +392,6 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogE
   return 0;
 }
 /* ------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MyKSPMonitor"
 /*
    MyKSPMonitor - This is a user-defined routine for monitoring
    the KSP iterative solvers.

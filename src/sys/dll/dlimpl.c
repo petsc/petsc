@@ -29,8 +29,6 @@ typedef void* dlhandle_t;
 typedef void* dlsymbol_t;
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLOpen"
 /*@C
    PetscDLOpen - opens dynamic library
 
@@ -73,7 +71,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
                   NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
-    ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
+    ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
                       "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
     LocalFree(buff);
     PetscFunctionReturn(ierr);
@@ -129,8 +127,6 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLClose"
 /*@C
    PetscDLClose -  closes a dynamic library
 
@@ -194,8 +190,6 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLSym"
 /*@C
    PetscDLSym - finds a symbol in a dynamic library
 

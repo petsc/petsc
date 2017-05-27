@@ -14,8 +14,6 @@ static char help[] ="Tests sequential and parallel DMCreateMatrix(), MatMatMult(
 
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 /* User-defined application contexts */
 typedef struct {
@@ -38,8 +36,6 @@ typedef struct {
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -55,6 +51,7 @@ int main(int argc,char **argv)
   PetscReal      norm,norm_tmp,norm_tmp1,tol=100.*PETSC_MACHINE_EPSILON;
   PetscRandom    rdm;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
+  const PetscInt *ia,*ja;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
@@ -85,6 +82,8 @@ int main(int argc,char **argv)
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(user.fine.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.fine.da);CHKERRQ(ierr);
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
@@ -105,7 +104,6 @@ int main(int argc,char **argv)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   /* set val=one to A */
   if (size == 1) {
-    const PetscInt *ia,*ja;
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
@@ -114,25 +112,34 @@ int main(int argc,char **argv)
     }
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   } else {
-    Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    Mat_SeqAIJ *a   = (Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
-    /* A_part */
-    for (i=0; i<a->i[m]; i++) a->a[i] = one;
-    /* B_part */
-    for (i=0; i<b->i[m]; i++) b->a[i] = one;
-
+    Mat AA,AB;
+    ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSeqAIJGetArray(AA,&array);CHKERRQ(ierr);
+      for (i=0; i<ia[nrows]; i++) array[i] = one;
+      ierr = MatSeqAIJRestoreArray(AA,&array);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSeqAIJGetArray(AB,&array);CHKERRQ(ierr);
+      for (i=0; i<ia[nrows]; i++) array[i] = one;
+      ierr = MatSeqAIJRestoreArray(AB,&array);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   }
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                        user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                        user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
                         1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);

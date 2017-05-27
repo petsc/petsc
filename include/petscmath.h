@@ -104,6 +104,32 @@ typedef __float128 PetscReal;
 #define PetscFloorReal(a)   floorq(a)
 #define PetscFmodReal(a,b)  fmodq(a,b)
 #define PetscTGamma(a)      tgammaq(a)
+#elif defined(PETSC_USE_REAL___FP16)
+PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
+#define MPIU_REAL MPIU___FP16
+typedef __fp16 PetscReal;
+#define PetscSqrtReal(a)    sqrtf(a)
+#define PetscExpReal(a)     expf(a)
+#define PetscLogReal(a)     logf(a)
+#define PetscLog10Real(a)   log10f(a)
+#ifdef PETSC_HAVE_LOG2
+#define PetscLog2Real(a)    log2f(a)
+#endif
+#define PetscSinReal(a)     sinf(a)
+#define PetscCosReal(a)     cosf(a)
+#define PetscTanReal(a)     tanf(a)
+#define PetscAsinReal(a)    asinf(a)
+#define PetscAcosReal(a)    acosf(a)
+#define PetscAtanReal(a)    atanf(a)
+#define PetscAtan2Real(a,b) atan2f(a,b)
+#define PetscSinhReal(a)    sinhf(a)
+#define PetscCoshReal(a)    coshf(a)
+#define PetscTanhReal(a)    tanhf(a)
+#define PetscPowReal(a,b)   powf(a,b)
+#define PetscCeilReal(a)    ceilf(a)
+#define PetscFloorReal(a)   floorf(a)
+#define PetscFmodReal(a,b)  fmodf(a,b)
+#define PetscTGamma(a)      tgammaf(a)
 #endif /* PETSC_USE_REAL_* */
 
 /*
@@ -188,12 +214,12 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
 #endif  /* ! PETSC_SKIP_COMPLEX */
 
-#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
+#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
 #if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
 
-#if defined(PETSC_USE_REAL_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
 typedef float _Complex PetscComplex;
 
 #define PetscRealPartComplex(a)      crealf(a)
@@ -281,7 +307,7 @@ PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(pet
 #endif /* PETSC_HAVE_COMPLEX */
 
 #if defined(PETSC_HAVE_COMPLEX)
-#  if defined(PETSC_USE_REAL_SINGLE)
+#  if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL___FP16)
 #    define MPIU_COMPLEX MPIU_C_COMPLEX
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #    define MPIU_COMPLEX MPIU_C_DOUBLE_COMPLEX
@@ -321,7 +347,7 @@ typedef PetscReal PetscScalar;
 #define PetscImaginaryPart(a) ((PetscReal)0.)
 PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a : a;}
 #define PetscConj(a)          (a)
-#if !defined(PETSC_USE_REAL___FLOAT128)
+#if !defined(PETSC_USE_REAL___FLOAT128)  && !defined(PETSC_USE_REAL___FP16)
 #define PetscSqrtScalar(a)    sqrt(a)
 #define PetscPowScalar(a,b)   pow(a,b)
 #define PetscExpScalar(a)     exp(a)
@@ -334,6 +360,19 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 #define PetscSinhScalar(a)    sinh(a)
 #define PetscCoshScalar(a)    cosh(a)
 #define PetscTanhScalar(a)    tanh(a)
+#elif defined(PETSC_USE_REAL___FP16)
+#define PetscSqrtScalar(a)    sqrtf(a)
+#define PetscPowScalar(a,b)   powf(a,b)
+#define PetscExpScalar(a)     expf(a)
+#define PetscLogScalar(a)     logf(a)
+#define PetscSinScalar(a)     sinf(a)
+#define PetscCosScalar(a)     cosf(a)
+#define PetscAsinScalar(a)    asinf(a)
+#define PetscAcosScalar(a)    acosf(a)
+#define PetscTanScalar(a)     tanf(a)
+#define PetscSinhScalar(a)    sinhf(a)
+#define PetscCoshScalar(a)    coshf(a)
+#define PetscTanhScalar(a)    tanhf(a)
 #else /* PETSC_USE_REAL___FLOAT128 */
 #define PetscSqrtScalar(a)    sqrtq(a)
 #define PetscPowScalar(a,b)   powq(a,b)
@@ -361,12 +400,48 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
    Certain objects may be created using either single or double precision.
    This is currently not used.
 */
-typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
+typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE, PETSC_SCALAR_HALF } PetscScalarPrecision;
 
 #if defined(PETSC_HAVE_COMPLEX)
 /* PETSC_i is the imaginary number, i */
 PETSC_EXTERN PetscComplex PETSC_i;
+
+/* Try to do the right thing for complex number construction: see
+
+  http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1464.htm
+
+  for details
+*/
+PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
+{
+#if   defined(__cplusplus)
+  return PetscComplex(x,y);
+#elif defined(_Imaginary_I)
+  return x + y * _Imaginary_I;
+#else
+#if   defined(PETSC_USE_REAL_SINGLE) && defined(CMPLXF)
+  return CMPLXF(x,y);
+#elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
+  return CMPLX(x,y);
+#else
+  { /* In both C99 and C11 (ISO/IEC 9899, Section 6.2.5),
+
+       "For each floating type there is a corresponding real type, which is always a real floating
+       type. For real floating types, it is the same type. For complex types, it is the type given
+       by deleting the keyword _Complex from the type name."
+
+       So type punning should be portable. */
+    union { PetscComplex z; PetscReal f[2]; } uz;
+
+    uz.f[0] = x;
+    uz.f[1] = y;
+    return uz.z;
+  }
 #endif
+#endif
+}
+#endif
+
 
 /*MC
    PetscMin - Returns minimum of two numbers
@@ -472,7 +547,15 @@ M*/
 .seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
 
 M*/
-#define PetscAbsReal(a) (((a)<0)   ? -(a) : (a))
+#if defined(PETSC_USE_REAL_SINGLE)
+#define PetscAbsReal(a) fabsf(a)
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#define PetscAbsReal(a) fabs(a)
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PetscAbsReal(a) fabsq(a)
+#elif defined(PETSC_USE_REAL___FP16)
+#define PetscAbsReal(a) fabsf(a)
+#endif
 
 /*MC
    PetscSqr - Returns the square of a number
@@ -533,6 +616,12 @@ M*/
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
 #  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17q
 #  define PETSC_SMALL                   1.e-20q
+#elif defined(PETSC_USE_REAL___FP16)  /* maybe should use single precision values for these? */
+#  define PETSC_MAX_REAL                65504.
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
+#  define PETSC_MACHINE_EPSILON         .00097656
+#  define PETSC_SQRT_MACHINE_EPSILON    .0312
+#  define PETSC_SMALL                   5.e-3
 #endif
 
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0

@@ -3,11 +3,37 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvalues_                    MATSETVALUES
+#define matsetvaluesnnnn_                MATSETVALUESNNNN
+#define matsetvalues0_                   MATSETVALUES0
+#define matsetvaluesnn1_                 MATSETVALUESNN1
+#define matsetvalues11_                  MATSETVALUES11
+#define matsetvalues1n_                  MATSETVALUES1N
+#define matsetvaluesn1_                  MATSETVALUESN1
+#define matsetvaluesblocked0_            MATSETVALUESBLOCKED0
+#define matsetvaluesblocked11_           MATSETVALUESBLOCKED11
+#define matsetvaluesblocked111_          MATSETVALUESBLOCKED111
+#define matsetvaluesblocked1n_           MATSETVALUESBLOCKED1N
+#define matsetvaluesblockedn1_           MATSETVALUESBLOCKEDN1
+#define matsetvaluesblockedlocal_        MATSETVALUESBLOCKEDLOCAL
+#define matsetvaluesblockedlocal0_       MATSETVALUESBLOCKEDLOCAL0
+#define matsetvaluesblockedlocal11_      MATSETVALUESBLOCKEDLOCAL11
+#define matsetvaluesblockedlocal111_     MATSETVALUESBLOCKEDLOCAL111
+#define matsetvaluesblockedlocal1n_      MATSETVALUESBLOCKEDLOCAL1N
+#define matsetvaluesblockedlocaln1_      MATSETVALUESBLOCKEDLOCALN1
+#define matsetvalueslocal_               MATSETVALUESLOCAL
+#define matsetvalueslocal0_              MATSETVALUESLOCAL0
+#define matsetvalueslocal11_             MATSETVALUESLOCAL11
+#define matsetvalueslocal11nn_           MATSETVALUESLOCAL11NN
+#define matsetvalueslocal111_            MATSETVALUESLOCAL111
+#define matsetvalueslocal1n_             MATSETVALUESLOCAL1N
+#define matsetvalueslocaln1_             MATSETVALUESLOCALN1
 #define matgetrowmin_                    MATGETROWMIN
 #define matgetrowminabs_                 MATGETROWMINABS
 #define matgetrowmax_                    MATGETROWMAX
 #define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
+#define matdestroysubmatrices_           MATDESTROYSUBMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
 #define matgetrowij_                     MATGETROWIJ
@@ -21,7 +47,7 @@
 #define matdensegetarray_                MATDENSEGETARRAY
 #define matdenserestorearray_            MATDENSERESTOREARRAY
 #define matconvert_                      MATCONVERT
-#define matgetsubmatrices_               MATGETSUBMATRICES
+#define matcreatesubmatrices_            MATCREATESUBMATRICES
 #define matzerorowscolumns_              MATZEROROWSCOLUMNS
 #define matzerorowscolumnsis_            MATZEROROWSCOLUMNSIS
 #define matzerorowsstencil_              MATZEROROWSSTENCIL
@@ -49,12 +75,45 @@
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
+#define matgetsize00_                    MATGETSIZE00
+#define matgetsize10_                    MATGETSIZE10
+#define matgetsize01_                    MATGETSIZE01
+#define matgetlocalsize00_               MATGETLOCALSIZE00
+#define matgetlocalsize10_               MATGETLOCALSIZE10
+#define matgetlocalsize01_               MATGETLOCALSIZE01
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvalues_                    matsetvalues
+#define matsetvaluesnnnn_                matsetvaluesnnnn
+#define matsetvalues0_                   matsetvalues0
+#define matsetvaluesnn1_                 matsetvaluesnn1
+#define matsetvalues11_                  matsetvalues11
+#define matsetvaluesn1_                  matsetvaluesn1
+#define matsetvalues1n_                  matsetvalues1n
+#define matsetvalueslocal_               matsetvalueslocal
+#define matsetvalueslocal0_              matsetvalueslocal0
+#define matsetvalueslocal11_             matsetvalueslocal11
+#define matsetvalueslocal11nn_           matsetvalueslocal11nn
+#define matsetvalueslocal111_            matsetvalueslocal111
+#define matsetvalueslocal1n_             matsetvalueslocal1n
+#define matsetvalueslocaln1_             matsetvalueslocaln1
+#define matsetvaluesblocked_             matsetvaluesblocked
+#define matsetvaluesblocked0_            matsetvaluesblocked0
+#define matsetvaluesblocked11_           matsetvaluesblocked11
+#define matsetvaluesblocked111_          matsetvaluesblocked111
+#define matsetvaluesblocked1n_           matsetvaluesblocked1n
+#define matsetvaluesblocked1n_           matsetvaluesblockedn1
+#define matsetvaluesblockedlocal_        matsetvaluesblockedlocal
+#define matsetvaluesblockedlocal0_       matsetvaluesblockedlocal0
+#define matsetvaluesblockedlocal11_      matsetvaluesblockedlocal11
+#define matsetvaluesblockedlocal111_     matsetvaluesblockedlocal111
+#define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocal1n
+#define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocaln1
 #define matgetrowmin_                    matgetrowmin
 #define matgetrowminabs_                 matgetrowminabs
 #define matgetrowmax_                    matgetrowmax
 #define matgetrowmaxabs_                 matgetrowmaxabs
 #define matdestroymatrices_              matdestroymatrices
+#define matdestroysubmatrices_           matdestroysubmatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matcreatevecs_                   matcreatevecs
@@ -69,7 +128,7 @@
 #define matdensegetarray_                matdensegetarray
 #define matdenserestorearray_            matdenserestorearray
 #define matconvert_                      matconvert
-#define matgetsubmatrices_               matgetsubmatrices
+#define matcreatesubmatrices_            matcreatesubmatrices
 #define matzerorowscolumns_              matzerorowscolumns
 #define matzerorowscolumnsis_            matzerorowscolumnsis
 #define matzerorowsstencil_              matzerorowsstencil
@@ -96,13 +155,183 @@
 #define matfactorinfoinitialize_         matfactorinfoinitialize
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
+#define matgetsize00_                    matgetsize00
+#define matgetsize10_                    matgetsize10
+#define matgetsize01_                    matgetsize01
+#define matgetlocalsize00_               matgetlocalsize00
+#define matgetlocalsize10_               matgetlocalsize10
+#define matgetlocalsize01_               matgetlocalsize01
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetSize(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetLocalSize(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  *ierr = MatSetValuesBlocked(*mat,*m,idxm,*n,idxn,v,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  *ierr = MatSetValuesBlockedLocal(*mat,*nrow,irow,*ncol,icol,y,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal111_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocaln1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalues_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  *ierr = MatSetValues(*mat,*m,idxm,*n,idxn,v,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesnnnn_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalues0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesnn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalues11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalues1n_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  *ierr = MatSetValuesLocal(*mat,*nrow,irow,*ncol,icol,y,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal0_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal11_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal11nn_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal111_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal1n_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocaln1_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
+}
 
 PETSC_EXTERN void PETSC_STDCALL  matgetrowmin_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
 {
   CHKFORTRANNULLINTEGER(idx);
   *ierr = MatGetRowMin(*mat,*v,idx);
 }
+
 PETSC_EXTERN void PETSC_STDCALL  matgetrowminabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
 {
   CHKFORTRANNULLINTEGER(idx);
@@ -265,7 +494,7 @@ PETSC_EXTERN void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,s
   *ierr = MatDenseRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -276,7 +505,7 @@ PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PE
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,char* outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -284,7 +513,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_
   FREECHAR(outtype,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,char* outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -293,38 +522,55 @@ PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LE
 }
 
 /*
-    MatGetSubmatrices() is slightly different from C since the
+    MatCreateSubmatrices() is slightly different from C since the
     Fortran provides the array to hold the submatrix objects,while in C that
-    array is allocated by the MatGetSubmatrices()
+    array is allocated by the MatCreateSubmatrices()
 */
-PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreatesubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
 {
   Mat      *lsmat;
   PetscInt i;
 
   if (*scall == MAT_INITIAL_MATRIX) {
-    *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
-    for (i=0; i<*n; i++) {
+    *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
   } else {
-    *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
+    *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
 }
 
 /*
     MatDestroyMatrices() is slightly different from C since the
-    Fortran provides the array to hold the submatrix objects,while in C that
-    array is allocated by the MatGetSubmatrices()
+    Fortran does not free the array of matrix objects, while in C that
+    the array is freed
 */
-PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {
   PetscInt i;
 
   for (i=0; i<*n; i++) {
     *ierr = MatDestroy(&smat[i]);if (*ierr) return;
   }
+}
+
+/*
+    MatDestroySubMatrices() is slightly different from C since the
+    Fortran provides the array to hold the submatrix objects, while in C that
+    array is allocated by the MatCreateSubmatrices()
+*/
+PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+{
+  Mat      *lsmat;
+  PetscInt i;
+
+  *ierr = PetscMalloc1(*n+1,&lsmat);
+  for (i=0; i<=*n; i++) {
+      lsmat[i] = smat[i];
+  }
+  *ierr = MatDestroySubMatrices(*n,&lsmat);
 }
 
 PETSC_EXTERN void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
@@ -397,7 +643,7 @@ PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,Petsc
   *ierr = MatZeroRowsColumnsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -411,62 +657,62 @@ PETSC_EXTERN void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Pe
   *ierr = MatNullSpaceRemove(*sp,*vec);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *ierr)
 {
-  *__ierr = MatGetInfo(*mat,*flag,info);
+  *ierr = MatGetInfo(*mat,*flag,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatLUFactor(*mat,*row,*col,info);
+  *ierr = MatLUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatILUFactor(*mat,*row,*col,info);
+  *ierr = MatILUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
+  *ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatLUFactorNumeric(*fact,*mat,info);
+  *ierr = MatLUFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatCholeskyFactor(*mat,*perm,info);
+  *ierr = MatCholeskyFactor(*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
+  *ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
+  *ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
+  *ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
+  *ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row,const MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row,const MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatICCFactor(*mat,*row,info);
+  *ierr = MatICCFactor(*mat,*row,info);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, int *ierr)
 {
-  *__ierr = MatFactorInfoInitialize(info);
+  *ierr = MatFactorInfoInitialize(info);
 }

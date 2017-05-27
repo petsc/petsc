@@ -5,8 +5,6 @@ PetscClassId PETSCDS_CLASSID = 0;
 PetscFunctionList PetscDSList              = NULL;
 PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSRegister"
 /*@C
   PetscDSRegister - Adds a new PetscDS implementation
 
@@ -49,8 +47,6 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetType"
 /*@C
   PetscDSSetType - Builds a particular PetscDS
 
@@ -92,8 +88,6 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetType"
 /*@C
   PetscDSGetType - Gets the PetscDS type name (as a string) from the object.
 
@@ -122,13 +116,12 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSView_Ascii"
 static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscInt          f;
-  PetscErrorCode    ierr;
+  PetscViewerFormat  format;
+  const PetscScalar *constants;
+  PetscInt           numConstants, f;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
@@ -151,9 +144,9 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, " FVM");CHKERRQ(ierr);
     }
-    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
-    if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "%d components", Nc);CHKERRQ(ierr);}
-    else        {ierr = PetscViewerASCIIPrintf(viewer, "%d component ", Nc);CHKERRQ(ierr);}
+    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "%D components", Nc);CHKERRQ(ierr);}
+    else        {ierr = PetscViewerASCIIPrintf(viewer, "%D component ", Nc);CHKERRQ(ierr);}
     if (prob->implicit[f]) {ierr = PetscViewerASCIIPrintf(viewer, " (implicit)");CHKERRQ(ierr);}
     else                   {ierr = PetscViewerASCIIPrintf(viewer, " (explicit)");CHKERRQ(ierr);}
     if (prob->adjacency[f*2+0]) {
@@ -169,12 +162,17 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
       else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
     }
   }
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
+  if (numConstants) {
+    ierr = PetscViewerASCIIPrintf(viewer, "%D constants\n", numConstants);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    for (f = 0; f < numConstants; ++f) {ierr = PetscViewerASCIIPrintf(viewer, "%g\n", constants[f]);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSView"
 /*@C
   PetscDSView - Views a PetscDS
 
@@ -203,8 +201,6 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetFromOptions"
 /*@
   PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
 
@@ -251,6 +247,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
       ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
       ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
+    len = 1024;
     ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
@@ -275,8 +272,6 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetUp"
 /*@C
   PetscDSSetUp - Construct data structures for the PetscDS
 
@@ -300,11 +295,11 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   if (prob->setup) PetscFunctionReturn(0);
   /* Calculate sizes */
   ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
-  prob->totDim = prob->totDimBd = prob->totComp = 0;
-  ierr = PetscCalloc4(Nf+1,&prob->off,Nf+1,&prob->offDer,Nf+1,&prob->offBd,Nf+1,&prob->offDerBd);CHKERRQ(ierr);
-  ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd);CHKERRQ(ierr);
+  prob->totDim = prob->totComp = 0;
+  ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
+  ierr = PetscCalloc2(Nf+1,&prob->off,Nf+1,&prob->offDer);CHKERRQ(ierr);
+  ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisFace,Nf,&prob->basisDerFace);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscFE         feBd = (PetscFE) prob->discBd[f];
     PetscObject     obj;
     PetscClassId    id;
     PetscQuadrature q;
@@ -319,29 +314,25 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+      ierr = PetscFEGetFaceTabulation(fe, &prob->basisFace[f], &prob->basisDerFace[f], NULL);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       PetscFV fv = (PetscFV) obj;
 
       ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-      Nb   = 1;
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+      Nb   = Nc;
       ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+      /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+    prob->Nc[f]       = Nc;
+    prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
-    if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
+    if (q) {ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
-    prob->totDim  += Nb*Nc;
+    prob->totDim  += Nb;
     prob->totComp += Nc;
-    if (feBd) {
-      ierr = PetscFEGetDimension(feBd, &Nb);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(feBd, &Nc);CHKERRQ(ierr);
-      ierr = PetscFEGetDefaultTabulation(feBd, &prob->basisBd[f], &prob->basisDerBd[f], NULL);CHKERRQ(ierr);
-      prob->totDimBd += Nb*Nc;
-      prob->offBd[f+1]    = Nc     + prob->offBd[f];
-      prob->offDerBd[f+1] = Nc*dim + prob->offDerBd[f];
-    }
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
@@ -352,25 +343,22 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroyStructs_Static"
 static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree4(prob->off,prob->offDer,prob->offBd,prob->offDerBd);CHKERRQ(ierr);
-  ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisBd,prob->basisDerBd);CHKERRQ(ierr);
+  ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
+  ierr = PetscFree2(prob->off,prob->offDer);CHKERRQ(ierr);
+  ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisFace,prob->basisDerFace);CHKERRQ(ierr);
   ierr = PetscFree5(prob->u,prob->u_t,prob->u_x,prob->x,prob->refSpaceDer);CHKERRQ(ierr);
   ierr = PetscFree6(prob->f0,prob->f1,prob->g0,prob->g1,prob->g2,prob->g3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSEnlarge_Static"
 static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
-  PetscObject      *tmpd, *tmpdbd;
+  PetscObject      *tmpd;
   PetscBool        *tmpi, *tmpa;
   PetscPointFunc   *tmpobj, *tmpf;
   PetscPointJac    *tmpg, *tmpgp, *tmpgt;
@@ -385,14 +373,12 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   if (Nf >= NfNew) PetscFunctionReturn(0);
   prob->setup = PETSC_FALSE;
   ierr = PetscDSDestroyStructs_Static(prob);CHKERRQ(ierr);
-  ierr = PetscMalloc4(NfNew, &tmpd, NfNew, &tmpdbd, NfNew, &tmpi, NfNew*2, &tmpa);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpdbd[f] = prob->discBd[f]; tmpi[f] = prob->implicit[f]; for (i = 0; i < 2; ++i) tmpa[f*2+i] = prob->adjacency[f*2+i];}
-  for (f = Nf; f < NfNew; ++f) {ierr = PetscContainerCreate(PetscObjectComm((PetscObject) prob), (PetscContainer *) &tmpd[f]);CHKERRQ(ierr);
-    tmpdbd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpa[f*2+0] = PETSC_FALSE; tmpa[f*2+1] = PETSC_TRUE;}
-  ierr = PetscFree4(prob->disc, prob->discBd, prob->implicit, prob->adjacency);CHKERRQ(ierr);
+  ierr = PetscMalloc3(NfNew, &tmpd, NfNew, &tmpi, NfNew*2, &tmpa);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {tmpd[f] = prob->disc[f]; tmpi[f] = prob->implicit[f]; for (i = 0; i < 2; ++i) tmpa[f*2+i] = prob->adjacency[f*2+i];}
+  for (f = Nf; f < NfNew; ++f) {tmpd[f] = NULL; tmpi[f] = PETSC_TRUE; tmpa[f*2+0] = PETSC_FALSE; tmpa[f*2+1] = PETSC_TRUE;}
+  ierr = PetscFree3(prob->disc, prob->implicit, prob->adjacency);CHKERRQ(ierr);
   prob->Nf        = NfNew;
   prob->disc      = tmpd;
-  prob->discBd    = tmpdbd;
   prob->implicit  = tmpi;
   prob->adjacency = tmpa;
   ierr = PetscCalloc7(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew*NfNew*4, &tmpgp, NfNew*NfNew*4, &tmpgt, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
@@ -428,8 +414,6 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroy"
 /*@
   PetscDSDestroy - Destroys a PetscDS object
 
@@ -457,9 +441,8 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   ierr = PetscDSDestroyStructs_Static(*prob);CHKERRQ(ierr);
   for (f = 0; f < (*prob)->Nf; ++f) {
     ierr = PetscObjectDereference((*prob)->disc[f]);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((*prob)->discBd[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree4((*prob)->disc, (*prob)->discBd, (*prob)->implicit, (*prob)->adjacency);CHKERRQ(ierr);
+  ierr = PetscFree3((*prob)->disc, (*prob)->implicit, (*prob)->adjacency);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
@@ -474,12 +457,11 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
     ierr = PetscFree(b->labelname);CHKERRQ(ierr);
     ierr = PetscFree(b);CHKERRQ(ierr);
   }
+  ierr = PetscFree((*prob)->constants);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCreate"
 /*@
   PetscDSCreate - Creates an empty PetscDS object. The type can then be set with PetscDSSetType().
 
@@ -509,13 +491,13 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
   p->Nf    = 0;
   p->setup = PETSC_FALSE;
+  p->numConstants = 0;
+  p->constants    = NULL;
 
   *prob = p;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetNumFields"
 /*@
   PetscDSGetNumFields - Returns the number of fields in the DS
 
@@ -540,8 +522,6 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetSpatialDimension"
 /*@
   PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
 
@@ -578,8 +558,6 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTotalDimension"
 /*@
   PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
 
@@ -607,37 +585,6 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTotalBdDimension"
-/*@
-  PetscDSGetTotalBdDimension - Returns the total size of the boundary approximation space for this system
-
-  Not collective
-
-  Input Parameter:
-. prob - The PetscDS object
-
-  Output Parameter:
-. dim - The total boundary problem dimension
-
-  Level: beginner
-
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSGetTotalBdDimension(PetscDS prob, PetscInt *dim)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  PetscValidPointer(dim, 2);
-  *dim = prob->totDimBd;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTotalComponents"
 /*@
   PetscDSGetTotalComponents - Returns the total number of components in this system
 
@@ -665,8 +612,6 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetDiscretization"
 /*@
   PetscDSGetDiscretization - Returns the discretization object for the given field
 
@@ -681,7 +626,7 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 
   Level: beginner
 
-.seealso: PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
@@ -693,36 +638,6 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdDiscretization"
-/*@
-  PetscDSGetBdDiscretization - Returns the boundary discretization object for the given field
-
-  Not collective
-
-  Input Parameters:
-+ prob - The PetscDS object
-- f - The field number
-
-  Output Parameter:
-. disc - The boundary discretization object
-
-  Level: beginner
-
-.seealso: PetscDSSetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSGetBdDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(disc, 3);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *disc = prob->discBd[f];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetDiscretization"
 /*@
   PetscDSSetDiscretization - Sets the discretization object for the given field
 
@@ -762,39 +677,6 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetBdDiscretization"
-/*@
-  PetscDSSetBdDiscretization - Sets the boundary discretization object for the given field
-
-  Not collective
-
-  Input Parameters:
-+ prob - The PetscDS object
-. f - The field number
-- disc - The boundary discretization object
-
-  Level: beginner
-
-.seealso: PetscDSGetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSSetBdDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (disc) PetscValidPointer(disc, 3);
-  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
-  if (prob->discBd[f]) {ierr = PetscObjectDereference(prob->discBd[f]);CHKERRQ(ierr);}
-  prob->discBd[f] = disc;
-  ierr = PetscObjectReference(disc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSAddDiscretization"
 /*@
   PetscDSAddDiscretization - Adds a discretization object
 
@@ -817,32 +699,6 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSAddBdDiscretization"
-/*@
-  PetscDSAddBdDiscretization - Adds a boundary discretization object
-
-  Not collective
-
-  Input Parameters:
-+ prob - The PetscDS object
-- disc - The boundary discretization object
-
-  Level: beginner
-
-.seealso: PetscDSGetBdDiscretization(), PetscDSSetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSAddBdDiscretization(PetscDS prob, PetscObject disc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDSSetBdDiscretization(prob, prob->Nf, disc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetImplicit"
 /*@
   PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for IMEX
 
@@ -857,7 +713,7 @@ PetscErrorCode PetscDSAddBdDiscretization(PetscDS prob, PetscObject disc)
 
   Level: developer
 
-.seealso: PetscDSSetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSSetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 {
@@ -869,8 +725,6 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetImplicit"
 /*@
   PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for IMEX
 
@@ -883,7 +737,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 
   Level: developer
 
-.seealso: PetscDSGetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetImplicit(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 {
@@ -894,8 +748,6 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetAdjacency"
 /*@
   PetscDSGetAdjacency - Returns the flags for determining variable influence
 
@@ -913,7 +765,7 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 
   Level: developer
 
-.seealso: PetscDSSetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSSetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone, PetscBool *useClosure)
 {
@@ -927,8 +779,6 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetAdjacency"
 /*@
   PetscDSSetAdjacency - Set the flags for determining variable influence
 
@@ -944,7 +794,7 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
 
   Level: developer
 
-.seealso: PetscDSGetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetAdjacency(), DMPlexGetAdjacencyUseCone(), DMPlexGetAdjacencyUseClosure(), PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, PetscBool useClosure)
 {
@@ -956,13 +806,11 @@ PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetObjective"
 PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
                                    void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], PetscScalar obj[]))
+                                                PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -972,13 +820,11 @@ PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetObjective"
 PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
                                    void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], PetscScalar obj[]))
+                                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
 {
   PetscErrorCode ierr;
 
@@ -991,8 +837,6 @@ PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetResidual"
 /*@C
   PetscDSGetResidual - Get the pointwise residual function for a given test field
 
@@ -1031,6 +875,8 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - f0 - output values at the current point
 
   Level: intermediate
@@ -1041,11 +887,11 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
                                   void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar f0[]),
+                                              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
                                   void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, const PetscReal x[], PetscScalar f1[]))
+                                              PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1055,8 +901,6 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetResidual"
 /*@C
   PetscDSSetResidual - Set the pointwise residual function for a given test field
 
@@ -1093,6 +937,8 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 . a_x - the gradient of auxiliary each field evaluated at the current point
 . t - current time
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - f0 - output values at the current point
 
   Level: intermediate
@@ -1103,11 +949,11 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
                                   void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, const PetscReal x[], PetscScalar f0[]),
+                                             PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
                                   void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, const PetscReal x[], PetscScalar f1[]))
+                                             PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1122,8 +968,6 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasJacobian"
 /*@C
   PetscDSHasJacobian - Signals that Jacobian functions have been set
 
@@ -1156,8 +1000,6 @@ PetscErrorCode PetscDSHasJacobian(PetscDS prob, PetscBool *hasJac)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetJacobian"
 /*@C
   PetscDSGetJacobian - Get the pointwise Jacobian function for given test and basis field
 
@@ -1200,6 +1042,8 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1210,19 +1054,19 @@ PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                   void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                   void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                   void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                   void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1235,8 +1079,6 @@ PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetJacobian"
 /*@C
   PetscDSSetJacobian - Set the pointwise Jacobian function for given test and basis fields
 
@@ -1277,6 +1119,8 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1287,19 +1131,19 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                   void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                   void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                   void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                   void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -1319,8 +1163,6 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasJacobianPreconditioner"
 /*@C
   PetscDSHasJacobianPreconditioner - Signals that a Jacobian preconditioner matrix has been set
 
@@ -1353,8 +1195,6 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS prob, PetscBool *hasJacP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetJacobianPreconditioner"
 /*@C
   PetscDSGetJacobianPreconditioner - Get the pointwise Jacobian preconditioner function for given test and basis field. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1397,6 +1237,8 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1407,19 +1249,19 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
                                   void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                   void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                   void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                   void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1432,8 +1274,6 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetJacobianPreconditioner"
 /*@C
   PetscDSSetJacobianPreconditioner - Set the pointwise Jacobian preconditioner function for given test and basis fields. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1474,6 +1314,8 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1484,19 +1326,19 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
                                   void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                   void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                   void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                   void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -1516,8 +1358,6 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasDynamicJacobian"
 /*@C
   PetscDSHasDynamicJacobian - Signals that a dynamic Jacobian, dF/du_t, has been set
 
@@ -1550,8 +1390,6 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS prob, PetscBool *hasDynJac)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetDynamicJacobian"
 /*@C
   PetscDSGetDynamicJacobian - Get the pointwise dynamic Jacobian, dF/du_t, function for given test and basis field
 
@@ -1594,6 +1432,8 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1604,19 +1444,19 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                          void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                          void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                          void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                          void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1629,8 +1469,6 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetDynamicJacobian"
 /*@C
   PetscDSSetDynamicJacobian - Set the pointwise dynamic Jacobian, dF/du_t, function for given test and basis fields
 
@@ -1671,6 +1509,8 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 . t - current time
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -1681,19 +1521,19 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                          void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[]),
+                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                          void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[]),
+                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                          void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[]),
+                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                          void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[]))
+                                                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -1713,8 +1553,6 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetRiemannSolver"
 /*@C
   PetscDSGetRiemannSolver - Returns the Riemann solver for the given field
 
@@ -1738,6 +1576,8 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 . uL   - The state vector to the left of the interface
 . uR   - The state vector to the right of the interface
 . flux - output array of flux through the interface
+. numConstants - number of constant parameters
+. constants - constant parameters
 - ctx  - optional user context
 
   Level: intermediate
@@ -1745,7 +1585,7 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 .seealso: PetscDSSetRiemannSolver()
 @*/
 PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
-                                       void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+                                       void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1755,8 +1595,6 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetRiemannSolver"
 /*@C
   PetscDSSetRiemannSolver - Sets the Riemann solver for the given field
 
@@ -1778,6 +1616,8 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 . uL   - The state vector to the left of the interface
 . uR   - The state vector to the right of the interface
 . flux - output array of flux through the interface
+. numConstants - number of constant parameters
+. constants - constant parameters
 - ctx  - optional user context
 
   Level: intermediate
@@ -1785,7 +1625,7 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 .seealso: PetscDSGetRiemannSolver()
 @*/
 PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
-                                       void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+                                       void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
 {
   PetscErrorCode ierr;
 
@@ -1798,8 +1638,6 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetContext"
 PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
 {
   PetscFunctionBegin;
@@ -1810,8 +1648,6 @@ PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetContext"
 PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
 {
   PetscErrorCode ierr;
@@ -1824,8 +1660,6 @@ PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdResidual"
 /*@C
   PetscDSGetBdResidual - Get the pointwise boundary residual function for a given test field
 
@@ -1865,6 +1699,8 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 . t - current time
 . x - coordinates of the current point
 . n - unit normal at the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - f0 - output values at the current point
 
   Level: intermediate
@@ -1875,11 +1711,11 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
                                     void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
                                     void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
+                                                PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1889,8 +1725,6 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetBdResidual"
 /*@C
   PetscDSSetBdResidual - Get the pointwise boundary residual function for a given test field
 
@@ -1928,6 +1762,8 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 . t - current time
 . x - coordinates of the current point
 . n - unit normal at the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - f0 - output values at the current point
 
   Level: intermediate
@@ -1938,11 +1774,11 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS prob, PetscInt f,
                                     void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]),
                                     void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[]))
+                                               PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1955,8 +1791,6 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdJacobian"
 /*@C
   PetscDSGetBdJacobian - Get the pointwise boundary Jacobian function for given test and basis field
 
@@ -2000,6 +1834,8 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 . n - normal at the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -2010,19 +1846,19 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                     void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                     void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                     void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                     void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
+                                                PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -2035,8 +1871,6 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetBdJacobian"
 /*@C
   PetscDSSetBdJacobian - Set the pointwise boundary Jacobian function for given test and basis field
 
@@ -2078,6 +1912,8 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 . u_tShift - the multiplier a for dF/dU_t
 . x - coordinates of the current point
 . n - normal at the current point
+. numConstants - number of constant parameters
+. constants - constant parameters
 - g0 - output values at the current point
 
   Level: intermediate
@@ -2088,19 +1924,19 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
                                     void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g0[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]),
                                     void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]),
                                     void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g2[]),
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]),
                                     void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g3[]))
+                                               PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
 {
   PetscErrorCode ierr;
 
@@ -2120,8 +1956,64 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldIndex"
+/*@C
+  PetscDSGetConstants - Returns the array of constants passed to point functions
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameters:
++ numConstants - The number of constants
+- constants    - The array of constants, NULL if there are none
+
+  Level: intermediate
+
+.seealso: PetscDSSetConstants(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const PetscScalar *constants[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (numConstants) {PetscValidPointer(numConstants, 2); *numConstants = prob->numConstants;}
+  if (constants)    {PetscValidPointer(constants, 3);    *constants    = prob->constants;}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSSetConstants - Set the array of constants passed to point functions
+
+  Not collective
+
+  Input Parameters:
++ prob         - The PetscDS object
+. numConstants - The number of constants
+- constants    - The array of constants, NULL if there are none
+
+  Level: intermediate
+
+.seealso: PetscDSGetConstants(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscScalar constants[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (numConstants != prob->numConstants) {
+    ierr = PetscFree(prob->constants);CHKERRQ(ierr);
+    prob->constants = NULL;
+  }
+  prob->numConstants = numConstants;
+  if (prob->numConstants) {
+    PetscValidPointer(constants, 3);
+    ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
+    ierr = PetscMemcpy(prob->constants, constants, prob->numConstants * sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDSGetFieldIndex - Returns the index of the given field
 
@@ -2136,7 +2028,7 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
   Level: beginner
 
-.seealso: PetscGetDiscretization(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscGetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 {
@@ -2152,8 +2044,6 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldSize"
 /*@
   PetscDSGetFieldSize - Returns the size of the given field in the full space basis
 
@@ -2168,37 +2058,21 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 
   Level: beginner
 
-.seealso: PetscDSGetFieldOffset(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 {
-  PetscClassId   id;
-  PetscInt       Nb, Nc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(size, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *size = 0;
-  ierr = PetscObjectGetClassId(prob->disc[f], &id);CHKERRQ(ierr);
-  if (id == PETSCFE_CLASSID)      {
-    PetscFE fe = (PetscFE) prob->disc[f];
-
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-  } else if (id == PETSCFV_CLASSID) {
-    PetscFV fv = (PetscFV) prob->disc[f];
-
-    Nb   = 1;
-    ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
-  *size = Nb*Nc;
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  *size = prob->Nb[f];
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldOffset"
 /*@
   PetscDSGetFieldOffset - Returns the offset of the given field in the full space basis
 
@@ -2213,7 +2087,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 
   Level: beginner
 
-.seealso: PetscDSGetFieldSize(), PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetFieldSize(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
@@ -2232,47 +2106,60 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdFieldOffset"
 /*@
-  PetscDSGetBdFieldOffset - Returns the offset of the given field in the full space boundary basis
+  PetscDSGetDimensions - Returns the size of the approximation space for each field on an evaluation point 
 
   Not collective
 
-  Input Parameters:
-+ prob - The PetscDS object
-- f - The field number
+  Input Parameter:
+. prob - The PetscDS object
 
   Output Parameter:
-. off - The boundary offset
+. dimensions - The number of dimensions
 
   Level: beginner
 
-.seealso: PetscDSGetFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
+PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
 {
-  PetscInt       g;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(off, 3);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *off = 0;
-  for (g = 0; g < f; ++g) {
-    PetscFE  fe = (PetscFE) prob->discBd[g];
-    PetscInt Nb, Nc;
-
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    *off += Nb*Nc;
-  }
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  PetscValidPointer(dimensions, 2);
+  *dimensions = prob->Nb;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentOffset"
+/*@
+  PetscDSGetComponents - Returns the number of components for each field on an evaluation point
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. components - The number of components
+
+  Level: beginner
+
+.seealso: PetscDSGetComponentOffsets(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  PetscValidPointer(components, 2);
+  *components = prob->Nc;
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDSGetComponentOffset - Returns the offset of the given field on an evaluation point
 
@@ -2287,30 +2174,18 @@ PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
   Level: beginner
 
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
-  PetscInt       g;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(off, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *off = 0;
-  for (g = 0; g < f; ++g) {
-    PetscFE  fe = (PetscFE) prob->disc[g];
-    PetscInt Nc;
-
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    *off += Nc;
-  }
+  *off = prob->off[f];
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentOffsets"
 /*@
   PetscDSGetComponentOffsets - Returns the offset of each field on an evaluation point
 
@@ -2324,7 +2199,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
 
   Level: beginner
 
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 {
@@ -2335,8 +2210,6 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentDerivativeOffsets"
 /*@
   PetscDSGetComponentDerivativeOffsets - Returns the offset of each field derivative on an evaluation point
 
@@ -2350,7 +2223,7 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
 
   Level: beginner
 
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
 {
@@ -2361,60 +2234,6 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentBdOffsets"
-/*@
-  PetscDSGetComponentBdOffsets - Returns the offset of each field on a boundary evaluation point
-
-  Not collective
-
-  Input Parameter:
-. prob - The PetscDS object
-
-  Output Parameter:
-. offsets - The offsets
-
-  Level: beginner
-
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSGetComponentBdOffsets(PetscDS prob, PetscInt *offsets[])
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(offsets, 2);
-  *offsets = prob->offBd;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentBdDerivativeOffsets"
-/*@
-  PetscDSGetComponentBdDerivativeOffsets - Returns the offset of each field derivative on a boundary evaluation point
-
-  Not collective
-
-  Input Parameter:
-. prob - The PetscDS object
-
-  Output Parameter:
-. offsets - The offsets
-
-  Level: beginner
-
-.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
-@*/
-PetscErrorCode PetscDSGetComponentBdDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(offsets, 2);
-  *offsets = prob->offDerBd;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTabulation"
 /*@C
   PetscDSGetTabulation - Return the basis tabulation at quadrature points for the volume discretization
 
@@ -2429,7 +2248,7 @@ PetscErrorCode PetscDSGetComponentBdDerivativeOffsets(PetscDS prob, PetscInt *of
 
   Level: intermediate
 
-.seealso: PetscDSGetBdTabulation(), PetscDSCreate()
+.seealso: PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
 {
@@ -2443,10 +2262,8 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdTabulation"
 /*@C
-  PetscDSGetBdTabulation - Return the basis tabulation at quadrature points for the boundary discretization
+  PetscDSGetFaceTabulation - Return the basis tabulation at quadrature points on the faces
 
   Not collective
 
@@ -2454,27 +2271,25 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
 . prob - The PetscDS object
 
   Output Parameters:
-+ basis - The basis function tabulation at quadrature points
-- basisDer - The basis function derivative tabulation at quadrature points
++ basisFace - The basis function tabulation at quadrature points
+- basisDerFace - The basis function derivative tabulation at quadrature points
 
   Level: intermediate
 
 .seealso: PetscDSGetTabulation(), PetscDSCreate()
 @*/
-PetscErrorCode PetscDSGetBdTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
+PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  if (basis)    {PetscValidPointer(basis, 2);    *basis    = prob->basisBd;}
-  if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDerBd;}
+  if (basis)    {PetscValidPointer(basis, 2);    *basis    = prob->basisFace;}
+  if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDerFace;}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetEvaluationArrays"
 PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x)
 {
   PetscErrorCode ierr;
@@ -2488,8 +2303,6 @@ PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetWeakFormArrays"
 PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3)
 {
   PetscErrorCode ierr;
@@ -2506,8 +2319,6 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetRefCoordArrays"
 PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar **refSpaceDer)
 {
   PetscErrorCode ierr;
@@ -2520,14 +2331,12 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSAddBoundary"
 /*@C
   PetscDSAddBoundary - Add a boundary condition to the model
 
   Input Parameters:
 + ds          - The PetscDS object
-. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -2546,7 +2355,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 
 .seealso: PetscDSGetBoundary()
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(void), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DSBoundary     b;
   PetscErrorCode ierr;
@@ -2560,7 +2369,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char 
   if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
-  b->essential       = isEssential;
+  b->type            = type;
   b->field           = field;
   b->numcomps        = numcomps;
   b->func            = bcFunc;
@@ -2571,8 +2380,6 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetNumBoundary"
 /*@
   PetscDSGetNumBoundary - Get the number of registered BC
 
@@ -2598,8 +2405,6 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBoundary"
 /*@C
   PetscDSGetBoundary - Add a boundary condition to the model
 
@@ -2608,7 +2413,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
++ type        - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -2627,7 +2432,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: PetscDSAddBoundary()
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(void), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   DSBoundary b    = ds->boundary;
   PetscInt   n    = 0;
@@ -2640,9 +2445,9 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssentia
     ++n;
   }
   if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
-  if (isEssential) {
-    PetscValidPointer(isEssential, 3);
-    *isEssential = b->essential;
+  if (type) {
+    PetscValidPointer(type, 3);
+    *type = b->type;
   }
   if (name) {
     PetscValidPointer(name, 4);
@@ -2683,8 +2488,6 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssentia
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCopyBoundary"
 PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
 {
   DSBoundary     b, next, *lastnext;
@@ -2709,7 +2512,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   for (b = probA->boundary; b; b = b->next) {
     DSBoundary bNew;
 
-    ierr = PetscNew(&bNew);
+    ierr = PetscNew(&bNew);CHKERRQ(ierr);
     bNew->numcomps = b->numcomps;
     ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
     ierr = PetscMemcpy(bNew->comps, b->comps, bNew->numcomps*sizeof(PetscInt));CHKERRQ(ierr);
@@ -2718,10 +2521,10 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
     ierr = PetscMemcpy(bNew->ids, b->ids, bNew->numids*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->labelname,(char **) &(bNew->labelname));CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
-    bNew->ctx       = b->ctx;
-    bNew->essential = b->essential;
-    bNew->field     = b->field;
-    bNew->func      = b->func;
+    bNew->ctx   = b->ctx;
+    bNew->type  = b->type;
+    bNew->field = b->field;
+    bNew->func  = b->func;
 
     *lastnext = bNew;
     lastnext = &(bNew->next);
@@ -2729,8 +2532,6 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCopyEquations"
 /*@
   PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
 
@@ -2783,8 +2584,6 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroy_Basic"
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
   PetscErrorCode      ierr;
@@ -2794,8 +2593,6 @@ static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSInitialize_Basic"
 static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
@@ -2814,8 +2611,6 @@ static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 .seealso: PetscDSType, PetscDSCreate(), PetscDSSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCreate_Basic"
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS prob)
 {
   PetscDS_Basic *b;

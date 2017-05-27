@@ -3,10 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q1.tar.gz']
-    self.double           = 0
-    self.downloadonWindows= 1
+    self.download               = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q3.tar.gz']
+    self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
+    self.installwithbatch       = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -16,7 +16,8 @@ class Configure(config.package.Package):
     import os
 
     make_target = 'single double'
-    if self.defaultPrecision == '__float128': make_target += ' quad'
+    if self.defaultPrecision == '__float128': make_target = 'quad'
+    if self.defaultPrecision == '__fp16': make_target     = 'half'
 
     libdir = self.libDir
     confdir = self.confDir

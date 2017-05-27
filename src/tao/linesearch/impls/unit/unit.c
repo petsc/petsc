@@ -1,8 +1,6 @@
 
 #include <petsc/private/taolinesearchimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_Unit"
 static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
@@ -11,8 +9,6 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetFromOptions_Unit"
 static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscErrorCode ierr;
@@ -22,8 +18,6 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchView_Unit"
 static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -37,8 +31,6 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply_Unit"
 static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *f,Vec g,Vec step_direction)
 {
   PetscErrorCode ierr;
@@ -59,8 +51,6 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate_Unit"
 /*@C
    TaoCreateUnitLineSearch - Always use step length of 1.0
 

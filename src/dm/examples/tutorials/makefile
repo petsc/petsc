@@ -4,10 +4,11 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c  ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c swarm_ex1.c
-EXAMPLESF       = ex11f90.F ex13f90aux.F90 ex13f90.F90
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c swarm_ex1.c
+EXAMPLESF       = ex11f90.F90 ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
+CLEANFILES      = output_file output_file.info
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -125,6 +126,31 @@ runex5_2:
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
+runex6:
+	-@${MPIEXEC} -n 1 ./ex6  > ex6_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_1.tmp
+runex6_2:
+	-@${MPIEXEC} -n 2 ./ex6  > ex6_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_2.tmp
+runex6_4:
+	-@${MPIEXEC} -n 4 ./ex6  > ex6_4.tmp 2>&1;   \
+	   if (${DIFF} output/ex6_4.out ex6_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_4.tmp
+runex6_9:
+	-@${MPIEXEC} -n 9 ./ex6  > ex6_9.tmp 2>&1;   \
+	   if (${DIFF} output/ex6_9.out ex6_9.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6_9, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6_9.tmp
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7  > ex7.tmp 2>&1;   \
+	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7.tmp
 runex9:
 	-@${MPIEXEC} -n 4 ./ex9
 	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
@@ -134,7 +160,7 @@ runex10:
 	-@${MPIEXEC} -n 4 ./ex10 -viewer_hdf5_sp_output
 
 runex11f90:
-	-@${MPIEXEC} -n 1 ./ex11f90  > ex11f90.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex11f90 | ${GREP} -v "Vec Object" > ex11f90.tmp 2>&1;   \
 	   if (${DIFF} output/ex11f90.out ex11f90.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex11f90, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex11f90.tmp
@@ -160,11 +186,13 @@ runex15_3:
 	   ${RM} -f ex15.tmp
 
 
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm \
+                            ex6.PETSc runex6 runex6_2 runex6_4 runex6_9 ex6.rm \
+                            ex7.PETSc runex7 ex7.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_FORTRAN	  =
-TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc runex11f90 ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex65dm.PETSc ex65dm.rm

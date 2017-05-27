@@ -70,7 +70,7 @@ class Logger(args.ArgumentProcessor):
     import nargs
 
     argDB = args.ArgumentProcessor.setupArguments(self, argDB)
-    argDB.setType('log',           nargs.Arg(None, 'build.log', 'The filename for the log'))
+    argDB.setType('log',           nargs.Arg(None, 'buildsystem.log', 'The filename for the log'))
     argDB.setType('logAppend',     nargs.ArgBool(None, 0, 'The flag determining whether we backup or append to the current log', isTemporary = 1))
     argDB.setType('debugLevel',    nargs.ArgInt(None, 3, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
     argDB.setType('debugSections', nargs.Arg(None, [], 'Message types to print, e.g. [compile,link,hg,install]'))

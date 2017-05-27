@@ -35,8 +35,6 @@ struct _UserCtx {
   Vec      Uloc,Kloc;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_U"
 static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
   PetscReal hx = 1./info->mx;
@@ -51,8 +49,6 @@ static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_K"
 static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
   PetscReal hx = 1./info->mx;
@@ -70,8 +66,6 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction_All"
 static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
 {
   User           user = (User)ctx;
@@ -130,8 +124,6 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_U"
 static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Buu)
 {
   PetscReal      hx = 1./info->mx;
@@ -154,8 +146,6 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_K"
 static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Bkk)
 {
   PetscReal      hx = 1./info->mx;
@@ -171,8 +161,6 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_UK"
 static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Buk)
 {
   PetscReal      hx = 1./info->mx;
@@ -193,8 +181,6 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_KU"
 static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Bku)
 {
   PetscErrorCode ierr;
@@ -228,8 +214,6 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_All"
 static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   User           user = (User)ctx;
@@ -264,8 +248,9 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
     break;
   case 2: {
-    Mat Buu,Buk,Bku,Bkk;
-    IS  *is;
+    Mat       Buu,Buk,Bku,Bkk;
+    PetscBool nest;
+    IS        *is;
     ierr = DMCompositeScatter(user->pack,X,Uloc,Kloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
@@ -275,8 +260,17 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     ierr = MatGetLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
     ierr = MatGetLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_U(user,&infou,u,k,Buu);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATNEST,&nest);CHKERRQ(ierr);
+    if (!nest) {
+      /*
+         DMCreateMatrix_Composite()  for a nested matrix does not generate off-block matrices that one can call MatSetValuesLocal() on, it just creates dummy 
+         matrices with no entries; there cannot insert values into them. Commit b6480e041dd2293a65f96222772d68cdb4ed6306
+         changed Mat_Nest() from returning NULL pointers for these submatrices to dummy matrices because PCFIELDSPLIT could not
+         handle the returned null matrices.
+      */
+      ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
+      ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
+    }
     ierr = FormJacobianLocal_K(user,&infok,u,k,Bkk);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
@@ -300,8 +294,6 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitial_Coupled"
 static PetscErrorCode FormInitial_Coupled(User user,Vec X)
 {
   PetscErrorCode ierr;
@@ -328,8 +320,6 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
@@ -344,9 +334,10 @@ int main(int argc, char *argv[])
   PetscBool      view_draw,pass_dm;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
+  ierr = DMSetUp(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc1(sizes,&lxk);CHKERRQ(ierr);
@@ -355,6 +346,7 @@ int main(int argc, char *argv[])
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dak);CHKERRQ(ierr);
+  ierr = DMSetUp(dak);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);

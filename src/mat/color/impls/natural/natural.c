@@ -1,8 +1,6 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petsc/private/isimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_Natural"
 static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -67,8 +65,6 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_Natural"
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {
     PetscFunctionBegin;

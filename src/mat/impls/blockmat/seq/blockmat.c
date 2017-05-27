@@ -16,8 +16,6 @@ typedef struct {
 
 extern PetscErrorCode  MatBlockMatSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSOR_BlockMat_Symmetric"
 static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
@@ -124,8 +122,6 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSOR_BlockMat"
 static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
@@ -221,8 +217,6 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_BlockMat"
 static PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
@@ -297,8 +291,6 @@ noinsert1:;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_BlockMat"
 static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -420,8 +412,6 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_BlockMat"
 static PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
@@ -441,8 +431,6 @@ static PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_BlockMat"
 static PetscErrorCode MatDestroy_BlockMat(Mat mat)
 {
   PetscErrorCode ierr;
@@ -469,8 +457,6 @@ static PetscErrorCode MatDestroy_BlockMat(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_BlockMat"
 static PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
@@ -507,8 +493,6 @@ static PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_BlockMat_Symmetric"
 PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
@@ -559,24 +543,18 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_BlockMat"
 static PetscErrorCode MatMultAdd_BlockMat(Mat A,Vec x,Vec y,Vec z)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_BlockMat"
 static PetscErrorCode MatMultTranspose_BlockMat(Mat A,Vec x,Vec y)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_BlockMat"
 static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A,Vec x,Vec y,Vec z)
 {
   PetscFunctionBegin;
@@ -586,8 +564,6 @@ static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A,Vec x,Vec y,Vec z)
 /*
      Adds diagonal pointers to sparse matrix structure.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMarkDiagonal_BlockMat"
 static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
@@ -610,9 +586,7 @@ static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix_BlockMat"
-static PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
   Mat_SeqAIJ     *c;
@@ -675,8 +649,6 @@ static PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_BlockMat"
 static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
@@ -732,8 +704,6 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_BlockMat"
 static PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool flg)
 {
   PetscFunctionBegin;
@@ -806,7 +776,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0,
                                        0,
                                        0,
-                               /* 59*/ MatGetSubMatrix_BlockMat,
+                               /* 59*/ MatCreateSubMatrix_BlockMat,
                                        MatDestroy_BlockMat,
                                        MatView_BlockMat,
                                        0,
@@ -891,8 +861,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatBlockMatSetPreallocation"
 /*@C
    MatBlockMatSetPreallocation - For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
@@ -930,8 +898,6 @@ PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatBlockMatSetPreallocation_BlockMat"
 static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
@@ -1003,8 +969,6 @@ static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,Pe
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_BlockMat"
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 {
   Mat_BlockMat   *b;
@@ -1023,8 +987,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateBlockMat"
 /*@C
    MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential Mat object
 

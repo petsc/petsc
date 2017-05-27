@@ -3,8 +3,6 @@
 #include <string.h>
 #include <ctype.h>
   
-#undef __FUNCT__
-#define __FUNCT__ "PFReadMatPowerData"
 PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 {
   FILE           *fp;
@@ -75,7 +73,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   fp = fopen(filename,"r");
   /* Reading data */
   for (i=0;i<line_counter;i++) {
-    fgets(line,MAXLINE,fp);
+    if (!fgets(line,MAXLINE,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"File is incorrectly formatted");
 
     if ((i >= bus_start_line) && (i < bus_end_line)) {
       double gl,bl,vm,va,basekV;

@@ -16,9 +16,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS);
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRegisterAll"
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS package.
 
@@ -53,6 +52,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSSUNDIALS, TSCreate_Sundials);CHKERRQ(ierr);
 #endif
   ierr = TSRegister(TSRK,       TSCreate_RK);CHKERRQ(ierr);
+  ierr = TSRegister(TSGLEE,     TSCreate_GLEE);CHKERRQ(ierr);
   ierr = TSRegister(TSARKIMEX,  TSCreate_ARKIMEX);CHKERRQ(ierr);
   ierr = TSRegister(TSROSW,     TSCreate_RosW);CHKERRQ(ierr);
   ierr = TSRegister(TSEIMEX,    TSCreate_EIMEX);CHKERRQ(ierr);

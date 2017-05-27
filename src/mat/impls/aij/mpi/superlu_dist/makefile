@@ -1,6 +1,5 @@
 
 #requirespackage   'PETSC_HAVE_SUPERLU_DIST'
-#requiresprecision double
 
 ALL: lib
 

@@ -1,8 +1,6 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush"
 /*@
    PetscViewerFlush - Flushes a PetscViewer (i.e. tries to dump all the
    data that has been printed through a PetscViewer).

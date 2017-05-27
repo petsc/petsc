@@ -5,8 +5,6 @@ static char help[] = "Create a mesh, refine and coarsen simultaneously, and tran
 #include <petscdmforest.h>
 #include <petscoptions.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "AddIdentityLabel"
 static PetscErrorCode AddIdentityLabel(DM dm)
 {
   PetscInt       pStart,pEnd,p;
@@ -19,8 +17,6 @@ static PetscErrorCode AddIdentityLabel(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateAdaptivityLabel"
 static PetscErrorCode CreateAdaptivityLabel(DM forest,DMLabel *adaptLabel)
 {
   DMLabel        identLabel;
@@ -41,8 +37,6 @@ static PetscErrorCode CreateAdaptivityLabel(DM forest,DMLabel *adaptLabel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LinearFunction"
 static PetscErrorCode LinearFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscFunctionBeginUser;
@@ -50,8 +44,6 @@ static PetscErrorCode LinearFunction(PetscInt dim,PetscReal time, const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultiaffineFunction"
 static PetscErrorCode MultiaffineFunction(PetscInt dim,PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscFunctionBeginUser;
@@ -68,8 +60,6 @@ typedef struct _bc_func_ctx
 }
 bc_func_ctx;
 
-#undef __FUNCT__
-#define __FUNCT__ "bc_func_fv"
 static PetscErrorCode bc_func_fv (PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   bc_func_ctx    *bcCtx;
@@ -81,8 +71,6 @@ static PetscErrorCode bc_func_fv (PetscReal time, const PetscReal *c, const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;

@@ -5,8 +5,6 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "Mat_CreateColInode"
 static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt *size,PetscInt **ns)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -56,8 +54,6 @@ static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt *size,PetscInt **ns)
 /*
       This builds symmetric version of nonzero structure,
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric"
 static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *iia[],const PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -148,8 +144,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,const PetscInt *i
 /*
       This builds nonsymmetric version of nonzero structure,
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
 static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt *iia[],const PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -229,8 +223,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode"
 static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -249,8 +241,6 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBool s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRowIJ_SeqAIJ_Inode"
 static PetscErrorCode MatRestoreRowIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -269,8 +259,6 @@ static PetscErrorCode MatRestoreRowIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBo
 
 /* ----------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric"
 static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt *iia[],const PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -349,8 +337,6 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Inode"
 static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -370,8 +356,6 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Inode"
 static PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -389,8 +373,6 @@ static PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,PetscInt oshift,Pets
 
 /* ----------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJ_Inode"
 static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -581,8 +563,6 @@ static PetscErrorCode MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 }
 /* ----------------------------------------------------------- */
 /* Almost same code as the MatMult_SeqAIJ_Inode() */
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJ_Inode"
 static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -769,8 +749,6 @@ static PetscErrorCode MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_Inode_inplace"
 PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
@@ -1173,8 +1151,6 @@ PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C     =B;
@@ -1891,8 +1867,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat             C     = B;
@@ -2319,8 +2293,6 @@ endofwhile:;
 
 
 /* ----------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqAIJ_Inode"
 PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a    = (Mat_SeqAIJ*)A->data;
@@ -2708,8 +2680,6 @@ PetscErrorCode MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 /*
      Makes a longer coloring[] array and calls the usual code with that
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
 PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->data;
@@ -2749,8 +2719,6 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
 
 #include <petsc/private/kernels/blockinvert.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSOR_SeqAIJ_Inode"
 PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -2759,11 +2727,11 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscScalar       *x,tmp4,tmp5,x1,x2,x3,x4,x5;
   const MatScalar   *v = a->a,*v1 = NULL,*v2 = NULL,*v3 = NULL,*v4 = NULL,*v5 = NULL;
   const PetscScalar *xb, *b;
-  PetscReal         zeropivot = 1.0e-15, shift = 0.0;
+  PetscReal         zeropivot = 100.*PETSC_MACHINE_EPSILON, shift = 0.0;
   PetscErrorCode    ierr;
   PetscInt          n,m = a->inode.node_count,cnt = 0,i,j,row,i1,i2;
   PetscInt          sz,k,ipvt[5];
-  PetscBool         allowzeropivot,zeropivotdetected=PETSC_FALSE;
+  PetscBool         allowzeropivot,zeropivotdetected;
   const PetscInt    *sizes = a->inode.size,*idx,*diag = a->diag,*ii = a->i;
 
   PetscFunctionBegin;
@@ -2800,7 +2768,9 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         /* Create matrix data structure */
         if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) {
           if (allowzeropivot) {
-            zeropivotdetected = PETSC_TRUE;
+            A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+            A->factorerror_zeropivot_value = PetscAbsScalar(ibdiag[cnt]);
+            A->factorerror_zeropivot_row   = row;
             ierr = PetscInfo1(A,"Zero pivot, row %D\n",row);CHKERRQ(ierr);
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
         }
@@ -2808,23 +2778,23 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         break;
       case 2:
         ierr = PetscKernel_A_gets_inverse_A_2(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       case 3:
         ierr = PetscKernel_A_gets_inverse_A_3(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       case 4:
         ierr = PetscKernel_A_gets_inverse_A_4(ibdiag+cnt,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       case 5:
         ierr = PetscKernel_A_gets_inverse_A_5(ibdiag+cnt,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+        if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
-      if (zeropivotdetected) {
-        A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-      }
-
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
     }
@@ -4002,8 +3972,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultDiagonalBlock_SeqAIJ_Inode"
 PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -4081,8 +4049,6 @@ PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
     samestructure indicates that the matrix has not changed its nonzero structure so we
     do not need to recompute the inodes
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJCheckInode"
 PetscErrorCode MatSeqAIJCheckInode(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -4162,8 +4128,6 @@ PetscErrorCode MatSeqAIJCheckInode(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqAIJ_Inode"
 PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {
   Mat            B =*C;
@@ -4203,8 +4167,6 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRow_FactoredLU"
 PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt nzl,PetscInt nzu,PetscInt nz,const PetscInt *ai,const PetscInt *aj,const PetscInt *adiag,PetscInt row)
 {
   PetscInt       k;
@@ -4227,8 +4189,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt 
 .  Mat A - ILU or LU matrix factor
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJCheckInode_FactorLU"
 PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -4299,8 +4259,6 @@ PetscErrorCode MatSeqAIJCheckInode_FactorLU(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJInvalidateDiagonal_Inode"
 PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
 {
   Mat_SeqAIJ *a=(Mat_SeqAIJ*)A->data;
@@ -4315,8 +4273,6 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat A)
   permutations with ones that correspond to rows/cols of the matrix
   rather then inode blocks
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatInodeAdjustForInodes"
 PetscErrorCode  MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr;
@@ -4326,8 +4282,6 @@ PetscErrorCode  MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInodeAdjustForInodes_SeqAIJ_Inode"
 PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -4387,8 +4341,6 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInodeGetInodeSizes"
 /*@C
    MatInodeGetInodeSizes - Returns the inode information of the Inode matrix.
 
@@ -4427,8 +4379,6 @@ PetscErrorCode  MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInodeGetInodeSizes_SeqAIJ_Inode"
 PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;

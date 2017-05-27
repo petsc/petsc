@@ -50,8 +50,6 @@ const char *TaoConvergedReasons_Shifted[] = {
 const char **TaoConvergedReasons = TaoConvergedReasons_Shifted + 7;
 extern PetscBool TaoRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoRegisterAll"
 /*@C
   TaoRegisterAll - Registers all of the minimization methods in the TAO
   package.
@@ -62,7 +60,7 @@ extern PetscBool TaoRegisterAllCalled;
 
 .seealso TaoRegister(), TaoRegisterDestroy()
 @*/
-PetscErrorCode TaoRegisterAll()
+PetscErrorCode TaoRegisterAll(void)
 {
   PetscErrorCode ierr;
 

@@ -1,6 +1,10 @@
 
 
-#include "petsc/finclude/petscdef.h"
+!/*T
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
+!T*/
+
+#include "petsc/finclude/petsc.h"
       use petsc
       implicit none
 
@@ -10,6 +14,10 @@
       PetscBool                                 :: set=PETSC_FALSE
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       list1(1) = 'a123'
       list1(2) = 'b456'
       list1(3) = 'c789'
@@ -19,8 +27,7 @@
 
       write(*,20) list1(1)
 20    format(A99)
-      call PetscOptionsGetEnum(PETSC_NULL_OBJECT,'joe_','-jeff',             &
-     &                         list1,opt,set,ierr)
+      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 
@@ -30,3 +37,11 @@
 
 
 
+
+!
+!/*TEST
+!
+!   test:
+!      args: -joe_jeff b456
+!
+!TEST*/

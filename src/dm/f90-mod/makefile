@@ -13,7 +13,9 @@ CFLAGS	   =
 FFLAGS	   =
 SOURCEC	   =
 SOURCEF	   = petscdmmod.F
-SOURCEH	   =
+SOURCEH = petscdmcomposite.h90 petscdmda.h90 petscdmforest.h90          \
+ petscdm.h90 petscdmlabel.h90 petscdmnetwork.h90 petscdmpatch.h90       \
+ petscdmplex.h90 petscdt.h90
 LIBBASE	   = libpetscdm
 MANSEC	   = DM
 LOCDIR	   = src/dm/f90-mod/

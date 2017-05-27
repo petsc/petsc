@@ -14,8 +14,6 @@ struct _n_TSMonitorSPEigCtx {
 };
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorSPEigCtxCreate"
 /*@C
    TSMonitorSPEigCtxCreate - Creates a context for use with TS to monitor the eigenvalues of the linearized operator
 
@@ -84,8 +82,6 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSLinearStabilityIndicator"
 static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal xi,PetscBool *flg)
 {
   PetscErrorCode ierr;
@@ -98,8 +94,6 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr,PetscReal x
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorSPEig"
 PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorSPEigCtx ctx = (TSMonitorSPEigCtx) monctx;
@@ -187,8 +181,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorSPEigCtxDestroy"
 /*@C
    TSMonitorSPEigCtxDestroy - Destroys a scatter plot context that was created with TSMonitorSPEigCtxCreate().
 

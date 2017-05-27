@@ -1,7 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointLocal"
 /*@
    DMPlexGetPointLocal - get location of point data in local Vec
 
@@ -36,8 +34,6 @@ PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointLocalRead"
 /*@
    DMPlexPointLocalRead - return read access to a point in local array
 
@@ -76,8 +72,6 @@ PetscErrorCode DMPlexPointLocalRead(DM dm,PetscInt point,const PetscScalar *arra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointLocalRef"
 /*@
    DMPlexPointLocalRef - return read/write access to a point in local array
 
@@ -116,8 +110,6 @@ PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointLocalField"
 /*@
   DMPlexGetPointLocalField - get location of point field data in local Vec
 
@@ -153,8 +145,6 @@ PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointLocalFieldRead"
 /*@
    DMPlexPointLocalFieldRead - return read access to a field on a point in local array
 
@@ -187,8 +177,6 @@ PetscErrorCode DMPlexPointLocalFieldRead(DM dm, PetscInt point,PetscInt field,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointLocalFieldRef"
 /*@
    DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
 
@@ -221,8 +209,6 @@ PetscErrorCode DMPlexPointLocalFieldRef(DM dm,PetscInt point,PetscInt field,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointGlobal"
 /*@
   DMPlexGetPointGlobal - get location of point data in global Vec
 
@@ -257,8 +243,6 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointGlobalRead"
 /*@
    DMPlexPointGlobalRead - return read access to a point in global array
 
@@ -297,8 +281,6 @@ PetscErrorCode DMPlexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *arr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointGlobalRef"
 /*@
    DMPlexPointGlobalRef - return read/write access to a point in global array
 
@@ -337,8 +319,6 @@ PetscErrorCode DMPlexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointGlobalField"
 /*@
   DMPlexGetPointGlobalField - get location of point field data in global Vec
 
@@ -374,8 +354,6 @@ PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointGlobalFieldRead"
 /*@
    DMPlexPointGlobalFieldRead - return read access to a field on a point in global array
 
@@ -408,8 +386,6 @@ PetscErrorCode DMPlexPointGlobalFieldRead(DM dm,PetscInt point,PetscInt field,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPointGlobalFieldRef"
 /*@
    DMPlexPointGlobalFieldRef - return read/write access to a field on a point in global array
 

@@ -13,8 +13,6 @@ const PetscReal dmda_i_val[] = { 1.10, 2.3006, 2.32444, 3.44006, 66.9009 };
 const PetscReal dmda_j_val[] = { 0.0, 0.25, 0.5, 0.75 };
 const PetscReal dmda_k_val[] = { 0.0, 1.1, 2.2, 3.3, 4.4, 5.5 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MyVecDump"
 PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usempiio,Vec x)
 {
   MPI_Comm       comm;
@@ -43,8 +41,6 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyVecLoad"
 PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usempiio,Vec x)
 {
   MPI_Comm       comm;
@@ -73,8 +69,6 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecGenerateEntries"
 PetscErrorCode DMDAVecGenerateEntries(DM dm,Vec a)
 {
   PetscScalar    ****LA_v;
@@ -101,8 +95,6 @@ PetscErrorCode DMDAVecGenerateEntries(DM dm,Vec a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HeaderlessBinaryReadCheck"
 PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
 {
   PetscErrorCode ierr;
@@ -155,8 +147,6 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCompare"
 PetscErrorCode VecCompare(Vec a,Vec b)
 {
   PetscInt       locmin[2],locmax[2];
@@ -192,8 +182,6 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestDMDAVec"
 PetscErrorCode TestDMDAVec(PetscBool usempiio)
 {
   DM             dm;
@@ -202,11 +190,12 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (!usempiio) { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",__FUNCT__);CHKERRQ(ierr); }
-  else { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",__FUNCT__);CHKERRQ(ierr); }
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+  if (!usempiio) { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr); }
+  else { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",PETSC_FUNCTION_NAME);CHKERRQ(ierr); }
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
                         3,2,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm,&x_ref);CHKERRQ(ierr);
   ierr = DMDAVecGenerateEntries(dm,x_ref);CHKERRQ(ierr);
@@ -238,8 +227,6 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

@@ -20,8 +20,6 @@ T*/
 */
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat             A;                      /* matrix */
@@ -51,7 +49,7 @@ int main(int argc,char **args)
         then load another (larger) system and solve it as well.
         This process preloads the instructions with the smaller
         system so that more accurate performance monitoring (via
-        -log_summary) can be done with the larger one (that actually
+        -log_view) can be done with the larger one (that actually
         is the system of interest).
   */
   PetscPreLoadBegin(PetscPreLoad,"Load");

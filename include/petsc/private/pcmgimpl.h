@@ -36,11 +36,11 @@ typedef struct {
     This data structure is shared by all the levels.
 */
 typedef struct {
-  PCMGType  am;                               /* Multiplicative, additive or full */
-  PetscInt  cyclesperpcapply;                 /* Number of cycles to use in each PCApply(), multiplicative only*/
-  PetscInt  maxlevels;                        /* total number of levels allocated */
-  PetscInt  galerkin;                         /* use Galerkin process to compute coarser matrices, 0=no, 1=yes, 2=yes but computed externally */
-  PetscBool usedmfornumberoflevels;           /* sets the number of levels by getting this information out of the DM */
+  PCMGType         am;                        /* Multiplicative, additive or full */
+  PetscInt         cyclesperpcapply;          /* Number of cycles to use in each PCApply(), multiplicative only*/
+  PetscInt         maxlevels;                 /* total number of levels allocated */
+  PCMGGalerkinType galerkin;                  /* use Galerkin process to compute coarser matrices */
+  PetscBool        usedmfornumberoflevels;    /* sets the number of levels by getting this information out of the DM */
 
   PetscInt     nlevels;
   PC_MG_Levels **levels;

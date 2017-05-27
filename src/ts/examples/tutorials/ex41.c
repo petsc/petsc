@@ -14,8 +14,6 @@ static char help[] = "Parallel bouncing ball example to test TS event feature.\n
 
 #include <petscts.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "EventFunction"
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -29,8 +27,6 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostEventFunction"
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   PetscErrorCode ierr;
@@ -50,10 +46,61 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 /*
-     Defines the ODE passed to the ODE solver
+     Defines the ODE passed to the ODE solver in explicit form: U_t = F(U)
+*/
+static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
+{
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u;
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+
+  f[0] = u[1];
+  f[1] = - 9.8;
+
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetRHSJacobian() for the meaning the Jacobian.
+*/
+static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
+{
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[2],rstart;
+  PetscScalar       J[2][2];
+  const PetscScalar *u;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+
+  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+  rowcol[0] = rstart; rowcol[1] = rstart+1;
+
+  J[0][0] = 0.0;      J[0][1] = 1.0;
+  J[1][0] = 0.0;      J[1][1] = 0.0;
+  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+     Defines the ODE passed to the ODE solver in implicit form: F(U_t,U) = 0
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
@@ -76,18 +123,15 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
-  PetscInt          rowcol[2];
-  const PetscScalar *u,*udot;
+  PetscInt          rowcol[2],rstart;
   PetscScalar       J[2][2];
-  PetscInt          rstart;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
@@ -96,12 +140,12 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
   rowcol[0] = rstart; rowcol[1] = rstart+1;
 
-  J[0][0] = a;                       J[0][1] = -1;
-  J[1][0] = 0.0;                     J[1][1] = a;
-  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  J[0][0] = a;        J[0][1] = -1.0;
+  J[1][0] = 0.0;      J[1][1] = a;
+  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -112,19 +156,17 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       n = 2;
   PetscScalar    *u;
   PetscInt       direction=-1;
   PetscBool      terminate=PETSC_FALSE;
+  PetscBool      rhs_form=PETSC_FALSE;
   TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,51 +176,56 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create necessary matrix and vectors
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
-
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  u[0] = 1.0*rank;
-  u[1] = 20.0;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,NULL);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set ODE routines
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  /* Users are advised against the following branching and code duplication.
+     For problems without a mass matrix like the one at hand, the RHSFunction
+     (and companion RHSJacobian) interface is enough to support both explicit
+     and implicit timesteppers. This tutorial example also deals with the
+     IFunction/IJacobian interface for demonstration and testing purposes. */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-rhs-form",&rhs_form,NULL);CHKERRQ(ierr);
+  if (rhs_form) {
+    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetIFunction(ts,NULL,IFunction,NULL);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
+  ierr = VecSetSizes(U,n,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetUp(U);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  u[0] = 1.0*rank;
+  u[1] = 20.0;
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
-
-  ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
-
   /* The adapative time step controller could take very large timesteps resulting in
      the same event occuring multiple times in the same interval. A maximum step size
-     limit is enforced here to avoid this issue.
-  */
+     limit is enforced here to avoid this issue. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+
+  /* Set direction and terminate flag for the event */
+  ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -190,7 +237,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 

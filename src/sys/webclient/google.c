@@ -15,8 +15,6 @@
 #define PETSC_GOOGLE_API_KEY    "AIzaSyDRZsOcySpWVzsUvIBL2UG3J2tcg-MXbyk"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGoogleDriveRefresh"
 /*@C
      PetscGoogleDriveRefresh - Get a new authorization token for accessing Google drive from PETSc from a refresh token
 
@@ -86,8 +84,6 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
 
 #include <sys/stat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGoogleDriveUpload"
 /*@C
      PetscGoogleDriveUpload - Loads a file to the Google Drive
 
@@ -106,7 +102,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
     PetscGoogleDriveUpload(comm,NULL,filename);        will upload file with no user interaction
 
     Without PETSc option -google_refresh_token XXX given
-    PetscGoogleDriveUpload(comm,NULL,filename);        for first use will prompt user to authorize access to Google Drive with their processor
+    PetscGoogleDriveUpload(comm,NULL,filename);        for first use will prompt user to authorize access to Google Drive with their browser
 
     With PETSc option -google_refresh_token  XXX given
     PetscGoogleDriveRefresh(comm,NULL,access_token,sizeof(access_token));
@@ -184,8 +180,6 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
 #include <unistd.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGoogleDriveAuthorize"
 /*@C
      PetscGoogleDriveAuthorize - Get authorization and refresh token for accessing Google drive from PETSc
 
@@ -267,8 +261,6 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscURLShorten"
 /*@C
      PetscURLShorten - Uses Google's service to get a short url for a long url
 

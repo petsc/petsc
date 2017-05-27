@@ -3,8 +3,6 @@ static char help[] = "Test saving SeqSBAIJ matrix that is missing diagonal entri
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

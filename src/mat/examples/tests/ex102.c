@@ -9,11 +9,9 @@ T*/
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x,b;
+  Vec            x,b,c=NULL;
   Mat            A,U,V,LR;
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,rstart,rend;
   PetscErrorCode ierr;
@@ -61,7 +59,6 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(U,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(U,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-
   ierr = MatCreate(PETSC_COMM_WORLD,&V);CHKERRQ(ierr);
   ierr = MatSetSizes(V,PETSC_DECIDE,PETSC_DECIDE,m*n,3);CHKERRQ(ierr);
   ierr = MatSetType(V,MATDENSE);CHKERRQ(ierr);
@@ -76,11 +73,30 @@ int main(int argc,char **args)
   ierr = MatDenseRestoreArray(V,&u);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-         Create low rank created matrix
+         Create a vector to hold the diagonal of C
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreateLRC(A,U,V,&LR);CHKERRQ(ierr);
-  ierr = MatSetUp(LR);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-use_c",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,3,&c);CHKERRQ(ierr);
+    ierr = VecGetArray(c,&u);CHKERRQ(ierr);
+    u[0] = 2.0;
+    u[1] = -1.0;
+    u[2] = 1.0;
+    ierr = VecRestoreArray(c,&u);CHKERRQ(ierr);
+  }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+         Create low rank correction matrix
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = PetscOptionsHasName(NULL,NULL,"-low_rank",&flg);CHKERRQ(ierr);
+  if (flg) {
+    /* create a low-rank matrix, with no A-matrix */
+    ierr = MatCreateLRC(NULL,U,c,V,&LR);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateLRC(A,U,c,V,&LR);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create test vectors
@@ -107,13 +123,14 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&U);CHKERRQ(ierr);
   ierr = MatDestroy(&V);CHKERRQ(ierr);
+  ierr = VecDestroy(&c);CHKERRQ(ierr);
   ierr = MatDestroy(&LR);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;

@@ -4,8 +4,6 @@
 
 static PetscInt c_n1 = -1;
 
-#undef __FUNCT__
-#define __FUNCT__ "MINPACKido"
 PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt * ipntr,PetscInt * ndeg,
                PetscInt *list,PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
 {
@@ -203,7 +201,8 @@ L70:
         numinc = list[ic];
         ++list[ic];
 /* Computing MAX */
-        i__3   = maxinc, i__4 = list[ic];
+        i__3   = maxinc;
+        i__4   = list[ic];
         maxinc = PetscMax(i__3,i__4);
 
 /*                 Delete column ic from the numinc list. */

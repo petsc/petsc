@@ -11,8 +11,6 @@ static char help[] = " Demonstrate the use of MatConvert_Nest_AIJ\n";
 #include <petscmat.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat                 A1,A2,A3,A4,nest;

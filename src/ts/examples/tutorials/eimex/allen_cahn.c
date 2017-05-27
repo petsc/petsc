@@ -24,8 +24,6 @@ static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *ctx);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 
 int main(int argc, char **argv)
 {
@@ -108,8 +106,6 @@ int main(int argc, char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode    ierr;
@@ -136,8 +132,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   PetscErrorCode    ierr;
@@ -163,8 +157,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -193,8 +185,6 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
 {
   AppCtx *user = (AppCtx*)ctx;
@@ -209,15 +199,15 @@ static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
   for(i=0;i<user->mx;i++) {
     x_map = user->xleft + i*hx;
     if(x_map >= 0.7065) {
-      x[i] = tanh((x_map-0.8)/(2.*PetscSqrtReal(user->param)));
+      x[i] = PetscTanhReal((x_map-0.8)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= 0.4865) {
-      x[i] = tanh((0.613-x_map)/(2.*PetscSqrtReal(user->param)));
+      x[i] = PetscTanhReal((0.613-x_map)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= 0.28) {
-      x[i] = tanh((x_map-0.36)/(2.*PetscSqrtReal(user->param)));
+      x[i] = PetscTanhReal((x_map-0.36)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= -0.7) {
-      x[i] = tanh((0.2-x_map)/(2.*PetscSqrtReal(user->param)));
+      x[i] = PetscTanhReal((0.2-x_map)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= -1) {
-      x[i] = tanh((x_map+0.9)/(2.*PetscSqrtReal(user->param)));
+      x[i] = PetscTanhReal((x_map+0.9)/(2.*PetscSqrtReal(user->param)));
     }
   }
   ierr = VecRestoreArray(U,&x);CHKERRQ(ierr);

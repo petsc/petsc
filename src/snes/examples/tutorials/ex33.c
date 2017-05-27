@@ -21,8 +21,6 @@ typedef struct {
   PetscScalar p; /* The pressure on each cell */
 } Field;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormPermeability"
 /*
    FormPermeability - Forms permeability field.
 
@@ -61,8 +59,6 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear residual, F(x) on local process patch
 */
@@ -94,10 +90,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].p = u[i].p - user->pl;
     } else {
       PetscScalar K          = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
-      PetscReal   lambdaWet  = kappaWet*PetscPowScalar(u[i].s, alpha);
-      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscPowScalar(1-u[i].s, beta);
-      PetscReal   lambdaWetL = kappaWet*PetscPowScalar(u[i-1].s, alpha);
-      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscPowScalar(1-u[i-1].s, beta);
+      PetscReal   lambdaWet  = kappaWet*PetscRealPart(PetscPowScalar(u[i].s, alpha));
+      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscRealPart(PetscPowScalar(1.-u[i].s, beta));
+      PetscReal   lambdaWetL = kappaWet*PetscRealPart(PetscPowScalar(u[i-1].s, alpha));
+      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscRealPart(PetscPowScalar(1.-u[i-1].s, beta));
 
       f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*((lambdaWet/lambda)*u[i].v - (lambdaWetL/lambdaL)*u[i-1].v);
 
@@ -115,15 +111,13 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;   /* nonlinear solver */
   DM             da;     /* grid */
   Vec            u;      /* solution vector */
   AppCtx         user;   /* user-defined work context */
-  PetscReal      t;      /* time */
+  PetscReal      t = 0.0;/* time */
   PetscErrorCode ierr;
   PetscInt       n;
 
@@ -131,11 +125,15 @@ int main(int argc, char **argv)
   /* Create solver */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   /* Create mesh */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,3,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,3,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, da);CHKERRQ(ierr);
   /* Create coefficient */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,1,1,NULL,&user.cda);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1,1,NULL,&user.cda);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.cda);CHKERRQ(ierr);
+  ierr = DMSetUp(user.cda);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(user.cda, &user.Kappa);CHKERRQ(ierr);
   ierr = FormPermeability(user.cda, user.Kappa, &user);CHKERRQ(ierr);
@@ -155,7 +153,7 @@ int main(int argc, char **argv)
   /* Time Loop */
   user.dt = 0.1;
   for (n = 0; n < 100; ++n, t += user.dt) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -175,3 +173,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: !single
+    args: -snes_converged_reason -snes_monitor_short
+
+TEST*/

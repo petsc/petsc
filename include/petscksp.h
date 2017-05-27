@@ -37,9 +37,9 @@ typedef const char* KSPType;
 #define KSPPIPECG     "pipecg"
 #define KSPPIPECGRR   "pipecgrr"
 #define   KSPCGNE       "cgne"
-#define   KSPNASH       "nash"
-#define   KSPSTCG       "stcg"
-#define   KSPGLTR       "gltr"
+#define   KSPCGNASH     "nash"
+#define   KSPCGSTCG     "stcg"
+#define   KSPCGGLTR     "gltr"
 #define KSPFCG        "fcg"
 #define KSPPIPEFCG    "pipefcg"
 #define KSPGMRES      "gmres"
@@ -54,6 +54,7 @@ typedef const char* KSPType;
 #define   KSPFBCGS      "fbcgs"
 #define   KSPFBCGSR     "fbcgsr"
 #define   KSPBCGSL      "bcgsl"
+#define   KSPPIPEBCGS   "pipebcgs"
 #define KSPCGS        "cgs"
 #define KSPTFQMR      "tfqmr"
 #define KSPCR         "cr"
@@ -216,6 +217,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperators(KSP,Mat,Mat);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
@@ -331,6 +333,7 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
@@ -610,19 +613,12 @@ PETSC_EXTERN const char *const KSPCGTypes[];
 PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP,KSPCGType);
 PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP,PetscBool );
 
-PETSC_EXTERN PetscErrorCode KSPNASHSetRadius(KSP,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPNASHGetNormD(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPNASHGetObjFcn(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP,PetscReal *);
 
-PETSC_EXTERN PetscErrorCode KSPSTCGSetRadius(KSP,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPSTCGGetNormD(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPSTCGGetObjFcn(KSP,PetscReal *);
-
-PETSC_EXTERN PetscErrorCode KSPGLTRSetRadius(KSP,PetscReal);
-PETSC_EXTERN PetscErrorCode KSPGLTRGetNormD(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPGLTRGetObjFcn(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP,PetscReal *);
-PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGLTRGetMinEig(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGLTRGetLambda(KSP,PetscReal *);
 
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 
@@ -692,9 +688,9 @@ PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM,Vec,Vec);
-PETSC_EXTERN PetscErrorCode DMProjectField(DM, Vec,
+PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec,
                                            void (**)(PetscInt, PetscInt, PetscInt,
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                     PetscReal, const PetscReal [], PetscScalar []), InsertMode, Vec);
+                                                     PetscReal, const PetscReal [], PetscInt, const PetscScalar[], PetscScalar []), InsertMode, Vec);
 #endif

@@ -5,8 +5,6 @@ typedef struct {
   Mat A;
 } Mat_HT;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HT"
 PetscErrorCode MatMult_HT(Mat N,Vec x,Vec y)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -17,8 +15,6 @@ PetscErrorCode MatMult_HT(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_HT"
 PetscErrorCode MatMultAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -29,8 +25,6 @@ PetscErrorCode MatMultAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTranspose_HT"
 PetscErrorCode MatMultHermitianTranspose_HT(Mat N,Vec x,Vec y)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -41,8 +35,6 @@ PetscErrorCode MatMultHermitianTranspose_HT(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTransposeAdd_HT"
 PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -53,8 +45,6 @@ PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HT"
 PetscErrorCode MatDestroy_HT(Mat N)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -66,8 +56,6 @@ PetscErrorCode MatDestroy_HT(Mat N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_HT"
 PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
 {
   Mat_HT         *Na = (Mat_HT*)N->data;
@@ -78,13 +66,11 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
     ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
   } else if (op == MAT_DO_NOT_COPY_VALUES) {
     ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
-    ierr = MatHermitianTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+    ierr = MatHermitianTranspose(*m,MAT_INPLACE_MATRIX,m);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateHermitianTranspose"
 /*@
       MatCreateHermitianTranspose - Creates a new matrix object that behaves like A'*
 

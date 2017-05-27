@@ -11,8 +11,6 @@
 #include <petscsnes.h>
 #include <petscao.h>
 
-#if !defined(PETSC_USE_COMPLEX)
-
 static char help[] = "An Unstructured Grid Example.\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
 with SNES for an unstructured mesh. The mesh and partitioning information\n\
@@ -79,8 +77,6 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES                   snes;                 /* SNES context */
@@ -505,8 +501,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /* --------------------  Form initial approximation ----------------- */
 
 /*
@@ -558,8 +552,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /* --------------------  Evaluate Function F(x) --------------------- */
 /*
    FormFunction - Evaluates nonlinear function, F(x).
@@ -637,8 +629,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.
@@ -729,11 +719,4 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }
-#else
 
-int main(int argc,char **args)
-{
-  fprintf(stdout,"This example does not work for complex numbers.\n");
-  return 0;
-}
-#endif

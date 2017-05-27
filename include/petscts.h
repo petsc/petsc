@@ -36,6 +36,7 @@ typedef const char* TSType;
 #define TSALPHA           "alpha"
 #define TSALPHA2          "alpha2"
 #define TSGLLE            "glle"
+#define TSGLEE            "glee"
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
@@ -244,23 +245,28 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
 
+PETSC_EXTERN PetscErrorCode TSGetSolutionComponents(TS,PetscInt*,Vec*);
+PETSC_EXTERN PetscErrorCode TSGetAuxSolution(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
+
 /*S
-     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step and stage)
+     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/ADE at each time step)
 
    Level: advanced
 
-  Concepts: ODE solvers, adjoint
+  Concepts: ODE solvers, trajectory
 
-.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectorySetType(), TSTrajectoryDestroy()
 S*/
 typedef struct _p_TSTrajectory* TSTrajectory;
 
 /*J
-    TSTrajectoryType - String with the name of a PETSc TS trajectory storage method
+    TSTrajectorySetType - String with the name of a PETSc TS trajectory storage method
 
    Level: intermediate
 
-.seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
+.seealso:  TSSetSaveTrajectory(), TSTrajectoryCreate(), TSTrajectoryDestroy()
 J*/
 typedef const char* TSTrajectoryType;
 #define TSTRAJECTORYBASIC         "basic"
@@ -284,6 +290,10 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegister(const char[],PetscErrorCode (*)(TSTrajectory,TS));
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory,const char * const*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetTransform(TSTrajectory,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
+PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS,TSTrajectory*);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);
@@ -390,17 +400,22 @@ PETSC_EXTERN PetscErrorCode TSComputeIJacobianDefaultColor(TS,PetscReal,Vec,Vec,
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));
 PETSC_EXTERN PetscErrorCode TSSetPostStage(TS, PetscErrorCode (*)(TS,PetscReal,PetscInt,Vec*));
+PETSC_EXTERN PetscErrorCode TSSetPostEvaluate(TS, PetscErrorCode(*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPostStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPostStage(TS,PetscReal,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode TSPostEvaluate(TS);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENormInfinity(TS,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENorm2(TS,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENorm(TS,Vec,Vec,Vec,NormType,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetFunctionDomainError(TS, PetscErrorCode (*)(TS,PetscReal,Vec,PetscBool*));
@@ -567,9 +582,10 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
-#define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
+#define TSADAPTBASIC "basic"
 #define TSADAPTCFL   "cfl"
+#define TSADAPTGLEE  "glee"
 
 PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
@@ -577,6 +593,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
+PETSC_EXTERN PetscErrorCode TSAdaptGetType(TSAdapt,TSAdaptType*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
@@ -589,11 +606,14 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptionItems*,TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptSetSafety(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetSafety(TSAdapt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSAdaptSetClip(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
-
-PETSC_EXTERN PetscErrorCode TSAdaptBasicSetClip(TSAdapt,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode TSAdaptBasicGetClip(TSAdapt,PetscReal*,PetscReal*);
 
 /*S
    TSGLLEAdapt - Abstract object that manages time-step adaptivity
@@ -688,6 +708,8 @@ typedef const char* TSRKType;
 #define TSRK4     "4"
 #define TSRK5F    "5f"
 #define TSRK5DP   "5dp"
+#define TSRK5BS   "5bs"
+
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
@@ -695,6 +717,36 @@ PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscR
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
+
+/*J
+    TSGLEEType - String with the name of a General Linear with Error Estimation method.
+
+   Level: beginner
+
+.seealso: TSGLEESetType(), TS, TSGLEE, TSGLEERegister()
+J*/
+typedef const char* TSGLEEType;
+#define TSGLEEi1      "BE1"
+#define TSGLEE23      "23"
+#define TSGLEE24      "24"
+#define TSGLEE25I     "25i"
+#define TSGLEE35      "35"
+#define TSGLEEEXRK2A  "exrk2a"
+#define TSGLEERK32G1  "rk32g1"
+#define TSGLEERK285EX "rk285ex"
+/*J
+    TSGLEEMode - String with the mode of error estimation for a General Linear with Error Estimation method.
+
+   Level: beginner
+
+.seealso: TSGLEESetMode(), TS, TSGLEE, TSGLEERegister()
+J*/
+PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType*);
+PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts,TSGLEEType);
+PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
 
 /*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
@@ -761,7 +813,6 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSBDFUseAdapt(TS,PetscBool);
 
 /*
        PETSc interface to Sundials
@@ -790,12 +841,10 @@ PETSC_EXTERN PetscErrorCode TSThetaGetTheta(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSThetaGetEndpoint(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSThetaSetEndpoint(TS,PetscBool);
 
-PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode TSAlpha2UseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetParams(TS,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*);

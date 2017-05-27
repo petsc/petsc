@@ -44,8 +44,6 @@ static PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
   PetscErrorCode     ierr;              /* used to check for functions returning nonzeros */
@@ -124,8 +122,6 @@ int main( int argc, char **argv )
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 
 /*  FormFunctionGradient - Evaluates function and corresponding gradient.
 
@@ -286,8 +282,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Evaluates the Hessian matrix.
 
@@ -313,8 +307,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "QuadraticH"
 /*
    QuadraticH - Evaluates the Hessian matrix.
 
@@ -469,8 +461,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_BoundaryConditions"
 /*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
@@ -555,8 +545,6 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_InitialPoint"
 /*
    MSA_InitialPoint - Calculates the initial guess in one of three ways.
 

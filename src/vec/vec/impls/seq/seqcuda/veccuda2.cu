@@ -14,8 +14,6 @@
 #include <thrust/transform.h>
 #include <thrust/functional.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAAllocateCheck"
 /*
     Allocates space for the vector array on the GPU if it does not exist.
     Does NOT change the PetscCUDAFlag for the vector
@@ -49,8 +47,6 @@ PetscErrorCode VecCUDAAllocateCheck(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPU"
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
 PetscErrorCode VecCUDACopyToGPU(Vec v)
 {
@@ -72,8 +68,6 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPUSome"
 PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci)
 {
   PetscScalar    *varray;
@@ -105,8 +99,6 @@ PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyFromGPU"
 /*
      VecCUDACopyFromGPU - Copies a vector from the GPU to the CPU unless we already have an up-to-date copy on the CPU
 */
@@ -130,8 +122,6 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyFromGPUSome"
 /* Note that this function only copies *some* of the values up from the GPU to CPU,
    which means that we need recombine the data at some point before using any of the standard functions.
    We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
@@ -177,8 +167,6 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci)
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAYPX_SeqCUDA"
 PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 {
   const PetscScalar *xarray;
@@ -209,8 +197,6 @@ PetscErrorCode VecAYPX_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPY_SeqCUDA"
 PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
 {
   const PetscScalar *xarray;
@@ -233,8 +219,6 @@ PetscErrorCode VecAXPY_SeqCUDA(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPointwiseDivide_SeqCUDA"
 PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
 {
   PetscInt                              n = xin->map->n;
@@ -264,8 +248,6 @@ PetscErrorCode VecPointwiseDivide_SeqCUDA(Vec win, Vec xin, Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWAXPY_SeqCUDA"
 PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
   const PetscScalar *xarray=NULL,*yarray=NULL;
@@ -294,8 +276,6 @@ PetscErrorCode VecWAXPY_SeqCUDA(Vec win,PetscScalar alpha,Vec xin, Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMAXPY_SeqCUDA"
 PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y)
 {
   PetscErrorCode ierr;
@@ -345,8 +325,6 @@ PetscErrorCode VecMAXPY_SeqCUDA(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_SeqCUDA"
 PetscErrorCode VecDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *xarray,*yarray;
@@ -573,8 +551,6 @@ __global__ void VecMDot_SeqCUDA_kernel8(const PetscScalar *x,const PetscScalar *
 }
 #endif /* !defined(PETSC_USE_COMPLEX) */
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_SeqCUDA"
 PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode    ierr;
@@ -756,8 +732,6 @@ PetscErrorCode VecMDot_SeqCUDA(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
 #undef MDOT_WORKGROUP_SIZE
 #undef MDOT_WORKGROUP_NUM
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSet_SeqCUDA"
 PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
 {
   PetscInt                        n = xin->map->n;
@@ -783,8 +757,6 @@ PetscErrorCode VecSet_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScale_SeqCUDA"
 PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
 {
   PetscScalar    *xarray;
@@ -806,8 +778,6 @@ PetscErrorCode VecScale_SeqCUDA(Vec xin,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_SeqCUDA"
 PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
 {
   const PetscScalar *xarray,*yarray;
@@ -829,8 +799,6 @@ PetscErrorCode VecTDot_SeqCUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqCUDA"
 PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
 {
   const PetscScalar *xarray;
@@ -880,8 +848,6 @@ PetscErrorCode VecCopy_SeqCUDA(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSwap_SeqCUDA"
 PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
@@ -902,8 +868,6 @@ PetscErrorCode VecSwap_SeqCUDA(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBY_SeqCUDA"
 PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
   PetscErrorCode    ierr;
@@ -944,8 +908,6 @@ PetscErrorCode VecAXPBY_SeqCUDA(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBYPCZ_SeqCUDA"
 PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
@@ -968,8 +930,6 @@ PetscErrorCode VecAXPBYPCZ_SeqCUDA(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPointwiseMult_SeqCUDA"
 PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
 {
   PetscInt                              n = win->map->n;
@@ -1001,8 +961,6 @@ PetscErrorCode VecPointwiseMult_SeqCUDA(Vec win,Vec xin,Vec yin)
 
 /* should do infinity norm in cuda */
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm_SeqCUDA"
 PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
 {
   PetscErrorCode    ierr;
@@ -1039,8 +997,6 @@ PetscErrorCode VecNorm_SeqCUDA(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2_SeqCUDA"
 PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
 {
   PetscErrorCode    ierr;
@@ -1059,8 +1015,6 @@ PetscErrorCode VecDotNorm2_SeqCUDA(Vec s, Vec t, PetscScalar *dp, PetscScalar *n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqCUDA"
 PetscErrorCode VecDestroy_SeqCUDA(Vec v)
 {
   PetscErrorCode ierr;
@@ -1091,8 +1045,6 @@ struct conjugate
 };
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecConjugate_SeqCUDA"
 PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 {
   PetscScalar                     *xarray;
@@ -1117,8 +1069,6 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetLocalVector_SeqCUDA"
 PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 {
   VecType        t;
@@ -1163,8 +1113,6 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreLocalVector_SeqCUDA"
 PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
 {
   VecType        t;
@@ -1200,8 +1148,6 @@ PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAGetArrayReadWrite"
 /*@C
    VecCUDAGetArrayReadWrite - Provides access to the CUDA buffer inside a vector.
 
@@ -1245,8 +1191,6 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDARestoreArrayReadWrite"
 /*@C
    VecCUDARestoreArrayReadWrite - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayReadWrite().
 
@@ -1277,8 +1221,6 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAGetArrayRead"
 /*@C
    VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
 
@@ -1321,8 +1263,6 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDARestoreArrayRead"
 /*@C
    VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayRead().
 
@@ -1349,8 +1289,6 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAGetArrayWrite"
 /*@C
    VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
 
@@ -1391,8 +1329,6 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDARestoreArrayWrite"
 /*@C
    VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayWrite().
 
@@ -1423,8 +1359,6 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAPlaceArray"
 /*@C
    VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a
    GPU array provided by the user. This is useful to avoid copying an
@@ -1459,8 +1393,6 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin,PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAReplaceArray"
 /*@C
    VecCUDAReplaceArray - Allows one to replace the GPU array in a vector
    with a GPU array provided by the user. This is useful to avoid copying
@@ -1497,8 +1429,6 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin,PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAResetArray"
 /*@C
    VecCUDAResetArray - Resets a vector to use its default memory. Call this
    after the use of VecCUDAPlaceArray().

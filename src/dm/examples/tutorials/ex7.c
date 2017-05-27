@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
+static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)\n\n";
 
 /*T
    Concepts: viewers
@@ -17,8 +17,6 @@ typedef struct {
   PetscBool ta;
 } Parameter;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,9 @@ int main(int argc,char **argv)
   */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Create a DMDA and an associated vector */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,10,10,
-                      PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,10,10,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = VecSet(global,-1.0);CHKERRQ(ierr);
@@ -75,7 +74,7 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global,"da1");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* clean up and exit */

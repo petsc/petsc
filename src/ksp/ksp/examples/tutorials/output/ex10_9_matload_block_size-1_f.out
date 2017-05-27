@@ -1,0 +1,26 @@
+  0 KSP Residual norm 28.4857 
+  1 KSP Residual norm 0.509078 
+  2 KSP Residual norm 0.225558 
+  3 KSP Residual norm 0.0805513 
+  4 KSP Residual norm 0.031433 
+  5 KSP Residual norm 0.000748707 
+  6 KSP Residual norm 0.000246414 
+  7 KSP Residual norm 4.05951e-05 
+  8 KSP Residual norm 1.38862e-05 
+  9 KSP Residual norm 3.69196e-06 
+ 10 KSP Residual norm 1.32815e-06 
+ 11 KSP Residual norm 3.13565e-07 
+ 12 KSP Residual norm 7.77047e-08 
+ 13 KSP Residual norm 2.46458e-08 
+ 14 KSP Residual norm 5.36105e-09 
+ 15 KSP Residual norm 1.59134e-09 
+ 16 KSP Residual norm 5.387e-10 
+ 17 KSP Residual norm 1.953e-10 
+ 18 KSP Residual norm 2.259e-11 
+ 19 KSP Residual norm < 1.e-11
+ 20 KSP Residual norm < 1.e-11
+ 21 KSP Residual norm < 1.e-11
+ 22 KSP Residual norm < 1.e-11
+ 23 KSP Residual norm < 1.e-11
+Number of iterations =  23
+  Residual norm < 1.e-12

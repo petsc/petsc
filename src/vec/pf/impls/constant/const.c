@@ -1,8 +1,6 @@
 
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApply_Constant"
 static PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt    i;
@@ -14,8 +12,6 @@ static PetscErrorCode PFApply_Constant(void *value,PetscInt n,const PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApplyVec_Constant"
 static PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -24,8 +20,6 @@ static PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
   ierr = VecSet(y,*((PetscScalar*)value));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PFView_Constant"
 PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -42,8 +36,6 @@ PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PFDestroy_Constant"
 static PetscErrorCode PFDestroy_Constant(void *value)
 {
   PetscErrorCode ierr;
@@ -53,8 +45,6 @@ static PetscErrorCode PFDestroy_Constant(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSetFromOptions_Constant"
 static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
@@ -67,8 +57,6 @@ static PetscErrorCode PFSetFromOptions_Constant(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate_Constant"
 PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
 {
   PetscErrorCode ierr;
@@ -87,8 +75,6 @@ PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
 
 /*typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*);  force argument to next function to not be extern C*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate_Quick"
 PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
 {
   PetscErrorCode ierr;
@@ -99,8 +85,6 @@ PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void
 }
 
 /* -------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PFApply_Identity"
 static PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscInt i;
@@ -111,8 +95,6 @@ static PetscErrorCode PFApply_Identity(void *value,PetscInt n,const PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApplyVec_Identity"
 static PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -121,8 +103,6 @@ static PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PFView_Identity"
 static PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -135,8 +115,6 @@ static PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PFDestroy_Identity"
 static PetscErrorCode PFDestroy_Identity(void *value)
 {
   PetscErrorCode ierr;
@@ -146,8 +124,6 @@ static PetscErrorCode PFDestroy_Identity(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate_Identity"
 PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;

@@ -1,0 +1,10 @@
+<HTML>
+<HEAD>
+<TITLE>DMPATCH Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> DMPATCH <A HREF="PETSC_DIRsrc/dm/impls/patch/examples/tutorials/index.html">Examples</A></H2>
+
+The DMPATCH class is intended to adaptive refinement calcualted in serial using patched that fill the local machine. It is currently not working.
+<P>

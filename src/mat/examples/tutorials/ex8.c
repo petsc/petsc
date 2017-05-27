@@ -4,36 +4,26 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 #include <petscmat.h>
 #include <petscblaslapack.h>
 
-/* This routine implments MatScaleUserImpl() functionality for MatType
-   SeqAIJ. MatScale_SeqAIJ() code duplicated here */
-#include <../src/mat/impls/aij/seq/aij.h>
 static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
-  PetscScalar    oalpha = alpha;
-  PetscBLASInt   one    = 1,bnz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
-  BLASscal_(&bnz,&oalpha,a->a,&one);
+  ierr = MatScale(inA,alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/* This routine implments MatScaleUserImpl() functionality for MatType
-   SeqAIJ. MatScale_MPIAIJ() code duplicated here */
 extern PetscErrorCode MatScaleUserImpl(Mat,PetscScalar);
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
+
 static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
 {
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
+  Mat            AA,AB;
 
   PetscFunctionBegin;
-  /* we can call MatScaleUserImpl_SeqAIJ() directly here instead of
-     going through MatScaleUserImpl() wrapper */
-  ierr = MatScaleUserImpl(a->A,aa);CHKERRQ(ierr);
-  ierr = MatScaleUserImpl(a->B,aa);CHKERRQ(ierr);
+  ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL);CHKERRQ(ierr);
+  ierr = MatScaleUserImpl(AA,aa);CHKERRQ(ierr);
+  ierr = MatScaleUserImpl(AB,aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -51,10 +41,11 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
 
   } else { /* MPIAIJ Matrix */
-    Mat_MPIAIJ *a = (Mat_MPIAIJ*)mat->data;
+    Mat AA,AB;
+    ierr = MatMPIAIJGetSeqAIJ(mat,&AA,&AB,NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_MPIAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)(a->A),"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)(a->B),"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)AA,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)AB,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -78,8 +69,6 @@ PetscErrorCode MatScaleUserImpl(Mat mat,PetscScalar a)
 
 /* Main user code that uses MatScaleUserImpl() */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            mat;
@@ -119,10 +108,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* check the matrix before and after scaling by -1.0 */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _before_ MatScaleUserImpl() operation\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _before_ MatScaleUserImpl() operation\n");CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatScaleUserImpl(mat,none);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n");
+  ierr = MatScaleUserImpl(mat,none);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n");CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(&mat);CHKERRQ(ierr);

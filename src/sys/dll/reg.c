@@ -11,10 +11,8 @@
 */
 PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLoadDynamicLibrary"
 static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
@@ -42,7 +40,9 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 #if defined(PETSC_HAVE_THREADSAFETY)
 extern PetscErrorCode AOInitializePackage(void);
 extern PetscErrorCode PetscSFInitializePackage(void);
+#if !defined(PETSC_USE_COMPLEX)
 extern PetscErrorCode CharacteristicInitializePackage(void);
+#endif
 extern PetscErrorCode ISInitializePackage(void);
 extern PetscErrorCode VecInitializePackage(void);
 extern PetscErrorCode MatInitializePackage(void);
@@ -54,8 +54,6 @@ extern PetscErrorCode TSInitializePackage(void);
 static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
@@ -65,7 +63,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscBool      preload;
 #endif
 
@@ -77,7 +75,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES) || !defined(PETSC_USE_SHARED_LIBRARIES)
   /*
       This just initializes the most basic PETSc stuff.
 
@@ -123,7 +121,9 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   /* These must be done here because it is not safe for individual threads to call these initialize routines */
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
+#endif
   ierr = ISInitializePackage();CHKERRQ(ierr);
   ierr = VecInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);
@@ -138,8 +138,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */
@@ -205,8 +203,6 @@ static PetscFunctionList dlallhead = 0;
 .seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
           PCRegister(), TSRegister(), PetscFunctionList, PetscObjectComposeFunction()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListAdd_Private"
 PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
   PetscFunctionList entry,ne;
@@ -256,8 +252,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListDestroy"
 /*@
     PetscFunctionListDestroy - Destroys a list of registered routines.
 
@@ -305,8 +299,6 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 /*
    Print any PetscFunctionLists that have not be destroyed
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListPrintAll"
 PetscErrorCode  PetscFunctionListPrintAll(void)
 {
   PetscFunctionList tmp = dlallhead;
@@ -341,8 +333,6 @@ PetscErrorCode  PetscFunctionListPrintAll(void)
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList, PetscObjectQueryFunction()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListFind_Private"
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,const char name[],void (**r)(void))
 {
   PetscFunctionList entry = fl;
@@ -364,8 +354,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListView"
 /*@
    PetscFunctionListView - prints out contents of an PetscFunctionList
 
@@ -400,8 +388,6 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListGet"
 /*@C
    PetscFunctionListGet - Gets an array the contains the entries in PetscFunctionList, this is used
          by help etc.
@@ -447,8 +433,6 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListPrintTypes"
 /*@C
    PetscFunctionListPrintTypes - Prints the methods available.
 
@@ -488,8 +472,6 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListDuplicate"
 /*@
     PetscFunctionListDuplicate - Creates a new list from a given object list.
 

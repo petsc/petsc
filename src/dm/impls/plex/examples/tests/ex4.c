@@ -13,8 +13,6 @@ typedef struct {
   PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -40,10 +38,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_1D"
 /* Two segments
 
   2-------0-------3-------1-------4
@@ -70,7 +66,7 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   } else {
-    PetscInt numPoints[2] = {0, 0, 0};
+    PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   }
@@ -78,8 +74,6 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_2D"
 /* Two triangles
         4
       / | \
@@ -134,8 +128,6 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplexHybrid_2D"
 /* Two triangles separated by a zero-volume cell with 4 vertices/2 edges
         5--16--8
       / |      | \
@@ -213,8 +205,6 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProduct_2D"
 /* Two quadrilaterals
 
   5----10-----4----14-----7
@@ -251,8 +241,6 @@ PetscErrorCode CreateTensorProduct_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProductHybrid_2D"
 PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL, hdm = NULL;
@@ -296,8 +284,6 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_3D"
 /* Two tetrahedrons
 
  cell   5          5______    cell
@@ -385,8 +371,6 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplexHybrid_3D"
 /* Two tetrahedrons separated by a zero-volume cell with 6 vertices
 
  cell   6 ___33___10______    cell
@@ -471,8 +455,6 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProduct_3D"
 PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL;
@@ -523,8 +505,6 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProductHybrid_3D"
 PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL, hdm = NULL;
@@ -602,20 +582,18 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim            = user->dim;
   PetscInt       numRefinements = user->numRefinements;
   PetscBool      cellHybrid     = user->cellHybrid;
   PetscBool      cellSimplex    = user->cellSimplex;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -657,13 +635,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
   }
-  if (user->testPartition && numProcs > 1) {
+  if (user->testPartition && size > 1) {
     PetscPartitioner part;
-    const PetscInt  *sizes  = NULL;
-    const PetscInt  *points = NULL;
+    PetscInt  *sizes  = NULL;
+    PetscInt  *points = NULL;
 
     if (!rank) {
-      if (dim == 2 && cellSimplex && !cellHybrid && numProcs == 2) {
+      if (dim == 2 && cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {1, 1};
@@ -675,7 +653,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {1, 2};
@@ -687,7 +665,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && !cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt quadSizes_p2[2]  = {1, 1};
@@ -699,7 +677,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && !cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt quadSizes_p2[2]  = {1, 2};
@@ -711,7 +689,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt tetSizes_p2[2]  = {1, 1};
@@ -730,7 +708,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt tetSizes_p2[2]  = {1, 2};
@@ -749,7 +727,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && !cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt hexSizes_p2[2]  = {1, 1};
@@ -761,7 +739,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && !cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt hexSizes_p2[2]  = {1, 1};
@@ -784,7 +762,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   {
@@ -824,8 +802,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -842,3 +818,151 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # 2D Simplex 0-3
+  test:
+    suffix: 0
+    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 1
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 2
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 3
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 2D Hybrid Simplex 4-7
+  test:
+    suffix: 4
+    args: -dim 2 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 5
+    args: -dim 2 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 6
+    nsize: 2
+    args: -dim 2 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 7
+    nsize: 2
+    args: -dim 2 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 3D Simplex 8-11
+  test:
+    suffix: 8
+    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 9
+    nsize: 2
+    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 10
+    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 11
+    nsize: 2
+    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 2D Quad 12-13
+  test:
+    suffix: 12
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 13
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 3D Hex 14-15
+  test:
+    suffix: 14
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 15
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 3D Hybrid Simplex 16-19
+  test:
+    suffix: 16
+    args: -dim 3 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 17
+    nsize: 2
+    args: -dim 3 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 18
+    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 19
+    nsize: 2
+    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 3D Hybrid Hex 20-23
+  test:
+    suffix: 20
+    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 21
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 22
+    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 23
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 2D Hybrid Simplex 24-24
+  test:
+    suffix: 24
+    args: -dim 2 -test_num 1 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 3D Multiple Refinement 25-26
+  test:
+    suffix: 25
+    args: -dim 3 -cell_hybrid 0 -test_num 2 -num_refinements 2 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 26
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -test_num 1 -num_refinements 2 -dm_view ascii::ascii_info_detail
+
+  # 2D Hybrid Quad 27-28
+  test:
+    suffix: 27
+    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 28
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+
+  # 1D Simplex 29-31
+  test:
+    suffix: 29
+    args: -dim 1 -cell_hybrid 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 30
+    args: -dim 1 -cell_hybrid 0 -num_refinements 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 31
+    args: -dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ascii::ascii_info_detail
+
+  # 2D Simplex 32-34
+  test:
+    suffix: 32
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 33
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 34
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 3 -uninterpolate -dm_view ascii::ascii_info_detail
+
+TEST*/

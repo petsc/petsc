@@ -54,7 +54,7 @@ Vec Object: 1 MPI processes
 
 Local to global mapping
 ISLocalToGlobalMapping Object: 3 MPI processes
-  type: basic
+  type not yet set
 [0] 0 -1
 [0] 1 0
 [0] 2 1

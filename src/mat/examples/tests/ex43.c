@@ -3,8 +3,6 @@ static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

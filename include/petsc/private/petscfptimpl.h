@@ -17,8 +17,6 @@ struct _n_PetscFPT {
 };
 extern PetscFPT  PetscFPTData;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTView"
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
 {
   PetscInt       i;
@@ -31,8 +29,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTView(PetscViewer viewer)
   }
   return(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTDestroy"
+
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTDestroy(void)
 {
   PetscErrorCode ierr;
@@ -46,8 +43,6 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTDestroy(void)
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTCreate"
 /*
    PetscFPTCreate  Creates a PETSc look up table from function pointers to strings
 
@@ -76,16 +71,12 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTCreate(PetscInt n)
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHashPointer"
 PETSC_STATIC_INLINE unsigned long PetscHashPointer(void *ptr)
 {
 #define PETSC_FPT_HASH_FACT 79943
   return((PETSC_FPT_HASH_FACT*((size_t)ptr))%PetscFPTData->tablesize);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTAdd"
 PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
 {
   PetscInt       i,hash;
@@ -109,8 +100,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTFind"
 /*
     PetscFPTFind - checks if a function pointer is in the table
 

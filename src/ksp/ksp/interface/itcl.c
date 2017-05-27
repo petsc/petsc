@@ -6,10 +6,6 @@
 #include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 #include <petscdraw.h>
 
-extern PetscBool KSPRegisterAllCalled;
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetOptionsPrefix"
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
    KSP options in the database.
@@ -56,8 +52,6 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAppendOptionsPrefix"
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
    KSP options in the database.
@@ -90,8 +84,6 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetTabLevel"
 /*@
    KSPGetTabLevel - Gets the number of tabs that ASCII output used by ksp.
 
@@ -121,8 +113,6 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetTabLevel"
 /*@
    KSPSetTabLevel - Sets the number of tabs that ASCII output for the ksp andn its pc will use.
 
@@ -155,8 +145,6 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUseFischerGuess"
 /*@C
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm, see KSPFischerGuessCreate()
 
@@ -192,8 +180,6 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFischerGuess"
 /*@C
    KSPSetFischerGuess - Use the Paul Fischer algorithm created by KSPFischerGuessCreate()
 
@@ -227,8 +213,6 @@ PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetFischerGuess"
 /*@C
    KSPGetFischerGuess - Gets the initial guess generator set with either KSPSetFischerGuess() or KSPCreateFischerGuess()/KSPSetFischerGuess()
 
@@ -253,8 +237,6 @@ PetscErrorCode  KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetOptionsPrefix"
 /*@C
    KSPGetOptionsPrefix - Gets the prefix used for searching for all
    KSP options in the database.
@@ -286,8 +268,6 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSetFromOptions"
 /*@C
    KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
@@ -328,8 +308,6 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be
@@ -453,7 +431,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     }
   }
 
-  ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,&normtype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,(PetscEnum)normtype,(PetscEnum*)&normtype,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetNormType(ksp,normtype);CHKERRQ(ierr); }
 
@@ -574,7 +552,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 #endif
 
   /* -----------------------------------------------------------------------*/
-  ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,NULL,&pcside);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPSetPCSide(ksp,pcside);CHKERRQ(ierr);}
 

@@ -21,8 +21,6 @@
 #if defined(PETSC_HAVE_SYS_TIMES_H)
 
 #include <sys/times.h>
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
   struct tms temp;
@@ -37,8 +35,6 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 
 #include <time.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
@@ -51,8 +47,6 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 
@@ -76,7 +70,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     Level: intermediate
 
     Notes:
-    One should use PetscTime() or the -log_summary option of
+    One should use PetscTime() or the -log_view option of
     PETSc for profiling. The CPU time is NOT a realistic number to
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.

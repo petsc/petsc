@@ -15,8 +15,6 @@ do { if (PetscUnlikely((color)<0||(color)>=256)) SETERRQ1(PETSC_COMM_SELF,PETSC_
 #define JTRANS(draw,img,j)  ((draw)->coor_yl + (((PetscReal)(j))/((img)->h-1) + (draw)->port_yl - 1)*((draw)->coor_yr - (draw)->coor_yl)/((draw)->port_yl - (draw)->port_yr))
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetViewport_Image"
 static PetscErrorCode PetscDrawSetViewport_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -31,8 +29,6 @@ static PetscErrorCode PetscDrawSetViewport_Image(PetscDraw draw,PetscReal xl,Pet
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetCoordinates_Image"
 static PetscErrorCode PetscDrawSetCoordinates_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscFunctionBegin;
@@ -40,8 +36,6 @@ static PetscErrorCode PetscDrawSetCoordinates_Image(PetscDraw draw,PetscReal xl,
 }*/
 #define PetscDrawSetCoordinates_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCoordinateToPixel_Image"
 static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw,PetscReal x,PetscReal y,int *i,int *j)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -51,8 +45,6 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPixelToCoordinate_Image"
 static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw,int i,int j,PetscReal *x,PetscReal *y)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -63,8 +55,6 @@ static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw,int i,int 
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPointSetSize_Image"
 static PetscErrorCode PetscDrawPointSetSize_Image(PetscDraw draw,PetscReal width)
 {
   PetscFunctionBegin;
@@ -72,8 +62,6 @@ static PetscErrorCode PetscDrawPointSetSize_Image(PetscDraw draw,PetscReal width
 }*/
 #define PetscDrawPointSetSize_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPoint_Image"
 static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw,PetscReal x,PetscReal y,int c)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -89,8 +77,6 @@ static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw,PetscReal x,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPointPixel_Image"
 static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw,int x,int y,int c)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -103,8 +89,6 @@ static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw,int x,int y,int c
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLineSetWidth_Image"
 static PetscErrorCode PetscDrawLineSetWidth_Image(PetscDraw draw,PetscReal width)
 {
   PetscFunctionBegin;
@@ -112,8 +96,6 @@ static PetscErrorCode PetscDrawLineSetWidth_Image(PetscDraw draw,PetscReal width
 }*/
 #define PetscDrawLineSetWidth_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLineGetWidth_Image"
 static PetscErrorCode PetscDrawLineGetWidth_Image(PetscDraw draw,PetscReal *width)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -125,8 +107,6 @@ static PetscErrorCode PetscDrawLineGetWidth_Image(PetscDraw draw,PetscReal *widt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLine_Image"
 static PetscErrorCode PetscDrawLine_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -139,8 +119,6 @@ static PetscErrorCode PetscDrawLine_Image(PetscDraw draw,PetscReal xl,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawArrow_Image"
 static PetscErrorCode PetscDrawArrow_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -173,8 +151,6 @@ static PetscErrorCode PetscDrawArrow_Image(PetscDraw draw,PetscReal xl,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRectangle_Image"
 static PetscErrorCode PetscDrawRectangle_Image(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -192,8 +168,6 @@ static PetscErrorCode PetscDrawRectangle_Image(PetscDraw draw,PetscReal xl,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawEllipse_Image"
 static PetscErrorCode PetscDrawEllipse_Image(PetscDraw draw,PetscReal x,PetscReal y,PetscReal a,PetscReal b,int c)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -210,8 +184,6 @@ static PetscErrorCode PetscDrawEllipse_Image(PetscDraw draw,PetscReal x,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawTriangle_Image"
 static PetscErrorCode PetscDrawTriangle_Image(PetscDraw draw,PetscReal X_1,PetscReal Y_1,PetscReal X_2,PetscReal Y_2,PetscReal X_3,PetscReal Y_3,int c1,int c2,int c3)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -228,8 +200,6 @@ static PetscErrorCode PetscDrawTriangle_Image(PetscDraw draw,PetscReal X_1,Petsc
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringSetSize_Image"
 static PetscErrorCode PetscDrawStringSetSize_Image(PetscDraw draw,PetscReal w,PetscReal h)
 {
   PetscFunctionBegin;
@@ -237,8 +207,6 @@ static PetscErrorCode PetscDrawStringSetSize_Image(PetscDraw draw,PetscReal w,Pe
 }*/
 #define PetscDrawStringSetSize_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize_Image"
 static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw,PetscReal *w,PetscReal  *h)
 {
   PetscImage img = (PetscImage)draw->data;
@@ -252,8 +220,6 @@ static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw,PetscReal *w,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString_Image"
 static PetscErrorCode PetscDrawString_Image(PetscDraw draw,PetscReal x,PetscReal y,int c,const char text[])
 {
   PetscImage     img = (PetscImage)draw->data;
@@ -277,8 +243,6 @@ static PetscErrorCode PetscDrawString_Image(PetscDraw draw,PetscReal x,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical_Image"
 static PetscErrorCode PetscDrawStringVertical_Image(PetscDraw draw,PetscReal x,PetscReal y,int c,const char text[])
 {
   PetscImage img = (PetscImage)draw->data;
@@ -298,8 +262,6 @@ static PetscErrorCode PetscDrawStringVertical_Image(PetscDraw draw,PetscReal x,P
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringBoxed_Image"
 static PetscErrorCode PetscDrawStringBoxed_Image(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscFunctionBegin;
@@ -310,8 +272,6 @@ static PetscErrorCode PetscDrawStringBoxed_Image(PetscDraw draw,PetscReal sxl,Pe
 #define PetscDrawStringBoxed_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawFlush_Image"
 static PetscErrorCode PetscDrawFlush_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -319,8 +279,6 @@ static PetscErrorCode PetscDrawFlush_Image(PetscDraw draw)
 }*/
 #define PetscDrawFlush_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawClear_Image"
 static PetscErrorCode PetscDrawClear_Image(PetscDraw draw)
 {
   PetscImage     img = (PetscImage)draw->data;
@@ -332,8 +290,6 @@ static PetscErrorCode PetscDrawClear_Image(PetscDraw draw)
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetDoubleBuffer_Image"
 static PetscErrorCode PetscDrawSetDoubleBuffer_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -341,8 +297,6 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_Image(PetscDraw draw)
 }*/
 #define PetscDrawSetDoubleBuffer_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetPopup_Image"
 static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw,PetscDraw *popup)
 {
   PetscBool      flg = PETSC_FALSE;
@@ -360,8 +314,6 @@ static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw,PetscDraw *popup)
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetTitle_Image"
 static PetscErrorCode PetscDrawSetTitle_Image(PetscDraw draw,const char title[])
 {
   PetscFunctionBegin;
@@ -370,8 +322,6 @@ static PetscErrorCode PetscDrawSetTitle_Image(PetscDraw draw,const char title[])
 #define PetscDrawSetTitle_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCheckResizedWindow_Image"
 static PetscErrorCode PetscDrawCheckResizedWindow_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -379,8 +329,6 @@ static PetscErrorCode PetscDrawCheckResizedWindow_Image(PetscDraw draw)
 }*/
 #define PetscDrawCheckResizedWindow_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawResizeWindow_Image"
 static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw,int w,int h)
 {
   PetscImage     img = (PetscImage)draw->data;
@@ -396,8 +344,6 @@ static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw,int w,int h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_Image"
 static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
 {
   PetscImage     img = (PetscImage)draw->data;
@@ -411,8 +357,6 @@ static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawView_Image"
 static PetscErrorCode PetscDrawView_Image(PetscDraw draw,PetscViewer viewer)
 {
   PetscFunctionBegin;
@@ -421,8 +365,6 @@ static PetscErrorCode PetscDrawView_Image(PetscDraw draw,PetscViewer viewer)
 #define PetscDrawView_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetMouseButton_Image"
 static PetscErrorCode PetscDrawGetMouseButton_Image(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscFunctionBegin;
@@ -436,8 +378,6 @@ static PetscErrorCode PetscDrawGetMouseButton_Image(PetscDraw draw,PetscDrawButt
 #define PetscDrawGetMouseButton_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPause_Image"
 static PetscErrorCode PetscDrawPause_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -446,8 +386,6 @@ static PetscErrorCode PetscDrawPause_Image(PetscDraw draw)
 #define PetscDrawPause_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBeginPage_Image"
 static PetscErrorCode PetscDrawBeginPage_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -456,8 +394,6 @@ static PetscErrorCode PetscDrawBeginPage_Image(PetscDraw draw)
 #define PetscDrawBeginPage_Image NULL
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawEndPage_Image"
 static PetscErrorCode PetscDrawEndPage_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -465,8 +401,6 @@ static PetscErrorCode PetscDrawEndPage_Image(PetscDraw draw)
 }*/
 #define PetscDrawEndPage_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetSingleton_Image"
 static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscImage     pimg = (PetscImage)draw->data;
@@ -482,8 +416,6 @@ static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw,PetscDraw *sdra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRestoreSingleton_Image"
 static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscImage     pimg = (PetscImage)draw->data;
@@ -497,8 +429,6 @@ static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw,PetscDraw *
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSave_Image"
 static PetscErrorCode PetscDrawSave_Image(PetscDraw draw)
 {
   PetscFunctionBegin;
@@ -506,8 +436,6 @@ static PetscErrorCode PetscDrawSave_Image(PetscDraw draw)
 }*/
 #define PetscDrawSave_Image NULL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetImage_Image"
 static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palette[256][3],unsigned int *w,unsigned int *h,unsigned char *pixels[])
 {
   PetscImage     img = (PetscImage)draw->data;
@@ -622,8 +550,6 @@ static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_Image"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
 {
   PetscImage     img;
@@ -677,8 +603,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenImage"
 /*@C
    PetscDrawOpenImage - Opens an image for use with the PetscDraw routines.
 

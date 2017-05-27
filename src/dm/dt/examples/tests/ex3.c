@@ -2,115 +2,88 @@ static char help[] = "Tests quadrature.\n\n";
 
 #include <petscdt.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "func1"
 static void func1(PetscReal x, PetscReal *val)
 {
   *val = x*PetscLogReal(1+x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func2"
 static void func2(PetscReal x, PetscReal *val)
 {
   *val = x*x*PetscAtanReal(x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func3"
 static void func3(PetscReal x, PetscReal *val)
 {
   *val = PetscExpReal(x)*PetscCosReal(x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func4"
 static void func4(PetscReal x, PetscReal *val)
 {
   const PetscReal u = PetscSqrtReal(2.0 + x*x);
   *val = PetscAtanReal(u)/((1.0 + x*x)*u);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func5"
 static void func5(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = 0.0;
   else *val = PetscSqrtReal(x)*PetscLogReal(x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func6"
 static void func6(PetscReal x, PetscReal *val)
 {
   *val = PetscSqrtReal(1-x*x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func7"
 static void func7(PetscReal x, PetscReal *val)
 {
   if (x == 1.0) *val = PETSC_INFINITY;
   else *val = PetscSqrtReal(x)/PetscSqrtReal(1-x*x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func8"
 static void func8(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = PETSC_INFINITY;
   else *val = PetscLogReal(x)*PetscLogReal(x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func9"
 static void func9(PetscReal x, PetscReal *val)
 {
   *val = PetscLogReal(PetscCosReal(x));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "func10"
 static void func10(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = 0.0;
   else if (x == 1.0) *val = PETSC_INFINITY;
    *val = PetscSqrtReal(PetscTanReal(x));
 }
-#undef __FUNCT__
-#define __FUNCT__ "func11"
+
 static void func11(PetscReal x, PetscReal *val)
 {
   *val = 1/(1-2*x+2*x*x);
 }
-#undef __FUNCT__
-#define __FUNCT__ "func12"
+
 static void func12(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = 0.0;
   else if (x == 1.0) *val = PETSC_INFINITY;
   else *val = PetscExpReal(1-1/x)/PetscSqrtReal(x*x*x-x*x*x*x);
 }
-#undef __FUNCT__
-#define __FUNCT__ "func13"
+
 static void func13(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = 0.0;
   else if (x == 1.0) *val = 1.0;
   else *val = PetscExpReal(-(1/x-1)*(1/x-1)/2)/(x*x);
 }
-#undef __FUNCT__
-#define __FUNCT__ "func14"
+
 static void func14(PetscReal x, PetscReal *val)
 {
   if (x == 0.0) *val = 0.0;
   else if (x == 1.0) *val = 1.0;
   else *val = PetscExpReal(1-1/x)*PetscCosReal(1/x-1)/(x*x);
 }
-#undef __FUNCT__
 
-
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
 #if PETSC_SCALAR_SIZE == 32
@@ -164,7 +137,7 @@ int main(int argc, char **argv)
   PetscInt        f;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-digits", "The number of significant digits for the integral","ex3.c",digits,&digits,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -196,3 +169,8 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 0
+TEST*/

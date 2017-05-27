@@ -6,9 +6,7 @@
 
 enum storage_flags {VAR,VAL,SEQ};     /* "Store as" switch */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscParseLayerYAML"
-PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
+static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 {
   yaml_event_t    event;
   int             storage = VAR; /* mapping cannot start with VAL definition w/o VAR key */
@@ -18,7 +16,9 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   PetscFunctionBegin;
   ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"%s"," ");CHKERRQ(ierr);
   do {
-    yaml_parser_parse(parser,&event);
+    if(!yaml_parser_parse(parser,&event)){
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parse error (for instance, improper indentation)");
+    }
     /* Parse value either as a new leaf in the mapping */
     /*  or as a leaf value (one of them, in case it's a sequence) */
     switch (event.type) {
@@ -63,8 +63,6 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsInsertFileYAML"
 /*C
 
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database
@@ -76,15 +74,18 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 .   file - name of file
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
-
   Only a small subset of the YAML standard is implemented. Sequences and alias
   are NOT supported.
   The algorithm recursively parses the yaml file, pushing and popping prefixes
-  and inserting key + values pairs using PetscOptionsInsertString.
+  and inserting key + values pairs using PetscOptionsInsertString().
 
-  Inspired by  http://stackoverflow.com/a/621451
+  PETSc will generate an error condition that stops the program if a YAML error
+  is detected, hence the user should check that the YAML file is valid before 
+  supplying it, for instance at http://www.yamllint.com/ .
 
-  Level: developer
+  Inspired by http://stackoverflow.com/a/621451
+
+  Level: intermediate
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
@@ -104,6 +105,7 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
   int            lvl=0;
   FILE          *source;
   PetscInt       offset;
+  size_t         rd;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -115,15 +117,14 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
       yamlLength = ftell(source);
       fseek(source,0,SEEK_SET);
       ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
-      /* Read the content of the YAML file one char at a time*/
+      /* Read the content of the YAML file one char at a time; why does this read the file one byte at a time? */
       for (offset = 0; offset < yamlLength; offset++) {
-        fread(&(optionsStr[offset]), sizeof(unsigned char),1,source);
+        rd = fread(&(optionsStr[offset]), sizeof(unsigned char),1,source);
+        if (rd != sizeof(unsigned char)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire YAML file: %s",file);
       }
       fclose(source);
       optionsStr[yamlLength] = '\0';
-    } else if (require) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open YAML option file %s\n",fname);
-    }
+    } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open YAML option file %s\n",fname);
     ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   } else {
@@ -131,9 +132,11 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
     ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
     ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   }
-  yaml_parser_initialize(&parser);
+  if(!yaml_parser_initialize(&parser)){
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parser initialization error");
+  }
   yaml_parser_set_input_string(&parser,optionsStr,(size_t) yamlLength);
-  ierr = PetscParseLayerYAML(&parser,&lvl);
+  ierr = PetscParseLayerYAML(&parser,&lvl);CHKERRQ(ierr);
   yaml_parser_delete(&parser);
   ierr = PetscFree(optionsStr);CHKERRQ(ierr);
   PetscFunctionReturn(0);

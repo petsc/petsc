@@ -10,8 +10,6 @@
 #include <time.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSleep"
 /*@
    PetscSleep - Sleeps some number of seconds.
 

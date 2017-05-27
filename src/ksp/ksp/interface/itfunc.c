@@ -6,8 +6,6 @@
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscdm.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExtremeSingularValues"
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
    for the preconditioned operator. Called after or during KSPSolve().
@@ -63,8 +61,6 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
    preconditioned operator. Called after or during KSPSolve().
@@ -130,8 +126,6 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeRitz"
 /*@
    KSPComputeRitz - Computes the Ritz or harmonic Ritz pairs associated to the
    smallest or largest in modulus, for the preconditioned operator.
@@ -182,8 +176,6 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
   if (ksp->ops->computeritz) {ierr = (*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUpOnBlocks"
 /*@
    KSPSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
@@ -196,7 +188,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
    Notes:
    KSPSetUpOnBlocks() is a routine that the user can optinally call for
-   more precise profiling (via -log_summary) of the setup phase for these
+   more precise profiling (via -log_view) of the setup phase for these
    block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
    it will automatically be called from within KSPSolve().
 
@@ -225,8 +217,6 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetReusePreconditioner"
 /*@
    KSPSetReusePreconditioner - reuse the current preconditioner, do not construct a new one even if the operator changes
 
@@ -252,8 +242,6 @@ PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetSkipPCSetFromOptions"
 /*@
    KSPSetSkipPCSetFromOptions - prevents KSPSetFromOptions() from call PCSetFromOptions(). This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
 
@@ -277,8 +265,6 @@ PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
@@ -311,7 +297,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
-  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
 
   if (ksp->dmActive && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
@@ -339,7 +325,6 @@ PetscErrorCode KSPSetUp(KSP ksp)
       if (kdm->ops->computeoperators) {
         ierr = KSPGetOperators(ksp,&A,&B);CHKERRQ(ierr);
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,kdm->operatorsctx);CHKERRQ(ierr);
-        ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
     }
   }
@@ -408,8 +393,6 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReasonView"
 /*@
    KSPReasonView - Displays the reason a KSP solve converged or diverged to a viewer
 
@@ -462,12 +445,9 @@ PetscErrorCode KSPReasonView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
 #if defined(PETSC_HAVE_THREADSAFETY)
 #define KSPReasonViewFromOptions KSPReasonViewFromOptionsUnsafe
-#define __FUNCT__ "KSPReasonViewFromOptionsUnsafe"
 #else
-#define __FUNCT__ "KSPReasonViewFromOptions"
 #endif
 /*@C
   KSPReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
@@ -499,9 +479,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve"
-/*@
+/*@C
    KSPSolve - Solves linear system.
 
    Collective on KSP
@@ -537,6 +515,24 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
    Call KSPGetConvergedReason() to determine if the solver converged or failed and
    why. The number of iterations can be obtained from KSPGetIterationNumber().
 
+   If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information to solve singular systems
+   in the least squares sense with a norm minimizing solution.
+$
+$                   A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see MatSetNullSpace()
+$
+$    KSP first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
+$    it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
+$    direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
+$
+$    We recommend always using GMRES for such singular systems.
+$    If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
+$    If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
+
+   Developer Note: The reason we cannot always solve  nullspace(A) != nullspace(A') systems with right preconditioning is because we need to remove at each iteration
+       the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
+       such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
+
+
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
@@ -552,7 +548,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber()
+          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace()
 @*/
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
@@ -851,8 +847,6 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolveTranspose"
 /*@
    KSPSolveTranspose - Solves the transpose of a linear system.
 
@@ -864,6 +858,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 -  x - solution vector
 
    Notes: For complex numbers this solve the non-Hermitian transpose system.
+
+   This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
 
    Developer Notes: We need to implement a KSPSolveHermitianTranspose()
 
@@ -879,6 +875,9 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscBool      inXisinB=PETSC_FALSE;
+  Vec            vec_rhs = 0,btmp;
+  Mat            mat,pmat;
+  MatNullSpace   nullsp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -898,8 +897,24 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ksp->transpose_solve = PETSC_TRUE;
 
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
+
+  ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
+  ierr = MatGetNullSpace(pmat,&nullsp);CHKERRQ(ierr);
+  if (nullsp) {
+    ierr = VecDuplicate(ksp->vec_rhs,&btmp);CHKERRQ(ierr);
+    ierr = VecCopy(ksp->vec_rhs,btmp);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullsp,btmp);CHKERRQ(ierr);
+    vec_rhs      = ksp->vec_rhs;
+    ksp->vec_rhs = btmp;
+  }
+
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  if (nullsp) {
+    ksp->vec_rhs = vec_rhs;
+    ierr = VecDestroy(&btmp);CHKERRQ(ierr);
+  }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
   if (inXisinB) {
@@ -910,8 +925,6 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset"
 /*@
    KSPReset - Resets a KSP context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
 
@@ -948,8 +961,6 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy"
 /*@
    KSPDestroy - Destroys KSP context.
 
@@ -998,8 +1009,6 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetPCSide"
 /*@
     KSPSetPCSide - Sets the preconditioning side.
 
@@ -1045,8 +1054,6 @@ PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetPCSide"
 /*@
     KSPGetPCSide - Gets the preconditioning side.
 
@@ -1076,13 +1083,11 @@ PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(side,2);
-  ierr  = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr  = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *side = ksp->pc_side;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetTolerances"
 /*@
    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence tests.
@@ -1119,8 +1124,6 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetTolerances"
 /*@
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence testers.
@@ -1181,8 +1184,6 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetInitialGuessNonzero"
 /*@
    KSPSetInitialGuessNonzero - Tells the iterative solver that the
    initial guess is nonzero; otherwise KSP assumes the initial guess
@@ -1215,8 +1216,6 @@ PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetInitialGuessNonzero"
 /*@
    KSPGetInitialGuessNonzero - Determines whether the KSP solver is using
    a zero initial guess.
@@ -1245,8 +1244,6 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetErrorIfNotConverged"
 /*@
    KSPSetErrorIfNotConverged - Causes KSPSolve() to generate an error if the solver has not converged.
 
@@ -1278,8 +1275,6 @@ PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetErrorIfNotConverged"
 /*@
    KSPGetErrorIfNotConverged - Will KSPSolve() generate an error if the solver does not converge?
 
@@ -1306,8 +1301,6 @@ PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetInitialGuessKnoll"
 /*@
    KSPSetInitialGuessKnoll - Tells the iterative solver to use PCApply(pc,b,..) to compute the initial guess (The Knoll trick)
 
@@ -1333,8 +1326,6 @@ PetscErrorCode  KSPSetInitialGuessKnoll(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetInitialGuessKnoll"
 /*@
    KSPGetInitialGuessKnoll - Determines whether the KSP solver is using the Knoll trick (using PCApply(pc,b,...) to compute
      the initial guess
@@ -1362,8 +1353,6 @@ PetscErrorCode  KSPGetInitialGuessKnoll(KSP ksp,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetComputeSingularValues"
 /*@
    KSPGetComputeSingularValues - Gets the flag indicating whether the extreme singular
    values will be calculated via a Lanczos or Arnoldi process as the linear
@@ -1402,8 +1391,6 @@ PetscErrorCode  KSPGetComputeSingularValues(KSP ksp,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeSingularValues"
 /*@
    KSPSetComputeSingularValues - Sets a flag so that the extreme singular
    values will be calculated via a Lanczos or Arnoldi process as the linear
@@ -1440,8 +1427,6 @@ PetscErrorCode  KSPSetComputeSingularValues(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetComputeEigenvalues"
 /*@
    KSPGetComputeEigenvalues - Gets the flag indicating that the extreme eigenvalues
    values will be calculated via a Lanczos or Arnoldi process as the linear
@@ -1473,8 +1458,6 @@ PetscErrorCode  KSPGetComputeEigenvalues(KSP ksp,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeEigenvalues"
 /*@
    KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
    values will be calculated via a Lanczos or Arnoldi process as the linear
@@ -1504,8 +1487,6 @@ PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeRitz"
 /*@
    KSPSetComputeRitz - Sets a flag so that the Ritz or harmonic Ritz pairs
    will be calculated via a Lanczos or Arnoldi process as the linear
@@ -1535,8 +1516,6 @@ PetscErrorCode  KSPSetComputeRitz(KSP ksp, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetRhs"
 /*@
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
@@ -1564,8 +1543,6 @@ PetscErrorCode  KSPGetRhs(KSP ksp,Vec *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetSolution"
 /*@
    KSPGetSolution - Gets the location of the solution for the
    linear system to be solved.  Note that this may not be where the solution
@@ -1594,8 +1571,6 @@ PetscErrorCode  KSPGetSolution(KSP ksp,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetPC"
 /*@
    KSPSetPC - Sets the preconditioner to be used to calculate the
    application of the preconditioner on a vector.
@@ -1631,8 +1606,6 @@ PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetPC"
 /*@
    KSPGetPC - Returns a pointer to the preconditioner context
    set with KSPSetPC().
@@ -1667,8 +1640,6 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitor"
 /*@
    KSPMonitor - runs the user provided monitor routines, if they exist
 
@@ -1699,8 +1670,6 @@ PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMonitorCompare"
 /*
 
     Checks if two monitors are identical; if they are then it destroys the new one
@@ -1724,8 +1693,6 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void),void *nmctx,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSet"
 /*@C
    KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
    the residual/error etc.
@@ -1800,8 +1767,6 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorCancel"
 /*@
    KSPMonitorCancel - Clears all monitors for a KSP object.
 
@@ -1837,8 +1802,6 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetMonitorContext"
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by
    KSPMonitorSet() for the FIRST monitor only.
@@ -1865,8 +1828,6 @@ PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetResidualHistory"
 /*@
    KSPSetResidualHistory - Sets the array used to hold the residual history.
    If set, this array will contain the residual norms computed at each
@@ -1917,8 +1878,6 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetResidualHistory"
 /*@C
    KSPGetResidualHistory - Gets the array used to hold the residual history
    and the number of residuals it contains.
@@ -1957,8 +1916,6 @@ PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetConvergenceTest"
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.
@@ -2016,8 +1973,6 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetConvergenceContext"
 /*@C
    KSPGetConvergenceContext - Gets the convergence context set with
    KSPSetConvergenceTest().
@@ -2044,8 +1999,6 @@ PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution"
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
    This routine is NOT commonly needed (see KSPSolve()).
@@ -2096,8 +2049,6 @@ PetscErrorCode  KSPBuildSolution(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildResidual"
 /*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 
@@ -2143,8 +2094,6 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetDiagonalScale"
 /*@
    KSPSetDiagonalScale - Tells KSP to symmetrically diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
@@ -2189,8 +2138,6 @@ PetscErrorCode  KSPSetDiagonalScale(KSP ksp,PetscBool scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetDiagonalScale"
 /*@
    KSPGetDiagonalScale - Checks if KSP solver scales the matrix and
                           right hand side
@@ -2223,8 +2170,6 @@ PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetDiagonalScaleFix"
 /*@
    KSPSetDiagonalScaleFix - Tells KSP to diagonally scale the system
      back after solving.
@@ -2259,8 +2204,6 @@ PetscErrorCode  KSPSetDiagonalScaleFix(KSP ksp,PetscBool fix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetDiagonalScaleFix"
 /*@
    KSPGetDiagonalScaleFix - Determines if KSP diagonally scales the system
      back after solving.
@@ -2297,8 +2240,6 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeOperators"
 /*@C
    KSPSetComputeOperators - set routine to compute the linear operators
 
@@ -2339,8 +2280,6 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeRHS"
 /*@C
    KSPSetComputeRHS - set routine to compute the right hand side of the linear system
 
@@ -2376,8 +2315,6 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetComputeInitialGuess"
 /*@C
    KSPSetComputeInitialGuess - set routine to compute the initial guess of the linear system
 

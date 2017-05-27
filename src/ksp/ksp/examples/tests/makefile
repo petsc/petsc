@@ -8,9 +8,9 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c
+                ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c
 EXAMPLESCH      =
-EXAMPLESF       = ex5f.F ex12f.F ex16f.F
+EXAMPLESF       = ex5f.F ex12f.F ex16f.F ex52f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -66,10 +66,6 @@ ex12f: ex12f.o  chkopts
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o  ${PETSC_KSP_LIB}
 	${RM} ex5f.o
-
-ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_KSP_LIB}
-	${RM} ex13.o
 
 ex14: ex14.o  chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_KSP_LIB}
@@ -140,9 +136,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex36: ex36.o  chkopts
-	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
-	${RM} ex36.o
 ex37: ex37.o  chkopts
 	-${CLINKER} -o ex37 ex37.o  ${PETSC_KSP_LIB}
 	${RM} ex37.o
@@ -188,6 +181,12 @@ ex49: ex49.o chkopts
 ex50: ex50.o chkopts
 	-${CLINKER} -o ex50 ex50.o ${PETSC_KSP_LIB}
 	${RM} ex50.o
+ex51: ex51.o chkopts
+	-${CLINKER} -o ex51 ex51.o ${PETSC_KSP_LIB}
+	${RM} ex51.o
+ex52f: ex52f.o  chkopts
+	-${FLINKER} -o ex52f ex52f.o  ${PETSC_KSP_LIB}
+	${RM} ex52f.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -253,11 +252,6 @@ runex4_5:
 	   if (${DIFF} output/ex4_5.out ex4_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_5.tmp
-runex5:
-	-@${MPIEXEC} -n 2 ./ex5 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
 runex5f:
 	-@${MPIEXEC} -n 1 ./ex5f -ksp_monitor_short > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -371,11 +365,6 @@ runex12f:
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex12f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12f_1.tmp
-runex13:
-	-@${MPIEXEC} -n 2  ./ex13 -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_short > ex13_1.tmp 2>&1; \
-	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex13_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex13_1.tmp
 runex14:
 	-@${MPIEXEC} -n 1  ./ex14  > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
@@ -1011,29 +1000,53 @@ runex49:
            ${MPIEXEC} -n 1 ./ex49 -bs $$bs -pc_type cholesky  ;\
          done;
 runex50:
-	@for bs in 1 2 3 4 5 6 7 ; do \
+	@for bs in 1 2 3 4 5 6 7; do \
            ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type pbjacobi  ;\
          done;
+runex50_2:
+	@for bs in 8 9 10 11 12 13 14 15; do \
+           ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type ilu ;\
+         done;
 
+runex51:
+	-@${MPIEXEC} -n 1 ./ex51 -reverse > ex51.tmp 2>&1;\
+	if (${DIFF} output/ex51_1.out ex51.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex51, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex51.tmp
+
+runex51_2:
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex51 -reverse -pc_type cholesky > ex51.tmp 2>&1;\
+	if (${DIFF} output/ex51_1.out ex51.tmp > /dev/null 2>&1) then x='good'; fi; \
+	if (${DIFF} output/ex51_2.out ex51.tmp > /dev/null 2>&1) then x='good'; fi; \
+        if [ "$$x" = "bad" ]; then ${DIFF} output/ex51_1.out ex51.tmp ; ${DIFF} output/ex51_2.out ex51.tmp ; printf "${PWD}\nPossible problem with ex51_2, diffs above\n=========================================\n"; fi; \
+        ${RM} -f ex51.tmp
+
+runex52f:
+	-@${MPIEXEC} -n 1 ./ex52f   > ex52f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex52f_1.out ex52f_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex52f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex52f_1.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
-                                 ex22.PETSc runex22 runex22_2 ex22.rm \
+                                 ex22.PETSc runex22 runex22_2 ex22.rm printdot \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
                                  ex28.PETSc runex28 runex28_2 runex28_3 ex28.rm \
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
-                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
+                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky printdot \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm\
-                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm printdot \
+                                 ex50.PETSc runex50 runex50_2 ex50.rm \
+                                 ex51.PETSc runex51 runex51_2 ex51.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex49.PETSc runex49 ex49.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm ex52f.PETSc runex52f ex52f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 runex17_2 ex17.rm

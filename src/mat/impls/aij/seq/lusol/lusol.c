@@ -177,8 +177,6 @@ typedef struct  {
 #define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0)
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_LUSOL"
 PetscErrorCode MatDestroy_LUSOL(Mat A)
 {
   PetscErrorCode ierr;
@@ -205,8 +203,6 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__  "MatSolve_LUSOL"
 PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 {
   Mat_LUSOL      *lusol=(Mat_LUSOL*)A->spptr;
@@ -237,8 +233,6 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_LUSOL"
 PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a;
@@ -336,8 +330,6 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_LUSOL"
 PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactorInfo *info)
 {
   /************************************************************************/
@@ -422,8 +414,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_lusol"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -431,8 +421,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPacka
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_lusol"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -462,8 +450,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_Lusol"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
 {
   PetscErrorCode ierr;

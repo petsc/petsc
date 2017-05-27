@@ -3,8 +3,6 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       n = 3,i,len,start,end;

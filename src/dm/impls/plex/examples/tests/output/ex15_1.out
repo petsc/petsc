@@ -2,24 +2,24 @@
 Vec Object: V 2 MPI processes
   type: mpi
 Process [0]
-1.
+0.
+0.
+0.
 0.5
-0.5
-1.
-1.
-1.
 Process [1]
-0.
-0.
 0.5
 0.
 1.
 0.
+0.5
+0.5
+1.
+0.5
 0.
+1.
 0.5
-0.5
-0.5
-0.
+1.
+1.
 1.
 ====  V in natural ordering. size==18	block size=2
 Vec Object: NV 2 MPI processes
@@ -29,9 +29,9 @@ Process [0]
 0.
 0.5
 0.
+Process [1]
 1.
 0.
-Process [1]
 0.
 0.5
 0.5
@@ -48,24 +48,24 @@ Process [1]
 Vec Object: V 2 MPI processes
   type: mpi
 Process [0]
-1.
+0.
+0.
+0.
 0.5
-0.5
-1.
-1.
-1.
 Process [1]
-0.
-0.
 0.5
 0.
 1.
 0.
+0.5
+0.5
+1.
+0.5
 0.
+1.
 0.5
-0.5
-0.5
-0.
+1.
+1.
 1.
 V and RV are equal
 ==== Vector from file. size==18	block size=2
@@ -76,9 +76,9 @@ Process [0]
 0.
 0.5
 0.
+Process [1]
 1.
 0.
-Process [1]
 0.
 0.5
 0.5

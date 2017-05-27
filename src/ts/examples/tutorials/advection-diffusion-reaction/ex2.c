@@ -32,13 +32,11 @@ typedef struct {
 PetscScalar k1(AppCtx *ctx,PetscReal t)
 {
   PetscReal th    = t/3600.0;
-  PetscReal barth = th - 24.0*floor(th/24.0);
-  if (((((PetscInt)th) % 24) < 4)               || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40);
+  PetscReal barth = th - 24.0*PetscFloorReal(th/24.0);
+  if (((((PetscInt)th) % 24) < 4) || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40);
   else return(ctx->k1*PetscExpReal(7.0*PetscPowReal(PetscSinReal(.0625*PETSC_PI*(barth - 4.0)),.2)));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -59,8 +57,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -88,8 +84,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Solution"
 static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
 {
   PetscErrorCode ierr;
@@ -100,8 +94,6 @@ static PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

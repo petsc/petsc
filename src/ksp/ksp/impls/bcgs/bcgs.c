@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_BCGS"
 PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -13,8 +11,6 @@ PetscErrorCode KSPSetFromOptions_BCGS(PetscOptionItems *PetscOptionsObject,KSP k
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_BCGS"
 PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -25,8 +21,6 @@ PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_BCGS"
 PetscErrorCode KSPSolve_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -155,8 +149,6 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_BCGS"
 PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
@@ -179,8 +171,6 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_BCGS"
 PetscErrorCode KSPReset_BCGS(KSP ksp)
 {
   KSP_BCGS       *cg = (KSP_BCGS*)ksp->data;
@@ -191,8 +181,6 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_BCGS"
 PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -219,8 +207,6 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPSetPCSide()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_BCGS"
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -240,5 +226,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

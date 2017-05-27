@@ -4,9 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '9fc43b7' # trilinos-release-12-6-branch
+    self.gitcommit         = '0ddbf6e' # master
     self.download          = ['https://github.com/trilinos/xSDKTrilinos/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/trilinos/xSDKTrilinos.git']
-    self.downloaddirname   = 'xSDKTrilinos'
+    self.downloaddirnames  = ['xSDKTrilinos']
     self.includes          = []
     self.functions         = []
     self.cxx               = 1
@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):
@@ -22,17 +23,21 @@ class Configure(config.package.CMakePackage):
     self.hypre    = framework.require('config.packages.hypre',self)
     self.x        = framework.require('config.packages.X',self)
     self.ssl      = framework.require('config.packages.ssl',self)
+    self.triangle = framework.require('config.packages.Triangle',self)
     self.exodusii = framework.require('config.packages.exodusii',self)
+    self.flibs    = framework.require('config.packages.flibs',self)
+    self.cxxlibs  = framework.require('config.packages.cxxlibs',self)
+    self.mathlib  = framework.require('config.packages.mathlib',self)
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
-  # the install is delayed until postProcess() since xSDKTrilinos requires PETSc
+  # the install is delayed until postProcess() since xSDKTrilinos install requires PETSc to be installed before xSDKTrilinos can be built
   def Install(self):
     return self.installDir
 
   def configureLibrary(self):
-    ''' Just assume the downloaded library will work'''
+    ''' Since xSDKTrilinos cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
     if self.framework.clArgDB.has_key('with-xsdktrilinos'):
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos; only --download-xsdktrilinos')
     if self.framework.clArgDB.has_key('with-xsdktrilinos-dir'):
@@ -63,7 +68,7 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTPL_ENABLE_PETSC=ON')
     # These are packages that PETSc may be using that Trilinos is not be using
-    plibs = self.exodusii.dlib+self.ssl.lib+self.x.lib
+    plibs = self.exodusii.dlib+self.triangle.lib+self.ssl.lib+self.x.lib
 
     if not hasattr(self.compilers, 'FC'):
       args.append('-DxSDKTrilinos_ENABLE_Fortran=OFF')
@@ -87,7 +92,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DxSDKTrilinos_ENABLE_DEBUG=NO')
 
-    args.append('-DxSDKTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
+    args.append('-DxSDKTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.flibs.lib+self.cxxlibs.lib+self.mathlib.lib)+' '+self.compilers.LIBS+'"')
     args.append('-DxSDKTrilinos_ENABLE_TESTS=ON')
     return args
 

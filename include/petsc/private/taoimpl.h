@@ -176,8 +176,6 @@ struct _p_Tao {
 
 extern PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_ObjGradientEval, Tao_GradientEval, Tao_HessianEval, Tao_ConstraintsEval, Tao_JacobianEval;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLogConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, PetscReal resid, PetscReal cnorm, PetscInt totits)
 {
   PetscFunctionBegin;

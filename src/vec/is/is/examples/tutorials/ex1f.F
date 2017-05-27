@@ -7,16 +7,10 @@
 !T*/
 !
 !
-!  The following include statements are required for Fortran programs
-!  that use PETSc index sets:
-!     petscsys.h  - base PETSc routines
-!     petscis.h     - index sets (IS objects)
-!
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscis.h>
+      use petscis
+      implicit none
 
       PetscErrorCode ierr
       PetscInt indices(5),n,index1,index5
@@ -25,6 +19,10 @@
       IS          is
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create an index set with 5 entries. Each processor creates

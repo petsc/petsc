@@ -3,12 +3,20 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = 'e1aabd8'  #master+
-    self.download          = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
-    self.functions         = []
-    self.includes          = []
+    self.gitcommit              = '0b9c802'  #master+
+    self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
+    self.functions              = []
+    self.includes               = []
     self.skippackagewithoptions = 1
-    self.downloaddirname   = 'petsc-petsc4py'
+    self.useddirectly           = 0
+    self.linkedbypetsc          = 0
+    self.downloaddirnames       = ['petsc-petsc4py','petsc4py']
+    return
+
+  def setupHelp(self, help):
+    config.package.Package.setupHelp(self,help)
+    import nargs
+    help.addArgument('PETSC4PY', '-download-petsc4py-python=<prog>',                            nargs.Arg(None, None, 'Use this python program to build petsc4py'))
     return
 
   def setupDependencies(self, framework):
@@ -47,12 +55,20 @@ class Configure(config.package.Package):
     else:
        newuser = ''
 
+    # determine python binary to use
+    if 'download-petsc4py-python' in self.argDB:
+      self.getExecutable(self.argDB['download-petsc4py-python'], getFullPath=1, resultName='pyexe', setMakeMacro = 0)
+    else:
+      import sys
+      self.pyexe = sys.executable
+
+    self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+'python setup.py clean --all && \\\n\
-           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newuser+newdir+self.pyexe+' setup.py clean --all && \\\n\
+           '+newuser+newdir+archflags+self.pyexe+' setup.py build ) > ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
@@ -61,7 +77,7 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+self.pyexe+' setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/lib/petsc/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\

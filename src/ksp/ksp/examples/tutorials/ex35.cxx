@@ -56,8 +56,6 @@ typedef struct {
   char filename[PETSC_MAX_PATH_LEN];
 } UserContext;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            ksp;
@@ -142,8 +140,6 @@ int main(int argc,char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho_MOAB"
 PetscErrorCode ComputeRho_MOAB(PetscReal coords[3], PetscReal centerRho, PetscReal *rho)
 {
   PetscFunctionBeginUser;
@@ -156,8 +152,6 @@ PetscErrorCode ComputeRho_MOAB(PetscReal coords[3], PetscReal centerRho, PetscRe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS_MOAB"
 PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
@@ -262,8 +256,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix_MOAB"
 PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
@@ -413,8 +405,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 *  Original Author: John Burkardt (http://people.sc.fsu.edu/~jburkardt/cpp_src/fem2d_pack/fem2d_pack.cpp)
 *  Modified by Vijay Mahadevan
 */
-#undef __FUNCT__
-#define __FUNCT__ "Compute_Quad4_Basis"
 PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[VPERE*3], PetscInt n, PetscReal *pts, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy)
 {
   PetscReal ejac;
@@ -482,14 +472,12 @@ PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[VPERE*3], PetscInt n, Pets
 *
 *    Output, PetscScalar jxw[NQPTS], the product of Jacobian of the physical element times the weights at the quadrature points.
 */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeQuadraturePointsPhysical"
 PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], PetscReal quad[NQPTS*3], PetscReal jxw[NQPTS])
 {
   int i,j;
   PetscReal centroid[3];
   const PetscReal GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
-  PetscReal dx = fabs(verts[0+2*3] - verts[0+0*3])/2, dy = fabs( verts[1+2*3] - verts[1+0*3] )/2;
+  PetscReal dx = PetscAbsReal(verts[0+2*3] - verts[0+0*3])/2, dy = PetscAbsReal( verts[1+2*3] - verts[1+0*3] )/2;
   PetscReal ejac = dx*dy;
   
   centroid[0] = centroid[1] = centroid[2] = 0.0;

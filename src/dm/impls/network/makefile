@@ -9,7 +9,7 @@ SOURCEH  =
 DIRS     = 
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= 
+SUBMANSEC= DMNetwork 
 LOCDIR   = src/dm/impls/network/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

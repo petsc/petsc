@@ -3,8 +3,6 @@ static char help[] = "Tests nested events.\n\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            event1,event2,event3;

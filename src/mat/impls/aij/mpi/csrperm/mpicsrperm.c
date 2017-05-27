@@ -1,7 +1,5 @@
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIAIJPERM"
 /*@C
    MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local
    portions are stored as SEQAIJPERM matrices (a matrix class that inherits
@@ -108,10 +106,6 @@ PetscErrorCode  MatCreateMPIAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJPERM"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b = (Mat_MPIAIJ*)B->data;
@@ -124,8 +118,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJPERM"
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -142,8 +134,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJPERM"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
 {
   PetscErrorCode ierr;

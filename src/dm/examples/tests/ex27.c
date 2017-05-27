@@ -10,8 +10,6 @@ static char help[] = "Test sequential USFFT interface on a uniform DMDA and comp
 #include <petscmat.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
@@ -32,9 +30,6 @@ PetscInt main(PetscInt argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "USFFT Options", "ex27");CHKERRQ(ierr);
@@ -46,14 +41,11 @@ PetscInt main(PetscInt argc,char **args)
   ierr     = PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
   ierr     = PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0], dim[1], dim[2],
+                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,dof, stencil,NULL, NULL, NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      dim[0], dim[1], dim[2],
-                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                      dof, stencil,
-                      NULL, NULL, NULL,
-                      &da);CHKERRQ(ierr);
   /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);

@@ -8,8 +8,6 @@ PETSC_INTERN PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int
 
 #define SHIFT_VAL 6
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawInterpolatedTriangle_X"
 PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
 {
   PetscReal rfrac,lfrac;

@@ -93,8 +93,6 @@ PetscErrorCode FormRHS(DM,AppCtx *,Vec);
 PetscErrorCode FormCoordinates(DM,AppCtx *);
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
@@ -113,7 +111,9 @@ int main(int argc,char **argv)
   ierr = FormElements();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,21,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
   ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
@@ -383,8 +383,6 @@ void SaintVenantKirchoffJacobian(PetscReal lambda,PetscReal mu,PetscScalar *F,Pe
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormElements"
 PetscErrorCode FormElements()
 {
   PetscInt i,j,k,ii,jj,kk;
@@ -628,8 +626,6 @@ void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt 
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,void *ptr)
 {
   /* values for each basis function at each quadrature point */
@@ -733,8 +729,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void *ptr)
 {
   /* values for each basis function at each quadrature point */
@@ -814,8 +808,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
 {
   /* values for each basis function at each quadrature point */
@@ -930,8 +922,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormCoordinates"
 PetscErrorCode FormCoordinates(DM da,AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -967,8 +957,6 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitialGuess"
 PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
 {
   PetscInt       i,j,k,xs,ys,zs,xm,ym,zm;
@@ -1001,8 +989,6 @@ PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHS"
 PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
 {
   PetscInt       i,j,k,xs,ys,zs,xm,ym,zm;
@@ -1029,8 +1015,6 @@ PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DisplayLine"
 PetscErrorCode DisplayLine(SNES snes,Vec X)
 {
   PetscInt       r,i,j=0,k=0,xs,xm,ys,ym,zs,zm,mx,my,mz;

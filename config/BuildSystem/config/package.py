@@ -15,11 +15,12 @@ class FakePETScDir:
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix     = 'PETSC'
-    self.substPrefix      = 'PETSC'
-    self.arch             = None # The architecture identifier
+    self.headerPrefix        = 'PETSC'
+    self.substPrefix         = 'PETSC'
+    self.arch                = None # The architecture identifier
     self.externalPackagesDir = os.path.abspath('externalpackages')
-    # These are gderived by the configure tests
+
+    # These are determined by the configure tests
     self.found            = 0
     self.setNames()
     self.include          = []
@@ -28,57 +29,57 @@ class Package(config.base.Configure):
     self.dlib             = []   # all libraries in this package and all those it depends on
     self.directory        = None # path of the package installation point; for example /usr/local or /home/bsmith/mpich-2.0.1
     self.version          = ''
-    # These are specified for the package
-    self.required         = 0    # 1 means the package is required
-    self.lookforbydefault = 0    # 1 means the package is not required, but always look for and use if found
-                                 # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
-                                 # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
-                                 # args database so it keeps track of what the user set vs what the program set
-    self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
-    self.linkedbypetsc    = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
-    self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
-    self.download         = []   # list of URLs where repository or tarballs may be found
-    self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
-    self.odeps            = []   # dependent packages that are optional
-    self.defaultLanguage  = 'C'  # The language in which to run tests
-    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
-    self.extraLib         = []   # additional libraries needed to link
-    self.includes         = []   # headers to check for
-    self.functions        = []   # functions we wish to check for in the libraries
-    self.functionsFortran = 0    # 1 means the above symbol is a Fortran symbol, so name-mangling is done
-    self.functionsCxx     = [0, '', ''] # 1 means the above symbol is a C++ symbol, so name-mangling with prototype/call is done
-    self.cxx              = 0    # 1 means requires C++
-    self.fc               = 0    # 1 means requires fortran
-    self.needsMath        = 0    # 1 means requires the system math library
-    self.needsCompression = 0    # 1 means requires the system compression library
-    self.noMPIUni         = 0    # 1 means requires a real MPI
-    self.libdir           = 'lib'     # location of libraries in the package directory tree
-    self.altlibdir        = 'lib64'   # alternate location of libraries in the package directory tree
-    self.includedir       = 'include' # location of includes in the package directory tree
-    self.license          = None # optional license text
-    self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.downloadonWindows= 0  # 1 means the --download-package works on Microsoft Windows
-    self.requirescxx11    = 0
-    self.publicInstall    = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
-                               # during the configuration/installation process such as sowing, make etc should be marked as 0
-    self.parallelMake     = 1  # 1 indicates the package supports make -j np option
 
-    self.double           = 0   # 1 means requires double precision
-    self.complex          = 1   # 0 means cannot use complex
-    self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
+    # These are specified for the package
+    self.required               = 0    # 1 means the package is required
+    self.lookforbydefault       = 0    # 1 means the package is not required, but always look for and use if found
+                                       # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
+                                       # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
+                                       # args database so it keeps track of what the user set vs what the program set
+    self.useddirectly           = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
+    self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
+    self.gitcommit              = None # Git commit to use for downloads
+    self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
+    self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
+    self.odeps                  = []   # dependent packages that are optional
+    self.defaultLanguage        = 'C'  # The language in which to run tests
+    self.liblist                = [[]] # list of libraries we wish to check for (packages can override with their own generateLibList() method)
+    self.extraLib               = []   # additional libraries needed to link
+    self.includes               = []   # headers to check for
+    self.functions              = []   # functions we wish to check for in the libraries
+    self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
+    self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
+    self.cxx                    = 0    # 1 means requires C++
+    self.fc                     = 0    # 1 means requires fortran
+    self.noMPIUni               = 0    # 1 means requires a real MPI
+    self.libdir                 = 'lib'     # location of libraries in the package directory tree
+    self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
+    self.includedir             = 'include' # location of includes in the package directory tree
+    self.license                = None # optional license text
+    self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
+    self.downloadonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
+    self.requirescxx11          = 0
+    self.publicInstall          = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
+                                     # during the configuration/installation process such as sowing, make etc should be marked as 0
+    self.parallelMake           = 1  # 1 indicates the package supports make -j np option
+
+    self.precisions             = ['__fp16','single','double','__float128']; # Floating point precision package works with
+    self.complex                = 1   # 0 means cannot use complex
+    self.requires32bitint       = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
-    self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
-    self.requirec99flag      = 0 # package must be compiled with C99 flags
+    self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
+    self.requirec99flag         = 0 # package must be compiled with C99 flags
 
     # Outside coupling
-    self.defaultInstallDir= os.path.abspath('externalpackages')
-    self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
+    self.defaultInstallDir      = os.path.abspath('externalpackages')
+    self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
 
-    self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
-    self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
-    self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
-    self.makerulename     = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
-    self.installedpetsc   = 0
+    self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
+    self.hastestsdatafiles      = 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
+    self.installedpetsc         = 0
+    self.installwithbatch       = 0  # install the package even though configure is running in the initial batch mode; f2blaslapack and fblaslapack for example
     return
 
   def __str__(self):
@@ -139,7 +140,7 @@ class Package(config.base.Configure):
     package:      The lowercase name
     PACKAGE:      The uppercase name
     downloadname:     Name for download option (usually name)
-    downloaddirname: name for downloaded directory (first part of string) (usually downloadname)
+    downloaddirnames: names for downloaded directory (first part of string) (usually downloadname)
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
@@ -150,7 +151,7 @@ class Package(config.base.Configure):
     self.package          = self.name.lower()
     self.downloadname     = self.name
     self.pkgname          = self.name
-    self.downloaddirname  = self.downloadname;
+    self.downloaddirnames = [self.downloadname];
     return
 
   def getDefaultPrecision(self):
@@ -190,9 +191,12 @@ class Package(config.base.Configure):
   defaultIndexSize = property(getDefaultIndexSize, setDefaultIndexSize, doc = 'The index size for of the library')
 
   def checkNoOptFlag(self):
-    flag = '-O0'
-    if self.setCompilers.checkCompilerFlag(flag): return flag
-    return ''
+    flags = ''
+    flag = '-O0 '
+    if self.setCompilers.checkCompilerFlag(flag): flags = flags+flag
+    flag = '-mfp16-format=ieee'
+    if self.setCompilers.checkCompilerFlag(flag): flags = flags+flag
+    return flags
 
   def getSharedFlag(self,cflags):
     for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
@@ -340,12 +344,15 @@ class Package(config.base.Configure):
 
   def getIncludeDirs(self, prefix, includeDir):
     if isinstance(includeDir, list):
-      return [inc for inc in includeDir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDir if not os.path.isabs(inc)]
+      iDirs = [inc for inc in includeDir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDir if not os.path.isabs(inc)]
+      return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
   def generateGuesses(self):
     d = self.checkDownload()
     if d:
+      if not self.liblist:
+        yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
@@ -458,9 +465,9 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if self.framework.batchBodies:
+    if self.framework.batchBodies and not self.installwithbatch:
       return
-    if self.argDB['download-'+self.downloadname.lower()]:
+    if self.argDB['download-'+self.package]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -469,6 +476,14 @@ class Package(config.base.Configure):
         fd = open('.'+self.package+'_license','w')
         fd.close()
       return self.getInstallDir()
+    else:
+      # check if download option is set for any of the dependent packages - if so flag an error.
+      mesg=''
+      for pkg in self.deps:
+        if 'download-'+pkg.package in self.argDB and self.argDB['download-'+pkg.package]:
+          mesg+='Error! Cannot use --download-'+pkg.package+' when not using --download-'+self.package+'. Perhaps you need to look for a version of '+pkg.PACKAGE+' that '+self.PACKAGE+' was built with!\n'
+      if mesg:
+        raise RuntimeError(mesg)
     return ''
 
   def installNeeded(self, mkfile):
@@ -574,16 +589,18 @@ class Package(config.base.Configure):
     pkgdirs = os.listdir(packages)
     gitpkg  = 'git.'+self.package
     hgpkg  = 'hg.'+self.package
-    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloaddirname))
+    self.logPrint('Looking for '+self.PACKAGE+' at '+gitpkg+ ', '+hgpkg+' or a directory starting with '+str(self.downloaddirnames))
     if hasattr(self.sourceControl, 'git') and gitpkg in pkgdirs:
       Dir = gitpkg
     elif hasattr(self.sourceControl, 'hg') and hgpkg in pkgdirs:
       Dir = hgpkg
     else:
       for d in pkgdirs:
-        if d.startswith(self.downloaddirname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
-          Dir = d
-          break
+        for j in self.downloaddirnames:
+          if d.startswith(j) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+            Dir = d
+            break
+        if Dir: break
     if Dir:
       self.logPrint('Found a copy of '+self.PACKAGE+' in '+str(Dir))
       return os.path.join(packages, Dir)
@@ -639,7 +656,7 @@ class Package(config.base.Configure):
         retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Failed to download '+self.PACKAGE)
+          raise RuntimeError('Could not located downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir
@@ -647,7 +664,7 @@ class Package(config.base.Configure):
         self.logPrint('ERROR: '+str(e))
         err += str(e)
     self.logWrite(retriever.restoreLog())
-    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
+    raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -673,7 +690,31 @@ class Package(config.base.Configure):
     self.compilers.LIBS = oldLibs
     return result
 
-  def checkDependencies(self, libs = None, incls = None):
+  @staticmethod
+  def sortPackageDependencies(startnode):
+    '''Create a dependency graph for all deps, and sort them'''
+    import graph
+    depGraph = graph.DirectedGraph()
+
+    def addGraph(Graph,node,nodesAdded=[]):
+      '''Recursively traverse the dependency graph - and add them as graph edges.'''
+      if not hasattr(node,'deps'): return
+      Graph.addVertex(node)
+      nodesAdded.append(node)
+      deps = list(node.deps)
+      for odep in node.odeps:
+        if odep.found: deps.append(odep)
+      if deps:
+        Graph.addEdges(node,outputs=deps)
+      for dep in deps:
+        if dep not in nodesAdded:
+          addGraph(Graph,dep,nodesAdded)
+      return
+
+    addGraph(depGraph,startnode)
+    return [sortnode for sortnode in graph.DirectedGraph.topologicalSort(depGraph,start=startnode)]
+
+  def checkDependencies(self):
     for package in self.deps:
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
@@ -684,9 +725,18 @@ class Package(config.base.Configure):
           str = ''
           if package.download: str = ' or --download-'+package.package
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
-    for package in self.deps + self.odeps:
-      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
-      if hasattr(package, 'include') and not incls is None: incls += package.include
+    for package in self.odeps:
+      if not hasattr(package, 'found'):
+        raise RuntimeError('Package '+package.name+' does not have found attribute!')
+      if not package.found:
+        if self.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+
+    dpkgs = Package.sortPackageDependencies(self)
+    dpkgs.remove(self)
+    for package in dpkgs:
+      if hasattr(package, 'lib'):     self.dlib += package.lib
+      if hasattr(package, 'include'): self.dinclude += package.include
     return
 
   def configureLibrary(self):
@@ -695,19 +745,6 @@ class Package(config.base.Configure):
     self.logPrint('Checking for a functional '+self.name)
     foundLibrary = 0
     foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs  = []
-    incls = []
-    self.checkDependencies(libs, incls)
-    if self.needsMath:
-      if self.libraries.math is None:
-        raise RuntimeError('Math library [libm.a or equivalent] is not found')
-      libs += self.libraries.math
-    if self.needsCompression:
-      if self.libraries.compression is None:
-        raise RuntimeError('Compression library [libz.a or equivalent] not found')
-      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
@@ -728,16 +765,16 @@ class Package(config.base.Configure):
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
-          self.dlib      = self.lib+libs
-          self.dinclude  = list(set(incl+incls))
+          self.dlib      = self.lib+self.dlib
+          self.dinclude  = list(set(incl+self.dinclude))
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
@@ -747,6 +784,8 @@ class Package(config.base.Configure):
         self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
+    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+      self.argDB['with-'+self.package] = 0
 
   def checkSharedLibrary(self):
     '''By default we don\'t care about checking if the library is shared'''
@@ -771,8 +810,8 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
-      if self.double and not self.defaultPrecision.lower() == 'double':
-        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+      if not self.defaultPrecision.lower() in self.precisions:
+        raise RuntimeError('Cannot use '+self.name+' with '+self.defaultPrecision.lower()+', it is not coded for this capability')
       if not self.complex and self.defaultScalarType.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
@@ -782,7 +821,7 @@ class Package(config.base.Configure):
     return
 
   def configure(self):
-    if self.download and self.argDB['download-'+self.downloadname.lower()] and not self.framework.batchBodies:
+    if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):
@@ -800,6 +839,7 @@ class Package(config.base.Configure):
     if self.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.defaultLanguage)
+      self.executeTest(self.checkDependencies)
       self.executeTest(self.configureLibrary)
       self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
@@ -837,12 +877,12 @@ class Package(config.base.Configure):
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
-    self.compilers.saveLog()
-    self.compilers.configure()
-    self.logWrite(self.compilers.restoreLog())
     self.compilerFlags.saveLog()
     self.compilerFlags.configure()
     self.logWrite(self.compilerFlags.restoreLog())
+    self.compilers.saveLog()
+    self.compilers.configure()
+    self.logWrite(self.compilers.restoreLog())
     return
 
   def rmArgs(self,args,rejects):
@@ -942,7 +982,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
-    self.downloaddirname - same as self.name (usage a bit inconsistent)  [string]
+    self.downloaddirnames - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]
@@ -1277,14 +1317,6 @@ class GNUPackage(Package):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
-
-  def checkDependencies(self, libs = None, incls = None):
-    Package.checkDependencies(self, libs, incls)
-    for package in self.odeps:
-      if not package.found:
-        if self.argDB['with-'+package.package] == 1:
-          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-    return
 
 class CMakePackage(Package):
   def __init__(self, framework):

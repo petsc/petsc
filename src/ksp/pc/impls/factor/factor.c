@@ -1,8 +1,42 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h>  /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetUpMatSolverPackage"
+static PetscErrorCode PCFactorSetReuseOrdering_Factor(PC pc,PetscBool flag)
+{
+  PC_Factor *lu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  lu->reuseordering = flag;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFactorSetReuseFill_Factor(PC pc,PetscBool flag)
+{
+  PC_Factor *lu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  lu->reusefill = flag;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCFactorSetUseInPlace_Factor(PC pc,PetscBool flg)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  dir->inplace = flg;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  PCFactorGetUseInPlace_Factor(PC pc,PetscBool *flg)
+{
+  PC_Factor *dir = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = dir->inplace;
+  PetscFunctionReturn(0);
+}
+
 /*@
     PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may
        set the options for that particular factorization object.
@@ -27,8 +61,6 @@ PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetZeroPivot"
 /*@
    PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
 
@@ -58,8 +90,6 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetShiftType"
 /*@
    PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
@@ -90,8 +120,6 @@ PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetShiftAmount"
 /*@
    PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
@@ -122,8 +150,6 @@ PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetDropTolerance"
 /*
    PCFactorSetDropTolerance - The preconditioner will use an ILU
    based on a drop tolerance. (Under development)
@@ -159,8 +185,84 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetLevels"
+/*@
+   PCFactorGetZeroPivot - Gets the tolerance used to define a zero privot
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  pivot - the tolerance
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetZeroPivot()
+@*/
+PetscErrorCode  PCFactorGetZeroPivot(PC pc,PetscReal *pivot)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetZeroPivot_C",(PC,PetscReal*),(pc,pivot));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCFactorGetShiftAmount - Gets the tolerance used to define a zero privot
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  shift - how much to shift the diagonal entry
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetShiftAmount(), PCFactorSetShiftType(), PCFactorGetShiftType()
+@*/
+PetscErrorCode  PCFactorGetShiftAmount(PC pc,PetscReal *shift)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetShiftAmount_C",(PC,PetscReal*),(pc,shift));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCFactorGetShiftType - Gets the type of shift, if any, done when a zero pivot is detected
+
+   Not Collective
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, or MAT_SHIFT_INBLOCKS
+
+   Level: intermediate
+
+
+.seealso: PCFactorSetShiftType(), MatFactorShiftType, PCFactorSetShiftAmount(), PCFactorGetShiftAmount()
+@*/
+PetscErrorCode  PCFactorGetShiftType(PC pc,MatFactorShiftType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetShiftType_C",(PC,MatFactorShiftType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
    PCFactorGetLevels - Gets the number of levels of fill to use.
 
@@ -186,8 +288,6 @@ PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetLevels"
 /*@
    PCFactorSetLevels - Sets the number of levels of fill to use.
 
@@ -216,8 +316,6 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetAllowDiagonalFill"
 /*@
    PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be
    treated as level 0 fill even if there is no non-zero location.
@@ -251,8 +349,6 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetAllowDiagonalFill"
 /*@
    PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
        treated as level 0 fill even if there is no non-zero location.
@@ -288,8 +384,6 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal"
 /*@
    PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
 
@@ -319,8 +413,6 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetMatSolverPackage"
 /*@C
    PCFactorSetMatSolverPackage - sets the software that is used to perform the factorization
 
@@ -354,8 +446,6 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetMatSolverPackage"
 /*@C
    PCFactorGetMatSolverPackage - gets the software that is used to perform the factorization
 
@@ -390,8 +480,6 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetFill"
 /*@
    PCFactorSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -430,8 +518,6 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetUseInPlace"
 /*@
    PCFactorSetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems.
@@ -473,8 +559,6 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetUseInPlace"
 /*@
    PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
 
@@ -502,8 +586,6 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetMatOrderingType"
 /*@C
     PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
     be used in the LU factorization.
@@ -536,8 +618,6 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetColumnPivot"
 /*@
     PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization.
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
@@ -567,8 +647,6 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetPivotInBlocks"
 /*@
     PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
       with BAIJ or SBAIJ matrices
@@ -597,10 +675,8 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetReuseFill"
 /*@
-   PCFactorSetReuseFill - When matrices with same different nonzero structure are factored,
+   PCFactorSetReuseFill - When matrices with different nonzero structure are factored,
    this causes later ones to use the fill ratio computed in the initial factorization.
 
    Logically Collective on PC
@@ -626,5 +702,41 @@ PetscErrorCode  PCFactorSetReuseFill(PC pc,PetscBool flag)
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   PetscValidLogicalCollectiveBool(pc,flag,2);
   ierr = PetscTryMethod(pc,"PCFactorSetReuseFill_C",(PC,PetscBool),(pc,flag));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCFactorInitialize(PC pc)
+{
+  PetscErrorCode ierr;
+  PC_Factor       *fact = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  ierr                       = MatFactorInfoInitialize(&fact->info);CHKERRQ(ierr);
+  fact->info.shifttype       = (PetscReal)MAT_SHIFT_NONE;
+  fact->info.shiftamount     = 100.0*PETSC_MACHINE_EPSILON;
+  fact->info.zeropivot       = 100.0*PETSC_MACHINE_EPSILON;
+  fact->info.pivotinblocks   = 1.0;
+  pc->ops->getfactoredmatrix = PCFactorGetMatrix_Factor;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetZeroPivot_C",PCFactorGetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftType_C",PCFactorGetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetShiftAmount_C",PCFactorGetShiftAmount_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",PCFactorSetAllowDiagonalFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetAllowDiagonalFill_C",PCFactorGetAllowDiagonalFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",PCFactorSetPivotInBlocks_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Factor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

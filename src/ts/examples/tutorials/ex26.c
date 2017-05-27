@@ -88,8 +88,6 @@ typedef struct {
 
 PetscErrorCode FormInitialSolution(TS,Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx            user;             /* user-defined work context */
@@ -103,7 +101,9 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -177,8 +177,6 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 /*
    FormInitialSolution - Forms initial approximation.
 
@@ -238,8 +236,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunctionLocal"
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,Field **xdot,Field **f,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;

@@ -2,93 +2,54 @@
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#include "petsc/finclude/petsckspdef.h"
+#if !defined (__PETSCKSPDEF_H)
+#define __PETSCKSPDEF_H
 
-!
-!  CG Types
-!
-      PetscEnum KSP_CG_SYMMETRIC
-      PetscEnum KSP_CG_HERMITIAN
-      parameter (KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1)
+#include "petsc/finclude/petscpc.h"
 
-      PetscEnum KSP_FCD_TRUNC_TYPE_STANDARD
-      PetscEnum KSP_FCD_TRUNC_TYPE_NOTAY
-      parameter (KSP_FCD_TRUNC_TYPE_STANDARD=0)
-      parameter (KSP_FCD_TRUNC_TYPE_NOTAY=1)
+#define KSP type(tKSP)
+#define KSPFischerGuess type(tKSPFischerGuess)
 
-      PetscEnum KSP_CONVERGED_RTOL
-      PetscEnum KSP_CONVERGED_ATOL
-      PetscEnum KSP_CONVERGED_ITS
-      PetscEnum KSP_DIVERGED_NULL
-      PetscEnum KSP_DIVERGED_ITS
-      PetscEnum KSP_DIVERGED_DTOL
-      PetscEnum KSP_DIVERGED_BREAKDOWN
-      PetscEnum KSP_CONVERGED_ITERATING
-      PetscEnum KSP_CONVERGED_CG_NEG_CURVE
-      PetscEnum KSP_CONVERGED_CG_CONSTRAINED
-      PetscEnum KSP_CONVERGED_STEP_LENGTH
-      PetscEnum KSP_CONVERGED_HAPPY_BREAKDOWN
-      PetscEnum KSP_DIVERGED_BREAKDOWN_BICG
-      PetscEnum KSP_DIVERGED_NONSYMMETRIC
-      PetscEnum KSP_DIVERGED_INDEFINITE_PC
-      PetscEnum KSP_DIVERGED_NANORINF
-      PetscEnum KSP_DIVERGED_INDEFINITE_MAT
-      PetscEnum KSP_DIVERGED_PCSETUP_FAILED
-
-      parameter (KSP_CONVERGED_RTOL            = 2)
-      parameter (KSP_CONVERGED_ATOL            = 3)
-      parameter (KSP_CONVERGED_ITS             = 4)
-      parameter (KSP_CONVERGED_CG_NEG_CURVE    = 5)
-      parameter (KSP_CONVERGED_CG_CONSTRAINED  = 6)
-      parameter (KSP_CONVERGED_STEP_LENGTH     = 7)
-      parameter (KSP_CONVERGED_HAPPY_BREAKDOWN = 8)
-
-      parameter (KSP_DIVERGED_NULL           = -2)
-      parameter (KSP_DIVERGED_ITS            = -3)
-      parameter (KSP_DIVERGED_DTOL           = -4)
-      parameter (KSP_DIVERGED_BREAKDOWN      = -5)
-      parameter (KSP_DIVERGED_BREAKDOWN_BICG = -6)
-      parameter (KSP_DIVERGED_NONSYMMETRIC   = -7)
-      parameter (KSP_DIVERGED_INDEFINITE_PC  = -8)
-      parameter (KSP_DIVERGED_NANORINF       = -9)
-      parameter (KSP_DIVERGED_INDEFINITE_MAT = -10)
-      parameter (KSP_DIVERGED_PCSETUP_FAILED = -11)
-
-      parameter (KSP_CONVERGED_ITERATING = 0)
+#define KSPType character*(80)
+#define KSPCGType PetscEnum
+#define KSPFCDTruncationType PetscEnum
+#define KSPConvergedReason PetscEnum
+#define KSPNormType PetscEnum
+#define KSPGMRESCGSRefinementType PetscEnum
+#define MatSchurComplementAinvType PetscEnum
 !
-!  Possible arguments to KSPSetNormType()
+!  Various Krylov subspace methods
 !
-      PetscEnum KSP_NORM_NONE
-      PetscEnum KSP_NORM_PRECONDITIONED
-      PetscEnum KSP_NORM_UNPRECONDITIONED
-      PetscEnum KSP_NORM_NATURAL
-
-      parameter (KSP_NORM_NONE=0)
-      parameter (KSP_NORM_PRECONDITIONED=1)
-      parameter (KSP_NORM_UNPRECONDITIONED=2)
-      parameter (KSP_NORM_NATURAL=3)
-!
-!   Possible arguments to KSPMonitorSet()
-!
-      external KSPCONVERGEDDEFAULT
-      external KSPMONITORDEFAULT
-      external KSPMONITORTRUERESIDUALNORM
-      external KSPMONITORLGRESIDUALNORM
-      external KSPMONITORLGTRUERESIDUALNORM
-      external KSPMONITORSOLUTION
-      external KSPMONITORSINGULARVALUE
-      external KSPGMRESMONITORKRYLOV
-!
-!   Possible arguments to KSPGMRESSetRefinementType()
-!
-      PetscEnum KSP_GMRES_CGS_REFINE_NEVER
-      PetscEnum KSP_GMRES_CGS_REFINE_IFNEEDED
-      PetscEnum KSP_GMRES_CGS_REFINE_ALWAYS
-!
-      parameter (KSP_GMRES_CGS_REFINE_NEVER = 0)
-      parameter (KSP_GMRES_CGS_REFINE_IFNEEDED = 1)
-      parameter (KSP_GMRES_CGS_REFINE_ALWAYS = 2)
-!
-!  End of Fortran include file for the KSP package in PETSc
-!
-
+#define KSPRICHARDSON 'richardson'
+#define KSPCHEBYSHEV 'chebyshev'
+#define KSPCG 'cg'
+#define KSPCGNE 'cgne'
+#define KSPSTCG 'stcg'
+#define KSPGLTR 'gltr'
+#define KSPFCG 'fcg'
+#define KSPGMRES 'gmres'
+#define KSPFGMRES 'fgmres'
+#define KSPLGMRES 'lgmres'
+#define KSPDGMRES 'dgmres'
+#define KSPPGMRES 'pgmres'
+#define KSPTCQMR 'tcqmr'
+#define KSPBCGS 'bcgs'
+#define KSPIBCGS 'ibcgs'
+#define KSPFBCGS  'fbcgs'
+#define KSPFBCGSR 'fbcgsr'
+#define KSPBCGSL 'bcgsl'
+#define KSPCGS 'cgs'
+#define KSPTFQMR 'tfqmr'
+#define KSPCR 'cr'
+#define KSPLSQR 'lsqr'
+#define KSPPREONLY 'preonly'
+#define KSPQCG 'qcg'
+#define KSPBICG 'bicg'
+#define KSPMINRES 'minres'
+#define KSPSYMMLQ 'symmlq'
+#define KSPLCD 'lcd'
+#define KSPPYTHON 'python'
+#define KSPGCR 'gcr'
+#define KSPTSIRM 'tsirm'
+#define KSPCGLS 'cgls'
+#endif

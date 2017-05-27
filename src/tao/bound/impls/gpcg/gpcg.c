@@ -6,8 +6,6 @@ static PetscErrorCode GPCGGradProjections(Tao tao);
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_GPCG"
 static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
@@ -30,8 +28,6 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_GPCG"
 static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
@@ -48,8 +44,6 @@ static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_GPCG"
 static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
@@ -72,8 +66,6 @@ static PetscErrorCode TaoView_GPCG(Tao tao, PetscViewer viewer)
    Compute f=0.5 * x'Hx + b'x + c
            g=Hx + b
 */
-#undef __FUNCT__
-#define __FUNCT__ "GPCGObjectiveAndGradient"
 static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void*tptr)
 {
   Tao            tao = (Tao)tptr;
@@ -91,8 +83,6 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_GPCG"
 static PetscErrorCode TaoSetup_GPCG(Tao tao)
 {
   PetscErrorCode ierr;
@@ -124,11 +114,11 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   ierr=VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
-        ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGNASH);CHKERRQ(ierr);
       } else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-        ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
       } else {
-        ierr = KSPSetType(tao->ksp,KSPGLTR);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPCGGLTR);CHKERRQ(ierr);
       }
       if (tao->ksp->ops->setfromoptions) {
         (*tao->ksp->ops->setfromoptions)(tao->ksp);
@@ -139,8 +129,6 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_GPCG"
 static PetscErrorCode TaoSolve_GPCG(Tao tao)
 {
   TAO_GPCG                     *gpcg = (TAO_GPCG *)tao->data;
@@ -247,8 +235,6 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GPCGGradProjections"
 static PetscErrorCode GPCGGradProjections(Tao tao)
 {
   PetscErrorCode                 ierr;
@@ -298,8 +284,6 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   PetscFunctionReturn(0);
 } /* End gradient projections */
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDual_GPCG"
 static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
@@ -330,8 +314,6 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 
   Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_GPCG"
 PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 {
   TAO_GPCG       *gpcg;
@@ -378,7 +360,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);

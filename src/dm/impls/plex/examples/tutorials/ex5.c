@@ -8,8 +8,6 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -25,8 +23,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm, dmdist, dmnew;
@@ -70,3 +66,18 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Idempotence of saving/loading
+  test:
+    suffix: 0
+    requires: exodusii broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 1
+    requires: exodusii broken
+    nsize: 2
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+
+TEST*/

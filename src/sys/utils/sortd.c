@@ -9,8 +9,6 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortReal_Private"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
@@ -36,8 +34,6 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortReal"
 /*@
    PetscSortReal - Sorts an array of doubles in place in increasing order.
 
@@ -74,8 +70,6 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortRemoveDupsReal"
 /*@
    PetscSortRemoveDupsReal - Sorts an array of doubles in place in increasing order removes all duplicate entries
 
@@ -110,8 +104,6 @@ PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortSplit"
 /*@
    PetscSortSplit - Quick-sort split of an array of PetscScalars in place.
 
@@ -148,10 +140,12 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 
   while (1) {
     mid    = first;
-    abskey = (d = a[mid],PetscAbsScalar(d));
+    d      = a[mid];
+    abskey = PetscAbsScalar(d);
     i      = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
+      d = a[j];
+      if (PetscAbsScalar(d) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];
@@ -173,8 +167,6 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortSplitReal"
 /*@
    PetscSortSplitReal - Quick-sort split of an array of PetscReals in place.
 
@@ -211,10 +203,12 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
 
   while (1) {
     mid    = first;
-    abskey = (d = a[mid],PetscAbsReal(d));
+    d      = a[mid];
+    abskey = PetscAbsReal(d);
     i      = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsReal(d)) >= abskey) {
+      d = a[j];
+      if (PetscAbsReal(d) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];

@@ -76,7 +76,7 @@ struct _VecOps {
   PetscErrorCode (*abs)(Vec);
   PetscErrorCode (*exp)(Vec);
   PetscErrorCode (*log)(Vec);
-  PetscErrorCode (*shift)(Vec);
+  PetscErrorCode (*shift)(Vec,PetscScalar);
   PetscErrorCode (*create)(Vec);
   PetscErrorCode (*stridegather)(Vec,PetscInt,Vec,InsertMode);
   PetscErrorCode (*stridescatter)(Vec,PetscInt,Vec,InsertMode);
@@ -376,8 +376,33 @@ PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
+#define VecCheckSameLocalSize(x,ar1,y,ar2)                                 \
+  if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %D != parameter # %d local size %D", ar1,(x)->map->n, ar2,(y)->map->n);
+
+#define VecCheckSameSize(x,ar1,y,ar2)                                      \
+  if ((x)->map->N != (y)->map->N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d %D != paramter # %d %D", ar1,(x)->map->N, ar2,(y)->map->N); \
+  if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d %D != parameter # %d %D", ar1,(x)->map->n, ar2,(y)->map->n);
+
+typedef struct _VecTaggerOps *VecTaggerOps;
+struct _VecTaggerOps {
+  PetscErrorCode (*create) (VecTagger);
+  PetscErrorCode (*destroy) (VecTagger);
+  PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
+  PetscErrorCode (*setup) (VecTagger);
+  PetscErrorCode (*view) (VecTagger,PetscViewer);
+  PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **);
+  PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
+};
+struct _p_VecTagger {
+  PETSCHEADER(struct _VecTaggerOps);
+  void      *data;
+  PetscInt  blocksize;
+  PetscBool invert;
+  PetscBool setupcalled;
+};
+
+PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*);
 
 #endif

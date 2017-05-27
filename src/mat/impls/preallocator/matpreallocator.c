@@ -1,13 +1,11 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
-#include <../src/sys/utils/hash.h>
+#include <petsc/private/hash.h>
 
 typedef struct {
   PetscHashJK ht;
   PetscInt   *dnz, *onz;
 } Mat_Preallocator;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Preallocator"
 PetscErrorCode MatDestroy_Preallocator(Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *) A->data;
@@ -23,8 +21,6 @@ PetscErrorCode MatDestroy_Preallocator(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_Preallocator"
 PetscErrorCode MatSetUp_Preallocator(Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *) A->data;
@@ -42,8 +38,6 @@ PetscErrorCode MatSetUp_Preallocator(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_Preallocator"
 PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_Preallocator *p = (Mat_Preallocator *) A->data;
@@ -78,8 +72,6 @@ PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscInt *rows
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyBegin_Preallocator"
 PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
 {
   PetscInt       nstash, reallocs;
@@ -93,8 +85,6 @@ PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_Preallocator"
 PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
 {
   PetscScalar   *val;
@@ -124,24 +114,18 @@ PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_Preallocator"
 PetscErrorCode MatView_Preallocator(Mat A, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_Preallocator"
 PetscErrorCode MatSetOption_Preallocator(Mat A, MatOption op, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPreallocatorPreallocate_Preallocator"
 PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *) mat->data;
@@ -156,8 +140,6 @@ PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPreallocatorPreallocate"
 /*@
   MatPreallocatorPreallocate - Preallocates the input matrix, optionally filling it with zeros
 
@@ -198,8 +180,6 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Preallocator"
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
 {
   Mat_Preallocator *p;

@@ -2,8 +2,6 @@
 #include <petsc/private/bagimpl.h>     /*I  "petscbag.h"   I*/
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegister_Private"
 /*
       Adds item to the linked list in a bag
 */
@@ -26,8 +24,6 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterEnum"
 /*@C
    PetscBagRegisterEnum - add an enum value to the bag
 
@@ -82,8 +78,6 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const *l
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterIntArray"
 /*@C
    PetscBagRegisterIntArray - add an integer value to the bag
 
@@ -136,8 +130,6 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterRealArray"
 /*@C
    PetscBagRegisterRealArray - add an real array to the bag
 
@@ -190,8 +182,6 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterInt"
 /*@C
    PetscBagRegisterInt - add an integer value to the bag
 
@@ -239,8 +229,6 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterInt64"
 /*@C
    PetscBagRegisterInt64 - add an integer value to the bag
 
@@ -291,8 +279,6 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag,void *addr,PetscInt64 mdefault
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscBagRegisterBoolArray"
 /*@C
    PetscBagRegisterBoolArray - add a n logical values to the bag
 
@@ -345,8 +331,6 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag,void *addr,PetscInt msize,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterString"
 /*@C
    PetscBagRegisterString - add a string value to the bag
 
@@ -399,8 +383,6 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterReal"
 /*@C
    PetscBagRegisterReal - add a real value to the bag
 
@@ -448,8 +430,6 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterScalar"
 /*@C
    PetscBagRegisterScalar - add a real or complex number value to the bag
 
@@ -498,8 +478,6 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagRegisterBool"
 /*@C
    PetscBagRegisterBool - add a logical value to the bag
 
@@ -550,8 +528,6 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool mdefault,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagDestroy"
 /*@C
    PetscBagDestroy - Destroys a bag values
 
@@ -586,8 +562,6 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagSetFromOptions"
 /*@
    PetscBagSetFromOptions - Allows setting options from a bag
 
@@ -661,8 +635,6 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagView"
 /*@C
    PetscBagView - Views a bag of values as either ASCII text or a binary file
 
@@ -772,7 +744,7 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 
       ierr = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype,PETSC_FALSE);CHKERRQ(ierr);
       if (dtype == PETSC_ENUM) {
-        ierr = PetscViewerBinaryWriteStringArray(view,(char**)nitem->list);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryWriteStringArray(view,(const char* const*)nitem->list);CHKERRQ(ierr);
       }
       nitem = nitem->next;
     }
@@ -790,8 +762,6 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagLoad"
 /*@C
    PetscBagLoad - Loads a bag of values from a binary file
 
@@ -866,9 +836,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagCreate"
-/*@
+/*@C
     PetscBagCreate - Create a bag of values
 
   Collective on MPI_Comm
@@ -908,8 +876,6 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagSetName"
 /*@C
     PetscBagSetName - Sets the name of a bag of values
 
@@ -938,8 +904,6 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagGetName"
 /*@C
     PetscBagGetName - Gets the name of a bag of values
 
@@ -964,8 +928,6 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagGetData"
 /*@C
     PetscBagGetData - Gives back the user - access to memory that
     should be used for storing user-data-structure
@@ -991,8 +953,6 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagSetOptionsPrefix"
 /*@C
   PetscBagSetOptionsPrefix - Sets the prefix used for searching for all
   PetscBag items in the options database.
@@ -1026,8 +986,6 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBagGetNames"
 /*@C
   PetscBagGetNames - Get the names of all entries in the bag
 

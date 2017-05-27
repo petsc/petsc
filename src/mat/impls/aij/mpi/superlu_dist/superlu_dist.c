@@ -51,8 +51,6 @@ typedef struct {
 } Mat_SuperLU_DIST;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluDistGetDiagU_SuperLU_DIST"
 PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
 {
   Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->data;
@@ -66,8 +64,6 @@ PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluDistGetDiagU"
 PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
 {
   PetscErrorCode    ierr;
@@ -78,8 +74,6 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SuperLU_DIST"
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
@@ -116,8 +110,6 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SuperLU_DIST"
 static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->data;
@@ -135,7 +127,9 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
   ierr = PetscCitationsRegister("@article{lidemmel03,\n  author = {Xiaoye S. Li and James W. Demmel},\n  title = {{SuperLU_DIST}: A Scalable Distributed-Memory Sparse Direct\n           Solver for Unsymmetric Linear Systems},\n  journal = {ACM Trans. Mathematical Software},\n  volume = {29},\n  number = {2},\n  pages = {110-140},\n  year = 2003\n}\n",&cite);CHKERRQ(ierr);
+
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size > 1 && lu->MatInputMode == GLOBAL) {
     /* global mat input, convert b to x_seq */
@@ -160,8 +154,6 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecCopy(b_mpi,x);CHKERRQ(ierr);
     ierr = VecGetArray(x,&bptr);CHKERRQ(ierr);
   }
-
-  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
 
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) {
@@ -198,8 +190,6 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_SuperLU_DIST"
 static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->data;
@@ -264,8 +254,6 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat              *tseq,A_seq = NULL;
@@ -291,7 +279,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
     if (size > 1) { /* convert mpi A to seq mat A */
       ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
-      ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
       ierr = ISDestroy(&isrow);CHKERRQ(ierr);
 
       A_seq = *tseq;
@@ -354,12 +342,23 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
-      SUPERLU_FREE((void*)lu->A_sup.Store);
       if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
-      } else {
-        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct)); /* Deallocate storage associated with the L and U matrices. */
+      } else if (lu->FactPattern == SamePattern) {
+        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct)); /* Deallocate L and U matrices. */
         lu->options.Fact = SamePattern;
+      } else if (lu->FactPattern == DOFACT) {
+        PetscStackCall("SuperLU_DIST:Destroy_CompRowLoc_Matrix_dist",Destroy_CompRowLoc_Matrix_dist(&lu->A_sup));
+        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct));
+        lu->options.Fact = DOFACT;
+
+#if defined(PETSC_USE_COMPLEX)
+      PetscStackCall("SuperLU_DIST:zallocateA_dist",zallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
+#else
+      PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
+#endif
+      } else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"options.Fact must be one of SamePattern SamePattern_SameRowPerm DOFACT");
       }
     }
     nz = 0;
@@ -397,7 +396,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
         lu->col[nz]   = rstart + ajj[j];
         lu->val[nz++] = *av++;
       }
-       
+
       /* B part, larger col index */
       for (j=jB; j<countB; j++) {
         lu->col[nz]   = garray[bjj[j]];
@@ -405,11 +404,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       }
     }
     lu->row[m] = nz;
+
+    if (lu->options.Fact == DOFACT) {
 #if defined(PETSC_USE_COMPLEX)
-    PetscStackCall("SuperLU_DIST:zCreate_CompRowLoc_Matrix_dist",zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_Z, SLU_GE));
+      PetscStackCall("SuperLU_DIST:zCreate_CompRowLoc_Matrix_dist",zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_Z, SLU_GE));
 #else
-    PetscStackCall("SuperLU_DIST:dCreate_CompRowLoc_Matrix_dist",dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE));
+      PetscStackCall("SuperLU_DIST:dCreate_CompRowLoc_Matrix_dist",dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE));
 #endif
+    }
   }
 
   /* Factor the matrix. */
@@ -433,14 +435,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
     } else {
       if (sinfo <= lu->A_sup.ncol) {
-        F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         ierr = PetscInfo1(F,"U(i,i) is exactly zero, i= %D\n",sinfo);CHKERRQ(ierr);
       } else if (sinfo > lu->A_sup.ncol) {
         /* 
          number of bytes allocated when memory allocation
          failure occurred, plus A->ncol.
          */
-        F->errortype = MAT_FACTOR_OUTMEMORY;
+        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
         ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
       }
     }
@@ -455,7 +457,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   if (lu->options.PrintStat) {
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
-  PStatFree(&stat);
+  PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
   (F)->assembled    = PETSC_TRUE;
   (F)->preallocated = PETSC_TRUE;
   lu->options.Fact  = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
@@ -463,8 +465,6 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 }
 
 /* Note the Petsc r and c permutations are ignored */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
 static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
@@ -484,8 +484,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_aij_superlu_dist"
 static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -493,8 +491,6 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_SuperLU_DIST"
 static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST       *lu=(Mat_SuperLU_DIST*)A->data;
@@ -539,14 +535,16 @@ static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 
   if (lu->FactPattern == SamePattern) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n");CHKERRQ(ierr);
-  } else {
+  } else if (lu->FactPattern == SamePattern_SameRowPerm) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern_SameRowPerm\n");CHKERRQ(ierr);
+  } else if (lu->FactPattern == DOFACT) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization DOFACT\n");CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown factorization pattern");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SuperLU_DIST"
 static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -564,8 +562,6 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_superlu_dist"
 static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat                    B;
@@ -577,7 +573,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscBool              flg;
   const char             *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
   const char             *rowperm[]     = {"LargeDiag","NATURAL"};
-  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
+  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm","DOFACT"};
   PetscBool              set;
 
   PetscFunctionBegin;
@@ -597,7 +593,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSUPERLU_DIST,&B->solvertype);CHKERRQ(ierr);
 
-  ierr     = PetscNewLog(B,&lu);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->data = lu;
 
   /* Set the default input options:
@@ -695,8 +691,8 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
     }
   }
 
-  lu->FactPattern = SamePattern; 
-  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
+  lu->FactPattern = SamePattern;
+  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -704,6 +700,9 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       break;
     case 1:
       lu->FactPattern = SamePattern_SameRowPerm;
+      break;
+    case 2:
+      lu->FactPattern = DOFACT;
       break;
     }
   }
@@ -732,8 +731,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_SuperLU_DIST"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;
@@ -760,7 +757,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 . -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
 . -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm
+. -mat_superlu_dist_fact <SamePattern> - (choose one of) SamePattern SamePattern_SameRowPerm DOFACT
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information
 
@@ -771,4 +768,3 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 .seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
 
 M*/
-

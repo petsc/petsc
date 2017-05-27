@@ -6,11 +6,10 @@
 !   matrix, and prints out the contents.
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
+
       PetscErrorCode ierr
       PetscInt row,col,ten
       PetscMPIInt rank
@@ -19,6 +18,10 @@
       PetscViewer  view
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 !

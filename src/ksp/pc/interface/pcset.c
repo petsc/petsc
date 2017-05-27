@@ -12,8 +12,6 @@ PetscBool PCRegisterAllCalled = PETSC_FALSE;
 */
 PetscFunctionList PCList = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetType"
 /*@C
    PCSetType - Builds PC for a particular preconditioner type
 
@@ -89,8 +87,6 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -121,8 +117,6 @@ PetscErrorCode  PCGetType(PC pc,PCType *type)
 
 extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be
@@ -185,8 +179,6 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetDM"
 /*@
    PCSetDM - Sets the DM that may be used by some preconditioners
 
@@ -215,8 +207,6 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGetDM"
 /*@
    PCGetDM - Gets the DM that may be used by some preconditioners
 
@@ -241,8 +231,6 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetApplicationContext"
 /*@
    PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
@@ -266,8 +254,6 @@ PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGetApplicationContext"
 /*@
    PCGetApplicationContext - Gets the user-defined context for the linear solver.
 

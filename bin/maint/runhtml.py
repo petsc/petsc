@@ -247,6 +247,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "warning: loop not entered at top",
                           "is deprecated",
                           "is superseded",
+                          "Warning: You are using gcc version '4.8.4'. The version of gcc is not supported. The version currently supported with MEX is '4.7.x'.",
                           "warning: no debug symbols in executable (-arch x86_64)",
                           "(aka 'const double *') doesn't match specified 'MPI' type tag that requires 'double *'",
                           "(aka 'const int *') doesn't match specified 'MPI' type tag that requires 'int *'",
@@ -256,6 +257,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "Warning: Cannot tell what pointer points to, assuming global memory space",
                           "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
                           "warning: linker scope was specified more than once",
+                          "cl : Command line warning D9024 : unrecognized source file type",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
         if re.search(r'[Ww]arning[: ]', line):
@@ -331,6 +333,8 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       for line in open(logfile_examples_full):
         if write_to_summary:
           examples_summary_file.write(line)
+        if re.search(r'not ok', line):
+          example_problem_num += 1
         if re.search(r'[Pp]ossible [Pp]roblem', line):
           example_problem_num += 1
 

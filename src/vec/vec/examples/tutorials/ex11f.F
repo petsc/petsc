@@ -7,21 +7,9 @@
 !T*/
 
       program main
-      implicit none
-
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!  Additional include statements may be needed if using additional
-!  PETSc routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
-!
+      use petscvec
+      implicit none
 
       Vec               x
       PetscReal         norm
@@ -32,11 +20,15 @@
       PetscScalar       one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       n   = 20
       one = 1.0
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                        '-n',n,flg,ierr)
 
 !

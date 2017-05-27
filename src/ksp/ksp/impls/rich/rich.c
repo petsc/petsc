@@ -4,8 +4,6 @@
 */
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>     /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_Richardson"
 PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -20,8 +18,6 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_Richardson"
 PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -72,8 +68,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   } else if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !nullsp) {
     ierr  = PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson() because scale factor is not 1.0\n");CHKERRQ(ierr);
   }
-
-  scale = richardsonP->scale;
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
@@ -134,7 +128,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         if (ksp->reason) break;
       }
 
-      ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
+      ierr = VecAXPY(x,richardsonP->scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ksp->its++;
 
       if (i+1 < maxit || ksp->normtype != KSP_NORM_NONE) {
@@ -167,8 +161,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_Richardson"
 PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -187,8 +179,6 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_Richardson"
 PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
@@ -206,8 +196,6 @@ PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_Richardson"
 PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -218,8 +206,6 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetScale_Richardson"
 static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
@@ -230,8 +216,6 @@ static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
 static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
 {
   KSP_Richardson *richardsonP;
@@ -278,8 +262,6 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_Richardson"
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -291,6 +273,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);  
 
   ksp->ops->setup          = KSPSetUp_Richardson;
   ksp->ops->solve          = KSPSolve_Richardson;

@@ -5,8 +5,6 @@
 
 #include <../src/vec/vec/impls/dvecimpl.h>          /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeq"
 /*@
    VecCreateSeq - Creates a standard, sequential array-style vector.
 

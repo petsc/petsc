@@ -51,8 +51,8 @@ typedef struct {
 
   PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
   PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
-
-  PetscBool             negativeMNP; /* used in DMSetFromOptions_DA() to check if the initial values provided in code can be changed with options database */
+                        /* if the refinement is done differently on different levels */
+  PetscInt              refine_x_hier_n,*refine_x_hier,refine_y_hier_n,*refine_y_hier,refine_z_hier_n,*refine_z_hier;
 
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
   void                  *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];

@@ -1,0 +1,74 @@
+Vec Object: Vec to Tag 3 MPI processes
+  type: mpi
+Process [0]
+0.720032
+0.061794
+0.0100223
+0.144639
+Process [1]
+0.541144
+0.529699
+0.848716
+0.503472
+Process [2]
+0.362256
+0.997603
+0.68741
+0.862305
+VecTagger Object: 3 MPI processes
+  type: cdf
+  Block size: 1
+   cdf box=[  0.25,0.75  ]
+  CDF computation method: gather
+Num boxes: 1
+  0:   [0.362256,0.720032]  
+IS Object: Tagged IS (block global) 3 MPI processes
+  type: block
+Block size 1
+Number of block indices in set 1
+The first indices of each block are
+Block 0 Index 0
+Block size 1
+Number of block indices in set 3
+The first indices of each block are
+Block 0 Index 4
+Block 1 Index 5
+Block 2 Index 7
+Block size 1
+Number of block indices in set 2
+The first indices of each block are
+Block 0 Index 8
+Block 1 Index 10
+IS Object: Untagged IS (global) 3 MPI processes
+  type: general
+[0] Number of indices in set 3
+[0] 0 1
+[0] 1 2
+[0] 2 3
+[1] Number of indices in set 1
+[1] 0 6
+[2] Number of indices in set 2
+[2] 0 9
+[2] 1 11
+Vec Object: Tagged selection 3 MPI processes
+  type: mpi
+Process [0]
+0.720032
+Process [1]
+0.541144
+0.529699
+0.503472
+Process [2]
+0.362256
+0.68741
+Vec Object: Untagged selection 3 MPI processes
+  type: mpi
+Process [0]
+0.061794
+0.0100223
+0.144639
+Process [1]
+0.848716
+Process [2]
+0.997603
+0.862305

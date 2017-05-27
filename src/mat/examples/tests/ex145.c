@@ -3,8 +3,6 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for an 
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,F,B,X,C,Aher,G;
@@ -12,7 +10,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*barray,rval;
-  PetscReal      norm,tol=1.e-12;
+  PetscReal      norm,tol=1.e-11;
   PetscMPIInt    size,rank;
   PetscRandom    rand;
   const PetscInt *rows,*cols;

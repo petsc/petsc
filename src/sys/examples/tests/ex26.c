@@ -1,10 +1,8 @@
 static char help[] = "Test scalability of PetscHash.\n\n";
 
 #include <petscsys.h>
-#include <../src/sys/utils/hash.h>
+#include <petsc/private/hash.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscHashIJ    table;

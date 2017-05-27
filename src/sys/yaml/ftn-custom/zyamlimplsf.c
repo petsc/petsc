@@ -12,7 +12,7 @@
 #define petscoptionsinsertfileyaml_             petscoptionsinsertfileyaml
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfileyaml_(MPI_Fint *comm,CHAR file PETSC_MIXED_LEN(len),PetscBool  *require,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscoptionsinsertfileyaml_(MPI_Fint *comm,char* file PETSC_MIXED_LEN(len),PetscBool  *require,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 

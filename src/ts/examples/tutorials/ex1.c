@@ -48,8 +48,6 @@ typedef struct {
 */
 extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                 /* timestepping context */
@@ -186,8 +184,6 @@ int main(int argc,char **argv)
 
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 {
   PetscInt       i,j,row,mx,my;
@@ -221,8 +217,6 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   AppCtx            *user = (AppCtx*)ptr;
@@ -268,8 +262,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    Calculate the Jacobian matrix J(X,t).
 

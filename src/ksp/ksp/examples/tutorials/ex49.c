@@ -194,8 +194,6 @@ static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscS
 
 
 /* procs to the left claim the ghost node as their element */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLocalElementSize"
 static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,PetscInt *mzl)
 {
   PetscErrorCode ierr;
@@ -221,8 +219,6 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementCorners"
 static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,PetscInt *sz,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
   PetscErrorCode ierr;
@@ -249,8 +245,6 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementOwnershipRanges2d"
 static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,PetscInt **_ly)
 {
   PetscErrorCode ierr;
@@ -317,8 +311,6 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoordViewGnuplot2d"
 static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
 {
   DM             cda;
@@ -356,8 +348,6 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAViewGnuplot2d"
 static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
   DM             cda;
@@ -423,8 +413,6 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAViewCoefficientsGnuplot2d"
 static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
   DM                     cda;
@@ -577,8 +565,6 @@ static void FormMomentumRhsQ1(PetscScalar Fe[],PetscScalar coords[],PetscScalar 
  The unknown is a vector quantity.
  The s[].c is used to indicate the degree of freedom.
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementEqnums_u"
 static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[],PetscInt i,PetscInt j)
 {
   PetscFunctionBeginUser;
@@ -601,8 +587,6 @@ static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[],PetscInt i,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetElementCoords"
 static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt ej,PetscScalar el_coords[])
 {
   PetscFunctionBeginUser;
@@ -614,8 +598,6 @@ static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AssembleA_Elasticity"
 static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec properties)
 {
   DM                     cda;
@@ -675,8 +657,6 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_ADD_VALUES"
 static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **fields_F,MatStencil u_eqn[],PetscScalar Fe_u[])
 {
   PetscInt n;
@@ -689,8 +669,6 @@ static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **field
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AssembleF_Elasticity"
 static PetscErrorCode AssembleF_Elasticity(Vec F,DM elas_da,DM properties_da,Vec properties)
 {
   DM                     cda;
@@ -761,8 +739,6 @@ static PetscErrorCode AssembleF_Elasticity(Vec F,DM elas_da,DM properties_da,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "solve_elasticity_2d"
 static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 {
   DM                     elas_da,da_prop;
@@ -799,8 +775,10 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   u_dof         = U_DOFS; /* Vx, Vy - velocities */
   dof           = u_dof;
   stencil_width = 1;
-  ierr          = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                               mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&elas_da);CHKERRQ(ierr);
+  ierr          = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&elas_da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(elas_da);CHKERRQ(ierr);
+  ierr = DMSetUp(elas_da);CHKERRQ(ierr);
+
   ierr = DMDASetFieldName(elas_da,0,"Ux");CHKERRQ(ierr);
   ierr = DMDASetFieldName(elas_da,1,"Uy");CHKERRQ(ierr);
 
@@ -818,8 +796,10 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
 
   prop_dof           = (PetscInt)(sizeof(GaussPointCoefficients)/sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
-  ierr               = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                                    mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop);CHKERRQ(ierr);
+  ierr               = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da_prop);CHKERRQ(ierr);
+  ierr = DMSetUp(da_prop);CHKERRQ(ierr);
+
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
 
@@ -1093,8 +1073,6 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -1111,8 +1089,6 @@ int main(int argc,char **args)
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "BCApply_EAST"
 static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
   DM                     cda;
@@ -1181,8 +1157,6 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCApply_WEST"
 static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
   DM                     cda;
@@ -1251,8 +1225,6 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDABCApplyCompression"
 static PetscErrorCode DMDABCApplyCompression(DM elas_da,Mat A,Vec f)
 {
   PetscErrorCode ierr;
@@ -1265,8 +1237,6 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da,Mat A,Vec f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Orthogonalize"
 static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
 {
   PetscInt       i,j;
@@ -1275,7 +1245,7 @@ static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-  ierr = VecNormalize(vecs[i],PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
      for (j=i+1; j<n; j++) {
        ierr = VecDot(vecs[i],vecs[j],&dot);CHKERRQ(ierr);
        ierr = VecAXPY(vecs[j],-dot,vecs[i]);CHKERRQ(ierr);
@@ -1284,8 +1254,6 @@ static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDABCApplySymmetricCompression"
 static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff)
 {
   PetscErrorCode ierr;
@@ -1334,7 +1302,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScale(f,-1.0);CHKERRQ(ierr);
 
   /* get new matrix */
-  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
   /* get new vector */
   ierr = MatCreateVecs(*AA,NULL,ff);CHKERRQ(ierr);
 

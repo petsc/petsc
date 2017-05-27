@@ -1,8 +1,9 @@
 
-#include "petsc/finclude/petscsysdef.h"
+#include "petsc/finclude/petscsys.h"
 
       Subroutine PetscOptionsGetEnum(po,pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding
+      use petscsysdef
       implicit none
 
       character(*)                pre,name

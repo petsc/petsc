@@ -2,8 +2,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 #include <petscmat.h>
 #include <fftw3-mpi.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
 PetscInt main(PetscInt argc,char **args)

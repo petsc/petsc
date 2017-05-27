@@ -97,8 +97,6 @@ typedef struct {
 
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "dq2ri"
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr, PetscScalar *Fi)
 {
   PetscFunctionBegin;
@@ -108,8 +106,6 @@ PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "ri2dq"
 PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd, PetscScalar *Fq)
 {
   PetscFunctionBegin;
@@ -118,8 +114,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -152,7 +146,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
     IGr = (Vr*PG[i] + Vi*QG[i])/Vm2;
     IGi = (Vi*PG[i] - Vr*QG[i])/Vm2;
 
-    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
+    delta = PetscAtan2Real(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
 
     theta = PETSC_PI/2.0 - delta;
 
@@ -199,14 +193,12 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
   ierr = VecRestoreArray(Xnet,&xnet);CHKERRQ(ierr);
 
   /* ierr = VecView(Xgen,0);CHKERRQ(ierr); */
-  ierr = DMCompositeGather(user->dmpgrid,X,INSERT_VALUES,Xgen,Xnet);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,X,Xgen,Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* Computes F = [-f(x,y);g(x,y)] */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualFunction"
 PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -320,7 +312,7 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
   ierr = VecRestoreArray(Fgen,&fgen);CHKERRQ(ierr);
   ierr = VecRestoreArray(Fnet,&fnet);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(user->dmpgrid,F,INSERT_VALUES,Fgen,Fnet);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,F,Fgen,Fnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -329,8 +321,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 /* \dot{x} - f(x,y)
      g(x,y) = 0
  */
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
 {
   PetscErrorCode    ierr;
@@ -365,8 +355,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
    differential equations
  F = [0;g(y)];
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgFunction"
 PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -390,8 +378,6 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreallocateJacobian"
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -441,8 +427,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
    J = [-df_dx, -df_dy
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualJacobian"
 PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -676,8 +660,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
    J = [I, 0
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgJacobian"
 PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -695,8 +677,6 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
         dg_dx, dg_dy]
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -730,8 +710,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CostIntegrand"
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
 {
   PetscErrorCode    ierr;
@@ -763,8 +741,6 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorUpdateQ"
 static PetscErrorCode MonitorUpdateQ(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx0)
 {
   PetscErrorCode ierr;
@@ -789,8 +765,6 @@ static PetscErrorCode MonitorUpdateQ(TS ts,PetscInt stepnum,PetscReal time,Vec X
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Userctx            user;
@@ -853,8 +827,12 @@ int main(int argc,char **argv)
   /* Create DMs for generator and network subsystems */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmgen,"dmgen_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.dmgen);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dmgen);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmnet,"dmnet_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.dmnet);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dmnet);CHKERRQ(ierr);
   /* Create a composite DM packer and add the two DMs */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmpgrid,"pgrid_");CHKERRQ(ierr);
@@ -917,8 +895,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates the function and corresponding gradient.
 

@@ -1,7 +1,5 @@
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichEqual"
 /*@
   VecWhichEqual - Creates an index set containing the indices
              where the vectors Vec1 and Vec2 have identical elements.
@@ -14,34 +12,33 @@
   OutputParameter:
 . S - The index set containing the indices i where vec1[i] == vec2[i]
 
+  Notes: the two vectors must have the same parallel layout
+
   Level: advanced
 @*/
 PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 {
-  PetscErrorCode  ierr;
-  PetscInt        i,n_same = 0;
-  PetscInt        n,low,high,low2,high2;
-  PetscInt        *same = NULL;
-  PetscScalar     *v1,*v2;
-  MPI_Comm        comm;
+  PetscErrorCode    ierr;
+  PetscInt          i,n_same = 0;
+  PetscInt          n,low,high;
+  PetscInt          *same = NULL;
+  const PetscScalar *v1,*v2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
+  VecCheckSameSize(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
-  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
-
   ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
 
     ierr = PetscMalloc1( n,&same );CHKERRQ(ierr);
@@ -51,19 +48,16 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
     }
 
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_same,same,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)Vec1),n_same,same,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichLessThan"
 /*@
   VecWhichLessThan - Creates an index set containing the indices
   where the vectors Vec1 < Vec2
@@ -76,34 +70,36 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   OutputParameter:
 . S - The index set containing the indices i where vec1[i] < vec2[i]
 
+  Notes:
+  The two vectors must have the same parallel layout
+
+  For complex numbers this only compares the real part
+
   Level: advanced
 @*/
 PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscInt       n,low,high,low2,high2,n_lt=0;
-  PetscInt       *lt = NULL;
-  PetscScalar    *v1,*v2;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+  PetscInt          n,low,high,n_lt=0;
+  PetscInt          *lt = NULL;
+  const PetscScalar *v1,*v2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
-
+  VecCheckSameSize(Vec1,1,Vec2,2);
+  
   ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
-  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must haveidentical layout");
-
-  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(n,&lt );CHKERRQ(ierr);
 
@@ -112,19 +108,16 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
     }
 
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_lt,lt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)Vec1),n_lt,lt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichGreaterThan"
 /*@
   VecWhichGreaterThan - Creates an index set containing the indices
   where the vectors Vec1 > Vec2
@@ -137,35 +130,35 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   OutputParameter:
 . S - The index set containing the indices i where vec1[i] > vec2[i]
 
+  Notes:
+  The two vectors must have the same parallel layout
+
+  For complex numbers this only compares the real part
+
   Level: advanced
 @*/
 PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 {
-  PetscErrorCode ierr;
-  PetscInt       n,low,high,low2,high2,n_gt=0,i;
-  PetscInt       *gt=NULL;
-  PetscScalar    *v1,*v2;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          n,low,high,n_gt=0,i;
+  PetscInt          *gt=NULL;
+  const PetscScalar *v1,*v2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
+  VecCheckSameSize(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
-  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be have identical layout");
-
   ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
-
   if (n>0){
-
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
 
     ierr = PetscMalloc1(n, &gt );CHKERRQ(ierr);
@@ -175,19 +168,16 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
     }
 
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(Vec2,&v2);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_gt,gt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)Vec1),n_gt,gt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichBetween"
 /*@
   VecWhichBetween - Creates an index set containing the indices
                where  VecLow < V < VecHigh
@@ -202,63 +192,60 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   OutputParameter:
 . S - The index set containing the indices i where veclow[i] < v[i] < vechigh[i]
 
+  Notes:
+  The vectors must have the same parallel layout
+
+  For complex numbers this only compares the real part
+
   Level: advanced
 @*/
 PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 {
 
-  PetscErrorCode ierr;
-  PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0;
-  PetscInt       *vm = NULL,i;
-  PetscScalar    *v1,*v2,*vmiddle;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          n,low,high,n_vm=0;
+  PetscInt          *vm = NULL,i;
+  const PetscScalar *v1,*v2,*vmiddle;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
-  PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
+  PetscCheckSameComm(V,2,VecLow,1);
+  PetscCheckSameComm(V,2,VecHigh,3);
+  VecCheckSameSize(V,2,VecLow,1);
+  VecCheckSameSize(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(V, &low3, &high3);CHKERRQ(ierr);
-  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
-
   ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
   if (n>0){
-    ierr = VecGetArray(VecLow,&v1);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecGetArray(VecHigh,&v2);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(VecHigh,&v2);CHKERRQ(ierr);
     } else {
       v2=v1;
     }
-    if ( V != VecLow && V != VecHigh){
-      ierr = VecGetArray(V,&vmiddle);CHKERRQ(ierr);
+    if (V != VecLow && V != VecHigh){
+      ierr = VecGetArrayRead(V,&vmiddle);CHKERRQ(ierr);
     } else if ( V==VecLow ){
       vmiddle=v1;
     } else {
       vmiddle =v2;
     }
-
     ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
-
     for (i=0; i<n; i++){
       if (PetscRealPart(v1[i]) < PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) < PetscRealPart(v2[i])) {vm[n_vm]=low+i; n_vm++;}
     }
-
-    ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecRestoreArray(VecHigh,&v2);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(VecHigh,&v2);CHKERRQ(ierr);
     }
-    if ( V != VecLow && V != VecHigh){
-      ierr = VecRestoreArray(V,&vmiddle);CHKERRQ(ierr);
+    if (V != VecLow && V != VecHigh){
+      ierr = VecRestoreArrayRead(V,&vmiddle);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)V),n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichBetweenOrEqual"
 /*@
   VecWhichBetweenOrEqual - Creates an index set containing the indices
   where  VecLow <= V <= VecHigh
@@ -279,19 +266,17 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 {
   PetscErrorCode ierr;
-  PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0,i;
+  PetscInt       n,low,high,n_vm=0,i;
   PetscInt       *vm = NULL;
   PetscScalar    *v1,*v2,*vmiddle;
-  MPI_Comm       comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
-  PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
+  PetscCheckSameComm(V,2,VecLow,1);
+  PetscCheckSameComm(V,2,VecHigh,3);
+  VecCheckSameSize(V,2,VecLow,1);
+  VecCheckSameSize(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(V, &low3, &high3);CHKERRQ(ierr);
-  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
-
   ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
 
   if (n>0){
@@ -323,13 +308,10 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
       ierr = VecRestoreArray(V,&vmiddle);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)V),n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecISAXPY"
 /*@
   VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector. 
                   vfull[is[i]] += alpha*vreduced[i]
@@ -349,7 +331,6 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
 {
   PetscInt       nfull,nreduced;
-  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -367,7 +348,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
     PetscInt          i,n,m,rstart;
     const PetscInt    *id;
 
-    ierr = PetscObjectGetComm((PetscObject)vfull,&comm);CHKERRQ(ierr);
     ierr = VecGetArray(vfull,&y);CHKERRQ(ierr);
     ierr = VecGetArrayRead(vreduced,&x);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&id);CHKERRQ(ierr);
@@ -393,8 +373,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISComplementVec"
 /*@
    ISComplementVec - Creates the complement of the index set relative to a layout defined by a Vec
 
@@ -422,8 +400,6 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecISSet"
 /*@
    VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
@@ -462,8 +438,6 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 }
 
 #if !defined(PETSC_USE_COMPLEX)
-#undef __FUNCT__
-#define __FUNCT__ "VecBoundGradientProjection"
 /*@C
   VecBoundGradientProjection - Projects  vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
@@ -479,15 +453,18 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   Output Parameter:
 . GP - gradient projection vector
 
+  Notes: GP may be the same vector as G
+
   Level: advanced
 C@*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
 
-  PetscErrorCode ierr;
-  PetscInt       n,i;
-  PetscReal      *xptr,*xlptr,*xuptr,*gptr,*gpptr;
-  PetscReal      xval,gpval;
+  PetscErrorCode  ierr;
+  PetscInt        n,i;
+  const PetscReal *xptr,*xlptr,*xuptr;
+  PetscReal       *gptr,*gpptr;
+  PetscReal       xval,gpval;
 
   /* Project variables at the lower and upper bound */
   PetscFunctionBegin;
@@ -499,13 +476,10 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
-  ierr=VecGetArray(X,&xptr);CHKERRQ(ierr);
-  ierr=VecGetArray(XL,&xlptr);CHKERRQ(ierr);
-  ierr=VecGetArray(XU,&xuptr);CHKERRQ(ierr);
-  ierr=VecGetArray(G,&gptr);CHKERRQ(ierr);
-  if (G!=GP){
-    ierr=VecGetArray(GP,&gpptr);CHKERRQ(ierr);
-  } else { gpptr=gptr; }
+  ierr = VecGetArrayRead(X,&xptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XL,&xlptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XU,&xuptr);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(G,GP,&gptr,&gpptr);CHKERRQ(ierr);
 
   for (i=0; i<n; ++i){
     gpval = gptr[i]; xval = xptr[i];
@@ -518,19 +492,15 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
     gpptr[i] = gpval;
   }
 
-  ierr=VecRestoreArray(X,&xptr);CHKERRQ(ierr);
-  ierr=VecRestoreArray(XL,&xlptr);CHKERRQ(ierr);
-  ierr=VecRestoreArray(XU,&xuptr);CHKERRQ(ierr);
-  ierr=VecRestoreArray(G,&gptr);CHKERRQ(ierr);
-  if (G!=GP){
-    ierr=VecRestoreArray(GP,&gpptr);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(X,&xptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XL,&xlptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XU,&xuptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(G,&gptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(G,GP,&gptr,&gpptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepMaxBounded"
 /*@
      VecStepMaxBounded - See below
 
@@ -548,11 +518,10 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 @*/
 PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,nn;
-  PetscScalar    *xx,*dx,*xl,*xu;
-  PetscReal      localmax=0;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          i,nn;
+  const PetscScalar *xx,*dx,*xl,*xu;
+  PetscReal         localmax=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -560,10 +529,10 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscValidHeaderSpecific(XL,VEC_CLASSID,3);
   PetscValidHeaderSpecific(XU,VEC_CLASSID,4);
 
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(XL,&xl);CHKERRQ(ierr);
-  ierr = VecGetArray(XU,&xu);CHKERRQ(ierr);
-  ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XL,&xl);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XU,&xu);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
     if (PetscRealPart(dx[i]) > 0){
@@ -572,17 +541,14 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
       localmax=PetscMax(localmax,PetscRealPart((xl[i]-xx[i])/dx[i]));
     }
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(XL,&xl);CHKERRQ(ierr);
-  ierr = VecRestoreArray(XU,&xu);CHKERRQ(ierr);
-  ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XL,&xl);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XU,&xu);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepBoundInfo"
 /*@
      VecStepBoundInfo - See below
 
@@ -595,20 +561,22 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 -      DX  - step direction, can have negative, positive or zero entries
 
      Output Parameter:
-+     boundmin -  maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
-.     wolfemin -
--     boundmax -   minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
++     boundmin -  (may be NULL this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
+.     wolfemin -  (may be NULL this it is not computed)
+-     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
+
+     Notes: For complex numbers only compares the real part
 
   Level: advanced
 @*/
 PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
 {
-  PetscErrorCode ierr;
-  PetscInt       n,i;
-  PetscScalar    *x,*xl,*xu,*dx;
-  PetscReal      t;
-  PetscReal      localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=-1;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          n,i;
+  const PetscScalar *x,*xl,*xu,*dx;
+  PetscReal         t;
+  PetscReal         localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=-1;
+  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -616,10 +584,10 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   PetscValidHeaderSpecific(XU,VEC_CLASSID,3);
   PetscValidHeaderSpecific(DX,VEC_CLASSID,4);
 
-  ierr=VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr=VecGetArray(XL,&xl);CHKERRQ(ierr);
-  ierr=VecGetArray(XU,&xu);CHKERRQ(ierr);
-  ierr=VecGetArray(DX,&dx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XL,&xl);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(XU,&xu);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++){
     if (PetscRealPart(dx[i])>0 && PetscRealPart(xu[i]) < PETSC_INFINITY) {
@@ -639,10 +607,10 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
     }
   }
 
-  ierr=VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr=VecRestoreArray(XL,&xl);CHKERRQ(ierr);
-  ierr=VecRestoreArray(XU,&xu);CHKERRQ(ierr);
-  ierr=VecRestoreArray(DX,&dx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XL,&xl);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(XU,&xu);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
   ierr=PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
 
   if (boundmin){
@@ -661,8 +629,6 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepMax"
 /*@
      VecStepMax - Returns the largest value so that x[i] + step*DX[i] >= 0 for all i
 
@@ -675,36 +641,34 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
      Output Parameter:
 .    step - largest value such that x[i] + step*DX[i] >= 0 for all i
 
+     Notes: For complex numbers only compares the real part
+
   Level: advanced
  @*/
 PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 {
-  PetscErrorCode ierr;
-  PetscInt       i, nn;
-  PetscReal      stepmax=PETSC_INFINITY;
-  PetscScalar    *xx, *dx;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscInt          i, nn;
+  PetscReal         stepmax=PETSC_INFINITY;
+  const PetscScalar *xx, *dx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(DX,VEC_CLASSID,2);
 
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
     if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
     else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(DX,&dx);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)X));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPow"
 /*@
   VecPow - Replaces each component of a vector by x_i^p
 
@@ -782,8 +746,6 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMedian"
 /*@
   VecMedian - Computes the componentwise median of three vectors
   and stores the result in this vector.  Used primarily for projecting
@@ -795,14 +757,16 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
 . Vec1, Vec2, Vec3 - The three vectors
 
   Output Parameter:
-. VMedian - The median vector
+. VMedian - The median vector (this can be any one of the input vectors)
+
+  Developers Note: Should VMedian be allow to be one of the input vectors?
 
   Level: advanced
 @*/
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,low1,low2,low3,low4,high1,high2,high3,high4;
+  PetscInt       i,n,low1,high1;
   PetscScalar    *v1,*v2,*v3,*vmed;
 
   PetscFunctionBegin;
@@ -812,26 +776,25 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   PetscValidHeaderSpecific(VMedian,VEC_CLASSID,4);
 
   if (Vec1==Vec2 || Vec1==Vec3){
-    ierr=VecCopy(Vec1,VMedian);CHKERRQ(ierr);
+    ierr = VecCopy(Vec1,VMedian);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (Vec2==Vec3){
-    ierr=VecCopy(Vec2,VMedian);CHKERRQ(ierr);
+    ierr = VecCopy(Vec2,VMedian);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
   PetscValidType(Vec1,1);
   PetscValidType(Vec2,2);
   PetscValidType(VMedian,4);
-  PetscCheckSameType(Vec1,1,Vec2,2); PetscCheckSameType(Vec1,1,VMedian,4);
-  PetscCheckSameComm(Vec1,1,Vec2,2); PetscCheckSameComm(Vec1,1,VMedian,4);
+  PetscCheckSameType(Vec1,1,Vec2,2);
+  PetscCheckSameType(Vec1,1,VMedian,4);
+  PetscCheckSameComm(Vec1,1,Vec2,2);
+  PetscCheckSameComm(Vec1,1,VMedian,4);
+  VecCheckSameSize(Vec1,1,Vec2,2);
+  VecCheckSameSize(Vec1,1,VMedian,4);
 
   ierr = VecGetOwnershipRange(Vec1, &low1, &high1);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec3, &low3, &high3);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VMedian, &low4, &high4);CHKERRQ(ierr);
-  if ( low1!= low2 || low1!= low3 || low1!= low4 || high1!= high2 || high1!= high3 || high1!= high4) SETERRQ(PETSC_COMM_SELF,1,"InCompatible vector local lengths");
-
   ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
   ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
   ierr = VecGetArray(Vec3,&v3);CHKERRQ(ierr);
@@ -846,12 +809,10 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
     vmed=v3;
   }
 
-  ierr=VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
-
+  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++){
     vmed[i]=PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]),PetscRealPart(v2[i])),PetscMin(PetscRealPart(v1[i]),PetscRealPart(v3[i]))),PetscMin(PetscRealPart(v2[i]),PetscRealPart(v3[i])));
   }
-
   ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
   ierr = VecRestoreArray(Vec3,&v3);CHKERRQ(ierr);

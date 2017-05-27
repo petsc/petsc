@@ -1,3 +1,10 @@
+Test MatGetInfo
+Process   0: 24 24 0 2 0
+Process   1: 24 24 0 1 0
+Process   2: 24 24 0 1 0
+Process   3: 24 24 0 1 0
+GlobalMax  : 24 24 0 2 0
+GlobalSum  : 96 96 0 1 0
 Test MatView
 Mat Object: 4 MPI processes
   type: is
@@ -42,8 +49,10 @@ row 5: (4, -6.)  (5, 12.)  (6, -6.)
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
 Test MatISGetMPIXAIJ
+Test MatDiagonalScale
 Test MatGetLocalSubMatrix
-Test MatGetSubMatrix
+Test MatConvert_Nest_IS
+Test MatCreateSubMatrix
 Test MatDiagonalSet
 Test MatShift
 IS Object: 4 MPI processes
@@ -84,3 +93,4 @@ Test MatMissingDiagonal
 [1] [2,4) Missing 0, row -1 (diag zero)
 [2] [4,6) Missing 1, row 4 (diag zero)
 [3] [6,8) Missing 1, row 6 (diag zero)
+Test MatTranspose

@@ -28,8 +28,6 @@
 /*              LT 0 MEANS THE NODE HAS BEEN MERGED WITH*/
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKqmdrch"
 PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,
                                 PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset,
                                 PetscInt *nhdsze, PetscInt *nbrhd)

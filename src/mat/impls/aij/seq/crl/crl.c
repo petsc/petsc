@@ -11,8 +11,6 @@
 */
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJCRL"
 PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
@@ -35,8 +33,6 @@ PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJCRL_create_aijcrl"
 PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
 {
   Mat_SeqAIJ     *a      = (Mat_SeqAIJ*)(A)->data;
@@ -71,10 +67,6 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJCRL"
 PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -93,8 +85,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 
 #include <../src/mat/impls/aij/seq/crl/ftn-kernels/fmultcrl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_AIJCRL"
 /*
     Shared by both sequential and parallel versions of CRL matrix: MATMPIAIJCRL and MATSEQAIJCRL
     - the scatter is used only in the parallel version
@@ -163,8 +153,6 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
  * SeqAIJCRL matrix.  This routine is called by the MatCreate_SeqAIJCRL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJCRL one. */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJCRL"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -194,8 +182,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJCRL"
 /*@C
    MatCreateSeqAIJCRL - Creates a sparse matrix of type SEQAIJCRL.
    This type inherits from AIJ, but stores some additional
@@ -241,8 +227,6 @@ PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJCRL"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
 {
   PetscErrorCode ierr;

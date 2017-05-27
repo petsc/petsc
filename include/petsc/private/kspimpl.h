@@ -141,8 +141,6 @@ typedef struct {
   Vec        work;
 } KSPConvergedDefaultCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLogResidualHistory"
 PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
   PetscErrorCode ierr;
@@ -156,7 +154,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
+PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,PetscBool,KSPNormType*,PCSide*);
 
 PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
 
@@ -195,8 +193,6 @@ PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM,DM);
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSP_RemoveNullSpace"
 PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
@@ -213,8 +209,22 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_MatMult"
+PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_LEFT) {
+    Mat          A;
+    MatNullSpace nullsp;
+    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
+    ierr = MatGetTransposeNullSpace(A,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -224,8 +234,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_MatMultTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -235,8 +243,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApply"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -246,18 +252,18 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!ksp->transpose_solve) {
     ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
@@ -265,8 +271,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyBAorAB"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
@@ -276,19 +280,17 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyBAorABTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!ksp->transpose_solve) {
     ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
   }
@@ -313,7 +315,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
       PetscInt       sendbuf,pcreason_max; \
       ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
@@ -336,7 +338,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
       PetscInt       sendbuf,pcreason_max; \
       ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\

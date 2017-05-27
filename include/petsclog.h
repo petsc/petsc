@@ -21,7 +21,7 @@ typedef int PetscLogEvent;
 
     Level: intermediate
 
-.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
+.seealso: PetscLogStageRegister(), PetscLogStagePush(), PetscLogStagePop(), PetscLogEvent
 M*/
 typedef int PetscLogStage;
 
@@ -198,8 +198,6 @@ PETSC_EXTERN PetscStageLog petsc_stageLog;
 #define PETSC_FLOPS_PER_OP 1.0
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogFlops"
 PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;
@@ -314,9 +312,12 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 */
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type)
 {
-  PetscMPIInt mysize; 
+  PetscMPIInt mysize;
+  PetscErrorCode _myierr;
   if (type == MPI_DATATYPE_NULL) return 0;
-  else return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
+  _myierr = MPI_Type_size(type,&mysize);CHKERRQ(_myierr);
+  *buff += (PetscLogDouble) (count*mysize);
+  return 0;
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type)
@@ -514,9 +515,5 @@ do {\
 /* some vars for logging */
 PETSC_EXTERN PetscBool PetscPreLoadingUsed;       /* true if we are or have done preloading */
 PETSC_EXTERN PetscBool PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

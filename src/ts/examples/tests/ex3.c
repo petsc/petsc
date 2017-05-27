@@ -41,8 +41,6 @@ extern PetscErrorCode femA(AppCtx*,PetscInt,PetscScalar*);
 extern PetscErrorCode rhs(AppCtx*,PetscScalar*, PetscInt, PetscScalar*,PetscReal);
 extern PetscErrorCode RHSfunction(TS,PetscReal,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       i,m,nz,steps,max_steps,k,nphase=1;
@@ -207,8 +205,6 @@ PetscScalar exact(PetscScalar z,PetscReal t)
   return val;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at
    each timestep.  This example plots the solution and computes the
@@ -379,7 +375,7 @@ PetscErrorCode femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScala
     zquad[il][0] = zip;
     zquad[il][1] = (0.5)*(zip+zipq);
     zquad[il][2] = zipq;
-    dlen[il]     = fabs(dl);
+    dlen[il]     = PetscAbsScalar(dl);
     nli[il][0]   = ip;
     nli[il][1]   = ipq;
   }
@@ -461,7 +457,7 @@ PetscErrorCode femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
     rquad[il][0] = zip;
     rquad[il][1] = (0.5)*(zip+zipq);
     rquad[il][2] = zipq;
-    dlen[il]     = fabs(dl);
+    dlen[il]     = PetscAbsScalar(dl);
     nli[il][0]   = ip;
     nli[il][1]   = ipq;
   } /*end for (il)*/

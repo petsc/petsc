@@ -42,8 +42,12 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 
   Concepts: distributed array
 
-  Developer note: Then entries in this struct are int instead of PetscInt so that the elements may
-                  be extracted in Fortran as if from an integer array
+  Fortran Notes - This should be declared as
+$    DMDALocalInfo :: info(DMDA_LOCAL_INFO_SIZE)
+     and the entries accessed via
+$    info(DMDA_LOCAL_INFO_DIM)
+$    info(DMDA_LOCAL_INFO_DOF) etc.
+   The entries bx,by,bz, st, and da are not accessible from Fortran.
 
 .seealso:  DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DM, DMDAGetLocalInfo(), DMDAGetInfo()
 S*/

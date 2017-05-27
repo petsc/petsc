@@ -15,7 +15,7 @@ CCmplx CCmplxPow(CCmplx a,PetscReal n)
   CCmplx b;
   PetscReal r,theta;
   r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
-  theta  = atan2(a.imag,a.real);
+  theta  = PetscAtan2Real(a.imag,a.real);
   b.real = PetscPowReal(r,n) * PetscCosReal(n*theta);
   b.imag = PetscPowReal(r,n) * PetscSinReal(n*theta);
   return b;
@@ -32,7 +32,7 @@ CCmplx CCmplxSqrt(CCmplx a)
   CCmplx b;
   PetscReal r,theta;
   r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
-  theta  = atan2(a.imag,a.real);
+  theta  = PetscAtan2Real(a.imag,a.real);
   b.real = PetscSqrtReal(r) * PetscCosReal(0.5*theta);
   b.imag = PetscSqrtReal(r) * PetscSinReal(0.5*theta);
   return b;
@@ -53,8 +53,6 @@ PetscScalar CCmplxIm(CCmplx a)
   return (PetscScalar)a.imag;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAApplyConformalMapping"
 PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
 {
   PetscErrorCode ierr;
@@ -198,8 +196,6 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAApplyTrilinearMapping"
 PetscErrorCode DAApplyTrilinearMapping(DM da)
 {
   PetscErrorCode ierr;
@@ -256,8 +252,6 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DADefineXLinearField2D"
 PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 {
   PetscErrorCode ierr;
@@ -288,8 +282,6 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DADefineXLinearField3D"
 PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 {
   PetscErrorCode ierr;
@@ -329,8 +321,6 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords1D"
 PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 {
   PetscErrorCode ierr;
@@ -343,13 +333,9 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,
-                      mx+1,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,mx+1,1, /* 1 dof */1, /* stencil = 1 */NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -422,8 +408,6 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords2D"
 PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 {
   PetscErrorCode ierr;
@@ -436,14 +420,9 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,
-                      mx+1, my+1,
-                      PETSC_DECIDE, PETSC_DECIDE,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL, NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE, PETSC_DECIDE,1, /* 1 dof */1, /* stencil = 1 */NULL, NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -524,8 +503,6 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords3D"
 PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 {
   PetscErrorCode ierr;
@@ -538,14 +515,10 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                      mx+1, my+1,mz+1,
-                      PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL,NULL,NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
+                      1, /* stencil = 1 */NULL,NULL,NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -630,8 +603,6 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

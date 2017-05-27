@@ -3,8 +3,6 @@
 #include <petscviewerhdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "ISLoad_HDF5"
 /*
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
    checks back and forth between the two types of variables.
@@ -113,8 +111,6 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLoad_Binary"
 PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -180,8 +176,6 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLoad_Default"
 PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
 {
   PetscBool      isbinary;

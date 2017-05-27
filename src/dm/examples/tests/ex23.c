@@ -4,8 +4,6 @@ static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMD
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscMPIInt      size;
@@ -47,6 +45,8 @@ int main(int argc,char **argv)
   } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);

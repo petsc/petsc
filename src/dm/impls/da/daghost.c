@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetGhostCorners"
 /*@C
    DMDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
    corner and size of the local region, including ghost points.

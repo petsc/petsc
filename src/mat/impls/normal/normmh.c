@@ -7,8 +7,6 @@ typedef struct {
   PetscScalar scale;
 } Mat_Normal;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScaleHermitian_Normal"
 PetscErrorCode MatScaleHermitian_Normal(Mat inA,PetscScalar scale)
 {
   Mat_Normal *a = (Mat_Normal*)inA->data;
@@ -18,8 +16,6 @@ PetscErrorCode MatScaleHermitian_Normal(Mat inA,PetscScalar scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScaleHermitian_Normal"
 PetscErrorCode MatDiagonalScaleHermitian_Normal(Mat inA,Vec left,Vec right)
 {
   Mat_Normal     *a = (Mat_Normal*)inA->data;
@@ -45,8 +41,6 @@ PetscErrorCode MatDiagonalScaleHermitian_Normal(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitian_Normal"
 PetscErrorCode MatMultHermitian_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -71,8 +65,6 @@ PetscErrorCode MatMultHermitian_Normal(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianAdd_Normal"
 PetscErrorCode MatMultHermitianAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -100,8 +92,6 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTranspose_Normal"
 PetscErrorCode MatMultHermitianTranspose_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -126,8 +116,6 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultHermitianTransposeAdd_Normal"
 PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -155,8 +143,6 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroyHermitian_Normal"
 PetscErrorCode MatDestroyHermitian_Normal(Mat N)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -176,8 +162,6 @@ PetscErrorCode MatDestroyHermitian_Normal(Mat N)
 /*
       Slow, nonscalable version
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonalHermitian_Normal"
 PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
@@ -210,8 +194,6 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateNormalHermitian"
 /*@
       MatCreateNormalHermitian - Creates a new matrix object that behaves like (A*)'*A.
 

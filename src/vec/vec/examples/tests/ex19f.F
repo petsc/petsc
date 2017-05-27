@@ -1,9 +1,9 @@
 !
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 !
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.
@@ -22,6 +22,10 @@
        three = 3.0
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+       endif
        call PetscOptionsCreate(options,ierr)
        call PetscOptionsGetInt(options,PETSC_NULL_CHARACTER,                  &
      &                        '-n',n,flg,ierr)

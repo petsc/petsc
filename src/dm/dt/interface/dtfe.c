@@ -57,8 +57,6 @@ PetscClassId PETSCSPACE_CLASSID = 0;
 PetscFunctionList PetscSpaceList              = NULL;
 PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceRegister"
 /*@C
   PetscSpaceRegister - Adds a new PetscSpace implementation
 
@@ -101,8 +99,6 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetType"
 /*@C
   PetscSpaceSetType - Builds a particular PetscSpace
 
@@ -144,8 +140,6 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetType"
 /*@C
   PetscSpaceGetType - Gets the PetscSpace type name (as a string) from the object.
 
@@ -176,8 +170,6 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView"
 /*@C
   PetscSpaceView - Views a PetscSpace
 
@@ -197,17 +189,11 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (!v) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);
-  }
-  if (sp->ops->view) {
-    ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);
-  }
+  if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) sp), &v);CHKERRQ(ierr);}
+  if (sp->ops->view) {ierr = (*sp->ops->view)(sp, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions"
 /*@
   PetscSpaceSetFromOptions - sets parameters in a PetscSpace from the options database
 
@@ -247,6 +233,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
   ierr = PetscOptionsInt("-petscspace_order", "The approximation order", "PetscSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_components", "The number of components", "PetscSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
@@ -257,8 +244,6 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp"
 /*@C
   PetscSpaceSetUp - Construct data structures for the PetscSpace
 
@@ -281,8 +266,6 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy"
 /*@
   PetscSpaceDestroy - Destroys a PetscSpace object
 
@@ -312,8 +295,6 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate"
 /*@
   PetscSpaceCreate - Creates an empty PetscSpace object. The type can then be set with PetscSpaceSetType().
 
@@ -343,15 +324,26 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   ierr = PetscHeaderCreate(s, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView);CHKERRQ(ierr);
 
   s->order = 0;
+  s->Nc    = 1;
   ierr = DMShellCreate(comm, &s->dm);CHKERRQ(ierr);
 
   *sp = s;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension"
-/* Dimension of the space, i.e. number of basis vectors */
+/*@
+  PetscSpaceGetDimension - Return the dimension of this space, i.e. the number of basis vectors
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. dim - The dimension
+
+  Level: intermediate
+
+.seealso: PetscSpaceGetOrder(), PetscSpaceCreate(), PetscSpace
+@*/
 PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -364,8 +356,6 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetOrder"
 /*@
   PetscSpaceGetOrder - Return the order of approximation for this space
 
@@ -377,7 +367,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 
   Level: intermediate
 
-.seealso: PetscSpaceSetOrder(), PetscSpaceCreate(), PetscSpace
+.seealso: PetscSpaceSetOrder(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
 @*/
 PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
 {
@@ -388,8 +378,6 @@ PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetOrder"
 /*@
   PetscSpaceSetOrder - Set the order of approximation for this space
 
@@ -409,8 +397,49 @@ PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate"
+/*@
+  PetscSpaceGetNumComponents - Return the number of components for this space
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. Nc - The number of components
+
+  Note: A vector space, for example, will have d components, where d is the spatial dimension
+
+  Level: intermediate
+
+.seealso: PetscSpaceSetNumComponents(), PetscSpaceGetDimension(), PetscSpaceCreate(), PetscSpace
+@*/
+PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(Nc, 2);
+  *Nc = sp->Nc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSpaceSetNumComponents - Set the number of components for this space
+
+  Input Parameters:
++ sp - The PetscSpace
+- order - The number of components
+
+  Level: intermediate
+
+.seealso: PetscSpaceGetNumComponents(), PetscSpaceCreate(), PetscSpace
+@*/
+PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  sp->Nc = Nc;
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
 
@@ -423,6 +452,8 @@ PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
 + B - The function evaluations in a npoints x nfuncs array
 . D - The derivative evaluations in a npoints x nfuncs x dim array
 - H - The second derivative evaluations in a npoints x nfuncs x dim x dim array
+
+  Note: Above nfuncs is the dimension of the space, and dim is the spatial dimension
 
   Level: advanced
 
@@ -442,8 +473,6 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions_Polynomial"
 PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -458,28 +487,22 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialView_Ascii"
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
-  PetscSpace_Poly  *poly = (PetscSpace_Poly *) sp->data;
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
-    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
+  if (sp->Nc > 1) {
+    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %D variables of degree %D with %D components\n", poly->numVariables, sp->order, sp->Nc);CHKERRQ(ierr);}
+    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %D variables of degree %D with %D components\n", poly->numVariables, sp->order, sp->Nc);CHKERRQ(ierr);}
   } else {
-    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
-    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
+    if (poly->tensor) {ierr = PetscViewerASCIIPrintf(viewer, "Tensor polynomial space in %d variables of degree %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
+    else              {ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of degree %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView_Polynomial"
 PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -493,8 +516,6 @@ PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp_Polynomial"
 PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
@@ -508,21 +529,20 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy_Polynomial"
 PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", NULL);CHKERRQ(ierr);
   ierr = PetscFree(poly->degrees);CHKERRQ(ierr);
   ierr = PetscFree(poly);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension_Polynomial"
+/* We treat the space as a tensor product of scalar polynomial spaces, so the dimension is multiplied by Nc */
 PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -540,11 +560,10 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
     }
     *dim = (PetscInt) (D + 0.5);
   }
+  *dim *= sp->Nc;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LatticePoint_Internal"
 /*
   LatticePoint_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to 'sum'.
 
@@ -559,7 +578,7 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 
   Level: developer
 
-.seealso: 
+.seealso:
 */
 static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt ind[], PetscInt tup[])
 {
@@ -583,8 +602,33 @@ static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorPoint_Internal"
+/*
+  LatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
+                                       Ordering is lexicographic with lowest index as least significant in ordering.
+                                       e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,0}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum sum
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+*/
+static PetscErrorCode LatticePointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscFunctionBegin;
+  while (len--) {
+    max -= tup[len];
+    if (!max) {
+      tup[len] = 0;
+      break;
+    }
+  }
+  tup[++len]++;
+  PetscFunctionReturn(0);
+}
+
 /*
   TensorPoint_Internal - Returns all tuples of size 'len' with nonnegative integers that are less than 'max'.
 
@@ -599,7 +643,7 @@ static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt
 
   Level: developer
 
-.seealso: 
+.seealso:
 */
 static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt ind[], PetscInt tup[])
 {
@@ -624,22 +668,56 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate_Polynomial"
+/*
+  TensorPointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max'.
+                                      Ordering is lexicographic with lowest index as least significant in ordering.
+                                      e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum value
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whos sum is at most 'max'
+*/
+static PetscErrorCode TensorPointLexicographic_Internal(PetscInt len, PetscInt max, PetscInt tup[])
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i = 0; i < len; i++) {
+    if (tup[i] < max) {
+      break;
+    } else {
+      tup[i] = 0;
+    }
+  }
+  tup[i]++;
+  PetscFunctionReturn(0);
+}
+
+/*
+  p in [0, npoints), i in [0, pdim), c in [0, Nc)
+
+  B[p][i][c] = B[p][i_scalar][c][c]
+*/
 PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   DM               dm      = sp->dm;
+  PetscInt         Nc      = sp->Nc;
   PetscInt         ndegree = sp->order+1;
   PetscInt        *degrees = poly->degrees;
   PetscInt         dim     = poly->numVariables;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
-  PetscInt         pdim, d, der, i, p, deg, o;
+  PetscInt         c, pdim, d, der, i, p, deg, o;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
+  pdim /= Nc;
   ierr = DMGetWorkArray(dm, npoints, PETSC_REAL, &lpoints);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, npoints*ndegree*3, PETSC_REAL, &tmp);CHKERRQ(ierr);
   if (B) {ierr = DMGetWorkArray(dm, npoints*dim*ndegree, PETSC_REAL, &LB);CHKERRQ(ierr);}
@@ -662,16 +740,17 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   /* Multiply by A (pdim x ndegree * dim) */
   ierr = PetscMalloc2(dim,&ind,dim,&tup);CHKERRQ(ierr);
   if (B) {
-    /* B (npoints x pdim) */
+    /* B (npoints x pdim x Nc) */
+    ierr = PetscMemzero(B, npoints*pdim*Nc*Nc * sizeof(PetscReal));CHKERRQ(ierr);
     if (poly->tensor) {
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
         ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
-          B[p*pdim + i] = 1.0;
+          B[(p*pdim + i)*Nc*Nc] = 1.0;
           for (d = 0; d < dim; ++d) {
-            B[p*pdim + i] *= LB[(tup[d]*dim + d)*npoints + p];
+            B[(p*pdim + i)*Nc*Nc] *= LB[(tup[d]*dim + d)*npoints + p];
           }
         }
         ++i;
@@ -683,18 +762,27 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
         while (ind[0] >= 0) {
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {
-            B[p*pdim + i] = 1.0;
+            B[(p*pdim + i)*Nc*Nc] = 1.0;
             for (d = 0; d < dim; ++d) {
-              B[p*pdim + i] *= LB[(tup[d]*dim + d)*npoints + p];
+              B[(p*pdim + i)*Nc*Nc] *= LB[(tup[d]*dim + d)*npoints + p];
             }
           }
           ++i;
         }
       }
     }
+    /* Make direct sum basis for multicomponent space */
+    for (p = 0; p < npoints; ++p) {
+      for (i = 0; i < pdim; ++i) {
+        for (c = 1; c < Nc; ++c) {
+          B[(p*pdim*Nc + i*Nc + c)*Nc + c] = B[(p*pdim + i)*Nc*Nc];
+        }
+      }
+    }
   }
   if (D) {
-    /* D (npoints x pdim x dim) */
+    /* D (npoints x pdim x Nc x dim) */
+    ierr = PetscMemzero(D, npoints*pdim*Nc*Nc*dim * sizeof(PetscReal));CHKERRQ(ierr);
     if (poly->tensor) {
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
@@ -702,12 +790,12 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
         ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           for (der = 0; der < dim; ++der) {
-            D[(p*pdim + i)*dim + der] = 1.0;
+            D[(p*pdim + i)*Nc*Nc*dim + der] = 1.0;
             for (d = 0; d < dim; ++d) {
               if (d == der) {
-                D[(p*pdim + i)*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
+                D[(p*pdim + i)*Nc*Nc*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
               } else {
-                D[(p*pdim + i)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+                D[(p*pdim + i)*Nc*Nc*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
               }
             }
           }
@@ -722,17 +810,27 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
           ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
           for (p = 0; p < npoints; ++p) {
             for (der = 0; der < dim; ++der) {
-              D[(p*pdim + i)*dim + der] = 1.0;
+              D[(p*pdim + i)*Nc*Nc*dim + der] = 1.0;
               for (d = 0; d < dim; ++d) {
                 if (d == der) {
-                  D[(p*pdim + i)*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
+                  D[(p*pdim + i)*Nc*Nc*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
                 } else {
-                  D[(p*pdim + i)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+                  D[(p*pdim + i)*Nc*Nc*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
                 }
               }
             }
           }
           ++i;
+        }
+      }
+    }
+    /* Make direct sum basis for multicomponent space */
+    for (p = 0; p < npoints; ++p) {
+      for (i = 0; i < pdim; ++i) {
+        for (c = 1; c < Nc; ++c) {
+          for (d = 0; d < dim; ++d) {
+            D[((p*pdim*Nc + i*Nc + c)*Nc + c)*dim + d] = D[(p*pdim + i)*Nc*Nc*dim + d];
+          }
         }
       }
     }
@@ -747,10 +845,79 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceInitialize_Polynomial"
+/*@
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
++ sp     - the function space object
+- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
+PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscSpacePolynomialSetTensor_C",(PetscSpace,PetscBool),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
+. sp     - the function space object
+
+  Output Parameters:
+. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
+PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  ierr = PetscTryMethod(sp,"PetscSpacePolynomialGetTensor_C",(PetscSpace,PetscBool*),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, PetscBool tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  poly->tensor = tensor;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, PetscBool *tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  *tensor = poly->tensor;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   sp->ops->setfromoptions = PetscSpaceSetFromOptions_Polynomial;
   sp->ops->setup          = PetscSpaceSetUp_Polynomial;
@@ -758,19 +925,20 @@ PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
   sp->ops->destroy        = PetscSpaceDestroy_Polynomial;
   sp->ops->getdimension   = PetscSpaceGetDimension_Polynomial;
   sp->ops->evaluate       = PetscSpaceEvaluate_Polynomial;
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Polynomial);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", PetscSpacePolynomialSetTensor_Polynomial);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*MC
-  PETSCSPACEPOLYNOMIAL = "poly" - A PetscSpace object that encapsulates a polynomial space, e.g. P1 is the space of linear polynomials.
+  PETSCSPACEPOLYNOMIAL = "poly" - A PetscSpace object that encapsulates a polynomial space, e.g. P1 is the space of
+  linear polynomials. The space is replicated for each component.
 
   Level: intermediate
 
 .seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate_Polynomial"
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly;
@@ -790,8 +958,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetSymmetric"
 PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -802,8 +968,6 @@ PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetSymmetric"
 PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -815,61 +979,6 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetTensor"
-/*@
-  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
-
-  Input Parameters:
-+ sp     - the function space object
-- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
-
-  Level: beginner
-
-.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
-@*/
-PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
-{
-  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  poly->tensor = tensor;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetTensor"
-/*@
-  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
-  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
-
-  Input Parameters:
-. sp     - the function space object
-
-  Output Parameters:
-. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
-
-  Level: beginner
-
-.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
-@*/
-PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
-{
-  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
-  *tensor = poly->tensor;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetNumVariables"
 PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace sp, PetscInt n)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -880,8 +989,6 @@ PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace sp, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetNumVariables"
 PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -893,44 +1000,38 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions_DG"
-PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
+PetscErrorCode PetscSpaceSetFromOptions_Point(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
-  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
-  PetscErrorCode ierr;
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace DG options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_dg_num_variables", "The number of different variables, e.g. x and y", "PetscSpaceDGSetNumVariables", dg->numVariables, &dg->numVariables, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace Point options");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_point_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePointSetNumVariables", pt->numVariables, &pt->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDGView_Ascii"
-PetscErrorCode PetscSpaceDGView_Ascii(PetscSpace sp, PetscViewer viewer)
+PetscErrorCode PetscSpacePointView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
-  PetscSpace_DG    *dg = (PetscSpace_DG *) sp->data;
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d:\n", dg->numVariables);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Point space in dimension %d:\n", pt->numVariables);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscQuadratureView(dg->quad, viewer);CHKERRQ(ierr);
+    ierr = PetscQuadratureView(pt->quad, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d on %d points\n", dg->numVariables, dg->quad->numPoints);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Point space in dimension %d on %d points\n", pt->numVariables, pt->quad->numPoints);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView_DG"
-PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
+PetscErrorCode PetscSpaceView_Point(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
   PetscErrorCode ierr;
@@ -939,109 +1040,108 @@ PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscSpaceDGView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  if (iascii) {ierr = PetscSpacePointView_Ascii(sp, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp_DG"
-PetscErrorCode PetscSpaceSetUp_DG(PetscSpace sp)
+PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
 {
-  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
-  PetscErrorCode ierr;
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!dg->quad->points && sp->order) {
-    ierr = PetscDTGaussJacobiQuadrature(dg->numVariables, sp->order, -1.0, 1.0, &dg->quad);CHKERRQ(ierr);
+  if (!pt->quad->points && sp->order) {
+    ierr = PetscDTGaussJacobiQuadrature(pt->numVariables, sp->Nc, sp->order, -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy_DG"
-PetscErrorCode PetscSpaceDestroy_DG(PetscSpace sp)
+PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
 {
-  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
-  PetscErrorCode ierr;
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscQuadratureDestroy(&dg->quad);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension_DG"
-PetscErrorCode PetscSpaceGetDimension_DG(PetscSpace sp, PetscInt *dim)
+PetscErrorCode PetscSpaceGetDimension_Point(PetscSpace sp, PetscInt *dim)
 {
-  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
 
   PetscFunctionBegin;
-  *dim = dg->quad->numPoints;
+  *dim = pt->quad->numPoints;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate_DG"
-PetscErrorCode PetscSpaceEvaluate_DG(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
-  PetscSpace_DG *dg  = (PetscSpace_DG *) sp->data;
-  PetscInt       dim = dg->numVariables, d, p;
-  PetscErrorCode ierr;
+  PetscSpace_Point *pt  = (PetscSpace_Point *) sp->data;
+  PetscInt          dim = pt->numVariables, pdim = pt->quad->numPoints, d, p, i, c;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a DG space");
-  if (npoints != dg->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate DG space on %d points != %d size", npoints, dg->quad->numPoints);
-  ierr = PetscMemzero(B, npoints*npoints * sizeof(PetscReal));CHKERRQ(ierr);
+  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a Point space");
+  if (npoints != pt->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
+  ierr = PetscMemzero(B, npoints*pdim * sizeof(PetscReal));CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
-    for (d = 0; d < dim; ++d) {
-      if (PetscAbsReal(points[p*dim+d] - dg->quad->points[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot evaluate DG point (%d, %d) %g != %g", p, d, points[p*dim+d], dg->quad->points[p*dim+d]);
+    for (i = 0; i < pdim; ++i) {
+      for (d = 0; d < dim; ++d) {
+        if (PetscAbsReal(points[p*dim+d] - pt->quad->points[p*dim+d]) > 1.0e-10) break;
+      }
+      if (d >= dim) {B[p*pdim+i] = 1.0; break;}
     }
-    B[p*npoints+p] = 1.0;
+  }
+  /* Replicate for other components */
+  for (c = 1; c < sp->Nc; ++c) {
+    for (p = 0; p < npoints; ++p) {
+      for (i = 0; i < pdim; ++i) {
+        B[(c*npoints + p)*pdim + i] = B[p*pdim + i];
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceInitialize_DG"
-PetscErrorCode PetscSpaceInitialize_DG(PetscSpace sp)
+PetscErrorCode PetscSpaceInitialize_Point(PetscSpace sp)
 {
   PetscFunctionBegin;
-  sp->ops->setfromoptions = PetscSpaceSetFromOptions_DG;
-  sp->ops->setup          = PetscSpaceSetUp_DG;
-  sp->ops->view           = PetscSpaceView_DG;
-  sp->ops->destroy        = PetscSpaceDestroy_DG;
-  sp->ops->getdimension   = PetscSpaceGetDimension_DG;
-  sp->ops->evaluate       = PetscSpaceEvaluate_DG;
+  sp->ops->setfromoptions = PetscSpaceSetFromOptions_Point;
+  sp->ops->setup          = PetscSpaceSetUp_Point;
+  sp->ops->view           = PetscSpaceView_Point;
+  sp->ops->destroy        = PetscSpaceDestroy_Point;
+  sp->ops->getdimension   = PetscSpaceGetDimension_Point;
+  sp->ops->evaluate       = PetscSpaceEvaluate_Point;
   PetscFunctionReturn(0);
 }
 
 /*MC
-  PETSCSPACEDG = "dg" - A PetscSpace object that encapsulates functions defined on a set of quadrature points.
+  PETSCSPACEPOINT = "point" - A PetscSpace object that encapsulates functions defined on a set of quadrature points.
 
   Level: intermediate
 
 .seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate_DG"
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace sp)
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
 {
-  PetscSpace_DG *dg;
-  PetscErrorCode ierr;
+  PetscSpace_Point *pt;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp,&dg);CHKERRQ(ierr);
-  sp->data = dg;
+  ierr     = PetscNewLog(sp,&pt);CHKERRQ(ierr);
+  sp->data = pt;
 
-  dg->numVariables    = 0;
-  dg->quad->dim       = 0;
-  dg->quad->numPoints = 0;
-  dg->quad->points    = NULL;
-  dg->quad->weights   = NULL;
+  pt->numVariables    = 0;
+  pt->quad->dim       = 0;
+  pt->quad->Nc        = 1;
+  pt->quad->numPoints = 0;
+  pt->quad->points    = NULL;
+  pt->quad->weights   = NULL;
 
-  ierr = PetscSpaceInitialize_DG(sp);CHKERRQ(ierr);
+  ierr = PetscSpaceInitialize_Point(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1051,8 +1151,6 @@ PetscClassId PETSCDUALSPACE_CLASSID = 0;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceRegister"
 /*@C
   PetscDualSpaceRegister - Adds a new PetscDualSpace implementation
 
@@ -1095,8 +1193,6 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetType"
 /*@C
   PetscDualSpaceSetType - Builds a particular PetscDualSpace
 
@@ -1138,8 +1234,6 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetType"
 /*@C
   PetscDualSpaceGetType - Gets the PetscDualSpace type name (as a string) from the object.
 
@@ -1170,8 +1264,6 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceView"
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
@@ -1200,8 +1292,6 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions"
 /*@
   PetscDualSpaceSetFromOptions - sets parameters in a PetscDualSpace from the options database
 
@@ -1241,6 +1331,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
     ierr = PetscDualSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
   ierr = PetscOptionsInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscdualspace_components", "The number of components", "PetscDualSpaceSetNumComponents", sp->Nc, &sp->Nc, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
     ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
@@ -1251,8 +1342,6 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp"
 /*@
   PetscDualSpaceSetUp - Construct a basis for the PetscDualSpace
 
@@ -1277,8 +1366,6 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy"
 /*@
   PetscDualSpaceDestroy - Destroys a PetscDualSpace object
 
@@ -1315,8 +1402,6 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate"
 /*@
   PetscDualSpaceCreate - Creates an empty PetscDualSpace object. The type can then be set with PetscDualSpaceSetType().
 
@@ -1346,14 +1431,13 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   ierr = PetscHeaderCreate(s, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView);CHKERRQ(ierr);
 
   s->order = 0;
+  s->Nc    = 1;
   s->setupcalled = PETSC_FALSE;
 
   *sp = s;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate"
 /*@
   PetscDualSpaceDuplicate - Creates a duplicate PetscDualSpace object, however it is not setup.
 
@@ -1380,8 +1464,6 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDM"
 /*@
   PetscDualSpaceGetDM - Get the DM representing the reference cell
 
@@ -1406,8 +1488,6 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetDM"
 /*@
   PetscDualSpaceSetDM - Get the DM representing the reference cell
 
@@ -1434,8 +1514,6 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetOrder"
 /*@
   PetscDualSpaceGetOrder - Get the order of the dual space
 
@@ -1460,8 +1538,6 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetOrder"
 /*@
   PetscDualSpaceSetOrder - Set the order of the dual space
 
@@ -1483,8 +1559,98 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetFunctional"
+/*@
+  PetscDualSpaceGetNumComponents - Return the number of components for this space
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. Nc - The number of components
+
+  Note: A vector space, for example, will have d components, where d is the spatial dimension
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceSetNumComponents(), PetscDualSpaceGetDimension(), PetscDualSpaceCreate(), PetscDualSpace
+@*/
+PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace sp, PetscInt *Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(Nc, 2);
+  *Nc = sp->Nc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceSetNumComponents - Set the number of components for this space
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- order - The number of components
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetNumComponents(), PetscDualSpaceCreate(), PetscDualSpace
+@*/
+PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  sp->Nc = Nc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. tensor - Whether the dual space has tensor layout (vs. simplicial)
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceLagrangeSetTensor(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeGetTensor_C",(PetscDualSpace,PetscBool *),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDualSpaceLagrangeSetTensor - Set the tensor nature of the dual space
+
+  Not collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- tensor - Whether the dual space has tensor layout (vs. simplicial)
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceLagrangeGetTensor(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  ierr = PetscTryMethod(sp,"PetscDualSpaceLagrangeSetTensor_C",(PetscDualSpace,PetscBool),(sp,tensor));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
 
@@ -1515,8 +1681,6 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension"
 /*@
   PetscDualSpaceGetDimension - Get the dimension of the dual space, i.e. the number of basis functionals
 
@@ -1544,8 +1708,6 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof"
 /*@C
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
 
@@ -1573,8 +1735,6 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreateReferenceCell"
 /*@
   PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
@@ -1602,8 +1762,6 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceApply"
 /*@C
   PetscDualSpaceApply - Apply a functional from the dual space basis to an input function
 
@@ -1611,7 +1769,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 + sp      - The PetscDualSpace object
 . f       - The basis functional index
 . time    - The time
-. geom    - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. cgeom   - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
 . numComp - The number of components for the function
 . func    - The input function
 - ctx     - A context for the function
@@ -1628,66 +1786,116 @@ $      PetscInt numComponents, PetscScalar values[], void *ctx)
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFECellGeom *geom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFECellGeom *cgeom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(cgeom, 4);
+  PetscValidPointer(value, 8);
+  ierr = (*sp->ops->apply)(sp, f, time, cgeom, numComp, func, ctx, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceApplyDefault - Apply a functional from the dual space basis to an input function by assuming a point evaluation functional.
+
+  Input Parameters:
++ sp    - The PetscDualSpace object
+. f     - The basis functional index
+. time  - The time
+. cgeom - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. Nc    - The number of components for the function
+. func  - The input function
+- ctx   - A context for the function
+
+  Output Parameter:
+. value   - The output value
+
+  Note: The calling sequence for the callback func is given by:
+
+$ func(PetscInt dim, PetscReal time, const PetscReal x[],
+$      PetscInt numComponents, PetscScalar values[], void *ctx)
+
+and the idea is to evaluate the functional as an integral
+
+$ n(f) = int dx n(x) . f(x)
+
+where both n and f have Nc components.
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFECellGeom *cgeom, PetscInt Nc, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
-  PetscQuadrature  quad;
+  PetscQuadrature  n;
+  const PetscReal *points, *weights;
   PetscReal        x[3];
   PetscScalar     *val;
-  PetscInt         dim, q, c;
+  PetscInt         dim, qNc, c, Nq, q;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(value, 5);
-  dim  = geom->dim;
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
-  for (c = 0; c < numComp; ++c) value[c] = 0.0;
-  for (q = 0; q < quad->numPoints; ++q) {
-    CoordinatesRefToReal(geom->dimEmbed, dim, geom->v0, geom->J, &quad->points[q*dim], x);
-    ierr = (*func)(geom->dimEmbed, time, x, numComp, val, ctx);CHKERRQ(ierr);
-    for (c = 0; c < numComp; ++c) {
-      value[c] += val[c]*quad->weights[q];
+  ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(n, &dim, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
+  if (dim != cgeom->dim) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature spatial dimension %D != cell geometry dimension %D", dim, cgeom->dim);
+  if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
+  ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  *value = 0.0;
+  for (q = 0; q < Nq; ++q) {
+    CoordinatesRefToReal(cgeom->dimEmbed, dim, cgeom->v0, cgeom->J, &points[q*dim], x);
+    ierr = (*func)(cgeom->dimEmbed, time, x, Nc, val, ctx);CHKERRQ(ierr);
+    for (c = 0; c < Nc; ++c) {
+      *value += val[c]*weights[q*Nc+c];
     }
   }
-  ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceApplyFVM"
 /*@C
-  PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function
+  PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function by assuming a point evaluation functional at the cell centroid.
 
   Input Parameters:
-+ sp      - The PetscDualSpace object
-. f       - The basis functional index
-. time    - The time
-. geom    - A context with geometric information for this cell, we currently just use the centroid
-. numComp - The number of components for the function
-. func    - The input function
-- ctx     - A context for the function
++ sp    - The PetscDualSpace object
+. f     - The basis functional index
+. time  - The time
+. cgeom - A context with geometric information for this cell, we currently just use the centroid
+. Nc    - The number of components for the function
+. func  - The input function
+- ctx   - A context for the function
 
   Output Parameter:
-. value   - numComp output values
+. value - The output value
 
   Note: The calling sequence for the callback func is given by:
 
 $ func(PetscInt dim, PetscReal time, const PetscReal x[],
 $      PetscInt numComponents, PetscScalar values[], void *ctx)
 
+and the idea is to evaluate the functional as an integral
+
+$ n(f) = int dx n(x) . f(x)
+
+where both n and f have Nc components.
+
   Level: developer
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFVCellGeom *geom, PetscInt numComp, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
+PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal time, PetscFVCellGeom *cgeom, PetscInt Nc, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
-  PetscQuadrature  quad;
+  PetscQuadrature  n;
+  const PetscReal *points, *weights;
   PetscScalar     *val;
-  PetscInt         dimEmbed, q, c;
+  PetscInt         dimEmbed, qNc, c, Nq, q;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1695,21 +1903,21 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   PetscValidPointer(value, 5);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
-  for (c = 0; c < numComp; ++c) value[c] = 0.0;
-  for (q = 0; q < quad->numPoints; ++q) {
-    ierr = (*func)(dimEmbed, time, geom->centroid, numComp, val, ctx);CHKERRQ(ierr);
-    for (c = 0; c < numComp; ++c) {
-      value[c] += val[c]*quad->weights[q];
+  ierr = PetscDualSpaceGetFunctional(sp, f, &n);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(n, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
+  if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
+  ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  for (c = 0; c < Nc; ++c) value[c] = 0.0;
+  for (q = 0; q < Nq; ++q) {
+    ierr = (*func)(dimEmbed, time, cgeom->centroid, Nc, val, ctx);CHKERRQ(ierr);
+    for (c = 0; c < Nc; ++c) {
+      value[c] += val[c]*weights[q*Nc+c];
     }
   }
-  ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetHeightSubspace"
 /*@
   PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a given height.
 
@@ -1726,7 +1934,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 - height - the height of the mesh point for which the subspace is desired
 
   Output Parameters:
-  bdsp - the subspace: must be destroyed by the user
+  bdsp - the subspace
 
   Level: advanced
 
@@ -1746,8 +1954,242 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
+static PetscErrorCode PetscDualSpaceLagrangeGetTensor_Lagrange(PetscDualSpace sp, PetscBool *tensor)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  *tensor = lag->tensorSpace;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscDualSpaceLagrangeSetTensor_Lagrange(PetscDualSpace sp, PetscBool tensor)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
+
+  PetscFunctionBegin;
+  lag->tensorSpace = tensor;
+  PetscFunctionReturn(0);
+}
+
+#define BaryIndex(perEdge,a,b,c) (((b)*(2*perEdge+1-(b)))/2)+(c)
+
+#define CartIndex(perEdge,a,b) (perEdge*(a)+b)
+
+static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
+{
+
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscInt           dim, order, p, Nc;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp,&Nc);CHKERRQ(ierr);
+  ierr = DMGetDimension(sp->dm,&dim);CHKERRQ(ierr);
+  if (!dim || !lag->continuous || order < 3) PetscFunctionReturn(0);
+  if (dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Lagrange symmetries not implemented for dim = %D > 3",dim);
+  if (!lag->symmetries) { /* store symmetries */
+    PetscDualSpace hsp;
+    DM             K;
+    PetscInt       numPoints = 1, d;
+    PetscInt       numFaces;
+    PetscInt       ***symmetries;
+    const PetscInt ***hsymmetries;
+
+    if (lag->simplexCell) {
+      numFaces = 1 + dim;
+      for (d = 0; d < dim; d++) numPoints = numPoints * 2 + 1;
+    }
+    else {
+      numPoints = PetscPowInt(3,dim);
+      numFaces  = 2 * dim;
+    }
+    ierr = PetscCalloc1(numPoints,&symmetries);CHKERRQ(ierr);
+    if (0 < dim && dim < 3) { /* compute self symmetries */
+      PetscInt **cellSymmetries;
+
+      lag->numSelfSym = 2 * numFaces;
+      lag->selfSymOff = numFaces;
+      ierr = PetscCalloc1(2*numFaces,&cellSymmetries);CHKERRQ(ierr);
+      /* we want to be able to index symmetries directly with the orientations, which range from [-numFaces,numFaces) */
+      symmetries[0] = &cellSymmetries[numFaces];
+      if (dim == 1) {
+        PetscInt dofPerEdge = order - 1;
+
+        if (dofPerEdge > 1) {
+          PetscInt i, j, *reverse;
+
+          ierr = PetscMalloc1(dofPerEdge*Nc,&reverse);CHKERRQ(ierr);
+          for (i = 0; i < dofPerEdge; i++) {
+            for (j = 0; j < Nc; j++) {
+              reverse[i*Nc + j] = Nc * (dofPerEdge - 1 - i) + j;
+            }
+          }
+          symmetries[0][-2] = reverse;
+
+          /* yes, this is redundant, but it makes it easier to cleanup if I don't have to worry about what not to free */
+          ierr = PetscMalloc1(dofPerEdge*Nc,&reverse);CHKERRQ(ierr);
+          for (i = 0; i < dofPerEdge; i++) {
+            for (j = 0; j < Nc; j++) {
+              reverse[i*Nc + j] = Nc * (dofPerEdge - 1 - i) + j;
+            }
+          }
+          symmetries[0][1] = reverse;
+        }
+      } else {
+        PetscInt dofPerEdge = lag->simplexCell ? (order - 2) : (order - 1), s;
+        PetscInt dofPerFace;
+
+        if (dofPerEdge > 1) {
+          for (s = -numFaces; s < numFaces; s++) {
+            PetscInt *sym, i, j, k, l;
+
+            if (!s) continue;
+            if (lag->simplexCell) {
+              dofPerFace = (dofPerEdge * (dofPerEdge + 1))/2;
+              ierr = PetscMalloc1(Nc*dofPerFace,&sym);CHKERRQ(ierr);
+              for (j = 0, l = 0; j < dofPerEdge; j++) {
+                for (k = 0; k < dofPerEdge - j; k++, l++) {
+                  i = dofPerEdge - 1 - j - k;
+                  switch (s) {
+                  case -3:
+                    sym[Nc*l] = BaryIndex(dofPerEdge,i,k,j);
+                    break;
+                  case -2:
+                    sym[Nc*l] = BaryIndex(dofPerEdge,j,i,k);
+                    break;
+                  case -1:
+                    sym[Nc*l] = BaryIndex(dofPerEdge,k,j,i);
+                    break;
+                  case 1:
+                    sym[Nc*l] = BaryIndex(dofPerEdge,k,i,j);
+                    break;
+                  case 2:
+                    sym[Nc*l] = BaryIndex(dofPerEdge,j,k,i);
+                    break;
+                  }
+                }
+              }
+            } else {
+              dofPerFace = dofPerEdge * dofPerEdge;
+              ierr = PetscMalloc1(Nc*dofPerFace,&sym);CHKERRQ(ierr);
+              for (j = 0, l = 0; j < dofPerEdge; j++) {
+                for (k = 0; k < dofPerEdge; k++, l++) {
+                  switch (s) {
+                  case -4:
+                    sym[Nc*l] = CartIndex(dofPerEdge,k,j);
+                    break;
+                  case -3:
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),k);
+                    break;
+                  case -2:
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),(dofPerEdge - 1 - j));
+                    break;
+                  case -1:
+                    sym[Nc*l] = CartIndex(dofPerEdge,j,(dofPerEdge - 1 - k));
+                    break;
+                  case 1:
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),j);
+                    break;
+                  case 2:
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),(dofPerEdge - 1 - k));
+                    break;
+                  case 3:
+                    sym[Nc*l] = CartIndex(dofPerEdge,k,(dofPerEdge - 1 - j));
+                    break;
+                  }
+                }
+              }
+            }
+            for (i = 0; i < dofPerFace; i++) {
+              sym[Nc*i] *= Nc;
+              for (j = 1; j < Nc; j++) {
+                sym[Nc*i+j] = sym[Nc*i] + j;
+              }
+            }
+            symmetries[0][s] = sym;
+          }
+        }
+      }
+    }
+    ierr = PetscDualSpaceGetHeightSubspace(sp,1,&hsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetSymmetries(hsp,&hsymmetries,NULL);CHKERRQ(ierr);
+    if (hsymmetries) {
+      PetscBool      *seen;
+      const PetscInt *cone;
+      PetscInt       KclosureSize, *Kclosure = NULL;
+
+      ierr = PetscDualSpaceGetDM(sp,&K);CHKERRQ(ierr);
+      ierr = PetscCalloc1(numPoints,&seen);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(K,0,&cone);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(K,0,PETSC_TRUE,&KclosureSize,&Kclosure);CHKERRQ(ierr);
+      for (p = 0; p < numFaces; p++) {
+        PetscInt closureSize, *closure = NULL, q;
+
+        ierr = DMPlexGetTransitiveClosure(K,cone[p],PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        for (q = 0; q < closureSize; q++) {
+          PetscInt point = closure[2*q], r;
+
+          if(!seen[point]) {
+            for (r = 0; r < KclosureSize; r++) {
+              if (Kclosure[2 * r] == point) break;
+            }
+            seen[point] = PETSC_TRUE;
+            symmetries[r] = (PetscInt **) hsymmetries[q];
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(K,cone[p],PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(K,0,PETSC_TRUE,&KclosureSize,&Kclosure);CHKERRQ(ierr);
+      ierr = PetscFree(seen);CHKERRQ(ierr);
+    }
+    lag->symmetries = symmetries;
+  }
+  if (perms) *perms = (const PetscInt ***) lag->symmetries;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDualSpaceGetSymmetries - Returns a description of the symmetries of this basis
+
+  Not collective
+
+  Input Parameter:
+. sp - the PetscDualSpace object
+
+  Output Parameters:
++ perms - Permutations of the local degrees of freedom, parameterized by the point orientation
+- flips - Sign reversal of the local degrees of freedom, parameterized by the point orientation
+
+  Note: The permutation and flip arrays are organized in the following way
+$ perms[p][ornt][dof # on point] = new local dof #
+$ flips[p][ornt][dof # on point] = reversal or not
+
+  Level: developer
+
+.seealso: PetscDualSpaceSetSymmetries()
+@*/
+PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,PETSCDUALSPACE_CLASSID,1);
+  if (perms) {
+    PetscValidPointer(perms,2);
+    *perms = NULL;
+  }
+  if (flips) {
+    PetscValidPointer(flips,3);
+    *flips = NULL;
+  }
+  if (sp->ops->getsymmetries) {
+    ierr = (sp->ops->getsymmetries)(sp,perms,flips);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -1758,7 +2200,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   PetscFunctionBegin;
   *dim = -1;                    /* Ensure that the compiler knows *dim is set. */
   ierr = DMGetDimension(sp->dm, &n);CHKERRQ(ierr);
-  if (lag->simplex || !lag->continuous) {
+  if (!lag->tensorSpace) {
     for (i = 1; i <= n; ++i) {
       D *= ((PetscReal) (order+i))/i;
     }
@@ -1767,15 +2209,14 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
     *dim = 1;
     for (i = 0; i < n; ++i) *dim *= (order+1);
   }
+  *dim *= sp->Nc;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreateHeightSubspace_Lagrange"
 static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscBool          continuous;
+  PetscBool          continuous, tensor;
   PetscInt           order;
   PetscErrorCode     ierr;
 
@@ -1787,11 +2228,9 @@ static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace
   if (height == 0) {
     ierr = PetscObjectReference((PetscObject)sp);CHKERRQ(ierr);
     *bdsp = sp;
-  }
-  else if (continuous == PETSC_FALSE || !order) {
+  } else if (continuous == PETSC_FALSE || !order) {
     *bdsp = NULL;
-  }
-  else {
+  } else {
     DM dm, K;
     PetscInt dim;
 
@@ -1799,195 +2238,58 @@ static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Asked for dual space at height %d for dimension %d reference element\n",height,dim);}
     ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplex, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplexCell, &K);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceLagrangeGetTensor(sp,&tensor);CHKERRQ(ierr);
+    ierr = PetscDualSpaceLagrangeSetTensor(*bdsp,tensor);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetUp(*bdsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp_Lagrange"
 PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
   DM                  dm    = sp->dm;
   PetscInt            order = sp->order;
-  PetscBool           disc  = lag->continuous ? PETSC_FALSE : PETSC_TRUE;
+  PetscInt            Nc    = sp->Nc;
+  PetscBool           continuous;
   PetscSection        csection;
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
-  PetscInt           *closure = NULL, closureSize, c;
-  PetscInt            depth, dim, pdimMax, pMax = 0, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
-  PetscBool           simplex;
+  PetscInt            depth, dim, pdimMax, pStart, pEnd, p, *pStratStart, *pStratEnd, coneSize, d, f = 0, c;
+  PetscBool           simplex, tensorSpace;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* Classify element type */
+  if (!order) lag->continuous = PETSC_FALSE;
+  continuous = lag->continuous;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(dim+1, &lag->numDof);CHKERRQ(ierr);
-  ierr = PetscMalloc2(depth+1,&pStart,depth+1,&pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= depth; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
-  ierr = DMPlexGetConeSize(dm, pStart[depth], &coneSize);CHKERRQ(ierr);
+  ierr = PetscMalloc2(depth+1,&pStratStart,depth+1,&pStratEnd);CHKERRQ(ierr);
+  for (d = 0; d <= depth; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStratStart[d], &pStratEnd[d]);CHKERRQ(ierr);}
+  ierr = DMPlexGetConeSize(dm, pStratStart[depth], &coneSize);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &csection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   if (depth == 1) {
     if      (coneSize == dim+1)    simplex = PETSC_TRUE;
     else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
     else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
-  }
-  else if (depth == dim) {
+  } else if (depth == dim) {
     if      (coneSize == dim+1)   simplex = PETSC_TRUE;
     else if (coneSize == 2 * dim) simplex = PETSC_FALSE;
     else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
-  }
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
-  lag->simplex = simplex;
-  ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
-  pdimMax *= (pEnd[dim] - pStart[dim]);
-  ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
-  for (d = 0; d <= depth; d++) {
-    pMax = PetscMax(pMax,pEnd[d]);
-  }
-  if (!dim) {
-    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-    ierr = PetscMalloc1(1, &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
-    ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-    ierr = PetscQuadratureSetData(sp->functional[f], PETSC_DETERMINE, 1, qpoints, qweights);CHKERRQ(ierr);
-    qpoints[0]  = 0.0;
-    qweights[0] = 1.0;
-    ++f;
-    lag->numDof[0] = 1;
-  } else {
-    PetscBT seen;
-
-    ierr = PetscBTCreate(pMax, &seen);CHKERRQ(ierr);
-    ierr = PetscBTMemzero(pMax, seen);CHKERRQ(ierr);
-    for (cell = pStart[depth]; cell < pEnd[depth]; ++cell) {
-      ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      for (c = 0; c < closureSize*2; c += 2) {
-        const PetscInt p = closure[c];
-
-        if (PetscBTLookup(seen, p)) continue;
-        ierr = PetscBTSet(seen, p);CHKERRQ(ierr);
-        if ((p >= pStart[0]) && (p < pEnd[0])) {
-          /* Vertices */
-          const PetscScalar *coords;
-          PetscInt           dof, off, d;
-
-          if (order < 1 || disc) continue;
-          ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-          ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-          ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
-          ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-          ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-          ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-          ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
-          if (dof != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of coordinates %d does not match spatial dimension %d", dof, dim);
-          for (d = 0; d < dof; ++d) {qpoints[d] = PetscRealPart(coords[off+d]);}
-          qweights[0] = 1.0;
-          ++f;
-          ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-          lag->numDof[0] = 1;
-        } else if ((p >= pStart[1]) && (p < pEnd[1])) {
-          /* Edges */
-          PetscScalar *coords;
-          PetscInt     num = ((dim == 1) && !order) ? 1 : order-1, k;
-
-          if (num < 1 || disc) continue;
-          coords = NULL;
-          ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
-          if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
-          for (k = 1; k <= num; ++k) {
-            ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-            ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-            ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
-            ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-            ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-            for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
-            qweights[0] = 1.0;
-            ++f;
-          }
-          ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
-          lag->numDof[1] = num;
-        } else if ((p >= pStart[depth-1]) && (p < pEnd[depth-1])) {
-          /* Faces */
-
-          if (disc) continue;
-          if ( simplex && (order < 3)) continue;
-          if (!simplex && (order < 2)) continue;
-          lag->numDof[depth-1] = 0;
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement faces");
-        } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
-          /* Cells */
-          PetscInt     orderEff = lag->continuous && order ? (simplex ? order-3 : order-2) : order;
-          PetscReal    denom    = order ? (lag->continuous ? order : (simplex ? order+3 : order+2)) : (simplex ? 3 : 2);
-          PetscScalar *coords   = NULL;
-          PetscReal    dx = 2.0/denom, *v0, *J, *invJ, detJ;
-          PetscInt    *ind, *tup;
-          PetscInt     cdim, csize, d, d2, o;
-
-          lag->numDof[depth] = 0;
-          if (orderEff < 0) continue;
-          ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, orderEff, &cdim);CHKERRQ(ierr);
-          ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
-          if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
-
-          ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
-          ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-          if (simplex || disc) {
-            for (o = 0; o <= orderEff; ++o) {
-              ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
-              while (ind[0] >= 0) {
-                ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-                ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-                ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
-                ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-                ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-                ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
-                for (d = 0; d < dim; ++d) {
-                  qpoints[d] = v0[d];
-                  for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
-                }
-                qweights[0] = 1.0;
-                ++f;
-              }
-            }
-          } else {
-            while (ind[0] >= 0) {
-              ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-              ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-              ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
-              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
-              ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-              ierr = TensorPoint_Internal(dim, orderEff+1, ind, tup);CHKERRQ(ierr);
-              for (d = 0; d < dim; ++d) {
-                qpoints[d] = v0[d];
-                for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d]+1)*dx);
-              }
-              qweights[0] = 1.0;
-              ++f;
-            }
-          }
-          ierr = PetscFree5(ind,tup,v0,J,invJ);CHKERRQ(ierr);
-          ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
-          lag->numDof[depth] = cdim;
-        }
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    }
-    ierr = PetscBTDestroy(&seen);CHKERRQ(ierr);
-  }
-  if (pEnd[dim] == 1 && f != pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdimMax);
-  ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
-  if (f > pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d is greater than dimension %d", f, pdimMax);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
+  lag->simplexCell = simplex;
+  if (dim > 1 && continuous && lag->simplexCell == lag->tensorSpace) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Mismatching simplex/tensor cells and spaces only allowed for discontinuous elements");
+  tensorSpace    = lag->tensorSpace;
   lag->height    = 0;
   lag->subspaces = NULL;
-  if (lag->continuous && sp->order > 0 && dim > 0) {
+  if (continuous && sp->order > 0 && dim > 0) {
     PetscInt i;
 
     lag->height = dim;
@@ -1999,11 +2301,163 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       ierr = PetscObjectReference((PetscObject)(lag->subspaces[i]));CHKERRQ(ierr);
     }
   }
+  ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
+  pdimMax *= (pStratEnd[depth] - pStratStart[depth]);
+  ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
+  if (!dim) {
+    for (c = 0; c < Nc; ++c) {
+      ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+      ierr = PetscCalloc1(Nc, &qweights);CHKERRQ(ierr);
+      ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
+      ierr = PetscQuadratureSetData(sp->functional[f], 0, Nc, 1, NULL, qweights);CHKERRQ(ierr);
+      qweights[c] = 1.0;
+      ++f;
+      lag->numDof[0]++;
+    }
+  } else {
+    PetscInt     *tup;
+    PetscReal    *v0, *hv0, *J, *invJ, detJ, hdetJ;
+    PetscSection section;
+
+    ierr = PetscSectionCreate(PETSC_COMM_SELF,&section);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(section,pStart,pEnd);CHKERRQ(ierr);
+    ierr = PetscCalloc5(dim+1,&tup,dim,&v0,dim,&hv0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt       pointDim, d, nFunc = 0;
+      PetscDualSpace hsp;
+
+      ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+      for (d = 0; d < depth; d++) {if (p >= pStratStart[d] && p < pStratEnd[d]) break;}
+      pointDim = (depth == 1 && d == 1) ? dim : d;
+      hsp = ((pointDim < dim) && lag->subspaces) ? lag->subspaces[dim - pointDim - 1] : NULL;
+      if (hsp) {
+        PetscDualSpace_Lag *hlag = (PetscDualSpace_Lag *) hsp->data;
+        DM                 hdm;
+
+        ierr = PetscDualSpaceGetDM(hsp,&hdm);CHKERRQ(ierr);
+        ierr = DMPlexComputeCellGeometryFEM(hdm, 0, NULL, hv0, NULL, NULL, &hdetJ);CHKERRQ(ierr);
+        nFunc = lag->numDof[pointDim] = hlag->numDof[pointDim];
+      }
+      if (pointDim == dim) {
+        /* Cells, create for self */
+        PetscInt     orderEff = continuous ? (!tensorSpace ? order-1-dim : order-2) : order;
+        PetscReal    denom    = continuous ? order : (!tensorSpace ? order+1+dim : order+2);
+        PetscReal    numer    = (!simplex || !tensorSpace) ? 2. : (2./dim);
+        PetscReal    dx = numer/denom;
+        PetscInt     cdim, d, d2;
+
+        if (orderEff < 0) continue;
+        ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, orderEff, &cdim);CHKERRQ(ierr);
+        ierr = PetscMemzero(tup,(dim+1)*sizeof(PetscInt));CHKERRQ(ierr);
+        if (!tensorSpace) {
+          while (!tup[dim]) {
+            for (c = 0; c < Nc; ++c) {
+              ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+              ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
+              ierr = PetscCalloc1(Nc,  &qweights);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetData(sp->functional[f], dim, Nc, 1, qpoints, qweights);CHKERRQ(ierr);
+              for (d = 0; d < dim; ++d) {
+                qpoints[d] = v0[d];
+                for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
+              }
+              qweights[c] = 1.0;
+              ++f;
+            }
+            ierr = LatticePointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
+          }
+        } else {
+          while (!tup[dim]) {
+            for (c = 0; c < Nc; ++c) {
+              ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+              ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
+              ierr = PetscCalloc1(Nc,  &qweights);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetData(sp->functional[f], dim, Nc, 1, qpoints, qweights);CHKERRQ(ierr);
+              for (d = 0; d < dim; ++d) {
+                qpoints[d] = v0[d];
+                for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
+              }
+              qweights[c] = 1.0;
+              ++f;
+            }
+            ierr = TensorPointLexicographic_Internal(dim, orderEff, tup);CHKERRQ(ierr);
+          }
+        }
+        lag->numDof[dim] = cdim;
+      } else { /* transform functionals from subspaces */
+        PetscInt q;
+
+        for (q = 0; q < nFunc; q++, f++) {
+          PetscQuadrature fn;
+          PetscInt        fdim, Nc, c, nPoints, i;
+          const PetscReal *points;
+          const PetscReal *weights;
+          PetscReal       *qpoints;
+          PetscReal       *qweights;
+
+          ierr = PetscDualSpaceGetFunctional(hsp, q, &fn);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(fn,&fdim,&Nc,&nPoints,&points,&weights);CHKERRQ(ierr);
+          if (fdim != pointDim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected height dual space dim %D, got %D",pointDim,fdim);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nPoints * dim, &qpoints);CHKERRQ(ierr);
+          ierr = PetscCalloc1(nPoints * Nc,  &qweights);CHKERRQ(ierr);
+          for (i = 0; i < nPoints; i++) {
+            PetscInt  j, k;
+            PetscReal *qp = &qpoints[i * dim];
+
+            for (c = 0; c < Nc; ++c) qweights[i*Nc+c] = weights[i*Nc+c];
+            for (j = 0; j < dim; ++j) qp[j] = v0[j];
+            for (j = 0; j < dim; ++j) {
+              for (k = 0; k < pointDim; k++) qp[j] += J[dim * j + k] * (points[pointDim * i + k] - hv0[k]);
+            }
+          }
+          ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+          ierr = PetscQuadratureSetOrder(sp->functional[f],0);CHKERRQ(ierr);
+          ierr = PetscQuadratureSetData(sp->functional[f],dim,Nc,nPoints,qpoints,qweights);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSectionSetDof(section,p,lag->numDof[pointDim]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree5(tup,v0,hv0,J,invJ);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+    { /* reorder to closure order */
+      PetscInt *key, count;
+      PetscQuadrature *reorder = NULL;
+
+      ierr = PetscCalloc1(f,&key);CHKERRQ(ierr);
+      ierr = PetscMalloc1(f*sp->Nc,&reorder);CHKERRQ(ierr);
+
+      for (p = pStratStart[depth], count = 0; p < pStratEnd[depth]; p++) {
+        PetscInt *closure = NULL, closureSize, c;
+
+        ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+        for (c = 0; c < closureSize; c++) {
+          PetscInt point = closure[2 * c], dof, off, i;
+
+          ierr = PetscSectionGetDof(section,point,&dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(section,point,&off);CHKERRQ(ierr);
+          for (i = 0; i < dof; i++) {
+            PetscInt fi = i + off;
+            if (!key[fi]) {
+              key[fi] = 1;
+              reorder[count++] = sp->functional[fi];
+            }
+          }
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(sp->functional);CHKERRQ(ierr);
+      sp->functional = reorder;
+      ierr = PetscFree(key);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  }
+  if (pStratEnd[depth] == 1 && f != pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdimMax);
+  ierr = PetscFree2(pStratStart, pStratEnd);CHKERRQ(ierr);
+  if (f > pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d is greater than dimension %d", f, pdimMax);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy_Lagrange"
 PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2011,6 +2465,19 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  if (lag->symmetries) {
+    PetscInt **selfSyms = lag->symmetries[0];
+
+    if (selfSyms) {
+      PetscInt i, **allocated = &selfSyms[-lag->selfSymOff];
+
+      for (i = 0; i < lag->numSelfSym; i++) {
+        ierr = PetscFree(allocated[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(allocated);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(lag->symmetries);CHKERRQ(ierr);
+  }
   for (i = 0; i < lag->height; i++) {
     ierr = PetscDualSpaceDestroy(&lag->subspaces[i]);CHKERRQ(ierr);
   }
@@ -2019,15 +2486,15 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   ierr = PetscFree(lag);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetTensor_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTensor_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate_Lagrange"
 PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace *spNew)
 {
-  PetscInt       order;
-  PetscBool      cont;
+  PetscInt       order, Nc;
+  PetscBool      cont, tensor;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2035,29 +2502,32 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
   ierr = PetscDualSpaceSetType(*spNew, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetOrder(sp, &order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(*spNew, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(*spNew, Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeGetContinuity(sp, &cont);CHKERRQ(ierr);
   ierr = PetscDualSpaceLagrangeSetContinuity(*spNew, cont);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(*spNew, tensor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
 PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
-  PetscBool      continuous, flg;
+  PetscBool      continuous, tensor, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceLagrangeGetContinuity(sp, &continuous);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetTensor(sp, &tensor);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"PetscDualSpace Lagrange Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-petscdualspace_lagrange_tensor", "Flag for tensor dual space", "PetscDualSpaceLagrangeSetContinuity", tensor, &tensor, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscDualSpaceLagrangeSetTensor(sp, tensor);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
   DM              K;
@@ -2081,8 +2551,6 @@ PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof_Lagrange"
 PetscErrorCode PetscDualSpaceGetNumDof_Lagrange(PetscDualSpace sp, const PetscInt **numDof)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2092,8 +2560,6 @@ PetscErrorCode PetscDualSpaceGetNumDof_Lagrange(PetscDualSpace sp, const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpace sp, PetscBool *continuous)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2105,8 +2571,6 @@ static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpace sp, PetscBool continuous)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2117,8 +2581,6 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity"
 /*@
   PetscDualSpaceLagrangeGetContinuity - Retrieves the flag for element continuity
 
@@ -2146,8 +2608,6 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity"
 /*@
   PetscDualSpaceLagrangeSetContinuity - Indicate whether the element is continuous
 
@@ -2176,8 +2636,6 @@ PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetHeightSubspace_Lagrange"
 PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2206,8 +2664,6 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceInitialize_Lagrange"
 PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 {
   PetscFunctionBegin;
@@ -2219,6 +2675,8 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   sp->ops->getdimension      = PetscDualSpaceGetDimension_Lagrange;
   sp->ops->getnumdof         = PetscDualSpaceGetNumDof_Lagrange;
   sp->ops->getheightsubspace = PetscDualSpaceGetHeightSubspace_Lagrange;
+  sp->ops->getsymmetries     = PetscDualSpaceGetSymmetries_Lagrange;
+  sp->ops->apply             = PetscDualSpaceApplyDefault;
   PetscFunctionReturn(0);
 }
 
@@ -2230,8 +2688,6 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 .seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate_Lagrange"
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag;
@@ -2242,18 +2698,19 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   ierr     = PetscNewLog(sp,&lag);CHKERRQ(ierr);
   sp->data = lag;
 
-  lag->numDof     = NULL;
-  lag->simplex    = PETSC_TRUE;
-  lag->continuous = PETSC_TRUE;
+  lag->numDof      = NULL;
+  lag->simplexCell = PETSC_TRUE;
+  lag->tensorSpace = PETSC_FALSE;
+  lag->continuous  = PETSC_TRUE;
 
   ierr = PetscDualSpaceInitialize_Lagrange(sp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", PetscDualSpaceLagrangeGetContinuity_Lagrange);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", PetscDualSpaceLagrangeSetContinuity_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetTensor_C", PetscDualSpaceLagrangeGetTensor_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetTensor_C", PetscDualSpaceLagrangeSetTensor_Lagrange);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp_Simple"
 PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s  = (PetscDualSpace_Simple *) sp->data;
@@ -2267,8 +2724,6 @@ PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy_Simple"
 PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2282,16 +2737,16 @@ PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate_Simple"
 PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace *spNew)
 {
-  PetscInt       dim, d;
+  PetscInt       dim, d, Nc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) sp), spNew);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(*spNew, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(sp, Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(sp, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceSimpleSetDimension(*spNew, dim);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) {
@@ -2303,16 +2758,12 @@ PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions_Simple"
 PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_Simple"
 PetscErrorCode PetscDualSpaceGetDimension_Simple(PetscDualSpace sp, PetscInt *dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2322,8 +2773,6 @@ PetscErrorCode PetscDualSpaceGetDimension_Simple(PetscDualSpace sp, PetscInt *di
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetDimension_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const PetscInt dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2344,8 +2793,6 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof_Simple"
 PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt **numDof)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2355,28 +2802,27 @@ PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetFunctional_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
 {
-  PetscDualSpace_Simple *s   = (PetscDualSpace_Simple *) sp->data;
-  PetscReal              vol = 0.0;
+  PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
   PetscReal             *weights;
-  PetscInt               Nq, p;
+  PetscInt               Nc, c, Nq, p;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if ((f < 0) || (f >= s->dim)) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Basis index %d not in [0, %d)", f, s->dim);
   ierr = PetscQuadratureDuplicate(q, &sp->functional[f]);CHKERRQ(ierr);
-  /* Reweight so that it has unit volume */
-  ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);
-  for (p = 0; p < Nq; ++p) vol += weights[p];
-  for (p = 0; p < Nq; ++p) weights[p] /= vol;
+  /* Reweight so that it has unit volume: Do we want to do this for Nc > 1? */
+  ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nc, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);
+  for (c = 0; c < Nc; ++c) {
+    PetscReal vol = 0.0;
+
+    for (p = 0; p < Nq; ++p) vol += weights[p*Nc+c];
+    for (p = 0; p < Nq; ++p) weights[p*Nc+c] /= (vol == 0.0 ? 1.0 : vol);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetDimension"
 /*@
   PetscDualSpaceSimpleSetDimension - Set the number of functionals in the dual space basis
 
@@ -2402,8 +2848,6 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetFunctional"
 /*@
   PetscDualSpaceSimpleSetFunctional - Set the given basis element for this dual space
 
@@ -2431,18 +2875,19 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceInitialize_Simple"
 PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 {
   PetscFunctionBegin;
-  sp->ops->setfromoptions = PetscDualSpaceSetFromOptions_Simple;
-  sp->ops->setup          = PetscDualSpaceSetUp_Simple;
-  sp->ops->view           = NULL;
-  sp->ops->destroy        = PetscDualSpaceDestroy_Simple;
-  sp->ops->duplicate      = PetscDualSpaceDuplicate_Simple;
-  sp->ops->getdimension   = PetscDualSpaceGetDimension_Simple;
-  sp->ops->getnumdof      = PetscDualSpaceGetNumDof_Simple;
+  sp->ops->setfromoptions    = PetscDualSpaceSetFromOptions_Simple;
+  sp->ops->setup             = PetscDualSpaceSetUp_Simple;
+  sp->ops->view              = NULL;
+  sp->ops->destroy           = PetscDualSpaceDestroy_Simple;
+  sp->ops->duplicate         = PetscDualSpaceDuplicate_Simple;
+  sp->ops->getdimension      = PetscDualSpaceGetDimension_Simple;
+  sp->ops->getnumdof         = PetscDualSpaceGetNumDof_Simple;
+  sp->ops->getheightsubspace = NULL;
+  sp->ops->getsymmetries     = NULL;
+  sp->ops->apply             = PetscDualSpaceApplyDefault;
   PetscFunctionReturn(0);
 }
 
@@ -2454,8 +2899,6 @@ PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 .seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate_Simple"
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s;
@@ -2481,8 +2924,6 @@ PetscClassId PETSCFE_CLASSID = 0;
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERegister"
 /*@C
   PetscFERegister - Adds a new PetscFE implementation
 
@@ -2525,8 +2966,6 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetType"
 /*@C
   PetscFESetType - Builds a particular PetscFE
 
@@ -2568,8 +3007,6 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetType"
 /*@C
   PetscFEGetType - Gets the PetscFE type name (as a string) from the object.
 
@@ -2600,8 +3037,6 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView"
 /*@C
   PetscFEView - Views a PetscFE
 
@@ -2630,8 +3065,6 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetFromOptions"
 /*@
   PetscFESetFromOptions - sets parameters in a PetscFE from the options database
 
@@ -2683,8 +3116,6 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp"
 /*@C
   PetscFESetUp - Construct data structures for the PetscFE
 
@@ -2707,8 +3138,6 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy"
 /*@
   PetscFEDestroy - Destroys a PetscFE object
 
@@ -2732,21 +3161,20 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
 
-  ierr = PetscFree((*fem)->numDof);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
+  ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->Bf, &(*fem)->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->F, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&(*fem)->basisSpace);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*fem)->faceQuadrature);CHKERRQ(ierr);
 
   if ((*fem)->ops->destroy) {ierr = (*(*fem)->ops->destroy)(*fem);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate"
 /*@
   PetscFECreate - Creates an empty PetscFE object. The type can then be set with PetscFESetType().
 
@@ -2778,12 +3206,15 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->basisSpace    = NULL;
   f->dualSpace     = NULL;
   f->numComponents = 1;
-  f->numDof        = NULL;
   f->invV          = NULL;
   f->B             = NULL;
   f->D             = NULL;
   f->H             = NULL;
+  f->Bf            = NULL;
+  f->Df            = NULL;
+  f->Hf            = NULL;
   ierr = PetscMemzero(&f->quadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
+  ierr = PetscMemzero(&f->faceQuadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
   f->blockSize     = 0;
   f->numBlocks     = 1;
   f->batchSize     = 0;
@@ -2793,8 +3224,6 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetSpatialDimension"
 /*@
   PetscFEGetSpatialDimension - Returns the spatial dimension of the element
 
@@ -2823,8 +3252,6 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetNumComponents"
 /*@
   PetscFESetNumComponents - Sets the number of components in the element
 
@@ -2846,8 +3273,6 @@ PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetNumComponents"
 /*@
   PetscFEGetNumComponents - Returns the number of components in the element
 
@@ -2872,8 +3297,6 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetTileSizes"
 /*@
   PetscFESetTileSizes - Sets the tile sizes for evaluation
 
@@ -2901,8 +3324,6 @@ PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt num
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTileSizes"
 /*@
   PetscFEGetTileSizes - Returns the tile sizes for evaluation
 
@@ -2936,8 +3357,6 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetBasisSpace"
 /*@
   PetscFEGetBasisSpace - Returns the PetscSpace used for approximation of the solution
 
@@ -2962,8 +3381,6 @@ PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetBasisSpace"
 /*@
   PetscFESetBasisSpace - Sets the PetscSpace used for approximation of the solution
 
@@ -2990,8 +3407,6 @@ PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDualSpace"
 /*@
   PetscFEGetDualSpace - Returns the PetscDualSpace used to define the inner product
 
@@ -3016,8 +3431,6 @@ PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetDualSpace"
 /*@
   PetscFESetDualSpace - Sets the PetscDualSpace used to define the inner product
 
@@ -3044,10 +3457,8 @@ PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetQuadrature"
 /*@
-  PetscFEGetQuadrature - Returns the PetscQuadreture used to calculate inner products
+  PetscFEGetQuadrature - Returns the PetscQuadrature used to calculate inner products
 
   Not collective
 
@@ -3070,10 +3481,8 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetQuadrature"
 /*@
-  PetscFESetQuadrature - Sets the PetscQuadreture used to calculate inner products
+  PetscFESetQuadrature - Sets the PetscQuadrature used to calculate inner products
 
   Not collective
 
@@ -3087,10 +3496,14 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
 @*/
 PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 {
+  PetscInt       Nc, qNc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetNumComponents(q, &qNc);CHKERRQ(ierr);
+  if ((qNc != 1) && (Nc != qNc)) SETERRQ2(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_SIZ, "FE components %D != Quadrature components %D and non-scalar quadrature", Nc, qNc);
   ierr = PetscFERestoreTabulation(fem, 0, NULL, &fem->B, &fem->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&fem->quadrature);CHKERRQ(ierr);
   fem->quadrature = q;
@@ -3098,34 +3511,104 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetNumDof"
+/*@
+  PetscFEGetFaceQuadrature - Returns the PetscQuadrature used to calculate inner products on faces
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFEGetFaceQuadrature(PetscFE fem, PetscQuadrature *q)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = fem->faceQuadrature;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscFESetFaceQuadrature - Sets the PetscQuadrature used to calculate inner products on faces
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr = PetscFERestoreTabulation(fem, 0, NULL, &fem->Bf, &fem->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fem->faceQuadrature);CHKERRQ(ierr);
+  fem->faceQuadrature = q;
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. numDof - Array with the number of dofs per dimension
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 {
-  const PetscInt *numDofDual;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(numDof, 2);
-  ierr = PetscDualSpaceGetNumDof(fem->dualSpace, &numDofDual);CHKERRQ(ierr);
-  if (!fem->numDof) {
-    DM       dm;
-    PetscInt dim, d;
-
-    ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = PetscMalloc1(dim+1, &fem->numDof);CHKERRQ(ierr);
-    for (d = 0; d <= dim; ++d) {
-      fem->numDof[d] = fem->numComponents*numDofDual[d];
-    }
-  }
-  *numDof = fem->numDof;
+  ierr = PetscDualSpaceGetNumDof(fem->dualSpace, numDof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDefaultTabulation"
+/*@C
+  PetscFEGetDefaultTabulation - Returns the tabulation of the basis functions at the quadrature points
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ B - The basis function values at quadrature points
+. D - The basis function derivatives at quadrature points
+- H - The basis function second derivatives at quadrature points
+
+  Note:
+$ B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+$ D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+$ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFEGetTabulation(), PetscFERestoreTabulation()
+@*/
 PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
   PetscInt         npoints;
@@ -3137,7 +3620,7 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   if (B) PetscValidPointer(B, 2);
   if (D) PetscValidPointer(D, 3);
   if (H) PetscValidPointer(H, 4);
-  ierr = PetscQuadratureGetData(fem->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(fem->quadrature, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fem->B) {ierr = PetscFEGetTabulation(fem, npoints, points, &fem->B, &fem->D, NULL/*&fem->H*/);CHKERRQ(ierr);}
   if (B) *B = fem->B;
   if (D) *D = fem->D;
@@ -3145,9 +3628,47 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetFaceTabulation"
-PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
+PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (Bf) PetscValidPointer(Bf, 2);
+  if (Df) PetscValidPointer(Df, 3);
+  if (Hf) PetscValidPointer(Hf, 4);
+  if (!fem->Bf) {
+    PetscFECellGeom  cgeom;
+    PetscQuadrature  fq;
+    PetscDualSpace   sp;
+    DM               dm;
+    const PetscInt  *faces;
+    PetscInt         dim, numFaces, f, npoints, q;
+    const PetscReal *points;
+    PetscReal       *facePoints;
+
+    ierr = PetscFEGetDualSpace(fem, &sp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, 0, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, 0, &faces);CHKERRQ(ierr);
+    ierr = PetscFEGetFaceQuadrature(fem, &fq);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(fq, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numFaces*npoints*dim, &facePoints);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {
+      ierr = DMPlexComputeCellGeometryFEM(dm, faces[f], NULL, cgeom.v0, cgeom.J, NULL, &cgeom.detJ);CHKERRQ(ierr);
+      for (q = 0; q < npoints; ++q) CoordinatesRefToReal(dim, dim-1, cgeom.v0, cgeom.J, &points[q*(dim-1)], &facePoints[(f*npoints+q)*dim]);
+    }
+    ierr = PetscFEGetTabulation(fem, numFaces*npoints, facePoints, &fem->Bf, &fem->Df, NULL/*&fem->Hf*/);CHKERRQ(ierr);
+    ierr = PetscFree(facePoints);CHKERRQ(ierr);
+  }
+  if (Bf) *Bf = fem->Bf;
+  if (Df) *Df = fem->Df;
+  if (Hf) *Hf = fem->Hf;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscReal **F)
 {
   PetscErrorCode   ierr;
 
@@ -3175,8 +3696,30 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation"
+/*@C
+  PetscFEGetTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
+
+  Not collective
+
+  Input Parameters:
++ fem     - The PetscFE object
+. npoints - The number of tabulation points
+- points  - The tabulation point coordinates
+
+  Output Parameters:
++ B - The basis function values at tabulation points
+. D - The basis function derivatives at tabulation points
+- H - The basis function second derivatives at tabulation points
+
+  Note:
+$ B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+$ D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+$ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFERestoreTabulation(), PetscFEGetDefaultTabulation()
+@*/
 PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM               dm;
@@ -3202,8 +3745,6 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERestoreTabulation"
 PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM             dm;
@@ -3218,8 +3759,6 @@ PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Basic"
 PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 {
   PetscFE_Basic *b = (PetscFE_Basic *) fem->data;
@@ -3230,14 +3769,12 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView_Basic_Ascii"
 PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
 {
   PetscSpace        basis;
   PetscDualSpace    dual;
   PetscQuadrature   q = NULL;
-  PetscInt          dim, Nq;
+  PetscInt          dim, Nc, Nq;
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
@@ -3245,17 +3782,20 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   ierr = PetscFEGetBasisSpace(fe, &basis);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe, &dual);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &Nq, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Basic Finite Element:\n");CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  components:      %d\n", Nc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  components:      %d\n", Nc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -3265,8 +3805,6 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView_Basic"
 PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -3280,8 +3818,6 @@ PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp_Basic"
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
@@ -3300,18 +3836,21 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   invVscalar = fem->invV;
 #endif
   for (j = 0; j < pdim; ++j) {
-    PetscReal      *Bf;
-    PetscQuadrature f;
-    PetscInt        q, k;
+    PetscReal       *Bf;
+    PetscQuadrature  f;
+    const PetscReal *points, *weights;
+    PetscInt         Nc, Nq, q, k, c;
 
     ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);CHKERRQ(ierr);
-    ierr = PetscMalloc1(f->numPoints*pdim,&Bf);CHKERRQ(ierr);
-    ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(f, NULL, &Nc, &Nq, &points, &weights);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc*Nq*pdim,&Bf);CHKERRQ(ierr);
+    ierr = PetscSpaceEvaluate(fem->basisSpace, Nq, points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
-      /* n_j \cdot \phi_k */
+      /* V_{jk} = n_j(\phi_k) = \int \phi_k(x) n_j(x) dx */
       invVscalar[j*pdim+k] = 0.0;
-      for (q = 0; q < f->numPoints; ++q) {
-        invVscalar[j*pdim+k] += Bf[q*pdim+k]*f->weights[q];
+
+      for (q = 0; q < Nq; ++q) {
+        for (c = 0; c < Nc; ++c) invVscalar[j*pdim+k] += Bf[(q*pdim + k)*Nc + c]*weights[q*Nc + c];
       }
     }
     ierr = PetscFree(Bf);CHKERRQ(ierr);
@@ -3328,8 +3867,6 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDimension_Basic"
 PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -3339,58 +3876,52 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation_Basic"
 PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   DM               dm;
   PetscInt         pdim; /* Dimension of FE space P */
   PetscInt         dim;  /* Spatial dimension */
-  PetscInt         comp; /* Field components */
+  PetscInt         Nc;   /* Field components */
   PetscReal       *tmpB, *tmpD, *tmpH;
-  PetscInt         p, d, j, k;
+  PetscInt         p, d, j, k, c;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   /* Evaluate the prime basis functions at all points */
-  if (B) {ierr = DMGetWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
-  if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
-  if (H) {ierr = DMGetWorkArray(dm, npoints*pdim*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
+  if (B) {ierr = DMGetWorkArray(dm, npoints*pdim*Nc, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
+  if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*Nc*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
+  if (H) {ierr = DMGetWorkArray(dm, npoints*pdim*Nc*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
   ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? tmpD : NULL, H ? tmpH : NULL);CHKERRQ(ierr);
   /* Translate to the nodal basis */
   for (p = 0; p < npoints; ++p) {
     if (B) {
       /* Multiply by V^{-1} (pdim x pdim) */
       for (j = 0; j < pdim; ++j) {
-        const PetscInt i = (p*pdim + j)*comp;
-        PetscInt       c;
+        const PetscInt i = (p*pdim + j)*Nc;
 
-        B[i] = 0.0;
-        for (k = 0; k < pdim; ++k) {
-          B[i] += fem->invV[k*pdim+j] * tmpB[p*pdim + k];
-        }
-        for (c = 1; c < comp; ++c) {
-          B[i+c] = B[i];
+        for (c = 0; c < Nc; ++c) {
+          B[i+c] = 0.0;
+          for (k = 0; k < pdim; ++k) {
+            B[i+c] += fem->invV[k*pdim+j] * tmpB[(p*pdim + k)*Nc+c];
+          }
         }
       }
     }
     if (D) {
       /* Multiply by V^{-1} (pdim x pdim) */
       for (j = 0; j < pdim; ++j) {
-        for (d = 0; d < dim; ++d) {
-          const PetscInt i = ((p*pdim + j)*comp + 0)*dim + d;
-          PetscInt       c;
+        for (c = 0; c < Nc; ++c) {
+          for (d = 0; d < dim; ++d) {
+            const PetscInt i = ((p*pdim + j)*Nc + c)*dim + d;
 
-          D[i] = 0.0;
-          for (k = 0; k < pdim; ++k) {
-            D[i] += fem->invV[k*pdim+j] * tmpD[(p*pdim + k)*dim + d];
-          }
-          for (c = 1; c < comp; ++c) {
-            D[((p*pdim + j)*comp + c)*dim + d] = D[i];
+            D[i] = 0.0;
+            for (k = 0; k < pdim; ++k) {
+              D[i] += fem->invV[k*pdim+j] * tmpD[((p*pdim + k)*Nc + c)*dim + d];
+            }
           }
         }
       }
@@ -3398,40 +3929,38 @@ PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const P
     if (H) {
       /* Multiply by V^{-1} (pdim x pdim) */
       for (j = 0; j < pdim; ++j) {
-        for (d = 0; d < dim*dim; ++d) {
-          const PetscInt i = ((p*pdim + j)*comp + 0)*dim*dim + d;
-          PetscInt       c;
+        for (c = 0; c < Nc; ++c) {
+          for (d = 0; d < dim*dim; ++d) {
+            const PetscInt i = ((p*pdim + j)*Nc + c)*dim*dim + d;
 
-          H[i] = 0.0;
-          for (k = 0; k < pdim; ++k) {
-            H[i] += fem->invV[k*pdim+j] * tmpH[(p*pdim + k)*dim*dim + d];
-          }
-          for (c = 1; c < comp; ++c) {
-            H[((p*pdim + j)*comp + c)*dim*dim + d] = H[i];
+            H[i] = 0.0;
+            for (k = 0; k < pdim; ++k) {
+              H[i] += fem->invV[k*pdim+j] * tmpH[((p*pdim + k)*Nc + c)*dim*dim + d];
+            }
           }
         }
       }
     }
   }
-  if (B) {ierr = DMRestoreWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
-  if (D) {ierr = DMRestoreWorkArray(dm, npoints*pdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
-  if (H) {ierr = DMRestoreWorkArray(dm, npoints*pdim*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
+  if (B) {ierr = DMRestoreWorkArray(dm, npoints*pdim*Nc, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
+  if (D) {ierr = DMRestoreWorkArray(dm, npoints*pdim*Nc*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
+  if (H) {ierr = DMRestoreWorkArray(dm, npoints*pdim*Nc*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrate_Basic"
-PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                       const PetscScalar coefficients[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal integral[])
 {
-  const PetscInt  debug = 0;
-  PetscPointFunc  obj_func;
-  PetscQuadrature quad;
-  PetscScalar    *u, *u_x, *a, *a_x;
-  PetscReal      *x;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug = 0;
+  PetscPointFunc     obj_func;
+  PetscQuadrature    quad;
+  PetscScalar       *u, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, e;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDSGetObjective(prob, field, &obj_func);CHKERRQ(ierr);
@@ -3440,26 +3969,35 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, NULL, &u_x);CHKERRQ(ierr);
-  ierr = PetscDSGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
+  ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
   for (e = 0; e < Ne; ++e) {
-    const PetscReal *v0   = geom[e].v0;
-    const PetscReal *J    = geom[e].J;
-    const PetscReal *invJ = geom[e].invJ;
-    const PetscReal  detJ = geom[e].detJ;
+    const PetscReal *v0   = cgeom[e].v0;
+    const PetscReal *J    = cgeom[e].J;
+    const PetscReal *invJ = cgeom[e].invJ;
+    const PetscReal  detJ = cgeom[e].detJ;
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
@@ -3471,9 +4009,9 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       NULL, u, u_x, NULL);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);
-      obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &integrand);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, invJ, &coefficients[cOffset], NULL, u, u_x, NULL);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+      obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, numConstants, constants, &integrand);
       integrand *= detJ*quadWeights[q];
       integral[field] += PetscRealPart(integrand);
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", PetscRealPart(integrand), integral[field]);CHKERRQ(ierr);}
@@ -3484,29 +4022,28 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_Basic"
-PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
-  const PetscInt  debug = 0;
-  PetscPointFunc  f0_func;
-  PetscPointFunc  f1_func;
-  PetscQuadrature quad;
-  PetscReal     **basisField, **basisFieldDer;
-  PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug = 0;
+  PetscPointFunc     f0_func;
+  PetscPointFunc     f1_func;
+  PetscQuadrature    quad;
+  PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &Nb);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
@@ -3514,25 +4051,35 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
   ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
+  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
+  NbI = Nb[field];
+  NcI = Nc[field];
+  BI  = B[field];
+  DI  = D[field];
   for (e = 0; e < Ne; ++e) {
-    const PetscReal *v0   = geom[e].v0;
-    const PetscReal *J    = geom[e].J;
-    const PetscReal *invJ = geom[e].invJ;
-    const PetscReal  detJ = geom[e].detJ;
+    const PetscReal *v0   = cgeom[e].v0;
+    const PetscReal *J    = cgeom[e].J;
+    const PetscReal *invJ = cgeom[e].invJ;
+    const PetscReal  detJ = cgeom[e].detJ;
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
-    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+    ierr = PetscMemzero(f0, Nq*NcI* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
@@ -3542,123 +4089,138 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
     for (q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, refSpaceDer);
-      TransformF(dim, dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, numConstants, constants, &f0[q*NcI]);
+      if (f1_func) {
+        ierr = PetscMemzero(refSpaceDer, NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+        f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, numConstants, constants, refSpaceDer);
+      }
+      TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
     }
-    UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
+    UpdateElementVec(dim, Nq, NbI, NcI, BI, DI, f0, f1, &elemVec[cOffset+fOffset]);
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual_Basic"
-PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                                 const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
-  const PetscInt  debug = 0;
-  PetscBdPointFunc f0_func;
-  PetscBdPointFunc f1_func;
-  PetscQuadrature quad;
-  PetscReal     **basisField, **basisFieldDer;
-  PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug = 0;
+  PetscBdPointFunc   f0_func;
+  PetscBdPointFunc   f1_func;
+  PetscQuadrature    quad;
+  PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
-  dim += 1; /* Spatial dimension is one higher than topological dimension */
-  bdim = dim-1;
-  ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &Nb);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscDSGetTotalBdDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdOffsets(prob, &uOff);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
-  ierr = PetscDSGetBdFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
   ierr = PetscDSGetBdResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
+  if (!f0_func && !f1_func) PetscFunctionReturn(0);
   ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
+  ierr = PetscDSGetFaceTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTotalBdDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdOffsets(probAux, &aOff);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetFaceTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
+  NbI = Nb[field];
+  NcI = Nc[field];
+  BI  = B[field];
+  DI  = D[field];
   for (e = 0; e < Ne; ++e) {
-    const PetscReal *v0          = geom[e].v0;
-    const PetscReal *n           = geom[e].n;
-    const PetscReal *J           = geom[e].J;
-    const PetscReal *invJ        = geom[e].invJ;
-    const PetscReal  detJ        = geom[e].detJ;
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    const PetscReal *v0   = fgeom[e].v0;
+    const PetscReal *J    = fgeom[e].J;
+    const PetscReal *invJ = fgeom[e].invJ[0];
+    const PetscReal  detJ = fgeom[e].detJ;
+    const PetscReal *n    = fgeom[e].n;
+    const PetscInt   face = fgeom[e].face[0];
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
-    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemzero(f1, Nq*Nc*bdim * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+    ierr = PetscMemzero(f0, Nq*NcI* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
       ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
 #endif
-    }
-    for (q = 0; q < Nq; ++q) {
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
-      TransformF(dim, bdim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
-    }
-    UpdateElementVec(bdim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
-    cOffset    += totDim;
-    cOffsetAux += totDimAux;
-  }
-  PetscFunctionReturn(0);
+     }
+     for (q = 0; q < Nq; ++q) {
+       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+       CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
+       EvaluateFieldJets(dim, Nf, Nb, Nc, face*Nq+q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+       if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+       if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, numConstants, constants, &f0[q*NcI]);
+       if (f1_func) {
+         ierr = PetscMemzero(refSpaceDer, NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+         f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, numConstants, constants, refSpaceDer);
+       }
+       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
+     }
+     UpdateElementVec(dim, Nq, NbI, NcI, &BI[face*Nq*NbI*NcI], &DI[face*Nq*NbI*NcI*dim], f0, f1, &elemVec[cOffset+fOffset]);
+     cOffset    += totDim;
+     cOffsetAux += totDimAux;
+   }
+   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian_Basic"
 PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
-  const PetscInt  debug      = 0;
-  PetscPointJac   g0_func;
-  PetscPointJac   g1_func;
-  PetscPointJac   g2_func;
-  PetscPointJac   g3_func;
-  PetscFE         fe;
-  PetscInt        cOffset    = 0; /* Offset into coefficients[] for element e */
-  PetscInt        cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
-  PetscInt        eOffset    = 0; /* Offset into elemMat[] for element e */
-  PetscInt        offsetI    = 0; /* Offset into an element vector for fieldI */
-  PetscInt        offsetJ    = 0; /* Offset into an element vector for fieldJ */
-  PetscQuadrature quad;
-  PetscScalar    *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug      = 0;
+  PetscPointJac      g0_func;
+  PetscPointJac      g1_func;
+  PetscPointJac      g2_func;
+  PetscPointJac      g3_func;
+  PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
+  PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
+  PetscInt           eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature    quad;
+  PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI, *BJ, *DJ;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, e;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   switch(jtype) {
@@ -3670,26 +4232,25 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
   ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, NULL, NULL, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
-  ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbI);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcI);CHKERRQ(ierr);
+  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, fieldI, &offsetI);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(prob, fieldJ, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbJ);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcJ);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, fieldJ, &offsetJ);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
-  basisI    = basisField[fieldI];
-  basisJ    = basisField[fieldJ];
-  basisDerI = basisFieldDer[fieldI];
-  basisDerJ = basisFieldDer[fieldJ];
+  NbI = Nb[fieldI], NbJ = Nb[fieldJ];
+  NcI = Nc[fieldI], NcJ = Nc[fieldJ];
+  BI  = B[fieldI],  BJ  = B[fieldJ];
+  DI  = D[fieldI],  DJ  = D[fieldJ];
   /* Initialize here in case the function is not defined */
   ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(g1, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -3701,31 +4262,35 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
     const PetscReal *invJ = geom[e].invJ;
     const PetscReal  detJ = geom[e].detJ;
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
     for (q = 0; q < Nq; ++q) {
+      const PetscReal *BIq = &BI[q*NbI*NcI], *BJq = &BJ[q*NbJ*NcJ];
+      const PetscReal *DIq = &DI[q*NbI*NcI*dim], *DJq = &DJ[q*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, g0);
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
               g1[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -3733,13 +4298,13 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
               g2[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -3747,7 +4312,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -3758,7 +4323,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
                     g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }
@@ -3768,20 +4333,20 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 
-              elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g0[fc*NcJ+gc]*basisJ[q*NbJ*NcJ+gidx];
+              elemMat[fOff] += BIq[fidx]*g0[fc*NcJ+gc]*BJq[gidx];
               for (d = 0; d < dim; ++d) {
-                elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g1[(fc*NcJ+gc)*dim+d]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d];
-                elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g2[(fc*NcJ+gc)*dim+d]*basisJ[q*NbJ*NcJ+gidx];
+                elemMat[fOff] += BIq[fidx]*g1[(fc*NcJ+gc)*dim+d]*DJq[gidx*dim+d];
+                elemMat[fOff] += DIq[fidx*dim+d]*g2[(fc*NcJ+gc)*dim+d]*BJq[gidx];
                 for (d2 = 0; d2 < dim; ++d2) {
-                  elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d2];
+                  elemMat[fOff] += DIq[fidx*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*DJq[gidx*dim+d2];
                 }
               }
             }
@@ -3813,101 +4378,103 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdJacobian_Basic"
-PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                                 const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
-  const PetscInt  debug      = 0;
-  PetscBdPointJac g0_func;
-  PetscBdPointJac g1_func;
-  PetscBdPointJac g2_func;
-  PetscBdPointJac g3_func;
-  PetscFE         fe;
-  PetscInt        cOffset    = 0; /* Offset into coefficients[] for element e */
-  PetscInt        cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
-  PetscInt        eOffset    = 0; /* Offset into elemMat[] for element e */
-  PetscInt        offsetI    = 0; /* Offset into an element vector for fieldI */
-  PetscInt        offsetJ    = 0; /* Offset into an element vector for fieldJ */
-  PetscQuadrature quad;
-  PetscScalar    *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt        dim, Nf, NfAux = 0, bdim, totDim, totDimAux = 0, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug      = 0;
+  PetscBdPointJac    g0_func;
+  PetscBdPointJac    g1_func;
+  PetscBdPointJac    g2_func;
+  PetscBdPointJac    g3_func;
+  PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
+  PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
+  PetscInt           eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature    quad;
+  PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI, *BJ, *DJ;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, e;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
-  dim += 1; /* Spatial dimension is one higher than topological dimension */
-  bdim = dim-1;
+  ierr = PetscFEGetFaceQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscDSGetTotalBdDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdOffsets(prob, &uOff);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, fieldI, &offsetI);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, fieldJ, &offsetJ);CHKERRQ(ierr);
   ierr = PetscDSGetBdJacobian(prob, fieldI, fieldJ, &g0_func, &g1_func, &g2_func, &g3_func);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, NULL, NULL, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
-  ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
-  ierr = PetscDSGetBdDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbI);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcI);CHKERRQ(ierr);
-  ierr = PetscDSGetBdFieldOffset(prob, fieldI, &offsetI);CHKERRQ(ierr);
-  ierr = PetscDSGetBdDiscretization(prob, fieldJ, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbJ);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcJ);CHKERRQ(ierr);
-  ierr = PetscDSGetBdFieldOffset(prob, fieldJ, &offsetJ);CHKERRQ(ierr);
+  ierr = PetscDSGetFaceTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTotalBdDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdOffsets(probAux, &aOff);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetFaceTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
-  basisI    = basisField[fieldI];
-  basisJ    = basisField[fieldJ];
-  basisDerI = basisFieldDer[fieldI];
-  basisDerJ = basisFieldDer[fieldJ];
+  NbI = Nb[fieldI], NbJ = Nb[fieldJ];
+  NcI = Nc[fieldI], NcJ = Nc[fieldJ];
+  BI  = B[fieldI],  BJ  = B[fieldJ];
+  DI  = D[fieldI],  DJ  = D[fieldJ];
   /* Initialize here in case the function is not defined */
   ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(g1, NcI*NcJ*bdim * sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(g2, NcI*NcJ*bdim * sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(g3, NcI*NcJ*bdim*bdim * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(g1, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(g2, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(g3, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
-    const PetscReal *v0   = geom[e].v0;
-    const PetscReal *n    = geom[e].n;
-    const PetscReal *J    = geom[e].J;
-    const PetscReal *invJ = geom[e].invJ;
-    const PetscReal  detJ = geom[e].detJ;
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    const PetscReal *v0   = fgeom[e].v0;
+    const PetscReal *J    = fgeom[e].J;
+    const PetscReal *invJ = fgeom[e].invJ[0];
+    const PetscReal  detJ = fgeom[e].detJ;
+    const PetscReal *n    = fgeom[e].n;
+    const PetscInt   face = fgeom[e].face[0];
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
     for (q = 0; q < Nq; ++q) {
+      const PetscReal *BIq = &BI[(face*Nq+q)*NbI*NcI], *BJq = &BJ[(face*Nq+q)*NbJ*NcJ];
+      const PetscReal *DIq = &DI[(face*Nq+q)*NbI*NcI*dim], *DJq = &DJ[(face*Nq+q)*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
+      CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, face*Nq+q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, numConstants, constants, g0);
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
-            for (d = 0; d < bdim; ++d) {
-              g1[(fc*NcJ+gc)*bdim+d] = 0.0;
-              for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*bdim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*bdim+d] *= detJ*quadWeights[q];
+            for (d = 0; d < dim; ++d) {
+              g1[(fc*NcJ+gc)*dim+d] = 0.0;
+              for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -3915,13 +4482,13 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
-            for (d = 0; d < bdim; ++d) {
-              g2[(fc*NcJ+gc)*bdim+d] = 0.0;
-              for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*bdim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*bdim+d] *= detJ*quadWeights[q];
+            for (d = 0; d < dim; ++d) {
+              g2[(fc*NcJ+gc)*dim+d] = 0.0;
+              for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -3929,18 +4496,18 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, g3);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
-            for (d = 0; d < bdim; ++d) {
-              for (dp = 0; dp < bdim; ++dp) {
-                g3[((fc*NcJ+gc)*bdim+d)*bdim+dp] = 0.0;
+            for (d = 0; d < dim; ++d) {
+              for (dp = 0; dp < dim; ++dp) {
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] = 0.0;
                 for (d2 = 0; d2 < dim; ++d2) {
                   for (d3 = 0; d3 < dim; ++d3) {
-                    g3[((fc*NcJ+gc)*bdim+d)*bdim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
+                    g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*bdim+d)*bdim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }
@@ -3950,20 +4517,20 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 
-              elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g0[fc*NcJ+gc]*basisJ[q*NbJ*NcJ+gidx];
-              for (d = 0; d < bdim; ++d) {
-                elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g1[(fc*NcJ+gc)*bdim+d]*basisDerJ[(q*NbJ*NcJ+gidx)*bdim+d];
-                elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*bdim+d]*g2[(fc*NcJ+gc)*bdim+d]*basisJ[q*NbJ*NcJ+gidx];
-                for (d2 = 0; d2 < bdim; ++d2) {
-                  elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*bdim+d]*g3[((fc*NcJ+gc)*bdim+d)*bdim+d2]*basisDerJ[(q*NbJ*NcJ+gidx)*bdim+d2];
+              elemMat[fOff] += BIq[fidx]*g0[fc*NcJ+gc]*BJq[gidx];
+              for (d = 0; d < dim; ++d) {
+                elemMat[fOff] += BIq[fidx]*g1[(fc*NcJ+gc)*dim+d]*DJq[gidx*dim+d];
+                elemMat[fOff] += DIq[fidx*dim+d]*g2[(fc*NcJ+gc)*dim+d]*BJq[gidx];
+                for (d2 = 0; d2 < dim; ++d2) {
+                  elemMat[fOff] += DIq[fidx*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*DJq[gidx*dim+d2];
                 }
               }
             }
@@ -3995,8 +4562,6 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Basic"
 PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -4023,8 +4588,6 @@ PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Basic"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
 {
   PetscFE_Basic *b;
@@ -4039,8 +4602,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Nonaffine"
 PetscErrorCode PetscFEDestroy_Nonaffine(PetscFE fem)
 {
   PetscFE_Nonaffine *na = (PetscFE_Nonaffine *) fem->data;
@@ -4051,29 +4612,28 @@ PetscErrorCode PetscFEDestroy_Nonaffine(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_Nonaffine"
-PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                                   const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
-  const PetscInt  debug = 0;
-  PetscPointFunc  f0_func;
-  PetscPointFunc  f1_func;
-  PetscQuadrature quad;
-  PetscReal     **basisField, **basisFieldDer;
-  PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug = 0;
+  PetscPointFunc     f0_func;
+  PetscPointFunc     f1_func;
+  PetscQuadrature    quad;
+  PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt          dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &Nb);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
@@ -4081,141 +4641,166 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
   ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
+  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
+  NbI = Nb[field];
+  NcI = Nc[field];
+  BI  = B[field];
+  DI  = D[field];
   for (e = 0; e < Ne; ++e) {
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
-    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemzero(f1, Nq*Nc*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+    ierr = PetscMemzero(f0, Nq*Nc[field]* sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(f1, Nq*Nc[field]*dim * sizeof(PetscScalar));CHKERRQ(ierr);
     for (q = 0; q < Nq; ++q) {
-      const PetscReal *v0   = geom[e*Nq+q].v0;
-      const PetscReal *J    = geom[e*Nq+q].J;
-      const PetscReal *invJ = geom[e*Nq+q].invJ;
-      const PetscReal  detJ = geom[e*Nq+q].detJ;
+      const PetscReal *v0   = cgeom[e*Nq+q].v0;
+      const PetscReal *J    = cgeom[e*Nq+q].J;
+      const PetscReal *invJ = cgeom[e*Nq+q].invJ;
+      const PetscReal  detJ = cgeom[e*Nq+q].detJ;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, refSpaceDer);
-      TransformF(dim, dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, numConstants, constants, &f0[q*NcI]);
+      if (f1_func) {
+        ierr = PetscMemzero(refSpaceDer, NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+        f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, numConstants, constants, refSpaceDer);
+      }
+      TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
-    UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
+    UpdateElementVec(dim, Nq, NbI, NcI, BI, DI, f0, f1, &elemVec[cOffset+fOffset]);
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual_Nonaffine"
-PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
-                                                    const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
+PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEFaceGeom *fgeom,
+                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
-  const PetscInt   debug = 0;
-  PetscBdPointFunc f0_func;
-  PetscBdPointFunc f1_func;
-  PetscQuadrature  quad;
-  PetscReal      **basisField, **basisFieldDer;
-  PetscScalar     *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal       *x;
-  PetscInt        *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt         dim, Nf, NfAux = 0, bdim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
-  PetscErrorCode   ierr;
+  const PetscInt      debug = 0;
+  PetscBdPointFunc    f0_func;
+  PetscBdPointFunc    f1_func;
+  PetscQuadrature     quad;
+  PetscScalar        *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal          *x;
+  PetscReal         **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI;
+  PetscInt           *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt            dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NbI, NcI;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
-  dim += 1; /* Spatial dimension is one higher than topological dimension */
-  bdim = dim-1;
-  ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &Nb);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscDSGetTotalBdDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdOffsets(prob, &uOff);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentBdDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
-  ierr = PetscDSGetBdFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
   ierr = PetscDSGetBdResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
-  ierr = PetscDSGetEvaluationArrays(prob, &u, &u_t, &u_x);CHKERRQ(ierr);
+  if (!f0_func && !f1_func) PetscFunctionReturn(0);
+  ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
+  ierr = PetscDSGetFaceTabulation(prob, &B, &D);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTotalBdDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdOffsets(probAux, &aOff);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentBdDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetFaceTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
+  NbI = Nb[field];
+  NcI = Nc[field];
+  BI  = B[field];
+  DI  = D[field];
   for (e = 0; e < Ne; ++e) {
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q, face;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
-    ierr = PetscMemzero(f0, Nq*Nc* sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemzero(f1, Nq*Nc*bdim * sizeof(PetscScalar));CHKERRQ(ierr);
-    for (q = 0; q < Nq; ++q) {
-      const PetscReal *v0   = geom[e*Nq+q].v0;
-      const PetscReal *n    = geom[e*Nq+q].n;
-      const PetscReal *J    = geom[e*Nq+q].J;
-      const PetscReal *invJ = geom[e*Nq+q].invJ;
-      const PetscReal  detJ = geom[e*Nq+q].detJ;
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+     face = fgeom[e*Nq].face[0];
+     ierr = PetscMemzero(f0, Nq*NcI* sizeof(PetscScalar));CHKERRQ(ierr);
+     ierr = PetscMemzero(f1, Nq*NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+     for (q = 0; q < Nq; ++q) {
+       const PetscReal *v0   = fgeom[e*Nq+q].v0;
+       const PetscReal *J    = fgeom[e*Nq+q].J;
+       const PetscReal *invJ = fgeom[e*Nq+q].invJ[0];
+       const PetscReal  detJ = fgeom[e*Nq+q].detJ;
+       const PetscReal *n    = fgeom[e*Nq+q].n;
 
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
-      if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*Nc]);
-      if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
-      TransformF(dim, bdim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
-    }
-    UpdateElementVec(bdim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
-    cOffset    += totDim;
-    cOffsetAux += totDimAux;
-  }
-  PetscFunctionReturn(0);
+       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+       CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
+       EvaluateFieldJets(dim, Nf, Nb, Nc, face*Nq+q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+       if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
+       if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, numConstants, constants, &f0[q*NcI]);
+       if (f1_func) {
+         ierr = PetscMemzero(refSpaceDer, NcI*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+         f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, numConstants, constants, refSpaceDer);
+       }
+       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
+     }
+     UpdateElementVec(dim, Nq, NbI, NcI, &BI[face*Nq*NbI*NcI], &DI[face*Nq*NbI*NcI*dim], f0, f1, &elemVec[cOffset+fOffset]);
+     cOffset    += totDim;
+     cOffsetAux += totDimAux;
+   }
+   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian_Nonaffine"
-PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *cgeom,
                                                   const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
-  const PetscInt  debug      = 0;
-  PetscPointJac   g0_func;
-  PetscPointJac   g1_func;
-  PetscPointJac   g2_func;
-  PetscPointJac   g3_func;
-  PetscFE         fe;
-  PetscInt        cOffset    = 0; /* Offset into coefficients[] for element e */
-  PetscInt        cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
-  PetscInt        eOffset    = 0; /* Offset into elemMat[] for element e */
-  PetscInt        offsetI    = 0; /* Offset into an element vector for fieldI */
-  PetscInt        offsetJ    = 0; /* Offset into an element vector for fieldJ */
-  PetscQuadrature quad;
-  PetscScalar    *g0, *g1, *g2, *g3, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
-  PetscReal      *x;
-  PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
-  PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt        dim, Nf, NfAux = 0, totDim, totDimAux = 0, e;
-  PetscErrorCode  ierr;
+  const PetscInt     debug      = 0;
+  PetscPointJac      g0_func;
+  PetscPointJac      g1_func;
+  PetscPointJac      g2_func;
+  PetscPointJac      g3_func;
+  PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
+  PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
+  PetscInt           eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature    quad;
+  PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscReal        **B, **D, **BAux = NULL, **DAux = NULL, *BI, *DI, *BJ, *DJ;
+  PetscInt           NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, e;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   switch(jtype) {
@@ -4223,29 +4808,28 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
   case PETSCFE_JACOBIAN_PRE: ierr = PetscDSGetJacobianPreconditioner(prob, fieldI, fieldJ, &g0_func, &g1_func, &g2_func, &g3_func);CHKERRQ(ierr);break;
   case PETSCFE_JACOBIAN:     ierr = PetscDSGetJacobian(prob, fieldI, fieldJ, &g0_func, &g1_func, &g2_func, &g3_func);CHKERRQ(ierr);break;
   }
-  ierr = PetscDSGetEvaluationArrays(prob, &u, &u_t, &u_x);CHKERRQ(ierr);
+  ierr = PetscDSGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscDSGetWeakFormArrays(prob, NULL, NULL, &g0, &g1, &g2, &g3);CHKERRQ(ierr);
-  ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(prob, fieldI, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbI);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcI);CHKERRQ(ierr);
+  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, fieldI, &offsetI);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(prob, fieldJ, (PetscObject *) &fe);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fe, &NbJ);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fe, &NcJ);CHKERRQ(ierr);
   ierr = PetscDSGetFieldOffset(prob, fieldJ, &offsetJ);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   if (probAux) {
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
+    ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
   }
-  basisI    = basisField[fieldI];
-  basisJ    = basisField[fieldJ];
-  basisDerI = basisFieldDer[fieldI];
-  basisDerJ = basisFieldDer[fieldJ];
+  NbI = Nb[fieldI], NbJ = Nb[fieldJ];
+  NcI = Nc[fieldI], NcJ = Nc[fieldJ];
+  BI  = B[fieldI],  BJ  = B[fieldJ];
+  DI  = D[fieldI],  DJ  = D[fieldJ];
   /* Initialize here in case the function is not defined */
   ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(g1, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -4253,35 +4837,39 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
   ierr = PetscMemzero(g3, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
     const PetscReal *quadPoints, *quadWeights;
-    PetscInt         Nq, q;
+    PetscInt         qNc, Nq, q;
 
-    ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+    if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
     for (q = 0; q < Nq; ++q) {
-      const PetscReal *v0   = geom[e*Nq+q].v0;
-      const PetscReal *J    = geom[e*Nq+q].J;
-      const PetscReal *invJ = geom[e*Nq+q].invJ;
-      const PetscReal  detJ = geom[e*Nq+q].detJ;
+      const PetscReal *v0   = cgeom[e*Nq+q].v0;
+      const PetscReal *J    = cgeom[e*Nq+q].J;
+      const PetscReal *invJ = cgeom[e*Nq+q].invJ;
+      const PetscReal  detJ = cgeom[e*Nq+q].detJ;
+      const PetscReal *BIq = &BI[q*NbI*NcI], *BJq = &BJ[q*NbJ*NcJ];
+      const PetscReal *DIq = &DI[q*NbI*NcI*dim], *DJq = &DJ[q*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt         f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
-      ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
-      ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
+      EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, invJ, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);
+      if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
-        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, g0);
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
               g1[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4289,13 +4877,13 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       if (g2_func) {
         PetscInt d, d2;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g2_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
               g2[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4303,7 +4891,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       if (g3_func) {
         PetscInt d, d2, dp, d3;
         ierr = PetscMemzero(refSpaceDer, NcI*NcJ*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
-        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, refSpaceDer);
+        g3_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, numConstants, constants, refSpaceDer);
         for (fc = 0; fc < NcI; ++fc) {
           for (gc = 0; gc < NcJ; ++gc) {
             for (d = 0; d < dim; ++d) {
@@ -4314,7 +4902,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
                     g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }
@@ -4324,20 +4912,20 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 
-              elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g0[fc*NcJ+gc]*basisJ[q*NbJ*NcJ+gidx];
+              elemMat[fOff] += BIq[fidx]*g0[fc*NcJ+gc]*BJq[gidx];
               for (d = 0; d < dim; ++d) {
-                elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g1[(fc*NcJ+gc)*dim+d]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d];
-                elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g2[(fc*NcJ+gc)*dim+d]*basisJ[q*NbJ*NcJ+gidx];
+                elemMat[fOff] += BIq[fidx]*g1[(fc*NcJ+gc)*dim+d]*DJq[gidx*dim+d];
+                elemMat[fOff] += DIq[fidx*dim+d]*g2[(fc*NcJ+gc)*dim+d]*BJq[gidx];
                 for (d2 = 0; d2 < dim; ++d2) {
-                  elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d2];
+                  elemMat[fOff] += DIq[fidx*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*DJq[gidx*dim+d2];
                 }
               }
             }
@@ -4369,8 +4957,6 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Nonaffine"
 PetscErrorCode PetscFEInitialize_Nonaffine(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -4395,8 +4981,6 @@ PetscErrorCode PetscFEInitialize_Nonaffine(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Nonaffine"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE fem)
 {
   PetscFE_Nonaffine *na;
@@ -4413,8 +4997,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE fem)
 
 #ifdef PETSC_HAVE_OPENCL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_OpenCL"
 PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -4432,8 +5014,7 @@ PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 #define STRING_ERROR_CHECK(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, MSG);} while(0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGenerateIntegrationCode"
+/* NOTE: This is now broken for vector problems. Must redo loops to respect vector basis elements */
 /* dim     Number of spatial dimensions:          2                   */
 /* N_b     Number of basis functions:             generated           */
 /* N_{bt}  Number of total basis functions:       N_b * N_{comp}      */
@@ -4463,8 +5044,9 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscBool       useFieldDerAux= PETSC_FALSE;
   PetscBool       useF0         = PETSC_TRUE;
   PetscBool       useF1         = PETSC_TRUE;
+  const PetscReal *points, *weights;
   PetscReal      *basis, *basisDer;
-  PetscInt        dim, N_b, N_c, N_q, N_t, p, d, b, c;
+  PetscInt        dim, qNc, N_b, N_c, N_q, N_t, p, d, b, c;
   size_t          count;
   PetscErrorCode  ierr;
 
@@ -4473,7 +5055,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_c);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
-  N_q  = q->numPoints;
+  ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
+  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
   if (ocl->realType == PETSC_DOUBLE) {
@@ -4500,7 +5083,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
                        &count, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (d = 0; d < dim; ++d) {
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q->points[p*dim+d]);STRING_ERROR_CHECK("Message to short");
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, points[p*dim+d]);STRING_ERROR_CHECK("Message to short");
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
@@ -4510,7 +5093,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const %s weights[%d] = {\n",
                        &count, numeric_str, N_q);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q->weights[p]);STRING_ERROR_CHECK("Message to short");
+    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, weights[p]);STRING_ERROR_CHECK("Message to short");
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
   /* Basis Functions */
@@ -4860,8 +5443,6 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGetIntegrationKernel"
 PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -4892,8 +5473,6 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLCalculateGrid"
 PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
 {
   const PetscInt Nblocks = N/blockSize;
@@ -4909,8 +5488,6 @@ PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt bloc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLLogResidual"
 PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
 {
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
@@ -4930,9 +5507,7 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_OpenCL"
-PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
@@ -4940,7 +5515,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscPointFunc    f0_func;
   PetscPointFunc    f1_func;
   PetscQuadrature   q;
-  PetscInt          dim;
+  PetscInt          dim, qNc;
   PetscInt          N_b;    /* The number of basis functions */
   PetscInt          N_comp; /* The number of basis function components */
   PetscInt          N_bt;   /* The total number of scalar basis functions */
@@ -4970,24 +5545,26 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   void             *oclCoeff, *oclCoeffAux, *oclInvJ, *oclDetJ;
   size_t            local_work_size[3], global_work_size[3];
   size_t            realSize, x, y, z;
+  const PetscReal   *points, *weights;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!Ne) {ierr = PetscFEOpenCLLogResidual(fem, 0.0, 0.0);CHKERRQ(ierr); PetscFunctionReturn(0);}
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
+  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_comp);CHKERRQ(ierr);
   ierr = PetscDSGetResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, &N_bc, &N_cb);CHKERRQ(ierr);
   N_bt  = N_b*N_comp;
-  N_q   = q->numPoints;
   N_bst = N_bt*N_q;
   N_t   = N_bst*N_bl;
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
-    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);
@@ -5025,9 +5602,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
       ierr = PetscMalloc4(Ne*N_bt,&f_coeff,Ne,&f_coeffAux,Ne*dim*dim,&f_invJ,Ne,&f_detJ);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
-        f_detJ[c] = (float) geom[c].detJ;
+        f_detJ[c] = (float) cgeom[c].detJ;
         for (d = 0; d < dim*dim; ++d) {
-          f_invJ[c*dim*dim+d] = (float) geom[c].invJ[d];
+          f_invJ[c*dim*dim+d] = (float) cgeom[c].invJ[d];
         }
         for (b = 0; b < N_bt; ++b) {
           f_coeff[c*N_bt+b] = (float) coefficients[c*N_bt+b];
@@ -5054,9 +5631,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
       ierr = PetscMalloc4(Ne*N_bt,&d_coeff,Ne,&d_coeffAux,Ne*dim*dim,&d_invJ,Ne,&d_detJ);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
-        d_detJ[c] = (double) geom[c].detJ;
+        d_detJ[c] = (double) cgeom[c].detJ;
         for (d = 0; d < dim*dim; ++d) {
-          d_invJ[c*dim*dim+d] = (double) geom[c].invJ[d];
+          d_invJ[c*dim*dim+d] = (double) cgeom[c].invJ[d];
         }
         for (b = 0; b < N_bt; ++b) {
           d_coeff[c*N_bt+b] = (double) coefficients[c*N_bt+b];
@@ -5085,9 +5662,9 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
 
     ierr = PetscMalloc2(Ne*dim*dim,&r_invJ,Ne,&r_detJ);CHKERRQ(ierr);
     for (c = 0; c < Ne; ++c) {
-      r_detJ[c] = geom[c].detJ;
+      r_detJ[c] = cgeom[c].detJ;
       for (d = 0; d < dim*dim; ++d) {
-        r_invJ[c*dim*dim+d] = geom[c].invJ[d];
+        r_invJ[c*dim*dim+d] = cgeom[c].invJ[d];
       }
     }
     oclCoeff    = (void *) coefficients;
@@ -5185,8 +5762,6 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_OpenCL"
 PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -5211,8 +5786,6 @@ PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_OpenCL"
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 {
   PetscFE_OpenCL *ocl;
@@ -5250,8 +5823,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLSetRealType"
 PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5262,8 +5833,6 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGetRealType"
 PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5277,8 +5846,6 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
 #endif /* PETSC_HAVE_OPENCL */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Composite"
 PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -5291,8 +5858,6 @@ PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp_Composite"
 PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -5345,18 +5910,20 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 #endif
   for (s = 0; s < cmp->numSubelements; ++s) {
     for (j = 0; j < spdim; ++j) {
-      PetscReal      *Bf;
-      PetscQuadrature f;
-      PetscInt        q, k;
+      PetscReal       *Bf;
+      PetscQuadrature  f;
+      const PetscReal *points, *weights;
+      PetscInt         Nc, Nq, q, k;
 
       ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);CHKERRQ(ierr);
-      ierr = PetscMalloc1(f->numPoints*spdim,&Bf);CHKERRQ(ierr);
-      ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(f, NULL, &Nc, &Nq, &points, &weights);CHKERRQ(ierr);
+      ierr = PetscMalloc1(f->numPoints*spdim*Nc,&Bf);CHKERRQ(ierr);
+      ierr = PetscSpaceEvaluate(fem->basisSpace, Nq, points, Bf, NULL, NULL);CHKERRQ(ierr);
       for (k = 0; k < spdim; ++k) {
         /* n_j \cdot \phi_k */
         invVscalar[(s*spdim + j)*spdim+k] = 0.0;
-        for (q = 0; q < f->numPoints; ++q) {
-          invVscalar[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
+        for (q = 0; q < Nq; ++q) {
+          invVscalar[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*weights[q];
         }
       }
       ierr = PetscFree(Bf);CHKERRQ(ierr);
@@ -5373,8 +5940,6 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation_Composite"
 PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -5428,14 +5993,10 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
       /* Multiply by V^{-1} (spdim x spdim) */
       for (j = 0; j < spdim; ++j) {
         const PetscInt i = (p*pdim + cmp->embedding[s*spdim+j])*comp;
-        PetscInt       c;
 
         B[i] = 0.0;
         for (k = 0; k < spdim; ++k) {
           B[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpB[p*spdim + k];
-        }
-        for (c = 1; c < comp; ++c) {
-          B[i+c] = B[i];
         }
       }
     }
@@ -5444,14 +6005,10 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
       for (j = 0; j < spdim; ++j) {
         for (d = 0; d < dim; ++d) {
           const PetscInt i = ((p*pdim + cmp->embedding[s*spdim+j])*comp + 0)*dim + d;
-          PetscInt       c;
 
           D[i] = 0.0;
           for (k = 0; k < spdim; ++k) {
             D[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpD[(p*spdim + k)*dim + d];
-          }
-          for (c = 1; c < comp; ++c) {
-            D[((p*pdim + cmp->embedding[s*spdim+j])*comp + c)*dim + d] = D[i];
           }
         }
       }
@@ -5461,14 +6018,10 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
       for (j = 0; j < spdim; ++j) {
         for (d = 0; d < dim*dim; ++d) {
           const PetscInt i = ((p*pdim + cmp->embedding[s*spdim+j])*comp + 0)*dim*dim + d;
-          PetscInt       c;
 
           H[i] = 0.0;
           for (k = 0; k < spdim; ++k) {
             H[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpH[(p*spdim + k)*dim*dim + d];
-          }
-          for (c = 1; c < comp; ++c) {
-            H[((p*pdim + cmp->embedding[s*spdim+j])*comp + c)*dim*dim + d] = H[i];
           }
         }
       }
@@ -5481,8 +6034,6 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Composite"
 PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -5507,8 +6058,6 @@ PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Composite"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp;
@@ -5528,8 +6077,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECompositeGetMapping"
 /*@C
   PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
 
@@ -5561,8 +6108,6 @@ PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDimension"
 /*@
   PetscFEGetDimension - Get the dimension of the finite element space on a cell
 
@@ -5677,8 +6222,6 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrate"
 /*@C
   PetscFEIntegrate - Produce the integral for the given field for a chunk of elements by quadrature integration
 
@@ -5689,7 +6232,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
 . prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
-. geom         - The cell geometry for each cell in the chunk
+. cgeom        - The cell geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
 - coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
@@ -5701,7 +6244,7 @@ __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients,
 
 .seealso: PetscFEIntegrateResidual()
 @*/
-PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                 const PetscScalar coefficients[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal integral[])
 {
   PetscErrorCode ierr;
@@ -5709,12 +6252,10 @@ PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
-  if (fem->ops->integrate) {ierr = (*fem->ops->integrate)(fem, prob, field, Ne, geom, coefficients, probAux, coefficientsAux, integral);CHKERRQ(ierr);}
+  if (fem->ops->integrate) {ierr = (*fem->ops->integrate)(fem, prob, field, Ne, cgeom, coefficients, probAux, coefficientsAux, integral);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual"
 /*@C
   PetscFEIntegrateResidual - Produce the element residual vector for a chunk of elements by quadrature integration
 
@@ -5725,7 +6266,7 @@ PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, Petsc
 . prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
-. geom         - The cell geometry for each cell in the chunk
+. cgeom        - The cell geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
@@ -5747,7 +6288,7 @@ $     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \
 
 .seealso: PetscFEIntegrateResidual()
 @*/
-PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                         const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscErrorCode ierr;
@@ -5755,12 +6296,10 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
-  if (fem->ops->integrateresidual) {ierr = (*fem->ops->integrateresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
+  if (fem->ops->integrateresidual) {ierr = (*fem->ops->integrateresidual)(fem, prob, field, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual"
 /*@C
   PetscFEIntegrateBdResidual - Produce the element residual vector for a chunk of elements by quadrature integration over a boundary
 
@@ -5771,7 +6310,7 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
 . prob         - The PetscDS specifying the discretizations and continuum functions
 . field        - The field being integrated
 . Ne           - The number of elements in the chunk
-. geom         - The cell geometry for each cell in the chunk
+. fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
@@ -5785,19 +6324,17 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
 
 .seealso: PetscFEIntegrateResidual()
 @*/
-PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *geom,
+PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                           const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratebdresidual) {ierr = (*fem->ops->integratebdresidual)(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
+  if (fem->ops->integratebdresidual) {ierr = (*fem->ops->integratebdresidual)(fem, prob, field, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian"
 /*@C
   PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
 
@@ -5810,7 +6347,7 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt fi
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
 . Ne           - The number of elements in the chunk
-. geom         - The cell geometry for each cell in the chunk
+. cgeom        - The cell geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
@@ -5830,21 +6367,22 @@ $         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-*/
-PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
+  Level: developer
+
+.seealso: PetscFEIntegrateResidual()
+@*/
+PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *cgeom,
                                         const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, prob, jtype, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
+  if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, prob, jtype, fieldI, fieldJ, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdJacobian"
-/*C
+/*@C
   PetscFEIntegrateBdJacobian - Produce the boundary element Jacobian for a chunk of elements by quadrature integration
 
   Not collective
@@ -5855,7 +6393,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobi
 . fieldI       - The test field being integrated
 . fieldJ       - The basis field being integrated
 . Ne           - The number of elements in the chunk
-. geom         - The cell geometry for each cell in the chunk
+. fgeom        - The face geometry for each cell in the chunk
 . coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t - The array of FEM basis time derivative coefficients for the elements
 . probAux      - The PetscDS specifying the auxiliary discretizations
@@ -5875,24 +6413,27 @@ $         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
 $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-*/
-PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
+  Level: developer
+
+.seealso: PetscFEIntegrateJacobian(), PetscFEIntegrateResidual()
+@*/
+PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                           const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
+  if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERefine"
 /*@
   PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
+
+  Collective on PetscFE
 
   Input Parameter:
 . fe - The initial PetscFE
@@ -5946,20 +6487,18 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreateDefault"
-/*@
+/*@C
   PetscFECreateDefault - Create a PetscFE for basic FEM computation
 
   Collective on DM
 
   Input Parameters:
-+ dm         - The underlying DM for the domain
-. dim        - The spatial dimension
-. numComp    - The number of components
-. isSimplex  - Flag for simplex reference cell, otherwise its a tensor product
-. prefix     - The options prefix, or NULL
-- qorder     - The quadrature order
++ dm        - The underlying DM for the domain
+. dim       - The spatial dimension
+. Nc        - The number of components
+. isSimplex - Flag for simplex reference cell, otherwise its a tensor product
+. prefix    - The options prefix, or NULL
+- qorder    - The quadrature order
 
   Output Parameter:
 . fem - The PetscFE object
@@ -5969,13 +6508,14 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 .keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
+PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
-  PetscQuadrature q;
+  PetscQuadrature q, fq;
   DM              K;
   PetscSpace      P;
   PetscDualSpace  Q;
-  PetscInt        order;
+  PetscInt        order, quadPointsPerEdge;
+  PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -5983,16 +6523,21 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
   ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create element */
@@ -6001,14 +6546,27 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(*fem, numComp);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
   ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature (with specified order if given) */
-  if (isSimplex) {ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
-  else           {ierr = PetscDTGaussTensorQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
+  qorder = qorder >= 0 ? qorder : order;
+  ierr = PetscObjectOptionsBegin((PetscObject)*fem);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadture points per edge","PetscFECreateDefault",qorder,&qorder,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  quadPointsPerEdge = PetscMax(qorder + 1,1);
+  if (isSimplex) {
+    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  }
+  else {
+    ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  }
   ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

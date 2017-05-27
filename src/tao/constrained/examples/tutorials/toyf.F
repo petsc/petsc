@@ -8,12 +8,13 @@
 !----------------------------------------------------------------------
 
       program toyf
+#include <petsc/finclude/petsctao.h>
+      use petsctao
       implicit none
 #include "toyf.h"
 
       PetscErrorCode       ierr
       Tao                  tao
-      TaoConvergedReason   reason
       KSP                  ksp
       PC                   pc
       external FormFunctionGradient,FormHessian
@@ -22,6 +23,10 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
       call PetscPrintf(PETSC_COMM_SELF,                                 &
      &           '\n---- TOY Problem -----\n',                          &
@@ -48,27 +53,27 @@
       CHKERRQ(ierr)
 
       call TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,   &
-     &     PETSC_NULL_OBJECT,ierr)
+     &     0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetEqualityConstraintsRoutine(tao,ce,                      &
-     &     FormEqualityConstraints,PETSC_NULL_OBJECT,ierr)
+     &     FormEqualityConstraints,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetInequalityConstraintsRoutine(tao,ci,                      &
-     &     FormInequalityConstraints,PETSC_NULL_OBJECT,ierr)
+     &     FormInequalityConstraints,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetJacobianEqualityRoutine(tao,Ae,Ae,FormEqualityJacobian, &
-     &      PETSC_NULL_OBJECT,ierr)
+     &      0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetJacobianInequalityRoutine(tao,Ai,Ai,                    &
-     &     FormInequalityJacobian,PETSC_NULL_OBJECT,ierr)
+     &     FormInequalityJacobian,0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetHessianRoutine(tao,Hess,Hess,FormHessian,               &
-     &     PETSC_NULL_OBJECT,ierr)
+     &     0,ierr)
       CHKERRQ(ierr)
 
       call TaoSetTolerances(tao,0,0,0,ierr)
@@ -86,7 +91,7 @@
 !      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU)
 !      CHKERRQ(ierr)
 
-      call PetscOptionsSetValue(PETSC_NULL_OBJECT,                      &
+      call PetscOptionsSetValue(PETSC_NULL_OPTIONS,                      &
      &              '-pc_factor_mat_solver_package','superlu',ierr)
       CHKERRQ(ierr)
 
@@ -120,6 +125,7 @@
 
 
       subroutine InitializeProblem(ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
       PetscReal zero,minus1,two
@@ -172,6 +178,7 @@
 
 
       subroutine DestroyProblem(ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
 
@@ -198,6 +205,7 @@
       end subroutine DestroyProblem
 
       subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
 
@@ -227,6 +235,7 @@
 
 
       subroutine FormHessian(tao,X,H,Hpre,dummy,ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
 
@@ -274,11 +283,11 @@
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRQ(ierr)
 
-      flag = SAME_NONZERO_PATTERN
       ierr = 0
       end subroutine FormHessian
 
       subroutine FormInequalityConstraints(tao,X,C,dummy,ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
       Tao      tao
@@ -304,6 +313,7 @@
 
 
       subroutine FormEqualityConstraints(tao,X,C,dummy,ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
       Tao      tao
@@ -326,6 +336,7 @@
 
 
       subroutine FormInequalityJacobian(tao,X,JI,JIpre,dummy,ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
 
@@ -363,6 +374,7 @@
       end subroutine FormInequalityJacobian
 
       subroutine FormEqualityJacobian(tao,X,JE,JEpre,dummy,ierr)
+      use petsctao
       implicit none
 #include "toyf.h"
 

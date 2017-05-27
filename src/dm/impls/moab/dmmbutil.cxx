@@ -8,8 +8,6 @@
 #include <moab/CN.hpp>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabComputeDomainBounds_Private"
 static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, PetscInt dim, PetscInt neleglob, PetscInt *ise)
 {
   PetscInt size,rank;
@@ -43,8 +41,6 @@ static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcom
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetStructuredCoords_Private"
 static void DMMoab_SetStructuredCoords_Private(PetscInt i, PetscInt j, PetscInt k, PetscReal hx, PetscReal hy, PetscReal hz, PetscInt vcount, std::vector<double*>& vcoords)
 {
   vcoords[0][vcount] = i*hx;
@@ -52,8 +48,6 @@ static void DMMoab_SetStructuredCoords_Private(PetscInt i, PetscInt j, PetscInt 
   vcoords[2][vcount] = k*hz;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetTensorElementConnectivity_Private"
 static void DMMoab_SetTensorElementConnectivity_Private(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
 {
   std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
@@ -85,8 +79,6 @@ static void DMMoab_SetTensorElementConnectivity_Private(PetscInt dim, moab::Enti
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetSimplexElementConnectivity_Private"
 static void DMMoab_SetSimplexElementConnectivity_Private(PetscInt dim, PetscInt subelem, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
 {
   std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
@@ -148,8 +140,6 @@ static void DMMoab_SetSimplexElementConnectivity_Private(PetscInt dim, PetscInt 
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
 static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt dim, moab::EntityType etype, PetscInt *ecount, PetscInt vpere, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
 {
   PetscInt m,subelem;
@@ -167,8 +157,6 @@ static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateBoxMesh"
 /*@
   DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with user specified bounds.
 
@@ -199,7 +187,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   moab::ParallelComm *pcomm;
   moab::ReadUtilIface* readMeshIface;
 
-  moab::Tag  id_tag=PETSC_NULL;
+  moab::Tag  id_tag=NULL;
   moab::Range         ownedvtx,ownedelms;
   moab::EntityHandle  vfirst,efirst,regionset,faceset,edgeset,vtxset;
   std::vector<double*> vcoords;
@@ -231,7 +219,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   if(nghost < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of ghost layers cannot be negative.\n");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
@@ -491,8 +479,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_GetReadOptions_Private"
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
   char           *ropts;
@@ -525,8 +511,6 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabLoadFromFile"
 /*@
   DMMoabLoadFromFile - Creates a DM object by loading the mesh from a user specified file.
 
@@ -563,7 +547,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   PetscValidPointer(dm,5);
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;

@@ -1,8 +1,6 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
 const char *const SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NCG"
 PetscErrorCode SNESReset_NCG(SNES snes)
 {
   PetscFunctionBegin;
@@ -19,8 +17,6 @@ PetscErrorCode SNESReset_NCG(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NCG"
 PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscErrorCode ierr;
@@ -43,8 +39,6 @@ PetscErrorCode SNESDestroy_NCG(SNES snes)
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NCG"
 PetscErrorCode SNESSetUp_NCG(SNES snes)
 {
   PetscErrorCode ierr;
@@ -63,8 +57,6 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NCG"
 static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NCG       *ncg = (SNES_NCG*)snes->data;
@@ -103,8 +95,6 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObjec
 
   Application Interface Routine: SNESView()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NCG"
 static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
   SNES_NCG      *ncg = (SNES_NCG *) snes->data;
@@ -119,8 +109,6 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_NCGLinear"
 PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
 {
   PetscScalar    alpha, ptAp;
@@ -162,8 +150,6 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_NCGLinear"
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
@@ -176,8 +162,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNCGComputeYtJtF_Private"
 /*
 
  Assuming F = SNESComputeFunction(X) compute Y^tJ^tF using a simple secant approximation of the jacobian.
@@ -200,8 +184,6 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNCGSetType"
 /*@
     SNESNCGSetType - Sets the conjugate update type for SNESNCG.
 
@@ -238,8 +220,6 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNCGSetType_NCG"
 PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 {
   SNES_NCG *ncg = (SNES_NCG*)snes->data;
@@ -260,8 +240,6 @@ PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 
   Application Interface Routine: SNESSolve()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NCG"
 PetscErrorCode SNESSolve_NCG(SNES snes)
 {
   SNES_NCG             *ncg = (SNES_NCG*)snes->data;
@@ -471,6 +449,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
           gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
           chooses the initial search direction as F(x) for the initial guess x.
 
+          Only supports left non-linear preconditioning.
+
    References:
 .  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
@@ -478,8 +458,6 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NCG"
 PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {
   PetscErrorCode ierr;

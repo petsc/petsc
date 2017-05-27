@@ -25,8 +25,6 @@ typedef struct {
   CUSPMATRIX * mat;
 } PC_BiCGStabCUSP;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetTolerance_BiCGStabCUSP"
 static PetscErrorCode PCBiCGStabCUSPSetTolerance_BiCGStabCUSP(PC pc,PetscReal rtol)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -36,8 +34,6 @@ static PetscErrorCode PCBiCGStabCUSPSetTolerance_BiCGStabCUSP(PC pc,PetscReal rt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP"
 static PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP(PC pc, PetscBool useverbose)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -47,8 +43,6 @@ static PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP(PC pc, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetUseVerboseMonitor"
 PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC pc, PetscBool useverbose)
 {
   PetscErrorCode ierr;
@@ -59,8 +53,6 @@ PetscErrorCode PCBiCGStabCUSPSetUseVerboseMonitor(PC pc, PetscBool useverbose)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetIterations_BiCGStabCUSP"
 static PetscErrorCode PCBiCGStabCUSPSetIterations_BiCGStabCUSP(PC pc, PetscInt its)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -70,8 +62,6 @@ static PetscErrorCode PCBiCGStabCUSPSetIterations_BiCGStabCUSP(PC pc, PetscInt i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetIterations"
 PetscErrorCode PCBiCGStabCUSPSetITerations(PC pc, PetscInt its)
 {
   PetscErrorCode ierr;
@@ -82,8 +72,6 @@ PetscErrorCode PCBiCGStabCUSPSetITerations(PC pc, PetscInt its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBiCGStabCUSPSetTolerance"
 PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
 {
   PetscErrorCode ierr;
@@ -108,8 +96,7 @@ PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_BiCGStabCUSP"
+
 static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -143,8 +130,7 @@ static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_BiCGStabCUSP"
+
 static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -193,8 +179,7 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BiCGStabCUSP"
+
 static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 {
   PetscErrorCode  ierr;
@@ -207,8 +192,6 @@ static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_BiCGStabCUSP"
 static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
@@ -225,8 +208,6 @@ static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptionItems *PetscOptio
 
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_BiCGStabCUSP"
 PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg;

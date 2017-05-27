@@ -1,0 +1,80 @@
+[0]Point 0 (0.5, 0.75, 0.25)
+[0]Point 1 (0.5, 0.25, 0.75)
+[0]Point 2 (0.75, 0.5, 0.25)
+[0]Point 3 (0.75, 0.25, 0.5)
+[0]Point 4 (0.25, 0.75, 0.5)
+[0]Point 5 (0.25, 0.5, 0.75)
+[0]Point 0 is in Cell 0
+[0]Point 1 is in Cell 1
+[0]Point 2 is in Cell 2
+[0]Point 3 is in Cell 3
+[0]Point 4 is in Cell 4
+[0]Point 5 is in Cell 5
+Vec Object: 1 MPI processes
+  type: seq
+0.5
+0.75
+0.25
+0.5
+0.25
+0.75
+0.75
+0.5
+0.25
+0.75
+0.25
+0.5
+0.25
+0.75
+0.5
+0.25
+0.5
+0.75
+[0]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+1.
+1.
+1.
+2.
+2.
+2.
+1.
+1.
+1.
+2.
+2.
+2.
+2.
+2.
+2.
+3.
+3.
+3.
+[0]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5

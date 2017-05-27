@@ -6,8 +6,6 @@ static char help[] = "Generates random numbers for radioactive events for ex61.c
 #include <petscvec.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;

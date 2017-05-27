@@ -1,0 +1,235 @@
+SNES Object: 5 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=30
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object: 5 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 5 MPI processes
+    type: fetidp
+      FETI-DP: fully redundant: 0
+      FETI-DP: saddle point:    1
+      FETI-DP: inner solver details
+        KSP Object: (fetidp_) 5 MPI processes
+          type: cg
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        PC Object: (fetidp_) 5 MPI processes
+          type: shell
+            Shell: no name
+              FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
+                Mat Object: 1 MPI processes
+                  type: schurcomplement
+                  rows=59, cols=59
+                    Schur complement A11 - A10 inv(A00) A01
+                    A11
+                      Mat Object: 1 MPI processes
+                        type: seqaij
+                        rows=59, cols=59
+                        total: nonzeros=663, allocated nonzeros=663
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 25 nodes, limit used is 5
+                    A10
+                      Mat Object: 1 MPI processes
+                        type: seqaij
+                        rows=59, cols=242
+                        total: nonzeros=983, allocated nonzeros=983
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 25 nodes, limit used is 5
+                    KSP of A00
+                      KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                        type: preonly
+                        maximum iterations=10000, initial guess is zero
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                        left preconditioning
+                        using NONE norm type for convergence test
+                      PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                        type: lu
+                          out-of-place factorization
+                          Reusing fill from past factorization
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: nd
+                          factor fill ratio given 0., needed 0.
+                            Factored matrix follows:
+                              Mat Object: 1 MPI processes
+                                type: umfpack
+                                rows=242, cols=242
+                                package used to perform factorization: umfpack
+                                total: nonzeros=0, allocated nonzeros=0
+                                total number of mallocs used during MatSetValues calls =0
+                                  UMFPACK run parameters:
+                                    Control[UMFPACK_PRL]: 1.
+                                    Control[UMFPACK_STRATEGY]: 0.
+                                    Control[UMFPACK_DENSE_COL]: 0.2
+                                    Control[UMFPACK_DENSE_ROW]: 0.2
+                                    Control[UMFPACK_AMD_DENSE]: 10.
+                                    Control[UMFPACK_BLOCK_SIZE]: 32.
+                                    Control[UMFPACK_FIXQ]: 0.
+                                    Control[UMFPACK_AGGRESSIVE]: 1.
+                                    Control[UMFPACK_PIVOT_TOLERANCE]: 0.1
+                                    Control[UMFPACK_SYM_PIVOT_TOLERANCE]: 0.001
+                                    Control[UMFPACK_SCALE]: 1.
+                                    Control[UMFPACK_ALLOC_INIT]: 0.7
+                                    Control[UMFPACK_DROPTOL]: 0.
+                                    Control[UMFPACK_IRSTEP]: 0.
+                                    Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
+                        linear system matrix = precond matrix:
+                        Mat Object: 1 MPI processes
+                          type: seqaij
+                          rows=242, cols=242
+                          total: nonzeros=7380, allocated nonzeros=7380
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 116 nodes, limit used is 5
+                    A01
+                      Mat Object: 1 MPI processes
+                        type: seqaij
+                        rows=242, cols=59
+                        total: nonzeros=983, allocated nonzeros=983
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 81 nodes, limit used is 5
+              FETI-DP pressure preconditioner
+                KSP Object: (fetidp_p_) 5 MPI processes
+                  type: richardson
+                    Richardson: damping factor=200.
+                  maximum iterations=1, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using PRECONDITIONED norm type for convergence test
+                PC Object: (fetidp_p_) 5 MPI processes
+                  type: none
+                  linear system matrix = precond matrix:
+                  Mat Object: 5 MPI processes
+                    type: is
+                    rows=37, cols=37
+                    total: nonzeros=238, allocated nonzeros=238
+                    total number of mallocs used during MatSetValues calls =0
+          linear system matrix = precond matrix:
+          Mat Object: (fetidp_) 5 MPI processes
+            type: shell
+            rows=163, cols=163
+      FETI-DP: BDDC solver details
+        PC Object: (fetidp_bddc_) 5 MPI processes
+          type: bddc
+            BDDC: Use verbose output: 0
+            BDDC: Use user-defined CSR: 0
+            BDDC: Use local mat graph: 1
+            BDDC: Connectivity graph topological dimension: 2
+            BDDC: Graph max count: 2147483647
+            BDDC: Use vertices: 1 (vertex size 2)
+            BDDC: Use edges: 1
+            BDDC: Use faces: 0
+            BDDC: Use true near null space: 0
+            BDDC: Use QR for single constraints on cc: 0
+            BDDC: Use change of basis on local edge nodes: 0
+            BDDC: Use change of basis on local face nodes: 0
+            BDDC: User defined change of basis matrix: 0
+            BDDC: Has change of basis matrix: 0
+            BDDC: Eliminate dirichlet boundary dofs: 1
+            BDDC: Switch on static condensation ops around the interface preconditioner: 1
+            BDDC: Use exact dirichlet trick: 0
+            BDDC: Multilevel max levels: 0
+            BDDC: Multilevel coarsening ratio: 8
+            BDDC: Use estimated eigs for coarse problem: 0
+            BDDC: Use deluxe scaling: 0
+            BDDC: Use deluxe zerorows: 0
+            BDDC: Use deluxe singlemat: 0
+            BDDC: Rebuild interface graph for Schur principal minors: 0
+            BDDC: Number of dofs' layers for the computation of principal minors: -1
+            BDDC: Use user CSR graph to compute successive layers: 0
+            BDDC: Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+            BDDC: Min constraints / connected component: 0
+            BDDC: Max constraints / connected component: 0
+            BDDC: Invert exact Schur complement for adaptive selection: 0
+            BDDC: Symmetric computation of primal basis functions: 0
+            BDDC: Num. Procs. to map coarse adjacency list: 0
+            BDDC: Coarse eqs per proc (significant at the coarsest level): 1
+            BDDC: Detect disconnected: 0
+            BDDC: Benign subspace trick: 0 (change explicit 0)
+            BDDC: Benign subspace trick is active: 0
+            BDDC: Algebraic computation of no-net-flux 0
+            BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
+            BDDC: Global dofs sizes: all 1227 interface 171 coarse 17
+            BDDC: Coarsening ratios: all/coarse 72 interface/coarse 10
+            BDDC: Active processes : 5
+            BDDC: Total subdomains : 5
+            BDDC: Dofs type        :	MIN	MAX	MEAN
+            BDDC: Interior  dofs   :	114	242	211
+            BDDC: Interface dofs   :	39	99	70
+            BDDC: Primal    dofs   :	4	13	8
+            BDDC: Local     dofs   :	153	333	282
+            BDDC: Local     subs   :	1	1
+            BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
+          KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
+            type: preonly
+            maximum iterations=1000, initial guess is zero
+            tolerances:  relative=1e-10, absolute=1e-10, divergence=10000.
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
+            type: redundant
+              Redundant preconditioner: First (color=0) of 5 PCs follows
+            linear system matrix = precond matrix:
+            Mat Object: 5 MPI processes
+              type: mpiaij
+              rows=17, cols=17
+              total: nonzeros=251, allocated nonzeros=273
+              total number of mallocs used during MatSetValues calls =0
+                using I-node (on process 0) routines: found 1 nodes, limit used is 5
+                        KSP Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
+                          type: preonly
+                          maximum iterations=10000, initial guess is zero
+                          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                          left preconditioning
+                          using NONE norm type for convergence test
+                        PC Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
+                          type: lu
+                            out-of-place factorization
+                            Reusing fill from past factorization
+                            tolerance for zero pivot 2.22045e-14
+                            matrix ordering: nd
+                            factor fill ratio given 5., needed 1.07968
+                              Factored matrix follows:
+                                Mat Object:           1 MPI processes
+                                  type: seqaij
+                                  rows=17, cols=17
+                                  package used to perform factorization: petsc
+                                  total: nonzeros=271, allocated nonzeros=271
+                                  total number of mallocs used during MatSetValues calls =0
+                                    using I-node routines: found 5 nodes, limit used is 5
+                          linear system matrix = precond matrix:
+                          Mat Object:           1 MPI processes
+                            type: seqaij
+                            rows=17, cols=17
+                            total: nonzeros=251, allocated nonzeros=251
+                            total number of mallocs used during MatSetValues calls =0
+                              using I-node routines: found 9 nodes, limit used is 5
+          linear system matrix = precond matrix:
+          Mat Object: 5 MPI processes
+            type: is
+            rows=1227, cols=1227
+            total: nonzeros=46498, allocated nonzeros=46498
+            total number of mallocs used during MatSetValues calls =0
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using NONE norm type for convergence test
+  PC Object: 5 MPI processes
+    type: none
+    linear system matrix = precond matrix:
+    Mat Object: 5 MPI processes
+      type: is
+      rows=1227, cols=1227
+      total: nonzeros=46498, allocated nonzeros=53284
+      total number of mallocs used during MatSetValues calls =0
+        has attached null space
+Number of SNES iterations = 1
+L_2 Error: 6.5e-09 [2.8e-10, 6.5e-09]

@@ -19,6 +19,7 @@ asterix*/*
 linux*/*
 darwin*/*
 arch-*/*
+petsc-install/*
 batch-test
 c_test
 RDict.db
@@ -29,6 +30,7 @@ conf/petscvariables
 configure.log*
 externalpackages/*
 ftn-auto
+ftn-auto-interfaces
 lib/*
 make_log_*
 test_log_*
@@ -170,3 +172,4 @@ src/benchmarks/streams/CUDAVersion
 src/benchmarks/streams/OpenMPVersion
 src/benchmarks/streams/PthreadVersion
 src/benchmarks/streams/scaling.png
+ftn-auto-interfaces

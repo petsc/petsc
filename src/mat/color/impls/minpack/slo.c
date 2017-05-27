@@ -3,8 +3,6 @@
 
 #include <../src/mat/color/impls/minpack/color.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MINPACKslo"
 PetscErrorCode MINPACKslo(PetscInt *n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt *ipntr, PetscInt *ndeg,PetscInt * list,
                           PetscInt * maxclq,PetscInt *iwa1,PetscInt * iwa2,PetscInt * iwa3,PetscInt * iwa4)
 {
@@ -82,7 +80,8 @@ PetscErrorCode MINPACKslo(PetscInt *n,const PetscInt * indrow,const PetscInt * j
     iwa4[jp]     = *n;
     list[jp]     = ndeg[jp];
     /* Computing MIN */
-    i__2   = mindeg, i__3 = ndeg[jp];
+    i__2   = mindeg;
+    i__3   = ndeg[jp];
     mindeg = PetscMin(i__2,i__3);
   }
 
@@ -180,7 +179,8 @@ L50:
         numdeg = list[ic];
         --list[ic];
         /* Computing MIN */
-        i__3   = mindeg, i__4 = list[ic];
+        i__3   = mindeg;
+        i__4   = list[ic];
         mindeg = PetscMin(i__3,i__4);
 
         /*                 Delete column ic from the numdeg list. */

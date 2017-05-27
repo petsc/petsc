@@ -48,8 +48,6 @@ extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -64,9 +62,13 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&user.red1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.red1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-5,1,1,NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.da1);CHKERRQ(ierr);
+  ierr = DMSetUp(user.da1);CHKERRQ(ierr);  
   ierr = DMCompositeAddDM(user.packer,user.da1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-5,1,1,NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.da2);CHKERRQ(ierr);
+  ierr = DMSetUp(user.da2);CHKERRQ(ierr);  
   ierr = DMCompositeAddDM(user.packer,user.da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
@@ -101,8 +103,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -159,14 +159,12 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void *dummy)
   ierr = DMDAVecRestoreArray(user->da1,vlambda,&lambda);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da1,vflambda,&flambda);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(user->packer,FU,INSERT_VALUES,vfw,vfu,vflambda);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->packer,INSERT_VALUES,FU,vfw,vfu,vflambda);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->packer,&vw,&vu,&vlambda);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->packer,&vfw,&vfu,&vflambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
   UserCtx        *user = (UserCtx*)dummy;

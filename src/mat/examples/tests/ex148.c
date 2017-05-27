@@ -2,8 +2,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
                     See ~petsc/src/mat/examples/tests/ex158.c for general cases. \n\n";
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

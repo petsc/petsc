@@ -13,37 +13,37 @@
    11 KSP Residual norm 2.684621583078e-04 
    12 KSP Residual norm 1.673486806782e-04 
    13 KSP Residual norm 1.043185419549e-04 
-   14 KSP Residual norm 6.502804893049e-05 
-   15 KSP Residual norm 4.053591114739e-05 
+   14 KSP Residual norm 6.502804893053e-05 
+   15 KSP Residual norm 4.053591114738e-05 
    16 KSP Residual norm 2.526848213307e-05 
-   17 KSP Residual norm 1.575137134545e-05 
-   18 KSP Residual norm 9.818781276860e-06 
-   19 KSP Residual norm 6.120639508031e-06 
-   20 KSP Residual norm 3.815364344205e-06 
-   21 KSP Residual norm 2.378347076300e-06 
-   22 KSP Residual norm 1.482567405081e-06 
-   23 KSP Residual norm 9.241738233563e-07 
-   24 KSP Residual norm 5.760933720636e-07 
-   25 KSP Residual norm 3.591137997868e-07 
-   26 KSP Residual norm 2.238573249405e-07 
-   27 KSP Residual norm 1.395437935198e-07 
-   28 KSP Residual norm 8.698607613686e-08 
-   29 KSP Residual norm 5.422367591300e-08 
-   30 KSP Residual norm 3.380089279537e-08 
-   31 KSP Residual norm 2.107013833451e-08 
-   32 KSP Residual norm 1.313429004435e-08 
-   33 KSP Residual norm 8.187396421781e-09 
-   34 KSP Residual norm 5.103698777487e-09 
-   35 KSP Residual norm 3.181443757243e-09 
-   36 KSP Residual norm 1.983186062110e-09 
-   37 KSP Residual norm 1.236239719261e-09 
-   38 KSP Residual norm 7.706228924241e-10 
-   39 KSP Residual norm 4.803757550281e-10 
-   40 KSP Residual norm 2.994472469490e-10 
-   41 KSP Residual norm 1.866635638486e-10 
-   42 KSP Residual norm 1.163586319954e-10 
-   43 KSP Residual norm 7.253341723844e-11 
-  1 SNES Function norm 2.289561665259e-10 
+   17 KSP Residual norm 1.575137134543e-05 
+   18 KSP Residual norm 9.818781276866e-06 
+   19 KSP Residual norm 6.120639508018e-06 
+   20 KSP Residual norm 3.815364344198e-06 
+   21 KSP Residual norm 2.378347076285e-06 
+   22 KSP Residual norm 1.482567405133e-06 
+   23 KSP Residual norm 9.241738233275e-07 
+   24 KSP Residual norm 5.760933720626e-07 
+   25 KSP Residual norm 3.591137997827e-07 
+   26 KSP Residual norm 2.238573249048e-07 
+   27 KSP Residual norm 1.395437935375e-07 
+   28 KSP Residual norm 8.698607613419e-08 
+   29 KSP Residual norm 5.422367595442e-08 
+   30 KSP Residual norm 3.380089278272e-08 
+   31 KSP Residual norm 2.107013831368e-08 
+   32 KSP Residual norm 1.313429007467e-08 
+   33 KSP Residual norm 8.187396410994e-09 
+   34 KSP Residual norm 5.103698749315e-09 
+   35 KSP Residual norm 3.181443756391e-09 
+   36 KSP Residual norm 1.983186082135e-09 
+   37 KSP Residual norm 1.236239695661e-09 
+   38 KSP Residual norm 7.706228625447e-10 
+   39 KSP Residual norm 4.803757932160e-10 
+   40 KSP Residual norm 2.994472448627e-10 
+   41 KSP Residual norm 1.866635652857e-10 
+   42 KSP Residual norm 1.163586726922e-10 
+   43 KSP Residual norm 7.253338151900e-11 
+  1 SNES Function norm 2.289562046898e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
@@ -61,9 +61,9 @@ SNES Object: 2 MPI processes
     maximum iterations=40
   KSP Object: 2 MPI processes
     type: richardson
-      Richardson: damping factor=1
+      Richardson: damping factor=1.
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 2 MPI processes
@@ -74,15 +74,15 @@ SNES Object: 2 MPI processes
     KSP Object: (sub_) 1 MPI processes
       type: preonly
       maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (sub_) 1 MPI processes
       type: lu
-        LU: out-of-place factorization
+        out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
-        factor fill ratio given 5, needed 1.875
+        factor fill ratio given 5., needed 1.875
           Factored matrix follows:
             Mat Object: 1 MPI processes
               type: seqaij
@@ -104,4 +104,4 @@ SNES Object: 2 MPI processes
       rows=32, cols=32
       total: nonzeros=136, allocated nonzeros=136
       total number of mallocs used during MatSetValues calls =0
-N: 32 error l2 6.01814e-12 inf 8.12005e-11
+N: 32 error l2 6.01814e-12 inf 8.12006e-11

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-blas-lapack-dir=/soft/mkl/10.2.2.025/lib/em64t',
+  '--with-blaslapack-dir=/soft/mkl/10.2.2.025/lib/em64t',
   '--with-mpi-dir=/soft/mvapich2/1.4.1-intel-11.1.064/bin',
   '--with-debugging=0',
   '-COPTFLAGS=-O3 -xHost',

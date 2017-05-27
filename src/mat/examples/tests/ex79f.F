@@ -2,11 +2,9 @@
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       Mat         A,Ad,Ao
       PetscErrorCode ierr
@@ -20,6 +18,10 @@
       PetscScalar aa(1)
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
@@ -67,6 +69,9 @@
       call MatSeqAIJRestoreArray(Ao,aa,aaa,ierr)
 
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
+
+      call MatGetDiagonalBlock(A,Ad,ierr)
+      call MatView(Ad,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)

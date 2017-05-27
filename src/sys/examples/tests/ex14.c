@@ -3,8 +3,6 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt    ierr,n,i;
@@ -42,3 +40,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      requires: complex
+      args: -array 1.0,-2-3i,4.5+6.2i,4.5,6.8+4i,i,-i,-1.2i -rarray 1,2,3 -a 1.5+2.1i
+
+TEST*/

@@ -23,8 +23,6 @@ typedef struct {
   PetscReal D_h;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
 {
   AppCtx*           user = (AppCtx*)ptr;
@@ -75,8 +73,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void* ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
 {
   AppCtx            *user = (AppCtx*)ptr;
@@ -143,8 +139,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DomainErrorFunction"
 PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
 {
   AppCtx            *user;
@@ -168,8 +162,6 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialState"
 PetscErrorCode FormInitialState(Vec X, AppCtx* user)
 {
   PetscErrorCode ierr;
@@ -188,8 +180,6 @@ PetscErrorCode FormInitialState(Vec X, AppCtx* user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PrintSolution"
 PetscErrorCode PrintSolution(Vec X, AppCtx *user)
 {
   PetscErrorCode    ierr;
@@ -207,8 +197,6 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   TS             ts;       /* time-stepping context */

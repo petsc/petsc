@@ -18,8 +18,6 @@ struct _n_PetscSegBuffer {
   size_t unitbytes;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferAlloc_Private"
 static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t count)
 {
   PetscErrorCode     ierr;
@@ -40,8 +38,6 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t coun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferCreate"
 /*@C
    PetscSegBufferCreate - create segmented buffer
 
@@ -74,8 +70,6 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuf
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferGet"
 /*@C
    PetscSegBufferGet - get new buffer space from a segmented buffer
 
@@ -106,8 +100,6 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,size_t count,void *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferDestroy"
 /*@C
    PetscSegBufferDestroy - destroy segmented buffer
 
@@ -136,8 +128,6 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferExtractTo"
 /*@C
    PetscSegBufferExtractTo - extract contiguous data to provided buffer and reset segmented buffer
 
@@ -177,8 +167,6 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferExtractAlloc"
 /*@C
    PetscSegBufferExtractAlloc - extract contiguous data to new allocation and reset segmented buffer
 
@@ -211,8 +199,6 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferExtractInPlace"
 /*@C
    PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
 
@@ -250,8 +236,6 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferGetSize"
 /*@C
    PetscSegBufferGetSize - get currently used size of segmented buffer
 
@@ -275,8 +259,6 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,size_t *usedsize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferUnuse"
 /*@C
    PetscSegBufferUnuse - return some unused entries obtained with an overzealous PetscSegBufferGet()
 

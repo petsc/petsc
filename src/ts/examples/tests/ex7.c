@@ -10,8 +10,6 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
 */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "f"
 /*
    f(U,V) = U + V
 
@@ -35,8 +33,6 @@ PetscErrorCode f(PetscReal t,Vec UV,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F"
 /*
    F(U,V) = U - V
 
@@ -72,8 +68,6 @@ typedef struct {
 extern PetscErrorCode TSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode SNESFunction(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -128,8 +122,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSFunction"
 /*
    Defines the RHS function that is passed to the time-integrator. 
 
@@ -152,8 +144,6 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFunction"
 /*
    Defines the nonlinear function that is passed to the nonlinear solver
 

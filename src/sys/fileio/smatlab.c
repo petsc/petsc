@@ -1,8 +1,6 @@
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStartMatlab"
 /*@C
     PetscStartMatlab - starts up MATLAB with a MATLAB script
 

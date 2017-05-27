@@ -16,8 +16,6 @@
 .seealso:   PetscViewerVTKAddField()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVTKAddField"
 /*@C
    PetscViewerVTKAddField - Add a field to the viewer
 
@@ -49,8 +47,6 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer,PetscObject dm,PetscErr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_VTK"
 static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
@@ -65,8 +61,6 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush_VTK"
 static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
 {
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
@@ -86,8 +80,6 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName_VTK"
 PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
@@ -120,8 +112,6 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetMode_VTK"
 PetscErrorCode  PetscViewerFileSetMode_VTK(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
@@ -132,8 +122,6 @@ PetscErrorCode  PetscViewerFileSetMode_VTK(PetscViewer viewer,PetscFileMode type
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVTKAddField_VTK"
 PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType fieldtype,PetscObject vec)
 {
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
@@ -143,8 +131,10 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   PetscFunctionBegin;
   if (vtk->dm) {
     if (dm != vtk->dm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
+  } else {
+    ierr = PetscObjectReference(dm);CHKERRQ(ierr);
+    vtk->dm = dm;
   }
-  vtk->dm    = dm;
   vtk->write = PetscViewerVTKWriteFunction;
   ierr       = PetscNew(&link);CHKERRQ(ierr);
   link->ft   = fieldtype;
@@ -158,8 +148,18 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_VTK"
+/*MC
+   PETSCVIEWERVTK - A viewer that writes to an VTK file
+
+
+.seealso:  PetscViewerVTKOpen(), PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+  Level: beginner
+M*/
+
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
 {
   PetscViewer_VTK *vtk;
@@ -180,8 +180,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVTKOpen"
 /*@C
    PetscViewerVTKOpen - Opens a file for VTK output.
 
@@ -222,8 +220,6 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVTKFWrite"
 /*@C
    PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 

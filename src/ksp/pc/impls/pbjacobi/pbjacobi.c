@@ -15,8 +15,6 @@ typedef struct {
 } PC_PBJacobi;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_1"
 static PetscErrorCode PCApply_PBJacobi_1(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi       *jac = (PC_PBJacobi*)pc->data;
@@ -32,12 +30,10 @@ static PetscErrorCode PCApply_PBJacobi_1(PC pc,Vec x,Vec y)
   for (i=0; i<m; i++) yy[i] = diag[i]*xx[i];
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_2"
 static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -61,8 +57,6 @@ static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(6.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_3"
 static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -88,8 +82,6 @@ static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(15.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_4"
 static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -116,8 +108,6 @@ static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(28.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_5"
 static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -145,8 +135,6 @@ static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(45.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_6"
 static PetscErrorCode PCApply_PBJacobi_6(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -175,8 +163,6 @@ static PetscErrorCode PCApply_PBJacobi_6(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(66.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PBJacobi_7"
 static PetscErrorCode PCApply_PBJacobi_7(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
@@ -203,12 +189,10 @@ static PetscErrorCode PCApply_PBJacobi_7(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(80.0*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(91*m);CHKERRQ(ierr); /* 2*bs2 - bs */
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_PBJacobi"
 static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
@@ -253,8 +237,6 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_PBJacobi"
 static PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
   PetscErrorCode ierr;
@@ -267,8 +249,6 @@ static PetscErrorCode PCDestroy_PBJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_PBJacobi"
 static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -312,8 +292,6 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_PBJacobi"
 PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac;

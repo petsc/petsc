@@ -32,8 +32,6 @@
 /*       FNROOT.                                                 */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKfndsep"
 PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
   PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */
@@ -87,7 +85,8 @@ L200:
   for (i = midbeg; i <= i__1; ++i) {
     node  = ls[i];
     jstrt = xadj[node];
-    jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
+    i__2  = xadj[node + 1];
+    jstop = (PetscInt)PetscAbsInt(i__2) - 1;
     i__2  = jstop;
     for (j = jstrt; j <= i__2; ++j) {
       nbr = adjncy[j];

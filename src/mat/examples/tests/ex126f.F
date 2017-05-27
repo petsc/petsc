@@ -4,11 +4,10 @@
 !
 
       program main
+#include <petsc/finclude/petscmat.h>
+      use petscmat
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
 
       Vec            x,b,u
       Mat            A, fact
@@ -23,6 +22,10 @@
       PetscReal      info(MAT_FACTORINFO_SIZE)
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       m    = 10
       one  = 1.0
       ione = 1
@@ -30,9 +33,9 @@
 
       wmumps = PETSC_FALSE
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                   &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                   &
      &                        '-m',m,flg, ierr)
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                  &
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                  &
      &                         '-use_mumps',wmumps,flg,ierr)
 
       call MatCreate(PETSC_COMM_WORLD, A, ierr)
@@ -84,8 +87,8 @@
       if (wmumps) then
           write(*,*) 'use MUMPS LU...'
           call MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,fact,ierr)
-          call MatLUFactorSymbolic(fact, A, PETSC_NULL_OBJECT,                            &
-     &                    PETSC_NULL_OBJECT,info, ierr)
+          call MatLUFactorSymbolic(fact, A, PETSC_NULL_IS,                               &
+     &                    PETSC_NULL_IS,info, ierr)
       else
          write(*,*) 'use PETSc LU...'
          call MatGetOrdering(A,MATORDERINGNATURAL,perm,iperm,ierr)

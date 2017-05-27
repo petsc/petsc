@@ -25,8 +25,6 @@ typedef struct {
   PetscBool   CleanUpESSL;
 } Mat_Essl;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Essl"
 PetscErrorCode MatDestroy_Essl(Mat A)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,6 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_Essl"
 PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
 {
   Mat_Essl       *essl = (Mat_Essl*)A->data;
@@ -58,8 +54,6 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_Essl"
 PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *aa  =(Mat_SeqAIJ*)(A)->data;
@@ -83,7 +77,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = 1.0;
 
-  ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],NULL);CHKERRQ(ierr);
 
   dgsf(&one,&nessl,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
@@ -96,8 +90,6 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_Essl"
 PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -125,8 +117,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_essl"
 PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -148,8 +138,6 @@ PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type
 .seealso: PCLU, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_essl"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -180,8 +168,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_Essl"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void)
 {
   PetscErrorCode ierr;

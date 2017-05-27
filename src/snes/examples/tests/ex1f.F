@@ -32,35 +32,13 @@
 !  --------------------------------------------------------------------------
 
       program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are generally used in SNES Fortran
-!  programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!     petscsnes.h   - SNES interface
-!  In addition, we need the following for use of PETSc drawing routines
-!     petscdraw.h   - drawing routines
-!  Other include statements may be needed if using additional PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscdraw.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscsnes.h>
+      use petscsnes
+      implicit none
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+      external SNESCOMPUTEJACOBIANDEFAULTCOLOR
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -105,6 +83,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -112,7 +94,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
 
 !  Initialize problem parameters
@@ -122,15 +104,15 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                        '-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                        '-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,  &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,  &
      &                         '-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
       N       = mx*my
 
@@ -156,7 +138,7 @@
 !     context that provides application-specific data for the
 !     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_VEC,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -166,7 +148,7 @@
 !  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
      &                         '-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
@@ -178,7 +160,7 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = .false.
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                         '-snes_fd_coloring',fd_coloring,ierr)
       if (fd_coloring) then
 
@@ -203,7 +185,7 @@
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
         call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
-     &                                PETSC_NULL_OBJECT,ierr)
+     &                                0,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
         call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
@@ -230,8 +212,7 @@
 !                          but use matrix-free approx for Jacobian-vector
 !                          products within Newton-Krylov method
 !
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,   &
-     &        ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,7 +233,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
@@ -305,12 +286,8 @@
 !  VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(X,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec           X
@@ -359,7 +336,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationInitialGuess(x,ierr)
-
+      use petscksp
       implicit none
 
 !  Common blocks:
@@ -421,11 +398,8 @@
 !  VecGetArray() and VecRestoreArray().
 !
       subroutine FormFunction(snes,X,F,dummy,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES              snes
@@ -483,7 +457,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationFunction(x,f,ierr)
-
+      use petscsnes
       implicit none
 
 !  Common blocks:
@@ -554,13 +528,8 @@
 !  VecGetArray() and VecRestoreArray().
 !
       subroutine FormJacobian(snes,X,jac,jac_prec,dummy,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES          snes
@@ -616,13 +585,8 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Common blocks:
       PetscReal    lambda

@@ -265,6 +265,8 @@ tree: ${ACTION}
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
 	  done
 
+printdot: 
+	-@if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi;
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
@@ -488,6 +490,7 @@ getautoconfargs:
           grep -v "may result in errors or" | \
           grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
           grep -v "is deprecated" | \
+          grep -v "Werror=format-security" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -500,6 +503,7 @@ getautoconfargs:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
+          grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
           grep -v "Unused external reference" | \
           grep -v "D4024 : unrecognized" | \
           grep -v "WARNING: TOC overflow." | \
@@ -533,6 +537,7 @@ getautoconfargs:
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
           grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
+          grep -v "Werror=format-security" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -580,26 +585,29 @@ chk_mansec:
         fi
 
 chk_manualpage_dir:
-	@if [ ! -d "${LOC}/docs/manualpages/${MANSEC}" ]; then \
-	  echo Making directory ${LOC}/docs/manualpages/${MANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/${MANSEC}; fi
+	@if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
+         if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
+	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
 
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
-          ${DOCTEXT} -html -indexdir ../${MANSEC} \
+          ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCED};  fi
+		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
 #
 #
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
 	  ${DOCTEXT} -html \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
+		-mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
-		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi
+		chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
@@ -611,9 +619,9 @@ manexamples:
           for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
-                   -printmatch -o /dev/null | sort | uniq` ;  \
+                   -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~  | sort | uniq` ;  \
               for j in $$a ; do \
-                b=`ls ${LOC}/docs/manualpages/*/$${j}.html | grep -v /all/ | cut -f9` ; \
+                b=`ls ${LOC}/docs/manualpages/$${j} | grep -v /all/ | cut -f9` ; \
                 l=`grep tutorials $${b} | wc -l`; \
                 if [ $$l -le 10 ] ; then \
                   if [ $$l -eq 0 ] ; then \
@@ -707,7 +715,7 @@ html: chk_c2html
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
-              ${PETSC_DIR}/bin/maint/fixinclude $$i $${ROOT} | \
+              awk '{ sub(/<pre width=\"80\">/,"<pre width=\"80\">\n"); print }'  | ${PETSC_DIR}/bin/maint/fixinclude $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
@@ -758,29 +766,10 @@ cleangcov:
 	@-${RM}  *.bb *.bbg *.da *.gcov *.lines *.gcno *.gcda
 #
 #----------------------------------------------------------------------------------
-# Rules for finding errors in the source and errors in the coding style
-countfunctions:
-	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
-	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
-	@-if [ "${SOURCED}" != "" ]; then \
-          for i in ${SOURCED} foo; do if [ -f $$i ]; then \
-           grep "define __FUNCT__" $$i | cut -f2 -d\" >> ${INSTALL_LIB_DIR}/countfunctions ; \
-          fi; done ; \
-        fi
-
 checkbadPetscFunctionBegin:
 	-@if [ "${SOURCED}" != "" ] ; then \
 	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
-
-checkbadPetscFunctionBegin_private:
-	-@for filename in ${SOURCED} ; do \
-	a=`grep '#define __FUNCT__' $$filename | wc -l`; \
-	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
-	if [ $$a -ne $$b ] ; then \
-	echo "$$filename: __FUNCT__ = $$a; PetscFunctionBegin = $$b" ; \
-	fi; \
-	done
 
 checkbadFileHeader:
 	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
@@ -979,3 +968,5 @@ uncrustify:
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
 
+# To leave executables in place, you can uncomment this line
+#RM = echo

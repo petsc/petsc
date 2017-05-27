@@ -5,8 +5,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPIAIJ"
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
@@ -129,8 +127,6 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDisAssemble_MPIAIJ"
 /*
      Takes the local part of an already assembled MPIAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
@@ -209,8 +205,6 @@ static PetscInt *auglyrmapd = 0,*auglyrmapo = 0; /* mapping from the local order
 static Vec auglydd          = 0,auglyoo     = 0; /* work vectors used to scale the two parts of the local matrix */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJDiagonalScaleLocalSetUp"
 PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIAIJ     *ina = (Mat_MPIAIJ*) inA->data; /*access private part of matrix */
@@ -265,8 +259,6 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJDiagonalScaleLocal"
 PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
@@ -277,8 +269,6 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScaleLocal_MPIAIJ"
 PetscErrorCode  MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*) A->data; /*access private part of matrix */

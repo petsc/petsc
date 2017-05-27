@@ -8,8 +8,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDenseGetLocalMatrix"
 /*@
 
       MatDenseGetLocalMatrix - For a MATMPIDENSE or MATSEQDENSE matrix returns the sequential
@@ -37,8 +35,6 @@ PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRow_MPIDense"
 PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
@@ -52,8 +48,6 @@ PetscErrorCode MatGetRow_MPIDense(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRow_MPIDense"
 PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscErrorCode ierr;
@@ -64,8 +58,6 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
 PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
@@ -96,8 +88,6 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_MPIDense"
 PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIDense   *A = (Mat_MPIDense*)mat->data;
@@ -132,8 +122,6 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetValues_MPIDense"
 PetscErrorCode MatGetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -156,8 +144,6 @@ PetscErrorCode MatGetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDenseGetArray_MPIDense"
 PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -168,9 +154,7 @@ PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix_MPIDense"
-static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_MPIDense   *mat  = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense   *lmat = (Mat_SeqDense*)mat->A->data;
@@ -232,8 +216,6 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDenseRestoreArray_MPIDense"
 PetscErrorCode MatDenseRestoreArray_MPIDense(Mat A,PetscScalar *array[])
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -244,8 +226,6 @@ PetscErrorCode MatDenseRestoreArray_MPIDense(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyBegin_MPIDense"
 PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -267,8 +247,6 @@ PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPIDense"
 PetscErrorCode MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIDense   *mdn=(Mat_MPIDense*)mat->data;
@@ -306,8 +284,6 @@ PetscErrorCode MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_MPIDense"
 PetscErrorCode MatZeroEntries_MPIDense(Mat A)
 {
   PetscErrorCode ierr;
@@ -324,8 +300,6 @@ PetscErrorCode MatZeroEntries_MPIDense(Mat A)
    mdn->A and mdn->B directly and not through the MatZeroRows()
    routine.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRows_MPIDense"
 PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_MPIDense      *l = (Mat_MPIDense*)A->data;
@@ -466,8 +440,6 @@ PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat,Vec,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIDense"
 PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -480,8 +452,6 @@ PetscErrorCode MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_MPIDense"
 PetscErrorCode MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -494,8 +464,6 @@ PetscErrorCode MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_MPIDense"
 PetscErrorCode MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -510,8 +478,6 @@ PetscErrorCode MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_MPIDense"
 PetscErrorCode MatMultTransposeAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -525,8 +491,6 @@ PetscErrorCode MatMultTransposeAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_MPIDense"
 PetscErrorCode MatGetDiagonal_MPIDense(Mat A,Vec v)
 {
   Mat_MPIDense   *a    = (Mat_MPIDense*)A->data;
@@ -549,8 +513,6 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIDense"
 PetscErrorCode MatDestroy_MPIDense(Mat mat)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -573,7 +535,6 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
@@ -584,8 +545,6 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIDense_Binary"
 static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
@@ -662,8 +621,6 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 
 extern PetscErrorCode MatView_SeqDense(Mat,PetscViewer);
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIDense_ASCIIorDraworSocket"
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
@@ -736,7 +693,8 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-        ierr = MatView_SeqDense(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPIDense*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
+      ierr = MatView_SeqDense(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -745,8 +703,6 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIDense"
 PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -766,8 +722,6 @@ PetscErrorCode MatView_MPIDense(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_MPIDense"
 PetscErrorCode MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data;
@@ -811,8 +765,6 @@ PetscErrorCode MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_MPIDense"
 PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -853,8 +805,6 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_MPIDense"
 PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
@@ -894,8 +844,6 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNorm_MPIDense"
 PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
@@ -943,8 +891,6 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTranspose_MPIDense"
 PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
 {
   Mat_MPIDense   *a    = (Mat_MPIDense*)A->data;
@@ -956,8 +902,8 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports square matrix only in-place");
-  if (reuse == MAT_INITIAL_MATRIX || A == *matout) {
+  if (reuse == MAT_INPLACE_MATRIX  && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports square matrix only in-place");
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -976,7 +922,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *matout = B;
   } else {
     ierr = MatHeaderMerge(A,&B);CHKERRQ(ierr);
@@ -988,8 +934,6 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
 static PetscErrorCode MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat*);
 extern PetscErrorCode MatScale_MPIDense(Mat,PetscScalar);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_MPIDense"
 PetscErrorCode MatSetUp_MPIDense(Mat A)
 {
   PetscErrorCode ierr;
@@ -999,8 +943,6 @@ PetscErrorCode MatSetUp_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPY_MPIDense"
 PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -1012,8 +954,6 @@ PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConjugate_MPIDense"
 PetscErrorCode  MatConjugate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)mat->data;
@@ -1024,8 +964,6 @@ PetscErrorCode  MatConjugate_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRealPart_MPIDense"
 PetscErrorCode MatRealPart_MPIDense(Mat A)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -1036,8 +974,6 @@ PetscErrorCode MatRealPart_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatImaginaryPart_MPIDense"
 PetscErrorCode MatImaginaryPart_MPIDense(Mat A)
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
@@ -1049,8 +985,6 @@ PetscErrorCode MatImaginaryPart_MPIDense(Mat A)
 }
 
 extern PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnNorms_MPIDense"
 PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
@@ -1077,8 +1011,6 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetRandom_MPIDense"
 static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
 {
   Mat_MPIDense   *d = (Mat_MPIDense*)x->data;
@@ -1098,8 +1030,6 @@ static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
 
 extern PetscErrorCode MatMatMultNumeric_MPIDense(Mat A,Mat,Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_MPIDense"
 static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A,PetscBool  *missing,PetscInt *d)
 {
   PetscFunctionBegin;
@@ -1140,7 +1070,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                 /* 29*/ MatSetUp_MPIDense,
                                         0,
                                         0,
-                                        0,
+                                        MatGetDiagonalBlock_MPIDense,
                                         0,
                                 /* 34*/ MatDuplicate_MPIDense,
                                         0,
@@ -1148,7 +1078,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                 /* 39*/ MatAXPY_MPIDense,
-                                        MatGetSubMatrices_MPIDense,
+                                        MatCreateSubMatrices_MPIDense,
                                         0,
                                         MatGetValues_MPIDense,
                                         0,
@@ -1167,7 +1097,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                /* 59*/ MatGetSubMatrix_MPIDense,
+                                /* 59*/ MatCreateSubMatrix_MPIDense,
                                         MatDestroy_MPIDense,
                                         MatView_MPIDense,
                                         0,
@@ -1257,8 +1187,6 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIDenseSetPreallocation_MPIDense"
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 {
   Mat_MPIDense   *a;
@@ -1283,8 +1211,6 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 }
 
 #if defined(PETSC_HAVE_ELEMENTAL)
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIDense_Elemental"
 PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat_elemental;
@@ -1325,8 +1251,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIDense"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a;
@@ -1356,7 +1280,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",MatMPIDenseSetPreallocation_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",MatMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
@@ -1384,8 +1307,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 .seealso: MatCreateMPIDense,MATSEQDENSE,MATMPIDENSE
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIDenseSetPreallocation"
 /*@C
    MatMPIDenseSetPreallocation - Sets the array used to store the matrix entries
 
@@ -1419,8 +1340,6 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateDense"
 /*@C
    MatCreateDense - Creates a parallel matrix in dense format.
 
@@ -1478,8 +1397,6 @@ PetscErrorCode  MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIDense"
 static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat            mat;
@@ -1515,8 +1432,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
 PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N,Mat newmat)
 {
   PetscErrorCode ierr;
@@ -1584,8 +1499,6 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_MPIDense"
 PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
 {
   Mat_MPIDense   *a;
@@ -1767,8 +1680,6 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatEqual_MPIDense"
 PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
 {
   Mat_MPIDense   *matB = (Mat_MPIDense*)B->data,*matA = (Mat_MPIDense*)A->data;
@@ -1784,8 +1695,6 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MatTransMatMult_MPIDense_MPIDense"
 PetscErrorCode MatDestroy_MatTransMatMult_MPIDense_MPIDense(Mat A)
 {
   PetscErrorCode        ierr;
@@ -1799,8 +1708,6 @@ PetscErrorCode MatDestroy_MatTransMatMult_MPIDense_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultNumeric_MPIDense_MPIDense"
 PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 {
   Mat_MPIDense   *a=(Mat_MPIDense*)A->data, *b=(Mat_MPIDense*)B->data, *c=(Mat_MPIDense*)C->data;
@@ -1844,8 +1751,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIDense_MPIDense"
 PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode        ierr;
@@ -1884,8 +1789,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMult_MPIDense_MPIDense"
 PetscErrorCode MatTransposeMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -1898,8 +1801,6 @@ PetscErrorCode MatTransposeMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MatMatMult_MPIDense_MPIDense"
 PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(Mat A)
 {
   PetscErrorCode   ierr;
@@ -1917,8 +1818,6 @@ PetscErrorCode MatDestroy_MatMatMult_MPIDense_MPIDense(Mat A)
 }
 
 #if defined(PETSC_HAVE_ELEMENTAL)
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIDense"
 PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode   ierr;
@@ -1933,8 +1832,6 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
 PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode   ierr;
@@ -1972,8 +1869,6 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMult_MPIDense_MPIDense"
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;

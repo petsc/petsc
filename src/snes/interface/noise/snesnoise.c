@@ -19,8 +19,6 @@ static PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
 extern PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 extern PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDiffParameterCreate_More"
 PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {
   DIFFPAR_MORE   *neP;
@@ -61,8 +59,6 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDiffParameterDestroy_More"
 PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE*)nePv;
@@ -78,8 +74,6 @@ PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDiffParameterCompute_More"
 PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE*)nePv;
@@ -219,8 +213,6 @@ theend:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "JacMatMultCompare"
 PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 {
   Vec            yy1, yy2; /* work vectors */

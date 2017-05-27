@@ -207,7 +207,7 @@ class BuildChecker(script.Script):
   def checkFile(self, filename):
     ##logRE = r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log'
     logRE = r'(build|examples)_(?P<branch>[\w.\d-]+)_(?P<arch>[\w.\d-]+)_(?P<machine>[\w.\d-]+)\.log'
-    commitRE = re.compile(r'^commit (?P<commit>[0-9a-z]{40})')
+    commitRE = re.compile(r'^commit: (?P<commit>[0-9a-z]{40})')
     petscdirRE = re.compile(r'PETSC_DIR[:= ]+(?P<petscdir>\S+)')
     configureRE = re.compile(r'\*{3,5} (?P<errorMsg>[^*]+) \*{3,5}')
     addBlameDict = self.argDB['blameMail']
@@ -382,7 +382,7 @@ Thanks,
       import smtplib
       from email.mime.text import MIMEText
 
-      if author == 'Mark Adams <mark.adams@columbia.edu>':
+      if author in ['Mark Adams <mark.adams@columbia.edu>','Mark Adams <cal2princeton@yahoo.com>'] :
         author =  'Mark Adams <mfadams@lbl.gov>'
       if author == 'Karl Rupp <rupp@mcs.anl.gov>':
         author =  'Karl Rupp <me@karlrupp.net>'

@@ -45,8 +45,6 @@ TO ADD:
   6) Try out CUSP PCs
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "IntegrateCells"
 PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats)
 {
   DMDALocalInfo  info;
@@ -104,8 +102,6 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   KSP            ksp;
@@ -125,6 +121,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, 0, help);if (ierr) return ierr;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL, "-view", &doView, NULL);CHKERRQ(ierr);
 

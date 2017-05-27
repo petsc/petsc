@@ -53,8 +53,6 @@
 */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_ASILS"
 static PetscErrorCode TaoSetUp_ASILS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
@@ -81,8 +79,6 @@ static PetscErrorCode TaoSetUp_ASILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Tao_ASLS_FunctionGradient"
 static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,  Vec G, void *ptr)
 {
   Tao            tao = (Tao)ptr;
@@ -104,8 +100,6 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_ASILS"
 static PetscErrorCode TaoDestroy_ASILS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
@@ -131,8 +125,6 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_ASILS"
 static PetscErrorCode TaoSolve_ASILS(Tao tao)
 {
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
@@ -261,7 +253,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     ierr = VecNorm(tao->stepdirection, NORM_2, &normd);CHKERRQ(ierr);
     ierr = VecDot(tao->stepdirection, asls->dpsi, &innerd);CHKERRQ(ierr);
 
-    if (innerd <= asls->delta*pow(normd, asls->rho)) {
+    if (innerd <= asls->delta*PetscPowReal(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
       ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
@@ -291,8 +283,6 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_ASILS"
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;

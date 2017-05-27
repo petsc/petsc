@@ -1,8 +1,6 @@
 static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
@@ -38,11 +36,11 @@ int main(int argc, char **argv)
       }
       /* Check result */
       for (j=0;j<i;j++) {
-        if (fabs(val_mdot[j] - val_dot[j])/fabs(val_dot[j]) > 1e-5) {
+        if (PetscAbsScalar(val_mdot[j] - val_dot[j])/PetscAbsScalar(val_dot[j]) > 1e-5) {
           ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, val_mdot[j]=%g, val_dot[j]=%g\n", i, j, val_mdot[j], val_dot[j]);CHKERRQ(ierr);
           break;
         }
-        if (fabs(tval_mdot[j] - tval_dot[j])/fabs(tval_dot[j]) > 1e-5) {
+        if (PetscAbsScalar(tval_mdot[j] - tval_dot[j])/PetscAbsScalar(tval_dot[j]) > 1e-5) {
           ierr = PetscPrintf(PETSC_COMM_WORLD, "[TEST FAILED] i=%D, j=%D, tval_mdot[j]=%g, tval_dot[j]=%g\n", i, j, tval_mdot[j], tval_dot[j]);CHKERRQ(ierr);
           break;
         }

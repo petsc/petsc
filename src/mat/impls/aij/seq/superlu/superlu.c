@@ -58,8 +58,6 @@ typedef struct {
 /*
     Utility function
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_SuperLU"
 static PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU       *lu= (Mat_SuperLU*)A->data;
@@ -92,8 +90,6 @@ static PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SuperLU_Private"
 PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU       *lu = (Mat_SuperLU*)A->data;
@@ -212,15 +208,13 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SuperLU"
 PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->errortype) {
+  if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
@@ -231,15 +225,13 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SuperLU"
 PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->errortype) {
+  if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
@@ -250,8 +242,6 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SuperLU"
 static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)F->data;
@@ -360,7 +350,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     } else {
       if (sinfo <= lu->A.ncol) {
         if (lu->options.ILU_FillTol == 0.0) {
-          F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+          F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         }
         ierr = PetscInfo2(F,"Number of zero pivots %D, ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol);CHKERRQ(ierr);
       } else if (sinfo == lu->A.ncol + 1) {
@@ -374,7 +364,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
          */
         ierr = PetscInfo1(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %D",sinfo);CHKERRQ(ierr);
       } else { /* sinfo > lu->A.ncol + 1 */
-        F->errortype = MAT_FACTOR_OUTMEMORY;
+        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
         ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
       }
     }
@@ -399,8 +389,6 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SuperLU"
 static PetscErrorCode MatDestroy_SuperLU(Mat A)
 {
   PetscErrorCode ierr;
@@ -432,8 +420,6 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SuperLU"
 static PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -451,8 +437,6 @@ static PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_SuperLU"
 PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->data;
@@ -472,8 +456,6 @@ PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 /*
    Note the r permutation is ignored
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
 static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SuperLU *lu = (Mat_SuperLU*)(F->data);
@@ -485,8 +467,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluSetILUDropTol_SuperLU"
 static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
 {
   Mat_SuperLU *lu= (Mat_SuperLU*)F->data;
@@ -496,8 +476,6 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluSetILUDropTol"
 /*@
   MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
    Logically Collective on Mat
@@ -527,8 +505,6 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_superlu"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -570,8 +546,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 .seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_superlu"
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -706,8 +680,6 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_SuperLU"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void)
 {
   PetscErrorCode ierr;

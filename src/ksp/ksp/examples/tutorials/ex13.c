@@ -34,8 +34,6 @@ extern PetscErrorCode UserInitializeLinearSolver(PetscInt,PetscInt,UserCtx*);
 extern PetscErrorCode UserFinalizeLinearSolver(UserCtx*);
 extern PetscErrorCode UserDoLinearSolver(PetscScalar*,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   UserCtx        userctx;
@@ -135,8 +133,6 @@ int main(int argc,char **args)
 }
 
 /* ------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UserInitializedLinearSolve"
 PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx)
 {
   PetscErrorCode ierr;
@@ -176,8 +172,6 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UserDoLinearSolve"
 /*
    Solves -div (rho grad psi) = F using finite differences.
    rho is a 2-dimensional array of size m by n, stored in Fortran
@@ -295,8 +289,6 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
 }
 
 /* ------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UserFinalizeLinearSolve"
 PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
 {
   PetscErrorCode ierr;

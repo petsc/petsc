@@ -13,8 +13,6 @@
  */
 static PetscReal Gamma = 2.0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawUtilitySetGamma"
 PetscErrorCode  PetscDrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -54,8 +52,6 @@ PETSC_STATIC_INLINE void PetscGammaCorrect(double *r,double *g,double *b)
   *b = (double)PetscPowReal((PetscReal)*b,igamma);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCmap_Hue"
 static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int    i;
@@ -73,8 +69,6 @@ static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[],unsigned 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCmap_Gray"
 static PetscErrorCode PetscDrawCmap_Gray(int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int i;
@@ -83,8 +77,6 @@ static PetscErrorCode PetscDrawCmap_Gray(int mapsize,unsigned char R[],unsigned 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCmap_Jet"
 static PetscErrorCode PetscDrawCmap_Jet(int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int          i;
@@ -110,8 +102,6 @@ static PetscErrorCode PetscDrawCmap_Jet(int mapsize,unsigned char R[],unsigned c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCmap_Hot"
 static PetscErrorCode PetscDrawCmap_Hot(int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int          i;
@@ -135,8 +125,6 @@ static PetscErrorCode PetscDrawCmap_Hot(int mapsize,unsigned char R[],unsigned c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCmap_Bone"
 static PetscErrorCode PetscDrawCmap_Bone(int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int i;
@@ -179,8 +167,6 @@ static struct {
   {"magma",    PetscDrawCmap_magma,    NULL}, /* matplotlib 1.5 */
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawUtilitySetCmap"
 PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsigned char R[],unsigned char G[],unsigned char B[])
 {
   int             i,j;

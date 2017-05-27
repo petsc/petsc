@@ -8,8 +8,6 @@ static char help[] = "Tests IS stride routines.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       i,n,start,stride;

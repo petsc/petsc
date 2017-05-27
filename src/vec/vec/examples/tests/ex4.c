@@ -3,8 +3,6 @@ static char help[] = "Scatters from a parallel vector into seqential vectors.\n\
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

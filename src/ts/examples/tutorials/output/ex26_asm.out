@@ -1,0 +1,23 @@
+7x7 grid, lid velocity = 100., prandtl # = 1., grashof # = 1000.
+0 TS dt 0.0714286 time 0.
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+1 TS dt 0.0714286 time 0.0714286
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+2 TS dt 0.0714286 time 0.142857
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+3 TS dt 0.0714286 time 0.214286
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+4 TS dt 0.0714286 time 0.285714
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+5 TS dt 0.0714286 time 0.357143
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+6 TS dt 0.0714286 time 0.428571
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+7 TS dt 0.0714286 time 0.5
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+8 TS dt 0.0714286 time 0.571429
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+9 TS dt 0.0714286 time 0.642857
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+10 TS dt 0.0714286 time 0.714286
+CONVERGED_ITS at time 0.714286 after 10 steps

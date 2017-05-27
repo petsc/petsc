@@ -5,8 +5,6 @@ typedef struct {
   PetscReal haptol;
 } KSP_SYMMLQ;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_SYMMLQ"
 PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -16,8 +14,6 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_SYMMLQ"
 PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -195,8 +191,6 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_SYMMLQ"
 PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ     *symmlq;

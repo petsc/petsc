@@ -11,8 +11,6 @@ typedef struct {
   char              *string;
 } PF_Matlab;
 
-#undef __FUNCT__
-#define __FUNCT__ "PFView_Matlab"
 PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -27,8 +25,6 @@ PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFDestroy_Matlab"
 PetscErrorCode PFDestroy_Matlab(void *value)
 {
   PetscErrorCode ierr;
@@ -41,8 +37,6 @@ PetscErrorCode PFDestroy_Matlab(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApply_Matlab"
 PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,PetscScalar *out)
 {
   PF_Matlab      *matlab = (PF_Matlab*)value;
@@ -56,8 +50,6 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSetFromOptions_Matlab"
 PetscErrorCode PFSetFromOptions_Matlab(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
@@ -75,8 +67,6 @@ PetscErrorCode PFSetFromOptions_Matlab(PetscOptionItems *PetscOptionsObject,PF p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate_Matlab"
 PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf,void *value)
 {
   PetscErrorCode ierr;

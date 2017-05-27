@@ -16,11 +16,11 @@
 
 PETSC_EXTERN void PETSC_STDCALL petscsynchronizedflush_(MPI_Fint * comm, FILE **file,int *ierr)
 {
-  *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm) ),*file);
+  FILE *f = *file;
+  if (!f) f = PETSC_STDOUT; /* support for PETSC_STDOUT in Fortran */
+  *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm) ),f);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
   PetscErrorCode ierr;
@@ -36,7 +36,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1,*tmp;
 
@@ -47,7 +47,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fn
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1,*tmp;
 
@@ -58,7 +58,7 @@ PETSC_EXTERN void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIX
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1,*tmp;
 
@@ -69,7 +69,7 @@ PETSC_EXTERN void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,char* fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1,*tmp;
 

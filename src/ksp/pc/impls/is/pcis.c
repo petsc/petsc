@@ -1,8 +1,6 @@
 
 #include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 {
   PC_IS *pcis = (PC_IS*)pc->data;
@@ -12,8 +10,6 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUseStiffnessScaling"
 /*@
  PCISSetUseStiffnessScaling - Tells PCIS to construct partition of unity using
                               local matrices' diagonal.
@@ -40,22 +36,18 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
 {
   PetscErrorCode ierr;
   PC_IS          *pcis = (PC_IS*)pc->data;
 
   PetscFunctionBegin;
-  ierr    = VecDestroy(&pcis->D);CHKERRQ(ierr);
   ierr    = PetscObjectReference((PetscObject)scaling_factors);CHKERRQ(ierr);
+  ierr    = VecDestroy(&pcis->D);CHKERRQ(ierr);
   pcis->D = scaling_factors;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainDiagonalScaling"
 /*@
  PCISSetSubdomainDiagonalScaling - Set diagonal scaling for PCIS.
 
@@ -82,8 +74,6 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 {
   PC_IS *pcis = (PC_IS*)pc->data;
@@ -93,8 +83,6 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainScalingFactor"
 /*@
  PCISSetSubdomainScalingFactor - Set scaling factor for PCIS.
 
@@ -126,8 +114,6 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 /*
    PCISSetUp -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUp"
 PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
 {
   PC_IS          *pcis  = (PC_IS*)(pc->data);
@@ -146,7 +132,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
   if (!pc->setupcalled) {
     PetscInt    n_I;
     PetscInt    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
-    PetscInt    *array;
+    PetscBT     bt;
     PetscInt    i,j;
 
     /* get info on mapping */
@@ -157,17 +143,17 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = ISLocalToGlobalMappingGetInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
 
     /* Identifying interior and interface nodes, in local numbering */
-    ierr = PetscMalloc1(pcis->n,&array);CHKERRQ(ierr);
-    ierr = PetscMemzero(array,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscBTCreate(pcis->n,&bt);CHKERRQ(ierr);
     for (i=0;i<pcis->n_neigh;i++)
-      for (j=0;j<pcis->n_shared[i];j++)
-          array[pcis->shared[i][j]] += 1;
+      for (j=0;j<pcis->n_shared[i];j++) {
+          ierr = PetscBTSet(bt,pcis->shared[i][j]);CHKERRQ(ierr);
+      }
 
     /* Creating local and global index sets for interior and inteface nodes. */
     ierr = PetscMalloc1(pcis->n,&idx_I_local);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
-      if (!array[i]) {
+      if (!PetscBTLookup(bt,i)) {
         idx_I_local[n_I] = i;
         n_I++;
       } else {
@@ -175,6 +161,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
         pcis->n_B++;
       }
     }
+
     /* Getting the global numbering */
     idx_B_global = idx_I_local + n_I; /* Just avoiding allocating extra memory, since we have vacant space */
     idx_I_global = idx_B_local + pcis->n_B;
@@ -190,7 +177,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     /* Freeing memory */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
     ierr = PetscFree(idx_I_local);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
+    ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
 
     /* Creating work vectors and arrays */
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
@@ -205,9 +192,13 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
     ierr = PetscMalloc1(pcis->n,&pcis->work_N);CHKERRQ(ierr);
     /* scaling vector */
-    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+    if (!pcis->D) { /* it can happen that the user passed in a scaling vector via PCISSetSubdomainDiagonalScaling */
+      ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+      ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
+    }
 
     /* Creating the scatter contexts */
+    ierr = VecScatterCreate(pcis->vec1_N,pcis->is_I_local,pcis->vec1_D,(IS)0,&pcis->N_to_D);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
@@ -239,34 +230,29 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
   }
 
-  ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
   if (!issbaij) {
-    ierr = MatGetSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matis->A,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(matis->A,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
   } else {
     Mat newmat;
     ierr = MatConvert(matis->A,MATSEQBAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&newmat);CHKERRQ(ierr);
   }
 
-  /* Creating scaling "matrix" D */
+  /* Creating scaling vector D */
   ierr = PetscOptionsGetBool(((PetscObject)pc)->options,((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,NULL);CHKERRQ(ierr);
-  if (!pcis->use_stiffness_scaling) {
-    ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (pcis->use_stiffness_scaling) {
+    ierr = MatGetDiagonal(pcis->A_BB,pcis->D);CHKERRQ(ierr);
   }
-  ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
   ierr = VecSet(counter,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,pcis->D,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
@@ -361,8 +347,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
 /*
    PCISDestroy -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISDestroy"
 PetscErrorCode  PCISDestroy(PC pc)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
@@ -392,6 +376,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = VecDestroy(&pcis->vec1_global);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&pcis->N_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->global_to_B);CHKERRQ(ierr);
   ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);
   if (pcis->n_neigh > -1) {
@@ -409,8 +394,6 @@ PetscErrorCode  PCISDestroy(PC pc)
 /*
    PCISCreate -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISCreate"
 PetscErrorCode  PCISCreate(PC pc)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
@@ -440,6 +423,7 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->work_N           = 0;
   pcis->global_to_D      = 0;
   pcis->N_to_B           = 0;
+  pcis->N_to_D           = 0;
   pcis->global_to_B      = 0;
   pcis->mapping          = 0;
   pcis->BtoNmap          = 0;
@@ -468,8 +452,6 @@ PetscErrorCode  PCISCreate(PC pc)
 .  vec2_D - garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISApplySchur"
 PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
@@ -504,8 +486,6 @@ PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D,
    Notes:
    The entries in the array that do not correspond to interface nodes remain unaltered.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISScatterArrayNToVecB"
 PetscErrorCode  PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   PetscInt       i;
@@ -555,8 +535,6 @@ PetscErrorCode  PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMod
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISApplyInvSchur"
 PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;

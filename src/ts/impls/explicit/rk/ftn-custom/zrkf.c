@@ -1,6 +1,6 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscts.h>
-#include <../src/sys/f90-src/f90impl.h>
+#include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tsrksettype_                     TSRKSETTYPE
@@ -8,7 +8,7 @@
 #define tsrksettype_                     tsrksettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tsrksettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tsrksettype_(TS *ts,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

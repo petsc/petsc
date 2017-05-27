@@ -12,8 +12,6 @@ static char help[] = "Each process opens the file and reads its part. Not scalab
 
     petsc-maint@mcs.anl.gov
 */
-#undef __FUNCT__
-#define __FUNCT__ "Mat_Parallel_Load"
 int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
 {
   Mat            A;

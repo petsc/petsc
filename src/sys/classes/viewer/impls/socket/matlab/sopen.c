@@ -73,8 +73,6 @@ typedef unsigned long   u_long;
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-#undef __FUNCT__
-#define __FUNCT__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa;
@@ -97,8 +95,6 @@ int SOCKConnect_Private(int portnumber)
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-#undef __FUNCT__
-#define __FUNCT__ "establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
@@ -157,9 +153,7 @@ int establish(u_short portnum)
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
+PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int t,portnumber;
 

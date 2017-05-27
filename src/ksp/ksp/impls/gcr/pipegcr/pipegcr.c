@@ -5,6 +5,21 @@
 #include "petscsys.h"
 #include <../src/ksp/ksp/impls/gcr/pipegcr/pipegcrimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEGCR_DEFAULT_MMAX 15
 #define KSPPIPEGCR_DEFAULT_NPREALLOC 5
 #define KSPPIPEGCR_DEFAULT_VECB 5
@@ -13,8 +28,6 @@
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAllocateVectors_PIPEGCR"
 static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
   PetscErrorCode  ierr;
@@ -54,8 +67,6 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEGCR_cycle"
 static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -261,8 +272,6 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEGCR"
 static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -274,6 +283,8 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   PetscBool      issym;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
@@ -339,8 +350,6 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEGCR"
 static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -372,8 +381,6 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEGCR"
 static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -420,8 +427,6 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_PIPEGCR"
 static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -434,8 +439,6 @@ static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEGCR"
 static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -469,8 +472,6 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetUnrollW"
 /*@
   KSPPIPEGCRSetUnrollW - Set to PETSC_TRUE to use PIPEGCR with unrolling of the w vector
 
@@ -498,8 +499,6 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetUnrollW"
 /*@
   KSPPIPEGCRGetUnrollW - Get information on PIPEGCR unrolling the w vector
 
@@ -528,8 +527,6 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetMmax"
 /*@
   KSPPIPEGCRSetMmax - set the maximum number of previous directions PIPEGCR will store for orthogonalization
 
@@ -561,8 +558,6 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetMmax"
 /*@
   KSPPIPEGCRGetMmax - get the maximum number of previous directions PIPEGCR will store
 
@@ -596,8 +591,6 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetNprealloc"
 /*@
   KSPPIPEGCRSetNprealloc - set the number of directions to preallocate with PIPEGCR
 
@@ -625,8 +618,6 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetNprealloc"
 /*@
   KSPPIPEGCRGetNprealloc - get the number of directions preallocate by PIPEGCR
 
@@ -657,8 +648,6 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetTruncationType"
 /*@
   KSPPIPEGCRSetTruncationType - specify how many of its stored previous directions PIPEGCR uses during orthoganalization
 
@@ -674,7 +663,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipegcr_truncation, -ksp_pipegcr_truncation_restart
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
@@ -689,8 +678,6 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetTruncationType"
 /*@
   KSPPIPEGCRGetTruncationType - get the truncation strategy employed by PIPEGCR
 
@@ -706,7 +693,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipegcr_truncation, -ksp_pipegcr_truncation_restart
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
@@ -724,8 +711,6 @@ PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEGCR"
 static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -749,8 +734,6 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsOb
 typedef PetscErrorCode (*KSPPIPEGCRModifyPCFunction)(KSP,PetscInt,PetscReal,void*);
 typedef PetscErrorCode (*KSPPIPEGCRDestroyFunction)(void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetModifyPC_PIPEGCR"
 static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCFunction function,void *data,KSPPIPEGCRDestroyFunction destroy)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -763,8 +746,6 @@ static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCF
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetModifyPC"
 /*@C
  KSPPIPEGCRSetModifyPC - Sets the routine used by PIPEGCR to modify the preconditioner.
 
@@ -802,8 +783,16 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 }
 
 /*MC
-     KSPPIPEGCR - Implements the preconditioned Generalized Conjugate Residual method with pipelining.
+     KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method.
 
+  Options Database Keys:
+.   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
+.   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
+.   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
+.   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
+
+
+  Notes:
     The PIPEGCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
     which may vary from one iteration to the next. Users can can define a method to vary the
     preconditioner between iterates via KSPPIPEGCRSetModifyPC().
@@ -814,27 +803,21 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
     Only supports left preconditioning.
 
-    The natural norm for this method is (u,Au). This norm is available at no computational costs. Choosing norm types preconditioned or unpreconditioned involves a blocking reduction which prevents any benefit from pipelining.
+    The natural "norm" for this method is (u,Au), where u is the preconditioned residual. This norm is available at no additional computational cost, as with standard CG. Choosing preconditioned or unpreconditioned norm types involves a blocking reduction which prevents any benefit from pipelining.
 
-   Options Database Keys:
-+   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
-.   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
-.   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
-.   -ksp_pipegcr_truncation - Truncate number of previous Krylov directions
--   -ksp_pipegcr_trancation_restart - Truncation-restart strategy: Keep at most mmax Krylov directions then restart (the default)
+  Reference:
+    P. Sanan, S.M. Schnepp, and D.A. May,
+    "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
+    DOI: 10.1137/15M1049130
 
-   Level: beginner
-
-    Reference:
-      Pipelined, Flexible Krylov Subspace Methods
-      Patrick Sanan, Sascha M. Schnepp, and Dave A. May
+   Level: intermediate
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG
+           KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()
+
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEGCR"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -857,6 +840,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPEGCR;
   ksp->ops->solve          = KSPSolve_PIPEGCR;

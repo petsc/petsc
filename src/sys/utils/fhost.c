@@ -19,8 +19,6 @@
 #include <netdb.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
     return the entire Internet name. It may not return the same name

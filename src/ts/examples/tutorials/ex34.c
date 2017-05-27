@@ -2,8 +2,8 @@ static const char help[] = "An elastic wave equation driven by Dieterich-Ruina f
 /*
 This whole derivation comes from Erickson, Birnir, and Lavallee [2010]. The model comes from the continuum limit in Carlson and Langer [1989],
 
-  u_{tt}   = c^2 u_{xx} - \tilde\gamma^2 u − (\gamma^2 / \xi) (\theta + \ln(u_t + 1))
-  \theta_t = −(u_t + 1) (\theta + (1 + \epsilon) \ln(u_t +1))
+  u_{tt}   = c^2 u_{xx} - \tilde\gamma^2 u - (\gamma^2 / \xi) (\theta + \ln(u_t + 1))
+  \theta_t = -(u_t + 1) (\theta + (1 + \epsilon) \ln(u_t +1))
 
 which can be reduced to a first order system,
 
@@ -29,8 +29,6 @@ struct _User {
   PetscReal c;          /* wavespeed */
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
 {
   User              user = (User) ctx;
@@ -64,8 +62,6 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
 {
   User           user = (User) ctx;
@@ -116,8 +112,6 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
 }
 
 /* IJacobian - Compute IJacobian = dF/dU + a dF/dUdot */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
 {
   User           user = (User) ctx;
@@ -179,8 +173,6 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
 {
   /* User            user = (User) ctx; */
@@ -210,8 +202,6 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM                dm;
@@ -226,6 +216,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
 

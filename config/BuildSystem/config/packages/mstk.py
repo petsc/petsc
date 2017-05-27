@@ -4,9 +4,9 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'master'
-    self.download         = ['git://https://github.com/MeshToolkit/MSTK','http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
-    self.downloaddirname  = 'mstk'
+    self.gitcommit        = '65328ea'
+    self.download         = ['git://https://github.com/MeshToolkit/MSTK','https://github.com/MeshToolkit/MSTK/archive'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames = ['mstk']
     self.includes         = ['MSTK.h']
     self.liblist          = [['libmstk.a']]
     self.functions        = []

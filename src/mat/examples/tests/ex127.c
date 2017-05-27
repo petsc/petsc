@@ -7,8 +7,6 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,As;
@@ -23,9 +21,6 @@ int main(int argc,char **args)
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
-#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-display_mat", &disp_mat);CHKERRQ(ierr);
@@ -157,7 +152,7 @@ int main(int argc,char **args)
   }
   ierr = VecAXPY(y,-1.0,ys);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-12 || disp_vec) {
+  if (norm > 100.0*PETSC_MACHINE_EPSILON || disp_vec) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"|| A*x - As*x || = %g\n",(double)norm);CHKERRQ(ierr);
   }
 

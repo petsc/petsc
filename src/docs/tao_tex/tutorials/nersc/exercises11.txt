@@ -110,7 +110,7 @@ How many iterations do the different solvers require to solve the problem?
 
 Now how many iterations does each solver take?
 
-Execute the programs from the last step again, but this time use the command line option -log_summary to get detailed performance information.
+Execute the programs from the last step again, but this time use the command line option -log_view to get detailed performance information.
 
 Look under the PETSc Performance Summary section and determine how long
 each algorithm takes to solve the problem. How many floating point operations (flops) are required? 
@@ -119,7 +119,7 @@ each algorithm takes to solve the problem. How many floating point operations (f
 
 Run the problem minsurf2.c on four processors and view the output.
 
-  > mpiexec -n 4 ./minsurf2 -tao_monitor -mx 20 -my 20 -log_summary
+  > mpiexec -n 4 ./minsurf2 -tao_monitor -mx 20 -my 20 -log_view
 
 
 Locate minsurf2.c in the TAO documentation on its web site.  Browse through

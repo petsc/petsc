@@ -3,8 +3,6 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateError"
 int CreateError(PetscReal x)
 {
   PetscErrorCode ierr;
@@ -15,8 +13,6 @@ int CreateError(PetscReal x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -28,3 +24,18 @@ int main(int argc,char **argv)
   return 0;
 }
 
+
+/*
+
+    Because this example may produce different output on different machines we filter out everything.
+    This makes the test uneffective but currently we don't have a good way to know which machines should handle
+    the floating point exceptions properly.
+
+*/
+/*TEST
+
+   test:
+      args: -fp_trap
+      filter:  true
+
+TEST*/

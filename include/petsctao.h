@@ -12,7 +12,7 @@ PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, V
 /*E
   TaoSubsetType - PetscInt representing the way TAO handles active sets
 
-+ TAO_SUBSET_SUBVEC - TAO uses PETSc's MatGetSubMatrix and VecGetSubVector
++ TAO_SUBSET_SUBVEC - TAO uses PETSc's MatCreateSubMatrix and VecGetSubVector
 . TAO_SUBSET_MASK - Matrices are zeroed out corresponding to active set entries
 - TAO_SUBSET_MATRIXFREE - Same as TAO_SUBSET_MASK, but can be applied to matrix-free operators
 
@@ -172,7 +172,6 @@ PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat);
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(Tao, Vec*, Vec*);
 PETSC_EXTERN PetscErrorCode TaoGetDualVariables(Tao, Vec*, Vec*);
@@ -200,7 +199,6 @@ PETSC_EXTERN PetscErrorCode TaoSetIterationNumber(Tao, PetscInt);
 PETSC_EXTERN PetscErrorCode TaoGetTotalIterationNumber(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetTotalIterationNumber(Tao, PetscInt);
 
-PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
 PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);

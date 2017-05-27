@@ -1,48 +1,48 @@
 DM Object: 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+Mesh in 2 dimensions:
   0-cells: 12
   1-cells: 21
   2-cells: 15 (6)
 Labels:
   ghost: 0 strata of sizes ()
   vtk: 1 strata of sizes (9)
-  Face Sets: 2 strata of sizes (3, 3)
   marker: 1 strata of sizes (12)
+  Face Sets: 2 strata of sizes (3, 3)
   depth: 3 strata of sizes (12, 21, 15)
   0  time        0  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  1  time   0.3333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  2  time   0.6667  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  3  time        1  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  4  time    1.333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  5  time    1.667  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  6  time        2  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  7  time    2.333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  8  time    2.667  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
-  9  time        3  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 10  time    3.333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 11  time    3.667  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 12  time        4  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 13  time    4.333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 14  time    4.667  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 15  time        5  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
-  Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
- 16  time    5.333  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           1] int     0.222222
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+  1  time   0.3333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0,       1e-06] int  2.22222e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  2  time   0.6667  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 2.00153e-06] int  4.44354e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  3  time        1  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 3.00125e-06] int  6.66514e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  4  time    1.333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 4.00301e-06] int  8.88697e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  5  time    1.667  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 5.00296e-06] int  1.11091e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  6  time        2  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 6.00108e-06] int  1.33271e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  7  time    2.333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 7.00121e-06] int  1.55453e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  8  time    2.667  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 7.99951e-06] int  1.77681e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  9  time        3  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 8.99984e-06] int   1.9991e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 10  time    3.333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 9.99833e-06] int  2.22099e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 11  time    3.667  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.09988e-05] int  2.44333e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 12  time        4  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.19975e-05] int  2.66569e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 13  time    4.333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.29983e-05] int  2.88764e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 14  time    4.667  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.39971e-05] int  3.10961e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 15  time        5  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.49981e-05] int  3.33204e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+ 16  time    5.333  |x| (       1,        1) |x|_1 (      30,        1)         Error [           0, 1.59972e-05] int  3.55406e-06
 TS Object: 1 MPI processes
   type: mimex
   maximum steps=20
@@ -51,13 +51,14 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of linear solver iterations=0
   total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Version = 1
   SNES Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-07, absolute=1e-50, solution=1e-08
-    total number of linear solver iterations=0
-    total number of function evaluations=56
+    total number of linear solver iterations=1
+    total number of function evaluations=57
     norm schedule ALWAYS
     SNESLineSearch Object: 1 MPI processes
       type: basic
@@ -74,7 +75,7 @@ TS Object: 1 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI processes
       type: lu
-        LU: out-of-place factorization
+        out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.44207

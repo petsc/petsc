@@ -74,8 +74,6 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
     PetscErrorCode     ierr;
@@ -103,8 +101,9 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
 
     /* Set up distributed array */
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,
-                        &user.dm);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
+    ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+    ierr = DMSetUp(user.dm);CHKERRQ(ierr);
 
     /* Create vectors */
     ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr);
@@ -159,8 +158,6 @@ int main(int argc, char **argv)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
     FormInitialGuess - Computes an initial approximation to the solution.
 
@@ -201,8 +198,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 
 
 /* ------------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
    FormFunctionGradient - Evaluates the function and corresponding gradient.
 
@@ -344,8 +339,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
 {
   AppCtx         *user= (AppCtx*) ctx;

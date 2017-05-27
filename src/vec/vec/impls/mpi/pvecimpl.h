@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
   VECHEADER
-  PetscInt    nghost;                   /* length of local portion including ghost padding */
+  PetscInt    nghost;                   /* number of ghost points on this process */
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */
 
@@ -47,7 +47,6 @@ PETSC_INTERN PetscErrorCode VecMax_MPI(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMin_MPI(Vec,PetscInt*,PetscReal*);
 PETSC_INTERN PetscErrorCode VecDestroy_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_Netcdf(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);

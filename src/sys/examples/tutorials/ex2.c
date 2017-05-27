@@ -10,6 +10,8 @@ static char help[] = "Synchronized printing.\n\n";
    Processors: n
 T*/
 
+
+
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
@@ -70,9 +72,16 @@ int main(int argc,char **argv)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
      See the PetscFinalize() manpage for more information.
   */
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

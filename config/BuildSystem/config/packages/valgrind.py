@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions = []
     self.includes  = ['valgrind/valgrind.h']
-    self.needsMath = 0
     self.required  = 1
     return
 

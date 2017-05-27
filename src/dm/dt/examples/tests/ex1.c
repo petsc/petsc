@@ -3,8 +3,6 @@ static char help[] = "Tests 1D discretization tools.\n\n";
 #include <petscdt.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckPoints"
 static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscReal *points,PetscInt ndegrees,const PetscInt *degrees)
 {
   PetscErrorCode ierr;
@@ -24,10 +22,6 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
   PetscFunctionReturn(0);
 }
 
-
-
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -84,3 +78,8 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+  test:
+    suffix: 1
+    args: -degrees 1,2,3,4,5 -points 0,.2,-.5,.8,.9,1 -interval -.5,1
+TEST*/

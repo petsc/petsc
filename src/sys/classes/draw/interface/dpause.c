@@ -3,8 +3,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPause"
 /*@
    PetscDrawPause - Waits n seconds or until user input, depending on input
                to PetscDrawSetPause().
@@ -34,8 +32,6 @@ PetscErrorCode  PetscDrawPause(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetPause"
 /*@
    PetscDrawSetPause - Sets the amount of time that program pauses after
    a PetscDrawPause() is called.
@@ -65,8 +61,6 @@ PetscErrorCode  PetscDrawSetPause(PetscDraw draw,PetscReal lpause)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetPause"
 /*@
    PetscDrawGetPause - Gets the amount of time that program pauses after
    a PetscDrawPause() is called.

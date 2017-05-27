@@ -3,9 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'MUMPS_5.0.1-p1.tar.gz'
+    self.gitcommit        = 'v5.1.1-p3'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.1-p1.tar.gz']
+                             'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames = ['petsc-pkg-mumps']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a'],
@@ -14,6 +15,7 @@ class Configure(config.package.Package):
     self.includes         = ['dmumps_c.h']
     #
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
+    self.precisions       = ['single','double']
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.downloadonWindows= 1
     self.hastests         = 1
@@ -28,6 +30,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.flibs        = framework.require('config.packages.flibs',self)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.mpi          = framework.require('config.packages.MPI',self)
     self.metis        = framework.require('config.packages.metis',self)
@@ -35,10 +38,10 @@ class Configure(config.package.Package):
     self.ptscotch     = framework.require('config.packages.PTScotch',self)
     self.scalapack    = framework.require('config.packages.scalapack',self)
     if self.argDB['with-mumps-serial']:
-      self.deps       = [self.blasLapack]
+      self.deps       = [self.blasLapack,self.flibs]
       self.odeps      = [self.metis]
     else:
-      self.deps       = [self.scalapack,self.mpi,self.blasLapack]
+      self.deps       = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
       self.odeps      = [self.metis,self.parmetis,self.ptscotch]
     return
 
@@ -50,8 +53,6 @@ class Configure(config.package.Package):
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-      elif self.mpi.usingMPIUniFortranBinding:
-        raise RuntimeError('Serial MUMPS version is incompatible with the MPIUni Fortran bindings\nReconfigure using --with-mpiuni-fortran-binding=0')
     return
 
   def Install(self):

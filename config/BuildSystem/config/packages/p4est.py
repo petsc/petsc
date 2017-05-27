@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'origin/petsc'
-    self.download          = ['git://https://github.com/tisaac/p4est'] # Switch to Toby's petsc branch during development: switch back to a stable release when ready
+    self.gitcommit         = 'v2.0'
+    self.download          = ['git://https://github.com/cburstedde/p4est','https://github.com/p4est/p4est.github.io/raw/master/release/p4est-2.0.tar.gz']
     self.functions         = ['p4est_init']
     self.includes          = ['p4est_bits.h']
     self.liblist           = [['libp4est.a', 'libsc.a']]
@@ -20,8 +20,9 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
+    self.deps = [self.mpi,self.blasLapack]
     return
 
   def formGNUConfigureArgs(self):
@@ -29,10 +30,14 @@ class Configure(config.package.GNUPackage):
     if self.argDB['with-p4est-debugging']:
       args.append('--enable-debug')
     args.append('--enable-mpi')
+    args.append('LIBS="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     return args
 
   def updateGitDir(self):
+    import os
     config.package.GNUPackage.updateGitDir(self)
+    if not hasattr(self.sourceControl, 'git') or (self.packageDir != os.path.join(self.externalPackagesDir,'git.'+self.package)):
+      return
     Dir = self.getDir()
     try:
       libsc = self.libsc

@@ -27,8 +27,6 @@ T*/
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;
@@ -80,7 +78,7 @@ int main(int argc,char **args)
         then load another (larger) system and solve it as well.
         This process preloads the instructions with the smaller
         system so that more accurate performance monitoring (via
-        -log_summary) can be done with the larger one (that actually
+        -log_view) can be done with the larger one (that actually
         is the system of interest).
   */
   PetscPreLoadBegin(preload,"Load system");
@@ -225,7 +223,7 @@ int main(int argc,char **args)
     ierr = PetscFree(count);CHKERRQ(ierr);
     ierr = ISDestroy(&nis);CHKERRQ(ierr);
     ierr = ISSort(is);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
 
     /* need to move the vector also */
     ierr = ISDestroy(&is);CHKERRQ(ierr);

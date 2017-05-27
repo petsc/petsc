@@ -11,16 +11,11 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for using PetscLog Routines
-!
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petsclog.h>
+      use petscsys
+      implicit none
+
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -44,6 +39,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 !
 !     Create a new user-defined event.
@@ -120,3 +119,10 @@
 
       end
 
+
+!
+!/*TEST
+!
+!   test:
+!
+!TEST*/

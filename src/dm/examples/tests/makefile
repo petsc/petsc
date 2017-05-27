@@ -4,11 +4,11 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex19.c ex20.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
-	          ex42.c ex43.c
+	          ex42.c ex43.c ex44.c ex45.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -42,18 +42,6 @@ ex6: ex6.o   chkopts
 ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
-
-ex8: ex8.o   chkopts
-	-${CLINKER} -o ex8 ex8.o  ${PETSC_DM_LIB}
-	${RM} -f ex8.o
-
-ex9: ex9.o   chkopts
-	-${CLINKER} -o ex9 ex9.o  ${PETSC_DM_LIB}
-	${RM} -f ex9.o
-
-ex10: ex10.o   chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
-	${RM} -f ex10.o
 
 ex11: ex11.o   chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_DM_LIB}
@@ -175,6 +163,12 @@ ex42:ex42.o   chkopts
 ex43:ex43.o   chkopts
 	-${CLINKER} -o ex43 ex43.o  ${PETSC_DM_LIB}
 	${RM} -f ex43.o
+ex44:ex44.o   chkopts
+	-${CLINKER} -o ex44 ex44.o  ${PETSC_DM_LIB}
+	${RM} -f ex44.o
+ex45:ex45.o   chkopts
+	-${CLINKER} -o ex45 ex45.o  ${PETSC_DM_LIB}
+	${RM} -f ex45.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
@@ -215,6 +209,18 @@ runex4:
 	   ${RM} -f ex4_1.tmp
 runex4_2:
 	-@${MPIEXEC} -n 1 ./ex4 -testorder -nox
+
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5 > ex5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_1.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+runex5_baij:
+	-@${MPIEXEC} -n 1 ./ex5 -dm_mat_type baij -dim 2 > ex5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_2.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+
 runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -testorder -nox
 
@@ -255,9 +261,9 @@ runex11_3:
 	   ${RM} -f ex11_3.tmp
 
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/share/petsc/matlab'],path); path([getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -nodesktop -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/share/petsc/matlab'],path); path([getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -nodesktop -nosplash -softwareopengl -display ${DISPLAY} > ex12_1.tmp 2>&1; if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex12_1.tmp ex12_1.tmp2
+	   ${RM} -f ex12_1.tmp
 
 # ex13 uses the output of ex14
 runex13:
@@ -396,16 +402,40 @@ runex37:
 	-@${MPIEXEC} -n 2 ./ex37 ;\
 	  ${RM} -f ex32_1.tmp
 
+runex39:
+	-@${MPIEXEC} -n 1 ./ex39  > ex39_1.tmp; \
+	  ${DIFF} output/ex39_1.out ex39_1.tmp || printf "${PWD}\nPossible problem with ex39, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_1.tmp
+runex39_2:
+	-@${MPIEXEC} -n 2 ./ex39  | ${GREP} -v Vec_  > ex39_2.tmp; \
+	  ${DIFF} output/ex39_2.out ex39_2.tmp || printf "${PWD}\nPossible problem with ex39_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_2.tmp
+runex40:
+	-@${MPIEXEC} -n 1 ./ex40  > ex40_1.tmp; \
+	  ${DIFF} output/ex40_1.out ex40_1.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_1.tmp
+runex40_2:
+	-@${MPIEXEC} -n 4 ./ex40 | ${GREP} -v Vec_  > ex40_2.tmp; \
+	  ${DIFF} output/ex40_2.out ex40_2.tmp || printf "${PWD}\nPossible problem with ex40_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_2.tmp
 runex42:
 	-@${MPIEXEC} -n 2 ./ex42 ;\
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
-
 runex43:
 	-@${MPIEXEC} -n 2 ./ex43 > ex43.tmp; \
-	  ${DIFF} output/ex43_1.out ex43.tmp || printf "${PWD}\nPossible problem with 43, diffs above\n=========================================\n" ; \
+	  ${DIFF} output/ex43_1.out ex43.tmp || printf "${PWD}\nPossible problem with ex43, diffs above\n=========================================\n" ; \
 	  ${RM} -f ex43.tmp
+runex44:
+	-@${MPIEXEC} -n 3 ./ex44 > ex44.tmp; \
+	  ${DIFF} output/ex44.out ex44.tmp || printf "${PWD}\nPossible problem with ex44, diffs above\n=========================================\n" ; \
+	  ${RM} -f ex44.tmp
+runex45:
+	-@${MPIEXEC} -n 5 ./ex45 > ex45.tmp; \
+	  ${DIFF} output/ex45_1.out ex45.tmp || printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n" ; \
+	  ${RM} -f ex45.tmp
 
-TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
+TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm \
+                            ex5.PETSc runex5 runex5_baij ex5.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
                             ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm \
@@ -418,7 +448,6 @@ TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm
-TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 

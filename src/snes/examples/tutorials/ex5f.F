@@ -31,6 +31,9 @@
 !  --------------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscsnes.h>
+      use petscdmda
+      use petscsnes
       implicit none
 !
 !  We place common blocks, variable declarations, and other include files
@@ -70,21 +73,25 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Initialize problem parameters
 
       i1 = 1
-      i4 = -4
+      i4 = 4
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,                        &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,                        &
      &             PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,'')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,6 +112,8 @@
      &     DM_BOUNDARY_NONE,                                            &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
@@ -141,9 +150,9 @@
 !  Set function evaluation routine and vector
 
       call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,            &
-     &                              PETSC_NULL_OBJECT,ierr)
+     &                              0,ierr)
       call DMDASNESSetJacobianLocal(da,FormJacobianLocal,                          &
-     &                              PETSC_NULL_OBJECT,ierr)
+     &                              0,ierr)
       call SNESSetDM(snes,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -163,7 +172,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr)
       if (rank .eq. 0) then
          write(6,100) its
@@ -202,6 +211,7 @@
 !  the local vector data via VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(X,ierr)
+      use petscsnes
       implicit none
 
 #include "ex5f.h"
@@ -253,6 +263,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(x,ierr)
+      use petscsnes
       implicit none
 
 #include "ex5f.h"
@@ -306,7 +317,8 @@
 !
 !
       subroutine FormFunctionLocal(info,x,f,dummy,ierr)
-
+#include <petsc/finclude/petscdmda.h>
+      use petscsnes
       implicit none
 
 #include "ex5f.h"
@@ -398,6 +410,7 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(info,x,A,jac,ctx,ierr)
+      use petscsnes
       implicit none
 
 #include "ex5f.h"

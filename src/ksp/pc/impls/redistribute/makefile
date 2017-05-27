@@ -1,15 +1,16 @@
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = redistribute.c
-SOURCEF  =
-SOURCEH  =
-LIBBASE  = libpetscksp
-DIRS     =
-MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/redistribute/
+CFLAGS    =
+FFLAGS    =
+SOURCEC   = redistribute.c
+SOURCEF   =
+SOURCEH   =
+LIBBASE   = libpetscksp
+DIRS      =
+MANSEC    = KSP
+SUBMANSEC = PC
+LOCDIR    = src/ksp/pc/impls/redistribute/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

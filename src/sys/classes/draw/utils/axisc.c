@@ -2,8 +2,6 @@
 
 PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisCreate"
 /*@
    PetscDrawAxisCreate - Generate the axis data structure.
 
@@ -15,8 +13,14 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
    Ouput Parameters:
 .  axis - the axis datastructure
 
+   Notes: the MPI communicator that owns the underlying draw object owns the PetscDrawAxis object, but calls to set PetscDrawAxis options are ignored by all processes
+          except the first MPI process in the communicator
+
    Level: advanced
 
+.seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawLGGetAxis(), PetscDrawSPGetAxis(),
+          PetscDrawHGGetAxis(), PetscDrawBarGetAxis(), PetscDrawAxis, PetscDrawAxisDestroy(), PetscDrawAxisSetColors(), PetscDrawAxisSetLabels(), PetscDrawAxisSetLimits(), PetscDrawAxisGetLimits(), PetscDrawAxisSetHoldLimits(),
+          PetscDrawAxisDraw()
 @*/
 PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
@@ -48,8 +52,6 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisDestroy"
 /*@
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -60,6 +62,7 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 
     Level: advanced
 
+.seealso: PetscDrawAxisCreate(), PetscDrawAxis
 @*/
 PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
 {
@@ -78,8 +81,6 @@ PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisSetColors"
 /*@
     PetscDrawAxisSetColors -  Sets the colors to be used for the axis,
                          tickmarks, and text.
@@ -94,6 +95,7 @@ PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
 
     Level: advanced
 
+.seealso: PetscDrawAxisCreate(), PetscDrawAxis, PetscDrawAxisSetLabels(), PetscDrawAxisDraw(), PetscDrawAxisSetLimits()
 @*/
 PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
@@ -106,8 +108,6 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisSetLabels"
 /*@C
     PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -123,6 +123,7 @@ PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 
     Level: advanced
 
+.seealso: PetscDrawAxisCreate(), PetscDrawAxis, PetscDrawAxisSetColors(), PetscDrawAxisDraw(), PetscDrawAxisSetLimits()
 @*/
 PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
@@ -139,8 +140,6 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisSetLimits"
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
@@ -156,7 +155,7 @@ PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const
 
     Level: advanced
 
-.seealso:  PetscDrawAxisSetHoldLimits()
+.seealso:  PetscDrawAxisSetHoldLimits(), PetscDrawAxisGetLimits(), PetscDrawAxisSetLabels(), PetscDrawAxisSetColors()
 
 @*/
 PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
@@ -174,8 +173,6 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisGetLimits"
 /*@
     PetscDrawAxisGetLimits -  Gets the limits (in user coords) of the axis
 
@@ -188,7 +185,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 
     Level: advanced
 
-.seealso:  PetscDrawAxisSetLimits()
+.seealso:  PetscDrawAxisCreate(), PetscDrawAxis, PetscDrawAxisSetHoldLimits(), PetscDrawAxisSetLimits(), PetscDrawAxisSetLabels(), PetscDrawAxisSetColors()
 
 @*/
 PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscReal *xmax,PetscReal *ymin,PetscReal *ymax)
@@ -202,8 +199,6 @@ PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisSetHoldLimits"
 /*@
     PetscDrawAxisSetHoldLimits -  Causes an axis to keep the same limits until this is called
         again
@@ -220,7 +215,7 @@ PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscR
         Once this has been called with PETSC_TRUE the limits will not change if you call
      PetscDrawAxisSetLimits() until you call this with PETSC_FALSE
 
-.seealso:  PetscDrawAxisSetLimits()
+.seealso:  PetscDrawAxisCreate(), PetscDrawAxis, PetscDrawAxisGetLimits(), PetscDrawAxisSetLimits(), PetscDrawAxisSetLabels(), PetscDrawAxisSetColors()
 
 @*/
 PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
@@ -232,8 +227,6 @@ PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAxisDraw"
 /*@
     PetscDrawAxisDraw - PetscDraws an axis.
 
@@ -249,6 +242,9 @@ PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscBool hold)
     By picking special routines for the ticks and labels, special
     effects may be generated.  These routines are part of the Axis
     structure (axis).
+
+.seealso:  PetscDrawAxisCreate(), PetscDrawAxis, PetscDrawAxisGetLimits(), PetscDrawAxisSetLimits(), PetscDrawAxisSetLabels(), PetscDrawAxisSetColors()
+
 @*/
 PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 {
@@ -375,8 +371,6 @@ finally:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripe0"
 /*
     Removes all zeros but one from .0000
 */
@@ -404,8 +398,6 @@ PetscErrorCode PetscStripe0(char *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripAllZeros"
 /*
     Removes all zeros but one from .0000
 */
@@ -425,8 +417,6 @@ PetscErrorCode PetscStripAllZeros(char *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripTrailingZeros"
 /*
     Removes trailing zeros
 */
@@ -456,8 +446,6 @@ PetscErrorCode PetscStripTrailingZeros(char *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripInitialZero"
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -476,8 +464,6 @@ PetscErrorCode PetscStripInitialZero(char *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripZeros"
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -499,8 +485,6 @@ PetscErrorCode PetscStripZeros(char *buf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStripZerosPlus"
 /*
       Removes the plus in something like 1.1e+2 or 1.1e+02
 */

@@ -1,5 +1,9 @@
 static char help[] = "Check that a DM can accurately represent and interpolate functions of a given polynomial order\n\n";
 
+/*T
+  requires: !mpiuni
+T*/
+
 #include <petscdmplex.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -111,19 +115,17 @@ PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], Pets
 {
   AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = tanh(coords[d] - 0.5);
+  for (d = 0; d < user->dim; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
   return 0;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
+  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -138,7 +140,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->shearCoords     = PETSC_FALSE;
   options->nonaffineCoords = PETSC_FALSE;
   options->qorder          = 0;
-  options->numComponents   = 1;
+  options->numComponents   = PETSC_DEFAULT;
   options->porder          = 0;
   options->convergence     = PETSC_FALSE;
   options->convRefine      = PETSC_TRUE;
@@ -171,11 +173,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  options->numComponents = options->numComponents < 0 ? options->dim : options->numComponents;
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransformCoordinates"
 static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
 {
   PetscSection   coordSection;
@@ -242,8 +244,6 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -276,7 +276,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     } else {
       switch (user->dim) {
       case 2:
-        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+        ierr = DMSetUp(*dm);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
         break;
       default:
@@ -287,7 +289,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = PetscObjectTypeCompare((PetscObject)*dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
-    DM distributedMesh = NULL;
+    PetscPartitioner part;
+    DM               distributedMesh = NULL;
+
     if (user->tree) {
       DM refTree;
       DM ncdm = NULL;
@@ -305,6 +309,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
+    ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -322,12 +328,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "simple_mass"
 static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                        PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+                        PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   PetscInt d, e;
   for (d = 0, e = 0; d < dim; d++, e+=dim+1) {
@@ -336,12 +340,10 @@ static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /* < \nabla v, 1/2(\nabla u + {\nabla u}^T) > */
-#undef __FUNCT__
-#define __FUNCT__ "symmetric_gradient_inner_product"
 static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar C[])
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar C[])
 {
   PetscInt compI, compJ, d, e;
 
@@ -362,8 +364,6 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupSection"
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
   PetscBool      isPlex;
@@ -519,6 +519,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
                                                               /* periodic x */
         ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dmda);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(dmda);CHKERRQ(ierr);
+        ierr = DMSetUp(dmda);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(dmda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
 
@@ -540,8 +542,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestFEJacobian"
 static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
 {
   PetscBool      isPlex;
@@ -551,9 +551,12 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
     Vec          local;
+    const Vec    *vecs;
     Mat          E;
     MatNullSpace sp;
-    PetscBool    isNullSpace;
+    PetscBool    isNullSpace, hasConst;
+    PetscInt     n, i;
+    Vec          res, localX, localRes;
     PetscDS      ds;
 
     if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
@@ -563,6 +566,30 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs);CHKERRQ(ierr);
+    ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm,&localX);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm,&localRes);CHKERRQ(ierr);
+    for (i = 0; i < n; i++) { /* also test via matrix-free Jacobian application */
+      PetscReal resNorm;
+
+      ierr = VecSet(localRes,0.);CHKERRQ(ierr);
+      ierr = VecSet(localX,0.);CHKERRQ(ierr);
+      ierr = VecSet(local,0.);CHKERRQ(ierr);
+      ierr = VecSet(res,0.);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
+      ierr = DMPlexSNESComputeJacobianActionFEM(dm,local,localX,localRes,NULL);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
+      ierr = VecNorm(res,NORM_2,&resNorm);CHKERRQ(ierr);
+      if (resNorm > PETSC_SMALL) {
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient action null space vector %D residual: %E\n",i,resNorm);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecDestroy(&localRes);CHKERRQ(ierr);
+    ierr = VecDestroy(&localX);CHKERRQ(ierr);
+    ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
     if (isNullSpace) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n");CHKERRQ(ierr);
@@ -576,8 +603,6 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInjector"
 static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 {
   DM             refTree;
@@ -600,8 +625,6 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestFVGrad"
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm          comm;
@@ -725,8 +748,6 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeError"
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
                                    PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                    void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
@@ -746,8 +767,6 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckFunctions"
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
@@ -795,8 +814,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckInterpolation"
 static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
@@ -846,6 +863,10 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
     exactFuncs[0]    = quadratic;
     exactFuncDers[0] = quadraticDer;
     break;
+  case 3:
+    exactFuncs[0]    = cubic;
+    exactFuncDers[0] = cubicDer;
+    break;
   default:
     SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %D order %D", dim, order);
   }
@@ -877,8 +898,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckConvergence"
 static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
 {
   DM               odm = dm, rdm = NULL, cdm = NULL;
@@ -949,8 +968,6 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -962,15 +979,9 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
-  if (user.testFEjacobian) {
-    ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);
-  }
-  if (user.testFVgrad) {
-    ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
-  }
-  if (user.testInjector) {
-    ierr = TestInjector(dm, &user);CHKERRQ(ierr);
-  }
+  if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
+  if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
+  if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
     ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
@@ -982,3 +993,362 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 1
+    requires: triangle
+
+  # 2D P_1 on a triangle
+  test:
+    suffix: p1_2d_0
+    requires: triangle
+    args: -petscspace_order 1 -qorder 1 -convergence
+  test:
+    suffix: p1_2d_1
+    requires: triangle
+    args: -petscspace_order 1 -qorder 1 -porder 1
+  test:
+    suffix: p1_2d_2
+    requires: triangle
+    args: -petscspace_order 1 -qorder 1 -porder 2
+  test:
+    suffix: p1_2d_3
+    requires: triangle pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1_2d_4
+    requires: triangle pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1_2d_5
+    requires: triangle pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 3D P_1 on a tetrahedron
+  test:
+    suffix: p1_3d_0
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 1 -qorder 1 -convergence
+  test:
+    suffix: p1_3d_1
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 1 -qorder 1 -porder 1
+  test:
+    suffix: p1_3d_2
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 1 -qorder 1 -porder 2
+  test:
+    suffix: p1_3d_3
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1_3d_4
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1_3d_5
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 2D P_2 on a triangle
+  test:
+    suffix: p2_2d_0
+    requires: triangle
+    args: -petscspace_order 2 -qorder 2 -convergence
+  test:
+    suffix: p2_2d_1
+    requires: triangle
+    args: -petscspace_order 2 -qorder 2 -porder 1
+  test:
+    suffix: p2_2d_2
+    requires: triangle
+    args: -petscspace_order 2 -qorder 2 -porder 2
+  test:
+    suffix: p2_2d_3
+    requires: triangle pragmatic
+    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p2_2d_4
+    requires: triangle pragmatic
+    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p2_2d_5
+    requires: triangle pragmatic
+    args: -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 3D P_2 on a tetrahedron
+  test:
+    suffix: p2_3d_0
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 2 -qorder 2 -convergence
+  test:
+    suffix: p2_3d_1
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 2 -qorder 2 -porder 1
+  test:
+    suffix: p2_3d_2
+    requires: ctetgen
+    args: -dim 3 -petscspace_order 2 -qorder 2 -porder 2
+  test:
+    suffix: p2_3d_3
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p2_3d_4
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p2_3d_5
+    requires: ctetgen pragmatic
+    args: -dim 3 -petscspace_order 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 2D Q_1 on a quadrilaterial DA
+  test:
+    suffix: q1_2d_da_0
+    requires: mpi_type_get_envelope broken
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -convergence
+  test:
+    suffix: q1_2d_da_1
+    requires: mpi_type_get_envelope broken
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1
+  test:
+    suffix: q1_2d_da_2
+    requires: mpi_type_get_envelope broken
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2
+
+  # 2D Q_1 on a quadrilaterial Plex
+  test:
+    suffix: q1_2d_plex_0
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -convergence
+  test:
+    suffix: q1_2d_plex_1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1
+  test:
+    suffix: q1_2d_plex_2
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2
+  test:
+    suffix: q1_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -shear_coords
+  test:
+    suffix: q1_2d_plex_4
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -shear_coords
+  test:
+    suffix: q1_2d_plex_5
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
+  test:
+    suffix: q1_2d_plex_6
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
+  test:
+    suffix: q1_2d_plex_7
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
+
+  # 2D Q_2 on a quadrilaterial
+  test:
+    suffix: q2_2d_plex_0
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -convergence
+  test:
+    suffix: q2_2d_plex_1
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+  test:
+    suffix: q2_2d_plex_2
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2
+
+
+  # 2D P_3 on a triangle
+  test:
+    suffix: p3_2d_0
+    requires: triangle
+    args: -petscspace_order 3 -qorder 3 -convergence
+  test:
+    suffix: p3_2d_1
+    requires: triangle
+    args: -petscspace_order 3 -qorder 3 -porder 1
+  test:
+    suffix: p3_2d_2
+    requires: triangle
+    args: -petscspace_order 3 -qorder 3 -porder 2
+  test:
+    suffix: p3_2d_3
+    requires: triangle
+    args: -petscspace_order 3 -qorder 3 -porder 3
+  test:
+    suffix: p3_2d_4
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p3_2d_5
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p3_2d_6
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+
+  # 2D P_1disc on a triangle/quadrilateral
+  test:
+    suffix: p1d_2d_0
+    requires: triangle
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+  test:
+    suffix: p1d_2d_1
+    requires: triangle
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
+  test:
+    suffix: p1d_2d_2
+    requires: triangle
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+  test:
+    suffix: p1d_2d_3
+    requires: triangle
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+  test:
+    suffix: p1d_2d_4
+    requires: triangle
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 1
+  test:
+    suffix: p1d_2d_5
+    requires: triangle
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -porder 2
+
+  # Test high order quadrature
+  test:
+    suffix: p1_quad_2
+    requires: triangle
+    args: -petscspace_order 1 -qorder 2 -porder 1
+  test:
+    suffix: p1_quad_5
+    requires: triangle
+    args: -petscspace_order 1 -qorder 5 -porder 1
+  test:
+    suffix: p2_quad_3
+    requires: triangle
+    args: -petscspace_order 2 -qorder 3 -porder 2
+  test:
+    suffix: p2_quad_5
+    requires: triangle
+    args: -petscspace_order 2 -qorder 5 -porder 2
+  test:
+    suffix: q1_quad_2
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+  test:
+    suffix: q1_quad_5
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 5 -porder 1
+  test:
+    suffix: q2_quad_3
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 3 -porder 1
+  test:
+    suffix: q2_quad_5
+    requires: mpi_type_get_envelope
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 5 -porder 1
+
+
+  # Nonconforming tests
+  test:
+    suffix: constraints
+    args: -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -qorder 0 -constraints
+  test:
+    suffix: nonconforming_tensor_2
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_tensor_3
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_tensor_2_fv
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2
+  test:
+    suffix: nonconforming_tensor_3_fv
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3
+  test:
+    suffix: nonconforming_tensor_2_hi
+    requires: !single
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_tensor_3_hi
+    requires: !single skip
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_2
+    requires: triangle
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_simplex_2_hi
+    requires: triangle
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_2_fv
+    requires: triangle
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2
+  test:
+    suffix: nonconforming_simplex_3
+    requires: ctetgen
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_simplex_3_hi
+    requires: ctetgen skip
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_3_fv
+    requires: ctetgen
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3
+
+TEST*/
+
+/*
+   # 2D Q_2 on a quadrilaterial Plex
+  test:
+    suffix: q2_2d_plex_0
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -convergence
+  test:
+    suffix: q2_2d_plex_1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+  test:
+    suffix: q2_2d_plex_2
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2
+  test:
+    suffix: q2_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -shear_coords
+  test:
+    suffix: q2_2d_plex_4
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -shear_coords
+  test:
+    suffix: q2_2d_plex_5
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
+  test:
+    suffix: q2_2d_plex_6
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
+  test:
+    suffix: q2_2d_plex_7
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
+
+  test:
+    suffix: p1d_2d_6
+    requires: pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1d_2d_7
+    requires: pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1d_2d_8
+    requires: pragmatic
+    args: -petscspace_order 1 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+*/

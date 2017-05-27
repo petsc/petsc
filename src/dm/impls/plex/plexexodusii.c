@@ -6,8 +6,6 @@
 #include <exodusII.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateExodusFromFile"
 /*@C
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
 
@@ -51,8 +49,6 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateExodus"
 /*@
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 
@@ -247,6 +243,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int num_side_in_set, num_dist_fact_in_set;
     /* Read from ex_get_side_set_node_list() */
     int *fs_vertex_count_list, *fs_vertex_list;
+    /* Read side set labels */
+    char fs_name[MAX_STR_LENGTH+1];
 
     /* Get side set ids */
     ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
@@ -255,6 +253,8 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_side_in_set,&fs_vertex_count_list,num_side_in_set*4,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
+      /* Get the specific name associated with this side set ID. */
+      int fs_name_err = ex_get_name(exoid, EX_SIDE_SET, fs_id[fs], fs_name);
       for (f = 0, voff = 0; f < num_side_in_set; ++f) {
         const PetscInt *faces   = NULL;
         PetscInt       faceSize = fs_vertex_count_list[f], numFaces;
@@ -267,6 +267,10 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         ierr = DMPlexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
         if (numFaces != 1) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
         ierr = DMSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
+        /* Only add the label if one has been detected for this side set. */
+        if (!fs_name_err) {
+          ierr = DMSetLabelValue(*dm, fs_name, faces[0], fs_id[fs]);CHKERRQ(ierr);
+        }
         ierr = DMPlexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
       }
       ierr = PetscFree2(fs_vertex_count_list,fs_vertex_list);CHKERRQ(ierr);

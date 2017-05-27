@@ -1,50 +1,50 @@
-0 SNES Function norm 437.423 
-    0 SNES Function norm 437.423 
-    1 SNES Function norm 124.966 
-      0 SNES Function norm 123.954 
-      1 SNES Function norm 55.8642 
-      2 SNES Function norm 69.1988 
-      3 SNES Function norm 17.3006 
-      4 SNES Function norm 2.50206 
-      5 SNES Function norm 0.0361675 
-      6 SNES Function norm 8.60483e-06 
+0 SNES Function norm 437.426 
+    0 SNES Function norm 437.426 
+    1 SNES Function norm 124.967 
+      0 SNES Function norm 123.957 
+      1 SNES Function norm 55.8605 
+      2 SNES Function norm 69.0578 
+      3 SNES Function norm 17.2709 
+      4 SNES Function norm 2.50332 
+      5 SNES Function norm 0.0362589 
+      6 SNES Function norm 8.67078e-06 
       7 SNES Function norm < 1.e-11
-    0 SNES Function norm 68.4527 
-    1 SNES Function norm 20.5995 
-  1 SNES Function norm 20.5995 
-    0 SNES Function norm 20.5995 
-    1 SNES Function norm 6.97312 
-      0 SNES Function norm 4.90173 
-      1 SNES Function norm 1.23212 
-      2 SNES Function norm 0.050306 
-      3 SNES Function norm 0.000524318 
-      4 SNES Function norm 4.76171e-08 
-    0 SNES Function norm 16.6695 
-    1 SNES Function norm 11.6479 
-  2 SNES Function norm 11.6479 
-    0 SNES Function norm 11.6479 
-    1 SNES Function norm 3.22862 
-      0 SNES Function norm 2.40157 
-      1 SNES Function norm 0.343444 
-      2 SNES Function norm 0.0136405 
-      3 SNES Function norm 2.36921e-05 
-      4 SNES Function norm 7.298e-11 
-    0 SNES Function norm 1.96475 
-    1 SNES Function norm 0.320567 
-  3 SNES Function norm 0.320567 
-    0 SNES Function norm 0.320567 
-    1 SNES Function norm 0.0145963 
-      0 SNES Function norm 0.00751029 
-      1 SNES Function norm 6.33223e-06 
+    0 SNES Function norm 68.4529 
+    1 SNES Function norm 20.5996 
+  1 SNES Function norm 20.5996 
+    0 SNES Function norm 20.5996 
+    1 SNES Function norm 6.96931 
+      0 SNES Function norm 4.90654 
+      1 SNES Function norm 1.23849 
+      2 SNES Function norm 0.0505996 
+      3 SNES Function norm 0.000529147 
+      4 SNES Function norm 4.85565e-08 
+    0 SNES Function norm 16.6477 
+    1 SNES Function norm 11.6306 
+  2 SNES Function norm 11.6306 
+    0 SNES Function norm 11.6306 
+    1 SNES Function norm 3.2244 
+      0 SNES Function norm 2.39651 
+      1 SNES Function norm 0.342881 
+      2 SNES Function norm 0.0136093 
+      3 SNES Function norm 2.36146e-05 
+      4 SNES Function norm 7.267e-11 
+    0 SNES Function norm 1.96251 
+    1 SNES Function norm 0.32281 
+  3 SNES Function norm 0.32281 
+    0 SNES Function norm 0.32281 
+    1 SNES Function norm 0.0148169 
+      0 SNES Function norm 0.00758821 
+      1 SNES Function norm 6.45461e-06 
       2 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.0127758 
-    1 SNES Function norm 1.70457e-05 
-  4 SNES Function norm 1.70457e-05 
-    0 SNES Function norm 1.70457e-05 
-    1 SNES Function norm 5.930e-11 
-      0 SNES Function norm 2.075e-11 
+    0 SNES Function norm 0.0129697 
+    1 SNES Function norm 1.75964e-05 
+  4 SNES Function norm 1.75964e-05 
+    0 SNES Function norm 1.75964e-05 
+    1 SNES Function norm 5.752e-11 
+      0 SNES Function norm 2.219e-11 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 5.556e-11 
+    0 SNES Function norm 5.307e-11 
     1 SNES Function norm < 1.e-11
   5 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
@@ -74,6 +74,8 @@ SNES Object: 2 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 2 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 2 MPI processes
           type: mpiaij
@@ -106,6 +108,8 @@ SNES Object: 2 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 2 MPI processes
         type: svd
+          SVD: All singular values smaller than 1e-12 treated as zero
+          SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
         linear system matrix = precond matrix:
         Mat Object: 2 MPI processes
           type: mpiaij
@@ -125,4 +129,4 @@ SNES Object: 2 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
 Number of SNES iterations = 5
-L_2 Error: 0.0054025
+L_2 Error: 0.00435416

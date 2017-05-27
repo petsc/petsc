@@ -8,8 +8,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIDense_MatTransMatMult"
 PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(Mat A)
 {
   PetscErrorCode      ierr;
@@ -25,8 +23,6 @@ PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMult_MPIAIJ_MPIDense"
 PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -43,8 +39,6 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIDense"
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
@@ -81,8 +75,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIDense"
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode      ierr;

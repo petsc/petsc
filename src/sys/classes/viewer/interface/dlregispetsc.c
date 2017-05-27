@@ -5,8 +5,6 @@
 extern PetscLogEvent PETSC_Barrier,PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 
 static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscSysFinalizePackage"
 /*@C
   PetscSysFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
   called from PetscFinalize().
@@ -23,8 +21,6 @@ PetscErrorCode  PetscSysFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSysInitializePackage"
 /*@C
   PetscSysInitializePackage - This function initializes everything in the main Petsc package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
@@ -84,11 +80,8 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void);
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void);
 #endif
 
-#undef __FUNCT__
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-#define __FUNCT__ "PetscDLLibraryRegister_petsc"
 #else
-#define __FUNCT__ "PetscDLLibraryRegister_petscsys"
 #endif
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

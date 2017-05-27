@@ -6,8 +6,6 @@
 
 #include <errno.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFOpen"
 /*@C
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
@@ -63,9 +61,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFClose"
-/*@
+/*@C
     PetscFClose - Has the first processor in the communicator close a
     file; all others do nothing.
 
@@ -103,8 +99,6 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 #if defined(PETSC_HAVE_POPEN)
 static char PetscPOpenMachine[128] = "";
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPClose"
 /*@C
       PetscPClose - Closes (ends) a program on processor zero run with PetscPOpen()
 
@@ -144,8 +138,6 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPOpen"
 /*@C
       PetscPOpen - Runs a program on processor zero and sends either its input or output to
           a file.
@@ -221,8 +213,6 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPOpenSetMachine"
 /*@C
       PetscPOpenSetMachine - Sets the name of the default machine to run PetscPOpen() calls on
 

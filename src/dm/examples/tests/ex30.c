@@ -2,8 +2,6 @@ static char help[] = "Tests DMSLICED operations\n\n";
 
 #include <petscdmsliced.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   char           mat_type[256] = "aij"; /* default matrix type */

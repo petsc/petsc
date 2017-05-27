@@ -80,8 +80,6 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 
-PETSC_INTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
-PETSC_INTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPIAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat*);
@@ -89,13 +87,15 @@ PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,PetscInt,IS [],PetscIn
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat,PetscInt,IS [],PetscInt);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColoring);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_INTERN PetscErrorCode MatGetSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat,MatGetSubMatrixOption,MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat,MatCreateSubMatrixOption,MatReuse,Mat *[]);
 
 
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat,IS,IS,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
@@ -141,7 +141,7 @@ PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems*,Mat);
 PETSC_INTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16)
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,const MatFactorInfo*,Mat*);
 #endif
 PETSC_INTERN PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
@@ -155,7 +155,56 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
 
-/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
+/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
+#define AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa) \
+{\
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj,_nextp,*_apJ;      \
+  PetscScalar *_aa,_valtmp,*_pa;                             \
+  _apJ = apj + api[i];\
+  /* diagonal portion of A */\
+  _ai  = ad->i;\
+  _anz = _ai[i+1] - _ai[i];\
+  _aj  = ad->j + _ai[i];\
+  _aa  = ad->a + _ai[i];\
+  for (_j=0; _j<_anz; _j++) {\
+    _row = _aj[_j]; \
+    _pi  = p_loc->i;                                 \
+    _pnz = _pi[_row+1] - _pi[_row];         \
+    _pj  = p_loc->j + _pi[_row];                 \
+    _pa  = p_loc->a + _pi[_row];                 \
+    /* perform sparse axpy */                    \
+    _valtmp = _aa[_j];                           \
+    _nextp  = 0; \
+    for (_k=0; _nextp<_pnz; _k++) {                    \
+      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */   \
+        apa[_k] += _valtmp*_pa[_nextp++];                                \
+      } \
+    }                                           \
+    PetscLogFlops(2.0*_pnz);                    \
+  }                                             \
+  /* off-diagonal portion of A */               \
+  _ai  = ao->i;\
+  _anz = _ai[i+1] - _ai[i];                     \
+  _aj  = ao->j + _ai[i];                         \
+  _aa  = ao->a + _ai[i];                         \
+  for (_j=0; _j<_anz; _j++) {                      \
+    _row = _aj[_j];    \
+    _pi  = p_oth->i;                         \
+    _pnz = _pi[_row+1] - _pi[_row];          \
+    _pj  = p_oth->j + _pi[_row];                  \
+    _pa  = p_oth->a + _pi[_row];                  \
+    /* perform sparse axpy */                     \
+    _valtmp = _aa[_j];                             \
+    _nextp  = 0; \
+    for (_k=0; _nextp<_pnz; _k++) {                     \
+      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */\
+        apa[_k] += _valtmp*_pa[_nextp++];                       \
+      }                                                     \
+    }                                            \
+    PetscLogFlops(2.0*_pnz);                     \
+  } \
+}
+
 #define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
 {\
   PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
@@ -197,4 +246,5 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
     PetscLogFlops(2.0*_pnz);                     \
   } \
 }
+
 #endif

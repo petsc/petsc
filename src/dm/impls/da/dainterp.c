@@ -13,8 +13,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolationScale"
 /*@
     DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the
       nearby fine grid points.
@@ -48,8 +46,6 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_1D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -181,8 +177,6 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_1D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -259,8 +253,6 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_2D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -485,8 +477,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 /*
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_2D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -600,8 +590,6 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 /*
        Contributed by Jianming Yang <jianming-yang@uiowa.edu>
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_3D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -723,8 +711,6 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_3D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode         ierr;
@@ -1003,8 +989,6 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA"
 PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode   ierr;
@@ -1053,8 +1037,6 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_DA_1D"
 PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode         ierr;
@@ -1114,8 +1096,6 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_DA_2D"
 PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode         ierr;
@@ -1185,8 +1165,6 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_DA_3D"
 PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode         ierr;
@@ -1273,8 +1251,6 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_DA"
 PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 {
   PetscErrorCode  ierr;
@@ -1311,8 +1287,6 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateAggregates_DA"
 PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 {
   PetscErrorCode         ierr;

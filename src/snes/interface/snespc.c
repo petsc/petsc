@@ -1,9 +1,6 @@
 
 #include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
-#include <petscdmshell.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESApplyNPC"
 /*@
    SNESApplyNPC - Calls SNESSolve() on preconditioner for the SNES
 
@@ -52,8 +49,6 @@ PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunctionDefaultNPC"
 PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
 {
 /* This is to be used as an argument to SNESMF -- NOT as a "function" */
@@ -73,8 +68,6 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNPCFunction"
 /*@
    SNESGetNPCFunction - Gets the function from a preconditioner after SNESSolve() has been called.
 

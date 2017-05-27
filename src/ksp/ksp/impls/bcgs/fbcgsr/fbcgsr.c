@@ -9,8 +9,6 @@
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 #include <petsc/private/vecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_FBCGSR"
 static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -20,8 +18,6 @@ static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_FBCGSR"
 static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 {
   PetscErrorCode    ierr;
@@ -205,8 +201,6 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_FBCGSR"
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;

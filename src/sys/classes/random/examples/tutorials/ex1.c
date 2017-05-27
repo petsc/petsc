@@ -4,13 +4,11 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #include <petscsys.h>
 
 /* Usage:
-   mpiexec -n <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
+   mpiexec -n <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_view
                          -view_randomvalues <view_rank>
                          -random_view ascii -random_view :filename
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       i,n = 1000,*values;

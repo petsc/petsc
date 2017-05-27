@@ -4,8 +4,6 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectStateGet"
 /*@C
    PetscObjectStateGet - Gets the state of any PetscObject,
    regardless of the type.
@@ -41,8 +39,6 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectStateSet"
 /*@C
    PetscObjectStateSet - Sets the state of any PetscObject,
    regardless of the type.
@@ -77,8 +73,6 @@ PetscErrorCode PetscObjectStateSet(PetscObject obj,PetscObjectState state)
 
 PetscInt PetscObjectComposedDataMax = 10;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataRegister"
 /*@C
    PetscObjectComposedDataRegister - Get an available id for composed data
 
@@ -105,8 +99,6 @@ PetscErrorCode  PetscObjectComposedDataRegister(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseInt"
 PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
 {
   PetscInt         *ar = obj->intcomposeddata,*new_ar,n = obj->int_idmax,new_n,i;
@@ -129,8 +121,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseIntstar"
 PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
   PetscInt         **ar = obj->intstarcomposeddata,**new_ar,n = obj->intstar_idmax,new_n,i;
@@ -153,8 +143,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseReal"
 PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
 {
   PetscReal        *ar = obj->realcomposeddata,*new_ar;
@@ -178,8 +166,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseRealstar"
 PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
   PetscReal        **ar = obj->realstarcomposeddata,**new_ar;
@@ -203,8 +189,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseScalar"
 PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
   PetscScalar      *ar = obj->scalarcomposeddata,*new_ar;
@@ -228,8 +212,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposedDataIncreaseScalarStar"
 PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
   PetscScalar      **ar = obj->scalarstarcomposeddata,**new_ar;
@@ -253,8 +235,6 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetId"
 /*@
    PetscObjectGetId - get unique object ID
 
