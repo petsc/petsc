@@ -101,4 +101,8 @@ int main(int argc, char **argv)
     suffix: 2d_tri
     args: -simplex -dm_view
 
+  test:
+    suffix: 3d_tri
+    args: -dim 3 -simplex -dm_view
+
 TEST*/
