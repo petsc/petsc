@@ -282,7 +282,7 @@ int main(int argc,char ** argv)
   PetscInt          i, nbranch = 0, eStart, eEnd, vStart, vEnd;
   PetscInt          seed = 0, nnode = 0;
   PetscMPIInt       size, rank;
-  DM                networkdm;
+  DM                networkdm, plex;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
@@ -290,6 +290,7 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
+  PetscPartitioner  part;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage[3];
 #endif
@@ -341,22 +342,12 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Set up DM for use */
+  /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-
-  if (size > 1) {
-    DM               distnetworkdm;
-    DM               plex;
-    PetscPartitioner part;
-
-    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
+  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */

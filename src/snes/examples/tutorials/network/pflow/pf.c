@@ -404,22 +404,23 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode ierr;
-  char           pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  PFDATA         *pfdata;
-  PetscInt       numEdges=0,numVertices=0;
-  int            *edges = NULL;
-  PetscInt       i;  
-  DM             networkdm;
-  PetscInt       componentkey[4];
-  UserCtx        User;
-  PetscLogStage  stage1,stage2;
-  PetscMPIInt    size,rank;
-  PetscInt       eStart, eEnd, vStart, vEnd,j;
-  PetscInt       genj,loadj;
-  Vec            X,F;
-  Mat            J;
-  SNES           snes;
+  PetscErrorCode   ierr;
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  PFDATA           *pfdata;
+  PetscInt         numEdges=0,numVertices=0;
+  int              *edges = NULL;
+  PetscInt         i;  
+  DM               networkdm, plex;
+  PetscInt         componentkey[4];
+  UserCtx          User;
+  PetscLogStage    stage1,stage2;
+  PetscMPIInt      size,rank;
+  PetscInt         eStart, eEnd, vStart, vEnd,j;
+  PetscInt         genj,loadj;
+  Vec              X,F;
+  Mat              J;
+  SNES             snes;
+  PetscPartitioner part;
 
   ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -509,19 +510,10 @@ int main(int argc,char ** argv)
     }
     
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    if (size > 1) {
-      DM               distnetworkdm;
-      DM               plex;
-      PetscPartitioner part;
-
-      ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-      ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-      /* Network partitioning and distribution of data */
-      ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-      ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-      networkdm = distnetworkdm;
-    }
+    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
     
     PetscLogStagePop();
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);

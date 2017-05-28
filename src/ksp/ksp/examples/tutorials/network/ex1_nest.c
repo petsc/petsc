@@ -263,7 +263,7 @@ int main(int argc,char ** argv)
   PetscInt          i, nnode = 0, nbranch = 0;
   PetscInt          eStart, eEnd, vStart, vEnd;
   PetscMPIInt       size, rank;
-  DM                networkdm;
+  DM                networkdm, plex;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
@@ -271,6 +271,7 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
+  PetscPartitioner  part;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -310,22 +311,12 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Set up DM for use */
+  /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-
-  if (size > 1) {
-    DM               distnetworkdm;
-    DM               plex;
-    PetscPartitioner part;
-
-    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
+  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
