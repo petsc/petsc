@@ -1380,10 +1380,9 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   switch (dim) {
   case 2:
     if (simplex) {
-      DM              idm;
-      const PetscReal phi         = 1.6180339887498948482;
-      const PetscReal edgeLen     = 2.0/(1.0 + phi);
-      const PetscReal vertex[3]   = {0.0, 1.0/(1.0 + phi), phi/(1.0 + phi)};
+      DM              idm         = NULL;
+      const PetscReal edgeLen     = 2.0/(1.0 + PETSC_PHI);
+      const PetscReal vertex[3]   = {0.0, 1.0/(1.0 + PETSC_PHI), PETSC_PHI/(1.0 + PETSC_PHI)};
       const PetscInt  degree      = 5;
       PetscInt        s[3]        = {1, 1, 1};
       PetscInt        cone[3];
@@ -1422,7 +1421,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
       /* Build Topology */
       ierr = DMPlexSetChart(*dm, 0, numCells+numVerts);CHKERRQ(ierr);
       for (c = 0; c < numCells; c++) {
-        ierr = DMPlexSetConeSize(*dm, c, 3);CHKERRQ(ierr);
+        ierr = DMPlexSetConeSize(*dm, c, embedDim);CHKERRQ(ierr);
       }
       ierr = DMSetUp(*dm);CHKERRQ(ierr); /* Allocate space for cones */
       /* Cells */
@@ -1566,6 +1565,139 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
     }
     break;
   case 3:
+    if (simplex) {
+      DM              idm             = NULL;
+      const PetscReal edgeLen         = 1.0/PETSC_PHI;
+      const PetscReal vertexA[4]      = {0.5, 0.5, 0.5, 0.5};
+      const PetscReal vertexB[4]      = {1.0, 0.0, 0.0, 0.0};
+      const PetscReal vertexC[4]      = {0.5, 0.5*PETSC_PHI, 0.5/PETSC_PHI, 0.0};
+      const PetscInt  degree          = 12;
+      PetscInt        s[4]            = {1, 1, 1};
+      PetscInt        evenPerm[12][4] = {{0, 1, 2, 3}, {0, 2, 3, 1}, {0, 3, 1, 2}, {1, 0, 3, 2}, {1, 2, 0, 3}, {1, 3, 2, 0},
+                                         {2, 0, 1, 3}, {2, 1, 3, 0}, {2, 3, 0, 1}, {3, 0, 2, 1}, {3, 1, 0, 2}, {3, 2, 1, 0}};
+      PetscInt        cone[4];
+      PetscInt       *graph, p, i, j, k, l;
+
+      numCells    = !rank ? 600 : 0;
+      numVerts    = !rank ? 120 : 0;
+      firstVertex = numCells;
+      /* Use the 600-cell, which for a unit sphere has coordinates which are
+
+           1/2 (\pm 1, \pm 1,    \pm 1, \pm 1)                          16
+               (\pm 1,    0,       0,      0)  all cyclic permutations   8
+           1/2 (\pm 1, \pm phi, \pm 1/phi, 0)  all even permutations    96
+
+         where \phi^2 - \phi - 1 = 0, meaning \phi is the golden ratio \frac{1 + \sqrt{5}}{2}. The edge
+         length is then given by 1/\phi = 2.73606.
+
+         http://buzzard.pugetsound.edu/sage-practice/ch03s03.html
+         http://mathworld.wolfram.com/600-Cell.html
+       */
+      /* Construct vertices */
+      ierr = PetscCalloc1(numVerts * embedDim, &coordsIn);CHKERRQ(ierr);
+      i    = 0;
+      for (s[0] = -1; s[0] < 2; s[0] += 2) {
+        for (s[1] = -1; s[1] < 2; s[1] += 2) {
+          for (s[2] = -1; s[2] < 2; s[2] += 2) {
+            for (s[3] = -1; s[3] < 2; s[3] += 2) {
+              for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[d]*vertexA[d];
+              ++i;
+            }
+          }
+        }
+      }
+      for (p = 0; p < embedDim; ++p) {
+        s[1] = s[2] = s[3] = 1;
+        for (s[0] = -1; s[0] < 2; s[0] += 2) {
+          for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[(d+p)%embedDim]*vertexB[(d+p)%embedDim];
+          ++i;
+        }
+      }
+      for (p = 0; p < 12; ++p) {
+        s[3] = 1;
+        for (s[0] = -1; s[0] < 2; s[0] += 2) {
+          for (s[1] = -1; s[1] < 2; s[1] += 2) {
+            for (s[2] = -1; s[2] < 2; s[2] += 2) {
+              for (d = 0; d < embedDim; ++d) coordsIn[i*embedDim+d] = s[evenPerm[p][d]]*vertexC[evenPerm[p][d]];
+              ++i;
+            }
+          }
+        }
+      }
+      if (i != numVerts) SETERRQ2(comm, PETSC_ERR_PLIB, "Invalid 600-cell, vertices %D != %D", i, numVerts);
+      /* Construct graph */
+      ierr = PetscCalloc1(numVerts * numVerts, &graph);CHKERRQ(ierr);
+      for (i = 0; i < numVerts; ++i) {
+        for (j = 0, k = 0; j < numVerts; ++j) {
+          if (PetscAbsReal(DiffNormReal(embedDim, &coordsIn[i*embedDim], &coordsIn[j*embedDim]) - edgeLen) < PETSC_SMALL) {graph[i*numVerts+j] = 1; ++k;}
+        }
+        if (k != degree) SETERRQ3(comm, PETSC_ERR_PLIB, "Invalid 600-cell, vertex %D degree %D != %D", i, k, degree);
+      }
+      /* Build Topology */
+      ierr = DMPlexSetChart(*dm, 0, numCells+numVerts);CHKERRQ(ierr);
+      for (c = 0; c < numCells; c++) {
+        ierr = DMPlexSetConeSize(*dm, c, embedDim);CHKERRQ(ierr);
+      }
+      ierr = DMSetUp(*dm);CHKERRQ(ierr); /* Allocate space for cones */
+      /* Cells */
+      for (i = 0, c = 0; i < numVerts; ++i) {
+        for (j = 0; j < i; ++j) {
+          for (k = 0; k < j; ++k) {
+            for (l = 0; l < k; ++l) {
+              if (graph[i*numVerts+j] && graph[j*numVerts+k] && graph[k*numVerts+i] &&
+                  graph[l*numVerts+i] && graph[l*numVerts+j] && graph[l*numVerts+k]) {
+                cone[0] = firstVertex+i; cone[1] = firstVertex+j; cone[2] = firstVertex+k; cone[3] = firstVertex+l;
+                /* Check orientation: https://ef.gy/linear-algebra:normal-vectors-in-higher-dimensional-spaces */
+                {
+                  const PetscInt epsilon[4][4][4][4] = {{{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  1}, { 0,  0, -1, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  0, -1}, { 0,  0, 0,  0}, { 0,  1,  0, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  1,  0}, { 0, -1, 0,  0}, { 0,  0,  0, 0}}},
+
+                                                        {{{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0, -1}, { 0,  0,  1, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0,  0,  0,  1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, {-1,  0,  0, 0}},
+                                                         {{0,  0, -1,  0}, { 0, 0,  0,  0}, { 1,  0, 0,  0}, { 0,  0,  0, 0}}},
+
+                                                        {{{0,  0,  0,  0}, { 0, 0,  0,  1}, { 0,  0, 0,  0}, { 0, -1,  0, 0}},
+                                                         {{0,  0,  0, -1}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 1,  0,  0, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0,  1,  0,  0}, {-1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}},
+
+                                                        {{{0,  0,  0,  0}, { 0, 0, -1,  0}, { 0,  1, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0,  0,  1,  0}, { 0, 0,  0,  0}, {-1,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0, -1,  0,  0}, { 1, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}},
+                                                         {{0,  0,  0,  0}, { 0, 0,  0,  0}, { 0,  0, 0,  0}, { 0,  0,  0, 0}}}};
+                  PetscReal normal[4];
+                  PetscInt  e, f, g;
+
+                  for (d = 0; d < embedDim; ++d) {
+                    normal[d] = 0.0;
+                    for (e = 0; e < embedDim; ++e) {
+                      for (f = 0; f < embedDim; ++f) {
+                        for (g = 0; g < embedDim; ++g) {
+                          normal[d] += epsilon[d][e][f][g]*(coordsIn[j*embedDim+e] - coordsIn[i*embedDim+e])*(coordsIn[k*embedDim+f] - coordsIn[i*embedDim+f])*(coordsIn[l*embedDim+f] - coordsIn[i*embedDim+f]);
+                        }
+                      }
+                    }
+                  }
+                  if (DotReal(embedDim, normal, &coordsIn[i*embedDim]) < 0) {PetscInt tmp = cone[1]; cone[1] = cone[2]; cone[2] = tmp;}
+                }
+                ierr = DMPlexSetCone(*dm, c++, cone);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+      ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
+      ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
+      ierr = PetscFree(graph);CHKERRQ(ierr);
+      /* Interpolate mesh */
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+      break;
+    }
   default: SETERRQ1(comm, PETSC_ERR_SUP, "Unsupported dimension for sphere: %D", dim);
   }
   /* Create coordinates */
