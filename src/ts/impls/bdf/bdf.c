@@ -328,6 +328,7 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
   size_t         i,n = sizeof(bdf->work)/sizeof(Vec);
+  PetscReal      low,high,two = 2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -338,16 +339,8 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
   ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
-  {
-    PetscBool isnone;
-    PetscReal low,high;
-    ierr = TSAdaptBasicGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
-    high = PetscMin(high,2.0);
-    ierr = TSAdaptBasicSetClip(ts->adapt,low,high);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
-    if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
-      ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
-  }
+  ierr = TSAdaptGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
+  ierr = TSAdaptSetClip(ts->adapt,low,PetscMin(high,two));CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -434,6 +427,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ts->ops->interpolate    = TSInterpolate_BDF;
   ts->ops->snesfunction   = SNESTSFormFunction_BDF;
   ts->ops->snesjacobian   = SNESTSFormJacobian_BDF;
+  ts->default_adapt_type  = TSADAPTBASIC;
 
   ierr = PetscNewLog(ts,&bdf);CHKERRQ(ierr);
   ts->data = (void*)bdf;

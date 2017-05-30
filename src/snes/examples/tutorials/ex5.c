@@ -561,7 +561,7 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*exp(x*(1 - x)*y*(1 - y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*PetscExpReal(x*(1 - x)*y*(1 - y)));
       }
     }
   }
@@ -627,7 +627,7 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*exp(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*PetscExpReal(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
       }
     }
   }
@@ -1072,3 +1072,60 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+/*TEST
+  # ASM vs MSM
+  test:
+    suffix: asm_0
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu
+  test:
+    suffix: msm_0
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu
+  test:
+    suffix: asm_1
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_1
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_2
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 3 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_2
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 3 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_3
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_3
+    requires: !single
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_4
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_4
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: asm_5
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu -da_grid_x 8
+  test:
+    suffix: msm_5
+    requires: !single
+    nsize: 2
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -snes_view -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 4 -pc_asm_overlap 0 -pc_asm_local_type multiplicative -sub_pc_type lu -da_grid_x 8
+
+TEST*/

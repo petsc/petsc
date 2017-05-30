@@ -33,16 +33,20 @@ PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line
 
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
-                   processors owning the object A.
+                   processors owning the object obj.
 
    Input Parameters:
-.  A - PETSc object  (Mat, Vec, IS, SNES etc...)
-        Must be caste with a (PetscObject), can use NULL (for MPI_COMM_WORLD)
+.  obj - PETSc object  (Mat, Vec, IS, SNES etc...)
+        The object be caste with a (PetscObject). NULL can be used to indicate the barrier should be across MPI_COMM_WORLD
 
   Level: intermediate
 
   Notes:
-  This routine calls MPI_Barrier with the communicator of the PETSc Object "A".
+  This routine calls MPI_Barrier with the communicator of the PETSc Object obj
+
+  Fortran Usage:
+    You may pass PETSC_NULL_VEC or any other PETSc null object, such as PETSC_NULL_MAT, to indicate the barrier should be
+    across MPI_COMM_WORLD.
 
    Concepts: barrier
 

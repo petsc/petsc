@@ -106,6 +106,10 @@ ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
 
+ex18: ex18.o  chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_TS_LIB}
+	${RM} ex18.o
+
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
 	${RM} ex19.o
@@ -729,12 +733,12 @@ runex31_2:
 	   ${RM} -f ex31_2.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_reject_safety 1 > ex35_1.tmp 2>&1;  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 -ts_adapt_basic_reject_safety 1 > ex35_2.tmp 2>&1;  \
+	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 -ts_adapt_reject_safety 1 > ex35_2.tmp 2>&1;  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
@@ -750,12 +754,12 @@ runex40_b:
 	   ${RM} -f ex40.tmp
 
 runex40_c:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_c, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex40_d:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
@@ -785,12 +789,12 @@ runex41_b:
 	   ${RM} -f ex41.tmp
 
 runex41_c:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_theta_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_c, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_d:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_alpha_adapt -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
@@ -820,7 +824,7 @@ runex43_a:
 	   ${RM} -f ex43_a.tmp
 
 runex43_b:
-	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_rtol 0 -ts_atol 1e-5 -ts_alpha_adapt -ts_adapt_monitor > ex43_b.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex43 -ts_max_steps 10 -ts_rtol 0 -ts_atol 1e-5 -ts_adapt_type basic -ts_adapt_monitor > ex43_b.tmp 2>&1; \
 	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_b.tmp
 
@@ -830,7 +834,7 @@ runex44_a:
 	   ${RM} -f ex44_a.tmp
 
 runex44_b:
-	-@${MPIEXEC} -n 1 ./ex44 -ts_rtol 0 -ts_atol 1e-1 -ts_alpha_adapt > ex44_b.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex44 -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic > ex44_b.tmp 2>&1; \
 	   ${DIFF} output/ex44.out ex44_b.tmp || printf "${PWD}\nPossible problem with ex44_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44_b.tmp
 

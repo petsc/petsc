@@ -153,15 +153,25 @@
         <li>Changed TSGL to TSGLLE.</li>
         <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.</li>
         <li>Added TSRK5BS scheme to TSRK.</li>
+        <li>Removed command line option <tt>-ts_theta_adapt</tt>, use <tt>-ts_adapt_type basic</tt> to turn on adaptivity in TSTHETA.</li>
+        <li>Remove command line option <tt>-ts_alpha_adapt</tt> and routines TSAlphaUseAdapt()/TSAlpha2UseAdapt(), use <tt>-ts_adapt_type basic</tt> to turn on adaptivity in TSALPHA/TSALPHA2.</li>
         <li>Removed TSBDFUseAdapt(), using time step adaptivity in TSBDF is now the default, use <tt>-ts_adapt_type none</tt> to turn adaptivity off. </li>
+        <li>Added TSAdaptSetAlwaysAccept() to set whether to always accept steps.</li>
+        <li>Added TSAdapt{Set|Get}Safety() to set safety factors and renamed option <tt>-ts_adapt_basic_[reject_]safety</tt> to <tt>-ts_adapt_[reject_]safety</tt>.</li>
+        <li>Renamed TSAdaptBasic{Set|Get}Clip() and option <tt>-ts_adapt_basic_clip</tt> to TSAdapt{Set|Get}Clip() and <tt>-ts_adapt_clip</tt>.</li>
+        <li>Added TSAdaptGetStepLimits() to get minimum and maximum allowed time step.</li>
+        <li>Calling TSAdaptSetType() will reset all option values (safety factors, clipping factors, etc) to default values.</li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>Changed prototypes for DMCompositeGather() and DMCompositeGatherArray()</li>
-      <li>Replace calls to DMDACreateXd() with DMDACreateXd(), [DMSetFromOptions()] DMSetUp()</li>
-      <li>DMDACreateXd() no longer can take negative values for dimensons, instead pass positive values and call DMSetFromOptions() immediately after</li>
+        <li>Replace calls to DMDACreateXd() with DMDACreateXd(), [DMSetFromOptions()] DMSetUp()</li>
+        <li>DMDACreateXd() no longer can take negative values for dimensons, instead pass positive values and call DMSetFromOptions() immediately after</li>
       </ul>
       <h4>DMPlex:</h4>
+      <ul>
+        <li>Added DMPlexRefineSimplexToTensor to refine simplicial into tensor product meshes
+      </ul>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <ul>

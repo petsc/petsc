@@ -265,21 +265,24 @@ extern "C" {
     '''Check for sin() in libm, the math library'''
     self.math = None
     funcs = ['sin', 'floor', 'log10', 'pow']
-    prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double pow(double, double);']
-    calls = ['double x = 0,y; y = sin(x);\n', 'double x = 0,y; y = floor(x);\n', 'double x = 0,y; y = log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
+    prototypes = ['#include <stdio.h>\ndouble sin(double);',
+                  '#include <stdio.h>\ndouble floor(double);',
+                  '#include <stdio.h>\ndouble log10(double);',
+                  '#include <stdio.h>\ndouble pow(double, double);']
+    calls = ['double x,y; scanf("%lf",&x); y = sin(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = floor(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = log10(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = pow(x,x); printf("%f",y);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Math functions are linked in by default')
       self.math = []
     elif self.check('m', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Using libm for the math library')
       self.math = ['libm.a']
-    else:
-      self.logPrint('Warning: No math library found')
+    self.logPrint('CheckMath: using math library '+str(self.math))
     return
 
   def checkMathErf(self):
     '''Check for erf() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['double x = 0,y; y = erf(x);\n']):
+    if not self.math is None and self.check(self.math, ['erf'], prototype = ['#include <math.h>'], call = ['double (*checkErf)(double) = erf;double x = 0,y; y = (*checkErf)(x)']):
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
@@ -287,8 +290,8 @@ extern "C" {
     return
 
   def checkMathTgamma(self):
-    '''Check for tgama() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['double tgamma(double);'], call = ['double x = 0,y; y = tgamma(x);\n']):
+    '''Check for tgamma() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['#include <math.h>'], call = ['double (*checkTgamma)(double) = tgamma;double x = 0,y; y = (*checkTgamma)(x)']):
       self.logPrint('tgamma() found')
       self.addDefine('HAVE_TGAMMA', 1)
     else:
@@ -305,7 +308,7 @@ extern "C" {
 
   def checkMathLog2(self):
     '''Check for log2() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['log2'], prototype = ['double log2(double);'], call = ['double x = 1,y; y = log2(x);\n']):
+    if not self.math is None and self.check(self.math, ['log2'], prototype = ['#include <math.h>'], call = ['double (*checkLog2)(double) = log2; double x = 2.5, y = (*checkLog2)(x)']):
       self.logPrint('log2() found')
       self.addDefine('HAVE_LOG2', 1)
     else:

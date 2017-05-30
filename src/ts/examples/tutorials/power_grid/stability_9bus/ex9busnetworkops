@@ -4,13 +4,14 @@
 -ts_theta_endpoint
 
 #-snes_atol 1e-8
-#-snes_rtol 1e-8
+-snes_rtol 1e-5
 
 -sub_pc_type lu
 -sub_pc_factor_shift_type NONZERO
 
 # alg_snes options
 #-------------------
+-alg_snes_rtol 1e-5
 -alg_ksp_error_if_not_converged
 
 -alg_pc_type bjacobi 

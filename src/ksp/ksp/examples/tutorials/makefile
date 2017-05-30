@@ -546,6 +546,16 @@ runex5_superlu_dist_3:
 	   if (${DIFF} output/ex5_superlu_dist.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_superlu_dist_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
+runex5_asm:
+	-@${MPIEXEC} -n 4 ./ex5 -pc_type asm > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_asm.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_5_asm, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+runex5_asm_baij:
+	-@${MPIEXEC} -n 4 ./ex5 -pc_type asm -mat_type baij > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_asm.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_5_asm_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
 
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_view  > ex6_0.tmp 2>&1; \
@@ -1622,7 +1632,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_pipebcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
                                  ex3.PETSc runex3_1 ex3.rm \
                                  ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
-                                 runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
+                                 runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 runex5_asm runex5_asm_baij ex5.rm \
                                  ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm printdot \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \

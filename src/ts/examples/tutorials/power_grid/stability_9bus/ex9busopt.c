@@ -183,7 +183,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
     IGr = (Vr*PG[i] + Vi*QG[i])/Vm2;
     IGi = (Vi*PG[i] - Vr*QG[i])/Vm2;
 
-    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
+    delta = PetscAtan2Real(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
 
     theta = PETSC_PI/2.0 - delta;
 
@@ -267,7 +267,7 @@ PetscErrorCode InitialGuess(Vec X,Userctx *user, const PetscScalar PGv[])
     IGr = (Vr*PGv[i] + Vi*QG[i])/Vm2;
     IGi = (Vi*PGv[i] - Vr*QG[i])/Vm2;
 
-    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
+    delta = PetscAtan2Real(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
 
     theta = PETSC_PI/2.0 - delta;
 

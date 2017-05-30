@@ -354,7 +354,10 @@ void (*signal())();
 
 
   def checkVisibility(self):
-    if self.argDB['with-visibility']:
+    if not self.argDB['with-shared-libraries']:
+      self.argDB['with-visibility'] = 0
+      self.log.write('Disabled visibility attributes due to static build')
+    elif self.argDB['with-visibility']:
       self.pushLanguage('C')
       if self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
         self.addDefine('USE_VISIBILITY_C',1)

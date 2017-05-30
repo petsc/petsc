@@ -75,7 +75,8 @@
       call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),ierr);CHKERRQ(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr);CHKERRQ(ierr)
+      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr)
+      CHKERRQ(ierr)
       call ISDestroy(bcCompIS(1), ierr);CHKERRQ(ierr)
       call ISDestroy(bcPointIS(1), ierr);CHKERRQ(ierr)
 !     Name the Field variables
@@ -100,3 +101,16 @@
 
       call PetscFinalize(ierr)
       end program DMPlexTestField
+
+!/*TEST
+!
+!  test:
+!    suffix: 0
+!    requires: triangle
+!
+!  test:
+!    suffix: 1
+!    requires: ctetgen
+!    args: -dim 3
+!
+!TEST*/

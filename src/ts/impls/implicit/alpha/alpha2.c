@@ -34,7 +34,6 @@ typedef struct {
   PetscReal Beta;
   PetscInt  order;
 
-  PetscBool adapt;
   Vec       vec_sol_prev;
   Vec       vec_dot_prev;
   Vec       vec_lte_work[2];
@@ -166,13 +165,13 @@ static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
   ierr = VecAXPY(th->A0,-1/ts->time_step,V2);CHKERRQ(ierr);
 
   /* Rough, lower-order estimate LTE of the initial step */
-  if (th->adapt) {
+  if (th->vec_lte_work[0]) {
     ierr = VecZeroEntries(th->vec_lte_work[0]);CHKERRQ(ierr);
     ierr = VecAXPY(th->vec_lte_work[0],+2,X2);CHKERRQ(ierr);
     ierr = VecAXPY(th->vec_lte_work[0],-4,X1);CHKERRQ(ierr);
     ierr = VecAXPY(th->vec_lte_work[0],+2,X0);CHKERRQ(ierr);
   }
-  if (th->adapt) {
+  if (th->vec_lte_work[1]) {
     ierr = VecZeroEntries(th->vec_lte_work[1]);CHKERRQ(ierr);
     ierr = VecAXPY(th->vec_lte_work[1],+2,V2);CHKERRQ(ierr);
     ierr = VecAXPY(th->vec_lte_work[1],-4,V1);CHKERRQ(ierr);
@@ -204,8 +203,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
   if (!ts->steprollback) {
-    if (th->adapt) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
-    if (th->adapt) { ierr = VecCopy(th->V0,th->vec_dot_prev);CHKERRQ(ierr); }
+    if (th->vec_sol_prev) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
+    if (th->vec_dot_prev) { ierr = VecCopy(th->V0,th->vec_dot_prev);CHKERRQ(ierr); }
     ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_dot,th->V0);CHKERRQ(ierr);
     ierr = VecCopy(th->A1,th->A0);CHKERRQ(ierr);
@@ -265,8 +264,12 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!th->vec_sol_prev) {*wlte = -1; PetscFunctionReturn(0);}
+  if (!th->vec_dot_prev) {*wlte = -1; PetscFunctionReturn(0);}
+  if (!th->vec_lte_work[0]) {*wlte = -1; PetscFunctionReturn(0);}
+  if (!th->vec_lte_work[1]) {*wlte = -1; PetscFunctionReturn(0);}
   if (ts->steprestart) {
-    /* th->vec_{sol|dot}_prev is set to the LTE in TSAlpha_Restart() */
+    /* th->vec_lte_prev is set to the LTE in TSAlpha_Restart() */
     ierr = VecAXPY(Y,1,X);CHKERRQ(ierr);
     ierr = VecAXPY(Z,1,V);CHKERRQ(ierr);
   } else {
@@ -382,7 +385,6 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   ierr = TSReset_Alpha(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2UseAdapt_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",NULL);CHKERRQ(ierr);
@@ -392,6 +394,7 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
 static PetscErrorCode TSSetUp_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -407,15 +410,12 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
   ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
-  if (!th->adapt) {
-    ierr = TSAdaptSetType(ts->adapt,TSADAPTNONE);CHKERRQ(ierr);
-  } else {
+  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&match);CHKERRQ(ierr);
+  if (!match) {
     ierr = VecDuplicate(ts->vec_sol,&th->vec_sol_prev);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&th->vec_dot_prev);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work[0]);CHKERRQ(ierr);
     ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work[1]);CHKERRQ(ierr);
-    if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
-      ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
   }
 
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
@@ -432,7 +432,6 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
   {
     PetscBool flg;
     PetscReal radius = 1;
-    PetscBool adapt  = th->adapt;
     ierr = PetscOptionsReal("-ts_alpha_radius","Spectral radius (high-frequency dissipation)","TSAlpha2SetRadius",radius,&radius,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSAlpha2SetRadius(ts,radius);CHKERRQ(ierr);}
     ierr = PetscOptionsReal("-ts_alpha_alpha_m","Algoritmic parameter alpha_m","TSAlpha2SetParams",th->Alpha_m,&th->Alpha_m,NULL);CHKERRQ(ierr);
@@ -440,8 +439,6 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
     ierr = PetscOptionsReal("-ts_alpha_gamma","Algoritmic parameter gamma","TSAlpha2SetParams",th->Gamma,&th->Gamma,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_beta","Algoritmic parameter beta","TSAlpha2SetParams",th->Beta,&th->Beta,NULL);CHKERRQ(ierr);
     ierr = TSAlpha2SetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma,th->Beta);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_alpha_adapt","Use time-step adaptivity with the Alpha method","TSAlpha2UseAdapt",adapt,&adapt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSAlpha2UseAdapt(ts,adapt);CHKERRQ(ierr);}
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -460,17 +457,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   }
   if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode TSAlpha2UseAdapt_Alpha(TS ts,PetscBool use)
-{
-  TS_Alpha *th = (TS_Alpha*)ts->data;
-
-  PetscFunctionBegin;
-  if (use == th->adapt) PetscFunctionReturn(0);
-  if (ts->setupcalled) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ORDER,"Cannot change adaptivity after TSSetUp()");
-  th->adapt = use;
   PetscFunctionReturn(0);
 }
 
@@ -546,6 +532,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   /*ts->ops->interpolate  = TSInterpolate_Alpha;*/
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
+  ts->default_adapt_type  = TSADAPTNONE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
@@ -556,39 +543,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   th->Beta    = 0.25;
   th->order   = 2;
 
-  th->adapt = PETSC_FALSE;
-
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2UseAdapt_C",TSAlpha2UseAdapt_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",TSAlpha2SetRadius_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",TSAlpha2SetParams_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",TSAlpha2GetParams_Alpha);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  TSAlpha2UseAdapt - Use time-step adaptivity with the Alpha method
-
-  Logically Collective on TS
-
-  Input Parameter:
-+  ts - timestepping context
--  use - flag to use adaptivity
-
-  Options Database:
-.  -ts_alpha_adapt
-
-  Level: intermediate
-
-.seealso: TSAdapt, TSADAPTBASIC
-@*/
-PetscErrorCode TSAlpha2UseAdapt(TS ts,PetscBool use)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidLogicalCollectiveBool(ts,use,2);
-  ierr = PetscTryMethod(ts,"TSAlpha2UseAdapt_C",(TS,PetscBool),(ts,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

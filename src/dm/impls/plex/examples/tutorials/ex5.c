@@ -2,6 +2,7 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 
 #include <petscdmplex.h>
 #include <petscviewerhdf5.h>
+#include <petscsf.h>
 
 typedef struct {
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
@@ -66,3 +67,19 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  build:
+    requires: exodusii
+  # Idempotence of saving/loading
+  test:
+    suffix: 0
+    requires: exodusii broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 1
+    requires: exodusii broken
+    nsize: 2
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+
+TEST*/

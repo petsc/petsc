@@ -42,12 +42,14 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
 {
   PetscInt       i, j, f, c;
   PetscErrorCode ierr;
+  PetscScalar *closure;
 
   PetscFunctionBeginUser;
+  ierr = PetscMalloc1(clSize,&closure);CHKERRQ(ierr);
   for (j = 0; j < Nj; ++j) {
     for (i = 0; i < Ni; ++i) {
-      PetscScalar closure[clSize];
       PetscInt    ki, kj, o = 0;
+      ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
 
       for (f = 0; f < user->Nf; ++f) {
         PetscInt ioff = i*user->k[f], joff = j*user->k[f];
@@ -63,6 +65,7 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
       ierr = DMPlexVecSetClosure(dm, NULL, u, j*Ni+i, closure, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -70,13 +73,15 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
 {
   PetscInt       i, j, k, f, c;
   PetscErrorCode ierr;
+  PetscScalar *closure;
 
   PetscFunctionBeginUser;
+  ierr = PetscMalloc1(clSize,&closure);CHKERRQ(ierr);
   for (k = 0; k < Nk; ++k) {
     for (j = 0; j < Nj; ++j) {
       for (i = 0; i < Ni; ++i) {
-        PetscScalar closure[clSize];
         PetscInt    ki, kj, kk, o = 0;
+        ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
 
         for (f = 0; f < user->Nf; ++f) {
           PetscInt ioff = i*user->k[f], joff = j*user->k[f], koff = k*user->k[f];
@@ -95,13 +100,15 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
       }
     }
   }
+  ierr = PetscFree(closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
 {
   PetscSection       s;
-  const PetscScalar *array, *a;
+  PetscScalar        *a;
+  const PetscScalar  *array;
   PetscInt           dof, d;
   PetscErrorCode     ierr;
 
@@ -113,7 +120,7 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_SELF, "Point %D: ", point);CHKERRQ(ierr);
   for (d = 0; d < dof; ++d) {
     if (d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-    ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", a[d]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(a[d]));CHKERRQ(ierr);
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(u, &array);CHKERRQ(ierr);
@@ -140,7 +147,7 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
           if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
           for (c = 0; c < user->Nc[f]; ++c) {
             if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
-            ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
           }
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
@@ -175,7 +182,7 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
             if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
             for (c = 0; c < user->Nc[f]; ++c) {
               if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
+              ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
             }
           }
           ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
@@ -389,3 +396,46 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Spectral ordering 2D 0-5
+  test:
+    suffix: 0
+    args: -dim 2 -num_fields 1 -num_components 1 -order 2
+  test:
+    suffix: 1
+    args: -dim 2 -num_fields 1 -num_components 1 -order 3
+  test:
+    suffix: 2
+    args: -dim 2 -num_fields 1 -num_components 1 -order 5
+  test:
+    suffix: 3
+    args: -dim 2 -num_fields 1 -num_components 2 -order 2
+  test:
+    suffix: 4
+    args: -dim 2 -num_fields 2 -num_components 1,1 -order 2,2
+  test:
+    suffix: 5
+    args: -dim 2 -num_fields 2 -num_components 1,2 -order 2,3
+  # Spectral ordering 3D 6-11
+  test:
+    suffix: 6
+    args: -dim 3 -num_fields 1 -num_components 1 -order 2
+  test:
+    suffix: 7
+    args: -dim 3 -num_fields 1 -num_components 1 -order 3
+  test:
+    suffix: 8
+    args: -dim 3 -num_fields 1 -num_components 1 -order 5
+  test:
+    suffix: 9
+    args: -dim 3 -num_fields 1 -num_components 2 -order 2
+  test:
+    suffix: 10
+    args: -dim 3 -num_fields 2 -num_components 1,1 -order 2,2
+  test:
+    suffix: 11
+    args: -dim 3 -num_fields 2 -num_components 1,2 -order 2,3
+
+TEST*/

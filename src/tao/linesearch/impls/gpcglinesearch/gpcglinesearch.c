@@ -130,7 +130,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     ierr = VecAXPY(neP->W1,-1.0,x);CHKERRQ(ierr);    /* W1 = W2 - X */
     ierr = VecDot(neP->W1,neP->Gold,&prered);CHKERRQ(ierr);
 
-    if (fabs(prered)<1.0e-100) prered=1.0e-12;
+    if (PetscAbsReal(prered)<1.0e-100) prered=1.0e-12;
     rho = actred/prered;
 
     /*

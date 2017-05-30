@@ -157,21 +157,15 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
   /* If the user has set a matrix to solve as the initial H0, set the options prefix here, and set up the KSP */
   if (blmP->H0) {
     const char *prefix;
-    PC H0pc;
-
     ierr = MatLMVMSetH0(blmP->M, blmP->H0);CHKERRQ(ierr);
     ierr = MatLMVMGetH0KSP(blmP->M, &H0ksp);CHKERRQ(ierr);
 
     ierr = TaoGetOptionsPrefix(tao, &prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(H0ksp, prefix);CHKERRQ(ierr);
-    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0ksp, "tao_h0_");CHKERRQ(ierr);
-    ierr = KSPGetPC(H0ksp, &H0pc);CHKERRQ(ierr);
-    ierr = PetscObjectAppendOptionsPrefix((PetscObject)H0pc,  "tao_h0_");CHKERRQ(ierr);
-
+    ierr = KSPAppendOptionsPrefix(H0ksp, "tao_h0_");CHKERRQ(ierr);
     ierr = KSPSetFromOptions(H0ksp);CHKERRQ(ierr);
     ierr = KSPSetUp(H0ksp);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -308,8 +302,7 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
   TAO_LMVM       *lmP;
   TAO_BLMVM      *blmP;
   const TaoType  type;
-  PetscBool is_lmvm, is_blmvm;
-
+  PetscBool      is_lmvm, is_blmvm;
   PetscErrorCode ierr;
 
   ierr = TaoGetType(tao, &type);CHKERRQ(ierr);
@@ -325,7 +318,6 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
     ierr = PetscObjectReference((PetscObject)H0);CHKERRQ(ierr);
     blmP->H0 = H0;
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
-
   PetscFunctionReturn(0);
 }
 
@@ -350,7 +342,6 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
     blmP = (TAO_BLMVM *)tao->data;
     M = blmP->M;
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
-
   ierr = MatLMVMGetH0(M, H0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -375,7 +366,6 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
     blmP = (TAO_BLMVM *)tao->data;
     M = blmP->M;
   } else SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "This routine applies to TAO_LMVM and TAO_BLMVM.");
-
   ierr = MatLMVMGetH0KSP(M, ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

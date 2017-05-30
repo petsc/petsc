@@ -628,7 +628,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo','requires': ['exodusii']},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo','requires': ['exodusii']},
                                                                 {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo','requires': ['exodusii']},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw -ts_adapt_basic_reject_safety 1','requires': ['exodusii']},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw -ts_adapt_reject_safety 1','requires': ['exodusii']},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/squaremotor-30.exo -ufv_split_faces','requires': ['exodusii']},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 1','requires': ['exodusii']},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 2','requires': ['exodusii']},
@@ -1950,6 +1950,7 @@ class PETScMaker(script.Script):
      output                  = output.strip()
      parse, excess           = parser.parse(output)
      validOutput             = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
+     validOutput             = validOutput.replace('\n\n', '\n').replace('\n\n', '\n')
      validParse, validExcess = parser.parse(validOutput)
      if not validParse == parse or not validExcess == excess:
        self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')

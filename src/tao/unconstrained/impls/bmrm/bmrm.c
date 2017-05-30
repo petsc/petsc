@@ -498,7 +498,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     if (r < TOL_R) return 0;
   } else  {
     /* equality constraint ,i.e., without \xi >= 0 constraint */
-    if (fabs(r) < TOL_R) return 0;
+    if (PetscAbsReal(r) < TOL_R) return 0;
   }
 
   if (r < 0.0){
@@ -535,7 +535,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     rl      = r;
   }
 
-  if(fabs(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  if(PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if(ru == 0){
     return innerIter;
@@ -547,8 +547,8 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
   lambda  = lambdau - dlambda;
   r       = phi(x, n, lambda, a, b, c, l, u);
 
-  while (fabs(r) > TOL_R
-         && dlambda > TOL_LAM * (1.0 + fabs(lambda))
+  while (PetscAbsReal(r) > TOL_R
+         && dlambda > TOL_LAM * (1.0 + PetscAbsReal(lambda))
          && innerIter < df->maxProjIter){
     innerIter++;
     if (r > 0.0){
@@ -636,7 +636,7 @@ PetscErrorCode solve(TAO_DF *df)
 
   it = 0;
   for (i = 0; i < dim; i++) {
-    if (fabs(x[i]) > ProdDELTAsv) ipt[it++] = i;
+    if (PetscAbsReal(x[i]) > ProdDELTAsv) ipt[it++] = i;
   }
 
   ierr = PetscMemzero(t, dim*sizeof(PetscReal));CHKERRQ(ierr);
@@ -661,7 +661,7 @@ PetscErrorCode solve(TAO_DF *df)
   max = ALPHA_MIN;
   for (i = 0; i < dim; i++){
     y[i] = tempv[i] - x[i];
-    if (fabs(y[i]) > max) max = fabs(y[i]);
+    if (PetscAbsReal(y[i]) > max) max = PetscAbsReal(y[i]);
   }
 
   if (max < tol*1e-3){
@@ -707,10 +707,10 @@ PetscErrorCode solve(TAO_DF *df)
 
     it = it2 = 0;
     for (i = 0; i < dim; i++){
-      if (fabs(d[i]) > (ProdDELTAsv*1.0e-2)) ipt[it++]   = i;
+      if (PetscAbsReal(d[i]) > (ProdDELTAsv*1.0e-2)) ipt[it++]   = i;
     }
     for (i = 0; i < dim; i++) {
-      if (fabs(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
+      if (PetscAbsReal(y[i]) > ProdDELTAsv) ipt2[it2++] = i;
     }
 
     ierr = PetscMemzero(Qd, dim*sizeof(PetscReal));CHKERRQ(ierr);
@@ -824,7 +824,7 @@ PetscErrorCode solve(TAO_DF *df)
         kktlam = kktlam/it;
         info   = 1;
         for (i = 0; i < it; i++) {
-          if (fabs(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
+          if (PetscAbsReal(a[ipt[i]] * g[ipt[i]] + kktlam) > tol) {
             info = 0;
             break;
           }

@@ -409,7 +409,7 @@ def parseTestFile(srcfile,verbosity):
     return {}
   fstart=len(fileStr.split("/*TEST\n")[0].split("\n"))+1
   # Allow for multiple "/*TEST" blocks even though it really should be
-  # on
+  # one
   srcTests=[]
   for t in fsplit: srcTests.append(t.split("TEST*/")[0])
   testString=" ".join(srcTests)

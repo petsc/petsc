@@ -183,7 +183,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               void (**funcs)(PetscInt, PetscInt, PetscInt,
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                             PetscReal, const PetscReal[], PetscScalar[]),
+                                             PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                               InsertMode mode, Vec X)
 {
   Vec            localX, localU;

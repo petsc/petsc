@@ -25,10 +25,12 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
 {
   PetscMPIInt     rank, size;
 #if defined(PETSC_HAVE_MED)
-  PetscInt        i, nstep, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
+  PetscInt        i, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
   PetscInt        numVertices = 0, numCells = 0, numCorners, numCellsLocal, numVerticesLocal;
-  PetscInt       *cellList;
-  PetscScalar    *coordinates = NULL;
+  med_int        *medCellList;
+  int            *cellList;
+  med_float      *coordinates = NULL;
+  PetscReal      *vertcoords = NULL;
   PetscLayout     vLayout, cLayout;
   const PetscInt *vrange, *crange;
   PetscSF         sfVertices;
@@ -56,8 +58,15 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   /* Read general mesh information */
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &axisname);CHKERRQ(ierr);
   ierr = PetscMalloc1(MED_SNAME_SIZE*spaceDim+1, &unitname);CHKERRQ(ierr);
-  ierr = MEDmeshInfo(fileID, 1, meshname, &spaceDim, &meshDim, &meshtype, meshdescription,
-                     dtunit, &sortingtype, &nstep, &axistype, axisname, unitname);CHKERRQ(ierr);
+  {
+    med_int medMeshDim, medNstep;
+    med_int medSpaceDim = spaceDim;
+
+    ierr = MEDmeshInfo(fileID, 1, meshname, &medSpaceDim, &medMeshDim, &meshtype, meshdescription,
+                       dtunit, &sortingtype, &medNstep, &axistype, axisname, unitname);CHKERRQ(ierr);
+    spaceDim = medSpaceDim;
+    meshDim  = medMeshDim;
+  }
   ierr = PetscFree(axisname);
   ierr = PetscFree(unitname);
   /* Partition mesh coordinates */
@@ -101,16 +110,36 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
                                   MED_NO_PROFILE, crange[rank]+1, 1, numCellsLocal, 1, 1, &cfilter);CHKERRQ(ierr);
   /* Read cell connectivity */
   if (numCells < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "No cells found in .med mesh file: %s", filename);
-  ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);
+  ierr = PetscMalloc1(numCellsLocal*numCorners, &medCellList);CHKERRQ(ierr);
   ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[cellID],
-                                              MED_NODAL, &cfilter, cellList);CHKERRQ(ierr);
+                                              MED_NODAL, &cfilter, medCellList);CHKERRQ(ierr);
+  if (sizeof(med_int) == sizeof(int)) {
+    cellList = (int *) medCellList;
+    medCellList = NULL;
+  } else {
+    ierr = PetscMalloc1(numCellsLocal*numCorners, &cellList);CHKERRQ(ierr);
+    for (i = 0; i < numCellsLocal*numCorners; i++) cellList[i] = medCellList[i];
+    ierr = PetscFree(medCellList);CHKERRQ(ierr);
+  }
   for (i = 0; i < numCellsLocal*numCorners; i++) cellList[i]--; /* Correct entity counting */
   /* Generate the DM */
+  if (sizeof(med_float) == sizeof(PetscReal)) {
+    vertcoords = (PetscReal *) coordinates;
+  } else {
+    ierr = PetscMalloc1(numVerticesLocal*spaceDim, &vertcoords);CHKERRQ(ierr);
+    for (i = 0; i < numVerticesLocal*spaceDim; i++) vertcoords[i] = coordinates[i];
+  }
   ierr = DMPlexCreateFromCellListParallel(comm, meshDim, numCellsLocal, numVerticesLocal, numCorners, interpolate, cellList, spaceDim, coordinates, &sfVertices, dm);CHKERRQ(ierr);
+  if (sizeof(med_float) == sizeof(PetscReal)) {
+    vertcoords = NULL;
+  } else {
+    ierr = PetscFree(vertcoords);CHKERRQ(ierr);
+  }
 
   if (ngeo > 1) {
     PetscInt        numFacets = 0, numFacetsLocal, numFacetCorners, numFacetsRendezvous;
     PetscInt        c, f, v, vStart, joinSize, vertices[8];
+    med_int        *medFacetList;
     PetscInt       *facetList, *facetListRendezvous, *facetIDs, *facetIDsRendezvous, *facetListRemote, *facetIDsRemote;
     const PetscInt *frange, *join;
     PetscLayout     fLayout;
@@ -132,10 +161,18 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
                                     MED_NO_PROFILE, frange[rank]+1, 1, numFacetsLocal, 1, 1, &fidfilter);CHKERRQ(ierr);
     /* Read facet connectivity */
     ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList);
-    ierr = PetscCalloc1(numFacetsLocal, &facetIDs);
+    ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &medFacetList);CHKERRQ(ierr);
+    ierr = PetscCalloc1(numFacetsLocal, &facetIDs);CHKERRQ(ierr);
     ierr = MEDmeshElementConnectivityAdvancedRd(fileID, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, geotype[facetID],
-                                                MED_NODAL, &ffilter, facetList);CHKERRQ(ierr);
+                                                MED_NODAL, &ffilter, medFacetList);CHKERRQ(ierr);
+    if (sizeof(med_int) == sizeof(PetscInt)) {
+      facetList = (PetscInt *) medFacetList;
+      medFacetList = NULL;
+    } else {
+      ierr = PetscMalloc1(numFacetsLocal*numFacetCorners, &facetList);CHKERRQ(ierr);
+      for (i = 0; i < numFacetsLocal*numFacetCorners; i++) facetList[i] = medFacetList[i];
+      ierr = PetscFree(medFacetList);
+    }
     for (i = 0; i < numFacetsLocal*numFacetCorners; i++) facetList[i]--; /* Correct entity counting */
     /* Read facet IDs */
     ierr = MEDmeshEntityAttributeAdvancedRd(fileID, meshname, MED_FAMILY_NUMBER, MED_NO_DT, MED_NO_IT, MED_CELL,
@@ -177,7 +214,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
       for (f = 0; f < numFacetsLocal; f++) {ierr = PetscSectionSetDof(facetSection, f, numFacetCorners);CHKERRQ(ierr);}
       ierr = PetscSectionSetUp(facetSection);CHKERRQ(ierr);
       ierr = PetscSectionCreate(comm, &facetSectionRendezvous);CHKERRQ(ierr);
-      ierr = DMPlexDistributeData(*dm, sfFacetMigration, facetSection, MPIU_INT, facetList, facetSectionRendezvous, (void**) &facetListRendezvous);
+      ierr = DMPlexDistributeData(*dm, sfFacetMigration, facetSection, MPIU_INT, facetList, facetSectionRendezvous, (void**) &facetListRendezvous);CHKERRQ(ierr);
       /* Migrate facet IDs */
       ierr = PetscSFGetGraph(sfFacetMigration, NULL, &numFacetsRendezvous, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc1(numFacetsRendezvous, &facetIDsRendezvous);CHKERRQ(ierr);
@@ -274,12 +311,12 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
         }
       }
     }
-    ierr = PetscFree(facetList);
-    ierr = PetscFree(facetListRendezvous);
-    ierr = PetscFree(facetListRemote);
-    ierr = PetscFree(facetIDs);
-    ierr = PetscFree(facetIDsRendezvous);
-    ierr = PetscFree(facetIDsRemote);
+    ierr = PetscFree(facetList);CHKERRQ(ierr);
+    ierr = PetscFree(facetListRendezvous);CHKERRQ(ierr);
+    ierr = PetscFree(facetListRemote);CHKERRQ(ierr);
+    ierr = PetscFree(facetIDs);CHKERRQ(ierr);
+    ierr = PetscFree(facetIDsRendezvous);CHKERRQ(ierr);
+    ierr = PetscFree(facetIDsRemote);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&fLayout);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&facetSectionRemote);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&facetSectionIDsRemote);CHKERRQ(ierr);

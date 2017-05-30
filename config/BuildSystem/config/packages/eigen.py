@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.download          = ['hg://https://bitbucket.org/eigen/eigen/']
     self.functions         = []
     self.includes          = ['Eigen/Core']
-    self.liblist           = [[]]
+    self.liblist           = []
     self.cxx               = 1
     self.includedir        = os.path.join('include', 'eigen3')
     self.useddirectly      = 0

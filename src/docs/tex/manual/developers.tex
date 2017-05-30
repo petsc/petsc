@@ -1523,10 +1523,10 @@ output file:
             suffix: 19
             requires: datafilespath
             args: -f0 ${DATAFILESPATH}/matrices/poisson1
-            args: -ksp_type cg -pc_type icc -pc_factor_levels 2
+            args: -ksp\_type cg -pc\_type icc -pc\_factor\_levels 2
             test:
             test:
-               args: -mat_type seqsbaij 
+               args: -mat\_type seqsbaij 
       */TESTS
 \end{lstlisting}
 
@@ -1541,10 +1541,10 @@ different output:
          testset:
             requires: datafilespath
             args: -f0 ${DATAFILESPATH}/matrices/medium
-            args: -ksp_type bicg
+            args: -ksp\_type bicg
             test:
                suffix: 4
-               args: -pc_type lu
+               args: -pc\_type lu
             test:
                suffix: 5 
       */TESTS
@@ -1563,7 +1563,7 @@ An example using a for loop would be:
              requires: datafilespath
          testset:
              suffix: 2
-             output\_file: output/ex138_1.out
+             output\_file: output/ex138\_1.out
              args: -f ${DATAFILESPATH}/matrices/small
              args: -mat\_type baij -matload\_block\_size {{2,3}shared output}
              requires: datafilespath
@@ -1579,7 +1579,7 @@ An example for showing the hierarchial nature of the test specification is:
 \begin{lstlisting}
       testset: 
         suffix:2
-        output\_file: output/ex138_1.out
+        output\_file: output/ex138\_1.out
         args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
         test:
              args: -matload\_block\_size 2
@@ -1594,18 +1594,18 @@ Here is a more complex example using for loops:
       suffix: 19
       requires: datafilespath
       args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp_type cg -pc_type icc 
-      args: -pc_factor_levels {{0 2 4}separate output}
+      args: -ksp\_type cg -pc\_type icc 
+      args: -pc\_factor\_levels {{0 2 4}separate output}
       test:
       test:
-         args: -mat_type seqsbaij
+         args: -mat\_type seqsbaij
 \end{lstlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
 be:
 \begin{lstlisting}
-      runex10_19_pc_factor_levels-0.sh
-      runex10_19_pc_factor_levels-2.sh
-      runex10_19_pc_factor_levels-4.sh
+      runex10\_19\_pc\_factor\_levels-0.sh
+      runex10\_19\_pc\_factor\_levels-2.sh
+      runex10\_19\_pc\_factor\_levels-4.sh
 \end{lstlisting}
 Each shell script would invoke mpiexec twice.
  

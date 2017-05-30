@@ -434,7 +434,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
         qAndLEvaluation(n,z,&q,&qp,&Ln);
         z1 = z;
         z  = z1-q/qp; /* Newton's method. */
-      } while (fabs(z-z1) > 3.0e-11);
+      } while (PetscAbsReal(z-z1) > 3.0e-11);
       qAndLEvaluation(n,z,&q,&qp,&Ln);
       x[j]   = xm+xl*z;      /* Scale the root to the desired interval, */
       x[n-j] = xm-xl*z;      /* and put in its symmetric counterpart.   */

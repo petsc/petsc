@@ -128,5 +128,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->view            = TSView_Euler;
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
+  ts->default_adapt_type   = TSADAPTNONE;
   PetscFunctionReturn(0);
 }
