@@ -2556,9 +2556,10 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
+  if (!ts->vecs_sensi) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
+  if (!ts->Jacp) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetRHSJacobian() first");
 
-  if (ts->vec_costintegral) { /* if there is integral in the cost function*/
+  if (ts->vec_costintegral) { /* if there is integral in the cost function */
     ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
     if (ts->vecs_sensip){
       ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
@@ -2973,7 +2974,7 @@ PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
 
   ts->rhsjacobianp    = func;
   ts->rhsjacobianpctx = ctx;
