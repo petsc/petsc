@@ -248,7 +248,7 @@ typedef const char *PCGAMGClassicalType;
    Level: beginner
 
    Values:
-+  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
++  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycleType()
 .  PC_MG_ADDITIVE - the additive multigrid preconditioner where all levels are
                 smoothed before updating the residual. This only uses the
                 down smoother, in the preconditioner the upper smoother is ignored
@@ -260,7 +260,7 @@ typedef const char *PCGAMGClassicalType;
 -  PC_MG_KASKADE - like full multigrid except one never goes back to a coarser level
                from a finer
 
-.seealso: PCMGSetType()
+.seealso: PCMGSetType(), PCMGSetCycleType(), PCMGSetCycleTypeOnLevel()
 
 E*/
 typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;

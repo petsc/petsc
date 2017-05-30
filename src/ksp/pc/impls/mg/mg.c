@@ -951,10 +951,10 @@ PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
 
    Input Parameters:
 +  pc - the multigrid context
--  PC_MG_CYCLE_V or PC_MG_CYCLE_W
+-  n - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-.  -pc_mg_cycle_type <v,w>
+.  -pc_mg_cycle_type <v,w> - provide the cycle desired
 
    Level: advanced
 

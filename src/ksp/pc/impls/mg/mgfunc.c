@@ -488,22 +488,22 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 }
 
 /*@
-   PCMGSetCyclesOnLevel - Sets the number of cycles to run on this level.
+   PCMGSetCycleTypeOnLevel - Sets the number of cycles to run on this level.
 
    Logically Collective on PC
 
    Input Parameters:
 +  pc - the multigrid context
-.  l  - the level (0 is coarsest) this is to be used for
--  n  - the number of cycles
+.  l  - the level (0 is coarsest)
+-  c  - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Level: advanced
 
 .keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
 
-.seealso: PCMGSetCycles()
+.seealso: PCMGSetCycleType()
 @*/
-PetscErrorCode  PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c)
+PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
 {
   PC_MG        *mg        = (PC_MG*)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
