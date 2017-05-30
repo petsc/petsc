@@ -168,6 +168,26 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateFieldDecomposition(self.dm, NULL) )
 
+    def setCreateDomainDecomposition(self, decomp, args=None, kargs=None):
+        if decomp is not None:
+            if args  is None: args = ()
+            if kargs is None: kargs = {}
+            context = (decomp, args, kargs)
+            self.set_attr('__create_domain_decomp__', context)
+            CHKERR( DMShellSetCreateDomainDecomposition(self.dm, DMSHELL_CreateDomainDecomposition) )
+        else:
+            CHKERR( DMShellSetCreateDomainDecomposition(self.dm, NULL) )
+
+    def setCreateDomainDecompositionScatters(self, scatter, args=None, kargs=None):
+        if scatter is not None:
+            if args  is None: args = ()
+            if kargs is None: kargs = {}
+            context = (scatter, args, kargs)
+            self.set_attr('__create_domain_decomp_scatters__', context)
+            CHKERR( DMShellSetCreateDomainDecompositionScatters(self.dm, DMSHELL_CreateDomainDecompositionScatters) )
+        else:
+            CHKERR( DMShellSetCreateDomainDecompositionScatters(self.dm, NULL) )
+
     def setCreateSubDM(self, create_subdm, args=None, kargs=None):
         if create_subdm is not None:
             if args  is None: args = ()

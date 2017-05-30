@@ -25,6 +25,18 @@ cdef extern from * nogil:
                                                                  char***,
                                                                  PetscIS**,
                                                                  PetscDM**) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscDMShellCreateDomainDecompositionFunction)(PetscDM,
+                                                                 PetscInt*,
+                                                                 char***,
+                                                                 PetscIS**,
+                                                                 PetscIS**,
+                                                                 PetscDM**) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscDMShellCreateDomainDecompositionScattersFunction)(PetscDM,
+                                                                 PetscInt,
+                                                                 PetscDM*,
+                                                                 PetscScatter**,
+                                                                 PetscScatter**,
+                                                                 PetscScatter**) except PETSC_ERR_PYTHON
     ctypedef int (*PetscDMShellCreateSubDM)(PetscDM,
                                             PetscInt,
                                             PetscInt[],
@@ -49,6 +61,8 @@ cdef extern from * nogil:
     int DMShellSetCreateInjection(PetscDM,PetscDMShellCreateInjectionFunction)
     int DMShellSetCreateRestriction(PetscDM,PetscDMShellCreateRestrictionFunction)
     int DMShellSetCreateFieldDecomposition(PetscDM,PetscDMShellCreateFieldDecompositionFunction)
+    int DMShellSetCreateDomainDecomposition(PetscDM,PetscDMShellCreateDomainDecompositionFunction)
+    int DMShellSetCreateDomainDecompositionScatters(PetscDM,PetscDMShellCreateDomainDecompositionScattersFunction)
     int DMShellSetCreateSubDM(PetscDM,PetscDMShellCreateSubDM)
 
 cdef int DMSHELL_CreateGlobalVector(
@@ -334,6 +348,108 @@ cdef int DMSHELL_CreateFieldDecomposition(
         for i in range(len(dms)):
             dmlist[0][i] = (<DM?>dms[i]).dm
             PetscINCREF((<DM?>dms[i]).obj)
+    return 0
+
+cdef int DMSHELL_CreateDomainDecomposition(
+    PetscDM dm,
+    PetscInt *clen,
+    char ***namelist,
+    PetscIS **innerislist,
+    PetscIS **outerislist,
+    PetscDM **dmlist) except PETSC_ERR_PYTHON with gil:
+    cdef DM Dm = subtype_DM(dm)()
+    cdef int i
+    cdef const_char *cname = NULL
+    Dm.dm = dm
+    PetscINCREF(Dm.obj)
+    context = Dm.get_attr('__create_domain_decomp__')
+    assert context is not None and type(context) is tuple
+    (decomp, args, kargs) = context
+    names, innerises, outerises, dms = decomp(Dm, *args, **kargs)
+
+    if clen != NULL:
+        if names is not None:
+            clen[0] = <PetscInt>len(names)
+        elif innerises is not None:
+            clen[0] = <PetscInt>len(innerises)
+        elif outerises is not None:
+            clen[0] = <PetscInt>len(outerises)
+        elif dms is not None:
+            clen[0] = <PetscInt>len(dms)
+        else:
+            clen[0] = 0
+
+    if namelist != NULL and names is not None:
+        CHKERR( PetscMalloc(len(names)*sizeof(char**), namelist) )
+        for i in range(len(names)):
+            names[i] = str2bytes(names[i], &cname)
+            CHKERR( PetscStrallocpy(cname, &(namelist[0][i])) )
+
+    if innerislist != NULL and innerises is not None:
+        CHKERR( PetscMalloc(len(innerises)*sizeof(PetscIS), innerislist) )
+        for i in range(len(innerises)):
+            innerislist[0][i] = (<IS?>innerises[i]).iset
+            PetscINCREF((<IS?>innerises[i]).obj)
+
+    if outerislist != NULL and outerises is not None:
+        CHKERR( PetscMalloc(len(outerises)*sizeof(PetscIS), outerislist) )
+        for i in range(len(outerises)):
+            outerislist[0][i] = (<IS?>outerises[i]).iset
+            PetscINCREF((<IS?>outerises[i]).obj)
+
+    if dmlist != NULL and dms is not None:
+        CHKERR( PetscMalloc(len(dms)*sizeof(PetscDM), dmlist) )
+        for i in range(len(dms)):
+            dmlist[0][i] = (<DM?>dms[i]).dm
+            PetscINCREF((<DM?>dms[i]).obj)
+    return 0
+
+cdef int DMSHELL_CreateDomainDecompositionScatters(
+    PetscDM dm,
+    PetscInt clen,
+    PetscDM *subdms,
+    PetscScatter** iscat,
+    PetscScatter** oscat,
+    PetscScatter** gscat) except PETSC_ERR_PYTHON with gil:
+
+    cdef DM Dm = subtype_DM(dm)()
+    cdef int i
+    cdef const_char *cname = NULL
+    cdef DM subdm = None
+
+    Dm.dm = dm
+    PetscINCREF(Dm.obj)
+
+    psubdms = []
+    for i from 0 <= i < clen:
+        subdm = subtype_DM(subdms[i])()
+        subdm.dm = subdms[i]
+        PetscINCREF(subdm.obj)
+        psubdms.append(subdm)
+
+    context = Dm.get_attr('__create_domain_decomp_scatters__')
+    assert context is not None and type(context) is tuple
+    (scatters, args, kargs) = context
+    (iscatter, oscatter, gscatter) = scatters(Dm, psubdms, *args, **kargs)
+
+    assert len(iscatter) == clen
+    assert len(oscatter) == clen
+    assert len(gscatter) == clen
+
+    CHKERR ( PetscMalloc(clen*sizeof(PetscScatter), iscat) )
+    CHKERR ( PetscMalloc(clen*sizeof(PetscScatter), oscat) )
+    CHKERR ( PetscMalloc(clen*sizeof(PetscScatter), gscat) )
+
+    for i in range(clen):
+        iscat[0][i] = (<Scatter?>iscatter[i]).sct
+        PetscINCREF((<Scatter?>iscatter[i]).obj)
+
+        oscat[0][i] = (<Scatter?>oscatter[i]).sct
+        PetscINCREF((<Scatter?>oscatter[i]).obj)
+
+        gscat[0][i] = (<Scatter?>gscatter[i]).sct
+        PetscINCREF((<Scatter?>gscatter[i]).obj)
+
     return 0
 
 cdef int DMSHELL_CreateSubDM(

@@ -201,6 +201,8 @@ cdef extern from * nogil:
 
     int SNESCompositeGetSNES(PetscSNES,PetscInt,PetscSNES*)
     int SNESCompositeGetNumber(PetscSNES,PetscInt*)
+    int SNESNASMGetSNES(PetscSNES,PetscInt,PetscSNES*)
+    int SNESNASMGetNumber(PetscSNES,PetscInt*)
 
 cdef extern from "custom.h" nogil:
     int SNESSetUseMFFD(PetscSNES,PetscBool)

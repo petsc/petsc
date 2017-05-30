@@ -114,6 +114,9 @@ cdef extern from * nogil:
 
     int DMCreateFieldDecomposition(PetscDM,PetscInt*,char***,PetscIS**,PetscDM**)
 
+    int DMSNESSetFunction(PetscDM,PetscSNESFunctionFunction,void*)
+    int DMSNESSetJacobian(PetscDM,PetscSNESJacobianFunction,void*)
+
 # --------------------------------------------------------------------
 
 cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \

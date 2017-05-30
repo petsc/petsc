@@ -470,6 +470,26 @@ cdef class DM(Object):
 
         return (names, isets, dms)
 
+    def setSNESFunction(self, function, args=None, kargs=None):
+        if function is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (function, args, kargs)
+            self.set_attr('__function__', context)
+            CHKERR( DMSNESSetFunction(self.dm, SNES_Function, <void*>context) )
+        else:
+            CHKERR( DMSNESSetFunction(self.dm, NULL, NULL) )
+
+    def setSNESJacobian(self, jacobian, args=None, kargs=None):
+        if jacobian is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (jacobian, args, kargs)
+            self.set_attr('__jacobian__', context)
+            CHKERR( DMSNESSetJacobian(self.dm, SNES_Jacobian, <void*>context) )
+        else:
+            CHKERR( DMSNESSetJacobian(self.dm, NULL, NULL) )
+
 # --------------------------------------------------------------------
 
 del DMType
