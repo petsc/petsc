@@ -10,6 +10,7 @@
 
 typedef struct {
   PetscScalar  *v;                /* matrix elements */
+  PetscScalar  *unplacedarray;    /* if one called MatDensePlaceArray(), this is where it stashed the original */
   PetscBool    roworiented;       /* if true, row oriented input (default) */
   PetscInt     pad;               /* padding */
   PetscBLASInt *pivots;           /* pivots in LU factorization */
@@ -17,6 +18,7 @@ typedef struct {
   PetscBool    changelda;         /* change lda on resize? Default unless user set lda */
   PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
   PetscBool    user_alloc;        /* true if the user provided the dense data */
+  PetscBool    unplaced_user_alloc; 
   Mat          ptapwork;          /* workspace (SeqDense matrix) for PtAP */
 
   Mat_MatTransMatMult *atb;       /* used by MatTransposeMatMult_SeqAIJ_SeqDense */
