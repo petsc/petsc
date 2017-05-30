@@ -73,6 +73,7 @@ struct AppCtx {
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormExactSolution(DM,AppCtx*,Vec);
+extern PetscErrorCode ZeroBCSolution(AppCtx*,const DMDACoor2d*,PetscScalar*);
 extern PetscErrorCode MMSSolution1(AppCtx*,const DMDACoor2d*,PetscScalar*);
 extern PetscErrorCode MMSForcing1(AppCtx*,const DMDACoor2d*,PetscScalar*);
 extern PetscErrorCode MMSSolution2(AppCtx*,const DMDACoor2d*,PetscScalar*);
@@ -153,6 +154,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  user.mms_solution = ZeroBCSolution;
   switch (MMS) {
   case 0: user.mms_solution = NULL; user.mms_forcing = NULL; CHKERRQ(ierr);
   case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
@@ -334,6 +336,12 @@ PetscErrorCode FormExactSolution(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode ZeroBCSolution(AppCtx *user,const DMDACoor2d *c,PetscScalar *u)
+{
+  u[0] = 0.;
+  return 0;
+}
+
 /* The functions below evaluate the MMS solution u(x,y) and associated forcing
 
      f(x,y) = -u_xx - u_yy - lambda exp(u)
@@ -429,11 +437,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   */
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
-      c.x = i*hx;
-      c.y = j*hy;
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        mms_solution = 0;
-        if (user->mms_solution) {ierr = user->mms_solution(user,&c,&mms_solution);CHKERRQ(ierr);}
+        c.x = i*hx; c.y = j*hy;
+        ierr = user->mms_solution(user,&c,&mms_solution);CHKERRQ(ierr);
         f[j][i] = 2.0*(hydhx+hxdhy)*(x[j][i] - mms_solution);
       } else {
         u  = x[j][i];
@@ -442,14 +448,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
         un = x[j-1][i];
         us = x[j+1][i];
 
-        if (i-1 == 0) uw = 0.;
-        if (i+1 == info->mx-1) ue = 0.;
-        if (j-1 == 0) un = 0.;
-        if (j+1 == info->my-1) us = 0.;
+        /* Enforce boundary conditions at neighboring points -- setting these values causes the Jacobian to be symmetric. */
+        if (i-1 == 0) {c.x = (i-1)*hx; c.y = j*hy; ierr = user->mms_solution(user,&c,&uw);CHKERRQ(ierr);}
+        if (i+1 == info->mx-1) {c.x = (i+1)*hx; c.y = j*hy; ierr = user->mms_solution(user,&c,&ue);CHKERRQ(ierr);}
+        if (j-1 == 0) {c.x = i*hx; c.y = (j-1)*hy; ierr = user->mms_solution(user,&c,&un);CHKERRQ(ierr);}
+        if (j+1 == info->my-1) {c.x = i*hx; c.y = (j+1)*hy; ierr = user->mms_solution(user,&c,&us);CHKERRQ(ierr);}
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
         mms_forcing = 0;
+        c.x = i*hx; c.y = j*hy;
         if (user->mms_forcing) {ierr = user->mms_forcing(user,&c,&mms_forcing);CHKERRQ(ierr);}
         f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + mms_forcing);
       }
