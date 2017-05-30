@@ -2596,23 +2596,23 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_2d_quad_p4est_0
-    requires:
+    requires: p4est
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
   test:
     suffix: adv_2d_quad_p4est_1
-    requires:
+    requires: p4est
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_2d_quad_p4est_adapt_0
-    requires:
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.001,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares
+    requires: p4est
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_final_time 0.01
   test:
     suffix: adv_2d_tri_0
-    requires:
+    requires: triangle
     args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
   test:
     suffix: adv_2d_tri_1
-    requires:
+    requires: triangle
     args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_0
