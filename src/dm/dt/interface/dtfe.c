@@ -3786,7 +3786,9 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
 
   PetscFunctionBegin;
   if (!npoints) {
-    if (B) *B = NULL; if (D) *D = NULL; if (H) *H = NULL;
+    if (B) *B = NULL;
+    if (D) *D = NULL;
+    if (H) *H = NULL;
     PetscFunctionReturn(0);
   }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
