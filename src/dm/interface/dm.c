@@ -97,7 +97,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscSF        sf;
   Vec            coords;
   void          *ctx;
-  PetscInt       dim;
+  PetscInt       dim, cdim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -133,6 +133,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }
   }
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*newdm, cdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
   if (coords) {
     ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
