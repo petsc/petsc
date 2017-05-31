@@ -445,7 +445,7 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 
   Input Parameters:
 + sp      - The PetscSpace
-. npoints - The number of evaluation points
+. npoints - The number of evaluation points, in reference coordinates
 - points  - The point coordinates
 
   Output Parameters:
@@ -453,7 +453,8 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
 . D - The derivative evaluations in a npoints x nfuncs x dim array
 - H - The second derivative evaluations in a npoints x nfuncs x dim x dim array
 
-  Note: Above nfuncs is the dimension of the space, and dim is the spatial dimension
+  Note: Above nfuncs is the dimension of the space, and dim is the spatial dimension. The coordinates are given
+  on the reference cell, not in real space.
 
   Level: advanced
 
