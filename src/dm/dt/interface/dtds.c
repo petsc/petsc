@@ -360,7 +360,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
   PetscObject      *tmpd;
   PetscBool        *tmpi, *tmpa;
-  PetscPointFunc   *tmpobj, *tmpf;
+  PetscPointFunc   *tmpobj, *tmpf, *tmpup;
   PetscPointJac    *tmpg, *tmpgp, *tmpgt;
   PetscBdPointFunc *tmpfbd;
   PetscBdPointJac  *tmpgbd;
@@ -382,11 +382,13 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   prob->implicit  = tmpi;
   prob->adjacency = tmpa;
   ierr = PetscCalloc7(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew*NfNew*4, &tmpgp, NfNew*NfNew*4, &tmpgt, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
+  ierr = PetscCalloc1(NfNew, &tmpup);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
   for (f = 0; f < Nf*2; ++f) tmpf[f] = prob->f[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpg[f] = prob->g[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpgp[f] = prob->gp[f];
   for (f = 0; f < Nf; ++f) tmpr[f] = prob->r[f];
+  for (f = 0; f < Nf; ++f) tmpup[f] = prob->update[f];
   for (f = 0; f < Nf; ++f) tmpctx[f] = prob->ctx[f];
   for (f = Nf; f < NfNew; ++f) tmpobj[f] = NULL;
   for (f = Nf*2; f < NfNew*2; ++f) tmpf[f] = NULL;
@@ -394,14 +396,17 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgp[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgt[f] = NULL;
   for (f = Nf; f < NfNew; ++f) tmpr[f] = NULL;
+  for (f = Nf; f < NfNew; ++f) tmpup[f] = NULL;
   for (f = Nf; f < NfNew; ++f) tmpctx[f] = NULL;
   ierr = PetscFree7(prob->obj, prob->f, prob->g, prob->gp, prob->gt, prob->r, prob->ctx);CHKERRQ(ierr);
+  ierr = PetscFree(prob->update);CHKERRQ(ierr);
   prob->obj = tmpobj;
   prob->f   = tmpf;
   prob->g   = tmpg;
   prob->gp  = tmpgp;
   prob->gt  = tmpgt;
   prob->r   = tmpr;
+  prob->update = tmpup;
   prob->ctx = tmpctx;
   ierr = PetscCalloc2(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd);CHKERRQ(ierr);
   for (f = 0; f < Nf*2; ++f) tmpfbd[f] = prob->fBd[f];
@@ -444,6 +449,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   }
   ierr = PetscFree3((*prob)->disc, (*prob)->implicit, (*prob)->adjacency);CHKERRQ(ierr);
   ierr = PetscFree7((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->gp,(*prob)->gt,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
+  ierr = PetscFree((*prob)->update);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   next = (*prob)->boundary;
@@ -1635,6 +1641,112 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->r[f] = r;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSGetUpdate - Get the pointwise update function for a given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS
+- f    - The field number
+
+  Output Parameters:
++ update - update function
+
+  Note: The calling sequence for the callback update is given by:
+
+$ update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$        PetscReal t, const PetscReal x[], PetscScalar uNew[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+- uNew - new value for field at the current point
+
+  Level: intermediate
+
+.seealso: PetscDSSetUpdate(), PetscDSSetResidual()
+@*/
+PetscErrorCode PetscDSGetUpdate(PetscDS prob, PetscInt f,
+                                  void (**update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  if (update) {PetscValidPointer(update, 3); *update = prob->update[f];}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDSSetUpdate - Set the pointwise update function for a given field
+
+  Not collective
+
+  Input Parameters:
++ prob   - The PetscDS
+. f      - The field number
+- update - update function
+
+  Note: The calling sequence for the callback update is given by:
+
+$ update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+$        PetscReal t, const PetscReal x[], PetscScalar uNew[])
+
++ dim - the spatial dimension
+. Nf - the number of fields
+. uOff - the offset into u[] and u_t[] for each field
+. uOff_x - the offset into u_x[] for each field
+. u - each field evaluated at the current point
+. u_t - the time derivative of each field evaluated at the current point
+. u_x - the gradient of each field evaluated at the current point
+. aOff - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x - the offset into a_x[] for each auxiliary field
+. a - each auxiliary field evaluated at the current point
+. a_t - the time derivative of each auxiliary field evaluated at the current point
+. a_x - the gradient of auxiliary each field evaluated at the current point
+. t - current time
+. x - coordinates of the current point
+- uNew - new field values at the current point
+
+  Level: intermediate
+
+.seealso: PetscDSGetResidual()
+@*/
+PetscErrorCode PetscDSSetUpdate(PetscDS prob, PetscInt f,
+                                void (*update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (update) PetscValidFunction(update, 3);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->update[f] = update;
   PetscFunctionReturn(0);
 }
 

@@ -1738,6 +1738,7 @@ extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
+static PetscErrorCode DMInitialize_Plex(DM dm);
 
 /* Replace dm with the contents of dmNew
    - Share the DM_Plex structure
@@ -1763,6 +1764,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
   if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L, bd);CHKERRQ(ierr);}
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
+  ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
   dmNew->labels->refct++;
@@ -2037,6 +2039,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors                    = DMGetNeighors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
