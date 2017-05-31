@@ -26,6 +26,14 @@ ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_DM_LIB}
 	${RM} -f ex5.o
 
+ex6: ex6.o  chkopts
+	-${CLINKER} -o ex6 ex6.o ${PETSC_DM_LIB}
+	${RM} -f ex6.o
+
+ex7: ex7.o  chkopts
+	-${CLINKER} -o ex7 ex7.o ${PETSC_DM_LIB}
+	${RM} -f ex7.o
+
 #--------------------------------------------------------------------------
 
 runex1:
