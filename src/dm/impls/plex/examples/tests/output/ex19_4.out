@@ -1,0 +1,18 @@
+DM Object: DMinit 2 MPI processes
+  type: plex
+DMinit in 2 dimensions:
+  0-cells: 6 6
+  1-cells: 9 9
+  2-cells: 4 4
+Labels:
+  marker: 1 strata of sizes (9)
+  depth: 3 strata of sizes (6, 9, 4)
+DM Object: DMadapt 2 MPI processes
+  type: plex
+DMadapt in 2 dimensions:
+  0-cells: 62 53
+  1-cells: 149 122
+  2-cells: 88 70
+Labels:
+  _boundary_: 1 strata of sizes (18)
+  depth: 3 strata of sizes (62, 149, 88)
