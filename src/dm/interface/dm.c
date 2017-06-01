@@ -97,7 +97,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscSF        sf;
   Vec            coords;
   void          *ctx;
-  PetscInt       dim;
+  PetscInt       dim, cdim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -133,6 +133,8 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
       ierr = DMDestroy(&ncdm);CHKERRQ(ierr);
     }
   }
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*newdm, cdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
   if (coords) {
     ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
@@ -1158,13 +1160,34 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 - only - PETSC_TRUE if only want preallocation
 
   Level: developer
-.seealso DMCreateMatrix()
+.seealso DMCreateMatrix(), DMSetMatrixStructureOnly()
 @*/
 PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->prealloc_only = only;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetMatrixStructureOnly - When DMCreateMatrix() is called, the matrix structure will be created
+    but the array for values will not be allocated.
+
+  Logically Collective on DM
+
+  Input Parameter:
++ dm - the DM
+- only - PETSC_TRUE if only want matrix stucture
+
+  Level: developer
+.seealso DMCreateMatrix(), DMSetMatrixPreallocateOnly()
+@*/
+PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->structure_only = only;
   PetscFunctionReturn(0);
 }
 
@@ -5936,7 +5959,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                  PetscReal, const PetscReal[], PetscScalar[]),
+                                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                                    InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -5954,7 +5977,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                       PetscReal, const PetscReal[], PetscScalar[]),
+                                                       PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                                         InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;

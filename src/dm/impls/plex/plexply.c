@@ -25,7 +25,7 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   PetscScalar    *coords;
   char            line[PETSC_MAX_PATH_LEN], ntype[16], itype[16], name[1024], vtype[16];
   PetscBool       match, byteSwap = PETSC_FALSE;
-  PetscInt        dim = 2, cdim = 3, Nvp = 0, coordSize, xi, yi, zi, v, c, p;
+  PetscInt        dim = 2, cdim = 3, Nvp = 0, coordSize, xi = -1, yi = -1, zi = -1, v, c, p;
   PetscMPIInt     rank;
   int             snum, Nv, Nc;
   PetscErrorCode  ierr;

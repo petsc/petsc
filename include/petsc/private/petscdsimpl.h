@@ -47,6 +47,9 @@ struct _p_PetscDS {
   PetscBdPointFunc *fBd;          /* Weak form boundary integrands F_bd, f_0, f_1 */
   PetscBdPointJac  *gBd;          /* Weak form boundary integrands J_bd = dF_bd/du, g_0, g_1, g_2, g_3 */
   PetscRiemannFunc *r;            /* Riemann solvers */
+  PetscPointFunc   *update;       /* Direct update of field coefficients */
+  PetscInt          numConstants; /* Number of constants passed to point functions */
+  PetscScalar      *constants;    /* Array of constants passed to point functions */
   void       **ctx;               /* User contexts for each field */
   PetscInt     dim;               /* The spatial dimension */
   /* Computed sizes */

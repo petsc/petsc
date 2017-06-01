@@ -1,0 +1,18 @@
+DM Object: 1 MPI processes
+  type: da
+Processor [0] M 6 m 1 w 2 s 1
+X range of indices: 0 6
+Mat Object: 1 MPI processes
+  type: seqaij
+row 0: (0)  (1)  (2)  (3) 
+row 1: (0)  (1)  (2)  (3) 
+row 2: (0)  (1)  (2)  (3)  (4)  (5) 
+row 3: (0)  (1)  (2)  (3)  (4)  (5) 
+row 4: (2)  (3)  (4)  (5)  (6)  (7) 
+row 5: (2)  (3)  (4)  (5)  (6)  (7) 
+row 6: (4)  (5)  (6)  (7)  (8)  (9) 
+row 7: (4)  (5)  (6)  (7)  (8)  (9) 
+row 8: (6)  (7)  (8)  (9)  (10)  (11) 
+row 9: (6)  (7)  (8)  (9)  (10)  (11) 
+row 10: (8)  (9)  (10)  (11) 
+row 11: (8)  (9)  (10)  (11) 

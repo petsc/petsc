@@ -548,7 +548,7 @@ int main(int argc,char ** argv)
   PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
   const PetscInt    *cone; 
-  DM                networkdm;
+  DM                networkdm, plex;
   PetscMPIInt       size,rank;
   PetscReal         ftime = 2500.0;
   Vec               X;
@@ -558,6 +558,7 @@ int main(int argc,char ** argv)
   PetscBool         viewpipes;
   PetscInt          pipesCase;
   DMNetworkMonitor  monitor;
+  PetscPartitioner  part;
   DMNetworkComponentGenericDataType *nwarr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -621,18 +622,10 @@ int main(int argc,char ** argv)
   ierr = WashNetworkCleanUp(wash,edgelist);CHKERRQ(ierr);
 
   /* Network partitioning and distribution of data */
-  if (size > 1) { 
-    DM               distnetworkdm;
-    DM               plex;
-    PetscPartitioner part;
-
-    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
+  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   
   /* PipeSetUp -- each process only sets its own pipes */
   /*---------------------------------------------------*/

@@ -71,8 +71,8 @@ PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace, PetscBo
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace, PetscBool *);
 
-PETSC_EXTERN PetscErrorCode PetscSpacePointSetQuadrature(PetscSpace, PetscQuadrature);
-PETSC_EXTERN PetscErrorCode PetscSpacePointGetQuadrature(PetscSpace, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscSpacePointGetPoints(PetscSpace, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscSpacePointSetPoints(PetscSpace, PetscQuadrature);
 
 PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 
