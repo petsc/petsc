@@ -157,6 +157,7 @@ static PetscErrorCode CreateRankField(DM dm, Vec *ranks)
   ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
   ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rdm, ranks);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *ranks, "partition");CHKERRQ(ierr);
@@ -201,9 +202,9 @@ int main (int argc, char * argv[]) {
     ierr = VecViewFromOptions(ranks, NULL, "-adapt_rank_view");CHKERRQ(ierr);
     ierr = VecDestroy(&ranks);CHKERRQ(ierr);
   }
+  ierr = DMDestroy(&dma);CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dma);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
