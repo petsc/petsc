@@ -155,6 +155,8 @@ typedef struct {
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
   PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
+  PetscErrorCode      (*useradjacency)(DM,PetscInt,PetscInt*,PetscInt[],void*); /* User callback for adjacency */
+  void                *useradjacencyctx;  /* User context for callback */
 
   /* Projection */
   PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
