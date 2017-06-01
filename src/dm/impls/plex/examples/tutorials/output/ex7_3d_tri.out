@@ -6,4 +6,4 @@ DM_0x84000000_0 in 3 dimensions:
   2-cells: 1200
   3-cells: 600
 Labels:
-  depth: 4 strata of sizes (120, 720, 1200, 600)
+  depth: 4 strata with value/size (0 (120), 1 (720), 2 (1200), 3 (600))
