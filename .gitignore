@@ -173,3 +173,4 @@ src/benchmarks/streams/OpenMPVersion
 src/benchmarks/streams/PthreadVersion
 src/benchmarks/streams/scaling.png
 ftn-auto-interfaces
+horse.ply

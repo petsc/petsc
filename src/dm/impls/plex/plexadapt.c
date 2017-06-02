@@ -8,7 +8,7 @@
 
   Input Parameters:
 + dm - The DM object
-. vertexMetric - The metric to which the mesh is adapted, defined vertex-wise.
+. vertexMetric - The metric to which the mesh is adapted, defined vertex-wise in a LOCAL vector
 . remeshBd - Flag to allow boundary changes
 - bdLabelName - Label name for boundary tags which are preserved in dmNew, or NULL. Should not be "_boundary_".
 
@@ -21,18 +21,22 @@
 */
 PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabelName[], PetscBool remeshBd, DM *dmNew)
 {
+  MPI_Comm           comm;
   const char        *bdName = "_boundary_";
+#if 0
+  DM                 odm = dm;
+#endif
   DM                 udm, cdm;
   DMLabel            bdLabel = NULL, bdLabelFull;
-  IS                 bdIS;
+  IS                 bdIS, globalVertexNum;
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords, *met;
-  const PetscInt    *bdFacesFull;
-  PetscInt          *bdFaces, *bdFaceIds;
+  const PetscInt    *bdFacesFull, *gV;
+  PetscInt          *bdFaces, *bdFaceIds, *l2gv;
   PetscReal         *x, *y, *z, *metric;
   PetscInt          *cells;
-  PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, v;
+  PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, numLocVertices, v;
   PetscInt           off, maxConeSize, numBdFaces, f, bdSize;
   PetscBool          flg;
 #ifdef PETSC_HAVE_PRAGMATIC
@@ -44,24 +48,36 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscInt           d, numCellsNew, numVerticesNew;
   PetscInt           numCornersNew, fStart, fEnd;
 #endif
+  PetscMPIInt        numProcs;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  /* Check for FEM adjacency flags */
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vertexMetric, VEC_CLASSID, 2);
   PetscValidCharPointer(bdLabelName, 3);
   PetscValidPointer(dmNew, 5);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   if (bdLabelName) {
     size_t len;
 
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
     ierr = PetscStrlen(bdLabelName, &len);CHKERRQ(ierr);
     if (len) {
       ierr = DMGetLabel(dm, bdLabelName, &bdLabel);CHKERRQ(ierr);
-      if (!bdLabel) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label \"%s\" does not exist in DM", bdLabelName);
+      if (!bdLabel) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Label \"%s\" does not exist in DM", bdLabelName);
     }
   }
+  /* Add overlap for Pragmatic */
+#if 0
+  /* Check for overlap by looking for cell in the SF */
+  if (!overlapped) {
+    ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
+    if (!dm) {dm = odm; ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);}
+  }
+#endif
   /* Get mesh information */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -79,6 +95,14 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
     ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
     for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart;
   }
+  ierr = PetscCalloc1(numVertices, &l2gv);CHKERRQ(ierr);
+  ierr = DMPlexGetVertexNumbering(udm, &globalVertexNum);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalVertexNum, &gV);CHKERRQ(ierr);
+  for (v = 0, numLocVertices = 0; v < numVertices; ++v) {
+    if (gV[v] >= 0) ++numLocVertices;
+    l2gv[v] = gV[v] < 0 ? -(gV[v]+1) : gV[v];
+  }
+  ierr = ISRestoreIndices(globalVertexNum, &gV);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
@@ -126,39 +150,44 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = PetscRealPart(met[v]);
   ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+#if 0
+  /* Destroy overlap mesh */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+#endif
   /* Create new mesh */
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
-    pragmatic_2d_init(&numVertices, &numCells, cells, x, y);break;
+    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm);break;
   case 3:
-    pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);break;
-  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
+    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm);break;
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
   pragmatic_adapt(remeshBd ? 1 : 0);
+  ierr = PetscFree(l2gv);CHKERRQ(ierr);
   /* Read out mesh */
-  pragmatic_get_info(&numVerticesNew, &numCellsNew);
+  pragmatic_get_info_mpi(&numVerticesNew, &numCellsNew);
   ierr = PetscMalloc1(numVerticesNew*dim, &coordsNew);CHKERRQ(ierr);
   switch (dim) {
   case 2:
     numCornersNew = 3;
     ierr = PetscMalloc2(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1]);CHKERRQ(ierr);
-    pragmatic_get_coords_2d(xNew[0], xNew[1]);
+    pragmatic_get_coords_2d_mpi(xNew[0], xNew[1]);
     break;
   case 3:
     numCornersNew = 4;
     ierr = PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]);CHKERRQ(ierr);
-    pragmatic_get_coords_3d(xNew[0], xNew[1], xNew[2]);
+    pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = (double) xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
   pragmatic_get_elements(cellsNew);
-  ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellListParallel(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, dmNew);CHKERRQ(ierr);
   /* Read out boundary label */
   pragmatic_get_boundaryTags(&bdTags);
   ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
@@ -169,18 +198,15 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   for (c = cStart; c < cEnd; ++c) {
     /* Only for simplicial meshes */
     coff = (c-cStart)*(dim+1);
+    /* d is the local cell number of the vertex opposite to the face we are marking */
     for (d = 0; d < dim+1; ++d) {
       if (bdTags[coff+d]) {
-        const PetscInt *faces;
-        PetscInt        numFaces, vertices[3], p;
+        const PetscInt  perm[4][4] = {{-1, -1, -1, -1}, {-1, -1, -1, -1}, {1, 2, 0, -1}, {3, 2, 1, 0}}; /* perm[d] = face opposite */
+        const PetscInt *cone;
 
-        /* Mark face opposite to this vertex */
-        for (p = 0, v = 0; p < dim+1; ++p) if (p != d) {vertices[v] = cellsNew[coff+p] + vStart; ++v;}
-        ierr = DMPlexGetFullJoin(*dmNew, dim, vertices, &numFaces, &faces);CHKERRQ(ierr);
-        if (numFaces != 1) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot find boundary face in new cell %D for vertex %D(%D) with tag %D", c, cellsNew[coff+d], d, bdTags[coff+d]);
-        if (faces[0] < fStart || faces[0] >= fEnd) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boundary point %D in new cell %D for vertex %D(%D) with tag %D is not a face", faces[0], c, cellsNew[coff+d], d, bdTags[coff+d]);
-        ierr = DMLabelSetValue(bdLabelNew, faces[0], bdTags[coff+d]);CHKERRQ(ierr);
-        ierr = DMPlexRestoreJoin(*dmNew, dim, vertices, &numFaces, &faces);CHKERRQ(ierr);
+        /* Mark face opposite to this vertex: This pattern is specified in DMPlexGetRawFaces_Internal() */
+        ierr = DMPlexGetCone(*dmNew, c, &cone);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(bdLabelNew, cone[perm[dim][d]], bdTags[coff+d]);CHKERRQ(ierr);
       }
     }
   }
@@ -195,7 +221,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = PetscFree(coordsNew);CHKERRQ(ierr);
   pragmatic_finalize();
 #else
-  SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
+  SETERRQ(comm, PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
 #endif
   PetscFunctionReturn(0);
 }

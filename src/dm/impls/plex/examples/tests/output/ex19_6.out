@@ -1,0 +1,23 @@
+DM Object: DMinit 2 MPI processes
+  type: plex
+DMinit in 3 dimensions:
+  0-cells: 548 555
+  1-cells: 3055 3074
+  2-cells: 4695 4707
+  3-cells: 2187 2187
+Labels:
+  marker: 1 strata of sizes (1022)
+  depth: 4 strata of sizes (548, 3055, 4695, 2187)
+DM Object: DMadapt 2 MPI processes
+  type: plex
+DMadapt in 3 dimensions:
+  0-cells: 49603 49827
+  1-cells: 334994 336178
+  2-cells: 564944 566672
+  3-cells: 279552 280320
+Labels:
+  _boundary_: 1 strata of sizes (7584)
+  depth: 4 strata of sizes (49603, 334994, 564944, 279552)
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-dm_plex_separate_marker value: 0

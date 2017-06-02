@@ -268,8 +268,8 @@ static void f0_lap_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  f0[0] = -sin(2.0*PETSC_PI*x[0]);
-  f0[1] = 2.0*PETSC_PI*x[1]*cos(2.0*PETSC_PI*x[0]);
+  f0[0] = -PetscSinReal(2.0*PETSC_PI*x[0]);
+  f0[1] = 2.0*PETSC_PI*x[1]*PetscCosReal(2.0*PETSC_PI*x[0]);
 }
 
 static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -277,8 +277,8 @@ static void f0_lap_doubly_periodic_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
-  f0[0] = -2.0*sin(2.0*PETSC_PI*x[0])*cos(2.0*PETSC_PI*x[1]);
-  f0[1] =  2.0*sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0]);
+  f0[0] = -2.0*PetscSinReal(2.0*PETSC_PI*x[0])*PetscCosReal(2.0*PETSC_PI*x[1]);
+  f0[1] =  2.0*PetscSinReal(2.0*PETSC_PI*x[1])*PetscCosReal(2.0*PETSC_PI*x[0]);
 }
 
 void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -454,8 +454,8 @@ We will conserve phi since
 */
 static PetscErrorCode periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  u[0] = sin(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
-  u[1] = -x[1]*cos(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI);
+  u[0] = PetscSinReal(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
+  u[1] = -x[1]*PetscCosReal(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI);
   return 0;
 }
 
@@ -478,8 +478,8 @@ We will conserve phi since
 */
 static PetscErrorCode doubly_periodic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  u[0] =  sin(2.0*PETSC_PI*x[0])*cos(2.0*PETSC_PI*x[1])/PetscSqr(2.0*PETSC_PI);
-  u[1] = -sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
+  u[0] =  PetscSinReal(2.0*PETSC_PI*x[0])*PetscCosReal(2.0*PETSC_PI*x[1])/PetscSqr(2.0*PETSC_PI);
+  u[1] = -PetscSinReal(2.0*PETSC_PI*x[1])*PetscCosReal(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
   return 0;
 }
 
