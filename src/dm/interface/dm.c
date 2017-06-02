@@ -5788,7 +5788,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 }
 
 /*@C
-  DMGetBoundary - Add a boundary condition to the model
+  DMGetBoundary - Get a model boundary condition
 
   Input Parameters:
 + dm          - The mesh object
@@ -5943,7 +5943,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
 
@@ -5951,7 +5951,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5973,7 +5973,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], Vec localU,
+PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -5987,7 +5987,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
   if (!dm->ops->projectfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

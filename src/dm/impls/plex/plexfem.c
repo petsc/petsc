@@ -255,6 +255,8 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 + dm     - The DM, with a PetscDS that matches the problem being constrained
 . time   - The time
 . field  - The field to constrain
+. Nc     - The number of constrained field components, or 0 for all components
+. comps  - An array of constrained component numbers, or NULL for all components
 . label  - The DMLabel defining constrained points
 . numids - The number of DMLabel ids for constrained points
 . ids    - An array of ids for constrained points
@@ -268,7 +270,7 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 
 .seealso: DMPlexInsertBoundaryValuesEssentialField(), DMAddBoundary()
 @*/
-PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
+PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   void            **ctxs;
@@ -280,7 +282,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
   ierr = PetscCalloc2(numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
   funcs[field] = func;
   ctxs[field]  = ctx;
-  ierr = DMProjectFunctionLabelLocal(dm, time, label, numids, ids, funcs, ctxs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(dm, time, label, numids, ids, Nc, comps, funcs, ctxs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
   ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -293,6 +295,8 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 . time   - The time
 . locU   - A local vector with the input solution values
 . field  - The field to constrain
+. Nc     - The number of constrained field components, or 0 for all components
+. comps  - An array of constrained component numbers, or NULL for all components
 . label  - The DMLabel defining constrained points
 . numids - The number of DMLabel ids for constrained points
 . ids    - An array of ids for constrained points
@@ -306,7 +310,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 
 .seealso: DMPlexInsertBoundaryValuesEssential(), DMAddBoundary()
 @*/
-PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, Vec locU, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[],
+PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[],
                                                         void (*func)(PetscInt, PetscInt, PetscInt,
                                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -327,7 +331,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
   ierr = PetscCalloc2(numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
   funcs[field] = func;
   ctxs[field]  = ctx;
-  ierr = DMProjectFieldLabelLocal(dm, time, label, numids, ids, locU, funcs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMProjectFieldLabelLocal(dm, time, label, numids, ids, Nc, comps, locU, funcs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
   ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -342,6 +346,8 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 . cellGeometry - A vector with the FVM cell geometry information
 . Grad         - A vector with the FVM cell gradient information
 . field  - The field to constrain
+. Nc     - The number of constrained field components, or 0 for all components
+. comps  - An array of constrained component numbers, or NULL for all components
 . label  - The DMLabel defining constrained points
 . numids - The number of DMLabel ids for constrained points
 . ids    - An array of ids for constrained points
@@ -357,7 +363,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 
 .seealso: DMPlexInsertBoundaryValuesEssential(), DMPlexInsertBoundaryValuesEssentialField(), DMAddBoundary()
 @*/
-PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[],
+PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[],
                                                  PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *ctx, Vec locX)
 {
   PetscDS            prob;
@@ -469,7 +475,8 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     DMBoundaryConditionType type;
     const char             *labelname;
     DMLabel                 label;
-    PetscInt                field;
+    PetscInt                field, Nc;
+    const PetscInt         *comps;
     PetscObject             obj;
     PetscClassId            id;
     void                    (*func)(void);
@@ -477,7 +484,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     const PetscInt         *ids;
     void                   *ctx;
 
-    ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, NULL, NULL, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, &Nc, &comps, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
@@ -487,12 +494,12 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
         /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       case DM_BC_ESSENTIAL:
         ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
-        ierr = DMPlexInsertBoundaryValuesEssential(dm, time, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
+        ierr = DMPlexInsertBoundaryValuesEssential(dm, time, field, Nc, comps, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
         ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
         break;
       case DM_BC_ESSENTIAL_FIELD:
         ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
-        ierr = DMPlexInsertBoundaryValuesEssentialField(dm, time, locX, field, label, numids, ids,
+        ierr = DMPlexInsertBoundaryValuesEssentialField(dm, time, locX, field, Nc, comps, label, numids, ids,
                                                         (void (*)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[])) func, ctx, locX);CHKERRQ(ierr);
@@ -502,7 +509,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
       }
     } else if (id == PETSCFV_CLASSID) {
       if (!faceGeomFVM) continue;
-      ierr = DMPlexInsertBoundaryValuesRiemann(dm, time, faceGeomFVM, cellGeomFVM, gradFVM, field, label, numids, ids,
+      ierr = DMPlexInsertBoundaryValuesRiemann(dm, time, faceGeomFVM, cellGeomFVM, gradFVM, field, Nc, comps, label, numids, ids,
                                                (PetscErrorCode (*)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*)) func, ctx, locX);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
   }
