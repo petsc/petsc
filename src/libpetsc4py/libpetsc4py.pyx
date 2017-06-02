@@ -1771,6 +1771,8 @@ cdef extern from * nogil:
     int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
     SNESJacobian MatMFFDComputeJacobian
     PetscErrorCode SNESGetKSP(PetscSNES,PetscKSP*)
+    PetscErrorCode SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
+    PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
 cdef extern from * nogil:
     PetscErrorCode SNESGetRhs(PetscSNES,PetscVec*)
     PetscErrorCode SNESGetSolution(PetscSNES,PetscVec*)
@@ -1951,9 +1953,11 @@ cdef PetscErrorCode SNESSolve_Python_default(
     FunctionBegin(b"SNESSolve_Python_default")
     #
     cdef PetscVec X=NULL, F=NULL, Y=NULL
+    cdef PetscSNESLineSearch ls
     CHKERR( SNESGetSolution(snes,&X)           )
     CHKERR( SNESGetFunction(snes,&F,NULL,NULL) )
     CHKERR( SNESGetSolutionUpdate(snes,&Y)     )
+    CHKERR( SNESGetLineSearch(snes, &ls)       )
     cdef PetscInt  its=0, lits=0
     cdef PetscReal xnorm = 0.0
     cdef PetscReal fnorm = 0.0
@@ -1977,10 +1981,8 @@ cdef PetscErrorCode SNESSolve_Python_default(
         SNESStep_Python(snes,X,F,Y)
         lits += snes.linear_its
         #
-        CHKERR( VecAXPY(X,-1.0,Y)             )
-        CHKERR( SNESComputeFunction(snes,X,F) )
+        CHKERR( SNESLineSearchApply(ls,X,F,&fnorm,Y) )
         CHKERR( VecNorm(X,NORM_2,&xnorm)      )
-        CHKERR( VecNorm(F,NORM_2,&fnorm)      )
         CHKERR( VecNorm(Y,NORM_2,&ynorm)      )
         snes.iter += 1
         #

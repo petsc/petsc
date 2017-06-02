@@ -142,6 +142,7 @@ include "petscdmcomposite.pxi"
 include "petscdmshell.pxi"
 include "petscsf.pxi"
 include "petscpartitioner.pxi"
+include "petsclinesearch.pxi"
 
 # --------------------------------------------------------------------
 

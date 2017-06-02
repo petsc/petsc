@@ -65,6 +65,9 @@ cdef extern from "petsc.h":
     struct _p_PetscPartitioner
     ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
 
+    struct _p_SNESLineSearch
+    ctypedef _p_SNESLineSearch* PetscSNESLineSearch "SNESLineSearch"
+
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
