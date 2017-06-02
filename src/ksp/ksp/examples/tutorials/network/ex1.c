@@ -171,8 +171,8 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     We iterate the list of edges and vertices, query the associated voltages and currents
     and use them to write the Kirchoff equations:
 
-    Branch equations: i/r + v_to - v_from     = i_source (battery)
-    Node equations:   sum(i_to) - sum(i_from) = v_source
+    Branch equations: i/r + v_to - v_from     = v_source (battery)
+    Node equations:   sum(i_to) - sum(i_from) = i_source
    */
   ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
   for (e = 0; e < eEnd; e++) {
@@ -196,10 +196,10 @@ PetscErrorCode FormOperator(DM dmnetwork,Mat A,Vec b)
     ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* set Node equation */
-    /* from node */
     ierr = DMNetworkGetComponentTypeOffset(dmnetwork,cone[0],0,NULL,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
+    /* from node */
     if (!node->gr) { /* not a boundary node */
       row[0] = lofst_fr;
       col[0] = lofst;   val[0] = -1;
@@ -262,7 +262,7 @@ int main(int argc,char ** argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  /* "read" data only for processor 0 */
+  /* "Read" data only for processor 0 */
   if (!rank) {
     ierr = read_data(&nnode, &nbranch, &node, &branch, &edgelist);CHKERRQ(ierr);
   }
@@ -271,7 +271,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(dmnetwork,"nstr",sizeof(Node),&componentkey[0]);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(dmnetwork,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
-  /* Set number of nodes/edges */
+  /* Set local number of nodes/edges */
   ierr = DMNetworkSetSizes(dmnetwork,nnode,nbranch,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   /* Add edge connectivity */
   ierr = DMNetworkSetEdgeList(dmnetwork,edgelist);CHKERRQ(ierr);
@@ -283,6 +283,7 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
       ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
+      /* Add number of variables */
       ierr = DMNetworkAddNumVariables(dmnetwork,i,1);CHKERRQ(ierr);
     }
 
