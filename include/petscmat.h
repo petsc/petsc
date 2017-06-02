@@ -1523,6 +1523,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 

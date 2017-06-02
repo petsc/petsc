@@ -6913,6 +6913,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     }
     ierr = PetscGatherMessageLengths(comm,n_sends,n_recvs,ilengths_idxs_is,&onodes_is,&olengths_idxs_is);CHKERRQ(ierr);
   }
+  ierr = MatISRestoreLocalMat(mat,&local_mat);CHKERRQ(ierr);
 
   buf_size_idxs = 0;
   buf_size_vals = 0;
@@ -7123,6 +7124,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   }
   ierr = MatAssemblyBegin(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatISRestoreLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(recv_buffer_vals);CHKERRQ(ierr);
@@ -7192,6 +7194,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   if (isdense) {
     ierr = MatISGetLocalMat(mat,&local_mat);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(local_mat,&send_buffer_vals);CHKERRQ(ierr);
+    ierr = MatISRestoreLocalMat(mat,&local_mat);CHKERRQ(ierr);
   } else {
     /* ierr = PetscFree(send_buffer_vals);CHKERRQ(ierr); */
   }
