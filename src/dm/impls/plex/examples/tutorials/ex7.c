@@ -78,6 +78,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, &dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = ProjectToUnitSphere(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -95,14 +96,17 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d_quad
+    requires: !quad
     args: -dm_view
 
   test:
     suffix: 2d_tri
+    requires: !quad
     args: -simplex -dm_view
 
   test:
     suffix: 3d_tri
+    requires: !quad
     args: -dim 3 -simplex -dm_view
 
 TEST*/
