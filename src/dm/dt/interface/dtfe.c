@@ -465,6 +465,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(points, 3);
   if (B) PetscValidPointer(B, 4);
@@ -1051,8 +1052,9 @@ PetscErrorCode PetscSpaceSetUp_Point(PetscSpace sp)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!pt->quad->points && sp->order) {
-    ierr = PetscDTGaussJacobiQuadrature(pt->numVariables, sp->Nc, sp->order, -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
+  if (!pt->quad->points && sp->order >= 0) {
+    ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(pt->numVariables, sp->Nc, PetscMax(sp->order + 1, 1), -1.0, 1.0, &pt->quad);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1064,6 +1066,7 @@ PetscErrorCode PetscSpaceDestroy_Point(PetscSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
+  ierr = PetscFree(pt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1083,7 +1086,6 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a Point space");
   if (npoints != pt->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
   ierr = PetscMemzero(B, npoints*pdim * sizeof(PetscReal));CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
@@ -1102,6 +1104,8 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
       }
     }
   }
+  if (D) {ierr = PetscMemzero(D, npoints*pdim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (H) {ierr = PetscMemzero(H, npoints*pdim*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1135,14 +1139,65 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
   ierr     = PetscNewLog(sp,&pt);CHKERRQ(ierr);
   sp->data = pt;
 
-  pt->numVariables    = 0;
-  pt->quad->dim       = 0;
-  pt->quad->Nc        = 1;
-  pt->quad->numPoints = 0;
-  pt->quad->points    = NULL;
-  pt->quad->weights   = NULL;
+  pt->numVariables = 0;
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscSpaceInitialize_Point(sp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSpacePointSetPoints - Sets the evaluation points for the space to coincide with the points of a quadrature rule
+
+  Logically collective
+
+  Input Parameters:
++ sp - The PetscSpace
+- q  - The PetscQuadrature defining the points
+
+  Level: intermediate
+
+.keywords: PetscSpacePoint
+.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+@*/
+PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
+{
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
+  ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
+  ierr = PetscQuadratureDuplicate(q, &pt->quad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSpacePointGetPoints - Gets the evaluation points for the space as the points of a quadrature rule
+
+  Logically collective
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. q  - The PetscQuadrature defining the points
+
+  Level: intermediate
+
+.keywords: PetscSpacePoint
+.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+@*/
+PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
+{
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = pt->quad;
   PetscFunctionReturn(0);
 }
 
@@ -3730,6 +3785,12 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (!npoints) {
+    if (B) *B = NULL;
+    if (D) *D = NULL;
+    if (H) *H = NULL;
+    PetscFunctionReturn(0);
+  }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(points, 3);
   if (B) PetscValidPointer(B, 4);

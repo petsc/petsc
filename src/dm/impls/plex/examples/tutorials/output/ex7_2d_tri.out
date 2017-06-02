@@ -1,0 +1,8 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 12
+  1-cells: 30
+  2-cells: 20
+Labels:
+  depth: 3 strata of sizes (12, 30, 20)
