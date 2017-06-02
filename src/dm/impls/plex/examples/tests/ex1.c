@@ -424,35 +424,37 @@ int main(int argc, char **argv)
     suffix: cgns_0
     requires: cgns
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
-  test:
-    suffix: cgns_1
-    requires: cgns
-    TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
 
   # Gmsh mesh reader tests
   test:
     suffix: gmsh_0
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_1
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_2
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_3
     nsize: 3
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
     nsize: 3
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_6
+    requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
