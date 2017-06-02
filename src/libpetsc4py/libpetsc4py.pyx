@@ -1388,6 +1388,7 @@ cdef extern from * nogil:
         PC_SYMMETRIC
     ctypedef enum KSPConvergedReason:
         KSP_CONVERGED_ITERATING
+        KSP_DIVERGED_ITS
 cdef extern from * nogil:
     struct _KSPOps:
       PetscErrorCode (*destroy)(PetscKSP) except IERR
@@ -1691,6 +1692,9 @@ cdef PetscErrorCode KSPSolve_Python_default(
         CHKERR( KSPLogHistory(ksp,ksp.norm) )
         CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
     <void>its # silent unused warning
+    if ksp.iter == ksp.max_its:
+        if ksp.reason == KSP_CONVERGED_ITERATING:
+            ksp.reason = KSP_DIVERGED_ITS
     #
     return FunctionEnd()
 
@@ -1734,7 +1738,9 @@ cdef PetscErrorCode KSPStep_Python(
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef enum SNESConvergedReason: SNES_CONVERGED_ITERATING
+    ctypedef enum SNESConvergedReason:
+      SNES_CONVERGED_ITERATING
+      SNES_DIVERGED_MAX_IT
 cdef extern from * nogil:
     struct _SNESOps:
       PetscErrorCode (*destroy)(PetscSNES) except IERR
@@ -1983,6 +1989,9 @@ cdef PetscErrorCode SNESSolve_Python_default(
         CHKERR( SNESLogHistory(snes,snes.norm,lits) )
         CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
     <void>its # silent unused warning
+    if snes.iter == snes.max_its:
+        if snes.reason == SNES_CONVERGED_ITERATING:
+            snes.reason = SNES_DIVERGED_MAX_IT
     #
     return FunctionEnd()
 
