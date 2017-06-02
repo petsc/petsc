@@ -166,7 +166,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   if (numConstants) {
     ierr = PetscViewerASCIIPrintf(viewer, "%D constants\n", numConstants);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    for (f = 0; f < numConstants; ++f) {ierr = PetscViewerASCIIPrintf(viewer, "%g\n", constants[f]);CHKERRQ(ierr);}
+    for (f = 0; f < numConstants; ++f) {ierr = PetscViewerASCIIPrintf(viewer, "%g\n", (double) PetscRealPart(constants[f]));CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
