@@ -1,6 +1,6 @@
-DM Object: 1 MPI processes
+DM Object: Sphere 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+Sphere in 2 dimensions:
   0-cells: 8
   1-cells: 12
   2-cells: 6
