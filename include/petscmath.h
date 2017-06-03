@@ -579,6 +579,15 @@ M*/
 #define PetscSqr(a)     ((a)*(a))
 
 /* ----------------------------------------------------------------------------*/
+
+#if defined(PETSC_USE_REAL_SINGLE)
+#define PetscRealConstant(constant) constant##F
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PetscRealConstant(constant) constant##Q
+#else
+#define PetscRealConstant(constant) constant
+#endif
+
 /*
      Basic constants
 */
@@ -604,7 +613,7 @@ M*/
 #  define PETSC_MIN_REAL                -PETSC_MAX_REAL
 #  define PETSC_MACHINE_EPSILON         1.19209290e-07F
 #  define PETSC_SQRT_MACHINE_EPSILON    3.45266983e-04F
-#  define PETSC_SMALL                   1.e-5
+#  define PETSC_SMALL                   1.e-5F
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #  define PETSC_MAX_REAL                1.7976931348623157e+308
 #  define PETSC_MIN_REAL                -PETSC_MAX_REAL
@@ -615,8 +624,8 @@ M*/
 #  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
-#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17q
-#  define PETSC_SMALL                   1.e-20q
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078144567552953958511352539e-17Q
+#  define PETSC_SMALL                   1.e-20Q
 #elif defined(PETSC_USE_REAL___FP16)  /* maybe should use single precision values for these? */
 #  define PETSC_MAX_REAL                65504.
 #  define PETSC_MIN_REAL                -PETSC_MAX_REAL
@@ -625,7 +634,7 @@ M*/
 #  define PETSC_SMALL                   5.e-3
 #endif
 
-#define PETSC_INFINITY                PETSC_MAX_REAL/4.0
+#define PETSC_INFINITY                PETSC_MAX_REAL/4
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
