@@ -1599,7 +1599,7 @@ int main(int argc, char **argv)
   PetscViewer       viewer;
   PetscBool         simplex = PETSC_FALSE, vtkCellGeom, splitFaces, useAMR;
   PetscInt          overlap, adaptInterval;
-  char              filename[PETSC_MAX_PATH_LEN];
+  char              filename[PETSC_MAX_PATH_LEN] = "";
   char              physname[256]  = "advect";
   VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
