@@ -96,17 +96,17 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d_quad
-    requires: !quad
+    requires: !__float128
     args: -dm_view
 
   test:
     suffix: 2d_tri
-    requires: !quad
+    requires: !__float128
     args: -simplex -dm_view
 
   test:
     suffix: 3d_tri
-    requires: !quad
+    requires: !__float128
     args: -dim 3 -simplex -dm_view
 
 TEST*/
