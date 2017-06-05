@@ -8046,3 +8046,58 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
+{
+  PetscBool      isUniform, localized;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+  if (isUniform) {
+    CellRefiner cellRefiner;
+
+    ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+    ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+    if (localized) {ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);}
+  } else {
+    ierr = DMPlexRefine_Internal(dm, NULL, dmRefined);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
+{
+  DM             cdm = dm;
+  PetscInt       r;
+  PetscBool      isUniform, localized;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+  if (isUniform) {
+    for (r = 0; r < nlevels; ++r) {
+      CellRefiner cellRefiner;
+
+      ierr = DMPlexGetCellRefiner_Internal(cdm, &cellRefiner);CHKERRQ(ierr);
+      ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
+      ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
+      if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
+      ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
+      ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
+      cdm  = dmRefined[r];
+    }
+  } else {
+    for (r = 0; r < nlevels; ++r) {
+      ierr = DMRefine(cdm, PetscObjectComm((PetscObject) dm), &dmRefined[r]);CHKERRQ(ierr);
+      ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
+      if (localized) {ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);}
+      ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
+      cdm  = dmRefined[r];
+    }
+  }
+  PetscFunctionReturn(0);
+}

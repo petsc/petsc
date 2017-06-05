@@ -2022,6 +2022,8 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
   dm->ops->coarsenhierarchy                = DMCoarsenHierarchy_Plex;
+  dm->ops->adaptlabel                      = DMAdaptLabel_Plex;
+  dm->ops->adaptmetric                     = DMAdaptMetric_Plex;
   dm->ops->globaltolocalbegin              = NULL;
   dm->ops->globaltolocalend                = NULL;
   dm->ops->localtoglobalbegin              = NULL;
@@ -2038,7 +2040,6 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2gradientdiff           = DMComputeL2GradientDiff_Plex;
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors                    = DMGetNeighors_Plex;
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

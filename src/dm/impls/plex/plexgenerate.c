@@ -181,7 +181,7 @@ static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm             comm;
   DM_Plex             *mesh             = (DM_Plex *) boundary->data;
@@ -313,7 +313,7 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
+PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm             comm;
   PetscInt             dim       = 2;
@@ -452,7 +452,7 @@ static PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRef
 
 #if defined(PETSC_HAVE_TETGEN)
 #include <tetgen.h>
-static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
   DM_Plex       *mesh      = (DM_Plex *) boundary->data;
@@ -597,7 +597,7 @@ static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
+PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;
@@ -737,7 +737,7 @@ static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefin
 #if defined(PETSC_HAVE_CTETGEN)
 #include <ctetgen.h>
 
-static PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;
@@ -900,7 +900,7 @@ static PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
+PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;
@@ -1125,276 +1125,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "Mesh generation for a dimension %d boundary is not supported.", dim);
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal maxVolumes[])
-{
-  PetscInt       dim, c;
-  PetscReal      refRatio;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr     = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  refRatio = (PetscReal) ((PetscInt) 1 << dim);
-  for (c = cStart; c < cEnd; c++) {
-    PetscReal vol;
-    PetscInt  i, closureSize = 0;
-    PetscInt  *closure = NULL;
-    PetscBool anyRefine  = PETSC_FALSE;
-    PetscBool anyCoarsen = PETSC_FALSE;
-    PetscBool anyKeep    = PETSC_FALSE;
-
-    ierr = DMPlexComputeCellGeometryFVM(dm,c,&vol,NULL,NULL);CHKERRQ(ierr);
-    maxVolumes[c - cStart] = vol;
-    ierr = DMPlexGetTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-    for (i = 0; i < closureSize; i++) {
-      PetscInt point = closure[2 * i], refFlag;
-
-      ierr = DMLabelGetValue(adaptLabel,point,&refFlag);CHKERRQ(ierr);
-      switch (refFlag) {
-      case DM_ADAPT_REFINE:
-        anyRefine = PETSC_TRUE;
-        break;
-      case DM_ADAPT_COARSEN:
-        anyCoarsen = PETSC_TRUE;
-        break;
-      case DM_ADAPT_KEEP:
-        anyKeep = PETSC_TRUE;
-        break;
-      case DM_ADAPT_DETERMINE:
-        break;
-      default:
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlex does not support refinement flag %D\n",refFlag);
-        break;
-      }
-      if (anyRefine) break;
-    }
-    ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-    if (anyRefine) {
-      maxVolumes[c - cStart] = vol / refRatio;
-    } else if (anyKeep) {
-      maxVolumes[c - cStart] = vol;
-    } else if (anyCoarsen) {
-      maxVolumes[c - cStart] = vol * refRatio;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adaptLabel, DM *dmRefined)
-{
-  PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
-  PetscReal        refinementLimit;
-  PetscInt         dim, cStart, cEnd;
-  char             genname[1024], *name = NULL;
-  PetscBool        isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg, localized;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  if (isUniform) {
-    CellRefiner cellRefiner;
-
-    ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
-    ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
-    if (localized) {
-      ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
-  }
-  ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
-  ierr = DMPlexGetRefinementFunction(dm, &refinementFunc);CHKERRQ(ierr);
-  if (refinementLimit == 0.0 && !refinementFunc) PetscFunctionReturn(0);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_generator", genname, 1024, &flg);CHKERRQ(ierr);
-  if (flg) name = genname;
-  if (name) {
-    ierr = PetscStrcmp(name, "triangle", &isTriangle);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "tetgen",   &isTetgen);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "ctetgen",  &isCTetgen);CHKERRQ(ierr);
-  }
-  switch (dim) {
-  case 2:
-    if (!name || isTriangle) {
-#if defined(PETSC_HAVE_TRIANGLE)
-      PetscReal *maxVolumes;
-      PetscInt  c;
-
-      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (adaptLabel) {
-        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
-      } else if (refinementFunc) {
-        for (c = cStart; c < cEnd; ++c) {
-          PetscReal vol, centroid[3];
-          PetscReal maxVol;
-
-          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVol);CHKERRQ(ierr);
-          maxVolumes[c - cStart] = (double) maxVol;
-        }
-      } else {
-        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
-      }
-#if !defined(PETSC_USE_REAL_DOUBLE)
-      {
-        double *mvols;
-        ierr = PetscMalloc1(cEnd - cStart,&mvols);CHKERRQ(ierr);
-        for (c = 0; c < cEnd-cStart; ++c) mvols[c] = (double)maxVolumes[c];
-        ierr = DMPlexRefine_Triangle(dm, mvols, dmRefined);CHKERRQ(ierr);
-        ierr = PetscFree(mvols);CHKERRQ(ierr);
-      }
-#else
-      ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#endif
-      ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");
-#endif
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 2D mesh generation package %s", name);
-    break;
-  case 3:
-    if (!name || isCTetgen || isTetgen) {
-      PetscReal *maxVolumes;
-      PetscInt   c;
-
-      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (adaptLabel) {
-        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
-      } else if (refinementFunc) {
-        for (c = cStart; c < cEnd; ++c) {
-          PetscReal vol, centroid[3];
-
-          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
-        }
-      } else {
-        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
-      }
-      if (!name) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with '--download-ctetgen' or '--with-clanguage=cxx --download-tetgen'.");
-#endif
-      } else if (isCTetgen) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
-#endif
-      } else {
-#if defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --download-tetgen.");
-#endif
-      }
-      ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 3D mesh generation package %s", name);
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
-  }
-  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
-  if (localized) {
-    ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMRefine_Plex_Internal(dm,comm,NULL,dmRefined);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
-{
-  PetscInt       defFlag, minFlag, maxFlag, numFlags, i;
-  const PetscInt *flags;
-  IS             flagIS;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMLabelGetDefaultValue(adaptLabel,&defFlag);CHKERRQ(ierr);
-  minFlag = defFlag;
-  maxFlag = defFlag;
-  ierr = DMLabelGetValueIS(adaptLabel,&flagIS);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(flagIS,&numFlags);CHKERRQ(ierr);
-  ierr = ISGetIndices(flagIS,&flags);CHKERRQ(ierr);
-  for (i = 0; i < numFlags; i++) {
-    PetscInt flag = flags[i];
-
-    minFlag = PetscMin(minFlag,flag);
-    maxFlag = PetscMax(maxFlag,flag);
-  }
-  ierr = ISRestoreIndices(flagIS,&flags);CHKERRQ(ierr);
-  ierr = ISDestroy(&flagIS);CHKERRQ(ierr);
-  {
-    PetscInt minMaxFlag[2], minMaxFlagGlobal[2];
-
-    minMaxFlag[0] = minFlag;
-    minMaxFlag[1] = -maxFlag;
-    ierr = MPI_Allreduce(minMaxFlag,minMaxFlagGlobal,2,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    minFlag = minMaxFlagGlobal[0];
-    maxFlag = -minMaxFlagGlobal[1];
-  }
-  if (minFlag == maxFlag) {
-    switch (minFlag) {
-    case DM_ADAPT_DETERMINE:
-      *dmAdapted = NULL;
-      break;
-    case DM_ADAPT_REFINE:
-      ierr = DMPlexSetRefinementUniform(dm,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = DMRefine(dm,MPI_COMM_NULL,dmAdapted);CHKERRQ(ierr);
-      break;
-    case DM_ADAPT_COARSEN:
-      ierr = DMCoarsen(dm,MPI_COMM_NULL,dmAdapted);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlex does not support refinement flag %D\n",minFlag);
-      break;
-    }
-  } else {
-    ierr = DMPlexSetRefinementUniform(dm,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMRefine_Plex_Internal(dm,MPI_COMM_NULL,adaptLabel,dmAdapted);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
-{
-  DM             cdm = dm;
-  PetscInt       r;
-  PetscBool      isUniform, localized;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
-  if (!isUniform) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Non-uniform refinement is incompatible with the hierarchy");
-  for (r = 0; r < nlevels; ++r) {
-    CellRefiner cellRefiner;
-
-    ierr = DMPlexGetCellRefiner_Internal(cdm, &cellRefiner);CHKERRQ(ierr);
-    ierr = DMPlexRefineUniform_Internal(cdm, cellRefiner, &dmRefined[r]);CHKERRQ(ierr);
-    ierr = DMCopyBoundary(cdm, dmRefined[r]);CHKERRQ(ierr);
-    if (localized) {
-      ierr = DMLocalizeCoordinates(dmRefined[r]);CHKERRQ(ierr);
-    }
-    ierr = DMSetCoarseDM(dmRefined[r], cdm);CHKERRQ(ierr);
-    ierr = DMPlexSetRegularRefinement(dmRefined[r], PETSC_TRUE);CHKERRQ(ierr);
-    cdm  = dmRefined[r];
   }
   PetscFunctionReturn(0);
 }

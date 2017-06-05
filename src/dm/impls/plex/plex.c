@@ -1031,7 +1031,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscGridHashDestroy(&mesh->lbox);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
