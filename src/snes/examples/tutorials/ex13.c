@@ -200,39 +200,39 @@ int main(int argc, char **argv)
     args: -petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q1_0
-    requires: triangle
+    requires:
     args: -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q2_0
-    requires: triangle
+    requires:
     args: -simplex 0 -petscspace_poly_tensor -petscspace_order 2 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q3_0
-    requires: triangle
+    requires:
     args: -simplex 0 -petscspace_poly_tensor -petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p1_0
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -petscspace_order 2 -dm_refine 1 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
-    requires: triangle
+    requires: ctetgen
     args: -dim 3 -petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0
-    requires: triangle
+    requires:
     args: -dim 3 -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_q2_0
-    requires: triangle
+    requires:
     args: -dim 3 -simplex 0 -petscspace_poly_tensor -petscspace_order 2 -dm_refine 1 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_q3_0
-    requires: triangle
+    requires:
     args: -dim 3 -simplex 0 -petscspace_poly_tensor -petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
 
 TEST*/
