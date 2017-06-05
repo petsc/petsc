@@ -356,7 +356,7 @@ void g1_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, void *ctx)
 {
   PetscReal wind[3] = {0.0, 1.0, 0.0};
-  PetscReal wn = DMPlex_DotD_Internal(dim, wind, n);
+  PetscReal wn = DMPlex_DotRealD_Internal(dim, wind, n);
 
   flux[0] = (wn > 0 ? uL[dim] : uR[dim]) * wn;
 }
@@ -511,15 +511,15 @@ static PetscErrorCode constant_phi(PetscInt dim, PetscReal time, const PetscReal
 
 static PetscErrorCode delta_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  PetscReal x0[2];
-  PetscReal xn[2];
+  PetscReal   x0[2];
+  PetscScalar xn[2];
 
   x0[0] = globalUser->source[0];
   x0[1] = globalUser->source[1];
   constant_x_2d(dim, time, x0, Nf, xn, ctx);
   {
-    const PetscReal xi  = x[0] - xn[0];
-    const PetscReal eta = x[1] - xn[1];
+    const PetscReal xi  = x[0] - PetscRealPart(xn[0]);
+    const PetscReal eta = x[1] - PetscRealPart(xn[1]);
     const PetscReal r2  = xi*xi + eta*eta;
 
     u[0] = r2 < 1.0e-7 ? 1.0 : 0.0;
@@ -544,14 +544,14 @@ static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscR
 {
   const PetscReal x0[2] = {0.5, 0.5};
   const PetscReal sigma = 1.0/6.0;
-  PetscReal       xn[2];
+  PetscScalar     xn[2];
 
   constant_x_2d(dim, time, x0, Nf, xn, ctx);
   {
     /* const PetscReal xi  = x[0] + (sin(2.0*PETSC_PI*x[0])/(4.0*PETSC_PI*PETSC_PI))*t - x0[0]; */
     /* const PetscReal eta = x[1] + (-x[1]*cos(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI))*t - x0[1]; */
-    const PetscReal xi  = x[0] - xn[0];
-    const PetscReal eta = x[1] - xn[1];
+    const PetscReal xi  = x[0] - PetscRealPart(xn[0]);
+    const PetscReal eta = x[1] - PetscRealPart(xn[1]);
     const PetscReal r2  = xi*xi + eta*eta;
 
     u[0] = PetscExpReal(-r2/(2.0*sigma*sigma))/(sigma*sqrt(2.0*PETSC_PI));
@@ -573,10 +573,12 @@ static PetscErrorCode tilted_phi_2d(PetscInt dim, PetscReal time, const PetscRea
 
 static PetscErrorCode tilted_phi_coupled_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
+  PetscReal       ur[3];
   PetscReal       x0[3];
   const PetscReal t = *((PetscReal *) ctx);
 
-  DMPlex_WaxpyD_Internal(2, -t, u, x, x0);
+  ur[0] = PetscRealPart(u[0]); ur[1] = PetscRealPart(u[1]); ur[2] = PetscRealPart(u[2]);
+  DMPlex_WaxpyD_Internal(2, -t, ur, x, x0);
   if (x0[1] > 0) u[0] =  1.0*x[0] + 3.0*x[1];
   else           u[0] = -2.0; /* Inflow state */
   return 0;
@@ -624,7 +626,7 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar *x, const PetscScalar *y, PetscReal *f, void *ctx)
+static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   PetscScalar    yexact[1];
