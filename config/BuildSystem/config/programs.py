@@ -142,6 +142,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GZIP', 1)
     import sys
     self.addMakeMacro('PYTHON',sys.executable)
+    self.getExecutable('m4', getFullPath=1, resultName = 'M4')
     return
 
   def configure(self):
