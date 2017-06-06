@@ -35,6 +35,7 @@
         use petscdmpatch
         use petscdmforest
         use petscdmlabel
+        use petscdt
         use petscts
         use petsctao
         end module
