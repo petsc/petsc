@@ -53,6 +53,7 @@ ts.setTime(0.0)
 ts.setTimeStep(.001)
 ts.setMaxTime(1e30)
 ts.setMaxSteps(100)
+ts.setExactFinalTime(PETSc.TS.ExactFinalTime.INTERPOLATE)
 
 ts.setFromOptions()
 ode.evalSolution(0.0, x)
@@ -71,14 +72,16 @@ ii = np.asarray([v[0] for v in history])
 tt = np.asarray([v[1] for v in history])
 xx = np.asarray([v[2] for v in history])
 
-pylab.figure()
+pylab.suptitle('Rober')
+pylab.subplot(2,2,1)
+pylab.subplots_adjust(wspace=0.3)
 pylab.semilogy(ii[:-1], np.diff(tt), )
-pylab.xlabel('step')
+pylab.xlabel('step number')
 pylab.ylabel('timestep')
 
 for i in range(0,3):
-    pylab.figure()
-    pylab.plot(tt, xx[:,i], "rgb"[i])
+    pylab.subplot(2,2,i+2)
+    pylab.semilogx(tt, xx[:,i], "rgb"[i])
     pylab.xlabel('t')
     pylab.ylabel('x%d' % i)
 
