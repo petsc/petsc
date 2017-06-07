@@ -634,7 +634,7 @@ M*/
 #  define PETSC_SMALL                   5.e-3
 #endif
 
-#define PETSC_INFINITY                PETSC_MAX_REAL/4
+#define PETSC_INFINITY               (PETSC_MAX_REAL/4)
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
