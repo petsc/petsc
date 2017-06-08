@@ -9392,7 +9392,8 @@ PetscErrorCode MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    Notes:
    Unless scall is MAT_REUSE_MATRIX C will be created.
 
-   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call and C was obtained from a previous
+   call to this function with either MAT_INITIAL_MATRIX or MatMatMultSymbolic()
 
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
@@ -9401,8 +9402,8 @@ PetscErrorCode MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    should either
 $   1) use MAT_REUSE_MATRIX in all calls but the first or
 $   2) call MatMatMultSymbolic() once and then MatMatMultNumeric() for each product needed
-   In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine
-   with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse.
+   In the special case where matrix B (and hence C) are sequential dense you can create the correctly sized matrix C yourself and then call this routine
+   with MAT_REUSE_MATRIX, rather than first having MatMatMult() create it for you. You can NEVER do this if the matrix C is sparse or in parallel.
 
    Level: intermediate
 
