@@ -753,7 +753,8 @@ PetscErrorCode  PetscOptionsInsert(PetscOptions options,int *argc,char ***args,c
    Logically Collective on PetscViewer
 
    Input Parameter:
-.  viewer - must be an PETSCVIEWERASCII viewer
+-  options - options database, use NULL for default global database
++  viewer - must be an PETSCVIEWERASCII viewer
 
    Options Database Key:
 .  -options_table - Activates PetscOptionsView() within PetscFinalize()
@@ -1430,7 +1431,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions opti
    for parallel objects looking for options.
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  name - the option one is seeking
 -  mess - error message (may be NULL)
 
@@ -1467,7 +1468,7 @@ PetscErrorCode  PetscOptionsReject(PetscOptions options,const char name[],const 
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  name - the option one is seeking
 -  pre - string to prepend to the name or NULL
 
@@ -1508,7 +1509,7 @@ PetscErrorCode  PetscOptionsHasName(PetscOptions options,const char pre[],const 
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
@@ -1558,7 +1559,7 @@ PetscErrorCode  PetscOptionsGetInt(PetscOptions options,const char pre[],const c
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 .  opt - option name
 .  list - the possible choices (one of these must be selected, anything else is invalid)
@@ -1613,7 +1614,7 @@ PetscErrorCode  PetscOptionsGetEList(PetscOptions options,const char pre[],const
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - option prefix or NULL
 .  opt - option name
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
@@ -1666,7 +1667,7 @@ PetscErrorCode  PetscOptionsGetEnum(PetscOptions options,const char pre[],const 
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
@@ -1724,7 +1725,7 @@ PetscErrorCode  PetscOptionsGetBool(PetscOptions options,const char pre[],const 
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
@@ -1787,7 +1788,7 @@ PetscErrorCode  PetscOptionsGetBoolArray(PetscOptions options,const char pre[],c
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 -  name - the option one is seeking
 
@@ -1838,7 +1839,7 @@ PetscErrorCode  PetscOptionsGetReal(PetscOptions options,const char pre[],const 
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 -  name - the option one is seeking
 
@@ -1897,7 +1898,7 @@ PetscErrorCode  PetscOptionsGetScalar(PetscOptions options,const char pre[],cons
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
@@ -1964,7 +1965,7 @@ PetscErrorCode  PetscOptionsGetRealArray(PetscOptions options,const char pre[],c
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
@@ -2030,7 +2031,7 @@ PetscErrorCode  PetscOptionsGetScalarArray(PetscOptions options,const char pre[]
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to each name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of values to retrieve
@@ -2142,7 +2143,7 @@ PetscErrorCode  PetscOptionsGetIntArray(PetscOptions options,const char pre[],co
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - option prefix or NULL
 .  name - option name
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
@@ -2219,7 +2220,7 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to name or NULL
 .  name - the option one is seeking
 -  len - maximum length of the string including null termination
@@ -2299,7 +2300,7 @@ char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const ch
    Not Collective
 
    Input Parameters:
-+  options - options database use NULL for default global database
++  options - options database, use NULL for default global database
 .  pre - string to prepend to name or NULL
 .  name - the option one is seeking
 -  nmax - maximum number of strings
@@ -2376,7 +2377,7 @@ PetscErrorCode  PetscOptionsGetStringArray(PetscOptions options,const char pre[]
    Not Collective
 
    Input Parameter:
-+   options - options database use NULL for default global database
++   options - options database, use NULL for default global database
 -   option - string name of option
 
    Output Parameter:
@@ -2411,7 +2412,7 @@ PetscErrorCode  PetscOptionsUsed(PetscOptions options,const char *option,PetscBo
    Not Collective
 
    Input Parameter:
-.  options - options database use NULL for default global database
+.  options - options database, use NULL for default global database
 
    Output Parameter:
 .   N - count of options not used
@@ -2439,7 +2440,7 @@ PetscErrorCode  PetscOptionsAllUsed(PetscOptions options,PetscInt *N)
   Not collective
 
    Input Parameter:
-.  options - options database use NULL for default global database
+.  options - options database; use NULL for default global database
 
    Options Database Key:
 .  -options_left - Activates OptionsAllUsed() within PetscFinalize()
@@ -2473,7 +2474,7 @@ PetscErrorCode  PetscOptionsLeft(PetscOptions options)
   Not collective
 
    Input Parameter:
-.  options - options database use NULL for default global database
+.  options - options database, use NULL for default global database
 
    Output Parameter:
 .   N - count of options not used
@@ -2526,7 +2527,7 @@ PetscErrorCode  PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **name
   Not collective
 
    Input Parameter:
-.   options - options database use NULL for default global database
+.   options - options database, use NULL for default global database
 .   names - names of options not used
 .   values - values of options not used
 
@@ -2587,7 +2588,7 @@ PetscErrorCode  PetscOptionsCreateDefault(void)
    Collective on PETSC_COMM_WORLD
 
    Input Parameter:
-.  options - options database use NULL for default global database
+.  options - options database, use NULL for default global database
 
    Options Database Keys:
 +  -options_monitor <optional filename> - prints the names and values of all runtime options as they are set. The monitor functionality is not
