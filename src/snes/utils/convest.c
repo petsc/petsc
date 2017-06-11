@@ -306,8 +306,6 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(ce->idm, &prob);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
-  ierr = PetscObjectGetName(disc, &uname);CHKERRQ(ierr);
   ierr = PetscMalloc2((Nr+1), &dm, (Nr+1), &dof);CHKERRQ(ierr);
   dm[0]  = ce->idm;
   *alpha = 0.0;
@@ -324,6 +322,8 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
     ierr = DMPlexGetHeightStratum(dm[r], 0, NULL, &dof[r]);CHKERRQ(ierr);
     /* Create solution */
     ierr = DMCreateGlobalVector(dm[r], &u);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, 0, &disc);CHKERRQ(ierr);
+    ierr = PetscObjectGetName(disc, &uname);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) u, uname);CHKERRQ(ierr);
     /* Setup solver */
     ierr = SNESReset(ce->snes);CHKERRQ(ierr);
