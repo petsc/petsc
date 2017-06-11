@@ -62,18 +62,21 @@ typedef struct {
   PetscReal     p_wall;            /* The wall pressure */
 } AppCtx;
 
+#if 0
 PETSC_STATIC_INLINE void Det2D(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
 }
+#endif
 
-PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscReal J[])
+PETSC_STATIC_INLINE void Det3D(PetscReal *detJ, const PetscScalar J[])
 {
-  *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-           J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-           J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+  *detJ = PetscRealPart(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                        J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                        J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
 }
 
+#if 0
 PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
 {
   C[0] =  A[3];
@@ -81,18 +84,19 @@ PETSC_STATIC_INLINE void Cof2D(PetscReal C[], const PetscReal A[])
   C[2] = -A[1];
   C[3] =  A[0];
 }
+#endif
 
-PETSC_STATIC_INLINE void Cof3D(PetscReal C[], const PetscReal A[])
+PETSC_STATIC_INLINE void Cof3D(PetscReal C[], const PetscScalar A[])
 {
-  C[0*3+0] = A[1*3+1]*A[2*3+2] - A[1*3+2]*A[2*3+1];
-  C[0*3+1] = A[1*3+2]*A[2*3+0] - A[1*3+0]*A[2*3+2];
-  C[0*3+2] = A[1*3+0]*A[2*3+1] - A[1*3+1]*A[2*3+0];
-  C[1*3+0] = A[0*3+2]*A[2*3+1] - A[0*3+1]*A[2*3+2];
-  C[1*3+1] = A[0*3+0]*A[2*3+2] - A[0*3+2]*A[2*3+0];
-  C[1*3+2] = A[0*3+1]*A[2*3+0] - A[0*3+0]*A[2*3+1];
-  C[2*3+0] = A[0*3+1]*A[1*3+2] - A[0*3+2]*A[1*3+1];
-  C[2*3+1] = A[0*3+2]*A[1*3+0] - A[0*3+0]*A[1*3+2];
-  C[2*3+2] = A[0*3+0]*A[1*3+1] - A[0*3+1]*A[1*3+0];
+  C[0*3+0] = PetscRealPart(A[1*3+1]*A[2*3+2] - A[1*3+2]*A[2*3+1]);
+  C[0*3+1] = PetscRealPart(A[1*3+2]*A[2*3+0] - A[1*3+0]*A[2*3+2]);
+  C[0*3+2] = PetscRealPart(A[1*3+0]*A[2*3+1] - A[1*3+1]*A[2*3+0]);
+  C[1*3+0] = PetscRealPart(A[0*3+2]*A[2*3+1] - A[0*3+1]*A[2*3+2]);
+  C[1*3+1] = PetscRealPart(A[0*3+0]*A[2*3+2] - A[0*3+2]*A[2*3+0]);
+  C[1*3+2] = PetscRealPart(A[0*3+1]*A[2*3+0] - A[0*3+0]*A[2*3+1]);
+  C[2*3+0] = PetscRealPart(A[0*3+1]*A[1*3+2] - A[0*3+2]*A[1*3+1]);
+  C[2*3+1] = PetscRealPart(A[0*3+2]*A[1*3+0] - A[0*3+0]*A[1*3+2]);
+  C[2*3+2] = PetscRealPart(A[0*3+0]*A[1*3+1] - A[0*3+1]*A[1*3+0]);
 }
 
 PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
@@ -139,8 +143,8 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x, p = u[Ncomp];
+  const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, p = PetscRealPart(u[Ncomp]);
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
@@ -161,8 +165,8 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x, pp, pm, p = u[Ncomp];
+  const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
@@ -247,8 +251,8 @@ void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscReal u[], const PetscReal u_t[], const PetscReal u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscReal a[], const PetscReal a_t[], const PetscReal a_x[],
+           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
            PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscReal g2[])
 {
   Cof3D(g2, u_x);
@@ -338,7 +342,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt        d, dim = user->dim, b, f, Nf;
     const PetscInt *faces;
     PetscInt        csize;
-    PetscReal      *coords = NULL;
+    PetscScalar    *coords = NULL;
     PetscSection    cs;
     Vec             coordinates ;
 
@@ -363,7 +367,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         const PetscInt Nv = csize/dim;
         for (d = 0; d < dim; ++d) {
           faceCoord = 0.0;
-          for (v = 0; v < Nv; ++v) faceCoord += coords[v*dim+d];
+          for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
           faceCoord /= Nv;
           for (b = 0; b < 2; ++b) {
             if (PetscAbs(faceCoord - b*1.0) < PETSC_SMALL) {
