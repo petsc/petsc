@@ -209,6 +209,7 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *pointsAllProcs = PETSC_FALSE;
   switch (ctx->pointType) {
   case CENTROID:        ierr = CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
   case GRID:            ierr = CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
