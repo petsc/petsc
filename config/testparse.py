@@ -378,9 +378,9 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
     testnames,subdicts=parseTest(test,srcfile,verbosity)
     for i in range(len(testnames)):
       if testDict.has_key(testnames[i]):
-        raise Error("Multiple test names specified: "+testname+" in file: "+srcfile)
+        raise RuntimeError("Multiple test names specified: "+testnames[i]+" in file: "+srcfile)
       testDict[testnames[i]]=subdicts[i]
-      
+
   return testDict
 
 def parseTestFile(srcfile,verbosity):
