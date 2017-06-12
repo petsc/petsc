@@ -61,3 +61,22 @@ def get_include():
     return join(dirname(__file__), 'include')
 
 # --------------------------------------------------------------------
+
+def get_config():
+    """Return a dictionary with information about PETSc."""
+    import sys, os.path as p
+    if sys.version_info[0] >= 3:
+        from io import StringIO
+        from configparser import ConfigParser
+    else:
+        from StringIO import StringIO
+        from ConfigParser import ConfigParser
+    filename = p.join(p.dirname(__file__), 'lib', 'petsc.cfg')
+    with open(filename) as fp:
+        stream = StringIO("[petsc]\n"+fp.read())
+    parser = ConfigParser()
+    parser.optionxform = str
+    parser.readfp(stream, filename)
+    return dict(parser.items('petsc'))
+
+# --------------------------------------------------------------------
