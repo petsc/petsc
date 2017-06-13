@@ -1,4 +1,4 @@
-
+#include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/impls/ell/mpi/mpiell.h>   /*I "petscmat.h" I*/
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h>
@@ -1097,7 +1097,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
                                        0,
                                        0,
                                        0,
-                                /*54*/ 0,
+                                /*54*/ MatFDColoringCreate_MPIXAIJ,
                                        0,
                                        MatSetUnfactored_MPIELL,
                                        0,
@@ -1118,7 +1118,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
                                        0,
                                        0,
                                        0,
-                                /*75*/ 0,
+                                /*75*/ MatFDColoringApply_AIJ, /* reuse AIJ function */
                                        MatSetFromOptions_MPIELL,
                                        0,
                                        0,
@@ -1185,7 +1185,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
                                 /*139*/0,
                                        0,
                                        0,
-                                       0,
+                                       MatFDColoringSetUp_MPIXAIJ,
                                        0,
                                 /*144*/0
 };

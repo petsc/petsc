@@ -1,6 +1,6 @@
-
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/ell/seq/ell.h>
 #include <petsc/private/isimpl.h>
 
 /*
@@ -11,24 +11,30 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 {
   PetscErrorCode ierr;
   PetscInt       bs,nis=iscoloring->n,m=mat->rmap->n;
-  PetscBool      isBAIJ;
+  PetscBool      isBAIJ,isELL;
 
   PetscFunctionBegin;
   /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQELL,&isELL);CHKERRQ(ierr);
   if (isBAIJ) {
     c->brows = m;
     c->bcols = 1;
   } else { /* seqaij matrix */
     /* bcols is chosen s.t. dy-array takes 50% of memory space as mat */
-    Mat_SeqAIJ *spA = (Mat_SeqAIJ*)mat->data;
     PetscReal  mem;
     PetscInt   nz,brows,bcols;
+    if (isELL) {
+      Mat_SeqELL *spA = (Mat_SeqELL*)mat->data;
+      nz = spA->nz;
+    } else {
+      Mat_SeqAIJ *spA = (Mat_SeqAIJ*)mat->data;
+      nz = spA->nz;
+    }
 
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
 
-    nz    = spA->nz;
     mem   = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*m*sizeof(PetscInt);
     bcols = (PetscInt)(0.5*mem /(m*sizeof(PetscScalar)));
     brows = 1000/bcols;
@@ -170,7 +176,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscInt       i,n,nrows,mbs=c->m,j,k,m,ncols,col,nis=iscoloring->n,*rowhit,bs,bs2,*spidx,nz;
   const PetscInt *is,*row,*ci,*cj;
   IS             *isa;
-  PetscBool      isBAIJ;
+  PetscBool      isBAIJ,isELL;
   PetscScalar    *A_val,**valaddrhit;
   MatEntry       *Jentry;
   MatEntry2      *Jentry2;
@@ -180,10 +186,16 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQELL,&isELL);CHKERRQ(ierr);
   if (isBAIJ) {
     Mat_SeqBAIJ *spA = (Mat_SeqBAIJ*)mat->data;
     A_val = spA->a;
     nz    = spA->nz;
+  } else if (isELL) {
+    Mat_SeqELL  *spA = (Mat_SeqELL*)mat->data;
+    A_val = spA->val;
+    nz    = spA->nz;
+    bs    = 1; /* only bs=1 is supported for SeqELL matrix */
   } else {
     Mat_SeqAIJ  *spA = (Mat_SeqAIJ*)mat->data;
     A_val = spA->a;
@@ -208,6 +220,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   if (isBAIJ) {
     ierr = MatGetColumnIJ_SeqBAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
+  } else if (isELL) {
+    ierr = MatGetColumnIJ_SeqELL_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   }
@@ -275,6 +289,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(bs*mat->rmap->n,&c->dy);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)c,bs*mat->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else if (isELL) {
+    ierr = MatRestoreColumnIJ_SeqELL_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   } else {
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   }

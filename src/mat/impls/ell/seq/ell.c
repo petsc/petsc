@@ -50,8 +50,8 @@ vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask); \
 
  Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
  entries or columns indices.
- 
- The maximum number of nonzeos in any row should be as accuate as possible. 
+
+ The maximum number of nonzeos in any row should be as accuate as possible.
  If it is underesitmated, you will get bad performance due to reallocation
  (MatSeqXELLReallocateELL).
 
@@ -102,7 +102,7 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
   b = (Mat_SeqELL*)B->data;
 
   if (!skipallocation) {
-	if (B->rmap->n & 0x07) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"SEQELL matrix requires the number of rows be the multiple of 8: value %D",B->rmap->n);
+    if (B->rmap->n & 0x07) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"SEQELL matrix requires the number of rows be the multiple of 8: value %D",B->rmap->n);
 
     if (!b->rlen) {
       /* sliidx gives the starting index of each slice, the last element is the total space allocated */
@@ -187,7 +187,7 @@ PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Ma
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
   } else {
-	*newmat = B;
+    *newmat = B;
   }
   PetscFunctionReturn(0);
 }
@@ -1044,7 +1044,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
       shift = a->sliidx[i>>3]+(i&0x07);
       y_l = m - i - 1.0;
       y_r = y_l + 1.0;
-      for (j=0; j<a->rlen[j]; j++) {
+      for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8];
         x_r = x_l + 1.0;
         color = PetscDrawRealToColor(PetscAbsScalar(a->val[count]),minv,maxv);
@@ -1421,7 +1421,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 10*/ 0,
                                        0,
                                        0,
-									   MatSOR_SeqELL,
+                                       MatSOR_SeqELL,
                                        0,
                                /* 15*/ MatGetInfo_SeqELL,
                                        MatEqual_SeqELL,
@@ -1462,7 +1462,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
                                        0,
                                        0,
-                               /* 54*/ 0,
+                               /* 54*/ MatFDColoringCreate_SeqXAIJ,
                                        0,
                                        0,
                                        0,
@@ -1483,7 +1483,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
                                        0,
                                /* 74*/ 0,
-                                       0,
+                                       MatFDColoringApply_AIJ, /* reuse the FDColoring function for AIJ */
                                        0,
                                        0,
                                        0,
@@ -1550,7 +1550,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /*139*/ 0,
                                        0,
                                        0,
-                                       0,
+                                       MatFDColoringSetUp_SeqXAIJ,
                                        0,
                                 /*144*/0
 };

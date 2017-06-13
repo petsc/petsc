@@ -48,6 +48,8 @@ typedef struct {
   PetscScalar *ibdiag;                        /* inverses of block diagonals */
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
+
+  ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqELL;
 
 /*
@@ -139,5 +141,8 @@ PETSC_INTERN PetscErrorCode MatEqual_SeqELL(Mat,Mat,PetscBool*);
 PETSC_INTERN PetscErrorCode MatSeqELLInvalidateDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat,MatType,MatReuse,Mat*);
-
+PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqELL(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqELL(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
 #endif
