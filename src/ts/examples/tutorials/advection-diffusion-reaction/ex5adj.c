@@ -175,8 +175,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  hx = 2.50/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy = 2.50/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -235,8 +235,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx = 2.5/(PetscReal)(Mx-1);
-  hy = 2.5/(PetscReal)(My-1);
+  hx = 2.5/(PetscReal)Mx;
+  hy = 2.5/(PetscReal)My;
 
   /*
      Get pointers to vector data
@@ -287,8 +287,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx = 2.50/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy = 2.50/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -401,8 +401,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  hx = 2.50/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy = 2.50/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -470,8 +470,8 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx = 2.50/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy = 2.50/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  hx = 2.50/(PetscReal)Mx; sx = 1.0/(hx*hx);
+  hy = 2.50/(PetscReal)My; sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
