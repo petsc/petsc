@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h>      /*I "petscts.h"  I*/
 
 const char *const TSConvergedReasons_Shifted[] = {
@@ -87,6 +86,14 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   /* All methods that do adaptivity should specify
    * its preferred adapt type in their constructor */
   t->default_adapt_type = TSADAPTNONE;
+
+  t->numcost          = 0;
+  t->num_parameters   = 0;
+  t->num_initialvalues= 0;
+
+  t->Jacp             = NULL;
+  t->vec_costintegral = NULL;
+  t->vec_costintegrand= NULL;
 
   *ts = t;
   PetscFunctionReturn(0);

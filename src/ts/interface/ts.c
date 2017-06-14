@@ -1,4 +1,3 @@
-
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdmshell.h>
 #include <petscdmda.h>
@@ -1257,7 +1256,6 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *c
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
 
@@ -2061,7 +2059,6 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /*@
    TSSetApplicationContext - Sets an optional user-defined context for
    the timesteppers.
@@ -2690,17 +2687,13 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
- if (ts->vec_costintegral) {
-    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
-    if (ts->vecs_drdp){
-      ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
-    }
-  }
-  ts->vecs_sensi  = NULL;
-  ts->vecs_sensip = NULL;
+  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
+
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2949,7 +2942,7 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 
    Level: beginner
 
-.keywords: TS, timestep, set, solution, initial conditions
+.keywords: TS, timestep, set, solution, initial values
 @*/
 PetscErrorCode  TSSetSolution(TS ts,Vec u)
 {
@@ -2998,7 +2991,7 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 }
 
 /*@
-   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
+   TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
       for use by the TSAdjoint routines.
 
    Logically Collective on TS and Vec
@@ -3012,7 +3005,7 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 
    Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
 
-.keywords: TS, timestep, set, sensitivity, initial conditions
+.keywords: TS, timestep, set, sensitivity, initial values
 @*/
 PetscErrorCode  TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
@@ -3121,7 +3114,7 @@ $   PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
     Level: intermediate
 
-    Notes: For optimization there is generally a single cost function, numcost = 1. For sensitivities there may be multiple cost functions
+    Notes: For optimization there is usually a single cost function (numcost = 1). For sensitivities there may be multiple cost functions
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
@@ -3137,7 +3130,7 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (costintegral) PetscValidHeaderSpecific(costintegral,VEC_CLASSID,3);
-  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients() or TSForwardSetIntegralGradients()");
   if (!ts->numcost) ts->numcost=numcost;
 
   if (costintegral) {
@@ -4065,27 +4058,27 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 }
 
 /*@
- TSForwardCostIntegral - Evaluate the cost integral in the forward run.
- 
- Collective on TS
- 
- Input Arguments:
- .  ts - time stepping context
- 
- Level: advanced
- 
- Notes:
- This function cannot be called until TSStep() has been completed.
- 
- .seealso: TSSolve(), TSAdjointCostIntegral()
- @*/
+   TSForwardCostIntegral - Evaluate the cost integral in the forward run.
+
+   Collective on TS
+
+   Input Arguments:
+.  ts - time stepping context
+
+   Level: advanced
+
+   Notes:
+   This function cannot be called until TSStep() has been completed.
+
+.seealso: TSSolve(), TSAdjointCostIntegral()
+@*/
 PetscErrorCode TSForwardCostIntegral(TS ts)
 {
-    PetscErrorCode ierr;
-    PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-    if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
-    ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->ops->forwardintegral) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide integral evaluation in the forward run",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->forwardintegral)(ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -4126,6 +4119,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = VecDestroy(&solution);CHKERRQ(ierr); /* grant ownership */
     }
     ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
+    if (ts->forward_solve) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Sensitivity analysis does not support the mode TS_EXACTFINALTIME_INTERPOLATE");
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
@@ -4135,18 +4129,22 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
+  if (ts->forward_solve) {
+    ierr = TSForwardSetUp(ts);CHKERRQ(ierr);
+  }
+
   /* reset number of steps only when the step is not restarted. ARKIMEX
-     restarts the step after an event. Resetting these counters in such a case causes
+     restarts the step after an event. Resetting these counters in such case causes
      TSTrajectory to incorrectly save the output files
   */
-
+  /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
   ts->snes_its          = 0;
   ts->num_snes_failures = 0;
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
-  
+
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
   if (ts->ops->solve) { /* This private interface is transitional and should be removed when all implementations are updated. */
@@ -4157,10 +4155,10 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else { /* Step the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
- 
+
     ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    
+
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_TRUE;
 
@@ -4172,6 +4170,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
+      }
+      if (!ts->steprollback && ts->forward_solve) { /* compute forward sensitivities before event handling because postevent() may change RHS and jump conditions may have to be applied */
+          ierr = TSForwardStep(ts);CHKERRQ(ierr);
       }
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
@@ -4236,7 +4237,7 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
 .  ts - the TS context obtained from TSCreate()
 
    Options Database:
-. -ts_adjoint_view_solution <viewerinfo> - views the first gradient with respect to the initial conditions
+. -ts_adjoint_view_solution <viewerinfo> - views the first gradient with respect to the initial values
 
    Level: intermediate
 
@@ -4401,12 +4402,11 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
 
    One can control the names displayed for each solution or error variable with TSMonitorLGCtxSetVariableNames() or TSMonitorLGSetVariableNames()
 
-
    Level: intermediate
 
 .keywords: TS, monitor, line graph, residual
 
-.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError(), TSMonitorDefault(), VecView(), 
+.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError(), TSMonitorDefault(), VecView(),
            TSMonitorLGCtxCreate(), TSMonitorLGCtxSetVariableNames(), TSMonitorLGCtxGetVariableNames(),
            TSMonitorLGSetVariableNames(), TSMonitorLGGetVariableNames(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetDisplayVariables(),
            TSMonitorLGCtxSetTransform(), TSMonitorLGSetTransform(), TSMonitorLGError(), TSMonitorLGSNESIterations(), TSMonitorLGKSPIterations(),
@@ -4600,7 +4600,6 @@ PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
@@ -4745,7 +4744,6 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **c
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    TSMonitorDrawSolution - Monitors progress of the TS solvers by calling
@@ -4920,7 +4918,6 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TSMonitorDrawCtxDestroy - Destroys the monitor context for TSMonitorDrawSolution()
 
@@ -5031,7 +5028,6 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
 
    Level: intermediate
 
-
 .seealso: TSGetDM(), SNESSetDM(), SNESGetDM()
 @*/
 PetscErrorCode  TSSetDM(TS ts,DM dm)
@@ -5073,7 +5069,6 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
 .  dm - the dm
 
    Level: intermediate
-
 
 .seealso: TSSetDM(), SNESSetDM(), SNESGetDM()
 @*/
@@ -5826,7 +5821,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
    With PETSc's implicit schemes for DAE problems, the calculation of the local truncation error
    (LTE) includes both the differential and the algebraic variables. If one wants the LTE to be
    computed only for the differential or the algebraic part then this can be done using the vector of
-   tolerances vatol. For example, by setting the tolerance vector with the desired tolerance for the 
+   tolerances vatol. For example, by setting the tolerance vector with the desired tolerance for the
    differential part and infinity for the algebraic part, the LTE calculation will include only the
    differential variables.
 
@@ -6749,7 +6744,6 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec u,Vec udot,V
   PetscFunctionReturn(0);
 }
 
-
 /*
    TSSetFunctionMatlab - Sets the function evaluation routine and function
    vector for use by the TS routines in solving ODEs
@@ -6852,7 +6846,6 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
   PetscFunctionReturn(0);
 }
 
-
 /*
    TSSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
    vector for use by the TS routines in solving ODEs from MATLAB. Here the function is a string containing the name of a MATLAB function
@@ -6867,7 +6860,6 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
 
    Calling sequence of func:
 $    flag = func (TS ts,PetscReal time,Vec u,Vec udot,Mat A,Mat B,void *ctx);
-
 
    Level: developer
 
@@ -6933,7 +6925,6 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec u, void *
   mxDestroyArray(plhs[0]);
   PetscFunctionReturn(0);
 }
-
 
 /*
    TSMonitorSetMatlab - Sets the monitor function from Matlab
@@ -7080,7 +7071,6 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TSMonitorLGSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
@@ -7217,7 +7207,6 @@ PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char 
   }
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    TSMonitorLGSetDisplayVariables - Sets the variables that are to be display in the monitor
@@ -7531,7 +7520,6 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
   PetscFunctionReturn(0);
 }
 
-
 /*@C
    TSMonitorEnvelopeGetBounds - Gets the bounds for the components of the solution
 
@@ -7791,7 +7779,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
 }
 
 /*@C
-  TSClone - This function clones a time step object. 
+  TSClone - This function clones a time step object.
 
   Collective on MPI_Comm
 
@@ -7802,7 +7790,7 @@ PetscErrorCode TSFunctionDomainError(TS ts,PetscReal stagetime,Vec Y,PetscBool* 
 . tsout   - The output TS (cloned)
 
   Notes:
-  This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly. 
+  This function is used to create a clone of a TS object. It is used in ARKIMEX for initializing the slope for first stage explicit methods. It will likely be replaced in the future with a mechanism of switching methods on the fly.
 
   When using TSDestroy() on a clone the user has to first reset the correct TS reference in the embedded SNES object: e.g.: by running SNES snes_dup=NULL; TSGetSNES(ts,&snes_dup); ierr = TSSetSNES(ts,snes_dup);
 

@@ -207,7 +207,6 @@ E*/
 typedef enum {TS_EXACTFINALTIME_UNSPECIFIED=0,TS_EXACTFINALTIME_STEPOVER=1,TS_EXACTFINALTIME_INTERPOLATE=2,TS_EXACTFINALTIME_MATCHSTEP=3} TSExactFinalTimeOption;
 PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
 
-
 /* Logging support */
 PETSC_EXTERN PetscClassId TS_CLASSID;
 PETSC_EXTERN PetscClassId DMTS_CLASSID;
@@ -311,7 +310,16 @@ PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSAdjointCostIntegral(TS);
+
+PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS,PetscInt,Vec*,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode TSForwardGetSensitivities(TS,PetscInt*,Vec**,PetscInt*,Vec**);
+PETSC_EXTERN PetscErrorCode TSForwardSetIntegralGradients(TS,PetscInt,Vec *,Vec *);
+PETSC_EXTERN PetscErrorCode TSForwardGetIntegralGradients(TS,PetscInt*,Vec **,Vec **);
+PETSC_EXTERN PetscErrorCode TSForwardSetRHSJacobianP(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSForwardComputeRHSJacobianP(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
+PETSC_EXTERN PetscErrorCode TSForwardStep(TS);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
@@ -495,7 +503,6 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGDMDARay(TS,PetscInt,PetscReal,Vec,void*);
-
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList TSList;

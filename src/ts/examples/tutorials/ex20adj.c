@@ -149,7 +149,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     ierr = TSInterpolate(ts,user->next_output,interpolatedX);CHKERRQ(ierr);
     ierr = VecGetArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
-                       user->next_output,step,t,dt,(double)PetscRealPart(x[0]),
+                       user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
                        (double)PetscRealPart(x[1]));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = VecDestroy(&interpolatedX);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -229,9 +229,6 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user.ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
@@ -288,5 +285,5 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return(ierr);
 }

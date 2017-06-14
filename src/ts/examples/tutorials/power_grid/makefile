@@ -34,6 +34,9 @@ ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
 	${RM} ex3.o
 
+ex3fwd: ex3fwd.o  chkopts
+	-${CLINKER} -o ex3fwd ex3fwd.o  ${PETSC_TS_LIB}
+
 ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
 	${RM} ex3adj.o
@@ -107,6 +110,9 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox  > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_1.tmp
+
+runex3fwd:
+	-@${MPIEXEC} -n 1 ./ex3fwd -ts_theta_theta 0.5 -ts_theta_endpoint | tee output/ex3fwd_1.out 2>&1
 
 runex3adj:
 	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_1.tmp 2>&1;	  \
@@ -204,8 +210,8 @@ TESTEXAMPLES_C_NOCOMPLEX          = ex2.PETSc runex2 ex2.rm  \
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm ex3adj.PETSc runex3adj ex3adj.rm \
                                     ex3opt.PETSc runex3opt ex3opt.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_C_X	  =
-TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI =
-TESTEXAMPLES_13		  = 
+TESTEXAMPLES_13		  =
 
 include ${PETSC_DIR}/lib/petsc/conf/test
