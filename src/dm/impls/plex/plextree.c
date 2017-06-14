@@ -3146,7 +3146,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = PetscFVGetDualSpace((PetscFV)disc,&dsp);CHKERRQ(ierr);
       }
       else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported discretization object");CHKERRQ(ierr);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported discretization object");
       }
       ierr = PetscDualSpaceGetNumDof(dsp,&depthNumDof);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetNumComponents(dsp,&Nc);CHKERRQ(ierr);

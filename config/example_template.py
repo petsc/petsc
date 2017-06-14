@@ -23,14 +23,14 @@ diffexec=${PETSCDIFF:-"${petsc_dir}/bin/petscdiff"}
 # The diff flags come from script arguments
 diff_exe="${diffexec} ${diff_flags}"
 mpiexec="${mpiexec} ${mpiexec_flags}"
-
+np=${nsize:-@NSIZE@}
 """
 
 footer='petsc_testend "@TESTROOT@" '
 
 todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"'
 skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"'
-mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args} @SUBARGS@" @REDIRECT_FILE@ ${testname}.err "${label}@LABEL_SUFFIX@" @FILTER@'
+mpitest='petsc_testrun "${mpiexec} -n ${np} ${exec} ${args} @SUBARGS@" @REDIRECT_FILE@ ${testname}.err "${label}@LABEL_SUFFIX@" @FILTER@'
 difftest='petsc_testrun "${diff_exe} @OUTPUT_FILE@ @REDIRECT_FILE@" diff-${testname}.out diff-${testname}.out diff-${label}@LABEL_SUFFIX@ ""'
 filterdifftest='petsc_testrun "@FILTER_OUTPUT@ @OUTPUT_FILE@ | ${diff_exe} - @REDIRECT_FILE@" diff-${testname}.out diff-${testname}.out diff-${label}@LABEL_SUFFIX@ ""'
 commandtest='petsc_testrun "@COMMAND@" @REDIRECT_FILE@ ${testname}.err cmd-${label}@LABEL_SUFFIX@ @FILTER@'

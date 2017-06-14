@@ -9392,7 +9392,8 @@ PetscErrorCode MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    Notes:
    Unless scall is MAT_REUSE_MATRIX C will be created.
 
-   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call and C was obtained from a previous
+   call to this function with either MAT_INITIAL_MATRIX or MatMatMultSymbolic()
 
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.

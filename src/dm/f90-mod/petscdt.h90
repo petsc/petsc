@@ -1,7 +1,7 @@
 
       Interface
-        Subroutine PetscQuadratureGetData(q,dim,np,p,w,ierr)
-          PetscInt     dim, np
+        Subroutine PetscQuadratureGetData(q,dim,nc,np,p,w,ierr)
+          PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
           PetscErrorCode ierr
@@ -10,8 +10,8 @@
       End Interface
 
       Interface
-        Subroutine PetscQuadratureRestoreData(q,dim,np,p,w,ierr)
-          PetscInt     dim, np
+        Subroutine PetscQuadratureRestoreData(q,dim,nc,np,p,w,ierr)
+          PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
           PetscErrorCode ierr
@@ -20,8 +20,8 @@
       End Interface
 
       Interface
-        Subroutine PetscQuadratureSetData(q,dim,np,p,w,ierr)
-          PetscInt     dim, np
+        Subroutine PetscQuadratureSetData(q,dim,nc,np,p,w,ierr)
+          PetscInt     dim, nc, np
           PetscReal, pointer :: p(:)
           PetscReal, pointer :: w(:)
           PetscErrorCode ierr
