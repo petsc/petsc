@@ -364,6 +364,11 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
   /* Since h^{-dim} = N, lg err = s lg N + b = -s dim lg h + b */
   *alpha = -slope * dim;
   ierr = PetscFree2(dm, dof);CHKERRQ(ierr);
+  /* Restore solver */
+  ierr = SNESReset(ce->snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(ce->snes, ce->idm);CHKERRQ(ierr);
+  ierr = DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(ce->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
