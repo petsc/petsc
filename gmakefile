@@ -99,6 +99,9 @@ endif
 ifdef EXTRA_OPTIONS
   TESTFLAGS += -e '$(EXTRA_OPTIONS)'  # add extra arguments
 endif
+ifdef NP
+  TESTFLAGS += -n $(NP)  # set number of processes
+endif
 
 
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
