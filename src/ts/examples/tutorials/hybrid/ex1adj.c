@@ -1,4 +1,4 @@
-static char help[] = "An adjoint example of hybrid system using TS event.\n";
+static char help[] = "Adjoint sensitivity of a hybrid system with state-dependent switchings.\n";
 
 /*
   The dynamics is described by the ODE
@@ -217,7 +217,7 @@ int main(int argc,char **argv)
   app.mode = 1;
   app.lambda1 = 2.75;
   app.lambda2 = 0.36;
-  tend = 0.11;
+  tend = 0.125;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex1adj options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-lambda1","","",app.lambda1,&app.lambda1,NULL);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,PETSC_DECIDE,tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.001);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,1./256.);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* Set directions and terminate flags for the two events */

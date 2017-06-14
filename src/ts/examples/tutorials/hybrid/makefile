@@ -25,6 +25,10 @@ ex1fd: ex1fd.o  chkopts
 	-${CLINKER} -o ex1fd ex1fd.o  ${PETSC_TS_LIB}
 	${RM} ex1fd.o
 
+ex1fwd: ex1fwd.o  chkopts
+	-${CLINKER} -o ex1fwd ex1fwd.o  ${PETSC_TS_LIB}
+	${RM} ex1fwd.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor > ex1_1.tmp 2>&1;    \
@@ -44,6 +48,14 @@ runex1adj_2:
 
 runex1fd:
 	-@${MPIEXEC} -n 1 ./ex1fd -ts_event_tol 1e-9
+
+runex1fwd:
+	-@${MPIEXEC} -n 1 ./ex1fwd -ts_monitor > ex1fwd_1.tmp 2>&1;    \
+	${DIFF} output/ex1fwd_1.out ex1fwd_1.tmp || printf "${PWD}\nPossible problem with ex1fwd_1, diffs above\n=========================================\n"; \
+	${RM} -f ex1fwd_1.tmp
+
+runex1fwd_2:
+	-@${MPIEXEC} -n 1 ./ex1fwd -ts_monitor_lg_solution -1 -draw_pause -2 -ts_monitor -ts_event_tol 1e-9
 
 clean_files:
 	-@${RM} *.bin; \
