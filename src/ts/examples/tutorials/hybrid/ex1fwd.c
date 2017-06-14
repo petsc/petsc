@@ -37,7 +37,7 @@ PetscErrorCode MyMonitor(TS ts,PetscInt stepnum,PetscReal time,Vec U,void *ctx)
   PetscFunctionBegin;
   if (time >= actx->print_time) {
     actx->print_time += 1./256.;
-    ierr = TSGetForwardSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
+    ierr = TSForwardGetSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
     ierr = VecGetArrayRead(sp[0],&u);CHKERRQ(ierr);
     f = fopen("fwd_sp.out", "a");
     ierr = PetscFPrintf(PETSC_COMM_WORLD,f,"%20.15lf %20.15lf %20.15lf\n",time,u[0],u[1]);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ PetscErrorCode ShiftGradients(TS ts,Vec U,AppCtx *actx)
   PetscInt          num,nump;
 
   PetscFunctionBegin;
-  ierr = TSGetForwardSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
+  ierr = TSForwardGetSensitivities(ts,&nump,&sp,&num,&s);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
 
   if (actx->mode==1) {
@@ -295,7 +295,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
-  ierr = TSSetForwardSensitivities(ts,1,sp,2,s);CHKERRQ(ierr);
+  ierr = TSForwardSetSensitivities(ts,1,sp,2,s);CHKERRQ(ierr);
     /*   Set RHS JacobianP */
   ierr = TSForwardSetRHSJacobianP(ts,Ap,RHSJacobianP,&app);CHKERRQ(ierr);
 

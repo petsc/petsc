@@ -111,21 +111,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
-{
-  PetscErrorCode ierr;
-  PetscInt       row[] = {0,1},col[]={0};
-  PetscScalar    J[2][1];
-
-  PetscFunctionBeginUser;
-  J[0][0] = 0;
-  J[1][0] = 1.;
-  ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
@@ -141,46 +126,27 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx)
+PetscErrorCode monitor(Tao tao,AppCtx *ctx)
 {
-  PetscErrorCode    ierr;
-  PetscScalar       *ry;
-  const PetscScalar *u;
+  FILE               *fp;
+  PetscInt           iterate;
+  PetscReal          f,gnorm,cnorm,xdiff;
+  Vec                X,G;
+  const PetscScalar  *x,*g;
+  TaoConvergedReason reason;
+  PetscErrorCode     ierr;
 
-  PetscFunctionBegin;
-  ierr  = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr  = VecGetArray(drdy[0],&ry);CHKERRQ(ierr);
-  ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
-  ierr  = VecRestoreArray(drdy[0],&ry);CHKERRQ(ierr);
-  ierr  = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx)
-{
-  PetscErrorCode ierr;
-  PetscScalar    *rp;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-  rp[0] = 0.;
-  ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,AppCtx *ctx)
-{
-  PetscErrorCode    ierr;
-  PetscScalar       *y,sensip;
-  const PetscScalar *x;
-
-  PetscFunctionBegin;
-  ierr = VecGetArrayRead(lambda,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(mu,&y);CHKERRQ(ierr);
-  sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];
-  y[0] = sensip;
-  ierr = VecRestoreArray(mu,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(lambda,&x);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = TaoGetSolutionStatus(tao,&iterate,&f,&gnorm,&cnorm,&xdiff,&reason);CHKERRQ(ierr);
+  ierr = TaoGetSolutionVector(tao,&X);CHKERRQ(ierr);
+  ierr = TaoGetGradientVector(tao,&G);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(G,&g);CHKERRQ(ierr);
+  fp = fopen("ex3opt_fd_conv.out","a");
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"%d %g %.12lf %.12lf\n",iterate,gnorm,x[0],g[0]);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(G,&g);CHKERRQ(ierr);
+  fclose(fp);
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +161,7 @@ int main(int argc,char **argv)
   Tao                tao;
   KSP                ksp;
   PC                 pc;
-
+  PetscBool          printtofile;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -224,20 +190,24 @@ int main(int argc,char **argv)
     ctx.Pmax    = ctx.E*ctx.V/ctx.X;
     ctx.Pmax_ini = ctx.Pmax;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
-    ctx.Pm      = 1.061605;
+    ctx.Pm      = 1.06;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
     ctx.tf      = 0.1;
     ctx.tcl     = 0.2;
     ierr        = PetscOptionsReal("-tf","Time to start fault","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
     ierr        = PetscOptionsReal("-tcl","Time to end fault","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
-
+    printtofile = PETSC_FALSE;
+    ierr        = PetscOptionsBool("-printtofile","Print convergence results to file","",printtofile,&printtofile,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
-
+  if(printtofile) {
+    ierr = TaoSetMonitor(tao,(PetscErrorCode (*)(Tao, void*))monitor,(void *)&ctx,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = TaoSetMaximumIterations(tao,30);CHKERRQ(ierr);
   /*
      Optimization starts
   */
@@ -271,7 +241,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  ierr = TaoSetTolerances(tao,1e-15,1e-15,1e-15);CHKERRQ(ierr);
+  ierr = TaoSetTolerances(tao,1e-14,1e-14,1e-14);CHKERRQ(ierr);
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
@@ -305,15 +275,13 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   Vec               U;             /* solution will be stored here */
   Mat               A;             /* Jacobian matrix */
-  Mat               Jacp;          /* Jacobian matrix */
   PetscErrorCode    ierr;
   PetscInt          n = 2;
   PetscReal         ftime;
   PetscInt          steps;
   PetscScalar       *u;
-  PetscScalar       *mx_ptr,*y_ptr;
   const PetscScalar *x_ptr,*qx_ptr;
-  Vec               lambda[1],q,mu[1];
+  Vec               q;
   PetscInt          direction[2];
   PetscBool         terminate[2];
 
@@ -330,11 +298,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
-
-  ierr = MatCreate(PETSC_COMM_WORLD,&Jacp);CHKERRQ(ierr);
-  ierr = MatSetSizes(Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Jacp);CHKERRQ(ierr);
-  ierr = MatSetUp(Jacp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -355,16 +318,12 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Save trajectory of solution so that TSAdjointSolve() may be used
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,0.03125);CHKERRQ(ierr);
+  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,PETSC_NULL,PETSC_NULL,PETSC_TRUE,ctx);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   direction[0] = direction[1] = 1;
@@ -380,30 +339,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Adjoint model starts here
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
-  /*   Set initial conditions for the adjoint integration */
-  ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 0.0; y_ptr[1] = 0.0;
-  ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-
-  ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(mu[0],&mx_ptr);CHKERRQ(ierr);
-  mx_ptr[0] = -1.0;
-  ierr = VecRestoreArray(mu[0],&mx_ptr);CHKERRQ(ierr);
-  ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
-
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
-
-  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
-
-  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
-  ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(q,&qx_ptr);CHKERRQ(ierr);
   *f   = -ctx->Pm + qx_ptr[0];
@@ -413,10 +349,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   return 0;

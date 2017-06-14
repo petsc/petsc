@@ -1,0 +1,26 @@
+Vec Object: 1 MPI processes
+  type: seq
+0.732671
+1.00874
+
+ sensitivity wrt initial conditions: d[phi(tf)]/d[phi0]  d[omega(tf)]/d[phi0]
+Vec Object: 1 MPI processes
+  type: seq
+0.269372
+-0.0138757
+
+ sensitivity wrt initial conditions: d[phi(tf)]/d[omega0]  d[omega(tf)]/d[omega0]
+Vec Object: 1 MPI processes
+  type: seq
+31.6501
+0.633732
+
+ sensitivity wrt parameters: d[phi(tf)]/d[pm]  d[omega(tf)]/d[pm]
+Vec Object: 1 MPI processes
+  type: seq
+-0.00476462
+0.0149985
+
+ cost function=11.4129
+
+ sensitivity wrt parameter pm: 345.5016871 

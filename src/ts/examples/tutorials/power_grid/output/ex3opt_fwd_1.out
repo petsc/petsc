@@ -6,9 +6,9 @@ iter =   4, Function value: -1.00649,  Residual: 1.17916
 iter =   5, Function value: -1.00732,  Residual: 0.125532 
 iter =   6, Function value: -1.00733,  Residual: 0.00012392 
 iter =   7, Function value: -1.00733,  Residual: 1.30266e-08 
-iter =   8, Function value: -1.00733,  Residual: 4.42818e-12 
-iter =   9, Function value: -1.00733,  Residual: 2.18398e-12 
-iter =  10, Function value: -1.00733,  Residual: 2.23099e-13 
+iter =   8, Function value: -1.00733,  Residual: 4.42912e-12 
+iter =   9, Function value: -1.00733,  Residual: 2.18425e-12 
+iter =  10, Function value: -1.00733,  Residual: 2.22267e-13 
 Vec Object: 1 MPI processes
   type: seq
 1.00793

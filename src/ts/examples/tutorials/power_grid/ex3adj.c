@@ -1,5 +1,5 @@
 
-static char help[] = "Sensitivity analysis of the basic equation for generator stability analysis.\n";
+static char help[] = "Adjoint sensitivity analysis of the basic equation for generator stability analysis.\n";
 
 /*F
 
@@ -318,15 +318,7 @@ int main(int argc,char **argv)
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
-  /*   Set initial conditions for the adjoint integration */
-  ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 0.0; y_ptr[1] = 0.0;
-  ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-
   ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = -1.0;
-  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
@@ -337,7 +329,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,0.03125);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   direction[0] = direction[1] = 1;
@@ -356,7 +348,7 @@ int main(int argc,char **argv)
       u[0] += du[0];
       u[1] += du[1];
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-      ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
+      ierr = TSSetInitialTimeStep(ts,0.0,0.03125);CHKERRQ(ierr);
       ierr = TSSolve(ts,U);CHKERRQ(ierr);
     }
   } else {
@@ -385,13 +377,12 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]\n");CHKERRQ(ierr);
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters (partial derivative): d[Psi(tf)]/d[pm]  d[Psi(tf)]/d[pm]\n");CHKERRQ(ierr);
   ierr = VecView(mu[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
-  ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(x_ptr[0]-ctx.Pm));CHKERRQ(ierr);
   ierr = VecRestoreArray(q,&x_ptr);CHKERRQ(ierr);
-
   ierr = ComputeSensiP(lambda[0],mu[0],&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
