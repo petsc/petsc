@@ -646,6 +646,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES,Vec,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
+PETSC_EXTERN PetscErrorCode SNESHasDM(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetNPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetNPC(SNES,SNES*);
 PETSC_EXTERN PetscErrorCode SNESHasNPC(SNES,PetscBool*);
