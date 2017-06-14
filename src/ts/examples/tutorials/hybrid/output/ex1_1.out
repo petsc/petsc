@@ -1,0 +1,30 @@
+0 TS dt 0.01 time 0.
+1 TS dt 0.01 time 0.01
+2 TS dt 0.01 time 0.02
+3 TS dt 0.01 time 0.03
+4 TS dt 0.01 time 0.04
+5 TS dt 0.01 time 0.05
+6 TS dt 0.01 time 0.06
+7 TS dt 0.01 time 0.07
+8 TS dt 0.01 time 0.08
+9 TS dt 0.01 time 0.09
+9 TS dt 0.00648204 time 0.09 (r)
+10 TS dt 2.71495e-06 time 0.096482
+10 TS dt 2.67273e-06 time 0.096482 (r)
+Change from mode 1 to 2 at t = 0.096485 
+11 TS dt 0.00351529 time 0.0964847
+12 TS dt 0.01 time 0.1
+13 TS dt 0.01 time 0.11
+13 TS dt 0.00563755 time 0.11 (r)
+13 TS dt 0.0056353 time 0.11 (r)
+Change from mode 2 to 1 at t = 0.115635 
+14 TS dt 0.0043647 time 0.115635
+15 TS dt 0.01 time 0.12
+16 TS dt 0.01 time 0.13
+16 TS dt 0.00491247 time 0.13 (r)
+16 TS dt 0.00490565 time 0.13 (r)
+17 TS dt 4.22765e-08 time 0.134906
+Change from mode 1 to 2 at t = 0.134906 
+18 TS dt 0.00509431 time 0.134906
+19 TS dt 0.01 time 0.14
+20 TS dt 0.01 time 0.15

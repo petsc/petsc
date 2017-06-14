@@ -1,0 +1,7 @@
+Change from mode 1 to 2 at t = 0.096485 
+Change from mode 1 to 2 at t = 0.096485 
+d x1(tf) /d x1(t0) = 0.048845 d x2(tf) / d x1(t0) = -0.514279 
+Change from mode 1 to 2 at t = 0.096485 
+d x1(tf) /d x2(t0) = -0.510648 d x2(tf) / d x2(t0) = -0.483799 
+Change from mode 1 to 2 at t = 0.096485 
+Final gradients: d x1(tf) /d p = 0.137230 d x2(tf) / d p = -0.260001 
