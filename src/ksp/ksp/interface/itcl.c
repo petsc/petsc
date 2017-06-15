@@ -172,7 +172,7 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,model,2);
-  PetscValidLogicalCollectiveInt(ksp,model,3);
+  PetscValidLogicalCollectiveInt(ksp,size,3);
   ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
   ierr = KSPGuessSetType(guess,KSPGUESSFISCHER);CHKERRQ(ierr);
   ierr = KSPGuessFischerSetModel(guess,model,size);CHKERRQ(ierr);
