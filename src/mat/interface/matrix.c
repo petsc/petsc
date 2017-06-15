@@ -8857,10 +8857,11 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  if (S) PetscValidPointer(S,2);
+  if (status) PetscValidPointer(status,3);
   if (S) {
     PetscErrorCode (*f)(Mat,Mat*);
 
-    PetscValidPointer(S,2);
     ierr = PetscObjectQueryFunction((PetscObject)F,"MatFactorCreateSchurComplement_C",&f);CHKERRQ(ierr);
     if (f) {
       ierr = (*f)(F,S);CHKERRQ(ierr);
@@ -8868,10 +8869,7 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus*
       ierr = MatDuplicate(F->schur,MAT_COPY_VALUES,S);CHKERRQ(ierr);
     }
   }
-  if (status) {
-    PetscValidPointer(status,3);
-    *status = F->schur_status;
-  }
+  if (status) *status = F->schur_status;
   PetscFunctionReturn(0);
 }
 
@@ -8901,14 +8899,10 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* st
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  if (S) {
-    PetscValidPointer(S,2);
-    *S = F->schur;
-  }
-  if (status) {
-    PetscValidPointer(status,3);
-    *status = F->schur_status;
-  }
+  if (S) PetscValidPointer(S,2);
+  if (status) PetscValidPointer(status,3);
+  if (S) *S = F->schur;
+  if (status) *status = F->schur_status;
   PetscFunctionReturn(0);
 }
 
@@ -8974,7 +8968,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
   PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
   ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
@@ -9021,7 +9015,7 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
   ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);

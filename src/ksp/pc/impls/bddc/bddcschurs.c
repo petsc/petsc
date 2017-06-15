@@ -1417,9 +1417,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         Mat      S_tmp;
         PetscInt nd = 0;
 
-        if (!solver_S) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
-        }
+        if (!solver_S) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
         ierr = MatFactorGetSchurComplement(F,&S_tmp,NULL);CHKERRQ(ierr);
         if (sub_schurs->is_posdef) {
           PetscScalar *data;
@@ -1448,9 +1446,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             data[i*(size_schur+1)] = infty;
           }
           ierr = MatDenseRestoreArray(S_tmp,&data);CHKERRQ(ierr);
-        } else {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
-        }
+        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
         ierr = MatFactorRestoreSchurComplement(F,&S_tmp,MAT_FACTOR_SCHUR_FACTORED);CHKERRQ(ierr);
       }
     } else if (factor_workaround) { /* we need to eliminate any unneeded coupling */
