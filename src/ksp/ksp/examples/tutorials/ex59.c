@@ -739,21 +739,14 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
     ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatZeroRowsColumnsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
     ierr = ISGetLocalSize(dirichletIS,&dirsize);CHKERRQ(ierr);
-    /* giving hints to local and global matrices could be useful for the BDDC */
-    if (!dirsize) {
-      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = MatSetOption(local_mat,MAT_SPD,PETSC_FALSE);CHKERRQ(ierr);
-    }
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
-  } else { /* safe to set the options for the global matrices (they will be communicated to the matis local matrices) */
-    ierr = MatSetOption(temp_A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatSetOption(temp_A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
   }
+
+  /* giving hints to local and global matrices could be useful for the BDDC */
+  ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(local_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
 #if DEBUG
   {
     Vec       lvec,rvec;

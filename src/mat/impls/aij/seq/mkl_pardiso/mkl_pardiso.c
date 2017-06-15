@@ -5,7 +5,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>        /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <petscblaslapack.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,10 +89,6 @@ typedef struct {
   PetscInt     *schur_idxs;
   PetscScalar  *schur_work;
   PetscBLASInt schur_work_size;
-  PetscInt     schur_solver_type;
-  PetscInt     *schur_pivots;
-  PetscBool    schur_factored;
-  PetscBool    schur_inverted;
   PetscBool    solve_interior;
 
   /* True if mkl_pardiso function have been used.*/
@@ -204,147 +199,51 @@ void pardiso_64init(void *pt, INT_TYPE *mtype, INT_TYPE iparm [])
   }
 }
 
-static PetscErrorCode MatMKLPardisoFactorSchur_Private(Mat_MKL_PARDISO* mpardiso)
+static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat F, PetscScalar *B, PetscScalar *X)
 {
-  PetscBLASInt   B_N,B_ierr;
-  PetscScalar    *work,val;
-  PetscBLASInt   lwork = -1;
-  PetscErrorCode ierr;
+  Mat_MKL_PARDISO      *mpardiso =(Mat_MKL_PARDISO*)F->data;
+  Mat                  S,Xmat,Bmat;
+  MatFactorSchurStatus schurstatus;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (mpardiso->schur_factored) {
-    PetscFunctionReturn(0);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  ierr = MatFactorGetSchurComplement(F,&S,&schurstatus);CHKERRQ(ierr);
+  if (X == B && schurstatus == MAT_FACTOR_SCHUR_INVERTED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,B,&Bmat);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->nrhs,X,&Xmat);CHKERRQ(ierr);
+  if (X != B) { /* using MatMatSolve */
+    ierr = MatCopy(Bmat,Xmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
-  ierr = PetscBLASIntCast(mpardiso->schur_size,&B_N);CHKERRQ(ierr);
-  switch (mpardiso->schur_solver_type) {
-    case 1: /* hermitian solver */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,mpardiso->schur,&B_N,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-      break;
-    case 2: /* symmetric */
-      if (!mpardiso->schur_pivots) {
-        ierr = PetscMalloc1(B_N,&mpardiso->schur_pivots);CHKERRQ(ierr);
-      }
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,&val,&lwork,&B_ierr));
-      ierr = PetscBLASIntCast((PetscInt)PetscRealPart(val),&lwork);CHKERRQ(ierr);
-      ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKsytrf",LAPACKsytrf_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,work,&lwork,&B_ierr));
-      ierr = PetscFree(work);CHKERRQ(ierr);
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRF Lapack routine %d",(int)B_ierr);
-      break;
-    default: /* general */
-      if (!mpardiso->schur_pivots) {
-        ierr = PetscMalloc1(B_N,&mpardiso->schur_pivots);CHKERRQ(ierr);
-      }
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-      break;
+
+#if defined(PETSC_USE_COMPLEX)
+  if (mpardiso->iparm[12-1] == 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Hermitian solve not implemented yet");
+#endif
+
+  switch (schurstatus) {
+  case MAT_FACTOR_SCHUR_FACTORED:
+    if (!mpardiso->iparm[12-1]) {
+      ierr = MatMatSolve(S,Bmat,Xmat);CHKERRQ(ierr);
+    } else { /* transpose solve */
+      ierr = MatMatSolveTranspose(S,Bmat,Xmat);CHKERRQ(ierr);
+    }
+    break;
+  case MAT_FACTOR_SCHUR_INVERTED:
+    if (!mpardiso->iparm[12-1]) {
+      ierr = MatMatMult(S,Bmat,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Xmat);CHKERRQ(ierr);
+    } else { /* transpose solve */
+      ierr = MatTransposeMatMult(S,Bmat,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Xmat);CHKERRQ(ierr);
+    }
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    break;
   }
-  mpardiso->schur_factored = PETSC_TRUE;
+  ierr = MatFactorRestoreSchurComplement(F,&S,schurstatus);CHKERRQ(ierr);
+  ierr = MatDestroy(&Bmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-static PetscErrorCode MatMKLPardisoInvertSchur_Private(Mat_MKL_PARDISO* mpardiso)
-{
-  PetscBLASInt   B_N,B_ierr;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMKLPardisoFactorSchur_Private(mpardiso);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(mpardiso->schur_size,&B_N);CHKERRQ(ierr);
-  switch (mpardiso->schur_solver_type) {
-    case 1: /* hermitian solver */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,mpardiso->schur,&B_N,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
-      break;
-    case 2: /* symmetric */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRI Lapack routine %d",(int)B_ierr);
-      break;
-    default: /* general */
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,mpardiso->schur,&B_N,mpardiso->schur_pivots,mpardiso->schur_work,&mpardiso->schur_work_size,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-      break;
-  }
-  mpardiso->schur_inverted = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode MatMKLPardisoSolveSchur_Private(Mat_MKL_PARDISO* mpardiso, PetscScalar *B, PetscScalar *X)
-{
-  PetscScalar    one=1.,zero=0.,*schur_rhs,*schur_sol;
-  PetscBLASInt   B_N,B_Nrhs,B_ierr;
-  char           type[2];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMKLPardisoFactorSchur_Private(mpardiso);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(mpardiso->schur_size,&B_N);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(mpardiso->nrhs,&B_Nrhs);CHKERRQ(ierr);
-  if (X == B && mpardiso->schur_inverted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"X and B cannot point to the same address");
-  if (X != B) { /* using LAPACK *TRS subroutines */
-    ierr = PetscMemcpy(X,B,B_N*B_Nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-  schur_rhs = B;
-  schur_sol = X;
-  switch (mpardiso->schur_solver_type) {
-    case 1: /* hermitian solver */
-      if (mpardiso->schur_inverted) { /* BLAShemm should go here */
-        PetscStackCallBLAS("BLASsymm",BLASsymm_("L","L",&B_N,&B_Nrhs,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
-      } else {
-        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&B_N,&B_Nrhs,mpardiso->schur,&B_N,schur_sol,&B_N,&B_ierr));
-        ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRS Lapack routine %d",(int)B_ierr);
-      }
-      break;
-    case 2: /* symmetric solver */
-      if (mpardiso->schur_inverted) {
-        PetscStackCallBLAS("BLASsymm",BLASsymm_("L","L",&B_N,&B_Nrhs,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
-      } else {
-        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKsytrs",LAPACKsytrs_("L",&B_N,&B_Nrhs,mpardiso->schur,&B_N,mpardiso->schur_pivots,schur_sol,&B_N,&B_ierr));
-        ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYTRS Lapack routine %d",(int)B_ierr);
-      }
-      break;
-    default: /* general */
-      switch (mpardiso->iparm[12-1]) {
-        case 1:
-          sprintf(type,"C");
-          break;
-        case 2:
-          sprintf(type,"T");
-          break;
-        default:
-          sprintf(type,"N");
-          break;
-      }
-      if (mpardiso->schur_inverted) {
-        PetscStackCallBLAS("BLASgemm",BLASgemm_(type,"N",&B_N,&B_Nrhs,&B_N,&one,mpardiso->schur,&B_N,schur_rhs,&B_N,&zero,schur_sol,&B_N));
-      } else {
-        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_(type,&B_N,&B_Nrhs,mpardiso->schur,&B_N,mpardiso->schur_pivots,schur_sol,&B_N,&B_ierr));
-        ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRS Lapack routine %d",(int)B_ierr);
-      }
-      break;
-  }
-  PetscFunctionReturn(0);
-}
-
 
 PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
 {
@@ -367,140 +266,23 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
     mpardiso->schur_size = size;
     ierr = PetscFree2(mpardiso->schur,mpardiso->schur_work);CHKERRQ(ierr);
     ierr = PetscFree(mpardiso->schur_idxs);CHKERRQ(ierr);
-    ierr = PetscFree(mpardiso->schur_pivots);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(PetscMax(mpardiso->n,2*size),&mpardiso->schur_work_size);CHKERRQ(ierr);
     ierr = PetscMalloc2(size*size,&mpardiso->schur,mpardiso->schur_work_size,&mpardiso->schur_work);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&mpardiso->schur_idxs);CHKERRQ(ierr);
   }
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mpardiso->schur_size,mpardiso->schur_size,mpardiso->schur,&F->schur);CHKERRQ(ierr);
+  if (mpardiso->mtype == 2) {
+    ierr = MatSetOption(F->schur,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   ierr = PetscMemzero(mpardiso->perm,mpardiso->n*sizeof(INT_TYPE));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idxs);CHKERRQ(ierr);
   ierr = PetscMemcpy(mpardiso->schur_idxs,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0;i<size;i++) mpardiso->perm[idxs[i]] = 1;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
-  if (size) { /* turn on Schur switch if we the set of indices is not empty */
+  if (size) { /* turn on Schur switch if the set of indices is not empty */
     mpardiso->iparm[36-1] = 2;
   }
-  mpardiso->schur_factored = PETSC_FALSE;
-  mpardiso->schur_inverted = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorCreateSchurComplement_MKL_PARDISO(Mat F,Mat* S)
-{
-  Mat             St;
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscScalar     *array;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
-  ierr = MatSetSizes(St,PETSC_DECIDE,PETSC_DECIDE,mpardiso->schur_size,mpardiso->schur_size);CHKERRQ(ierr);
-  ierr = MatSetType(St,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(St);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(St,&array);CHKERRQ(ierr);
-  ierr = PetscMemcpy(array,mpardiso->schur,mpardiso->schur_size*mpardiso->schur_size*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(St,&array);CHKERRQ(ierr);
-  *S = St;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorGetSchurComplement_MKL_PARDISO(Mat F,Mat* S)
-{
-  Mat             St;
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
-  ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mpardiso->schur_size,mpardiso->schur_size,mpardiso->schur,&St);CHKERRQ(ierr);
-  *S = St;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorInvertSchurComplement_MKL_PARDISO(Mat F)
-{
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) { /* do nothing */
-    PetscFunctionReturn(0);
-  }
-  if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-  ierr = MatMKLPardisoInvertSchur_Private(mpardiso);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorFactorizeSchurComplement_MKL_PARDISO(Mat F)
-{
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) { /* do nothing */
-    PetscFunctionReturn(0);
-  }
-  if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-  ierr = MatMKLPardisoFactorSchur_Private(mpardiso);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorSolveSchurComplement_MKL_PARDISO(Mat F, Vec rhs, Vec sol)
-{
-  Mat_MKL_PARDISO   *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscScalar       *asol,*arhs;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
-  mpardiso->nrhs = 1;
-  ierr = VecGetArrayRead(rhs,(const PetscScalar**)&arhs);CHKERRQ(ierr);
-  ierr = VecGetArray(sol,&asol);CHKERRQ(ierr);
-  ierr = MatMKLPardisoSolveSchur_Private(mpardiso,arhs,asol);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(rhs,(const PetscScalar**)&arhs);CHKERRQ(ierr);
-  ierr = VecRestoreArray(sol,&asol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorSolveSchurComplementTranspose_MKL_PARDISO(Mat F, Vec rhs, Vec sol)
-{
-  Mat_MKL_PARDISO   *mpardiso =(Mat_MKL_PARDISO*)F->data;
-  PetscScalar       *asol,*arhs;
-  PetscInt          oiparm12;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!mpardiso->iparm[36-1]) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
-  mpardiso->nrhs = 1;
-  ierr = VecGetArrayRead(rhs,(const PetscScalar**)&arhs);CHKERRQ(ierr);
-  ierr = VecGetArray(sol,&asol);CHKERRQ(ierr);
-  oiparm12 = mpardiso->iparm[12 - 1];
-  mpardiso->iparm[12 - 1] = 2;
-  ierr = MatMKLPardisoSolveSchur_Private(mpardiso,arhs,asol);CHKERRQ(ierr);
-  mpardiso->iparm[12 - 1] = oiparm12;
-  ierr = VecRestoreArrayRead(rhs,(const PetscScalar**)&arhs);CHKERRQ(ierr);
-  ierr = VecRestoreArray(sol,&asol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatFactorSetSchurComplementSolverType_MKL_PARDISO(Mat F, PetscInt sym)
-{
-  Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
-
-  PetscFunctionBegin;
-  if (mpardiso->schur_factored && sym != mpardiso->schur_solver_type) {
-    SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONG,"Cannot change the Schur solver! Schur complement data has been already factored");
-  }
-  mpardiso->schur_solver_type = sym;
   PetscFunctionReturn(0);
 }
 
@@ -533,7 +315,6 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   ierr = PetscFree(mat_mkl_pardiso->perm);CHKERRQ(ierr);
   ierr = PetscFree2(mat_mkl_pardiso->schur,mat_mkl_pardiso->schur_work);CHKERRQ(ierr);
   ierr = PetscFree(mat_mkl_pardiso->schur_idxs);CHKERRQ(ierr);
-  ierr = PetscFree(mat_mkl_pardiso->schur_pivots);CHKERRQ(ierr);
   if (mat_mkl_pardiso->freeaij) {
     ierr = PetscFree2(mat_mkl_pardiso->ia,mat_mkl_pardiso->ja);CHKERRQ(ierr);
     ierr = PetscFree(mat_mkl_pardiso->a);CHKERRQ(ierr);
@@ -543,13 +324,6 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurIS_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorCreateSchurComplement_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSchurComplement_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorInvertSchurComplement_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorFactorizeSchurComplement_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSolveSchurComplement_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSolveSchurComplementTranspose_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurComplementSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_PardisoSetCntl_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -583,7 +357,7 @@ static PetscErrorCode MatMKLPardisoScatterSchur_Private(Mat_MKL_PARDISO *mpardis
 
 PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
 {
-  Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(A)->data;
+  Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)A->data;
   PetscErrorCode    ierr;
   PetscScalar       *xarray;
   const PetscScalar *barray;
@@ -646,20 +420,20 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
 
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
 
-  if (mat_mkl_pardiso->schur) { /* solve Schur complement and expand solution */
+  if (A->schur) { /* solve Schur complement and expand solution */
     PetscInt shift = mat_mkl_pardiso->schur_size;
 
     /* if inverted, uses BLAS *MM subroutines, otherwise LAPACK *TRS */
-    if (!mat_mkl_pardiso->schur_inverted) {
+    if (A->schur_status != MAT_FACTOR_SCHUR_INVERTED) {
       shift = 0;
     }
 
     if (!mat_mkl_pardiso->solve_interior) {
       /* solve Schur complement */
       ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
+      ierr = MatMKLPardisoSolveSchur_Private(A,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
       ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
-    } else { /* if we are solving for the interior problem, any value in barray[schur] forward-substitued to xarray[schur] will be neglected */
+    } else { /* if we are solving for the interior problem, any value in barray[schur] forward-substituted to xarray[schur] will be neglected */
       PetscInt i;
       for (i=0;i<mat_mkl_pardiso->schur_size;i++) {
         xarray[mat_mkl_pardiso->schur_idxs[i]] = 0.;
@@ -757,9 +531,8 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 
       /* allocate extra memory if it is needed */
       scale = 1;
-      if (mat_mkl_pardiso->schur_inverted) {
-        scale = 2;
-      }
+      if (A->schur_status == MAT_FACTOR_SCHUR_INVERTED) scale = 2;
+
       mem *= scale;
       if (mem > mat_mkl_pardiso->schur_work_size) {
         o_schur_work = mat_mkl_pardiso->schur_work;
@@ -767,14 +540,14 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
       }
 
       /* if inverted, uses BLAS *MM subroutines, otherwise LAPACK *TRS */
-      if (!mat_mkl_pardiso->schur_inverted) shift = 0;
+      if (A->schur_status != MAT_FACTOR_SCHUR_INVERTED) shift = 0;
 
       /* solve Schur complement */
       if (!mat_mkl_pardiso->solve_interior) {
         ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work,PETSC_TRUE);CHKERRQ(ierr);
-        ierr = MatMKLPardisoSolveSchur_Private(mat_mkl_pardiso,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
+        ierr = MatMKLPardisoSolveSchur_Private(A,mat_mkl_pardiso->schur_work,mat_mkl_pardiso->schur_work+shift);CHKERRQ(ierr);
         ierr = MatMKLPardisoScatterSchur_Private(mat_mkl_pardiso,xarray,mat_mkl_pardiso->schur_work+shift,PETSC_FALSE);CHKERRQ(ierr);
-      } else { /* if we are solving for the interior problem, any value in barray[schur,n] forward-substitued to xarray[schur,n] will be neglected */
+      } else { /* if we are solving for the interior problem, any value in barray[schur,n] forward-substituted to xarray[schur,n] will be neglected */
         PetscInt i,n,m=0;
         for (n=0;n<mat_mkl_pardiso->nrhs;n++) {
           for (i=0;i<mat_mkl_pardiso->schur_size;i++) {
@@ -843,28 +616,12 @@ PetscErrorCode MatFactorNumeric_MKL_PARDISO(Mat F,Mat A,const MatFactorInfo *inf
     &mat_mkl_pardiso->err);
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
 
-  if (mat_mkl_pardiso->schur) { /* schur output from pardiso is in row major format */
-    PetscInt j,k,n=mat_mkl_pardiso->schur_size;
-    if (!mat_mkl_pardiso->schur_solver_type) {
-      for (j=0; j<n; j++) {
-        for (k=0; k<j; k++) {
-          PetscScalar tmp = mat_mkl_pardiso->schur[j + k*n];
-          mat_mkl_pardiso->schur[j + k*n] = mat_mkl_pardiso->schur[k + j*n];
-          mat_mkl_pardiso->schur[k + j*n] = tmp;
-        }
-      }
-    } else { /* we could use row-major in LAPACK routines (e.g. use 'U' instead of 'L'; instead, I prefer consistency between data structures and swap to column major */
-      for (j=0; j<n; j++) {
-        for (k=0; k<j; k++) {
-          mat_mkl_pardiso->schur[j + k*n] = mat_mkl_pardiso->schur[k + j*n];
-        }
-      }
-    }
+  if (F->schur) { /* schur output from pardiso is in row major format */
+    ierr = MatFactorRestoreSchurComplement(F,NULL,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
+    ierr = MatTranspose(F->schur,MAT_INPLACE_MATRIX,&F->schur);CHKERRQ(ierr);
   }
   mat_mkl_pardiso->matstruc = SAME_NONZERO_PATTERN;
   mat_mkl_pardiso->CleanUp  = PETSC_TRUE;
-  mat_mkl_pardiso->schur_factored = PETSC_FALSE;
-  mat_mkl_pardiso->schur_inverted = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1288,7 +1045,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     else if (isSeqBAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
     else if (isSeqSBAIJ) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
     else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU with %s format",((PetscObject)A)->type_name);
-    mat_mkl_pardiso->schur_solver_type = 0;
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso->mtype = 13;
 #else
@@ -1307,13 +1063,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with %s format",((PetscObject)A)->type_name);
 
     mat_mkl_pardiso->needsym = PETSC_TRUE;
-    if (A->spd_set && A->spd) {
-      mat_mkl_pardiso->schur_solver_type = 1;
-      mat_mkl_pardiso->mtype = 2;
-    } else {
-      mat_mkl_pardiso->schur_solver_type = 2;
-      mat_mkl_pardiso->mtype = -2;
-    }
+    if (A->spd_set && A->spd) mat_mkl_pardiso->mtype = 2;
+    else                      mat_mkl_pardiso->mtype = -2;
   }
   B->ops->destroy          = MatDestroy_MKL_PARDISO;
   B->ops->view             = MatView_MKL_PARDISO;
@@ -1326,13 +1077,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_pardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSchurComplement_C",MatFactorGetSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorInvertSchurComplement_C",MatFactorInvertSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorFactorizeSchurComplement_C",MatFactorFactorizeSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSolveSchurComplement_C",MatFactorSolveSchurComplement_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSolveSchurComplementTranspose_C",MatFactorSolveSchurComplementTranspose_MKL_PARDISO);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurComplementSolverType_C",MatFactorSetSchurComplementSolverType_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_PardisoSetCntl_C",MatMkl_PardisoSetCntl_MKL_PARDISO);CHKERRQ(ierr);
 
   *F = B;

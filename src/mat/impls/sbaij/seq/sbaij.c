@@ -237,12 +237,14 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_HERMITIAN:
+#if defined(PETSC_USE_COMPLEX) /* MAT_HERMITIAN is a synonym for MAT_SYMMETRIC with reals */
     if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatAssemblyEnd() first");
     if (A->cmap->n < 65536 && A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian_ushort;
     } else if (A->cmap->bs == 1) {
       A->ops->mult = MatMult_SeqSBAIJ_1_Hermitian;
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for Hermitian with block size greater than 1");
+#endif
     break;
   case MAT_SPD:
     /* These options are handled directly by MatSetOption() */

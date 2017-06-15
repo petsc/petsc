@@ -388,6 +388,7 @@ PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMatSolveTranspose(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
@@ -1110,16 +1111,17 @@ PETSC_EXTERN PetscErrorCode MatSolveAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolveTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolveTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolves(Mat,Vecs,Vecs);
+PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
+
+typedef enum {MAT_FACTOR_SCHUR_UNFACTORED, MAT_FACTOR_SCHUR_FACTORED, MAT_FACTOR_SCHUR_INVERTED} MatFactorSchurStatus;
 PETSC_EXTERN PetscErrorCode MatFactorSetSchurIS(Mat,IS);
-PETSC_EXTERN PetscErrorCode MatFactorGetSchurComplement(Mat,Mat*);
-PETSC_EXTERN PetscErrorCode MatFactorRestoreSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatFactorGetSchurComplement(Mat,Mat*,MatFactorSchurStatus*);
+PETSC_EXTERN PetscErrorCode MatFactorRestoreSchurComplement(Mat,Mat*,MatFactorSchurStatus);
 PETSC_EXTERN PetscErrorCode MatFactorInvertSchurComplement(Mat);
-PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*,MatFactorSchurStatus*);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
-PETSC_EXTERN PetscErrorCode MatFactorSetSchurComplementSolverType(Mat,PetscInt);
-PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
 /*E
     MatSORType - What type of (S)SOR to perform
@@ -1471,7 +1473,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW_UPPER_TRIANGULAR=107,
                MATOP_RESTORE_ROW_UPPER_TRIANG=108,
                MATOP_MAT_SOLVE=109,
-               MATOP_GET_REDUNDANT_MATRIX=110,
+               MATOP_MAT_SOLVE_TRANSPOSE=110,
                MATOP_GET_ROW_MIN=111,
                MATOP_GET_COLUMN_VECTOR=112,
                MATOP_MISSING_DIAGONAL=113,
