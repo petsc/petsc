@@ -1,10 +1,15 @@
 
 ALL: lib
 
-SOURCEH  = ../../../include/petsc/private/kspimpl.h ../../../include/petscksp.h
-DIRS     = interface impls examples utils guess
-LOCDIR   = src/ksp/ksp/
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = fischer.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscksp
+DIRS     =
 MANSEC   = KSP
+LOCDIR   = src/ksp/ksp/guess/impls/fischer/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

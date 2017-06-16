@@ -7,6 +7,7 @@
 
 PETSC_EXTERN PetscBool KSPRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPGuessRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
 typedef struct _KSPOps *KSPOps;
@@ -31,7 +32,30 @@ struct _KSPOps {
   PetscErrorCode (*load)(KSP,PetscViewer);
 };
 
-typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
+typedef struct _KSPGuessOps *KSPGuessOps;
+
+struct _KSPGuessOps {
+  PetscErrorCode (*formguess)(KSPGuess,Vec,Vec); /* Form initial guess */
+  PetscErrorCode (*update)(KSPGuess,Vec,Vec);    /* Update database */
+  PetscErrorCode (*setfromoptions)(KSPGuess);
+  PetscErrorCode (*setup)(KSPGuess);
+  PetscErrorCode (*destroy)(KSPGuess);
+  PetscErrorCode (*view)(KSPGuess,PetscViewer);
+  PetscErrorCode (*reset)(KSPGuess);
+};
+
+/*
+   Defines the KSPGuess data structure.
+*/
+struct _p_KSPGuess {
+  PETSCHEADER(struct _KSPGuessOps);
+  KSP  ksp;     /* the parent KSP */
+  Mat  A;       /* the current linear operator */
+  void *data;   /* pointer to the specific implementation */
+};
+
+PETSC_EXTERN PetscErrorCode KSPGuessCreate_Fischer(KSPGuess);
+PETSC_EXTERN PetscErrorCode KSPGuessCreate_POD(KSPGuess);
 
 /*
      Maximum number of monitors you can run with a single KSP
@@ -49,7 +73,7 @@ struct _p_KSP {
   PetscBool       dmActive;     /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
   PetscInt        max_it;                     /* maximum number of iterations */
-  KSPFischerGuess guess;
+  KSPGuess        guess;
   PetscBool       guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
                   calc_ritz,                   /* calculate (harmonic) Ritz pairs */
