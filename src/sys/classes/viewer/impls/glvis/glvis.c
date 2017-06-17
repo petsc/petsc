@@ -630,11 +630,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
 /* this is a private implementation of a SOCKET with ASCII data format
    GLVis does not currently handle binary socket streams */
 #include <petsc/private/viewerimpl.h>
+#include <stdio.h>
 
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
+#if !defined(PETSC_HAVE_WINDOWS_H)
 static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
@@ -650,11 +652,14 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
   ierr = PetscViewerDestroy_ASCII(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#include <stdio.h>
+#endif
 
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostname,PetscInt port,PetscViewer* viewer)
 {
+#if defined(PETSC_HAVE_WINDOWS_H)
+  PetscFunctionBegin;
+  SETERRQ(comm,PETSC_ERR_SUP,"Not implemented for Windows");
+#else
   FILE           *stream = NULL;
   int            fd;
   PetscErrorCode ierr;
@@ -682,5 +687,6 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
   ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,stream,viewer);CHKERRQ(ierr);
   PetscViewerDestroy_ASCII = (*viewer)->ops->destroy;
   (*viewer)->ops->destroy = PetscViewerDestroy_ASCII_Socket;
+#endif
   PetscFunctionReturn(0);
 }
