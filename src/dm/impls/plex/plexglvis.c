@@ -52,30 +52,15 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
   const PetscInt *gNum;
   PetscInt       *nlocal,*bs,*idxs;
   PetscInt       f,maxfields,nfields,c,totc,totdofs,Nv,cum,i;
-  PetscInt       dim,depth,cStart,cEnd,cEndInterior,vStart,vEnd,coneSize;
+  PetscInt       dim,cStart,cEnd,cEndInterior,vStart,vEnd;
   GLVisViewerCtx *ctx;
   PetscSection   s;
-  PetscBool      simplex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm,cStart,&coneSize);CHKERRQ(ierr);
-  if (depth == 1) {
-    if      (coneSize == dim+1)    simplex = PETSC_TRUE;
-    else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
-    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
-  }
-  else if (depth == dim) {
-    if      (coneSize == dim+1)   simplex = PETSC_TRUE;
-    else if (coneSize == 2 * dim) simplex = PETSC_FALSE;
-    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
-  }
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
-
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetCellNumbering(dm,&globalNum);CHKERRQ(ierr);
@@ -258,7 +243,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLa
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetPointMFEMVertexIDs_Internal"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscInt *nv, PetscInt vids[])
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscInt *nv, int vids[])
 {
   PetscInt       dim,i,q,vStart,vEnd,numPoints,*points = NULL;
   PetscErrorCode ierr;
@@ -292,7 +277,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscBool            ovl,isascii,enable_boundary,enable_ncmesh;
   PetscBT              pown;
   PetscErrorCode       ierr;
-  PetscInt             *faces,fpc,vpf;
+  PetscInt             *faces = NULL,fpc = 0,vpf = 0;
   PetscInt             fv1[]     = {0,1},
                        fv2tri[]  = {0,1,
                                     1,2,
@@ -407,7 +392,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"\nelements\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",cEnd-cStart-novl);CHKERRQ(ierr);
   for (p=cStart;p<cEnd;p++) {
-    PetscInt vids[8],i,nv = 0,cid = -1,mid = 1;
+    int      vids[8];
+    PetscInt i,nv = 0,cid = -1,mid = 1;
 
     if (ovl) {
       if (gNum[p-cStart] < 0) continue;
@@ -419,7 +405,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,&nv,vids);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
     for (i=0;i<nv;i++) {
-      ierr = PetscViewerASCIIPrintf(viewer," %D",vids[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   }
@@ -631,8 +617,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         ierr = DMPlexGetDepthLabel(dm,&dlabel);CHKERRQ(ierr);
         ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
         if (parent != p) {
-          PetscInt       vids[8],i,nv,size,n;
-          PetscInt       numChildren,depth = -1;
+          int            vids[8];
+          PetscInt       i,nv,size,n,numChildren,depth = -1;
           const PetscInt *children;
           ierr = DMPlexGetConeSize(dm,parent,&size);CHKERRQ(ierr);
           switch (size) {
@@ -641,7 +627,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,parent,&nv,vids);CHKERRQ(ierr);
               ierr = PetscViewerASCIIPrintf(viewer,"%D",p-vStart);CHKERRQ(ierr);
               for (i=0;i<nv;i++) {
-                ierr = PetscViewerASCIIPrintf(viewer," %D",vids[i]);CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
               }
               ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
               vp--;
@@ -673,7 +659,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                   he      = hvsupp[i];
                   skip[i] = PETSC_TRUE;
                   ierr    = DMPlexGetCone(dm,he,&cone);CHKERRQ(ierr);
-                  vids[0] = (cone[0] == hv) ? cone[1] : cone[0];
+                  vids[0] = (int)((cone[0] == hv) ? cone[1] : cone[0]);
                   ierr    = DMPlexGetSupportSize(dm,he,&hesuppSize);CHKERRQ(ierr);
                   ierr    = DMPlexGetSupport(dm,he,&hesupp);CHKERRQ(ierr);
                   for (f=0;f<hesuppSize;f++) {
@@ -694,12 +680,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                   for (i=0;i<hvsuppSize;i++) {
                     if (!skip[i]) {
                       ierr = DMPlexGetCone(dm,hvsupp[i],&cone);CHKERRQ(ierr);
-                      vids[1] = (cone[0] == hv) ? cone[1] : cone[0];
+                      vids[1] = (int)((cone[0] == hv) ? cone[1] : cone[0]);
                     }
                   }
                   ierr = PetscViewerASCIIPrintf(viewer,"%D",hv-vStart);CHKERRQ(ierr);
                   for (i=0;i<2;i++) {
-                    ierr = PetscViewerASCIIPrintf(viewer," %D",vids[i]-vStart);CHKERRQ(ierr);
+                    ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]-vStart);CHKERRQ(ierr);
                   }
                   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
                   vp--;

@@ -651,6 +651,8 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <stdio.h>
+
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostname,PetscInt port,PetscViewer* viewer)
 {
   FILE           *stream = NULL;
