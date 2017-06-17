@@ -1643,6 +1643,7 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   Vec            local,global;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  PetscBool      monolithic = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* need to convert from global to local topology information and remove references to information in global ordering */
@@ -2108,7 +2109,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
       ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
       for (a = 0; a < adjSize; ++a) {
         const PetscInt point = adj[a];
-        if (point != p && pStart <= point && point < pEnd) {
+        if (pStart <= point && point < pEnd) {
           PetscInt *PETSC_RESTRICT pBuf;
           ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
           ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);

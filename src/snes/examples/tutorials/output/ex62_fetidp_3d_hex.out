@@ -39,7 +39,11 @@ SNES Object: 5 MPI processes
                 using NONE norm type for convergence test
               PC Object: 5 MPI processes
                 type: shell
+<<<<<<< HEAD
                   no name
+=======
+                  Shell: no name
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                     FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                       Mat Object: 1 MPI processes
                         type: schurcomplement
@@ -68,6 +72,10 @@ SNES Object: 5 MPI processes
                               using NONE norm type for convergence test
                             PC Object: (fetidp_harmonic_) 1 MPI processes
                               type: cholesky
+<<<<<<< HEAD
+=======
+                                Cholesky: out-of-place factorization
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                                 out-of-place factorization
                                 tolerance for zero pivot 2.22045e-14
                                 matrix ordering: natural
@@ -133,7 +141,11 @@ SNES Object: 5 MPI processes
             KSP solver for S = A11 - A10 inv(A00) A01 
               KSP Object: (fetidp_fieldsplit_p_) 5 MPI processes
                 type: richardson
+<<<<<<< HEAD
                   damping factor=2000.
+=======
+                  Richardson: damping factor=2000.
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                 maximum iterations=1, initial guess is zero
                 tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
@@ -162,7 +174,11 @@ SNES Object: 5 MPI processes
                         using NONE norm type for convergence test
                       PC Object: 5 MPI processes
                         type: shell
+<<<<<<< HEAD
                           no name
+=======
+                          Shell: no name
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                             FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                               Mat Object: 1 MPI processes
                                 type: schurcomplement
@@ -191,6 +207,10 @@ SNES Object: 5 MPI processes
                                       using NONE norm type for convergence test
                                     PC Object: (fetidp_harmonic_) 1 MPI processes
                                       type: cholesky
+<<<<<<< HEAD
+=======
+                                        Cholesky: out-of-place factorization
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                                         out-of-place factorization
                                         tolerance for zero pivot 2.22045e-14
                                         matrix ordering: natural
@@ -267,6 +287,7 @@ SNES Object: 5 MPI processes
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
             rows=1450, cols=1450
+<<<<<<< HEAD
       BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
@@ -319,6 +340,60 @@ SNES Object: 5 MPI processes
             Local     dofs   :	1005	1314	1165
             Local     subs   :	1	1
             ********************************** COARSE PROBLEM DETAILS *********************************
+=======
+      FETI-DP: BDDC solver details
+        PC Object: (fetidp_bddc_) 5 MPI processes
+          type: bddc
+            BDDC: Use verbose output: 0
+            BDDC: Use user-defined CSR: 0
+            BDDC: Use local mat graph: 1
+            BDDC: Connectivity graph topological dimension: 3
+            BDDC: Graph max count: 2147483647
+            BDDC: Use vertices: 1 (vertex size 3)
+            BDDC: Use edges: 1
+            BDDC: Use faces: 0
+            BDDC: Use true near null space: 0
+            BDDC: Use QR for single constraints on cc: 0
+            BDDC: Use change of basis on local edge nodes: 0
+            BDDC: Use change of basis on local face nodes: 0
+            BDDC: User defined change of basis matrix: 0
+            BDDC: Has change of basis matrix: 0
+            BDDC: Eliminate dirichlet boundary dofs: 1
+            BDDC: Switch on static condensation ops around the interface preconditioner: 1
+            BDDC: Use exact dirichlet trick: 0
+            BDDC: Multilevel max levels: 0
+            BDDC: Multilevel coarsening ratio: 8
+            BDDC: Use estimated eigs for coarse problem: 0
+            BDDC: Use deluxe scaling: 0
+            BDDC: Use deluxe zerorows: 0
+            BDDC: Use deluxe singlemat: 0
+            BDDC: Rebuild interface graph for Schur principal minors: 0
+            BDDC: Number of dofs' layers for the computation of principal minors: -1
+            BDDC: Use user CSR graph to compute successive layers: 0
+            BDDC: Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+            BDDC: Min constraints / connected component: 0
+            BDDC: Max constraints / connected component: 0
+            BDDC: Invert exact Schur complement for adaptive selection: 0
+            BDDC: Symmetric computation of primal basis functions: 0
+            BDDC: Num. Procs. to map coarse adjacency list: 0
+            BDDC: Coarse eqs per proc (significant at the coarsest level): 1
+            BDDC: Detect disconnected: 0
+            BDDC: Benign subspace trick: 0 (change explicit 0)
+            BDDC: Benign subspace trick is active: 0
+            BDDC: Algebraic computation of no-net-flux 0
+            BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
+            BDDC: Global dofs sizes: all 4336 interface 1264 coarse 8
+            BDDC: Coarsening ratios: all/coarse 542 interface/coarse 158
+            BDDC: Active processes : 5
+            BDDC: Total subdomains : 5
+            BDDC: Dofs type        :	MIN	MAX	MEAN
+            BDDC: Interior  dofs   :	526	749	614
+            BDDC: Interface dofs   :	412	710	550
+            BDDC: Primal    dofs   :	3	8	5
+            BDDC: Local     dofs   :	1005	1314	1165
+            BDDC: Local     subs   :	1	1
+            BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
+>>>>>>> stefano_zampini/feature-fetidp-ex69
           KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: preonly
             maximum iterations=1000, initial guess is zero
@@ -383,4 +458,8 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
+<<<<<<< HEAD
 L_2 Error: 2.12794e-08 [7.06531e-10, 2.12677e-08]
+=======
+L_2 Error: 2.13e-08 [7.08e-10, 2.13e-08]
+>>>>>>> stefano_zampini/feature-fetidp-ex69

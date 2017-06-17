@@ -134,8 +134,13 @@ SNES Object: 5 MPI processes
                         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
+<<<<<<< HEAD
                       PC Object: (fetidp_harmonic_) 1 MPI processes
                         type: cholesky
+=======
+                      PC Object: (fetidp_bddelta_) 1 MPI processes
+                        type: lu
+>>>>>>> stefano_zampini/feature-fetidp-ex69
                           out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
                           matrix ordering: nd
@@ -362,6 +367,7 @@ SNES Object: 5 MPI processes
                   rows=55, cols=55
                   total: nonzeros=55, allocated nonzeros=55
                   total number of mallocs used during MatSetValues calls =0
+<<<<<<< HEAD
                     using I-node routines: found 47 nodes, limit used is 5
               FETI-DP pressure preconditioner
                 KSP Object: (fetidp_p_) 5 MPI processes
@@ -379,6 +385,9 @@ SNES Object: 5 MPI processes
                     rows=55, cols=55
                     total: nonzeros=735, allocated nonzeros=735
                     total number of mallocs used during MatSetValues calls =0
+=======
+                    not using I-node (on process 0) routines
+>>>>>>> stefano_zampini/feature-fetidp-ex69
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
