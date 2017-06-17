@@ -1643,7 +1643,6 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   Vec            local,global;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
-  PetscBool      monolithic = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* need to convert from global to local topology information and remove references to information in global ordering */
