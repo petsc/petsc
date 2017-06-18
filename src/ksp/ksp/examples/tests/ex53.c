@@ -11,8 +11,7 @@ int main(int argc, char *argv[])
    PetscErrorCode ierr;
    KSP            ksp;
    PC             pc;
-   unsigned int   i;
-   PetscInt       Istart,Iend,local_m,local_n;
+   PetscInt       Istart,Iend,local_m,local_n,i;
    PetscMPIInt    rank;
    PetscInt       method=2,mat_size=40,block_size=2,*A_indices,*B_indices,A_size,B_size;
    IS             A_IS, B_IS;
@@ -38,10 +37,12 @@ int main(int argc, char *argv[])
 
    for (i = Istart; i < Iend; ++i) {
      ierr = MatSetValue(A,i,i,2,INSERT_VALUES);CHKERRQ(ierr);
-     if (i < mat_size-1)
+     if (i < mat_size-1) {
        ierr = MatSetValue(A,i,i+1,-1,INSERT_VALUES);CHKERRQ(ierr);
-     if (i > 0)
+     }
+     if (i > 0) {
        ierr = MatSetValue(A,i,i-1,-1,INSERT_VALUES);CHKERRQ(ierr);
+     }
    }
 
    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
