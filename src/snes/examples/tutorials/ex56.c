@@ -207,7 +207,7 @@ int main(int argc,char **args)
   SNES           snes;
   KSP            ksp;
   MPI_Comm       comm;
-  PetscMPIInt    npe,rank;
+  PetscMPIInt    rank;
   PetscLogStage  stage[7];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
@@ -230,7 +230,6 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
   /* options */
   ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
@@ -429,7 +428,7 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,PETSC_FUNCTION_NAME,N,N/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D global equations, %D vertices\n",rank,N,N/dim);CHKERRQ(ierr);
     if (use_nearnullspace && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -462,7 +461,7 @@ int main(int argc,char **args)
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,PETSC_FUNCTION_NAME,i,i/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D equations in vector, %D vertices\n",rank,i,i/dim);CHKERRQ(ierr);
     /* setup solver, dummy solve to really setup */
     if (0) {
       ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
