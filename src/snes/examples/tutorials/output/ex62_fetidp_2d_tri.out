@@ -39,11 +39,7 @@ SNES Object: 5 MPI processes
                 using NONE norm type for convergence test
               PC Object: 5 MPI processes
                 type: shell
-<<<<<<< HEAD
                   no name
-=======
-                  Shell: no name
->>>>>>> stefano_zampini/feature-fetidp-ex69
                     FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                       Mat Object: 1 MPI processes
                         type: schurcomplement
@@ -121,11 +117,7 @@ SNES Object: 5 MPI processes
             KSP solver for S = A11 - A10 inv(A00) A01 
               KSP Object: (fetidp_fieldsplit_p_) 5 MPI processes
                 type: richardson
-<<<<<<< HEAD
                   damping factor=200.
-=======
-                  Richardson: damping factor=200.
->>>>>>> stefano_zampini/feature-fetidp-ex69
                 maximum iterations=1, initial guess is zero
                 tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
@@ -154,11 +146,7 @@ SNES Object: 5 MPI processes
                         using NONE norm type for convergence test
                       PC Object: 5 MPI processes
                         type: shell
-<<<<<<< HEAD
                           no name
-=======
-                          Shell: no name
->>>>>>> stefano_zampini/feature-fetidp-ex69
                             FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                               Mat Object: 1 MPI processes
                                 type: schurcomplement
@@ -363,4 +351,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 4.74e-09 [3.59e-10, 4.72e-09]
+L_2 Error: 4.73816e-09 [3.58622e-10, 4.72457e-09]
