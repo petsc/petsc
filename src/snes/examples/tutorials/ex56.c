@@ -116,9 +116,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
     g3[80] += mu;
     g3[80] += mu;
   } else {
+    int        i,j,k,l;
     static int cc=-1;
     cc++;
-    int i,j,k,l;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
         for (k = 0; k < 3; ++k) {
@@ -126,9 +126,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
             if (k==l && i==j) g3[IDX(i,j,k,l)] += lambda;
             if (i==k && j==l) g3[IDX(i,j,k,l)] += mu;
             if (i==l && j==k) g3[IDX(i,j,k,l)] += mu;
-	    if (k==l && i==j && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
-	    if (i==k && j==l && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
-	    if (i==l && j==k && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+	    if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
+	    if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+	    if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
           }
         }
       }
@@ -307,10 +307,11 @@ int main(int argc,char **args)
     }
   }
   {
-    PetscInt dimEmbed, i;
-    PetscInt nCoords;
-    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
-    Vec coordinates;
+    PetscInt    dimEmbed, i;
+    PetscInt    nCoords;
+    PetscScalar *coords,bounds[] = {0,0,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    Vec         coordinates;
+    bounds[1] = Lx;
     if (run_type==1) {
       for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
     }
@@ -321,7 +322,7 @@ int main(int argc,char **args)
     if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
-      PetscInt j;
+      PetscInt    j;
       PetscScalar *coord = &coords[i];
       for (j = 0; j < dimEmbed; j++) {
         coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
@@ -388,9 +389,9 @@ int main(int argc,char **args)
       const PetscInt Nfid = 1, Npid = 1;
       const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
       const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
-      PetscFE         fe;
-      PetscDS         prob;
-      DM              cdm = dm;
+      PetscFE        fe;
+      PetscDS        prob;
+      DM             cdm = dm;
 
       ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
@@ -507,9 +508,8 @@ int main(int argc,char **args)
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
-                rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
-                mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
+                mdisp[iter]-mdisp[iter-1],err[iter],PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.));CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();
