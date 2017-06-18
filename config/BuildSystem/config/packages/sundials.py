@@ -57,6 +57,8 @@ class Configure(config.package.GNUPackage):
         args.append('--with-mpi-libs="-lc"')
 
     self.framework.popLanguage()
+
+    args = self.rmArgsStartsWith(args,['F77=','F90=','FC='])
     args.append('--without-mpif77')
     args.append('--disable-examples')
     args.append('--disable-cvodes')
