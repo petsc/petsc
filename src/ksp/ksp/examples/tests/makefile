@@ -187,6 +187,9 @@ ex51: ex51.o chkopts
 ex52f: ex52f.o  chkopts
 	-${FLINKER} -o ex52f ex52f.o  ${PETSC_KSP_LIB}
 	${RM} ex52f.o
+ex53: ex53.o chkopts
+	-${CLINKER} -o ex53 ex53.o ${PETSC_KSP_LIB}
+	${RM} ex53.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1027,6 +1030,17 @@ runex52f:
 	   else printf "${PWD}\nPossible problem with ex52f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex52f_1.tmp
 
+runex53:
+	-@${MPIEXEC} -n 2 ./ex53 -method 1 > ex53.tmp 2>&1;\
+	if (${DIFF} output/ex53_1.out ex53.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex53, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex53.tmp
+runex53_2:
+	-@${MPIEXEC} -n 2 ./ex53 -method 2 > ex53.tmp 2>&1;\
+	if (${DIFF} output/ex53_2.out ex53.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex53_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex53.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
@@ -1042,7 +1056,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm printdot \
                                  ex50.PETSc runex50 runex50_2 ex50.rm \
-                                 ex51.PETSc runex51 runex51_2 ex51.rm
+                                 ex51.PETSc runex51 runex51_2 ex51.rm ex53.PETSc runex53 runex53_2 ex53.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex49.PETSc runex49 ex49.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
