@@ -20,7 +20,7 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
   Mat_MPIELL     *ell  = (Mat_MPIELL*)A->data;
   Mat            B     = ell->B,Bnew;
   Mat_SeqELL     *Bell = (Mat_SeqELL*)B->data;
-  PetscInt       i,j,m = B->rmap->n,n = A->cmap->N,ec,row;
+  PetscInt       i,j,totalslices,N = A->cmap->N,ec,row;
   PetscBool      bflag;
   PetscErrorCode ierr;
 
@@ -44,7 +44,7 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
 
   /* invent new B and copy stuff over */
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bnew,B->rmap->n,N,B->rmap->n,N);CHKERRQ(ierr);
   ierr = MatSetBlockSizesFromMats(Bnew,A,A);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqELLSetPreallocation(Bnew,0,Bell->rlen);CHKERRQ(ierr);
@@ -55,8 +55,8 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
    Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?
    */
   Bnew->nonzerostate = B->nonzerostate;
-
-  for (i=0; i<m/8; i++) { /* loop over slices */
+  totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=Bell->sliidx[i],row=0; j<Bell->sliidx[i+1]; j++,row=((row+1)&0x07)) {
       bflag = Bell->bt[j>>3] & (char)(1<<row);
       if (bflag) {
@@ -80,7 +80,7 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
   Mat_SeqELL     *B   = (Mat_SeqELL*)(ell->B->data);
   PetscErrorCode ierr;
-  PetscInt       i,*bcolidx = B->colidx,ec = 0,*garray;
+  PetscInt       i,*bcolidx = B->colidx,ec = 0,*garray,totalslices;
   IS             from,to;
   Vec            gvec;
 #if defined(PETSC_USE_CTABLE)
@@ -92,11 +92,12 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
 #endif
 
   PetscFunctionBegin;
+  totalslices = ell->B->rmap->n/8+((ell->B->rmap->n & 0x07)?1:0); /* floor(n/8) */
   /* ec counts the number of columns that contain nonzeros */
 #if defined(PETSC_USE_CTABLE)
   /* use a table */
   ierr = PetscTableCreate(ell->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) { /* loop over all elements */
+  for (i=0; i<B->sliidx[totalslices]; i++) { /* loop over all elements */
     if (B->bt[i>>3] & (char)(1<<(i&0x07))) { /* check the mask bit */
       PetscInt data,gid1 = bcolidx[i] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
@@ -122,7 +123,7 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
   }
   /* compact out the extra columns in B */
-  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+  for (i=0; i<B->sliidx[totalslices]; i++) {
     if (B->bt[i>>3] & (char)(1<<(i&0x07))) {
       PetscInt gid1 = bcolidx[i] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
@@ -140,7 +141,7 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   /* mark those columns that are in ell->B */
   ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
 
-  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+  for (i=0; i<B->sliidx[totalslices]; i++) {
     if ((B->bt[i>>3] & (char)(1<<(i&0x07))) && !indices[bcolidx[i]]) ec++;
     indices[bcolidx[i]] = 1;
   }
@@ -158,7 +159,7 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   }
 
   /* compact out the extra columns in B */
-  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+  for (i=0; i<B->sliidx[totalslices]; i++) {
     if (B->bt[i>>3] & (char)(1<<(i&0x07))) bcolidx[i] = indices[bcolidx[i]];
   }
   ell->B->cmap->n = ell->B->cmap->N = ec; /* number of columns that are not all zeros */

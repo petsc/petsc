@@ -635,7 +635,7 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat        A;
     Mat_SeqELL *Aloc;
-    PetscInt   M = mat->rmap->N,N = mat->cmap->N,m,*acolidx,row,col,i,j;
+    PetscInt   M = mat->rmap->N,N = mat->cmap->N,totalslices,*acolidx,row,col,i,j;
     MatScalar  *aval;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
@@ -652,8 +652,9 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 
     /* copy over the A part */
     Aloc = (Mat_SeqELL*)ell->A->data;
-    m    = ell->A->rmap->n; acolidx = Aloc->colidx; aval = Aloc->val;
-    for (i=0; i<(m>>3); i++) { /* loop over slices */
+    acolidx = Aloc->colidx; aval = Aloc->val;
+    totalslices = ell->A->rmap->n/8+((ell->A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+    for (i=0; i<totalslices; i++) { /* loop over slices */
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
         if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) { /* check the mask bit */
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
@@ -666,8 +667,9 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 
     /* copy over the B part */
     Aloc = (Mat_SeqELL*)ell->B->data;
-    m    = ell->B->rmap->n;  acolidx = Aloc->colidx; aval = Aloc->val;
-    for (i=0; i<(m>>3); i++) {
+    acolidx = Aloc->colidx; aval = Aloc->val;
+    totalslices = ell->B->rmap->n/8+((ell->B->rmap->n & 0x07)?1:0); /* floor(n/8) */
+    for (i=0; i<totalslices; i++) {
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
         if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) {
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart;
@@ -1225,8 +1227,6 @@ PetscErrorCode  MatMPIELLSetPreallocation_MPIELL(Mat B,PetscInt d_rlenmax,const 
   b = (Mat_MPIELL*)B->data;
 
   if (!B->preallocated) {
-	if (B->rmap->n & 0x07) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MPIELL matrix requires the number of rows be the multiple of 8: value %D",B->rmap->n);
-
     /* Explicitly create 2 MATSEQELL matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
