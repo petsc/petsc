@@ -3410,7 +3410,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
 
     } else {
       /* (2) iscol_local -> iscol_sub and iscmap */
-      PetscInt *idx,*cmap1,k,cbs;
+      PetscInt *idx,*cmap1,k;
 
       /* implementation below requires iscol_local be sorted, it can have duplicate indices */
       ierr = ISSorted(iscol_local,&flg);CHKERRQ(ierr);
