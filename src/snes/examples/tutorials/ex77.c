@@ -144,14 +144,14 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9/*Ncomp*dim*/], detu_x, p = PetscRealPart(u[Ncomp]);
+  PetscInt        comp, d;
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
   p += kappa * (detu_x - 1.0);
 
   /* f1 is the first Piola-Kirchhoff tensor */
-  PetscInt comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) {
       f1[comp*dim+d] = mu * u_x[comp*dim+d] + p * cofu_x[comp*dim+d];
@@ -166,7 +166,8 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9/*Ncomp*dim*/], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
+  PetscInt        compI, compJ, d1, d2;
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
@@ -175,7 +176,6 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   pm = p/detu_x;
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
-  PetscInt compI, compJ, d1, d2;
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
       const PetscReal G = (compI == compJ) ? 1.0 : 0.0;
@@ -198,7 +198,7 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   const PetscInt    Ncomp = dim;
   const PetscScalar p = a[aOff[1]];
-  PetscReal         cofu_x[Ncomp*dim];
+  PetscReal         cofu_x[9/*Ncomp*dim*/];
   PetscInt          comp, d;
 
   Cof3D(cofu_x, u_x);
@@ -215,13 +215,13 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 {
   const PetscInt Ncomp = dim;
   PetscScalar    p = a[aOff[1]];
-  PetscReal      cofu_x[Ncomp*dim], m[Ncomp], detu_x;
+  PetscReal      cofu_x[9/*Ncomp*dim*/], m[3/*Ncomp*/], detu_x;
+  PetscInt       comp, compI, compJ, d;
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
   p /= detu_x;
 
-  PetscInt comp, compI, compJ, d;
   for (comp = 0; comp < Ncomp; ++comp) for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp*dim+d] * n[d];
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
@@ -351,6 +351,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
     ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
     if (is) {
+      PetscReal faceCoord;
+      PetscInt  v;
+
       ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
       ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
 
@@ -359,13 +362,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMGetDefaultSection(cdm, &cs);
 
       /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
-      PetscReal faceCoord;
-      PetscInt  v;
       for (f = 0; f < Nf; ++f) {
         ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
         /* Calculate mean coordinate vector */
-        const PetscInt Nv = csize/dim;
         for (d = 0; d < dim; ++d) {
+          const PetscInt Nv = csize/dim;
           faceCoord = 0.0;
           for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
           faceCoord /= Nv;
@@ -471,10 +472,11 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
   Vec            A;
-  void *ctxs[] = {user, user};
+  void          *ctxs[2];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ctxs[0] = user; ctxs[1] = user;
   ierr = DMCreateLocalVector(dmAux, &A);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctxs, INSERT_ALL_VALUES, A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) A);CHKERRQ(ierr);
@@ -593,8 +595,11 @@ int main(int argc, char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {coordinates, zero_scalar};
-  ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  {
+    PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx);
+    initialGuess[0] = coordinates; initialGuess[1] = zero_scalar;
+    ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  }
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   if (user.runType == RUN_FULL) {

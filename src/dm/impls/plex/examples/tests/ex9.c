@@ -77,7 +77,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsReal("-max_vec_closure_time", "The maximum time per run for DMPlexVecGetClosure()", "ex9.c", options->maxVecClosureTime, &options->maxVecClosureTime, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
 {

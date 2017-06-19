@@ -117,8 +117,8 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
     g3[80] += mu;
   } else {
     static int cc=-1;
-    cc++;
     int i,j,k,l;
+    cc++;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
         for (k = 0; k < 3; ++k) {
@@ -309,8 +309,9 @@ int main(int argc,char **args)
   {
     PetscInt dimEmbed, i;
     PetscInt nCoords;
-    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    PetscScalar *coords,bounds[] = {0,1,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
     Vec coordinates;
+    bounds[1] = Lx;
     if (run_type==1) {
       for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
     }
