@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   if (isdense) { /* special case for dense local matrices */
     for (i=0;i<local_rows;i++) {
       PetscInt index_row = global_indices_r[i];
-      for (j=i;j<local_rows;j++) {
+      for (j=i;j<local_cols;j++) {
         PetscInt owner = row_ownership[index_row];
         PetscInt index_col = global_indices_c[j];
         if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
