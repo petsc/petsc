@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
    PC             pc;
    PetscInt       Istart,Iend,local_m,local_n,i;
    PetscMPIInt    rank;
-   PetscInt       method=2,mat_size=40,block_size=2,*A_indices,*B_indices,A_size,B_size;
+   PetscInt       method=2,mat_size=40,block_size=2,*A_indices=NULL,*B_indices=NULL,A_size=0,B_size=0;
    IS             A_IS, B_IS;
 
    ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
    /* Create Index Sets */
    if (rank == 0) {
-     if(method > 1) {
+     if (method > 1) {
        /* with method > 1, the fieldsplit B is set to zero */
        A_size = Iend-Istart;
        B_size = 0;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
      B_indices = (PetscInt*) calloc(B_size,sizeof(PetscInt));
      for (i = 0; i < A_size; ++i) A_indices[i] = Istart + i;
      for (i = 0; i < B_size; ++i) B_indices[i] = Istart + i + A_size;
-   } else if(rank == 1) {
+   } else if (rank == 1) {
      A_size = (Iend-Istart)/2;
      B_size = (Iend-Istart)/2;
      A_indices = (PetscInt*) calloc(A_size,sizeof(PetscInt));
@@ -106,4 +106,3 @@ int main(int argc, char *argv[])
    ierr = PetscFinalize();
    return ierr;
 }
-
