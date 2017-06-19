@@ -1,3 +1,5 @@
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen */
+
 #include <petsc/private/viewerimpl.h> /*I   "petscviewer.h" I*/
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petsc/private/glvisviewerimpl.h>
@@ -629,9 +631,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
 
 /* this is a private implementation of a SOCKET with ASCII data format
    GLVis does not currently handle binary socket streams */
-#include <petsc/private/viewerimpl.h>
-#include <stdio.h>
-
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
