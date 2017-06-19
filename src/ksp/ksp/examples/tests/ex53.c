@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
    ierr = ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_COPY_VALUES,&A_IS);CHKERRQ(ierr);
    ierr = ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_COPY_VALUES,&B_IS);CHKERRQ(ierr);
-   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %d, B_size = %d\n",rank,A_size,B_size);CHKERRQ(ierr);
+   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D]: A_size = %D, B_size = %D\n",rank,A_size,B_size);CHKERRQ(ierr);
    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
    /* Solve the system */
