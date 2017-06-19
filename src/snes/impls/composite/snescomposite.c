@@ -548,6 +548,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   ierr        = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr        = SNESSetDM(ilink->snes,dm);CHKERRQ(ierr);
   ierr        = SNESSetTolerances(ilink->snes,ilink->snes->abstol,ilink->snes->rtol,ilink->snes->stol,1,ilink->snes->max_funcs);CHKERRQ(ierr);
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
   if (!next) {
