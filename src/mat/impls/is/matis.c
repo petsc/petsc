@@ -340,26 +340,15 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   /* Set values */
   ierr = MatSetLocalToGlobalMapping(*M,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
   if (isdense) { /* special case for dense local matrices */
-    PetscInt i,*dummy_rows,*dummy_cols;
+    PetscInt i,*dummy;
 
-    if (local_rows != local_cols) {
-      ierr = PetscMalloc2(local_rows,&dummy_rows,local_cols,&dummy_cols);CHKERRQ(ierr);
-      for (i=0;i<local_rows;i++) dummy_rows[i] = i;
-      for (i=0;i<local_cols;i++) dummy_cols[i] = i;
-    } else {
-      ierr = PetscMalloc1(local_rows,&dummy_rows);CHKERRQ(ierr);
-      for (i=0;i<local_rows;i++) dummy_rows[i] = i;
-      dummy_cols = dummy_rows;
-    }
+    ierr = PetscMalloc1(PetscMax(local_rows,local_cols),&dummy);CHKERRQ(ierr);
+    for (i=0;i<PetscMax(local_rows,local_cols);i++) dummy[i] = i;
     ierr = MatSetOption(*M,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatDenseGetArray(local_mat,&array);CHKERRQ(ierr);
-    ierr = MatSetValuesLocal(*M,local_rows,dummy_rows,local_cols,dummy_cols,array,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*M,local_rows,dummy,local_cols,dummy,array,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(local_mat,&array);CHKERRQ(ierr);
-    if (dummy_rows != dummy_cols) {
-      ierr = PetscFree2(dummy_rows,dummy_cols);CHKERRQ(ierr);
-    } else {
-      ierr = PetscFree(dummy_rows);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(dummy);CHKERRQ(ierr);
   } else if (isseqaij) {
     PetscInt  i,nvtxs,*xadj,*adjncy;
     PetscBool done;
