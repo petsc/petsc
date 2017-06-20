@@ -149,7 +149,7 @@ class logParse(object):
     allGitPersons={}
     for pkg in pkgs:
       ofh.write('<tr><th class="gray" colspan=4></th></tr>\n');
-      ofh.write('<tr><a name="'+pkg+'"></a> <th colspan=4>'+pkg+' Package</th></tr>\n');
+      ofh.write('<tr id="'+pkg+'"><th colspan=4>'+pkg+' Package</th></tr>\n');
       ofh.write("\n\n")
       ofh.write("<tr><th>Test Name</th><th>Error</th><th>Arch</th><th>Log</th></tr>\n");
       ofh.write("\n\n")
@@ -215,7 +215,7 @@ class logParse(object):
     for person in happyShinyPeople:
       (gpFullName,gpName)=allGitPersons[person]
       ofh.write('<tr><th class="gray" colspan=4></th></tr>\n');
-      ofh.write('<tr><a name="'+person+'"></a> <th colspan=4>'+gpFullName+'</th></tr>\n');
+      ofh.write('<tr id="'+person+'"><th colspan=4>'+gpFullName+'</th></tr>\n');
       ofh.write("\n\n")
       ofh.write("<tr><th>Test Name</th><th>Error</th><th></th><th>Arch</th></tr>\n");
       ofh.write("\n\n")
