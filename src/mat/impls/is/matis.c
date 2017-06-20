@@ -184,23 +184,13 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   /* preallocation as a MATAIJ */
   if (isdense) { /* special case for dense local matrices */
     for (i=0;i<local_rows;i++) {
-      PetscInt index_row = global_indices_r[i];
-      for (j=i;j<local_cols;j++) {
-        PetscInt owner = row_ownership[index_row];
+      PetscInt owner = row_ownership[global_indices_r[i]];
+      for (j=0;j<local_cols;j++) {
         PetscInt index_col = global_indices_c[j];
         if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
           my_dnz[i] += 1;
         } else { /* offdiag block */
           my_onz[i] += 1;
-        }
-        /* same as before, interchanging rows and cols */
-        if (i != j) {
-          owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
-            my_dnz[j] += 1;
-          } else {
-            my_onz[j] += 1;
-          }
         }
       }
     }
