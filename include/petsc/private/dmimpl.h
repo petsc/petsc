@@ -37,6 +37,8 @@ struct _DMOps {
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
   PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
+  PetscErrorCode (*adaptlabel)(DM,DMLabel,DM*);
+  PetscErrorCode (*adaptmetric)(DM,Vec,DMLabel,DM*);
 
   PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
