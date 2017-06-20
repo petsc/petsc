@@ -58,7 +58,7 @@ class Configure(config.package.GNUPackage):
 
     self.framework.popLanguage()
 
-    args = self.rmArgsStartsWith(args,['F77=','F90=','FC='])
+    args = self.rmArgsStartsWith(args,['F77=','F90=','FC=','FFLAGS=','FCFLAGS=','F90FLAGS='])
     args.append('--without-mpif77')
     args.append('--disable-examples')
     args.append('--disable-cvodes')
