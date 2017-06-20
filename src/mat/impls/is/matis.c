@@ -1031,12 +1031,18 @@ static PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscI
 
   for (i=0;i<matis->sf->nleaves;i++) matis->sf_leafdata[i] = PetscMin(matis->sf_leafdata[i],nlocalcols);
   ierr = MatSeqAIJSetPreallocation(matis->A,0,matis->sf_leafdata);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatHYPRESetPreallocation(matis->A,0,matis->sf_leafdata,0,NULL);CHKERRQ(ierr);
+#endif
 
   for (i=0;i<matis->sf->nleaves/bs;i++) matis->sf_leafdata[i] = matis->sf_leafdata[i*bs]/bs;
   ierr = MatSeqBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
 
   for (i=0;i<matis->sf->nleaves/bs;i++) matis->sf_leafdata[i] = matis->sf_leafdata[i]-i;
   ierr = MatSeqSBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
+
+  /* for other matrix types */
+  ierr = MatSetUp(matis->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
