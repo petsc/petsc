@@ -247,15 +247,25 @@ void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
            PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
-  Cof3D(g1, u_x);
+  PetscReal cofu_x[9/*Ncomp*dim*/];
+  PetscInt  compI, d;
+
+  Cof3D(cofu_x, u_x);
+  for (compI = 0; compI < dim; ++compI)
+    for (d = 0; d < dim; ++d) g1[compI*dim+d] = cofu_x[compI*dim+d];
 }
 
 void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscReal g2[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
-  Cof3D(g2, u_x);
+  PetscReal cofu_x[9/*Ncomp*dim*/];
+  PetscInt  compI, d;
+
+  Cof3D(cofu_x, u_x);
+  for (compI = 0; compI < dim; ++compI)
+    for (d = 0; d < dim; ++d) g2[compI*dim+d] = cofu_x[compI*dim+d];
 }
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -359,11 +369,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
       ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
       ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
-      ierr = DMGetDefaultSection(cdm, &cs);
+      ierr = DMGetDefaultSection(cdm, &cs);CHKERRQ(ierr);
 
       /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
       for (f = 0; f < Nf; ++f) {
-        ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+        ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
         /* Calculate mean coordinate vector */
         for (d = 0; d < dim; ++d) {
           const PetscInt Nv = csize/dim;
@@ -376,7 +386,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
             }
           }
         }
-        ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);
+        ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
     }
