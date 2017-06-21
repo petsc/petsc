@@ -381,6 +381,16 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       goto done;
     }
 
+    /* look for uncompressed file in requested directory */
+    if (compressed) {
+      ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
+      ierr = PetscStrstr(localname,".gz",&par);CHKERRQ(ierr);
+      *par = 0; /* remove .gz extension */
+      ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
+      if (*found) goto done;
+    }
+
+    /* look for file in current directory */
     ierr = PetscStrrchr(url,'/',&tlocalname);CHKERRQ(ierr);
     ierr = PetscStrncpy(localname,tlocalname,llen);CHKERRQ(ierr);
     if (compressed) {
