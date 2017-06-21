@@ -57,10 +57,20 @@ int main(int argc,char **args)
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP);CHKERRQ(ierr);
   ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
- 
   ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > 1.e-14) {ierr = PetscPrintf(PETSC_COMM_SELF,"norm(PtAP - RAP)= %g\n",norm);CHKERRQ(ierr);}
- 
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&RAP);CHKERRQ(ierr);
+
+  /* Test RARt = RAP */
+  ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatRARt(A,R,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  
+  ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP);CHKERRQ(ierr);
+  ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  if (norm > 1.e-14) {ierr = PetscPrintf(PETSC_COMM_SELF,"norm(RARt - RAP)= %g\n",norm);CHKERRQ(ierr);}
+
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&RAP);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
