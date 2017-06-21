@@ -8,25 +8,23 @@
 #include <petscviewer.h>
 
 typedef struct {
-  PetscBool sorted;             /* are the blocks sorted? */
-  PetscBool borrowed_indices;   /* do not free indices when IS is destroyed */
+  PetscBool sorted;      /* are the blocks sorted? */
+  PetscBool allocated;   /* did we allocate the index array ourselves? */
   PetscInt  *idx;
 } IS_Block;
 
 static PetscErrorCode ISDestroy_Block(IS is)
 {
-  IS_Block       *is_block = (IS_Block*)is->data;
+  IS_Block       *sub = (IS_Block*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!is_block->borrowed_indices) {
-    ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetSize_C",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetLocalSize_C",0);CHKERRQ(ierr);
+  if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetSize_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetLocalSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -200,7 +198,9 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   nb   = n/bs;
   ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(is->map, nb*bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -304,8 +304,8 @@ static PetscErrorCode ISToGeneral_Block(IS inis)
   ierr = ISGetLocalSize(inis,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(inis,&idx);CHKERRQ(ierr);
   if (bs == 1) {
-    PetscCopyMode mode = sub->borrowed_indices ? PETSC_USE_POINTER : PETSC_OWN_POINTER;
-    sub->borrowed_indices = PETSC_TRUE; /* prevent deallocation when changing the subtype*/
+    PetscCopyMode mode = sub->allocated ? PETSC_OWN_POINTER : PETSC_USE_POINTER;
+    sub->allocated = PETSC_FALSE; /* prevent deallocation when changing the subtype*/
     ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
     ierr = ISGeneralSetIndices(inis,n,idx,mode);CHKERRQ(ierr);
   } else {
@@ -380,49 +380,50 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
 {
   PetscErrorCode ierr;
   PetscInt       i,min,max;
-  IS_Block       *sub   = (IS_Block*)is->data;
-  PetscBool      sorted = PETSC_TRUE;
+  IS_Block       *sub = (IS_Block*)is->data;
 
   PetscFunctionBegin;
-  if (!sub->borrowed_indices) {
-    ierr = PetscFree(sub->idx);CHKERRQ(ierr);
-  } else {
-    sub->borrowed_indices = PETSC_FALSE;
-  }
+  if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n) PetscValidIntPointer(idx,3);
+
   ierr = PetscLayoutSetLocalSize(is->map, n*bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
-  for (i=1; i<n; i++) {
-    if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
-  }
-  if (n) {
-    min = max = idx[0];
-  } else {
-    min = -1;
-    max = -2;
-  }
-  for (i=1; i<n; i++) {
-    if (idx[i] < min) min = idx[i];
-    if (idx[i] > max) max = idx[i];
-  }
+
+  if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
     sub->idx = (PetscInt*) idx;
     ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_USE_POINTER) {
     sub->idx = (PetscInt*) idx;
-    sub->borrowed_indices = PETSC_TRUE;
+    sub->allocated = PETSC_FALSE;
   }
 
-  sub->sorted = sorted;
-  is->min     = bs*min;
-  is->max     = bs*max+bs-1;
-  is->data    = (void*)sub;
-  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  is->isperm  = PETSC_FALSE;
+  sub->sorted = PETSC_TRUE;
+  for (i=1; i<n; i++) {
+    if (idx[i] < idx[i-1]) {sub->sorted = PETSC_FALSE; break;}
+  }
+  if (n) {
+    min = max = idx[0];
+    for (i=1; i<n; i++) {
+      if (idx[i] < min) min = idx[i];
+      if (idx[i] > max) max = idx[i];
+    }
+    is->min = bs*min;
+    is->max = bs*max+bs-1;
+  } else {
+    is->min = PETSC_MAX_INT;
+    is->max = PETSC_MIN_INT;
+  }
+  is->isperm     = PETSC_FALSE;
+  is->isidentity = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -466,6 +467,7 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);
+  if (bs < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"block size < 1");
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,4);
 
@@ -631,7 +633,8 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
-  is->data = sub;
+  is->data = (void *) sub;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C",ISBlockSetIndices_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C",ISBlockGetIndices_Block);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C",ISBlockRestoreIndices_Block);CHKERRQ(ierr);
