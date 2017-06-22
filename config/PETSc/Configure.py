@@ -798,10 +798,11 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     def getFunctionName(lang):
       name = '__FUNCT__'
       self.pushLanguage(lang)
-      if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
-        name = '__func__'
-      elif self.checkLink('', "if (__FUNCTION__[0] != 'm') return 1;"):
-        name = '__FUNCTION__'
+      for fname in ['__func__','__FUNCTION__']:
+        code = "if ("+fname+"[0] != 'm') return 1;"
+        if self.checkCompile('',code) and self.checkLink('',code):
+          name = fname
+          break
       self.popLanguage()
       return name
     langs = []
