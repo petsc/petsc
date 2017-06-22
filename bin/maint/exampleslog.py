@@ -86,6 +86,7 @@ class logParse(object):
         testname=test.replace("diff-","") if test.startswith("diff-") else test
         comment=logDict[logfile][test].strip()
         comment=comment if test==testname else "Diff errors:\n"+comment
+        if comment=="": comment="No comment"
         # Organize by filename
         if not fname in testDict: 
           testDict[fname]={}
@@ -97,6 +98,7 @@ class logParse(object):
           else:
             testDict[fname][testname]['comments'][comment]=[lfile]
         else:
+          #print testname+","+fname+","
           testDict[fname][testname]={}
           # We'll be adding other keys later
           testDict[fname][testname]['comments']={}
@@ -127,21 +129,22 @@ class logParse(object):
     """
     import htmltemplate
 
+    htmlfiles=[]
+    for hf in "sortByPkg sortByPerson".split(): 
+      htmlfiles.append(outprefix+hf+".html")
+
     # ----------------------------------------------------------------
     # This is by package and test name
-    ofh=open(outprefix+"sortByPkg.html","w")
-    ofh.write(htmltemplate.getHeader("PETSc Examples - Sort By Name"))
-    ofh.write("\n\n")
+    ofh=open(htmlfiles[0],"w")
+    ofh.write(htmltemplate.getHeader("PETSc Examples - Sort By Package/Test"))
+
+    ofh.write('<b><a href="'+htmlfiles[1]+'">'+htmlfiles[1]+'</a></b><br><br>\n\n');
 
     pkgs="sys vec mat dm ksp snes ts tao".split()
-
-    ofh.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc Example Summary - Sorted by Package/Testname</span><br />Last update: " + time.strftime("%c") + "</center>\n\n")
-    ofh.write("</span></center><br><br>\n\n")
-    ofh.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">\n")
     ofh.write('Packages:  \n');
     for pkg in pkgs:
       ofh.write('<b><a href="#'+pkg+'">'+pkg+'</a></b>\n');
-    ofh.write("</span></center><br><br>\n")
+    ofh.write("</span></center><br>\n")
 
     ofh.write("<center><table>\n");
 
@@ -165,7 +168,11 @@ class logParse(object):
           if test=='gitPerson': continue
           i=0
           for comment in testDict[fname][test]['comments']:
-            teststr=test if i==0 else ""
+            if i==0:
+                teststr='<td class="border">'+test+'</td>'
+            else:
+                teststr='<td></td>'
+            i+=1
             arches=testDict[fname][test]['comments'][comment]
             rsnum=len(arches)
             # Smaller arch string looks nice
@@ -178,12 +185,12 @@ class logParse(object):
             else:
               comstr="<pre>"+comment+"</pre>"
               #comstr=comment
-            logstr='<td><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
-            ofh.write('<tr><td>'+teststr+'</td><td rowspan="'+str(rsnum)+'">'+comstr+'</td><td>'+archstr[0]+'</td>'+logstr+'</tr>\n')
+            logstr='<td class="border"><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
+            ofh.write('<tr>'+teststr+'<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td><td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
             if len(arches)>1: 
-              for i in range(1,rsnum):
-                logstr='<td><a href=\"examples_'+arches[i]+'.log\">[log]</a></td>'
-                ofh.write("<tr><td></td>                     <td>"+archstr[i]+"</td> "+logstr+"</tr>\n")
+              for j in range(1,rsnum):
+                logstr='<td><a href=\"examples_'+arches[j]+'.log\">[log]</a></td>'
+                ofh.write("<tr><td></td>                     <td>"+archstr[j]+"</td> "+logstr+"</tr>\n")
             ofh.write("\n\n")
 
     ofh.write("</table>\n<br>\n")
@@ -195,9 +202,7 @@ class logParse(object):
     ofh.write(htmltemplate.getHeader("PETSc Examples - Sort By Person"))
     ofh.write("\n\n")
 
-    ofh.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc Example Summary - Sorted by Person</span><br />Last update: " + time.strftime("%c") + "</center>\n\n")
-    ofh.write("</span></center><br><br>\n\n")
-    ofh.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">\n")
+    ofh.write('<b><a href="'+htmlfiles[0]+'">'+htmlfiles[0]+'</a></b><br><br>\n');
 
     happyShinyPeople=allGitPersons.keys()
     happyShinyPeople.sort()  # List alphabetically by last name
@@ -206,7 +211,7 @@ class logParse(object):
     for person in happyShinyPeople:
       (gpFullName,gpName)=allGitPersons[person]
       ofh.write('<a href="#'+person+'">'+gpName+'  </a> &nbsp\n');
-    ofh.write("</span></center><br><br>\n")
+    ofh.write("</span></center><br>\n")
 
 
     #  sort by example
@@ -227,7 +232,11 @@ class logParse(object):
           if test=='gitPerson': continue
           i=0
           for comment in testDict[fname][test]['comments']:
-            teststr=test if i==0 else ""
+            if i==0:
+                teststr='<td class="border">'+test+'</td>'
+            else:
+                teststr='<td></td>'
+            i+=1
             arches=testDict[fname][test]['comments'][comment]
             rsnum=len(arches)
             # Smaller arch string looks nice
@@ -240,17 +249,20 @@ class logParse(object):
             else:
               comstr="<pre>"+comment+"</pre>"
               #comstr=comment
-            logstr='<td><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
-            ofh.write('<tr><td>'+teststr+'</td><td rowspan="'+str(rsnum)+'">'+comstr+'</td><td>'+archstr[0]+'</td>'+logstr+'</tr>\n')
+            logstr='<td class="border"><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
+            ofh.write('<tr>'+teststr+'<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td><td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
             if len(arches)>1: 
-              for i in range(1,rsnum):
-                logstr='<td><a href=\"examples_'+arches[i]+'.log\">[log]</a></td>'
-                ofh.write("<tr> <td></td>           <td>"+archstr[i]+"</td> "+logstr+"</tr>\n")
+              for j in range(1,rsnum):
+                logstr='<td><a href=\"examples_'+arches[j]+'.log\">[log]</a></td>'
+                ofh.write("<tr> <td></td>           <td>"+archstr[j]+"</td> "+logstr+"</tr>\n")
             ofh.write("\n\n")
 
     ofh.write("</table>")
     ofh.close()
-    return testDict
+
+
+
+    return
 
   def doLogFiles(self):
     """

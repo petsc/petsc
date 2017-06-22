@@ -1,10 +1,13 @@
-
+import time
 def getHeader(title):
   """ Generalized header"""
   firstpart="""
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head><title>"""+title+"""</title>
+<head>
+<title>
+"""+title+"""
+</title>
 <style type="text/css">
 div.main {
   max-width: 1300px;
@@ -49,6 +52,9 @@ td a:hover {
   font-weight: bold;
   text-decoration: underline;
   color: black;
+}
+td.border {
+  border-top: 2px solid #EEE;
 }
 th.gray {
   background: #FFFFFF;
@@ -97,7 +103,17 @@ td.red {
 }
 </style>
 </head>
-<body><div class="main"> """
+<body><div class="main"> 
+
+
+
+<center><span style=\"font-size:1.3em; font-weight: bold;\">
+"""+title+"""
+</span><br />
+Last update: " """+ time.strftime("%c") +""" "</center>\n\n
+
+</span></center><br>\n\n
+<center><span style=\"font-size:1.3em; font-weight: bold;\">\n
+
+"""
   return firstpart
-
-
