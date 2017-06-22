@@ -90,6 +90,9 @@ PetscErrorCode  AODestroy(AO *ao)
 
 #include <../src/vec/is/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
+
+PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
+
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
@@ -133,6 +136,8 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
+  /* updated cached values (sorted, min, max, etc.)*/
+  ierr = ISSetUp_General(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -177,6 +182,8 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,(const PetscInt**)&ia);CHKERRQ(ierr);
+  /* updated cached values (sorted, min, max, etc.)*/
+  ierr = ISSetUp_General(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

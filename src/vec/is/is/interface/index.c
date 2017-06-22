@@ -527,6 +527,8 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 
    Level: intermediate
 
+   Notes: Empty index sets return min=PETSC_MAX_INT and max=PETSC_MIN_INT.
+
    Concepts: index sets^getting indices
    Concepts: indices of index set
 
