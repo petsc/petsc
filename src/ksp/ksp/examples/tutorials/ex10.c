@@ -24,7 +24,6 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*T
    Concepts: KSP^solving a linear system
    Processors: n
-   requires: !complex 
 T*/
 
 
@@ -450,6 +449,9 @@ int main(int argc,char **args)
 
 /*TEST
    
+   build:
+      requires: !complex 
+
    testset:
       suffix: 1
       nsize: 2
