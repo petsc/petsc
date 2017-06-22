@@ -351,7 +351,7 @@ $(alltest.d) : ;
 #    make -f gmakefile test argsearch=cuda
 # For general glob-style searching using python:
 # NOTE: uses shell which is possibly slower and is possibly more brittle
-#    make -f gmakefile test pysearch='sys*ex2*'
+#    make -f gmakefile test globsearch='sys*ex2*'
 ifdef search
   TESTTARGETS := $(filter $(search),$(alltesttargets))
   ifdef searchin
@@ -362,15 +362,15 @@ else ifdef searchin
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(searchin),$(v)),$(v)))
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
-else ifdef pysearch
+else ifdef globsearch
   TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print ' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1]))" '$(pysearch)' '$(alltesttargets)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
 
-.PHONY: report_tests echo_test
+.PHONY: report_tests print-test
 
-echo_test:
+print-test:
 	-@echo $(TESTTARGETS)
 
 report_tests: $(TESTTARGETS)
@@ -416,18 +416,20 @@ help-test:
 	-@echo "  Search and searchin can be combined:"
 	-@echo "    make -f gmakefile test search='sys%' searchin=ex2"
 	-@echo
-	-@echo "  To match patters in the arguments:"
+	-@echo "  To match patterns in the arguments:"
 	-@echo "    make -f gmakefile test argsearch=cuda"
 	-@echo
 	-@echo "  For general glob-style searching using python:"
-	-@echo "   NOTE: uses shell which is possibly slower and is possibly more brittle"
-	-@echo "    make -f gmakefile test pysearch='sys*ex2*'"
+	-@echo "   NOTE: uses shell which is possibly slower and more brittle"
+	-@echo "    make -f gmakefile test globsearch='sys*ex2*'"
 	-@echo
 	-@echo "  To see which targets match a given pattern (useful for doing a specific target):"
-	-@echo "    make -f gmakefile echo_test search=sys%"
+	-@echo "    make -f gmakefile print-test search=sys%"
+	-@echo "  which is equivalent to:"
+	-@echo "    make -f gmakefile print VAR=TESTTARGETS search='sys%'"
 	-@echo
 	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f gmakefile PETSC_ARCH/tests/src/sys/examples/tests/ex1'
+	-@echo '    make -f gmakefile $${PETSC_ARCH}/tests/src/sys/examples/tests/ex1'
 	-@echo "  or make the test with NO_RM=1"
 	-@echo
 
