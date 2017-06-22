@@ -507,7 +507,7 @@ int main(int argc,char **args)
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],err[iter],PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.));CHKERRQ(ierr);
   }
 
