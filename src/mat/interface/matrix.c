@@ -9368,9 +9368,10 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(A,1);
 
   if (!A->ops->rart) {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix of type <%s> does not support RARt",mattype);
+    Mat Rt;
+    ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+    ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Rt);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_RARt,A,R,0,0);CHKERRQ(ierr);
   ierr = (*A->ops->rart)(A,R,scall,fill,C);CHKERRQ(ierr);
