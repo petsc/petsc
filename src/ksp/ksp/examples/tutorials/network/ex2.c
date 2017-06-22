@@ -7,7 +7,6 @@ static char help[] = "This example is based on ex1.c, but generates a random net
 */
 
 #include <petscdmnetwork.h>
-#include <petscdmplex.h>
 #include <petscksp.h>
 #include <time.h>
 
@@ -282,7 +281,7 @@ int main(int argc,char ** argv)
   PetscInt          i, nbranch = 0, eStart, eEnd, vStart, vEnd;
   PetscInt          seed = 0, nnode = 0;
   PetscMPIInt       size, rank;
-  DM                networkdm, plex;
+  DM                networkdm;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
@@ -290,7 +289,6 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
-  PetscPartitioner  part;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage[3];
 #endif
@@ -344,9 +342,6 @@ int main(int argc,char ** argv)
 
   /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
@@ -362,7 +357,7 @@ int main(int argc,char ** argv)
   ierr = DMCreateMatrix(networkdm,&A);CHKERRQ(ierr);
 
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  
+
   ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
   /* Assembly system of equations */
   ierr = FormOperator(networkdm,A,b);CHKERRQ(ierr);
