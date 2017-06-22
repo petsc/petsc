@@ -398,7 +398,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha, PetscViewe
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii);CHKERRQ(ierr);
   if (isAscii) {
     ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: %0.2g\n", (double) alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: %g\n", (double) alpha);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
