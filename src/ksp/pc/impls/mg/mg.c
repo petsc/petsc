@@ -101,6 +101,8 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   for (i=1; i<levels; i++) {
     ierr = KSPSetTolerances(mglevels[i]->smoothu,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     if (mglevels[i]->smoothu != mglevels[i]->smoothd) {
+      /* For Richardson the initial guess is nonzero since it is solving in each cycle the original system not just applying as a preconditioner */
+      ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSetTolerances(mglevels[i]->smoothd,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     }
   }
@@ -1258,6 +1260,11 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
    Notes: If one uses a Krylov method such GMRES or CG as the smoother than one must use KSPFGMRES, KSPGCG, or KSPRICHARDSON as the outer Krylov method
 
        When run with a single level the smoother options are used on that level NOT the coarse grid solver options
+
+       When run with KSPRICHARDSON the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
+       is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
+       (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
+       residual is computed at the end of each cycle.
 
    Level: intermediate
 
