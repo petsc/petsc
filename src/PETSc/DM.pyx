@@ -289,6 +289,27 @@ cdef class DM(Object):
 
     #
 
+    def adaptLabel(self, label):
+        cdef const_char *cval = NULL
+        cdef PetscDMLabel clbl = NULL
+        label = str2bytes(label, &cval)
+        CHKERR( DMGetLabel(self.dm, cval, &clbl) )
+        cdef DM newdm = DMPlex()
+        CHKERR( DMAdaptLabel(self.dm, clbl, &newdm.dm) )
+        return newdm
+
+    def adaptMetric(self, Vec metric not None, label=None):
+        cdef const_char *cval = NULL
+        cdef PetscDMLabel clbl = NULL
+        label = str2bytes(label, &cval)
+        if cval == NULL: cval = b"" # XXX Should be fixed upstream
+        CHKERR( DMGetLabel(self.dm, cval, &clbl) )
+        cdef DM newdm = DMPlex()
+        CHKERR( DMAdaptMetric(self.dm, metric.vec, clbl, &newdm.dm) )
+        return newdm
+
+    #
+
     def setDefaultSection(self, Section sec not None):
         CHKERR( DMSetDefaultSection(self.dm, sec.sec) )
 

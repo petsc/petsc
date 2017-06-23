@@ -68,6 +68,9 @@ cdef extern from * nogil:
     int DMSetRefineLevel(PetscDM,PetscInt)
     int DMGetCoarsenLevel(PetscDM,PetscInt*)
 
+    int DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
+    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDM*)
+
     int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMLocalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
