@@ -40,6 +40,5 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      filter: 2>/dev/null
 
 TEST*/
