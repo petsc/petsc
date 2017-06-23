@@ -74,37 +74,72 @@ class logParse(object):
 
   def getTestDict(self,logDict):
     """
-     Summarize all of the logfile data by test and then comments
+     Summarize all of the logfile data by test and then errors
      Want to know if same error occurs on multiple machines
     """
     testDict={}
+    testDict['info']={'branch':logDict['branch']}
+    testDict['info']['errors']={}
     for logfile in logDict:
+      if logfile=='branch': continue
       lfile=logfile.replace("examples_","").replace(".log","")
       for test in logDict[logfile]:
         filename=self.findSrcfile(test)
         fname=os.path.relpath(filename,self.petsc_dir).replace("src/","")
         testname=test.replace("diff-","") if test.startswith("diff-") else test
-        comment=logDict[logfile][test].strip()
-        comment=comment if test==testname else "Diff errors:\n"+comment
-        if comment=="": comment="No comment"
+        error=logDict[logfile][test].strip()
+        error=error if test==testname else "Diff errors:\n"+error
+        if error=="": error="No error"
         # Organize by filename
         if not fname in testDict: 
           testDict[fname]={}
           testDict[fname]['gitPerson']=str(self.getGitPerson(filename))
-        # Now organize by test and comments
+        # Now organize by test and errors
         if testname in testDict[fname]:
-          if comment in testDict[fname][testname]['comments']:
-            testDict[fname][testname]['comments'][comment].append(lfile)
+          if error in testDict[fname][testname]['errors']:
+            testDict[fname][testname]['errors'][error].append(lfile)
           else:
-            testDict[fname][testname]['comments'][comment]=[lfile]
+            testDict[fname][testname]['errors'][error]=[lfile]
         else:
           #print testname+","+fname+","
           testDict[fname][testname]={}
           # We'll be adding other keys later
-          testDict[fname][testname]['comments']={}
-          testDict[fname][testname]['comments'][comment]=[lfile]
+          testDict[fname][testname]['errors']={}
+          testDict[fname][testname]['errors'][error]=[lfile]
+        # Create additional datastructure to sort by errors
+        if error in testDict['info']['errors']:
+          testDict['info']['errors'][error][testname]=fname
+        else:
+          testDict['info']['errors'][error]={testname:fname}
+
+    # Place holder for later -- keep log of analysis
+    for fname in testDict:
+      if fname=='info': continue
+      for test in testDict[fname]:
+        if test=='gitPerson': continue
+        testDict[fname][test]['ndays']=0
+        testDict[fname][test]['fdate']='Date'
 
     return testDict
+
+  def writeSummaryLog(self,testDict,outprefix):
+    """
+     Just do a simple pretty print
+    """
+    branch=testDict['info']['branch']
+    fh=open(outprefix+branch+".csv","w")
+    c=','
+    for fname in testDict:
+      if fname=='info': continue
+      for test in testDict[fname]:
+        if test=='gitPerson': continue
+        ndays=testDict[fname][test]['ndays']
+        fdate=testDict[fname][test]['fdate']
+        fh.write(fname+c+test+c+str(ndays)+fdate)
+
+    fh.close()
+    return
+
 
   def printTestDict(self,testDict):
     """
@@ -112,16 +147,23 @@ class logParse(object):
     """
     indent="  "
     for fname in testDict:
+      if fname=='info': continue
       for test in testDict[fname]:
         print "\n ----------------------------------------------------"
         print test
         print indent+testDict[fname][test]['gitPerson']
-        for comment in testDict[fname][test]['comments']:
+        for error in testDict[fname][test]['errors']:
           print "\n ----- "
-          print 2*indent+" ".join(testDict[fname][test]['comments'][comment])
-          print 2*indent+comment
+          print 2*indent+" ".join(testDict[fname][test]['errors'][error])
+          print 2*indent+error
 
     return testDict
+
+  def getLogLink(self,arch):
+    """
+     For the html for showing the log link
+    """
+    return '<td class="border"><a href=\"examples_'+arch+'.log\">[log]</a></td>'
 
   def writeHTML(self,testDict,outprefix):
     """
@@ -129,67 +171,74 @@ class logParse(object):
     """
     import htmltemplate
 
+    branch=testDict['info']['branch']
+    branchtitle="PETSc Examples ("+branch+")"
+    branchhtml=branch+".html"
     htmlfiles=[]
-    for hf in "sortByPkg sortByPerson".split(): 
-      htmlfiles.append(outprefix+hf+".html")
+    for hf in "sortByPkg sortByPerson sortByErrors".split(): 
+      htmlfiles.append(outprefix+branch+'-'+hf+".html")
 
     # ----------------------------------------------------------------
     # This is by package and test name
     ofh=open(htmlfiles[0],"w")
-    ofh.write(htmltemplate.getHeader("PETSc Examples - Sort By Package/Test"))
+    ofh.write(htmltemplate.getHeader(branchtitle+" - Sort By Package/Test"))
 
-    ofh.write('<b><a href="'+htmlfiles[1]+'">'+htmlfiles[1]+'</a></b><br><br>\n\n');
+    ofh.write('See also:  \n')
+    ofh.write('<a href="'+branchhtml+'">'+branchhtml+'</a> \n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[1]+'">'+htmlfiles[1]+'</a>\n\n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[2]+'">'+htmlfiles[2]+'</a><br><br>\n\n')
 
     pkgs="sys vec mat dm ksp snes ts tao".split()
-    ofh.write('Packages:  \n');
+    ofh.write('Packages:  \n')
     for pkg in pkgs:
-      ofh.write('<b><a href="#'+pkg+'">'+pkg+'</a></b>\n');
+      ofh.write('<b><a href="#'+pkg+'">'+pkg+'</a></b>\n')
     ofh.write("</span></center><br>\n")
 
-    ofh.write("<center><table>\n");
+    ofh.write("<center><table>\n")
 
     #  sort by example
     allGitPersons={}
     for pkg in pkgs:
-      ofh.write('<tr><th class="gray" colspan=4></th></tr>\n');
-      ofh.write('<tr id="'+pkg+'"><th colspan=4>'+pkg+' Package</th></tr>\n');
+      ofh.write('<tr><th class="gray" colspan=4></th></tr>\n')
+      ofh.write('<tr id="'+pkg+'"><th colspan=4>'+pkg+' Package</th></tr>\n')
       ofh.write("\n\n")
-      ofh.write("<tr><th>Test Name</th><th>Error</th><th>Arch</th><th>Log</th></tr>\n");
+      ofh.write("<tr><th>Test Name</th><th>Errors</th><th>Arch</th><th>Log</th></tr>\n")
       ofh.write("\n\n")
       for fname in testDict:
+        if fname=='info': continue
         if not fname.startswith(pkg): continue  # Perhaps could be more efficient
         gp=testDict[fname]['gitPerson']
         gitPerson=gp.replace("<","&lt").replace("<","&gt")
         gpName=gp.split("<")[0].strip(); gpLastName=gpName.split()[-1]
         if not gpLastName in allGitPersons:
           allGitPersons[gpLastName]=(gp,gpName)
-        ofh.write('<tr><th colspan="4">'+fname+" &nbsp&nbsp ("+gitPerson+')</th></tr>\n\n')
+        permlink=htmlfiles[0]+'#'+fname
+        plhtml='<a id="'+permlink+'" href="'+permlink+'"> (permlink)</a>'
+        ofh.write('<tr><th colspan="4">'+fname+" &nbsp&nbsp ("+gitPerson+') '+plhtml+'</th></tr>\n\n')
         for test in testDict[fname]:
           if test=='gitPerson': continue
           i=0
-          for comment in testDict[fname][test]['comments']:
-            if i==0:
-                teststr='<td class="border">'+test+'</td>'
-            else:
-                teststr='<td></td>'
+          for error in testDict[fname][test]['errors']:
+            ofh.write('<!-- New row  -->\n')
+
+            teststr='<td class="border">'+test+'</td>' if i==0 else '<td></td>'
             i+=1
-            arches=testDict[fname][test]['comments'][comment]
+            arches=testDict[fname][test]['errors'][error]
             rsnum=len(arches)
             # Smaller arch string looks nice
-            archstr=[]
-            for arch in arches:
-              archstr.append(arch.replace("next_",'').replace("master_",'').replace("arch-",''))
-            ofh.write('<!-- New row  -->\n')
-            if len(comment)==0: 
-              comstr="No comment"
-            else:
-              comstr="<pre>"+comment+"</pre>"
-              #comstr=comment
-            logstr='<td class="border"><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
-            ofh.write('<tr>'+teststr+'<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td><td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
+            archstr=[arch.replace(branch+'_','').replace("arch-",'') for arch in arches]
+
+            comstr="<pre>"+error+"</pre>" if error else "No error"
+            comstr='<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td>'
+
+            logstr=self.getLogLink(arches[0]) 
+            ofh.write('<tr>'+teststr+comstr+'<td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
+            # Log files are then hanging
             if len(arches)>1: 
               for j in range(1,rsnum):
-                logstr='<td><a href=\"examples_'+arches[j]+'.log\">[log]</a></td>'
+                logstr=self.getLogLink(arches[j]) 
                 ofh.write("<tr><td></td>                     <td>"+archstr[j]+"</td> "+logstr+"</tr>\n")
             ofh.write("\n\n")
 
@@ -198,64 +247,111 @@ class logParse(object):
 
     # ----------------------------------------------------------------
     # This is by person
-    ofh=open(outprefix+"sortByPerson.html","w")
-    ofh.write(htmltemplate.getHeader("PETSc Examples - Sort By Person"))
+    ofh=open(htmlfiles[1],"w")
+    ofh.write(htmltemplate.getHeader(branchtitle+" - Sort By Person")) 
     ofh.write("\n\n")
 
-    ofh.write('<b><a href="'+htmlfiles[0]+'">'+htmlfiles[0]+'</a></b><br><br>\n');
+    ofh.write('See also:  \n')
+    ofh.write('<a href="'+branchhtml+'">'+branchhtml+'</a> \n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[0]+'">'+htmlfiles[0]+'</a> \n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[2]+'">'+htmlfiles[2]+'</a><br><br>\n')
 
     happyShinyPeople=allGitPersons.keys()
     happyShinyPeople.sort()  # List alphabetically by last name
 
-    ofh.write('People:  \n');
+    ofh.write('People:  \n')
     for person in happyShinyPeople:
       (gpFullName,gpName)=allGitPersons[person]
-      ofh.write('<a href="#'+person+'">'+gpName+'  </a> &nbsp\n');
+      ofh.write('<a href="#'+person+'">'+gpName+'  </a> &nbsp\n')
     ofh.write("</span></center><br>\n")
 
 
-    #  sort by example
-    #   3 rows minimum.  More than 3 if len(arches)>3
-    ofh.write("<center><table>\n");
+    #  sort by person
+    ofh.write("<center><table>\n")
     for person in happyShinyPeople:
       (gpFullName,gpName)=allGitPersons[person]
-      ofh.write('<tr><th class="gray" colspan=4></th></tr>\n');
-      ofh.write('<tr id="'+person+'"><th colspan=4>'+gpFullName+'</th></tr>\n');
+      ofh.write('<tr><th class="gray" colspan=4></th></tr>\n')
+      ofh.write('<tr id="'+person+'"><th colspan=4>'+gpFullName+'</th></tr>\n')
       ofh.write("\n\n")
-      ofh.write("<tr><th>Test Name</th><th>Error</th><th></th><th>Arch</th></tr>\n");
+      ofh.write("<tr><th>Test Name</th><th>Error</th><th></th><th>Arch</th></tr>\n")
       ofh.write("\n\n")
       for fname in testDict:
+        if fname=='info': continue
         gitPerson=testDict[fname]['gitPerson'].replace("<","&lt").replace("<","&gt")
         if not gitPerson.startswith(gpName): continue
-        ofh.write('<tr><th colspan="4">'+fname+'</th></tr>\n\n')
+        permlink=htmlfiles[0]+'#'+fname
+        plhtml=' <a id="'+permlink+'" href="'+permlink+'"> (permlink)</a>'
+        ofh.write('<tr><th colspan="4">'+fname+plhtml+'</th></tr>\n\n')
         for test in testDict[fname]:
           if test=='gitPerson': continue
           i=0
-          for comment in testDict[fname][test]['comments']:
-            if i==0:
-                teststr='<td class="border">'+test+'</td>'
-            else:
-                teststr='<td></td>'
-            i+=1
-            arches=testDict[fname][test]['comments'][comment]
-            rsnum=len(arches)
-            # Smaller arch string looks nice
-            archstr=[]
-            for arch in arches:
-              archstr.append(arch.replace("next_",'').replace("master_",'').replace("arch-",''))
+          for error in testDict[fname][test]['errors']:
             ofh.write('<!-- New row  -->\n')
-            if len(comment)==0: 
-              comstr="No comment"
-            else:
-              comstr="<pre>"+comment+"</pre>"
-              #comstr=comment
-            logstr='<td class="border"><a href=\"examples_'+arches[0]+'.log\">[log]</a></td>'
-            ofh.write('<tr>'+teststr+'<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td><td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
+
+            teststr='<td class="border">'+test+'</td>' if i==0 else '<td></td>'
+            i+=1
+            arches=testDict[fname][test]['errors'][error]
+            rsnum=len(arches)
+            archstr=[arch.replace(branch+'_','').replace("arch-",'') for arch in arches]
+            comstr="<pre>"+error+"</pre>" if error else "No error"
+            comstr='<td class="border" rowspan="'+str(rsnum)+'">'+comstr+'</td>'
+            logstr=self.getLogLink(arches[0]) 
+
+            ofh.write('<tr>'+teststr+comstr+'<td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
             if len(arches)>1: 
               for j in range(1,rsnum):
-                logstr='<td><a href=\"examples_'+arches[j]+'.log\">[log]</a></td>'
+                logstr=self.getLogLink(arches[j]) 
                 ofh.write("<tr> <td></td>           <td>"+archstr[j]+"</td> "+logstr+"</tr>\n")
             ofh.write("\n\n")
+
+    ofh.write("</table>")
+    ofh.close()
+
+    # ----------------------------------------------------------------
+    # This is by errors
+    ofh=open(htmlfiles[2],"w")
+    ofh.write(htmltemplate.getHeader(branchtitle+" - Sort By Errors")) 
+    ofh.write("\n\n")
+
+    ofh.write('See also:  \n')
+    ofh.write('<a href="'+branchhtml+'">'+branchhtml+'</a> \n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[0]+'">'+htmlfiles[0]+'</a> \n')
+    ofh.write('&nbsp \n')
+    ofh.write('<a href="'+htmlfiles[1]+'">'+htmlfiles[1]+'</a><br><br>\n')
+    ofh.write("</span></center><br>\n")
+
+
+    #  sort by error
+    ofh.write("<center><table>\n")
+    ofh.write("<tr><th>Error</th><th>Test Name</th><th></th><th>Arch</th></tr>\n")
+    for error in testDict['info']['errors']:
+      ofh.write('<tr><th class="gray" colspan=4></th></tr>\n')
+      ofh.write("\n\n")
+      i=0
+      comstr="<pre>"+error+"</pre>" if error else "No error"
+      comstr='<td class="border">'+comstr+'</td>'
+      for test in testDict['info']['errors'][error]:
+        fname=testDict['info']['errors'][error][test]
+
+        permlink=htmlfiles[0]+'#'+fname
+        plhtml=' <a id="'+permlink+'" href="'+permlink+'"> (permlink)</a>'
+
+        arches=testDict[fname][test]['errors'][error]
+        rsnum=len(arches)
+        if i>0: comstr='<td></td>'
+        i+=1
+        teststr='<td class="border" rowspan="'+str(rsnum)+'">'+test+'</td>'
+        archstr=[arch.replace(branch+'_','').replace("arch-",'') for arch in arches]
+        logstr=self.getLogLink(arches[0]) 
+        ofh.write('<tr>'+comstr+teststr+'<td class="border">'+archstr[0]+'</td>'+logstr+'</tr>\n')
+        if len(arches)>1: 
+          for j in range(1,rsnum):
+            logstr=self.getLogLink(arches[j]) 
+            ofh.write("<tr> <td></td>           <td>"+archstr[j]+"</td> "+logstr+"</tr>\n")
+        ofh.write("\n\n")
 
     ofh.write("</table>")
     ofh.close()
@@ -264,17 +360,17 @@ class logParse(object):
 
     return
 
-  def doLogFiles(self):
+  def doLogFiles(self,branch):
     """
      Go through all of the log files and call the parser for each one
      Get a simple dictionary for each logfile -- later we process
      to make nice printouts
     """
-    logDict={}
+    logDict={'branch':branch}
     startdir=os.path.abspath(os.path.curdir)
     os.chdir(self.logdir)
-    for logfile in glob.glob('examples*.log'):
-      if logfile=='examples_full_next.log': continue
+    for logfile in glob.glob('examples_'+branch+'_*.log'):
+      if logfile.startswith('examples_full'): continue
       logDict[logfile]=self.parseLogFile(logfile)
     os.chdir(startdir)
     return logDict
@@ -293,16 +389,16 @@ class logParse(object):
         if line.startswith("not ok "): 
           last_pos=infile.tell()
           test=line.replace("not ok ","").strip()
-          comments=''
+          errors=''
           while 1:
             newline=infile.readline()
             if newline.startswith('#'):
-              comments=newline.lstrip('#').strip()
+              errors=newline.lstrip('#').strip()
               last_pos=infile.tell()
             else:
               break
           infile.seek(last_pos)  # Go back b/c we grabbed another test
-          lDict[test]=comments
+          lDict[test]=errors
     if printDict:
       for lkey in lDict:
         print lkey
@@ -322,10 +418,13 @@ def main():
                       default='')
     parser.add_option('-o', '--outfile', dest='outfile',
                       help='The output file prefix where the HTML code will be written to', 
-                      default='example_summary-')
+                      default='examples_summary-')
     parser.add_option('-v', '--verbosity', dest='verbosity',
                       help='Verbosity of output by level: 1, 2, or 3', 
                       default='0')
+    parser.add_option('-b', '--branch', dest='branch',
+                      help='Comma delimitted list of branches to parse files of form: examples_<branch>_<arch>.log', 
+                      default='master,next')
     options, args = parser.parse_args()
 
     # Process arguments
@@ -356,11 +455,13 @@ def main():
        l=logP.parseLogFile(options.logfile,printDict=True)
        return
     else:
-      logDict=logP.doLogFiles()
-      testDict=logP.getTestDict(logDict)
-      if verbosity>2:
-        logP.printTestDict(testDict)
-      logP.writeHTML(testDict,options.outfile)
+      for b in options.branch.split(','):
+        logDict=logP.doLogFiles(b)
+        testDict=logP.getTestDict(logDict)
+        if verbosity>2:
+          logP.printTestDict(testDict)
+        logP.writeHTML(testDict,options.outfile)
+        logP.writeSummaryLog(testDict,options.outfile)
 
     return
 

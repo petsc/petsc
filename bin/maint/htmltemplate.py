@@ -110,8 +110,7 @@ td.red {
 <center><span style=\"font-size:1.3em; font-weight: bold;\">
 """+title+"""
 </span><br />
-Last update: " """+ time.strftime("%c") +""" "</center>\n\n
-
+Last update: """+ time.strftime("%c") +""" </center>\n\n
 </span></center><br>\n\n
 <center><span style=\"font-size:1.3em; font-weight: bold;\">\n
 
