@@ -9339,7 +9339,7 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
    C will be created and must be destroyed by the user with MatDestroy().
 
    This routine is currently only implemented for pairs of SeqAIJ matrices and classes
-   which inherit from SeqAIJ.
+   which inherit from SeqAIJ. For parallel matrices, it is recommended to use MatPtAP().
 
    Level: intermediate
 
