@@ -110,8 +110,8 @@ runex1f_2:
 	   else printf "${PWD}\nPossible problem with ex1f_2, diffs above\n=========================================\n"; fi; \
 	   #${RM} -f ex1f_2.tmp
 runex1f_3:
-	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always | sort > ex1f_3.tmp 2>&1;\
-	   if (${DIFF} output/ex1f_3.out ex1f_3.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always | sort -b > ex1f_3.tmp 2>&1;\
+           if (sort -b output/ex1f_3.out | ${DIFF} - ex1f_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1f_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1f_3.tmp
 runex3:
