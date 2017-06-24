@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-method",&method,PETSC_NULL);CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-block_size",&block_size,PETSC_NULL);CHKERRQ(ierr);
 
-   if (rank == 0) {
-     ierr = PetscPrintf(PETSC_COMM_SELF,"  matrix size = %d, block size = %d\n",mat_size,block_size);CHKERRQ(ierr);
+   if (!rank) {
+     ierr = PetscPrintf(PETSC_COMM_SELF,"  matrix size = %D, block size = %D\n",mat_size,block_size);CHKERRQ(ierr);
    }
 
    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
    ierr = MatSetUp(A);CHKERRQ(ierr);
 
    ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-   /* printf("[%d]: Istart = %d, Iend = %d\n",rank,Istart,Iend); */
 
    for (i = Istart; i < Iend; ++i) {
      ierr = MatSetValue(A,i,i,2,INSERT_VALUES);CHKERRQ(ierr);
@@ -49,7 +48,6 @@ int main(int argc, char *argv[])
    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
    ierr = MatGetLocalSize(A,&local_m,&local_n);CHKERRQ(ierr);
-   /* printf("[%d]: local_m = %d, local_n = %d\n",rank,local_m,local_n); */
 
    /* Create Index Sets */
    if (rank == 0) {
@@ -62,22 +60,22 @@ int main(int argc, char *argv[])
        A_size = (Iend-Istart)/2;
        B_size = (Iend-Istart)/2;
      }
-     A_indices = (PetscInt*) calloc(A_size,sizeof(PetscInt));
-     B_indices = (PetscInt*) calloc(B_size,sizeof(PetscInt));
+     ierr = PetscCalloc1(A_size,&A_indices);CHKERRQ(ierr);
+     ierr = PetscCalloc1(B_size,&B_indices);CHKERRQ(ierr);
      for (i = 0; i < A_size; ++i) A_indices[i] = Istart + i;
      for (i = 0; i < B_size; ++i) B_indices[i] = Istart + i + A_size;
    } else if (rank == 1) {
      A_size = (Iend-Istart)/2;
      B_size = (Iend-Istart)/2;
-     A_indices = (PetscInt*) calloc(A_size,sizeof(PetscInt));
-     B_indices = (PetscInt*) calloc(B_size,sizeof(PetscInt));
+     ierr = PetscCalloc1(A_size,&A_indices);CHKERRQ(ierr);
+     ierr = PetscCalloc1(B_size,&B_indices);CHKERRQ(ierr);
      for (i = 0; i < A_size; ++i) A_indices[i] = Istart + i;
      for (i = 0; i < B_size; ++i) B_indices[i] = Istart + i + A_size;
    }
 
-   ierr = ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_COPY_VALUES,&A_IS);CHKERRQ(ierr);
-   ierr = ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_COPY_VALUES,&B_IS);CHKERRQ(ierr);
-   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D]: A_size = %D, B_size = %D\n",rank,A_size,B_size);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(PETSC_COMM_WORLD,A_size,A_indices,PETSC_OWN_POINTER,&A_IS);CHKERRQ(ierr);
+   ierr = ISCreateGeneral(PETSC_COMM_WORLD,B_size,B_indices,PETSC_OWN_POINTER,&B_IS);CHKERRQ(ierr);
+   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: A_size = %D, B_size = %D\n",rank,A_size,B_size);CHKERRQ(ierr);
    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
    /* Solve the system */
@@ -92,13 +90,10 @@ int main(int argc, char *argv[])
    ierr = PCFieldSplitSetIS(pc,"b",B_IS);CHKERRQ(ierr);
    ierr = ISSetBlockSize(A_IS,block_size);CHKERRQ(ierr);
    ierr = ISSetBlockSize(B_IS,block_size);CHKERRQ(ierr);
-   /* ierr = ISView(A_IS,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
-   free(A_indices);
-   free(B_indices);
    ierr = ISDestroy(&A_IS);CHKERRQ(ierr);
    ierr = ISDestroy(&B_IS);CHKERRQ(ierr);
    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
