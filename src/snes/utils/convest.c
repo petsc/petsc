@@ -343,7 +343,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
       for (f = 0; f < ce->Nf; ++f) {
         if (f > 0) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
         if (errors[f] < 1.0e-11) {ierr = PetscPrintf(comm, "< 1e-11");CHKERRQ(ierr);}
-        else                     {ierr = PetscPrintf(comm, "%g", errors[f]);CHKERRQ(ierr);}
+        else                     {ierr = PetscPrintf(comm, "%g", (double)errors[f]);CHKERRQ(ierr);}
       }
       ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
     }
