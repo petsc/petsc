@@ -512,7 +512,7 @@ PetscErrorCode  PCMGSetCycleTypeOnLevel(PC pc,PetscInt l,PCMGCycleType c)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,l,2);
-  PetscValidLogicalCollectiveInt(pc,c,3);
+  PetscValidLogicalCollectiveEnum(pc,c,3);
   mglevels[l]->cycles = c;
   PetscFunctionReturn(0);
 }
