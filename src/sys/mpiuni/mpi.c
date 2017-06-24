@@ -77,7 +77,7 @@ static int Keyval_setup(void)
 
 int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
-  if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
+  if (num_attr >= MAX_ATTR) MPIUni_Abort(MPI_COMM_WORLD,1);
 
   attr_keyval[num_attr].extra_state = extra_state;
   attr_keyval[num_attr].del         = delete_fn;
@@ -184,6 +184,12 @@ int MPI_Comm_rank(MPI_Comm comm, int *rank)
   if (comm-1 < 0 || comm-1 > MaxComm) return 1;
   *rank=0;
   return MPI_SUCCESS;
+}
+
+int MPIUni_Abort(MPI_Comm comm,int errorcode)
+{
+  printf("MPI operation not supported by PETSc's sequential MPI wrappers\n");
+  return MPI_FAILURE;
 }
 
 int MPI_Abort(MPI_Comm comm,int errorcode)
@@ -460,27 +466,27 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_scan_(void *sendbuf,void *recvbuf,int 
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_send_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_recv_(void *buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_reduce_scatter_(void *sendbuf,void *recvbuf,int *recvcounts,int *datatype,int *op,int *comm,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_irecv_(void *buf,int *count, int *datatype, int *source, int *tag, int *comm, int *request, int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_isend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *request, int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_sendrecv_(void *sendbuf,int *sendcount,int *sendtype,int *dest,int *sendtag,void *recvbuf,int *recvcount,int *recvtype,int *source,int *recvtag,int *comm,int *status,int *ierr)
@@ -490,7 +496,7 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_sendrecv_(void *sendbuf,int *sendcount
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_test_(int *request,int *flag,int *status,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_waitall_(int *count,int *array_of_requests,int *array_of_statuses,int *ierr)
@@ -527,22 +533,22 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_address_(void *location,MPIUNI_INTPTR 
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_pack_(void *inbuf,int *incount,int *datatype,void *outbuf,int *outsize,int *position,int *comm,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_unpack_(void *inbuf,int *insize,int *position,void *outbuf,int *outcount,int *datatype,int *comm,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_pack_size_(int *incount,int *datatype,int *comm,int *size,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_type_struct_(int *count,int *array_of_blocklengths,int * array_of_displaments,int *array_of_types,int *newtype,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_type_commit_(int *datatype,int *ierr)
@@ -573,7 +579,7 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_comm_free_(int *comm,int *ierr)
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_get_count_(int *status,int *datatype,int *count,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 /* duplicate from fortranimpl.h */
@@ -615,7 +621,7 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_request_free_(int *request,int *ierr)
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_ssend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
 {
-  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+  *ierr = MPIUni_Abort(MPI_COMM_WORLD,0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_wait_(int *request,int *status,int *ierr)

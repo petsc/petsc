@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
 
   test:
     suffix: 0
+    requires: !mpiuni
     args:
 
   test:
