@@ -72,15 +72,15 @@ SNES Object: 5 MPI processes
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux 0
       ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 225 interface 43 coarse 7
-      Coarsening ratios: all/coarse 32 interface/coarse 6
+      Global dofs sizes: all 225 interface 57 coarse 9
+      Coarsening ratios: all/coarse 25 interface/coarse 6
       Active processes : 5
       Total subdomains : 5
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	21	49	36
-      Interface dofs   :	15	22	17
-      Primal    dofs   :	3	4	3
-      Local     dofs   :	36	64	54
+      Interior  dofs   :	21	42	33
+      Interface dofs   :	15	36	23
+      Primal    dofs   :	3	6	4
+      Local     dofs   :	36	78	57
       Local     subs   :	1	1
       ********************************** COARSE PROBLEM DETAILS *********************************
     KSP Object: (pc_bddc_coarse_) 5 MPI processes

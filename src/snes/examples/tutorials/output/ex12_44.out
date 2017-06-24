@@ -1,4 +1,4 @@
-0 SNES Function norm 3393.27 
+  0 SNES Function norm 3393.27 
     0 SNES Function norm 3393.27 
     1 SNES Function norm 937.658 
       0 SNES Function norm 858.91 
@@ -64,9 +64,9 @@
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 SNES Object: 2 MPI processes
   type: fas
-  FAS: type is MULTIPLICATIVE, levels=3, cycles=1
-      Not using Galerkin computed coarse grid function evaluation
-  Coarse grid solver -- level 0 -------------------------------
+    type is MULTIPLICATIVE, levels=3, cycles=1
+    Not using Galerkin computed coarse grid function evaluation
+    Coarse grid solver -- level 0 -------------------------------
     SNES Object: (fas_coarse_) 2 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
@@ -97,7 +97,7 @@ SNES Object: 2 MPI processes
           total: nonzeros=13, allocated nonzeros=13
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-  Down solver (pre-smoother) on level 1 -------------------------------
+    Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 2 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
@@ -131,8 +131,8 @@ SNES Object: 2 MPI processes
           total: nonzeros=137, allocated nonzeros=137
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  Down solver (pre-smoother) on level 2 -------------------------------
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
     SNES Object: (fas_levels_2_) 2 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
@@ -166,10 +166,9 @@ SNES Object: 2 MPI processes
           total: nonzeros=721, allocated nonzeros=721
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-  Up solver (post-smoother) same as down solver (pre-smoother)
+    Up solver (post-smoother) same as down solver (pre-smoother)
   maximum iterations=10000, maximum function evaluations=30000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=0
   total number of function evaluations=1
   norm schedule ALWAYS
   SNESLineSearch Object: 2 MPI processes
