@@ -101,6 +101,7 @@ function petsc_testrun() {
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
   filter=$5
+<<<<<<< HEAD
   job_control=true
   cmd="$1 > $2 2> $3"
   if test -n "$filter"; then
@@ -120,6 +121,12 @@ function petsc_testrun() {
     # Put a watcher process in that will kill a job that exceeds limit
     $petsc_dir/config/watchtime.sh $pid $TIMEOUT &
     watcher=$!
+=======
+  # Determining whether this test passes or fails is tricky because of filters
+  # and eval.  Use sum of all parts of a potential pipe to determine status. See:
+  #  https://stackoverflow.com/questions/24734850/how-to-get-the-exit-status-of-the-first-command-in-a-pipe
+  #  http://www.unix.com/shell-programming-and-scripting/128869-creating-run-script-getting-pipestatus-eval.html
+>>>>>>> Enable skip of diff tests when primary cmd fails
 
     # See if the job we want finishes
     wait $pid 2> /dev/null
@@ -134,6 +141,7 @@ function petsc_testrun() {
       echo "Exceeded timeout limit of $TIMEOUT s" > $3
     fi
   else
+<<<<<<< HEAD
     # The action -- assume no timeout needed
     eval $cmd
     # We are testing error codes so just make it pass
@@ -149,6 +157,15 @@ function petsc_testrun() {
   fi
 
   # Report errors
+=======
+    cmd="$1 2> $3 | $filter > $2 2>> $3"
+  fi
+  echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
+  eval "$cmd; typeset -a cmd_errstat=(\${PIPESTATUS[@]})"
+  let cmd_res=0
+  for i in ${cmd_errstat[@]}; do let cmd_res+=$i; done
+
+>>>>>>> Enable skip of diff tests when primary cmd fails
   if test $cmd_res == 0; then
     if "${verbose}"; then
      printf "ok $tlabel $cmd\n" | tee -a ${testlogfile}
