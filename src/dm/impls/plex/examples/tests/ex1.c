@@ -494,7 +494,7 @@ int main(int argc, char **argv)
     suffix: med_1
     requires: med
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type simple -dm_view
   test:
     suffix: med_2
     requires: med
@@ -503,7 +503,7 @@ int main(int argc, char **argv)
     suffix: med_3
     requires: med
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type simple -dm_view
 
   # Test shape quality
   test:
