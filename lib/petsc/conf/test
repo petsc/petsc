@@ -5,7 +5,6 @@
 #    6 - C examples that don't work with complex numbers, require PETSc matrices
 #    8 - Fortran .F examples that don't work with complex numbers
 #   13 - Examples that should only be compiled.
-#   17 - requires or PYTHON wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C}\n"; fi
