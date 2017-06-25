@@ -1,4 +1,4 @@
-#include <petsc/private/fortranimpl.h>
+#include <petsc/private/f90impl.h>
 #include <petsc/private/matimpl.h>
 
 /* Declare these pointer types instead of void* for clarity, but do not include petscts.h so that this code does have an actual reverse dependency. */
@@ -6,17 +6,33 @@ typedef struct _p_TS *TS;
 typedef struct _p_SNES *SNES;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
-#define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
-#define matfdcoloringview_               MATFDCOLORINGVIEW
-#define matfdcoloingsettype_             MATFDCOLORINGSETTYPE
+#define matfdcoloringsetfunctionts_              MATFDCOLORINGSETFUNCTIONTS
+#define matfdcoloringsetfunction_                MATFDCOLORINGSETFUNCTION
+#define matfdcoloringview_                       MATFDCOLORINGVIEW
+#define matfdcoloingsettype_                     MATFDCOLORINGSETTYPE
+#define matfdcoloringgetperturbedcolumnsf90_     MATFDCOLORINGGETPERTURBEDCOLUMNSF90
+#define matfdcoloringrestoreperturbedcolumnsf90_ MATFDCOLORINGRESTOREPERTURBEDCOLUMNSF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
-#define matfdcoloringsetfunction_        matfdcoloringsetfunction
-#define matfdcoloringview_               matfdcoloringview
-#define matfdcoloingsettype_             matfdcoloringsettype
+#define matfdcoloringsetfunctionts_              matfdcoloringsetfunctionts
+#define matfdcoloringsetfunction_                matfdcoloringsetfunction
+#define matfdcoloringview_                       matfdcoloringview
+#define matfdcoloingsettype_                     matfdcoloringsettype
+#define matfdcoloringgetperturbedcolumnsf90_     matfdcoloringgetperturbedcolumnsf90
+#define matfdcoloringrestoreperturbedcolumnsf90_ matfdcoloringrestoreperturbedcolumnsf90
 #endif
 
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringgetperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscInt *fa;
+  PetscInt       len;
+
+  *__ierr = MatFDColoringGetPerturbedColumns(*x,&len,&fa);   if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void*)fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *__ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));
+}
 
 /* These are not extern C because they are passed into non-extern C user level functions */
 static PetscErrorCode ourmatfdcoloringfunctionts(TS ts,PetscReal t,Vec x,Vec y,MatFDColoring fd)
