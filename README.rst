@@ -23,3 +23,9 @@ Dependencies
 .. _Python: http://www.python.org
 .. _NumPy:  http://www.numpy.org
 .. _Cython: http://www.cython.org
+
+Documentation
+-------------
+* http://petsc4py.readthedocs.org/, This does not contain the epydoc-generated API reference.
+
+* https://pythonhosted.org/petsc4py/, This is for the last release, not the in-development version.
