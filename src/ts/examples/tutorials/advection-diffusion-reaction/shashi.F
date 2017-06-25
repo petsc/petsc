@@ -64,10 +64,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_WORLD,1,'requires one process')
       endif
 
       big  = 2.88

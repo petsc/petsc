@@ -8,7 +8,7 @@
       PetscErrorCode  ierr
       integer line
 
-      call PetscError(PETSC_COMM_SELF,1,line,1,'Error message',ierr)
+      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'Error message')
 
       return
       end
@@ -36,18 +36,15 @@
         stop
       endif
 
-      call PetscPushErrorHandler(PetscTraceBackErrorHandler,               &
-     &                           PETSC_NULL_INTEGER,ierr)
+      call PetscPushErrorHandler(PetscTraceBackErrorHandler,PETSC_NULL_INTEGER,ierr)
 
       call GenerateErr(__LINE__,ierr)
 
-      call PetscPushErrorHandler(MyErrHandler,                           &
-     &                           PETSC_NULL_INTEGER,ierr)
+      call PetscPushErrorHandler(MyErrHandler,PETSC_NULL_INTEGER,ierr)
 
       call GenerateErr(__LINE__,ierr)
 
-      call PetscPushErrorHandler(PetscAbortErrorHandler,                   &
-     &                           PETSC_NULL_INTEGER,ierr)
+      call PetscPushErrorHandler(PetscAbortErrorHandler,PETSC_NULL_INTEGER,ierr)
 
       call GenerateErr(__LINE__,ierr)
 
@@ -58,7 +55,7 @@
 !/*TEST
 !
 !   test:
-!     filter: egrep  "(PETSC ERROR|My error handler)" | sort -b
+!     filter: grep  "My error handler" | sort -b
 !     filter_output:   sort -b
 !
 !TEST*/

@@ -195,8 +195,8 @@
 !     Macros for error checking
 !
 #if defined(PETSC_USE_ERRORCHECKING)
-#define SETERRQ(c,ierr,s) call MPIU_Abort(PETSC_COMM_WORLD,ierr)
-#define CHKERRQ(ierr) if (ierr .ne. 0) call MPIU_Abort(PETSC_COMM_WORLD,ierr)
+#define SETERRQ(c,ierr,s) call PetscError(c,ierr,PETSC_ERROR_INITIAL,s); return
+#define CHKERRQ(ierr) if (ierr .ne. 0) then ; call PetscError(PETSC_COMM_SELF,ierr,PETSC_ERROR_REPEAT,PETSC_NULL_CHARACTER); return; endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 #else
 #define SETERRQ(c,ierr,s)

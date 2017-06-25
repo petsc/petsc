@@ -85,11 +85,12 @@ PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *hand
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,int *line,PetscErrorType *p,char* message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorType *p,char* message PETSC_MIXED_LEN(len) PETSC_END_LEN(len))
 {
+  PetscErrorCode nierr,*ierr = &nierr;
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(MPI_Comm_f2c(*(comm)),*line,0,0,*number,*p,t1);
+  nierr = PetscError(MPI_Comm_f2c(*(comm)),0,NULL,NULL,*number,*p,t1);
   FREECHAR(message,t1);
 }
 
