@@ -6144,8 +6144,8 @@ PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
 /*@
   DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
 
-  Input Parameters:
-  + dm - The DMPlex object
+  Input Parameter:
+. dm - The DMPlex object
 
   Note: This is a useful diagnostic when creating meshes programmatically.
 
