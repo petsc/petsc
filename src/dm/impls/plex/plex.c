@@ -951,7 +951,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, ishdf5, isvtk, isdraw;
+  PetscBool      iascii, ishdf5, isvtk, isdraw, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -975,6 +975,14 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     ierr = DMPlexVTKWriteAll((PetscObject) dm,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = DMPlexView_Draw(dm, viewer);CHKERRQ(ierr);
+  }
+  /* Optionally view the partition */
+  ierr = PetscOptionsHasName(((PetscObject) dm)->options, ((PetscObject) dm)->prefix, "-dm_partition_view", &flg);CHKERRQ(ierr);
+  if (flg) {
+    Vec ranks;
+    ierr = DMPlexCreateRankField(dm, &ranks);CHKERRQ(ierr);
+    ierr = VecView(ranks, viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&ranks);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
