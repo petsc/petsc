@@ -353,15 +353,20 @@ class generateExamples(Petsc):
     template=eval("example_template."+tors+"line")
     tsStr=re.sub("@"+TORS+"COMMENT@",', '.join(reasons),template)
     tab = ''
+    if reasons:
+      fh.write('if ! $force; then\n')
+      tab = tab + '    '
     if reasons == ["Requires DATAFILESPATH"]:
       # The only reason not to run is DATAFILESPATH, which we check at run-time
-      tab = '    '
-      fh.write('if test -z "${DATAFILESPATH}"; then\n')
+      fh.write(tab + 'if test -z "${DATAFILESPATH}"; then\n')
+      tab = tab + '    '
     if reasons:
-      fh.write(tab+tsStr+"\ntotal=1; "+tors+"=1\n")
+      fh.write(tab+tsStr+"\n" + tab + "total=1; "+tors+"=1\n")
       fh.write(tab+footer+"\n")
       fh.write(tab+"exit\n")
     if reasons == ["Requires DATAFILESPATH"]:
+      fh.write('    fi\n')
+    if reasons:
       fh.write('fi\n')
     fh.write('\n\n')
     return
