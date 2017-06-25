@@ -40,5 +40,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+     requires: define(PETSC_HAVE_POPEN)
 
 TEST*/
