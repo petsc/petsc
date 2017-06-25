@@ -202,10 +202,11 @@ int main (int argc, char * argv[]) {
   }
   ierr = DMAdaptMetric(user.dm, metric, bdLabel, &dma);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dma, NULL, "-adapt_dm_view");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dma, NULL, "-dm_view");CHKERRQ(ierr);
   {
     Vec ranks;
-    ierr = CreateRankField(dma, &ranks);CHKERRQ(ierr);
+    ierr = DMPlexCreateRankField(dma, &ranks);CHKERRQ(ierr);
     ierr = VecViewFromOptions(ranks, NULL, "-adapt_rank_view");CHKERRQ(ierr);
     ierr = VecDestroy(&ranks);CHKERRQ(ierr);
   }
