@@ -302,24 +302,26 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
-    indnt=self.indent
     nindnt=i # the start and has to be consistent with below
+    cmdindnt=self.indent*nindnt
     cmdLines=""
 
     # MPI is the default -- but we have a few odd commands
     if not subst['command']:
-      cmd=indnt*nindnt+self._substVars(subst,example_template.mpitest)
+      cmd=cmdindnt+self._substVars(subst,example_template.mpitest)
     else:
-      cmd=indnt*nindnt+self._substVars(subst,example_template.commandtest)
-    cmdLines+=cmd+"\n\n"
+      cmd=cmdindnt+self._substVars(subst,example_template.commandtest)
+    cmdLines+=cmd+"\n"+cmdindnt+"res=$?\n\n"
 
+    cmdLines+=cmdindnt+'if test $res = 0; then\n'
+    diffindnt=self.indent*(nindnt+1)
     if not subst['filter_output']:
       if 'altfiles' not in subst:
-        cmd=indnt*nindnt+self._substVars(subst,example_template.difftest)
+        cmd=diffindnt+self._substVars(subst,example_template.difftest)
       else:
         # Have to do it by hand a bit because of variable number of alt files
         rf=subst['redirect_file']
-        cmd=indnt*nindnt+example_template.difftest.split('@')[0]
+        cmd=diffindnt+example_template.difftest.split('@')[0]
         for i in range(len(subst['altfiles'])):
           af=subst['altfiles'][i]
           cmd+=af+' '+rf+' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
@@ -329,8 +331,11 @@ class generateExamples(Petsc):
             cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
             cmd+=subst['label_suffix']+' ""'  # Quotes are painful
     else:
-      cmd=indnt*nindnt+self._substVars(subst,example_template.filterdifftest)
+      cmd=diffindnt+self._substVars(subst,example_template.filterdifftest)
     cmdLines+=cmd+"\n"
+    cmdLines+=cmdindnt+'else\n'
+    cmdLines+=diffindnt+'printf "ok ${label} # SKIP Command failed so no diff\\n"\n'
+    cmdLines+=cmdindnt+'fi\n'
     return cmdLines
 
   def _substVars(self,subst,origStr):

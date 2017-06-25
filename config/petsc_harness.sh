@@ -94,15 +94,22 @@ function petsc_testrun() {
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
   filter=$5
+  # Determining whether this test passes or fails is tricky because of filters
+  # and eval.  Use sum of all parts of a potential pipe to determine status. See:
+  #  https://stackoverflow.com/questions/24734850/how-to-get-the-exit-status-of-the-first-command-in-a-pipe
+  #  http://www.unix.com/shell-programming-and-scripting/128869-creating-run-script-getting-pipestatus-eval.html
 
   if test -z "$filter"; then
     cmd="$1 > $2 2> $3"
   else
-    cmd="$1 2>&1 | $filter > $2 2> $3"
+    cmd="$1 2> $3 | $filter > $2 2>> $3"
   fi
   echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
-  eval $cmd
-  if test $? == 0; then
+  eval "$cmd; typeset -a cmd_errstat=(\${PIPESTATUS[@]})"
+  let cmd_res=0
+  for i in ${cmd_errstat[@]}; do let cmd_res+=$i; done
+
+  if test $cmd_res == 0; then
     if "${verbose}"; then
      printf "ok $tlabel $cmd\n"
     else
@@ -120,6 +127,7 @@ function petsc_testrun() {
     failures="$failures $tlabel"
   fi
   let total=$success+$failed
+  return $cmd_res
 }
 
 function petsc_testend() {
