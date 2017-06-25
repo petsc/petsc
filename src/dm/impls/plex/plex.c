@@ -6090,6 +6090,57 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   PetscFunctionReturn(0);
 }
 
+
+/*@
+  DMPlexCreateRankField - Create a cell field whose value is the rank of the owner
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. ranks - The rank field
+
+  Options Database Keys:
+. -dm_partition_view - Adds the rank field into the DM output from -dm_view using the same viewer
+
+  Level: intermediate
+
+.seealso: DMView()
+@*/
+PetscErrorCode DMPlexCreateRankField(DM dm, Vec *ranks)
+{
+  DM             rdm;
+  PetscDS        prob;
+  PetscFE        fe;
+  PetscScalar   *r;
+  PetscMPIInt    rank;
+  PetscInt       dim, cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
+  ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(rdm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
+  ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(rdm, ranks);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *ranks, "partition");CHKERRQ(ierr);
+  ierr = VecGetArray(*ranks, &r);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *lr;
+
+    ierr = DMPlexPointGlobalRef(rdm, c, r, &lr);CHKERRQ(ierr);
+    *lr = rank;
+  }
+  ierr = VecRestoreArray(*ranks, &r);CHKERRQ(ierr);
+  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
 
