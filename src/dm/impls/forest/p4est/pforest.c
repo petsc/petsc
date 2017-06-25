@@ -4356,7 +4356,7 @@ static PetscErrorCode DMProjectFunctionLocal_pforest(DM dm, PetscReal time, Pets
 }
 
 #define DMProjectFunctionLabelLocal_pforest _append_pforest(DMProjectFunctionLabelLocal)
-static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs) (PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void*), void **ctxs, InsertMode mode, Vec localX)
+static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Ncc, const PetscInt comps[], PetscErrorCode (**funcs) (PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void*), void **ctxs, InsertMode mode, Vec localX)
 {
   DM             plex;
   PetscErrorCode ierr;
@@ -4364,7 +4364,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,Ncc,comps,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
