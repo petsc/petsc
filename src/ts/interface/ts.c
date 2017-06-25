@@ -792,21 +792,32 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 {
   Mat            A,B;
   PetscErrorCode ierr;
+  TSIJacobian    ijacobian;
 
   PetscFunctionBegin;
   if (Arhs) *Arhs = NULL;
   if (Brhs) *Brhs = NULL;
-  ierr = TSGetIJacobian(ts,&A,&B,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetIJacobian(ts,&A,&B,&ijacobian,NULL);CHKERRQ(ierr);
   if (Arhs) {
     if (!ts->Arhs) {
-      ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
+      if (ijacobian) {
+        ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
+      } else {
+        ts->Arhs = A;
+        ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+      }
     }
     *Arhs = ts->Arhs;
   }
   if (Brhs) {
     if (!ts->Brhs) {
       if (A != B) {
-        ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
+        if (ijacobian) {
+          ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
+        } else {
+          ts->Brhs = B;
+          ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+        }
       } else {
         ierr = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
         ts->Brhs = ts->Arhs;
