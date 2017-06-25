@@ -18,7 +18,7 @@ typedef struct {
   PetscInt   overlap;             /* overlap requested by user */
   KSP        *ksp;                /* linear solvers for each block */
   VecScatter *restriction;        /* mapping from global to subregion */
-  VecScatter *localization;       /* mapping from overlapping to non-overlapping subregion */
+  VecScatter *localization;       /* mapping from overlapping to non-overlapping subregion; used for restrict version of algorithms */
   VecScatter *prolongation;       /* mapping from subregion to global */
   Vec        *x,*y,*y_local;      /* work vectors */
   IS         *is;                 /* index set that defines each overlapping subdomain */
@@ -343,7 +343,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     /* Create the local work vectors (from the local matrices) and scatter contexts */
     ierr = MatCreateVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->restriction);CHKERRQ(ierr);
-    if (osm->is_local) {ierr = PetscMalloc1(osm->n_local,&osm->localization);CHKERRQ(ierr);}
+    if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE )) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()"); 
+    if (osm->is_local && osm->type == PC_ASM_RESTRICT) {ierr = PetscMalloc1(osm->n_local,&osm->localization);CHKERRQ(ierr);}
     ierr = PetscMalloc1(osm->n_local,&osm->prolongation);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->y);CHKERRQ(ierr);
@@ -355,7 +356,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecScatterCreate(vec,osm->is[i],osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&isl);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
-      if (osm->is_local) {
+      if (osm->localization) {
         ISLocalToGlobalMapping ltog;
         IS                     isll;
         const PetscInt         *idx_local;
@@ -378,14 +379,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = VecScatterCreate(vec,osm->is_local[i],osm->y_local[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
         ierr = ISDestroy(&isl);CHKERRQ(ierr);
       } else {
-        ierr = VecGetLocalSize(vec,&m_local);CHKERRQ(ierr);
-
         osm->y_local[i] = osm->y[i];
-
         ierr = PetscObjectReference((PetscObject) osm->y[i]);CHKERRQ(ierr);
-
         osm->prolongation[i] = osm->restriction[i];
-
         ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       }
     }
@@ -395,7 +391,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecDuplicate(osm->x[i],&osm->y_local[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&isl);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
-      if (osm->is_local) {
+      if (osm->localization) {
         ierr = VecScatterCreate(osm->y[i],isl,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
         ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
       } else {
@@ -889,8 +885,8 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 .   n - the number of subdomains for this processor (default value = 1)
 .   is - the index set that defines the subdomains for this processor
          (or NULL for PETSc to determine subdomains)
--   is_local - the index sets that define the local part of the subdomains for this processor
-         (or NULL to use the default of 1 subdomain per process)
+-   is_local - the index sets that define the local part of the subdomains for this processor, not used unless PCASMType is PC_ASM_RESTRICT
+         (or NULL to not provide these)
 
     Notes:
     The IS numbering is in the parallel, global numbering of the vector for both is and is_local
@@ -899,12 +895,18 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 
     Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
 
+    If is_local is provided and PCASMType is PC_ASM_RESTRICT then the solution only over the is_local region is interpolated
+    back to form the global solution (this is the standard restricted additive Schwarz method)
+
+    If the is_local is provided and PCASMType is PC_ASM_INTERPOLATE or PC_ASM_NONE then an error is generated since there is
+    no code to handle that case.
+
     Level: advanced
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
-          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
+          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains(), PCASMType, PCASMSetType()
 @*/
 PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 {
@@ -929,7 +931,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 .   is - the index sets that define the subdomains for all processors
          (or NULL to ask PETSc to compe up with subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor
-         (or NULL to use the default of 1 subdomain per process)
+         (or NULL to not provide this information)
 
     Options Database Key:
     To set the total number of subdomain blocks rather than specify the
@@ -937,7 +939,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 .    -pc_asm_blocks <blks> - Sets total blocks
 
     Notes:
-    Currently you cannot use this to set the actual subdomains with the argument is.
+    Currently you cannot use this to set the actual subdomains with the argument is or is_local.
 
     By default the ASM preconditioner uses 1 block per processor.
 
@@ -968,8 +970,7 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
-    PC communicator must call this routine. If MatIncreaseOverlap is used,
-    use option -mat_increase_overlap when the problem size large.
+    PC communicator must call this routine.
 
     Logically Collective on PC
 
@@ -993,8 +994,11 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
     internally by PETSc, and using an overlap of 0 would result in an ASM
     variant that is equivalent to the block Jacobi preconditioner.
 
+    The default algorithm used by PETSc to increase overlap is fast, but not scalable,
+    use the option -mat_increase_overlap_scalable when the problem and number of processes is large.
+
     Note that one can define initial index sets with any overlap via
-    PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(); the routine
+    PCASMSetLocalSubdomains(); the routine
     PCASMSetOverlap() merely allows PETSc to extend that overlap further
     if desired.
 
@@ -1003,7 +1007,7 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
 .keywords: PC, ASM, set, overlap
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
-          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
+          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains(), MatIncreaseOverlap()
 @*/
 PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
 {
@@ -1035,12 +1039,15 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
     Options Database Key:
 .   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
+    Notes: if the is_local arguments are passed to PCASMSetLocalSubdomains() then they are used when PC_ASM_RESTRICT has been selected
+    to limit the local processor interpolation
+
     Level: intermediate
 
 .keywords: PC, ASM, set, type
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
-          PCASMCreateSubdomains2D()
+          PCASMCreateSubdomains2D(), PCASMType, PCASMSetLocalType(), PCASMGetLocalType()
 @*/
 PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
 {
@@ -1080,7 +1087,7 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
 .keywords: PC, ASM, set, type
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
-          PCASMCreateSubdomains2D()
+          PCASMCreateSubdomains2D(), PCASMType, PCASMSetType(), PCASMSetLocalType(), PCASMGetLocalType()
 @*/
 PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
 {
@@ -1110,7 +1117,7 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
 
   Level: intermediate
 
-.seealso: PCASMSetType(), PCASMGetType(), PCASMGetLocalType(), PCASMCreate()
+.seealso: PCASMSetType(), PCASMGetType(), PCASMGetLocalType(), PCASM, PCASMType, PCASMSetType(), PCASMGetType(), PCCompositeType
 @*/
 PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 {
@@ -1143,7 +1150,7 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
 
   Level: intermediate
 
-.seealso: PCASMSetType(), PCASMGetType(), PCASMSetLocalType(), PCASMCreate()
+.seealso: PCASMSetType(), PCASMGetType(), PCASMSetLocalType(), PCASMCreate(), PCASMType, PCASMSetType(), PCASMGetType(), PCCompositeType
 @*/
 PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
 {
@@ -1201,9 +1208,6 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    Note:
    After PCASMGetSubKSP() the array of KSPes is not to be freed.
 
-   Currently for some matrix implementations only 1 block per processor
-   is supported.
-
    You must call KSPSetUp() before calling PCASMGetSubKSP().
 
    Fortran note:
@@ -1234,14 +1238,15 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
    Options Database Keys:
 +  -pc_asm_blocks <blks> - Sets total blocks
 .  -pc_asm_overlap <ovl> - Sets overlap
--  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+.  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type, default is restrict
+-  -pc_asm_local_type [additive, multiplicative] - Sets ASM type, default is additive
 
      IMPORTANT: If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you
       will get a different convergence rate due to the default option of -pc_asm_type restrict. Use
       -pc_asm_type basic to use the standard ASM.
 
    Notes: Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Defaults to one block per processor.
+     than one processor. Use PCGASM for subdomains shared by multiple processes. Defaults to one block per processor.
 
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
@@ -1249,7 +1254,6 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
      To set the options on the solvers separate for each block call PCASMGetSubKSP()
          and set the options directly on the resulting KSP object (you can access its PC
          with KSPGetPC())
-
 
    Level: beginner
 
@@ -1262,8 +1266,8 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
     Cambridge University Press.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCBJACOBI, PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
-           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType()
+           PCBJACOBI, PCASMGetSubKSP(), PCASMSetLocalSubdomains(), PCASMType, PCASMGetType(), PCASMSetLocalType(), PCASMGetLocalType()
+           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(), PCCompositeType
 
 M*/
 
@@ -1679,7 +1683,6 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
 +   n - the number of matrices for this processor (default value = 1)
 -   mat - the matrices
 
-
     Level: advanced
 
     Notes: Call after PCSetUp() (or KSPSetUp()) but before PCApply() (or KSPApply()) and before PCSetUpOnBlocks())
@@ -1716,6 +1719,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 
 /*@
     PCASMSetDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+
     Logically Collective
 
     Input Parameter:
@@ -1786,9 +1790,8 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
   PetscFunctionReturn(0);
 }
 
-
 /*@
-PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
+     PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
 
    Not Collective
 
@@ -1796,7 +1799,7 @@ PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
 .  pc - the PC
 
    Output Parameter:
-.  sub_mat_type - name of matrix type
+.  -pc_asm_sub_mat_type - name of matrix type
 
    Level: advanced
 
@@ -1812,7 +1815,7 @@ PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type){
 }
 
 /*@
- PCASMSetSubMatType - Set the type of matrix used for ASM subsolves
+     PCASMSetSubMatType - Set the type of matrix used for ASM subsolves
 
    Collective on Mat
 
