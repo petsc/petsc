@@ -55,63 +55,9 @@ PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
-{
-  switch (i) {
-  case 0:
-    switch (j) {
-    case 0: return 0;
-    case 1:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 0;
-      case 2: return 1;
-      }
-    case 2:
-      switch (k) {
-      case 0: return 0;
-      case 1: return -1;
-      case 2: return 0;
-      }
-    }
-  case 1:
-    switch (j) {
-    case 0:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 0;
-      case 2: return -1;
-      }
-    case 1: return 0;
-    case 2:
-      switch (k) {
-      case 0: return 1;
-      case 1: return 0;
-      case 2: return 0;
-      }
-    }
-  case 2:
-    switch (j) {
-    case 0:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 1;
-      case 2: return 0;
-      }
-    case 1:
-      switch (k) {
-      case 0: return -1;
-      case 1: return 0;
-      case 2: return 0;
-      }
-    case 2: return 0;
-    }
-  }
-  return 0;
-}
-
 static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
 {
+  const PetscInt eps[3][3][3] = {{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}}, {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}};
   PetscInt *ctxInt  = (PetscInt *) ctx;
   PetscInt  dim2    = ctxInt[0];
   PetscInt  d       = ctxInt[1];
@@ -121,11 +67,11 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   if (dim != dim2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input dimension %d does not match context dimension %d", dim, dim2);
   for (i = 0; i < dim; i++) mode[i] = 0.;
   if (d < dim) {
-    mode[d] = 1.;
+    mode[d] = 1.; /* Translation along axis d */
   } else {
     for (i = 0; i < dim; i++) {
       for (j = 0; j < dim; j++) {
-        mode[j] += epsilon(i, j, k)*X[i];
+        mode[j] += eps[i][j][k]*X[i]; /* Rotation about axis d */
       }
     }
   }
@@ -133,7 +79,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
 }
 
 /*@C
-  DMPlexCreateRigidBody - for the default global section, create rigid body modes from coordinates
+  DMPlexCreateRigidBody - For the default global section, create rigid body modes by function space interpolation
 
   Collective on DM
 
@@ -143,11 +89,11 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   Output Argument:
 . sp - the null space
 
-  Note: This is necessary to take account of Dirichlet conditions on the displacements
+  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
 
   Level: advanced
 
-.seealso: MatNullSpaceCreate()
+.seealso: MatNullSpaceCreate(), PCGAMG
 @*/
 PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 {
@@ -194,6 +140,75 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
   for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexCreateRigidBodies - For the default global section, create rigid body modes by function space interpolation
+
+  Collective on DM
+
+  Input Arguments:
++ dm    - the DM
+. nb    - The number of bodies
+. label - The DMLabel marking each domain
+. nids  - The number of ids per body
+- ids   - An array of the label ids in sequence for each domain
+
+  Output Argument:
+. sp - the null space
+
+  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
+
+  Level: advanced
+
+.seealso: MatNullSpaceCreate()
+@*/
+PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const PetscInt nids[], const PetscInt ids[], MatNullSpace *sp)
+{
+  MPI_Comm       comm;
+  PetscSection   section, globalSection;
+  Vec           *mode;
+  PetscScalar   *dots;
+  PetscInt       dim, dimEmbed, n, m, b, d, i, j, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &n);CHKERRQ(ierr);
+  m    = nb * (dim*(dim+1))/2;
+  ierr = PetscMalloc2(m, &mode, m, &dots);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &mode[0]);CHKERRQ(ierr);
+  ierr = VecSetSizes(mode[0], n, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
+  for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
+  for (b = 0, off = 0; b < nb; ++b) {
+    for (d = 0; d < m/nb; ++d) {
+      PetscInt         ctx[2];
+      PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody_Private;
+      void            *voidctx = (void *) (&ctx[0]);
+
+      ctx[0] = dimEmbed;
+      ctx[1] = d;
+      ierr = DMProjectFunctionLabel(dm, 0.0, label, nids[b], &ids[off], 0, NULL, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+      off   += nids[b];
+    }
+  }
+  for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
+  /* Orthonormalize system */
+  for (i = 0; i < m; ++i) {
+    ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
+    for (j = 0; j < i; ++j) dots[j] *= -1.0;
+    ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
+    ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
+  for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  ierr = PetscFree2(mode, dots);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
