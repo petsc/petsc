@@ -29,7 +29,7 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      filter: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
+     filter: Error: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
 
 
 TEST*/

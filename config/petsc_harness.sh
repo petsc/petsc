@@ -102,7 +102,12 @@ function petsc_testrun() {
   if test -z "$filter"; then
     cmd="$1 > $2 2> $3"
   else
-    cmd="$1 2> $3 | $filter > $2 2>> $3"
+    if test "${filter:0:6}"=="Error:"; then
+      filter=${filter##Error:}
+      cmd="#!/bin/bash eval $1 2>&1  | $filter > $2 2> $3"
+    else
+      cmd="$1 2> $3 | $filter > $2 2>> $3"
+    fi
   fi
   echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
   eval "$cmd; typeset -a cmd_errstat=(\${PIPESTATUS[@]})"

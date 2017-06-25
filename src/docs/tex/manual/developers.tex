@@ -1372,6 +1372,10 @@ With this background, these keywords are are:
                  diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
       \end{lstlisting}
 
+      \item If the filter begins with \lstinline{Error:}, then the test is
+            assumed to be testing the error output, and the error code and
+            output is set up to be tested.
+
       \end{itemize}
 
     \item[]  \textbf{filter\_output}: (\emph{Optional}; \emph{Default:} \lstinline{""})
