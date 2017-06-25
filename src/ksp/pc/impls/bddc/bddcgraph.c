@@ -139,7 +139,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     }
     if (verbosity_level > 1) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"):");CHKERRQ(ierr);
-      if (graph->twodim || graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) {
+      if (verbosity_level > 2 || graph->twodim || graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == PCBDDCGRAPH_NEUMANN_MARK)) {
         printcc = PETSC_TRUE;
       }
       if (printcc) {

@@ -143,6 +143,7 @@
         <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.</li>
         <li>Added additional string parameter to PCBDDCCreateFETIDPOperators for the specification of the prefix (can be NULL).</li>
         <li>FIELDSPLIT now extracts off-diag fieldsplit blocks from the preconditioner instead of the jacobian by default. Use -pc_fieldsplit_off_diag_use_amat to use the jacobian matrix.</li>
+        <li>Added PCFieldSplitSetSchurScale to control the scaling factor of the Schur complement with the DIAG factorization. The corresponding command line option is -pc_fieldsplit_schur_scale.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>

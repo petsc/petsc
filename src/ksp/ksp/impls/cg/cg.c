@@ -444,10 +444,10 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIIPrintf(viewer,"  CG or CGNE: variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
 #endif
     if (cg->singlereduction) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: using single-reduction variant\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  using single-reduction variant\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

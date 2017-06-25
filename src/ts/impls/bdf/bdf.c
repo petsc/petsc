@@ -374,8 +374,6 @@ static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Order=%D\n",bdf->order);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
-  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -428,6 +426,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_BDF;
   ts->ops->snesjacobian   = SNESTSFormJacobian_BDF;
   ts->default_adapt_type  = TSADAPTBASIC;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&bdf);CHKERRQ(ierr);
   ts->data = (void*)bdf;

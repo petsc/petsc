@@ -163,6 +163,8 @@ struct _p_TS {
 
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES     snes;
+  PetscBool usessnes;   /* Flag set by each TSType to indicate if the type actually uses a SNES;
+                           this works around the design flaw that a SNES is ALWAYS created with TS even when it is not needed.*/
   PetscInt ksp_its;                /* total number of linear solver iterations */
   PetscInt snes_its;               /* total number of nonlinear solver iterations */
   PetscInt num_snes_failures;

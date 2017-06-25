@@ -61,15 +61,15 @@ SNES Object: 6 MPI processes
     maximum iterations=40
   KSP Object: 6 MPI processes
     type: fgmres
-      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=0.01, absolute=-1., divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 6 MPI processes
     type: mg
-      MG: type is MULTIPLICATIVE, levels=4 cycles=v
+      type is MULTIPLICATIVE, levels=4 cycles=v
         Cycles per PCApply=1
         Not using Galerkin computed coarse grid matrices
     Coarse grid solver -- level -------------------------------
@@ -81,7 +81,7 @@ SNES Object: 6 MPI processes
         using NONE norm type for convergence test
       PC Object: (mg_coarse_) 6 MPI processes
         type: redundant
-          Redundant preconditioner: First (color=0) of 6 PCs follows
+          First (color=0) of 6 PCs follows
           KSP Object: (mg_coarse_redundant_) 1 MPI processes
             type: preonly
             maximum iterations=10000, initial guess is zero
@@ -119,16 +119,15 @@ SNES Object: 6 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 6 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=1, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using NONE norm type for convergence test
       PC Object: (mg_levels_1_) 6 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 6
+          number of blocks = 6
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (mg_levels_1_sub_) 1 MPI processes
           type: preonly
@@ -138,7 +137,6 @@ SNES Object: 6 MPI processes
           using NONE norm type for convergence test
         PC Object: (mg_levels_1_sub_) 1 MPI processes
           type: cholesky
-            Cholesky: out-of-place factorization
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: natural
@@ -168,16 +166,15 @@ SNES Object: 6 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 6 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=1, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using NONE norm type for convergence test
       PC Object: (mg_levels_2_) 6 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 6
+          number of blocks = 6
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (mg_levels_2_sub_) 1 MPI processes
           type: preonly
@@ -218,16 +215,15 @@ SNES Object: 6 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 6 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
+        maximum iterations=1, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using NONE norm type for convergence test
       PC Object: (mg_levels_3_) 6 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 6
+          number of blocks = 6
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (mg_levels_3_sub_) 1 MPI processes
           type: preonly

@@ -421,16 +421,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObjec
 
 static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 {
-  /*  TS_EIMEX         *ext = (TS_EIMEX*)ts->data; */
-  PetscBool        iascii;
-  PetscErrorCode   ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  EIMEX\n");CHKERRQ(ierr);
-  }
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -596,6 +587,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_EIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_EIMEX;
   ts->default_adapt_type  = TSADAPTNONE;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&ext);CHKERRQ(ierr);
   ts->data = (void*)ext;

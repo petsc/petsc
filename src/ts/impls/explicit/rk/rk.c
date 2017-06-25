@@ -881,13 +881,12 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     TSRKType  rktype;
     char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RK: %s\n",rktype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

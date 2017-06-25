@@ -614,19 +614,19 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D\n",pipefgmres->max_k);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)pipefgmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  restart=%D\n",pipefgmres->max_k);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  happy breakdown tolerance %g\n",(double)pipefgmres->haptol);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIIPrintf(viewer," PIPEFGMRES: shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIIPrintf(viewer," PIPEFGMRES: shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
 #endif
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"restart %D",pipefgmres->max_k);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerStringSPrintf(viewer,"   PIPEFGMRES: shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"   shift=%g+%gi\n",PetscRealPart(pipefgmres->shift),PetscImaginaryPart(pipefgmres->shift));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerStringSPrintf(viewer,"   PIPEFGMRES: shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"   shift=%g\n",pipefgmres->shift);CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);

@@ -369,11 +369,11 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
   
 
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: max previous directions = %D\n",pipegcr->mmax);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: preallocated %D directions\n",PetscMin(pipegcr->nprealloc,pipegcr->mmax+1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: %s\n",truncstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: w unrolling = %D \n", pipegcr->unroll_w);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEGCR: restarts performed = %D \n", pipegcr->n_restarts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  max previous directions = %D\n",pipegcr->mmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(pipegcr->nprealloc,pipegcr->mmax+1));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  w unrolling = %D \n", pipegcr->unroll_w);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  restarts performed = %D \n", pipegcr->n_restarts);CHKERRQ(ierr);
   } else if (isstring) { 
     ierr = PetscViewerStringSPrintf(viewer, "max previous directions = %D, preallocated %D directions, %s truncation strategy", pipegcr->mmax,pipegcr->nprealloc,truncstr);CHKERRQ(ierr);
   }

@@ -2296,7 +2296,8 @@ be used. \sindex{Bi-conjugate gradient}
 Note: PETSc implements the FETI-DP (Finite Element Tearing and Interconnecting
 Dual-Primal) method as a KSP since it recasts the original problem into a contstrained
 minimization one with Lagrange multipliers. The only matrix type supported is
-\lstinline{MATIS}.
+\lstinline{MATIS}. Support for saddle point problems is provided.
+Consult the online documentation for further details.
 
 \subsection{Convergence Tests}
 \label{section_convergencetests}

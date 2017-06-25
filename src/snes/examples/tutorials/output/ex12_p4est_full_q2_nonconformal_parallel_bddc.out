@@ -22,55 +22,55 @@ SNES Object: 7 MPI processes
     using PRECONDITIONED norm type for convergence test
   PC Object: 7 MPI processes
     type: bddc
-      BDDC: Use verbose output: 0
-      BDDC: Use user-defined CSR: 0
-      BDDC: Use local mat graph: 1
-      BDDC: Connectivity graph topological dimension: 2
-      BDDC: Graph max count: 2147483647
-      BDDC: Use vertices: 1 (vertex size 1)
-      BDDC: Use edges: 1
-      BDDC: Use faces: 0
-      BDDC: Use true near null space: 0
-      BDDC: Use QR for single constraints on cc: 0
-      BDDC: Use change of basis on local edge nodes: 0
-      BDDC: Use change of basis on local face nodes: 0
-      BDDC: User defined change of basis matrix: 0
-      BDDC: Has change of basis matrix: 0
-      BDDC: Eliminate dirichlet boundary dofs: 0
-      BDDC: Switch on static condensation ops around the interface preconditioner: 0
-      BDDC: Use exact dirichlet trick: 1
-      BDDC: Multilevel max levels: 0
-      BDDC: Multilevel coarsening ratio: 8
-      BDDC: Use estimated eigs for coarse problem: 0
-      BDDC: Use deluxe scaling: 0
-      BDDC: Use deluxe zerorows: 0
-      BDDC: Use deluxe singlemat: 0
-      BDDC: Rebuild interface graph for Schur principal minors: 0
-      BDDC: Number of dofs' layers for the computation of principal minors: -1
-      BDDC: Use user CSR graph to compute successive layers: 0
-      BDDC: Adaptive constraint selection threshold (active 0, userdefined 0): 0.
-      BDDC: Min constraints / connected component: 0
-      BDDC: Max constraints / connected component: 0
-      BDDC: Invert exact Schur complement for adaptive selection: 0
-      BDDC: Symmetric computation of primal basis functions: 1
-      BDDC: Num. Procs. to map coarse adjacency list: 0
-      BDDC: Coarse eqs per proc (significant at the coarsest level): 1
-      BDDC: Detect disconnected: 0
-      BDDC: Benign subspace trick: 0 (change explicit 0)
-      BDDC: Benign subspace trick is active: 0
-      BDDC: Algebraic computation of no-net-flux 0
-      BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
-      BDDC: Global dofs sizes: all 1485 interface 171 coarse 21
-      BDDC: Coarsening ratios: all/coarse 70 interface/coarse 8
-      BDDC: Active processes : 7
-      BDDC: Total subdomains : 7
-      BDDC: Dofs type        :	MIN	MAX	MEAN
-      BDDC: Interior  dofs   :	182	195	187
-      BDDC: Interface dofs   :	29	66	50
-      BDDC: Primal    dofs   :	3	10	7
-      BDDC: Local     dofs   :	216	254	237
-      BDDC: Local     subs   :	1	1
-      BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
+      Use verbose output: 0
+      Use user-defined CSR: 0
+      Use local mat graph: 1
+      Connectivity graph topological dimension: 2
+      Graph max count: 2147483647
+      Use vertices: 1 (vertex size 1)
+      Use edges: 1
+      Use faces: 0
+      Use true near null space: 0
+      Use QR for single constraints on cc: 0
+      Use change of basis on local edge nodes: 0
+      Use change of basis on local face nodes: 0
+      User defined change of basis matrix: 0
+      Has change of basis matrix: 0
+      Eliminate dirichlet boundary dofs: 0
+      Switch on static condensation ops around the interface preconditioner: 0
+      Use exact dirichlet trick: 1
+      Multilevel max levels: 0
+      Multilevel coarsening ratio: 8
+      Use estimated eigs for coarse problem: 0
+      Use deluxe scaling: 0
+      Use deluxe zerorows: 0
+      Use deluxe singlemat: 0
+      Rebuild interface graph for Schur principal minors: 0
+      Number of dofs' layers for the computation of principal minors: -1
+      Use user CSR graph to compute successive layers: 0
+      Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+      Min constraints / connected component: 0
+      Max constraints / connected component: 0
+      Invert exact Schur complement for adaptive selection: 0
+      Symmetric computation of primal basis functions: 1
+      Num. Procs. to map coarse adjacency list: 0
+      Coarse eqs per proc (significant at the coarsest level): 1
+      Detect disconnected: 0
+      Benign subspace trick: 0 (change explicit 0)
+      Benign subspace trick is active: 0
+      Algebraic computation of no-net-flux 0
+      ********************************** STATISTICS AT LEVEL 0 **********************************
+      Global dofs sizes: all 1495 interface 173 coarse 19
+      Coarsening ratios: all/coarse 78 interface/coarse 9
+      Active processes : 7
+      Total subdomains : 7
+      Dofs type        :	MIN	MAX	MEAN
+      Interior  dofs   :	182	195	188
+      Interface dofs   :	46	58	50
+      Primal    dofs   :	4	8	6
+      Local     dofs   :	228	250	239
+      Local     subs   :	1	1
+      ********************************** COARSE PROBLEM DETAILS *********************************
     KSP Object: (pc_bddc_coarse_) 7 MPI processes
       type: preonly
       maximum iterations=1, initial guess is zero
@@ -79,7 +79,7 @@ SNES Object: 7 MPI processes
       using NONE norm type for convergence test
     PC Object: (pc_bddc_coarse_) 7 MPI processes
       type: redundant
-        Redundant preconditioner: First (color=0) of 7 PCs follows
+        First (color=0) of 7 PCs follows
       linear system matrix = precond matrix:
       Mat Object: 7 MPI processes
         type: mpiaij

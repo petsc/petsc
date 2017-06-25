@@ -35,14 +35,14 @@ PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
   PetscCheckSameComm(snes,1,x,2);
   PetscCheckSameComm(snes,1,y,3);
   ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
-  if (snes->pc) {
+  if (snes->npc) {
     if (f) {
-      ierr = SNESSetInitialFunction(snes->pc,f);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->npc,f);CHKERRQ(ierr);
     }
     ierr = VecCopy(x,y);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,x,y,0);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->npc,snes->vec_rhs,y);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->npc,x,y,0);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -56,9 +56,9 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (snes->pc) {
+  if (snes->npc) {
     ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
     }
@@ -95,22 +95,22 @@ PetscErrorCode SNESGetNPCFunction(SNES snes,Vec F,PetscReal *fnorm)
   Vec              FPC,XPC;
 
   PetscFunctionBegin;
-  if (snes->pc) {
-    ierr = SNESGetNPCSide(snes->pc,&npcside);CHKERRQ(ierr);
-    ierr = SNESGetFunctionType(snes->pc,&functype);CHKERRQ(ierr);
-    ierr = SNESGetNormSchedule(snes->pc,&normschedule);CHKERRQ(ierr);
+  if (snes->npc) {
+    ierr = SNESGetNPCSide(snes->npc,&npcside);CHKERRQ(ierr);
+    ierr = SNESGetFunctionType(snes->npc,&functype);CHKERRQ(ierr);
+    ierr = SNESGetNormSchedule(snes->npc,&normschedule);CHKERRQ(ierr);
 
     /* check if the function is valid based upon how the inner solver is preconditioned */
     if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
-      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes->npc,&FPC,NULL,NULL);CHKERRQ(ierr);
       if (FPC) {
         if (fnorm) {ierr = VecNorm(FPC,NORM_2,fnorm);CHKERRQ(ierr);}
         ierr = VecCopy(FPC,F);CHKERRQ(ierr);
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no function");
     } else {
-      ierr = SNESGetSolution(snes->pc,&XPC);CHKERRQ(ierr);
+      ierr = SNESGetSolution(snes->npc,&XPC);CHKERRQ(ierr);
       if (XPC) {
-        ierr = SNESComputeFunction(snes->pc,XPC,F);CHKERRQ(ierr);
+        ierr = SNESComputeFunction(snes->npc,XPC,F);CHKERRQ(ierr);
         if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no solution");
     }

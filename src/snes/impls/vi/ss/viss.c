@@ -475,7 +475,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   snes->ops->view           = NULL;
 
   snes->usesksp = PETSC_TRUE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 

@@ -23,8 +23,8 @@ SNES Object: 5 MPI processes
     maximum iterations=40
   KSP Object: 5 MPI processes
     type: fgmres
-      GMRES: restart=10, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=10, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
@@ -39,15 +39,15 @@ SNES Object: 5 MPI processes
       KSP solver for A00 block
         KSP Object: (fieldsplit_velocity_) 5 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 5 MPI processes
           type: gamg
-            MG: type is MULTIPLICATIVE, levels=3 cycles=v
+            type is MULTIPLICATIVE, levels=3 cycles=v
               Cycles per PCApply=1
               Using externally compute Galerkin coarse grid matrices
               GAMG specific options
@@ -66,7 +66,7 @@ SNES Object: 5 MPI processes
               using NONE norm type for convergence test
             PC Object: (fieldsplit_velocity_mg_coarse_) 5 MPI processes
               type: bjacobi
-                block Jacobi: number of blocks = 5
+                number of blocks = 5
                 Local solve is same for all blocks, in the following KSP and PC objects:
               KSP Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                 type: preonly
@@ -106,26 +106,25 @@ SNES Object: 5 MPI processes
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates used:  min = 0.0999934, max = 1.09993
-                Chebyshev: eigenvalues estimate via gmres min 0.477752, max 0.999934
-                Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+                eigenvalue estimates used:  min = 0.0999934, max = 1.09993
+                eigenvalues estimate via gmres min 0.477752, max 0.999934
+                eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 5 MPI processes
                   type: gmres
-                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                    GMRES: happy breakdown tolerance 1e-30
+                    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    happy breakdown tolerance 1e-30
                   maximum iterations=10, initial guess is zero
                   tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
-                Chebyshev: estimating eigenvalues using noisy right hand side
-              maximum iterations=2
+                estimating eigenvalues using noisy right hand side
+              maximum iterations=2, nonzero initial guess
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
-              using nonzero initial guess
               using NONE norm type for convergence test
             PC Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
               type: sor
-                SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+                type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
               linear system matrix = precond matrix:
               Mat Object: 5 MPI processes
                 type: mpiaij
@@ -137,26 +136,25 @@ SNES Object: 5 MPI processes
           Down solver (pre-smoother) on level 2 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_2_) 5 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates used:  min = 0.139266, max = 1.53192
-                Chebyshev: eigenvalues estimate via gmres min 0.0208652, max 1.39266
-                Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+                eigenvalue estimates used:  min = 0.139266, max = 1.53192
+                eigenvalues estimate via gmres min 0.0208652, max 1.39266
+                eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_2_esteig_) 5 MPI processes
                   type: gmres
-                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                    GMRES: happy breakdown tolerance 1e-30
+                    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    happy breakdown tolerance 1e-30
                   maximum iterations=10, initial guess is zero
                   tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
-                Chebyshev: estimating eigenvalues using noisy right hand side
-              maximum iterations=2
+                estimating eigenvalues using noisy right hand side
+              maximum iterations=2, nonzero initial guess
               tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
               left preconditioning
-              using nonzero initial guess
               using NONE norm type for convergence test
             PC Object: (fieldsplit_velocity_mg_levels_2_) 5 MPI processes
               type: sor
-                SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+                type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
               linear system matrix = precond matrix:
               Mat Object: (fieldsplit_velocity_) 5 MPI processes
                 type: mpiaij
@@ -175,8 +173,8 @@ SNES Object: 5 MPI processes
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 5 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -207,15 +205,15 @@ SNES Object: 5 MPI processes
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 5 MPI processes
                   type: gmres
-                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                    GMRES: happy breakdown tolerance 1e-30
+                    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    happy breakdown tolerance 1e-30
                   maximum iterations=10000, initial guess is zero
                   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 5 MPI processes
                   type: gamg
-                    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+                    type is MULTIPLICATIVE, levels=3 cycles=v
                       Cycles per PCApply=1
                       Using externally compute Galerkin coarse grid matrices
                       GAMG specific options
@@ -234,7 +232,7 @@ SNES Object: 5 MPI processes
                       using NONE norm type for convergence test
                     PC Object: (fieldsplit_velocity_mg_coarse_) 5 MPI processes
                       type: bjacobi
-                        block Jacobi: number of blocks = 5
+                        number of blocks = 5
                         Local solve is same for all blocks, in the following KSP and PC objects:
                       KSP Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                         type: preonly
@@ -274,26 +272,25 @@ SNES Object: 5 MPI processes
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates used:  min = 0.0999934, max = 1.09993
-                        Chebyshev: eigenvalues estimate via gmres min 0.477752, max 0.999934
-                        Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+                        eigenvalue estimates used:  min = 0.0999934, max = 1.09993
+                        eigenvalues estimate via gmres min 0.477752, max 0.999934
+                        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 5 MPI processes
                           type: gmres
-                            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                            GMRES: happy breakdown tolerance 1e-30
+                            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                            happy breakdown tolerance 1e-30
                           maximum iterations=10, initial guess is zero
                           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                           left preconditioning
                           using PRECONDITIONED norm type for convergence test
-                        Chebyshev: estimating eigenvalues using noisy right hand side
-                      maximum iterations=2
+                        estimating eigenvalues using noisy right hand side
+                      maximum iterations=2, nonzero initial guess
                       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
-                      using nonzero initial guess
                       using NONE norm type for convergence test
                     PC Object: (fieldsplit_velocity_mg_levels_1_) 5 MPI processes
                       type: sor
-                        SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+                        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
                       linear system matrix = precond matrix:
                       Mat Object: 5 MPI processes
                         type: mpiaij
@@ -305,26 +302,25 @@ SNES Object: 5 MPI processes
                   Down solver (pre-smoother) on level 2 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_2_) 5 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates used:  min = 0.139266, max = 1.53192
-                        Chebyshev: eigenvalues estimate via gmres min 0.0208652, max 1.39266
-                        Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+                        eigenvalue estimates used:  min = 0.139266, max = 1.53192
+                        eigenvalues estimate via gmres min 0.0208652, max 1.39266
+                        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_2_esteig_) 5 MPI processes
                           type: gmres
-                            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                            GMRES: happy breakdown tolerance 1e-30
+                            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                            happy breakdown tolerance 1e-30
                           maximum iterations=10, initial guess is zero
                           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
                           left preconditioning
                           using PRECONDITIONED norm type for convergence test
-                        Chebyshev: estimating eigenvalues using noisy right hand side
-                      maximum iterations=2
+                        estimating eigenvalues using noisy right hand side
+                      maximum iterations=2, nonzero initial guess
                       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                       left preconditioning
-                      using nonzero initial guess
                       using NONE norm type for convergence test
                     PC Object: (fieldsplit_velocity_mg_levels_2_) 5 MPI processes
                       type: sor
-                        SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+                        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
                       linear system matrix = precond matrix:
                       Mat Object: (fieldsplit_velocity_) 5 MPI processes
                         type: mpiaij
