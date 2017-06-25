@@ -903,13 +903,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf_operator,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","SNESSetUseMatrixFree",PETSC_FALSE,&snes->mf_operator,&flg);CHKERRQ(ierr);
   if (flg && snes->mf_operator) {
     snes->mf_operator = PETSC_TRUE;
     snes->mf          = PETSC_TRUE;
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","SNESSetUseMatrixFree",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
   if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
   ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
 
@@ -1058,6 +1058,69 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   *(void**)usrP = snes->user;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply
+                          the Jacobian.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - SNES context
+.  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
+-  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+
+   Options Database:
++ -snes_mf - use matrix free for both the mat and pmat operator
+- -snes_mf_operator - use matrix free only for the mat operator
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, iteration, number,
+
+.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF()
+@*/
+PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool mf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (mf && !mf_operator) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"If using mf must also use mf_operator");
+  snes->mf          = mf;
+  snes->mf_operator = mf_operator;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply
+                          the Jacobian.
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - SNES context
+
+   Output Parameters:
++  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
+-  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+
+   Options Database:
++ -snes_mf - use matrix free for both the mat and pmat operator
+- -snes_mf_operator - use matrix free only for the mat operator
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, iteration, number,
+
+.seealso:   SNESSetUseMatrixFree(), MatCreateSNESMF()
+@*/
+PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool *mf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (mf)          *mf          = snes->mf;
+  if (mf_operator) *mf_operator = snes->mf_operator;
   PetscFunctionReturn(0);
 }
 
