@@ -1351,6 +1351,28 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatDensePlaceArray_SeqDense(Mat A,const PetscScalar array[])
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+
+  PetscFunctionBegin;
+  a->unplacedarray       = a->v;
+  a->unplaced_user_alloc = a->user_alloc;
+  a->v                   = (PetscScalar*) array;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseResetArray_SeqDense(Mat A)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+
+  PetscFunctionBegin;
+  a->v             = a->unplacedarray;
+  a->user_alloc    = a->unplaced_user_alloc;
+  a->unplacedarray = NULL;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatDestroy_SeqDense(Mat mat)
 {
   Mat_SeqDense   *l = (Mat_SeqDense*)mat->data;
@@ -1368,6 +1390,8 @@ static PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_seqdense_seqaij_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -2535,6 +2559,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   b->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetArray_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDensePlaceArray_C",MatDensePlaceArray_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseResetArray_C",MatDenseResetArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqaij_C",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
