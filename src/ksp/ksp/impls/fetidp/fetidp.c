@@ -2,7 +2,8 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
-static PetscBool  cited = PETSC_FALSE;
+static PetscBool  cited  = PETSC_FALSE;
+static PetscBool  cited2 = PETSC_FALSE;
 static const char citation[] =
 "@article{ZampiniPCBDDC,\n"
 "author = {Stefano Zampini},\n"
@@ -26,6 +27,17 @@ static const char citation[] =
 "doi = {10.1142/S0218202513500632},\n"
 "URL = {http://www.worldscientific.com/doi/abs/10.1142/S0218202513500632},\n"
 "eprint = {http://www.worldscientific.com/doi/pdf/10.1142/S0218202513500632}\n"
+"}\n";
+static const char citation2[] =
+"@article{li2013nonoverlapping,\n"
+"title={A nonoverlapping domain decomposition method for incompressible Stokes equations with continuous pressures},\n"
+"author={Li, Jing and Tu, Xuemin},\n"
+"journal={SIAM Journal on Numerical Analysis},\n"
+"volume={51},\n"
+"number={2},\n"
+"pages={1235--1253},\n"
+"year={2013},\n"
+"publisher={Society for Industrial and Applied Mathematics}\n"
 "}\n";
 
 /*
@@ -1034,6 +1046,9 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+  if (fetidp->saddlepoint) {
+    ierr = PetscCitationsRegister(citation2,&cited2);CHKERRQ(ierr);
+  }
   ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&B);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&X);CHKERRQ(ierr);
