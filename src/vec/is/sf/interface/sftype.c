@@ -1,16 +1,16 @@
 #include <petsc/private/sfimpl.h>
 
-#if !defined(PETSC_HAVE_MPI_TYPE_GET_ENVELOPE)
+#if !defined(PETSC_HAVE_MPI_TYPE_GET_ENVELOPE) && !defined(PETSC_HAVE_MPIUNI)
 #define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) (*(num_ints)=0,*(num_addrs)=0,*(num_dtypes)=0,*(combiner)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #define MPI_Type_get_contents(datatype,num_ints,num_addrs,num_dtypes,ints,addrs,dtypes) (*(ints)=0,*(addrs)=0,*(dtypes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
 #endif
-#if !defined(PETSC_HAVE_MPI_COMBINER_DUP)  /* We have no way to interpret output of MPI_Type_get_envelope without this. */
+#if !defined(PETSC_HAVE_MPI_COMBINER_DUP) && !defined(MPI_COMBINER_DUP)  /* We have no way to interpret output of MPI_Type_get_envelope without this. */
 #  define MPI_COMBINER_DUP   0
 #endif
-#if !defined(PETSC_HAVE_MPI_COMBINER_NAMED)
+#if !defined(PETSC_HAVE_MPI_COMBINER_NAMED) && !defined(MPI_COMBINER_NAMED)
 #define MPI_COMBINER_NAMED -2
 #endif
-#if !defined(PETSC_HAVE_MPI_COMBINER_CONTIGUOUS) && MPI_VERSION < 2
+#if !defined(PETSC_HAVE_MPI_COMBINER_CONTIGUOUS) && !defined(MPI_COMBINER_CONTIGUOUS) && MPI_VERSION < 2
 #  define MPI_COMBINER_CONTIGUOUS -1
 #endif
 
@@ -37,6 +37,8 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
+  *atype = a;
+  if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(0);
   ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRQ(ierr);
   if (combiner == MPI_COMBINER_DUP) {
     PetscMPIInt  ints[1];
@@ -54,7 +56,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
     }
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
-  } else *atype = a;
+  }
   PetscFunctionReturn(0);
 }
 

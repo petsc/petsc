@@ -14,7 +14,6 @@
 #define MPI_FAILURE 1
 
 void *MPIUNI_TMP         = 0;
-int  MPIUNI_DATASIZE[10] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char),2*sizeof(int),4*sizeof(double),4,8,2*sizeof(double)};
 /*
        With MPI Uni there are exactly four distinct communicators:
     MPI_COMM_SELF, MPI_COMM_WORLD, and a MPI_Comm_dup() of each of these (duplicates of duplicates return the same communictor)
@@ -60,6 +59,56 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return 0;
   if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return 0;
   for (i=0; i<n; i++) aa[i] = bb[i];
+  return 0;
+}
+
+int MPI_Type_get_envelope(MPI_Datatype datatype,int *num_integers,int *num_addresses,int *num_datatypes,int *combiner)
+{
+  int comb = datatype >> 28;
+  switch (comb) {
+  case MPI_COMBINER_NAMED:
+    *num_integers = 0;
+    *num_addresses = 0;
+    *num_datatypes = 0;
+    *combiner = comb;
+    break;
+  case MPI_COMBINER_DUP:
+    *num_integers = 0;
+    *num_addresses = 0;
+    *num_datatypes = 1;
+    *combiner = comb;
+    break;
+  case MPI_COMBINER_CONTIGUOUS:
+    *num_integers = 1;
+    *num_addresses = 0;
+    *num_datatypes = 1;
+    *combiner = comb;
+    break;
+  default:
+    return MPIUni_Abort(MPI_COMM_SELF,1);
+  }
+  return 0;
+}
+
+int MPI_Type_get_contents(MPI_Datatype datatype,int max_integers,int max_addresses,int max_datatypes,int *array_of_integers,MPI_Aint *array_of_addresses,MPI_Datatype *array_of_datatypes)
+{
+  int comb = datatype >> 28;
+  switch (comb) {
+  case MPI_COMBINER_NAMED:
+    return MPIUni_Abort(MPI_COMM_SELF,1);
+    break;
+  case MPI_COMBINER_DUP:
+    if (max_datatypes < 1) return MPIUni_Abort(MPI_COMM_SELF,1);
+    array_of_datatypes[0] = datatype & 0x0fffffff;
+    break;
+  case MPI_COMBINER_CONTIGUOUS:
+    if (max_integers < 1 || max_datatypes < 1) return MPIUni_Abort(MPI_COMM_SELF,1);
+    array_of_integers[0] = (datatype >> 8) & 0xfff; /* count */
+    array_of_datatypes[0] = (datatype & 0x0ff000ff) | 0x100;  /* basic named type (count=1) from which the contiguous type is derived */
+    break;
+  default:
+    return MPIUni_Abort(MPI_COMM_SELF,1);
+  }
   return 0;
 }
 
@@ -461,7 +510,7 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_allgather_(void *sendbuf,int *scount,i
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
 {
-  *ierr = MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
+  *ierr = MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPI_sizeof(*datatype));
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_send_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
@@ -491,7 +540,7 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_isend_(void *buf,int *count,int *datat
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_sendrecv_(void *sendbuf,int *sendcount,int *sendtype,int *dest,int *sendtag,void *recvbuf,int *recvcount,int *recvtype,int *source,int *recvtag,int *comm,int *status,int *ierr)
 {
-  *ierr = MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPIUNI_DATASIZE[*sendtype]);
+  *ierr = MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPI_sizeof(*sendtype));
 }
 
 PETSC_EXTERN void PETSC_STDCALL petsc_mpi_test_(int *request,int *flag,int *status,int *ierr)
