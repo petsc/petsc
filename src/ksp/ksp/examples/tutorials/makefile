@@ -1155,11 +1155,11 @@ runex43_3:
 	   ${RM} -f ex43_3.tmp
 
 runex43_bjacobi:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -dm_mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_bjacobi_baij:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -dm_mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi_baij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 
