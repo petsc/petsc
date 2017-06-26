@@ -62,7 +62,8 @@ clean_files:
 	  ${RM} *.info
 
 TESTEXAMPLES_C_NOCOMPLEX = ex1.PETSc runex1 ex1.rm \
-                           ex1adj.PETSc runex1adj ex1adj.rm
+                           ex1adj.PETSc runex1adj ex1adj.rm \
+                           ex1fwd.PETSc runex1fwd ex1fwd.rm
 
 TESTEXAMPLES_C_X  =
 TESTEXAMPLES_FORTRAN  =
