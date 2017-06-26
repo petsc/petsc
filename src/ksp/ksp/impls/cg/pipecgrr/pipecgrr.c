@@ -7,9 +7,7 @@
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPECGRR"
-PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
+static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -26,12 +24,10 @@ PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
  .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
              example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPECGRR"
-PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
+static PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       i,replace,totreplaces,nsize;
+  PetscInt       i = 0,replace = 0,totreplaces = 0,nsize;
   PetscScalar    alpha = 0.0,beta = 0.0,gamma = 0.0,gammaold = 0.0,delta = 0.0,alphap = 0.0,betap = 0.0;
   PetscReal      dp = 0.0,nsi = 0.0,sqn = 0.0,Anorm = 0.0,rnp = 0.0,pnp = 0.0,snp = 0.0,unp = 0.0,wnp = 0.0,xnp = 0.0,qnp = 0.0,znp = 0.0,mnz = 5.0,tol = PETSC_SQRT_MACHINE_EPSILON,eps = PETSC_MACHINE_EPSILON;
   PetscReal      ds = 0.0,dz = 0.0,dx = 0.0,dpp = 0.0,dq = 0.0,dm = 0.0,du = 0.0,dw = 0.0,db = 0.0,errr = 0.0,errrprev = 0.0,errs = 0.0,errw = 0.0,errz = 0.0,errncr = 0.0,errncs = 0.0,errncw = 0.0,errncz = 0.0;
@@ -106,9 +102,6 @@ PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /*  test for convergence  */
   if (ksp->reason) PetscFunctionReturn(0);
 
-  i = 0;
-  replace = 0;
-  totreplaces = 0;
   ierr = MatNorm(Amat,NORM_INFINITY,&Anorm);CHKERRQ(ierr);
   ierr = VecGetSize(B,&nsize);CHKERRQ(ierr);
   nsi = (PetscReal) nsize;
@@ -283,13 +276,11 @@ PetscErrorCode  KSPSolve_PIPECGRR(KSP ksp)
 
    Reference:
    S. Cools, E.F. Yetkin, E. Agullo, L. Giraud, W. Vanroose, "Analyzing the effect of local rounding error 
-   propagation on the maximal attainable accurcy of the pipelined Conjugate Gradients method",
+   propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
    SIAM J. Matrix Anal. Appl. (SIMAX), 2017.
 
-.seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPIPECG, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPIPECG, KSPPGMRES, KSPCG, KSPPIPEBCGS, KSPCGUseSingleReduction()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPECGRR"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -298,6 +289,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPECGRR;
   ksp->ops->solve          = KSPSolve_PIPECGRR;
