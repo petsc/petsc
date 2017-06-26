@@ -347,8 +347,8 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(hjac->b,(void**)&jbv));
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(hjac->x,(void**)&jxv));
   PetscStackCall("Hypre solve",hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
-                               if (hierr && hierr != HYPRE_ERROR_CONV) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
-                               if (hierr) hypre__global_error = 0;);
+  if (hierr && hierr != HYPRE_ERROR_CONV) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
+  if (hierr) hypre__global_error = 0;);
 
   if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) {
     PetscStackCallStandard(HYPRE_AMSProjectOutGradients,(jac->hsolver,jxv));
@@ -1937,26 +1937,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
   jac->comm_hypre         = MPI_COMM_NULL;
-  jac->G                  = NULL;
-  jac->C                  = NULL;
-  jac->alpha_Poisson      = NULL;
-  jac->beta_Poisson       = NULL;
-  jac->coords[0]          = NULL;
-  jac->coords[1]          = NULL;
-  jac->coords[2]          = NULL;
-  jac->constants[0]       = NULL;
-  jac->constants[1]       = NULL;
-  jac->constants[2]       = NULL;
-  jac->RT_PiFull          = NULL;
-  jac->RT_Pi[0]           = NULL;
-  jac->RT_Pi[1]           = NULL;
-  jac->RT_Pi[2]           = NULL;
-  jac->ND_PiFull          = NULL;
-  jac->ND_Pi[0]           = NULL;
-  jac->ND_Pi[1]           = NULL;
-  jac->ND_Pi[2]           = NULL;
-  jac->hmnull             = NULL;
-  jac->n_hmnull           = 0;
   /* duplicate communicator for hypre */
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPRESetType_C",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
@@ -2019,7 +1999,6 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCSetFromOptions_PFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
@@ -2126,7 +2105,6 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
      PCPFMG - the hypre PFMG multigrid solver
 
@@ -2222,7 +2200,6 @@ PetscErrorCode PCView_SysPFMG(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
@@ -2342,7 +2319,6 @@ static PetscErrorCode PCApplyRichardson_SysPFMG(PC pc,Vec b,Vec y,Vec w,PetscRea
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode PCSetUp_SysPFMG(PC pc)
 {
   PetscErrorCode   ierr;
@@ -2361,7 +2337,6 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetup,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
   PetscFunctionReturn(0);
 }
-
 
 /*MC
      PCSysPFMG - the hypre SysPFMG multigrid solver
