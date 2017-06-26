@@ -298,6 +298,7 @@ PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);
 PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscBool,void*);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
@@ -308,7 +309,6 @@ PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSAdjointCostIntegral(TS);
 
 PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS,PetscInt,Vec*,PetscInt,Vec*);

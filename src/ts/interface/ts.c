@@ -2694,6 +2694,8 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
 
+  ierr = PetscFree(ts->vecs_fwdsensipacked);CHKERRQ(ierr);
+
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -3176,7 +3178,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 }
 
 /*@
-   TSAdjointComputeCostIntegrand - Evaluates the integral function in the cost functions.
+   TSComputeCostIntegrand - Evaluates the integral function in the cost functions.
 
    Input Parameters:
 +  ts - the TS context
@@ -3196,7 +3198,7 @@ PetscErrorCode  TSGetCostIntegral(TS ts,Vec *v)
 
 .seealso: TSSetCostIntegrand()
 @*/
-PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
+PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
 {
   PetscErrorCode ierr;
 

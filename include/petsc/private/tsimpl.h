@@ -140,8 +140,7 @@ struct _p_TS {
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* specific to forward sensitivity analysis */
-  Vec       *vecs_fwdsensi;         /* one vector for each initial value */
-  Vec       *vecs_fwdsensip;        /* one vector for each parameter */
+  Vec       *vecs_fwdsensipacked;    /* packed vector array for forward sensitivitis */
   Vec       *vecs_integral_sensi;    /* one vector for each integral */
   Vec       *vecs_integral_sensip;   /* one vector for each integral */
   PetscInt  num_parameters;

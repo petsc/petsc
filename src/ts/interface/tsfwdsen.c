@@ -97,10 +97,11 @@ PetscErrorCode  TSForwardComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Vec* A )
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscValidPointer(A,4);
-
-  PetscStackPush("TS user JacobianP function for sensitivity analysis");
-  ierr = (*ts->vecsrhsjacobianp)(ts,t,X,A,ts->vecsrhsjacobianpctx); CHKERRQ(ierr);
-  PetscStackPop;
+  if (ts->vecsrhsjacobianp) {
+    PetscStackPush("TS user JacobianP function for sensitivity analysis");
+    ierr = (*ts->vecsrhsjacobianp)(ts,t,X,A,ts->vecsrhsjacobianpctx); CHKERRQ(ierr);
+    PetscStackPop;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -205,6 +206,7 @@ PetscErrorCode TSForwardStep(TS ts)
   This function turns on a flag to trigger TSSolve() to compute forward sensitivities automatically.
   You must call this function before TSSolve().
   The entries in these vectors must be correctly initialized with the values s_i = dy/dp|startingtime.
+  The two user-provided sensitivity vector arrays will be packed into one big array to simplify implementation.
 
 .keywords: TS, timestep, set, forward sensitivity, initial values
 
@@ -212,13 +214,20 @@ PetscErrorCode TSForwardStep(TS ts)
 @*/
 PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Vec *sp,PetscInt num,Vec *s)
 {
+  PetscInt       i;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->forward_solve     = PETSC_TRUE;
-  ts->vecs_fwdsensip   = sp;
-  ts->vecs_fwdsensi    = s;
-  ts->num_parameters    = ts->vecs_fwdsensip ? nump:0;
-  ts->num_initialvalues = ts->vecs_fwdsensi ? num:0;
+  ts->num_parameters    = sp ? nump:0;
+  ts->num_initialvalues = s ? num:0;
+  /* pack fwdsensi and fwdsensip into a big array */
+  if (!ts->vecs_fwdsensipacked) {
+    ierr = PetscMalloc1(num+nump,&ts->vecs_fwdsensipacked);CHKERRQ(ierr);
+  }
+  for (i=0; i<num; i++) ts->vecs_fwdsensipacked[i] = s[i];
+  for (i=0; i<nump; i++) ts->vecs_fwdsensipacked[i+num] = sp[i];
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +254,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Vec **sp,PetscInt 
   PetscFunctionBegin;
   if (nump) *nump = ts->num_parameters;
   if (num) *num   = ts->num_initialvalues;
-  if (sp) *sp     = ts->vecs_fwdsensip;
-  if (s) *s       = ts->vecs_fwdsensi;
+  if (sp) *sp     = &ts->vecs_fwdsensipacked[(*num)];
+  if (s) *s       = ts->vecs_fwdsensipacked;
   PetscFunctionReturn(0);
 }
