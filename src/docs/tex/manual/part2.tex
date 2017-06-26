@@ -5463,7 +5463,7 @@ are the timestep context, current time, $y$, and the (optional) user-provided co
 
 If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
 \begin{lstlisting}
-TSSetCostIntegrand(TS ts,PetscInt numcost,
+TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,
                    PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                    PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                    PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)

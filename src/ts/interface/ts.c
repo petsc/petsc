@@ -2636,9 +2636,10 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
+  if (!ts->vecs_sensi) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetCostGradients() first");
+  if (ts->vecs_sensip && !ts->Jacp) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetRHSJacobian() first");
 
-  if (ts->vec_costintegral) { /* if there is integral in the cost function*/
+  if (ts->vec_costintegral) { /* if there is integral in the cost function */
     ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
     if (ts->vecs_sensip){
       ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
@@ -3053,7 +3054,7 @@ PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
 
   ts->rhsjacobianp    = func;
   ts->rhsjacobianpctx = ctx;
@@ -3101,6 +3102,7 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
 .   numcost - number of gradients to be computed, this is the number of cost functions
+.   costintegral - vector that stores the integral values
 .   rf - routine for evaluating the integrand function
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
 .   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
@@ -3108,18 +3110,13 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
     Calling sequence of rf:
-$     rf(TS ts,PetscReal t,Vec y,Vec f[],void *ctx);
+$   PetscErrorCode rf(TS ts,PetscReal t,Vec y,Vec f,void *ctx);
 
-+   t - current timestep
-.   y - input vector
-.   f - function result; one vector entry for each cost function
--   ctx - [optional] user-defined function context
+    Calling sequence of drdyf:
+$   PetscErroCode drdyf(TS ts,PetscReal t,Vec y,Vec *drdy,void *ctx);
 
-   Calling sequence of drdyf:
-$    PetscErroCode drdyf(TS ts,PetscReal t,Vec y,Vec *drdy,void *ctx);
-
-   Calling sequence of drdpf:
-$    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
+    Calling sequence of drdpf:
+$   PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
     Level: intermediate
 
@@ -3129,7 +3126,7 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
 .seealso: TSAdjointSetRHSJacobian(),TSGetCostGradients(), TSSetCostGradients()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                           PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                           PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),
                                                           PetscBool fwd,void *ctx)
@@ -3138,11 +3135,17 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,PetscErrorCode (*rf)(T
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (costintegral) PetscValidHeaderSpecific(costintegral,VEC_CLASSID,3);
   if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostGradients()");
   if (!ts->numcost) ts->numcost=numcost;
 
+  if (costintegral) {
+    ierr = PetscObjectReference((PetscObject)costintegral);CHKERRQ(ierr);
+    ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
+    ts->vec_costintegral = costintegral;
+  } else { ierr = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr); /* works for serial only */ }
+
   ts->costintegralfwd  = fwd; /* Evaluate the cost integral in forward run if fwd is true */
-  ierr                 = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand    = rf;
   ts->costintegrandctx = ctx;
