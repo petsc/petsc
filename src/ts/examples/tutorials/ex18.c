@@ -8,10 +8,6 @@ a forcing function $f$:
 \end{align}
 F*/
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscds.h>
 #include <petscts.h>
@@ -1152,6 +1148,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # 2D harmonic velocity, no porosity
   test:

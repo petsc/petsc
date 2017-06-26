@@ -37,10 +37,6 @@ Citcom:
   - Can we do T with a GlobalToNatural reordering?
 */
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
@@ -3723,6 +3719,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # 2D serial P2/P1 tests 0-2
   test:

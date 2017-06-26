@@ -45,10 +45,6 @@ Next Steps:
 For tensor product meshes, see SNES ex67, ex72
 */
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
@@ -584,6 +580,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # 2D serial P1 tests 0-3
   test:
