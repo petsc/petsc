@@ -139,6 +139,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: triangle hdf5
   test:
     suffix: 0
     requires: triangle hdf5

@@ -1,9 +1,5 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 
 typedef enum {BOX, CYLINDER} DomainShape;
@@ -361,6 +357,9 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
+  build:
+    requires: !mpiuni
 
   # CTetGen 0-1
   test:
