@@ -230,7 +230,7 @@ int main(int argc, char **argv)
   PetscScalar        *vals;
   const PetscScalar  *ivals, *vcoords;
   PetscReal          *pcoords;
-  PetscBool           pointsAllProcs;
+  PetscBool           pointsAllProcs=PETSC_TRUE;
   PetscInt            spaceDim, c, Np, p;
   PetscMPIInt         rank, size;
   PetscErrorCode      ierr;
