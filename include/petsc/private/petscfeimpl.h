@@ -113,6 +113,7 @@ struct _p_PetscFE {
   PetscInt        numComponents;         /* The number of field components */
   PetscQuadrature quadrature;            /* Suitable quadrature on K */
   PetscQuadrature faceQuadrature;        /* Suitable face quadrature on \partial K */
+  PetscFE        *subspaces;             /* Subspaces for each dimension */
   PetscReal      *invV;                  /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B,  *D,  *H;           /* Tabulation of basis and derivatives at quadrature points */
   PetscReal      *Bf, *Df, *Hf;          /* Tabulation of basis and derivatives at quadrature points on each face */

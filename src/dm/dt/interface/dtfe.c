@@ -3297,6 +3297,13 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
 
+  if ((*fem)->subspaces) {
+    PetscInt dim, d;
+
+    ierr = PetscDualSpaceGetDimension((*fem)->dualSpace, &dim);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {ierr = PetscFEDestroy(&(*fem)->subspaces[d]);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree((*fem)->subspaces);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->Bf, &(*fem)->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
@@ -3342,6 +3349,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->basisSpace    = NULL;
   f->dualSpace     = NULL;
   f->numComponents = 1;
+  f->subspaces     = NULL;
   f->invV          = NULL;
   f->B             = NULL;
   f->D             = NULL;
@@ -6567,6 +6575,53 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *subfe)
+{
+  PetscSpace      P, subP;
+  PetscDualSpace  Q, subQ;
+  PetscQuadrature subq;
+  PetscFEType     fetype;
+  PetscInt        dim, Nc;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
+  PetscValidPointer(subfe, 3);
+  if (height == 0) {
+    *subfe = fe;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
+  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height != 1) SETERRQ1(PetscObjectComm((PetscObject) fe), PETSC_ERR_SUP, "Height %D not currently supported", height);
+  if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
+  if (height <= dim) {
+    if (!fe->subspaces[height-1]) {
+      PetscFE sub;
+
+      ierr = PetscSpaceGetHeightSubspace(P, height, &subP);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetHeightSubspace(Q, height, &subQ);CHKERRQ(ierr);
+      ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), &sub);CHKERRQ(ierr);
+      ierr = PetscFEGetType(fe, &fetype);CHKERRQ(ierr);
+      ierr = PetscFESetType(sub, fetype);CHKERRQ(ierr);
+      ierr = PetscFESetBasisSpace(sub, subP);CHKERRQ(ierr);
+      ierr = PetscFESetDualSpace(sub, subQ);CHKERRQ(ierr);
+      ierr = PetscFESetNumComponents(sub, Nc);CHKERRQ(ierr);
+      ierr = PetscFESetUp(sub);CHKERRQ(ierr);
+      ierr = PetscFESetQuadrature(sub, subq);CHKERRQ(ierr);
+      fe->subspaces[height-1] = sub;
+    }
+    *subfe = fe->subspaces[height-1];
+  } else {
+    *subfe = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
