@@ -99,6 +99,8 @@ PETSC_EXTERN PetscErrorCode SNESAppendOptionsPrefix(SNES,const char[]);
 PETSC_EXTERN PetscErrorCode SNESGetOptionsPrefix(SNES,const char*[]);
 PETSC_EXTERN PetscErrorCode SNESSetFromOptions(SNES);
 
+PETSC_EXTERN PetscErrorCode SNESSetUseMatrixFree(SNES,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode SNESGetUseMatrixFree(SNES,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatCreateSNESMF(SNES,Mat*);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
@@ -106,6 +108,7 @@ PETSC_EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);
 
 PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode SNESMonitorScaling(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRange(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRatio(SNES,PetscInt,PetscReal,PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRatioSetUp(SNES,PetscViewerAndFormat*);
@@ -646,6 +649,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES,Vec,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
+PETSC_EXTERN PetscErrorCode SNESHasDM(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetNPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetNPC(SNES,SNES*);
 PETSC_EXTERN PetscErrorCode SNESHasNPC(SNES,PetscBool*);

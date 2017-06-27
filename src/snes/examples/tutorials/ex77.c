@@ -2,10 +2,6 @@ static char help[] = "Nonlinear elasticity problem in 3d with simplicial finite 
 We solve a nonlinear elasticity problem, modelled as an incompressible Neo-Hookean solid, \n\
  with pressure loading in a rectangular domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
-/*T
- requires: !complex
-T*/
-
 /*
 Nonlinear elasticity problem, which we discretize using the finite
 element method on an unstructured mesh. This uses both Dirichlet boundary conditions (fixed faces)
@@ -650,6 +646,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !complex
 
   test:
     suffix: 0

@@ -48,6 +48,7 @@ int main(int argc,char **args)
   ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(da,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATBAIJ);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
 
@@ -56,7 +57,6 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&y);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
   ierr = VecSet(y,one);CHKERRQ(ierr);
-  ierr = DMSetMatType(da,MATBAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);

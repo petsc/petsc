@@ -1,8 +1,5 @@
 
 
-!/*T
-!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
-!T*/
 
 #include "petsc/finclude/petsc.h"
       use petsc
@@ -40,6 +37,9 @@
 
 !
 !/*TEST
+!
+!   build:
+!      requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      args: -joe_jeff b456

@@ -84,6 +84,9 @@ else				# Show the full command line
   TESTFLAGS += -v
 endif
 
+ifeq ($(FORCE),1)
+  TESTFLAGS += -f    # force test execution
+endif
 ifeq ($(VALGRIND),1)
   TESTFLAGS += -V    # Add valgrind to the flags
 endif
@@ -98,6 +101,9 @@ ifdef OPTIONS
 endif
 ifdef EXTRA_OPTIONS
   TESTFLAGS += -e '$(EXTRA_OPTIONS)'  # add extra arguments
+endif
+ifdef NP
+  TESTFLAGS += -n $(NP)  # set number of processes
 endif
 
 

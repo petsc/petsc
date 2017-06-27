@@ -1173,6 +1173,7 @@ PetscErrorCode MatDestroy(Mat *A)
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->transnullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*A)->schur);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
@@ -3267,7 +3268,7 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
+static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
 {
   PetscErrorCode ierr;
   Vec            b,x;
@@ -3289,7 +3290,11 @@ PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
-    ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+    if (trans) {
+      ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
+    } else {
+      ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+    }
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(b);CHKERRQ(ierr);
   }
@@ -3331,7 +3336,7 @@ PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
 
    Concepts: matrices^triangular solves
 
-.seealso: MatMatSolveAdd(), MatMatSolveTranspose(), MatMatSolveTransposeAdd(), MatLUFactor(), MatCholeskyFactor()
+.seealso: MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
 @*/
 PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
 {
@@ -3356,7 +3361,7 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
   ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
   if (!A->ops->matsolve) {
     ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMatSolve_Basic(A,B,X);CHKERRQ(ierr);
+    ierr = MatMatSolve_Basic(A,B,X,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
   }
@@ -3365,6 +3370,70 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatMatSolveTranspose - Solves A^T X = B, given a factored matrix.
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the factored matrix
+-  B - the right-hand-side matrix  (dense matrix)
+
+   Output Parameter:
+.  X - the result matrix (dense matrix)
+
+   Notes:
+   The matrices b and x cannot be the same.  I.e., one cannot
+   call MatMatSolveTranspose(A,x,x).
+
+   Notes:
+   Most users should usually employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
+   at a time.
+
+   When using SuperLU_Dist as a parallel solver PETSc will use the SuperLU_Dist functionality to solve multiple right hand sides simultaneously. For MUMPS
+   it calls a separate solve for each right hand side since MUMPS does not yet support distributed right hand sides.
+
+   Since the resulting matrix X must always be dense we do not support sparse representation of the matrix B.
+
+   Level: developer
+
+   Concepts: matrices^triangular solves
+
+.seealso: MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
+@*/
+PetscErrorCode MatMatSolveTranspose(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
+  PetscCheckSameComm(A,1,B,2);
+  PetscCheckSameComm(A,1,X,3);
+  if (X == B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
+  if (!A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (A->cmap->N != X->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat X: global dim %D %D",A->cmap->N,X->rmap->N);
+  if (A->rmap->N != B->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D",A->rmap->N,B->rmap->N);
+  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D",A->rmap->n,B->rmap->n);
+  if (X->cmap->N < B->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Solution matrix must have same number of columns as rhs matrix");
+  if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(0);
+  MatCheckPreallocated(A,1);
+
+  ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  if (!A->ops->matsolvetranspose) {
+    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolveTranspose\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMatSolve_Basic(A,B,X,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->matsolvetranspose)(A,B,X);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
@@ -4333,7 +4402,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidPointer(M,3);
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (op == MAT_COPY_VALUES && !mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MAT_COPY_VALUES not allowed for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
@@ -5363,12 +5432,20 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->symmetric_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
+#if !defined(PETSC_USE_COMPLEX)
+    mat->hermitian     = flg;
+    mat->hermitian_set = PETSC_TRUE;
+#endif
     break;
   case MAT_HERMITIAN:
     mat->hermitian = flg;
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->hermitian_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
+#if !defined(PETSC_USE_COMPLEX)
+    mat->symmetric     = flg;
+    mat->symmetric_set = PETSC_TRUE;
+#endif
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
     mat->structurally_symmetric     = flg;
@@ -5437,6 +5514,9 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
     break;
   case MAT_SYMMETRY_ETERNAL:
     *flg = mat->symmetric_eternal;
+    break;
+  case MAT_SPD:
+    *flg = mat->spd;
     break;
   default:
     break;
@@ -8739,15 +8819,20 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   PetscErrorCode ierr,(*f)(Mat,IS);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(is,2);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   PetscCheckSameComm(mat,1,is,2);
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
   if (!f) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"The selected MatSolverPackage does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
+  if (mat->schur) {
+    ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
+  }
   ierr = (*f)(mat,is);CHKERRQ(ierr);
+  if (!mat->schur) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Schur complement has not been created");
+  ierr = MatFactorSetUpInPlaceSchur_Private(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8758,25 +8843,39 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
-.  *S - location where to return the Schur complement (MATDENSE)
+.  S - location where to return the Schur complement, can be NULL
+-  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
-   The routine provides a copy of the Schur data stored within solver's data strutures. The caller must destroy the object when it is no longer needed.
-   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse
+   The routine provides a copy of the Schur matrix stored within the solver data structures.
+   The caller must destroy the object when it is no longer needed.
+   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse.
 
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorCreateSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  if (S) PetscValidPointer(S,2);
+  if (status) PetscValidPointer(status,3);
+  if (S) {
+    PetscErrorCode (*f)(Mat,Mat*);
+
+    ierr = PetscObjectQueryFunction((PetscObject)F,"MatFactorCreateSchurComplement_C",&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(F,S);CHKERRQ(ierr);
+    } else {
+      ierr = MatDuplicate(F->schur,MAT_COPY_VALUES,S);CHKERRQ(ierr);
+    }
+  }
+  if (status) *status = F->schur_status;
   PetscFunctionReturn(0);
 }
 
@@ -8787,26 +8886,29 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
-.  *S - location where to return the Schur complement (in MATDENSE format)
+.  *S - location where to return the Schur complement, can be NULL
+-  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
    Schur complement mode is currently implemented for sequential matrices.
-   The routine returns a dense matrix pointing to the raw data of the Schur Complement stored within the data strutures of the solver; e.g. if MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
-   The caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
+   The routine returns a the Schur Complement stored within the data strutures of the solver.
+   If MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
+   The returned matrix should not be destroyed; the caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
 
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* status)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorGetSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  if (S) PetscValidPointer(S,2);
+  if (status) PetscValidPointer(status,3);
+  if (S) *S = F->schur;
+  if (status) *status = F->schur_status;
   PetscFunctionReturn(0);
 }
 
@@ -8818,6 +8920,7 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 .  *S - location where the Schur complement is stored
+-  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
 
    Notes:
 
@@ -8825,16 +8928,20 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S,MatFactorSchurStatus status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(*S,MAT_CLASSID,1);
-  ierr = MatDestroy(S);CHKERRQ(ierr);
+  if (S) {
+    PetscValidHeaderSpecific(*S,MAT_CLASSID,2);
+    *S = NULL;
+  }
+  F->schur_status = status;
+  ierr = MatFactorUpdateSchurStatus_Private(F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8862,12 +8969,26 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
+  PetscValidType(rhs,2);
+  PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
-  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplementTranspose_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  switch (F->schur_status) {
+  case MAT_FACTOR_SCHUR_FACTORED:
+    ierr = MatSolveTranspose(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_SCHUR_INVERTED:
+    ierr = MatMultTranspose(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    break;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -8895,17 +9016,31 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
+  PetscValidType(rhs,2);
+  PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
-  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplement_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  switch (F->schur_status) {
+  case MAT_FACTOR_SCHUR_FACTORED:
+    ierr = MatSolve(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_SCHUR_INVERTED:
+    ierr = MatMult(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    break;
+  }
   PetscFunctionReturn(0);
 }
 
 /*@
-  MatFactorInvertSchurComplement - Invert the raw Schur data computed during the factorization step
+  MatFactorInvertSchurComplement - Invert the Schur complement matrix computed during the factorization step
 
    Logically Collective on Mat
 
@@ -8925,13 +9060,17 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorInvertSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED) PetscFunctionReturn(0);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  ierr = MatFactorInvertSchurComplement_Private(F);CHKERRQ(ierr);
+  F->schur_status = MAT_FACTOR_SCHUR_INVERTED;
   PetscFunctionReturn(0);
 }
 
 /*@
-  MatFactorFactorizeSchurComplement - Factorize the raw Schur data computed during the factorization step
+  MatFactorFactorizeSchurComplement - Factorize the Schur complement matrix computed during the factorization step
 
    Logically Collective on Mat
 
@@ -8939,7 +9078,6 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 +  F - the factored matrix obtained by calling MatGetFactor()
 
    Notes:
-   The routine uses the pointer to the raw data of the Schur Complement stored within the solver.
 
    Level: advanced
 
@@ -8952,38 +9090,11 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  MatFactorSetSchurComplementSolverType - Set type of solver for Schur complement
-
-   Logically Collective on Mat
-
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
--  type - either 0 (non-symmetric), 1 (symmetric positive definite) or 2 (symmetric indefinite)
-
-   Notes:
-   The parameter is used to compute the correct factorization of the Schur complement matrices
-   This could be useful in case the nature of the Schur complement is different from that of the matrix to be factored
-
-   Level: advanced
-
-   References:
-
-.seealso: MatGetFactor(), MatFactorSetSchurIS()
-@*/
-PetscErrorCode MatFactorSetSchurComplementSolverType(Mat F, PetscInt type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveInt(F,type,2);
-  ierr = PetscTryMethod(F,"MatFactorSetSchurComplementSolverType_C",(Mat,PetscInt),(F,type));CHKERRQ(ierr);
+  if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED || F->schur_status == MAT_FACTOR_SCHUR_FACTORED) PetscFunctionReturn(0);
+  ierr = MatFactorFactorizeSchurComplement_Private(F);CHKERRQ(ierr);
+  F->schur_status = MAT_FACTOR_SCHUR_FACTORED;
   PetscFunctionReturn(0);
 }
 
@@ -9231,7 +9342,9 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
    C will be created and must be destroyed by the user with MatDestroy().
 
    This routine is currently only implemented for pairs of AIJ matrices and classes
-   which inherit from AIJ.
+   which inherit from AIJ. Due to PETSc sparse matrix block row distribution among processes,
+   parallel MatRARt is implemented via explicit transpose of R, which could be very expensive.
+   We recommend using MatPtAP().
 
    Level: intermediate
 
@@ -9260,9 +9373,10 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(A,1);
 
   if (!A->ops->rart) {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix of type <%s> does not support RARt",mattype);
+    Mat Rt;
+    ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+    ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Rt);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_RARt,A,R,0,0);CHKERRQ(ierr);
   ierr = (*A->ops->rart)(A,R,scall,fill,C);CHKERRQ(ierr);
@@ -9392,7 +9506,8 @@ PetscErrorCode MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
    Notes:
    Unless scall is MAT_REUSE_MATRIX C will be created.
 
-   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call and C was obtained from a previous
+   call to this function with either MAT_INITIAL_MATRIX or MatMatMultSymbolic()
 
    To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
@@ -9599,7 +9714,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of SeqAIJ matrices and for the SeqDense class.
 
    Level: intermediate
 

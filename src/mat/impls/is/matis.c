@@ -1031,12 +1031,18 @@ static PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscI
 
   for (i=0;i<matis->sf->nleaves;i++) matis->sf_leafdata[i] = PetscMin(matis->sf_leafdata[i],nlocalcols);
   ierr = MatSeqAIJSetPreallocation(matis->A,0,matis->sf_leafdata);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = MatHYPRESetPreallocation(matis->A,0,matis->sf_leafdata,0,NULL);CHKERRQ(ierr);
+#endif
 
   for (i=0;i<matis->sf->nleaves/bs;i++) matis->sf_leafdata[i] = matis->sf_leafdata[i*bs]/bs;
   ierr = MatSeqBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
 
   for (i=0;i<matis->sf->nleaves/bs;i++) matis->sf_leafdata[i] = matis->sf_leafdata[i]-i;
   ierr = MatSeqSBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
+
+  /* for other matrix types */
+  ierr = MatSetUp(matis->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1094,23 +1100,13 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   /* preallocation as a MATAIJ */
   if (isdense) { /* special case for dense local matrices */
     for (i=0;i<local_rows;i++) {
-      PetscInt index_row = global_indices_r[i];
-      for (j=i;j<local_rows;j++) {
-        PetscInt owner = row_ownership[index_row];
+      PetscInt owner = row_ownership[global_indices_r[i]];
+      for (j=0;j<local_cols;j++) {
         PetscInt index_col = global_indices_c[j];
         if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
           my_dnz[i] += 1;
         } else { /* offdiag block */
           my_onz[i] += 1;
-        }
-        /* same as before, interchanging rows and cols */
-        if (i != j) {
-          owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
-            my_dnz[j] += 1;
-          } else {
-            my_onz[j] += 1;
-          }
         }
       }
     }
@@ -1248,7 +1244,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = ISInvertPermutation(cols,mat->cmap->n,&icols);CHKERRQ(ierr);
     ierr = ISDestroy(&cols);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
-    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = ISDestroy(&icols);CHKERRQ(ierr);
@@ -1307,26 +1303,15 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   /* Set values */
   ierr = MatSetLocalToGlobalMapping(*M,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
   if (isseqdense) { /* special case for dense local matrices */
-    PetscInt i,*dummy_rows,*dummy_cols;
+    PetscInt i,*dummy;
 
-    if (local_rows != local_cols) {
-      ierr = PetscMalloc2(local_rows,&dummy_rows,local_cols,&dummy_cols);CHKERRQ(ierr);
-      for (i=0;i<local_rows;i++) dummy_rows[i] = i;
-      for (i=0;i<local_cols;i++) dummy_cols[i] = i;
-    } else {
-      ierr = PetscMalloc1(local_rows,&dummy_rows);CHKERRQ(ierr);
-      for (i=0;i<local_rows;i++) dummy_rows[i] = i;
-      dummy_cols = dummy_rows;
-    }
+    ierr = PetscMalloc1(PetscMax(local_rows,local_cols),&dummy);CHKERRQ(ierr);
+    for (i=0;i<PetscMax(local_rows,local_cols);i++) dummy[i] = i;
     ierr = MatSetOption(*M,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatDenseGetArray(local_mat,&array);CHKERRQ(ierr);
-    ierr = MatSetValuesLocal(*M,local_rows,dummy_rows,local_cols,dummy_cols,array,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*M,local_rows,dummy,local_cols,dummy,array,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(local_mat,&array);CHKERRQ(ierr);
-    if (dummy_rows != dummy_cols) {
-      ierr = PetscFree2(dummy_rows,dummy_cols);CHKERRQ(ierr);
-    } else {
-      ierr = PetscFree(dummy_rows);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(dummy);CHKERRQ(ierr);
   } else if (isseqaij) {
     PetscInt  i,nvtxs,*xadj,*adjncy;
     PetscBool done;
@@ -1630,6 +1615,8 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->cmap);CHKERRQ(ierr);
 
   if (!is->islocalref) { /* setup scatters and local vectors for MatMult */
     /* Create the local work vectors */

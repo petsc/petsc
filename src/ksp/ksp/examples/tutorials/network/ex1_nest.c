@@ -7,7 +7,6 @@ static char help[] = "This example is based on ex1 using MATNEST. \n";
 */
 
 #include <petscdmnetwork.h>
-#include <petscdmplex.h>
 #include <petscksp.h>
 
 /* The topology looks like:
@@ -263,7 +262,7 @@ int main(int argc,char ** argv)
   PetscInt          i, nnode = 0, nbranch = 0;
   PetscInt          eStart, eEnd, vStart, vEnd;
   PetscMPIInt       size, rank;
-  DM                networkdm, plex;
+  DM                networkdm;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
@@ -271,7 +270,6 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
-  PetscPartitioner  part;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -313,9 +311,6 @@ int main(int argc,char ** argv)
 
   /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);

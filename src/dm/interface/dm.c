@@ -6090,20 +6090,54 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
 - label - label with the flags
 
   Output parameters:
-. adaptedDM - the adapted DM object: may be NULL if an adapted DM could not be produced.
+. dmAdapt - the adapted DM object: may be NULL if an adapted DM could not be produced.
 
   Level: intermediate
+
+.seealso: DMAdaptMetric(), DMCoarsen(), DMRefine()
 @*/
-PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *adaptedDM)
+PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(label,2);
-  PetscValidPointer(adaptedDM,3);
-  *adaptedDM = NULL;
-  ierr = PetscTryMethod((PetscObject)dm,"DMAdaptLabel_C",(DM,DMLabel, DM*),(dm,label,adaptedDM));CHKERRQ(ierr);
+  PetscValidPointer(dmAdapt,3);
+  *dmAdapt = NULL;
+  if (!dm->ops->adaptlabel) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMAdaptLabel",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->adaptlabel)(dm, label, dmAdapt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMAdaptMetric - Generates a mesh adapted to the specified metric field using the pragmatic library.
+
+  Input Parameters:
++ dm - The DM object
+. metric - The metric to which the mesh is adapted, defined vertex-wise.
+- bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "boundary".
+
+  Output Parameter:
+. dmAdapt  - Pointer to the DM object containing the adapted mesh
+
+  Note: The label in the adapted mesh will be registered under the name of the input DMLabel object
+
+  Level: advanced
+
+.seealso: DMAdaptLabel(), DMCoarsen(), DMRefine()
+@*/
+PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(metric, VEC_CLASSID, 2);
+  if (bdLabel) PetscValidPointer(bdLabel, 3);
+  PetscValidPointer(dmAdapt, 4);
+  if (!dm->ops->adaptlabel) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMAdaptLabel",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->adaptmetric)(dm, metric, bdLabel, dmAdapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

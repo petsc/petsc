@@ -23,22 +23,23 @@ int main(int argc, char *argv[])
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
-  /* Create 1D DMDAs along two directions */
+  /* Create 1D DMDAs along two directions. */
   ierr = DMDAGetOwnershipRanges(da, &lx, &ly, NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ierr = DMDAGetProcessorSubsets(da, DMDA_X, &commX);CHKERRQ(ierr);
-  ierr = DMDAGetProcessorSubsets(da, DMDA_Y, &commY);CHKERRQ(ierr);
+  /* Partitioning in the X direction makes a subcomm extending in the Y direction and vice-versa. */
+  ierr = DMDAGetProcessorSubsets(da, DMDA_X, &commY);CHKERRQ(ierr);
+  ierr = DMDAGetProcessorSubsets(da, DMDA_Y, &commX);CHKERRQ(ierr);
   ierr = MPI_Comm_size(commX, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commX, &subrank);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]X subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   ierr = MPI_Comm_size(commY, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commY, &subrank);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
-  ierr = DMDACreate1d(commX, DM_BOUNDARY_NONE, M, dof, 1, lx, &daX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(daX);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commX, DM_BOUNDARY_NONE, info.mx, dof, 1, lx, &daX);CHKERRQ(ierr);
   ierr = DMSetUp(daX);CHKERRQ(ierr);
-  ierr = DMDACreate1d(commY, DM_BOUNDARY_NONE, N, dof, 1, ly, &daY);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(daY);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commY, DM_BOUNDARY_NONE, info.my, dof, 1, ly, &daY);CHKERRQ(ierr);
   ierr = DMSetUp(daY);CHKERRQ(ierr);
   /* Create 1D vectors for basis functions */
   ierr = DMGetGlobalVector(daX, &basisX);CHKERRQ(ierr);

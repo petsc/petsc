@@ -155,6 +155,9 @@
   /* stebz does not exist for complex data */
 # define LAPACKstebz_ PETSCBLAS(stebz,STEBZ) /* eigenvalues of symm tridiagonal matrix */
 #else
+# define LAPACKhetrf_ PETSCBLAS(hetrf,HETRF)
+# define LAPACKhetrs_ PETSCBLAS(hetrs,HETRS)
+# define LAPACKhetri_ PETSCBLAS(hetri,HETRI)
 # define LAPACKungqr_ PETSCBLAS(ungqr,UNGQR)
    /* note: dot and dotu are handled separately for complex data */
 

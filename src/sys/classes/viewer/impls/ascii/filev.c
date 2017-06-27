@@ -707,6 +707,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
   if (gz) {
     ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
     if (len == 3) {
+      if (vascii->mode != FILE_MODE_WRITE) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot open ASCII PetscViewer file that is compressed; uncompress it manually first");
       *gz = 0;
       vascii->storecompressed = PETSC_TRUE;
     }

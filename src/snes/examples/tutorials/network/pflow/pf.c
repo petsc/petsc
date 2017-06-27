@@ -1,8 +1,8 @@
 static char help[] = "This example demonstrates the use of DMNetwork interface for solving a nonlinear electric power grid problem.\n\
                       The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
                       The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
-                      Run this program: mpiexec -n <n> ./PF\n\
-                      mpiexec -n <n> ./PF -pfdata <filename>\n";
+                      Run this program: mpiexec -n <n> ./pf\n\
+                      mpiexec -n <n> ./pf \n";
 
 /* T
    Concepts: DMNetwork
@@ -10,7 +10,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include "pf.h"
-#include <petscdmplex.h>
+#include <petscdmnetwork.h>
 
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
@@ -377,7 +377,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     if (ghostvtex) continue;
-   
+
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     for (j=0; j < numComps; j++) {
@@ -389,7 +389,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
       } else if(key == 2) {
 	gen = (GEN)(arr+offsetd);
 	if (!gen->status) continue;
-	xarr[offset+1] = gen->vs; 
+	xarr[offset+1] = gen->vs;
 	break;
       }
     }
@@ -409,18 +409,17 @@ int main(int argc,char ** argv)
   PFDATA           *pfdata;
   PetscInt         numEdges=0,numVertices=0;
   int              *edges = NULL;
-  PetscInt         i;  
-  DM               networkdm, plex;
+  PetscInt         i;
+  DM               networkdm;
   PetscInt         componentkey[4];
   UserCtx          User;
   PetscLogStage    stage1,stage2;
-  PetscMPIInt      size,rank;
+  PetscMPIInt      rank;
   PetscInt         eStart, eEnd, vStart, vEnd,j;
   PetscInt         genj,loadj;
   Vec              X,F;
   Mat              J;
   SNES             snes;
-  PetscPartitioner part;
 
   ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -468,11 +467,11 @@ int main(int argc,char ** argv)
     ierr = DMNetworkSetEdgeList(networkdm,edges);CHKERRQ(ierr);
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
-    
+
     if (!crank) {
       ierr = PetscFree(edges);CHKERRQ(ierr);
     }
-    
+
     /* Add network components only process 0 has any data to add*/
     if (!crank) {
       genj=0; loadj=0;
@@ -508,17 +507,14 @@ int main(int argc,char ** argv)
       ierr = PetscFree(pfdata->load);CHKERRQ(ierr);
       ierr = PetscFree(pfdata);CHKERRQ(ierr);
     }
-    
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+
+    /* Distribute networkdm to multiple processes */
     ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
-    
+
     PetscLogStagePop();
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-    
+
 #if 0
     PetscInt numComponents;
     EDGEDATA edge;

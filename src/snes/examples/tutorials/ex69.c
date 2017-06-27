@@ -37,10 +37,6 @@ Citcom:
   - Can we do T with a GlobalToNatural reordering?
 */
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
@@ -67,6 +63,7 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
+  PetscInt      serRef;            /* Number of serial refinements before the mesh gets distributed */
   char          mantleBasename[PETSC_MAX_PATH_LEN];
   int           verts[3];          /* The number of vertices in each dimension for mantle problems */
   int           perm[3] ;          /* The permutation of axes for mantle problems */
@@ -3155,6 +3152,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
+  options->serRef          = 0;
   options->simplex         = PETSC_TRUE;
   options->testPartition   = PETSC_FALSE;
   options->showSolution    = PETSC_FALSE;
@@ -3166,6 +3164,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex69.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex69.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex69.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-serial_refinements", "Number of serial uniform refinements steps", "ex69.c", options->serRef, &options->serRef, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex69.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex69.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex69.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
@@ -3295,7 +3294,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       if (!is) continue;
       ierr = DMCreateLabel(*dm, names[f]);CHKERRQ(ierr);
       ierr = DMGetLabel(*dm, names[f], &label);CHKERRQ(ierr);
-      ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      if (is) {
+        ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      }
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
@@ -3341,6 +3342,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+  }
+  {
+    PetscInt i;
+    for (i=0;i<user->serRef;i++) {
+      DM dmRefined;
+
+      ierr = DMPlexSetRefinementUniform(*dm,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMRefine(*dm,PetscObjectComm((PetscObject)*dm),&dmRefined);CHKERRQ(ierr);
+      if (dmRefined) {
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm  = dmRefined;
+      }
+    }
   }
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
@@ -3723,74 +3737,76 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # 2D serial P2/P1 tests 0-2
   test:
     suffix: 0
     requires: triangle
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   test:
     suffix: 1
     requires: triangle
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   test:
     suffix: 2
     requires: triangle
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   # 2D serial discretization tests
   test:
     suffix: p2p1
     requires: triangle
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: p2p1ref
     requires: triangle
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2q1
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2q1ref
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q1p0
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q1p0ref
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2p1
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -fieldsplit_pressure_pc_factor_shift_type -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2p1ref
     requires:
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   # 2D serial mantle tests
   test:
     suffix: mantle_q1p0
     requires: broken
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: mantle_q2q1
     requires: broken
-    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
 
 TEST*/

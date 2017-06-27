@@ -2597,7 +2597,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                 /*134*/0,
                                        0,
-                                       0,
+                                       MatRARt_MPIAIJ_MPIAIJ,
                                        0,
                                        0,
                                 /*139*/MatSetBlockSizes_MPIAIJ,
@@ -3075,8 +3075,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(iscol,&i);CHKERRQ(ierr);
-  ierr = ISSetBlockSize(*iscol_o,i);CHKERRQ(ierr);
+  /* cannot ensure iscol_o has same blocksize as iscol! */
+
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
   *garray = cmap1;
@@ -3303,7 +3303,8 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   if (m != B->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Am %D != Bm %D",m,B->rmap->N);
   if (A->rmap->bs != B->rmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A row bs %D != B row bs %D",A->rmap->bs,B->rmap->bs);
-  if (A->cmap->bs != B->cmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A column bs %D != B column bs %D",A->cmap->bs,B->cmap->bs);
+  /* remove check below; When B is created using iscol_o from ISGetSeqIS_SameColDist_Private(), its bs may not be same as A */
+  /* if (A->cmap->bs != B->cmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A column bs %D != B column bs %D",A->cmap->bs,B->cmap->bs); */
 
   /* Get global columns of mat */
   ierr = MPIU_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -3409,7 +3410,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
 
     } else {
       /* (2) iscol_local -> iscol_sub and iscmap */
-      PetscInt *idx,*cmap1,k,cbs;
+      PetscInt *idx,*cmap1,k;
 
       /* implementation below requires iscol_local be sorted, it can have duplicate indices */
       ierr = ISSorted(iscol_local,&flg);CHKERRQ(ierr);
@@ -3510,7 +3511,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
       olens[i] = olen;
       dlens[i] = dlen;
     }
-    ierr = MatGetBlockSizes(Msub,&bs,&cbs);CHKERRQ(ierr);
+
+    ierr = ISGetBlockSize(isrow,&bs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
 
     ierr = MatCreate(comm,&M);CHKERRQ(ierr);
     ierr = MatSetSizes(M,m,nlocal,PETSC_DECIDE,Ncols);CHKERRQ(ierr);

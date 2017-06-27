@@ -4372,7 +4372,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
 PetscErrorCode DMProjectFieldLocal_pforest(DM dm, PetscReal time, Vec localU,void (**funcs) (PetscInt, PetscInt, PetscInt,
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                                             PetscReal, const PetscReal[], PetscScalar[]),InsertMode mode, Vec localX)
+                                                                             PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),InsertMode mode, Vec localX)
 {
   DM             plex;
   PetscErrorCode ierr;

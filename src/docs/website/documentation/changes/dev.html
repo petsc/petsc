@@ -131,9 +131,12 @@
         <li>Renamed MatGetSubMatrix() to MatCreateSubMatrix(). </li>
         <li>Renamed MatGetSubMatrixOption() to MatCreateSubMatrixOption(). </li>
         <li>MatSetOption(mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE) no longer applies to zero values set or added to the matrix diagonal, they are now not ignored and are included in the matrix nonzero structure. This is useful for Jacobians passed to TS. </li>
+        <li>Added MatFactorSchurStatus. MatFactorGet/Restore/CreateSchurComplement now take an extra status argument. </li>
+        <li>Added MatMatSolveTranspose to solve transposed linear systems for multiple right-hand sides. </li>
       </ul>
       <h4>PC:</h4>
       <ul>
+        <li>The is_local argument to PCASMSetLocalSubdomains() is now ignored UNLESS the PCASMType is set to restrict</li>
         <li>Added PCMGSetNumberSmooth()</li>
         <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool</li>
         <li>Added PCBDDCSetDivergenceMat to help BDDC to compute the flux across the subdomain interfaces.</li>
@@ -141,10 +144,13 @@
         <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.</li>
         <li>Added additional string parameter to PCBDDCCreateFETIDPOperators for the specification of the prefix (can be NULL).</li>
         <li>FIELDSPLIT now extracts off-diag fieldsplit blocks from the preconditioner instead of the jacobian by default. Use -pc_fieldsplit_off_diag_use_amat to use the jacobian matrix.</li>
+        <li>Added PCFieldSplitSetSchurScale to control the scaling factor of the Schur complement with the DIAG factorization. The corresponding command line option is -pc_fieldsplit_schur_scale.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
         <li>Added KSPFETIDP, a linear system solver based on the FETI-DP method.</li>
+        <li>Added the KSPGuess class: available methods are KSPGUESSFISCHER and KSPGUESSPOD. The new KSPGUESSPOD computes an initial guess using the Proper Orthogonal Decomposition technique.</li>
+        <li>KSPFischerGuessCreate has been removed: see the man page of KSPGUESSFISCHER for how to create a Fischer type initial guess.</li>
       </ul>
       <h4>SNES:</h4>
       <h4>SNESLineSearch:</h4>
@@ -175,6 +181,7 @@
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <ul>
+        <li>-help now has the option -help intro that only prints the programs help string and then exits the program</li>
         <li>Petsc64bitInt -> PetscInt64, PetscIntMult64bit() -> PetscInt64Mult(), PetscBagRegister64bitInt() -> PetscBagRegisterInt64()</li>
       </ul>
       <h4>AO:</h4>

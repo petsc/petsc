@@ -1,0 +1,21 @@
+  0  time        0  |x|    3.833  
+  1  time   0.1061  |x|    3.523  
+  2  time   0.2121  |x|    3.207  
+  3  time   0.3182  |x|    2.889  
+  4  time   0.4243  |x|     2.57  
+  5  time   0.5303  |x|     2.23  
+  6  time   0.6364  |x|    1.999  
+  7  time   0.7425  |x|        2  
+  8  time   0.8485  |x|        2  
+  9  time   0.9546  |x|        2  
+ 10  time    1.061  |x|        2  
+ 11  time    1.167  |x|        2  
+ 12  time    1.273  |x|        2  
+ 13  time    1.379  |x|        2  
+ 14  time    1.485  |x|        2  
+ 15  time    1.591  |x|        2  
+ 16  time    1.697  |x|        2  
+ 17  time    1.803  |x|        2  
+ 18  time    1.909  |x|        2  
+ 19  time    2.015  |x|        2  
+CONVERGED_TIME at time 2.01525 after 19 steps

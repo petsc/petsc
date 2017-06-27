@@ -5,12 +5,13 @@ Mesh in 2 dimensions:
   1-cells: 208
   2-cells: 128
 Labels:
-  markerLeft: 1 strata of sizes (17)
-  markerTop: 1 strata of sizes (15)
-  markerRight: 1 strata of sizes (17)
-  markerBottom: 1 strata of sizes (15)
-  marker: 4 strata of sizes (17, 15, 17, 15)
-  depth: 3 strata of sizes (81, 208, 128)
+  markerLeft: 1 strata with value/size (1 (17))
+  markerTop: 1 strata with value/size (1 (15))
+  markerRight: 1 strata with value/size (1 (17))
+  markerBottom: 1 strata with value/size (1 (15))
+  Face Sets: 4 strata with value/size (1 (14), 4 (14), 2 (14), 3 (14))
+  marker: 4 strata with value/size (4 (17), 1 (15), 2 (17), 3 (15))
+  depth: 3 strata with value/size (0 (81), 1 (208), 2 (128))
 Integral of pressure: 0.
 SNES Object: 1 MPI processes
   type: newtonls
@@ -28,8 +29,8 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: gmres
-      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-12, absolute=1e-10, divergence=10000.
     left preconditioning
@@ -44,8 +45,8 @@ SNES Object: 1 MPI processes
       KSP solver for A00 block
         KSP Object: (fieldsplit_velocity_) 1 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -80,8 +81,8 @@ SNES Object: 1 MPI processes
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 1 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -124,8 +125,8 @@ SNES Object: 1 MPI processes
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 1 MPI processes
                   type: gmres
-                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                    GMRES: happy breakdown tolerance 1e-30
+                    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    happy breakdown tolerance 1e-30
                   maximum iterations=10000, initial guess is zero
                   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning

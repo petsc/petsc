@@ -159,7 +159,9 @@ class Package(config.base.Configure):
     if hasattr(self, 'precisionProvider'):
       if hasattr(self.precisionProvider, 'precision'):
         return self.precisionProvider.precision
-    return self._defaultPrecision
+    if hasattr(self, '_defaultPrecision'):
+      return self._defaultPrecision
+    return 'double'
   def setDefaultPrecision(self, defaultPrecision):
     '''The precision of the library'''
     self._defaultPrecision = defaultPrecision

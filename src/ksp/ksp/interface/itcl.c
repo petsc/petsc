@@ -145,14 +145,14 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
   PetscFunctionReturn(0);
 }
 
-/*@C
-   KSPSetUseFischerGuess - Use the Paul Fischer algorithm, see KSPFischerGuessCreate()
+/*@
+   KSPSetUseFischerGuess - Use the Paul Fischer algorithm
 
    Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
-.  model - use model 1, model 2 or 0 to turn it off
+.  model - use model 1, model 2 or any other number to turn it off
 -  size - size of subspace used to generate initial guess
 
     Options Database:
@@ -162,59 +162,60 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
 
 .keywords: KSP, set, options, prefix, database
 
-.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerInitialGuess()
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetGuess(), KSPGetGuess()
 @*/
 PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 {
+  KSPGuess       guess;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,model,2);
-  PetscValidLogicalCollectiveInt(ksp,model,3);
-  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
-  if (model == 1 || model == 2) {
-    ierr = KSPFischerGuessCreate(ksp,model,size,&ksp->guess);CHKERRQ(ierr);
-    ierr = KSPFischerGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
-  } else if (model != 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Model must be 1 or 2 (or 0 to turn off guess generation)");
+  PetscValidLogicalCollectiveInt(ksp,size,3);
+  ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
+  ierr = KSPGuessSetType(guess,KSPGUESSFISCHER);CHKERRQ(ierr);
+  ierr = KSPGuessFischerSetModel(guess,model,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*@C
-   KSPSetFischerGuess - Use the Paul Fischer algorithm created by KSPFischerGuessCreate()
+/*@
+   KSPSetGuess - Set the initial guess object
 
    Logically Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov context
--  guess - the object created with KSPFischerGuessCreate()
+-  guess - the object created with KSPGuessCreate()
 
    Level: advanced
 
    Notes: this allows a single KSP to be used with several different initial guess generators (likely for different linear
           solvers, see KSPSetPC()).
 
-          This increases the reference count of the guess object, you must destroy the object with KSPFischerGuessDestroy()
+          This increases the reference count of the guess object, you must destroy the object with KSPGuessDestroy()
           before the end of the program.
 
 .keywords: KSP, set, options, prefix, database
 
-.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerGuess()
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPGetGuess()
 @*/
-PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
+PetscErrorCode  KSPSetGuess(KSP ksp,KSPGuess guess)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr       = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)guess);CHKERRQ(ierr);
+  ierr = KSPGuessDestroy(&ksp->guess);CHKERRQ(ierr);
   ksp->guess = guess;
-  if (guess) guess->refcnt++;
+  ksp->guess->ksp = ksp;
   PetscFunctionReturn(0);
 }
 
-/*@C
-   KSPGetFischerGuess - Gets the initial guess generator set with either KSPSetFischerGuess() or KSPCreateFischerGuess()/KSPSetFischerGuess()
+/*@
+   KSPGetGuess - Gets the initial guess generator for the KSP.
 
    Not Collective
 
@@ -228,11 +229,25 @@ PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
 
 .keywords: KSP, set, options, prefix, database
 
-.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess()
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetGuess()
 @*/
-PetscErrorCode  KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
+PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  PetscValidPointer(guess,2);
+  if (!ksp->guess) {
+    const char* prefix;
+
+    ierr = KSPGuessCreate(PetscObjectComm((PetscObject)ksp),&ksp->guess);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,&prefix);CHKERRQ(ierr);
+    if (prefix) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp->guess,prefix);CHKERRQ(ierr);
+    }
+    ksp->guess->ksp = ksp;
+  }
   *guess = ksp->guess;
   PetscFunctionReturn(0);
 }
@@ -338,6 +353,7 @@ PetscErrorCode  KSPMonitorSetFromOptions(KSP ksp,const char name[],const char he
 .   -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
        the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
        This will require 1 more iteration of the solver than usual.
+.   -ksp_guess_type - Type of initial guess generator for repeated linear solves
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with MatSetNullSpace() to see if it truly is a null space
@@ -364,7 +380,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       indx;
   const char     *convtests[] = {"default","skip"};
-  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
+  char           type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscBool      flg,flag,reuse,set;
   PetscInt       model[2]={0,0},nmax;
   KSPNormType    normtype;
@@ -413,11 +429,18 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   ierr = PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
-  nmax = 2;
-  ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
-  if (flag) {
-    if (nmax != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
-    ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ksp_guess_type","Initial guess in Krylov method",NULL,KSPGuessList,NULL,guesstype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPGetGuess(ksp,&ksp->guess);CHKERRQ(ierr);
+    ierr = KSPGuessSetType(ksp->guess,guesstype);CHKERRQ(ierr);
+    ierr = KSPGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
+  } else { /* old option for KSP */
+    nmax = 2;
+    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    if (flag) {
+      if (nmax != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
+      ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);

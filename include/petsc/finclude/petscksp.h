@@ -8,9 +8,10 @@
 #include "petsc/finclude/petscpc.h"
 
 #define KSP type(tKSP)
-#define KSPFischerGuess type(tKSPFischerGuess)
+#define KSPGuess type(tKSPGuess)
 
 #define KSPType character*(80)
+#define KSPGuessType character*(80)
 #define KSPCGType PetscEnum
 #define KSPFCDTruncationType PetscEnum
 #define KSPConvergedReason PetscEnum
@@ -52,4 +53,9 @@
 #define KSPGCR 'gcr'
 #define KSPTSIRM 'tsirm'
 #define KSPCGLS 'cgls'
+!
+!  Various Initial guesses for Krylov subspace methods
+!
+#define KSPGUESSFISCHER 'fischer'
+#define KSPGUESSPOD 'pod'
 #endif

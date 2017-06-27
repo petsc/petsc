@@ -4,7 +4,6 @@ static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\
 /*T
    Concepts: introduction to PETSc^Chombo
    Processors: n
-   requires: chombo
 T*/
 
 
@@ -35,6 +34,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
+
+   build:
+      requires: chombo
 
    test:
 

@@ -49,82 +49,106 @@ typedef struct {
 } TS_RK;
 
 /*MC
-     TSRK1 - First order forward Euler scheme.
+     TSRK1FE - First order forward Euler scheme.
 
      This method has one stage.
 
+     Options database:
+.     -ts_rk_type 1fe
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK2A - Second order RK scheme.
 
      This method has two stages.
 
+     Options database:
+.     -ts_rk_type 2a
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
 
+     Options database:
+.     -ts_rk_type 3
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
      This method has four stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 3bs
+
      Level: advanced
 
      References: https://doi.org/10.1016/0893-9659(89)90079-7
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
      This is the classical Runge-Kutta method with four stages.
 
+     Options database:
+.     -ts_rk_type 4
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
+     Options database:
+.     -ts_rk_type 5f
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
      This method has seven stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 5dp
+
      Level: advanced
 
      References: https://doi.org/10.1016/0771-050X(80)90013-3
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
 
      This method has eight stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 5bs
+
      Level: advanced
 
      References: https://doi.org/10.1016/0898-1221(96)00141-1
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 
 /*@C
@@ -146,141 +170,88 @@ PetscErrorCode TSRKRegisterAll(void)
   if (TSRKRegisterAllCalled) PetscFunctionReturn(0);
   TSRKRegisterAllCalled = PETSC_TRUE;
 
+#define RC PetscRealConstant
   {
     const PetscReal
-      A[1][1] = {{0.0}},
-      b[1]    = {1.0};
+      A[1][1] = {{0}},
+      b[1]    = {RC(1.0)};
     ierr = TSRKRegister(TSRK1FE,1,1,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-      A[2][2]     = {{0.0,0.0},
-                    {1.0,0.0}},
-      b[2]        = {0.5,0.5},
-      bembed[2]   = {1.0,0};
+      A[2][2]   = {{0,0},
+                   {RC(1.0),0}},
+      b[2]      =  {RC(0.5),RC(0.5)},
+      bembed[2] =  {RC(1.0),0};
     ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-#if defined(PETSC_USE_REAL___FLOAT128)
       A[3][3] = {{0,0,0},
-                 {2.0q/3.0q,0,0},
-                 {-1.0q/3.0q,1.0,0}},
-#else
-      A[3][3] = {{0,0,0},
-                 {2.0/3.0,0,0},
-                 {-1.0/3.0,1.0,0}},
-#endif
-      b[3]    = {0.25,0.5,0.25};
+                 {RC(2.0)/RC(3.0),0,0},
+                 {RC(-1.0)/RC(3.0),RC(1.0),0}},
+      b[3]    =  {RC(0.25),RC(0.5),RC(0.25)};
     ierr = TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-#if defined(PETSC_USE_REAL___FLOAT128)
-      A[4][4] = {{0,0,0,0},
-                 {1.0q/2.0q,0,0,0},
-                 {0,3.0q/4.0q,0,0},
-                 {2.0q/9.0q,1.0q/3.0q,4.0q/9.0q,0}},
-      b[4]    = {2.0q/9.0q,1.0q/3.0q,4.0q/9.0q,0},
-      bembed[4] = {7.0q/24.0q,1.0q/4.0q,1.0q/3.0q,1.0q/8.0q};
-#else
-      A[4][4] = {{0,0,0,0},
-                 {1.0/2.0,0,0,0},
-                 {0,3.0/4.0,0,0},
-                 {2.0/9.0,1.0/3.0,4.0/9.0,0}},
-      b[4]    = {2.0/9.0,1.0/3.0,4.0/9.0,0},
-      bembed[4] = {7.0/24.0,1.0/4.0,1.0/3.0,1.0/8.0};
-#endif
+      A[4][4]   = {{0,0,0,0},
+                   {RC(1.0)/RC(2.0),0,0,0},
+                   {0,RC(3.0)/RC(4.0),0,0},
+                   {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0}},
+      b[4]      =  {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0},
+      bembed[4] =  {RC(7.0)/RC(24.0),RC(1.0)/RC(4.0),RC(1.0)/RC(3.0),RC(1.0)/RC(8.0)};
     ierr = TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
       A[4][4] = {{0,0,0,0},
-                 {0.5,0,0,0},
-                 {0,0.5,0,0},
-                 {0,0,1.0,0}},
-#if defined(PETSC_USE_REAL___FLOAT128)
-      b[4]    = {1.0q/6.0q,1.0q/3.0q,1.0q/3.0q,1.0q/6.0q};
-#else
-      b[4]    = {1.0/6.0,1.0/3.0,1.0/3.0,1.0/6.0};
-#endif
+                 {RC(0.5),0,0,0},
+                 {0,RC(0.5),0,0},
+                 {0,0,RC(1.0),0}},
+      b[4]    =  {RC(1.0)/RC(6.0),RC(1.0)/RC(3.0),RC(1.0)/RC(3.0),RC(1.0)/RC(6.0)};
     ierr = TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-#if defined(PETSC_USE_REAL___FLOAT128)
       A[6][6]   = {{0,0,0,0,0,0},
-                   {0.25q,0,0,0,0,0},
-                   {3.0q/32.0q,9.0q/32.0q,0,0,0,0},
-                   {1932.0q/2197.0q,-7200.0q/2197.0q,7296.0q/2197.0q,0,0,0},
-                   {439.0q/216.0q,-8.0q,3680.0q/513.0q,-845.0q/4104.0q,0,0},
-                   {-8.0q/27.0q,2.0q,-3544.0q/2565.0q,1859.0q/4104.0q,-11.0q/40.0q,0}},
-      b[6]      = {16.0q/135.0q,0,6656.0q/12825.0q,28561.0q/56430.0q,-9.0q/50.0q,2.0q/55.0q},
-      bembed[6] = {25.0q/216.0q,0,1408.0q/2565.0q,2197.0q/4104.0q,-1.0q/5.0q,0};
-#else
-      A[6][6]   = {{0,0,0,0,0,0},
-                   {0.25,0,0,0,0,0},
-                   {3.0/32.0,9.0/32.0,0,0,0,0},
-                   {1932.0/2197.0,-7200.0/2197.0,7296.0/2197.0,0,0,0},
-                   {439.0/216.0,-8.0,3680.0/513.0,-845.0/4104.0,0,0},
-                   {-8.0/27.0,2.0,-3544.0/2565.0,1859.0/4104.0,-11.0/40.0,0}},
-      b[6]      = {16.0/135.0,0,6656.0/12825.0,28561.0/56430.0,-9.0/50.0,2.0/55.0},
-      bembed[6] = {25.0/216.0,0,1408.0/2565.0,2197.0/4104.0,-1.0/5.0,0};
-#endif
+                   {RC(0.25),0,0,0,0,0},
+                   {RC(3.0)/RC(32.0),RC(9.0)/RC(32.0),0,0,0,0},
+                   {RC(1932.0)/RC(2197.0),RC(-7200.0)/RC(2197.0),RC(7296.0)/RC(2197.0),0,0,0},
+                   {RC(439.0)/RC(216.0),RC(-8.0),RC(3680.0)/RC(513.0),RC(-845.0)/RC(4104.0),0,0},
+                   {RC(-8.0)/RC(27.0),RC(2.0),RC(-3544.0)/RC(2565.0),RC(1859.0)/RC(4104.0),RC(-11.0)/RC(40.0),0}},
+      b[6]      =  {RC(16.0)/RC(135.0),0,RC(6656.0)/RC(12825.0),RC(28561.0)/RC(56430.0),RC(-9.0)/RC(50.0),RC(2.0)/RC(55.0)},
+      bembed[6] =  {RC(25.0)/RC(216.0),0,RC(1408.0)/RC(2565.0),RC(2197.0)/RC(4104.0),RC(-1.0)/RC(5.0),0};
     ierr = TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-#if defined(PETSC_USE_REAL___FLOAT128)
       A[7][7]   = {{0,0,0,0,0,0,0},
-                   {1.0q/5.0q,0,0,0,0,0,0},
-                   {3.0q/40.0q,9.0q/40.0q,0,0,0,0,0},
-                   {44.0q/45.0q,-56.0q/15.0q,32.0q/9.0q,0,0,0,0},
-                   {19372.0q/6561.0q,-25360.0q/2187.0q,64448.0q/6561.0q,-212.0q/729.0q,0,0,0},
-                   {9017.0q/3168.0q,-355.0q/33.0q,46732.0q/5247.0q,49.0q/176.0q,-5103.0q/18656.0q,0,0},
-                   {35.0q/384.0q,0,500.0q/1113.0q,125.0q/192.0q,-2187.0q/6784.0q,11.0q/84.0q,0}},
-      b[7]      = {35.0q/384.0q,0,500.0q/1113.0q,125.0q/192.0q,-2187.0q/6784.0q,11.0q/84.0q,0},
-      bembed[7] = {5179.0q/57600.0q,0,7571.0q/16695.0q,393.0q/640.0q,-92097.0q/339200.0q,187.0q/2100.0q,1.0q/40.0q};
-#else
-      A[7][7]   = {{0,0,0,0,0,0,0},
-                   {1.0/5.0,0,0,0,0,0,0},
-                   {3.0/40.0,9.0/40.0,0,0,0,0,0},
-                   {44.0/45.0,-56.0/15.0,32.0/9.0,0,0,0,0},
-                   {19372.0/6561.0,-25360.0/2187.0,64448.0/6561.0,-212.0/729.0,0,0,0},
-                   {9017.0/3168.0,-355.0/33.0,46732.0/5247.0,49.0/176.0,-5103.0/18656.0,0,0},
-                   {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0}},
-      b[7]      = {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0},
-      bembed[7] = {5179.0/57600.0,0,7571.0/16695.0,393.0/640.0,-92097.0/339200.0,187.0/2100.0,1.0/40.0};
-#endif
+                   {RC(1.0)/RC(5.0),0,0,0,0,0,0},
+                   {RC(3.0)/RC(40.0),RC(9.0)/RC(40.0),0,0,0,0,0},
+                   {RC(44.0)/RC(45.0),RC(-56.0)/RC(15.0),RC(32.0)/RC(9.0),0,0,0,0},
+                   {RC(19372.0)/RC(6561.0),RC(-25360.0)/RC(2187.0),RC(64448.0)/RC(6561.0),RC(-212.0)/RC(729.0),0,0,0},
+                   {RC(9017.0)/RC(3168.0),RC(-355.0)/RC(33.0),RC(46732.0)/RC(5247.0),RC(49.0)/RC(176.0),RC(-5103.0)/RC(18656.0),0,0},
+                   {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0}},
+      b[7]      =  {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0},
+      bembed[7] =  {RC(5179.0)/RC(57600.0),0,RC(7571.0)/RC(16695.0),RC(393.0)/RC(640.0),RC(-92097.0)/RC(339200.0),RC(187.0)/RC(2100.0),RC(1.0)/RC(40.0)};
     ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-#if defined(PETSC_USE_REAL___FLOAT128)
       A[8][8]   = {{0,0,0,0,0,0,0,0},
-                   {1.0q/6.0q,0,0,0,0,0,0,0},
-                   {2.0q/27.0q,4.0q/27.0q,0,0,0,0,0,0},
-                   {183.0q/1372.0q,-162.0q/343.0q,1053.0q/1372.0q,0,0,0,0,0},
-                   {68.0q/297.0q,-4.0q/11.0q,42.0q/143.0q,1960.0q/3861.0q,0,0,0,0},
-                   {597.0q/22528.0q,81.0q/352.0q,63099.0q/585728.0q,58653.0q/366080.0q,4617.0q/20480.0q,0,0,0},
-                   {174197.0q/959244.0q,-30942.0q/79937.0q,8152137.0q/19744439.0q,666106.0q/1039181.0q,-29421.0q/29068.0q,482048.0q/414219.0q,0,0},
-                   {587.0q/8064.0q,0,4440339.0q/15491840.0q,24353.0q/124800.0q,387.0q/44800.0q,2152.0q/5985.0q,7267.0q/94080.0q,0}},
-      b[8]      = {587.0q/8064.0q,0,4440339.0q/15491840.0q,24353.0q/124800.0q,387.0q/44800.0q,2152.0q/5985.0q,7267.0q/94080.0q,0},
-      bembed[8] = {2479.0q/34992.0q,0,123.0q/416.0q,612941.0q/3411720.0q,43.0q/1440.0q,2272.0q/6561.0q,79937.0q/1113912.0q,3293.0q/556956.0q};
-#else
-      A[8][8]   = {{0,0,0,0,0,0,0,0},
-                   {1.0/6.0,0,0,0,0,0,0,0},
-                   {2.0/27.0,4.0/27.0,0,0,0,0,0,0},
-                   {183.0/1372.0,-162.0/343.0,1053.0/1372.0,0,0,0,0,0},
-                   {68.0/297.0,-4.0/11.0,42.0/143.0,1960.0/3861.0,0,0,0,0},
-                   {597.0/22528.0,81.0/352.0,63099.0/585728.0,58653.0/366080.0,4617.0/20480.0,0,0,0},
-                   {174197.0/959244.0,-30942.0/79937.0,8152137.0/19744439.0,666106.0/1039181.0,-29421.0/29068.0,482048.0/414219.0,0,0},
-                   {587.0/8064.0,0,4440339.0/15491840.0,24353.0/124800.0,387.0/44800.0,2152.0/5985.0,7267.0/94080.0,0}},
-      b[8]      = {587.0/8064.0,0,4440339.0/15491840.0,24353.0/124800.0,387.0/44800.0,2152.0/5985.0,7267.0/94080.0,0},
-      bembed[8] = {2479.0/34992.0,0,123.0/416.0,612941.0/3411720.0,43.0/1440.0,2272.0/6561.0,79937.0/1113912.0,3293.0/556956.0};
-#endif
+                   {RC(1.0)/RC(6.0),0,0,0,0,0,0,0},
+                   {RC(2.0)/RC(27.0),RC(4.0)/RC(27.0),0,0,0,0,0,0},
+                   {RC(183.0)/RC(1372.0),RC(-162.0)/RC(343.0),RC(1053.0)/RC(1372.0),0,0,0,0,0},
+                   {RC(68.0)/RC(297.0),RC(-4.0)/RC(11.0),RC(42.0)/RC(143.0),RC(1960.0)/RC(3861.0),0,0,0,0},
+                   {RC(597.0)/RC(22528.0),RC(81.0)/RC(352.0),RC(63099.0)/RC(585728.0),RC(58653.0)/RC(366080.0),RC(4617.0)/RC(20480.0),0,0,0},
+                   {RC(174197.0)/RC(959244.0),RC(-30942.0)/RC(79937.0),RC(8152137.0)/RC(19744439.0),RC(666106.0)/RC(1039181.0),RC(-29421.0)/RC(29068.0),RC(482048.0)/RC(414219.0),0,0},
+                   {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0}},
+      b[8]      =  {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0},
+      bembed[8] =  {RC(2479.0)/RC(34992.0),0,RC(123.0)/RC(416.0),RC(612941.0)/RC(3411720.0),RC(43.0)/RC(1440.0),RC(2272.0)/RC(6561.0),RC(79937.0)/RC(1113912.0),RC(3293.0)/RC(556956.0)};
     ierr = TSRKRegister(TSRK5BS,5,8,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
+#undef RC
   PetscFunctionReturn(0);
 }
 
@@ -934,13 +905,12 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     TSRKType  rktype;
     char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RK: %s\n",rktype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -964,9 +934,12 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 +  ts - timestepping context
 -  rktype - type of RK-scheme
 
+  Options Database:
+.   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
+
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRK2, TSRK3, TSRKPRSSP2, TSRK4, TSRK5
+.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {

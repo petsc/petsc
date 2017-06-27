@@ -353,15 +353,20 @@ class generateExamples(Petsc):
     template=eval("example_template."+tors+"line")
     tsStr=re.sub("@"+TORS+"COMMENT@",', '.join(reasons),template)
     tab = ''
+    if reasons:
+      fh.write('if ! $force; then\n')
+      tab = tab + '    '
     if reasons == ["Requires DATAFILESPATH"]:
       # The only reason not to run is DATAFILESPATH, which we check at run-time
-      tab = '    '
-      fh.write('if test -z "${DATAFILESPATH}"; then\n')
+      fh.write(tab + 'if test -z "${DATAFILESPATH}"; then\n')
+      tab = tab + '    '
     if reasons:
-      fh.write(tab+tsStr+"\ntotal=1; "+tors+"=1\n")
+      fh.write(tab+tsStr+"\n" + tab + "total=1; "+tors+"=1\n")
       fh.write(tab+footer+"\n")
       fh.write(tab+"exit\n")
     if reasons == ["Requires DATAFILESPATH"]:
+      fh.write('    fi\n')
+    if reasons:
       fh.write('fi\n')
     fh.write('\n\n')
     return
@@ -478,7 +483,6 @@ class generateExamples(Petsc):
      All tests are *always* run, but some may be SKIP'd per the TAP standard
     """
     debug=False
-    fileIsTested=False
     execname=self.getExecname(exfile,root)
     isBuilt=self._isBuilt(exfile,srcDict)
     for test in srcDict:
@@ -488,12 +492,10 @@ class generateExamples(Petsc):
       isRun=self._isRun(srcDict[test])
       self.genRunScript(test,root,isRun,srcDict)
       srcDict[test]['isrun']=isRun
-      if isRun: fileIsTested=True
       self.addToTests(test,root,exfile,execname,srcDict[test])
 
     # This adds to datastructure for building deps
-    if fileIsTested and isBuilt: self.addToSources(exfile,root,srcDict)
-    #print self.nameSpace(exfile,root), fileIsTested
+    if isBuilt: self.addToSources(exfile,root,srcDict)
     return
 
   def _isBuilt(self,exfile,srcDict):

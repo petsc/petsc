@@ -200,19 +200,18 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
      collectively on the comm.
      */
     ierr = PetscObjectName((PetscObject)viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Generalized additive Schwarz:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Restriction/interpolation type: %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%s\n",overlap);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%s\n",gsubdomains);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%s\n",msubdomains);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Restriction/interpolation type: %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",overlap);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",gsubdomains);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",msubdomains);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d|%d] number of locally-supported subdomains = %D\n",rank,size,osm->n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d|%d] number of locally-supported subdomains = %D\n",rank,size,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
     /* Cannot take advantage of osm->same_subdomain_solvers without a global numbering of subdomains. */
-    ierr = PetscViewerASCIIPrintf(viewer,"Subdomain solver info is as follows:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Subdomain solver info is as follows:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  - - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
     /* Make sure that everybody waits for the banner to be printed. */
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
     /* Now let subdomains go one at a time in the global numbering order and print their subdomain/solver info. */
@@ -227,17 +226,17 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
           ierr = MPI_Comm_rank(((PetscObject)osm->ois[d])->comm, &srank);CHKERRQ(ierr);
           ierr = PetscViewerGetSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ierr = ISGetLocalSize(osm->ois[d],&bsz);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d|%d] (subcomm [%d|%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"  [%d|%d] (subcomm [%d|%d]) local subdomain number %D, local size = %D\n",rank,size,srank,ssize,d,bsz);CHKERRQ(ierr);
           ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
           if (view_subdomains) {
             ierr = PCGASMSubdomainView_Private(pc,d,sviewer);CHKERRQ(ierr);
           }
           if (!pc->setupcalled) {
-            ierr = PetscViewerASCIIPrintf(sviewer, "Solver not set up yet: PCSetUp() not yet called\n");CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(sviewer, "  Solver not set up yet: PCSetUp() not yet called\n");CHKERRQ(ierr);
           } else {
             ierr = KSPView(osm->ksp[d],sviewer);CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(sviewer,"  - - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
           ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
           ierr = PetscViewerRestoreSubViewer(viewer,((PetscObject)osm->ois[d])->comm, &sviewer);CHKERRQ(ierr);
           ++l;

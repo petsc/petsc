@@ -1,9 +1,5 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 
 typedef enum {BOX, CYLINDER} DomainShape;
@@ -19,6 +15,7 @@ typedef struct {
   PetscBool     interpolate;                  /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;              /* The largest allowable cell volume */
   PetscBool     cellSimplex;                  /* Use simplices or hexes */
+  PetscBool     cellWedge;                    /* Use wedges */
   PetscBool     simplex2tensor;               /* Refine simplicials in hexes */
   DomainShape   domainShape;                  /* Shep of the region to be meshed */
   DMBoundaryType periodicity[3];              /* The domain periodicity */
@@ -41,6 +38,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate       = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
+  options->cellWedge         = PETSC_FALSE;
   options->domainShape       = BOX;
   options->periodicity[0]    = DM_BOUNDARY_NONE;
   options->periodicity[1]    = DM_BOUNDARY_NONE;
@@ -58,6 +56,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_wedge", "Use wedges if true", "ex1.c", options->cellWedge, &options->cellWedge, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex1.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
   if (options->simplex2tensor) options->interpolate = PETSC_TRUE;
   shape = options->domainShape;
@@ -93,6 +92,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate          = user->interpolate;
   PetscReal      refinementLimit      = user->refinementLimit;
   PetscBool      cellSimplex          = user->cellSimplex;
+  PetscBool      cellWedge            = user->cellWedge;
   PetscBool      simplex2tensor       = user->simplex2tensor;
   const char    *filename             = user->filename;
   const char    *bdfilename           = user->bdfilename;
@@ -142,8 +142,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
-      ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
-      ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
+      if (cellWedge) {
+        ierr = DMPlexCreateWedgeCylinderMesh(comm, 6, PETSC_FALSE, dm);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
+        ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
+      }
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
@@ -354,6 +358,9 @@ int main(int argc, char **argv)
 
 /*TEST
 
+  build:
+    requires: !mpiuni
+
   # CTetGen 0-1
   test:
     suffix: 0
@@ -522,6 +529,10 @@ int main(int argc, char **argv)
   test:
     suffix: cylinder_per
     args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -test_shape -dm_view
+
+  test:
+    suffix: cylinder_wedge
+    args: -dim 3 -cell_simplex 0 -cell_wedge -domain_shape cylinder -dm_view
 
   test:
     suffix: box_2d

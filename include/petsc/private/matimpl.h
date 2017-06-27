@@ -161,7 +161,7 @@ struct _MatOps {
   PetscErrorCode (*restorerowuppertriangular)(Mat);
   /*109*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
-  PetscErrorCode (*placeholder_110)(Mat);
+  PetscErrorCode (*matsolvetranspose)(Mat,Mat,Mat);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
   PetscErrorCode (*missingdiagonal)(Mat,PetscBool *,PetscInt*);
@@ -403,6 +403,8 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
+  Mat                    schur;             /* Schur complement matrix */
+  MatFactorSchurStatus   schur_status;      /* status of the Schur complement matrix */
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
   MatFactorError         factorerrortype;               /* type of error in factorization */
@@ -412,6 +414,14 @@ struct _p_Mat {
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
+
+/*
+    Utility for MatFactor (Schur complement)
+*/
+PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat);
+PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat);
+PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat);
+PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat);
 
 /*
     Utility for MatZeroRows

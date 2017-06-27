@@ -550,11 +550,21 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
    Level: intermediate
 
+   Fortran Note:
+   This routine has a different interface for Fortran
+$          use petscisdef
+$          PetscInt, pointer :: array(:)
+$          PetscErrorCode  ierr
+$          MatFDColoring   i
+$          call MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
+$      use the entries of array ...
+$          call MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
+
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringApply()
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt *n,PetscInt *cols[])
+PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt *n,const PetscInt *cols[])
 {
   PetscFunctionBegin;
   if (coloring->currentcolor >= 0) {

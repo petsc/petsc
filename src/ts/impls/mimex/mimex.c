@@ -314,7 +314,6 @@ static PetscErrorCode TSView_Mimex(TS ts,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  Version = %D\n", mimex->version);CHKERRQ(ierr);
   }
-  if (ts->snes) {ierr = SNESView(ts->snes, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

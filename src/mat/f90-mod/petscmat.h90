@@ -3,6 +3,24 @@
 ! rename MAT_INFO_SIZE and MAT_FACTORINFO_SIZE to enable reuse here
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
+      Interface
+        Subroutine MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
+          use petscmatdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         MatFDColoring       i
+        End Subroutine
+      End Interface
+
+
+      Interface
+        Subroutine MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
+          use petscmatdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+         MatFDColoring      i
+        End Subroutine
+      End Interface
 
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)

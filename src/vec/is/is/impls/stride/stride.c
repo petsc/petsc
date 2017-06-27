@@ -114,7 +114,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -355,12 +355,13 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   if (step > 0) {min = first; max = first + step*(n-1);}
   else          {max = first; min = first + step*(n-1);}
 
-  is->min  = n > 0 ? min : -1;
-  is->max  = n > 0 ? max : -2;
+  is->min  = n > 0 ? min : PETSC_MAX_INT;
+  is->max  = n > 0 ? max : PETSC_MIN_INT;
   is->data = (void*)sub;
 
   if ((!first && step == 1) || (first == max && step == -1 && !min)) is->isperm = PETSC_TRUE;
   else is->isperm = PETSC_FALSE;
+  is->isidentity = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -409,12 +410,9 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
   IS_Stride      *sub;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
-  is->data = sub;
+  is->data = (void *) sub;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-

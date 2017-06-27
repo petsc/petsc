@@ -10,19 +10,12 @@ From the command line, it prints out the dictionary.
 This is meant to be used by other scripts, but it is 
 useful to debug individual files.
 
-
-
 Example language
 ----------------
-/*T
-   Concepts:
-   requires: moab
-T*/
-
-
 
 /*TEST
-
+   build:
+     requires: moab
    # This is equivalent to test:
    testset:
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
@@ -79,7 +72,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
     if line.strip().startswith('#'): continue
     if entireBlock:
       var=line.split(":")[0].strip()
-      if not (var=='test' or var=='testset'): 
+      if not var in ['test','testset','build']: 
         raise Exception("Formatting error: Cannot find test in file: "+srcfile+" at line: "+str(lineNum)+"\n")
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
@@ -105,7 +98,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
       if line.strip().startswith('#'): continue
       if not newline.startswith(" "):
         var=newline.split(":")[0].strip()
-        if not (var=='test' or var=='testset'): 
+        if not var in ['test','testset','build']: 
           err="Formatting error in file "+srcfile+" at line: " +line+"\n"
           if len(fileNums)>0:
             raise Exception(err+"Check indentation at line number: "+str(lineNum))
@@ -113,7 +106,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
             raise Exception(err)
       else:
         var=line.split(":")[0].strip()
-        if var=='test' or var=='testset':
+        if var in ['test','testset','build']: 
           subnspace=len(line)-len(line.lstrip(stripstr))
           if firstPass:
             firstsubnspace=subnspace
@@ -373,14 +366,25 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
   newTestStr=_stripIndent(testStr,srcfile,entireBlock=True,fileNums=fileNums)
   if verbosity>2: print srcfile
 
+  ## Check and see if we have build reuqirements
+  if "\nbuild:" in newTestStr:
+    testDict['build']={}
+    # The file info is already here and need to append
+    Part1=newTestStr.split("build:")[1]
+    fileInfo=re.split("\ntest(?:set)?:",newTestStr)[0]
+    for bkey in buildkeys:
+      if bkey+":" in fileInfo:
+        testDict['build'][bkey]=fileInfo.split(bkey+":")[1].split("\n")[0].strip()
+        #if verbosity>1: bkey+": "+testDict['build'][bkey]
+
   # Now go through each test.  First elem in split is blank
   for test in re.split("\ntest(?:set)?:",newTestStr)[1:]:
     testnames,subdicts=parseTest(test,srcfile,verbosity)
     for i in range(len(testnames)):
       if testDict.has_key(testnames[i]):
-        raise Error("Multiple test names specified: "+testname+" in file: "+srcfile)
+        raise RuntimeError("Multiple test names specified: "+testnames[i]+" in file: "+srcfile)
       testDict[testnames[i]]=subdicts[i]
-      
+
   return testDict
 
 def parseTestFile(srcfile,verbosity):
@@ -416,16 +420,11 @@ def parseTestFile(srcfile,verbosity):
   fend=fstart+flen-1
   fileNums=range(fstart,fend)
   testDict[basename]=parseTests(testString,srcfile,fileNums,verbosity)
+  # Massage dictionary for build requirements
+  if 'build' in testDict[basename]:
+    testDict[basename].update(testDict[basename]['build'])
+    del testDict[basename]['build']
 
-  ## Check and see if we have build reuqirements
-  #
-  if "/*T\n" in fileStr or "/*T " in fileStr:
-    # The file info is already here and need to append
-    Part1=fileStr.split("T*/")[0]
-    fileInfo=Part1.split("/*T")[1]
-    for bkey in buildkeys:
-      if bkey+":" in fileInfo:
-        testDict[basename][bkey]=fileInfo.split(bkey+":")[1].split("\n")[0].strip()
 
   os.chdir(curdir)
   return testDict

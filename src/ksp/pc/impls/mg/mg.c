@@ -101,6 +101,8 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   for (i=1; i<levels; i++) {
     ierr = KSPSetTolerances(mglevels[i]->smoothu,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     if (mglevels[i]->smoothu != mglevels[i]->smoothd) {
+      /* For Richardson the initial guess is nonzero since it is solving in each cycle the original system not just applying as a preconditioner */
+      ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSetTolerances(mglevels[i]->smoothd,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     }
   }
@@ -458,7 +460,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply);CHKERRQ(ierr);
     }
@@ -951,10 +953,10 @@ PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
 
    Input Parameters:
 +  pc - the multigrid context
--  PC_MG_CYCLE_V or PC_MG_CYCLE_W
+-  n - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-.  -pc_mg_cycle_type <v,w>
+.  -pc_mg_cycle_type <v,w> - provide the cycle desired
 
    Level: advanced
 
@@ -1258,6 +1260,11 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
    Notes: If one uses a Krylov method such GMRES or CG as the smoother than one must use KSPFGMRES, KSPGCG, or KSPRICHARDSON as the outer Krylov method
 
        When run with a single level the smoother options are used on that level NOT the coarse grid solver options
+
+       When run with KSPRICHARDSON the convergence test changes slightly if monitor is turned on. The iteration count may change slightly. This
+       is because without monitoring the residual norm is computed WITHIN each multigrid cycle on the finest level after the pre-smoothing
+       (because the residual has just been computed for the multigrid algorithm and is hence available for free) while with monitoring the
+       residual is computed at the end of each cycle.
 
    Level: intermediate
 

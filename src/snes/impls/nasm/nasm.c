@@ -216,7 +216,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "  Nonlinear Additive Schwarz: total subdomain blocks = %D\n",N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %D\n",N);CHKERRQ(ierr);
     if (nasm->same_local_solves) {
       if (nasm->subsnes) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is the same for all blocks:\n");CHKERRQ(ierr);
@@ -895,7 +895,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->ops->reset          = SNESReset_NASM;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 

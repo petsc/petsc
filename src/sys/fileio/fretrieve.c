@@ -323,134 +323,141 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 
 
 /*@C
-    PetscFileRetrieve - Obtains a library from a URL or compressed
+    PetscFileRetrieve - Obtains a file from a URL or compressed
         and copies into local disk space as uncompressed.
 
     Collective on MPI_Comm
 
     Input Parameter:
-+   comm     - processors accessing the library
-.   libname  - name of library, including entire URL (with or without .gz)
--   llen     - length of llibname
++   comm     - processors accessing the file
+.   url      - name of file, including entire URL (with or without .gz)
+-   llen     - length of localname
 
     Output Parameter:
-+   llibname - name of local copy of library
--   found - if found and retrieved the file
++   localname - name of local copy of file - valid on only process zero
+-   found - if found or retrieved the file - valid on all processes
 
-    Level: developer
+    Notes: if the file already exists local this function just returns without downloading it.
 
+    Level: intermediate
 @*/
-PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibname[],size_t llen,PetscBool  *found)
+PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[],size_t llen,PetscBool  *found)
 {
-  char           buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
-  const char     *pdir;
+  char           buffer[PETSC_MAX_PATH_LEN],*par,*tlocalname,name[PETSC_MAX_PATH_LEN];
   FILE           *fp;
   PetscErrorCode ierr;
-  int            i;
   PetscMPIInt    rank;
   size_t         len = 0;
-  PetscBool      flg1,flg2,flg3,sharedtmp,exists;
+  PetscBool      flg1,flg2,flg3,flg4,download,compressed = PETSC_FALSE;
 #if defined(PETSC_HAVE_POPEN)
   int            rval;
 #endif
 
   PetscFunctionBegin;
-  *found = PETSC_FALSE;
-
-  /* if file does not have an ftp:// or http:// or .gz then need not process file */
-  ierr = PetscStrstr(libname,".gz",&par);CHKERRQ(ierr);
-  if (par) {ierr = PetscStrlen(par,&len);CHKERRQ(ierr);}
-
-  ierr = PetscStrncmp(libname,"ftp://",6,&flg1);CHKERRQ(ierr);
-  ierr = PetscStrncmp(libname,"http://",7,&flg2);CHKERRQ(ierr);
-  ierr = PetscStrncmp(libname,"file://",7,&flg3);CHKERRQ(ierr);
-  if (!flg1 && !flg2 && !flg3 && (!par || len != 3)) {
-    ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
-    ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
-    if (*found) {
-      ierr = PetscInfo1(NULL,"Found file %s\n",libname);CHKERRQ(ierr);
-    } else {
-      ierr = PetscInfo1(NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
-  }
-
-  if (par && len == 3){
-    size_t llen;
-    ierr = PetscStrlen(libname,&llen);CHKERRQ(ierr);
-    ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
-    llibname[llen-len] = 0;
-    ierr = PetscTestFile(llibname,'r',found);CHKERRQ(ierr);
-    if (*found) {
-      ierr = PetscInfo1(NULL,"Found uncompressed version of file %s\n",llibname);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    } else {
-      ierr = PetscInfo1(NULL,"Did not find uncompressed version of file %s\n",libname);CHKERRQ(ierr);
-    }
-  }
-
-  /* Determine if all processors share a common /tmp */
-  ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpdir,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank || !sharedtmp) {
+  if (!rank) {
+    *found = PETSC_FALSE;
 
-    /* Construct the script to get URL file */
-    ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
-    ierr = PetscStrcpy(urlget,pdir);CHKERRQ(ierr);
-    ierr = PetscStrcat(urlget,"/bin/urlget");CHKERRQ(ierr);
-    ierr = PetscTestFile(urlget,'r',&exists);CHKERRQ(ierr);
-    if (!exists) {
-      ierr = PetscTestFile("urlget",'r',&exists);CHKERRQ(ierr);
-      if (!exists) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
-      ierr = PetscStrcpy(urlget,"urlget");CHKERRQ(ierr);
-    }
-    ierr = PetscStrcat(urlget," ");CHKERRQ(ierr);
-
-    /* are we using an alternative /tmp? */
-    if (flg1) {
-      ierr = PetscStrcat(urlget,"-tmp ");CHKERRQ(ierr);
-      ierr = PetscStrcat(urlget,tmpdir);CHKERRQ(ierr);
-      ierr = PetscStrcat(urlget," ");CHKERRQ(ierr);
+    ierr = PetscStrstr(url,".gz",&par);CHKERRQ(ierr);
+    if (par) {
+      ierr = PetscStrlen(par,&len);CHKERRQ(ierr);
+      if (len == 3) compressed = PETSC_TRUE;
     }
 
-    ierr = PetscStrcat(urlget,libname);CHKERRQ(ierr);
-    ierr = PetscStrcat(urlget," 2>&1 ");CHKERRQ(ierr);
+    ierr = PetscStrncmp(url,"ftp://",6,&flg1);CHKERRQ(ierr);
+    ierr = PetscStrncmp(url,"http://",7,&flg2);CHKERRQ(ierr);
+    ierr = PetscStrncmp(url,"file://",7,&flg3);CHKERRQ(ierr);
+    ierr = PetscStrncmp(url,"https://",8,&flg4);CHKERRQ(ierr);
+    download = (PetscBool) (flg1 || flg2 || flg3 || flg4);
 
-#if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,urlget,"r",&fp);CHKERRQ(ierr);
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
-#endif
-    if (!fgets(buf,1024,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
-    ierr = PetscInfo1(0,"Message back from urlget: %s\n",buf);CHKERRQ(ierr);
-
-    ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
-#endif
-    if (flg1 || flg2) *found = PETSC_FALSE;
-    else {
-      *found = PETSC_TRUE;
-
-      /* Check for \n and make it 0 */
-      for (i=0; i<1024; i++) {
-        if (buf[i] == '\n') {
-          buf[i] = 0;
-          break;
-        }
+    if (!download && !compressed) {
+      ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
+      ierr = PetscTestFile(url,'r',found);CHKERRQ(ierr);
+      if (*found) {
+        ierr = PetscInfo1(NULL,"Found file %s\n",url);CHKERRQ(ierr);
+      } else {
+        ierr = PetscInfo1(NULL,"Did not find file %s\n",url);CHKERRQ(ierr);
       }
-      ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
+      goto done;
+    }
+
+    /* look for uncompressed file in requested directory */
+    if (compressed) {
+      ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
+      ierr = PetscStrstr(localname,".gz",&par);CHKERRQ(ierr);
+      *par = 0; /* remove .gz extension */
+      ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
+      if (*found) goto done;
+    }
+
+    /* look for file in current directory */
+    ierr = PetscStrrchr(url,'/',&tlocalname);CHKERRQ(ierr);
+    ierr = PetscStrncpy(localname,tlocalname,llen);CHKERRQ(ierr);
+    if (compressed) {
+      ierr = PetscStrstr(localname,".gz",&par);CHKERRQ(ierr);
+      *par = 0; /* remove .gz extension */
+    }
+    ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
+    if (*found) goto done;
+
+    if (download) {
+      /* local file is not already here so use curl to get it */
+      ierr = PetscStrncpy(localname,tlocalname,llen);CHKERRQ(ierr);
+      ierr = PetscStrcpy(buffer,"curl ");CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer,url);CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer," > ");CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer,localname);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
+      ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+#else
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
+      ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
+      if (*found) {
+        FILE      *fd;
+        char      buf[1024],*str,*substring;
+
+        /* check if the file didn't exist so it downloaded an HTML message instead */
+        fd = fopen(localname,"r");
+        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTestFile() indicates %s exists but fopen() cannot open it",localname);
+        str = fgets(buf,sizeof(buf)-1,fd);
+        while (str) {
+          ierr = PetscStrstr(buf,"<!DOCTYPE html>",&substring);CHKERRQ(ierr);
+          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          ierr = PetscStrstr(buf,"Not Found",&substring);CHKERRQ(ierr);
+          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          str = fgets(buf,sizeof(buf)-1,fd);
+        }
+        fclose(fd);
+      }
+    } else if (compressed) {
+      ierr = PetscTestFile(url,'r',found);CHKERRQ(ierr);
+      if (!*found) goto done;
+      ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
+    }
+    if (compressed) {
+      ierr = PetscStrrchr(localname,'/',&tlocalname);CHKERRQ(ierr);
+      ierr = PetscStrncpy(name,tlocalname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+      ierr = PetscStrstr(name,".gz",&par);CHKERRQ(ierr);
+      *par = 0; /* remove .gz extension */
+      /* uncompress file */
+      ierr = PetscStrcpy(buffer,"gzip -c -d ");CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer,localname);CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer," > ");CHKERRQ(ierr);
+      ierr = PetscStrcat(buffer,name);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
+      ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+#else
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
+      ierr = PetscStrncpy(localname,name,llen);CHKERRQ(ierr);
+      ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
     }
   }
-  if (sharedtmp) { /* send library name to all processors */
-    ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
-    if (*found) {
-      ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
-    }
-  }
+  done:
+  ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(localname, llen, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

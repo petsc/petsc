@@ -131,6 +131,7 @@ PetscErrorCode  KSPFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&KSPGuessList);CHKERRQ(ierr);
   KSPPackageInitialized = PETSC_FALSE;
   KSPRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -159,10 +160,13 @@ PetscErrorCode  KSPInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("Krylov Solver",&KSP_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMKSP interface",&DMKSP_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("KSPGuess interface",&KSPGUESS_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = KSPRegisterAll();CHKERRQ(ierr);
   /* Register matrix implementations packaged in KSP */
   ierr = KSPMatRegisterAll();CHKERRQ(ierr);
+  /* Register KSP guesses implementations */
+  ierr = KSPGuessRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);

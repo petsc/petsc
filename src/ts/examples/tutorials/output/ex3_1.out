@@ -103,9 +103,10 @@ Timestep 100: step size = 0.0005, time = 0.05, 2-norm error = 0.000559537, max n
 avg. error (2 norm) = 0.000913004, avg. error (max norm) = 0.00130754
 TS Object: 1 MPI processes
   type: ssp
+    Scheme: rks2
   maximum steps=100
   maximum time=100.
-  total number of linear solver iterations=0
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-    Scheme: rks2
+TSAdapt Object: 1 MPI processes
+  type: none

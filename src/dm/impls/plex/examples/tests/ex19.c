@@ -175,9 +175,11 @@ static PetscErrorCode CreateRankField(DM dm, Vec *ranks)
 
 int main (int argc, char * argv[]) {
   AppCtx         user;                 /* user-defined work context */
+  DMLabel        bdLabel = NULL;
   MPI_Comm       comm;
   DM             dma, odm;
   Vec            metric;
+  size_t         len;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -193,7 +195,12 @@ int main (int argc, char * argv[]) {
   if (!user.dm) {user.dm = odm;}
   else          {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
   ierr = ComputeMetric(user.dm, &user, &metric);CHKERRQ(ierr);
-  ierr = DMPlexAdapt(user.dm, metric, user.bdLabel, &dma);CHKERRQ(ierr);
+  ierr = PetscStrlen(user.bdLabel, &len);CHKERRQ(ierr);
+  if (len) {
+    ierr = DMCreateLabel(user.dm, user.bdLabel);CHKERRQ(ierr);
+    ierr = DMGetLabel(user.dm, user.bdLabel, &bdLabel);CHKERRQ(ierr);
+  }
+  ierr = DMAdaptMetric(user.dm, metric, bdLabel, &dma);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dma, NULL, "-adapt_dm_view");CHKERRQ(ierr);
   {

@@ -68,6 +68,15 @@ int main(int argc,char **args)
   ierr = MatLoad(A,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+
+  ierr = PetscMalloc1((rend-rstart)*n,&array);CHKERRQ(ierr);
+  for (i=0; i<(rend-rstart)*n; i++) array[i] = 1.;
+  ierr = MatDensePlaceArray(A,array);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDenseResetArray(A);CHKERRQ(ierr);
+  ierr = PetscFree(array);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

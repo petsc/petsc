@@ -345,8 +345,8 @@ static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: All singular values smaller than %g treated as zero\n",(double)svd->zerosing);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  All singular values smaller than %g treated as zero\n",(double)svd->zerosing);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
