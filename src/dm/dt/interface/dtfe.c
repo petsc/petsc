@@ -2069,23 +2069,23 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 + sp - the PetscDualSpace object
 - height - the height of the mesh point for which the subspace is desired
 
-  Output Parameters:
-  bdsp - the subspace
+  Output Parameter:
+. subsp - the subspace
 
   Level: advanced
 
-.seealso: PetscDualSpace
+.seealso: PetscSpaceGetHeightSubspace(), PetscDualSpace
 @*/
-PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
+PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *subsp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(bdsp,2);
-  *bdsp = NULL;
+  PetscValidPointer(subsp, 3);
+  *subsp = NULL;
   if (sp->ops->getheightsubspace) {
-    ierr = (*sp->ops->getheightsubspace)(sp,height,bdsp);CHKERRQ(ierr);
+    ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
