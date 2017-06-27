@@ -229,6 +229,7 @@ class generateExamples(Petsc):
 
     # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
     if 'nsize' not in testDict: testDict['nsize']=1
+    if 'timeoutfactor' not in testDict: testDict['timeoutfactor']="1"
     for ak in testparse.acceptedkeys: 
       if ak=='test': continue
       subst[ak]=(testDict[ak] if ak in testDict else '')
@@ -263,6 +264,7 @@ class generateExamples(Petsc):
     else:
       subst['mpiexec']=self.conf['MPIEXEC']
     subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
+    subst['petsc_arch']=self.petsc_arch
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
     subst['grep']=self.conf['GREP']

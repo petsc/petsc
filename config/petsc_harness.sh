@@ -2,6 +2,7 @@
 
 scriptname=`basename $0`
 rundir=${scriptname%.sh}
+TIMEOUT=60
 
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
@@ -31,6 +32,7 @@ OPTIONS
   -j ................ Pass -j to petscdiff (just use diff)
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
+  -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
 EOF
@@ -46,7 +48,7 @@ cleanup=false
 debugger=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mn:vV" arg
+while getopts "a:cde:fhjJ:mn:t:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -59,6 +61,7 @@ do
     j ) diff_flags="-j"      ;;  
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
+    t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
     *)  # To take care of any extra args
@@ -72,6 +75,9 @@ do
 done
 shift $(( $OPTIND - 1 ))
 
+# Individual tests can extend the default
+TIMEOUT=$((TIMEOUT*timeoutfactor))
+
 if test -n "$extra_args"; then
   args="$args $extra_args"
 fi
@@ -84,6 +90,7 @@ fi
 success=0; failed=0; failures=""; rmfiles=""
 total=0
 todo=-1; skip=-1
+job_level=0
 
 function petsc_testrun() {
   # First arg = Basic command
@@ -94,40 +101,68 @@ function petsc_testrun() {
   rmfiles="${rmfiles} $2 $3"
   tlabel=$4
   filter=$5
-  # Determining whether this test passes or fails is tricky because of filters
-  # and eval.  Use sum of all parts of a potential pipe to determine status. See:
-  #  https://stackoverflow.com/questions/24734850/how-to-get-the-exit-status-of-the-first-command-in-a-pipe
-  #  http://www.unix.com/shell-programming-and-scripting/128869-creating-run-script-getting-pipestatus-eval.html
-
-  if test -z "$filter"; then
-    cmd="$1 > $2 2> $3"
-  else
+  job_control=true
+  cmd="$1 > $2 2> $3"
+  if test -n "$filter"; then
     if test "${filter:0:6}"=="Error:"; then
+      job_control=false      # redirection error method causes job control probs
       filter=${filter##Error:}
-      cmd="#!/bin/bash eval $1 2>&1  | $filter > $2 2> $3"
-    else
-      cmd="$1 2> $3 | $filter > $2 2>> $3"
+      cmd="$1 2>&1 | cat > $2 2> $3"
     fi
   fi
   echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
-  eval "$cmd; typeset -a cmd_errstat=(\${PIPESTATUS[@]})"
-  let cmd_res=0
-  for i in ${cmd_errstat[@]}; do let cmd_res+=$i; done
 
+  kill_job=false
+  if $job_control; then
+    # The action:
+    eval "($cmd) &"
+    pid=$!
+    # Put a watcher process in that will kill a job that exceeds limit
+    $petsc_dir/config/watchtime.sh $pid $TIMEOUT &
+    watcher=$!
+
+    # See if the job we want finishes
+    wait $pid 2> /dev/null
+    cmd_res=$?
+    if ps -p $watcher > /dev/null; then
+      # Keep processes tidy by killing watcher
+      kill -s PIPE $watcher 
+      wait $watcher 2>/dev/null  # Wait used here to capture the kill message
+    else
+      # Timeout
+      cmd_res=1
+      echo "Exceeded timeout limit of $TIMEOUT s" > $3
+    fi
+  else
+    # The action -- assume no timeout needed
+    eval $cmd
+    # We are testing error codes so just make it pass
+    cmd_res=0
+  fi
+
+  # Handle filters separately and assume no timeout check needed
+  if test -n "$filter"; then
+    cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
+    echo $cmd >> ${tlabel}.sh
+    eval "$cmd"
+    let cmd_res+=$?
+  fi
+
+  # Report errors
   if test $cmd_res == 0; then
     if "${verbose}"; then
-     printf "ok $tlabel $cmd\n"
+     printf "ok $tlabel $cmd\n" | tee -a ${testlogfile}
     else
-     printf "ok $tlabel\n"
+     printf "ok $tlabel\n" | tee -a ${testlogfile}
     fi
     let success=$success+1
   else
     if "${verbose}"; then 
-      printf "not ok $tlabel $cmd\n"
+      printf "not ok $tlabel $cmd\n" | tee -a ${testlogfile}
     else
-      printf "not ok $tlabel\n"
+      printf "not ok $tlabel\n" | tee -a ${testlogfile}
     fi
-    awk '{print "#\t" $0}' < $3
+    awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
     let failed=$failed+1
     failures="$failures $tlabel"
   fi
