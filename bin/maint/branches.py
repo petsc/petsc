@@ -121,7 +121,7 @@ outfile = open(sys.argv[2], "w")
 outfile.write("""
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head><title>PETSc Test Summary</title>
+<head><title>PETSc Branch Summary</title>
 <style type="text/css">
 div.main {
   max-width: 1300px;
