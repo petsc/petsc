@@ -180,10 +180,10 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, char* name PETSC_MIXED_L
   FREECHAR(name, lname);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmgetlabelname_(DMLabel *label,PetscInt *n,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmgetlabelname_(DM *dm,PetscInt *n,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tmp;
-  *ierr = DMGetLabelName(*label,*n,&tmp);
+  *ierr = DMGetLabelName(*dm,*n,&tmp);
   *ierr = PetscStrncpy(name,tmp,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
