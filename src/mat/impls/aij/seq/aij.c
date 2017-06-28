@@ -2167,11 +2167,13 @@ PetscErrorCode MatIsHermitian_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 
 PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *l,*r,x;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,n = A->cmap->n,M,nz = a->nz,*jj;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  const PetscScalar *l,*r;
+  PetscScalar       x;
+  MatScalar         *v;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,m = A->rmap->n,n = A->cmap->n,M,nz = a->nz;
+  const PetscInt    *jj;
 
   PetscFunctionBegin;
   if (ll) {
@@ -2179,23 +2181,23 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
        by MatDiagonalScale_MPIAIJ */
     ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
     if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
     v    = a->a;
     for (i=0; i<m; i++) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for (j=0; j<M; j++) (*v++) *= x;
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
     if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
     v    = a->a; jj = a->j;
     for (i=0; i<nz; i++) (*v++) *= r[*jj++];
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
