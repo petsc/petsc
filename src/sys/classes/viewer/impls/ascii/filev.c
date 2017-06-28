@@ -707,6 +707,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
   if (gz) {
     ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
     if (len == 3) {
+      if (vascii->mode != FILE_MODE_WRITE) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot open ASCII PetscViewer file that is compressed; uncompress it manually first");
       *gz = 0;
       vascii->storecompressed = PETSC_TRUE;
     }
@@ -1010,6 +1011,13 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     else if (dtype == PETSC_ENUM)    ret = fscanf(fd, "%d",  &(((int*)data)[i]));
     else if (dtype == PETSC_FLOAT)   ret = fscanf(fd, "%f",  &(((float*)data)[i]));
     else if (dtype == PETSC_DOUBLE)  ret = fscanf(fd, "%lg", &(((double*)data)[i]));
+#if defined(PETSC_USE_REAL___FLOAT128)
+    else if (dtype == PETSC___FLOAT128) {
+      double tmp;
+      ret = fscanf(fd, "%lg", &tmp);
+      ((__float128*)data)[i] = tmp;
+    }
+#endif
     else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type %d not supported", (int) dtype);}
     if (!ret) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */

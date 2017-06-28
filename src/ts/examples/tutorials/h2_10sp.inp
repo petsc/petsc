@@ -1,0 +1,45 @@
+#
+#   Run with  ./extchem -options_file h2_10sp.inp
+#
+# If your machine is not connected to the internet you must obtain the two files below and store
+# them in this directory (otherwise the program will automatically obtain them for you).
+#
+#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1a_therm.txt > h2_v1a_therm.txt
+#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1b_mech.txt > h2_v1b_mech.txt
+#
+# You may need to do
+#       cp $PETSC_DIR/$PETSC_ARCH/share/periodictable.dat .
+#
+#
+-chem https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1b_mech.txt
+-thermo https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1a_therm.txt
+
+-initial_species H2,O2,N2
+-initial_mole    1,0.5,1.88
+
+-Tini 1500
+##pressure is in N/m2
+-pressure 1.013e5
+
+-monitor_temp
+
+# the following line is needed because currently the basic adapter takes large steps and steps right over the ignition
+-ts_adapt_type glee
+-ts_arkimex_fully_implicit
+-ts_max_snes_failures -1
+-ts_adapt_monitor
+-ts_arkimex_type 4
+-ts_final_time 2.0e-4
+
+# the chemistry dictates reasonable bounds on the timestep
+-ts_adapt_dt_max 1e-4
+-ts_adapt_dt_min 1e-9
+
+-snes_max_it 10
+-pc_type lu
+
+#-ts_monitor_lg_solution
+#-draw_pause -2
+#-lg_use_markers false
+#-ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
+-ts_monitor_envelope

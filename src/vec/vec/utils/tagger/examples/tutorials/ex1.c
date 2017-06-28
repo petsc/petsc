@@ -218,12 +218,14 @@ int main(int argc, char **argv)
     requires: !complex
     nsize: 3
     args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box 0.0,0.25 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.75,inf
+    filter: sed -e s~Inf~inf~g
 
   test:
     suffix: 9
     requires: !complex
     nsize: 3
     args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box -inf,0.5 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.25,0.75
+    filter: sed -e s~Inf~inf~g
 
   test:
     suffix: 10
@@ -273,11 +275,13 @@ int main(int argc, char **argv)
     requires: complex
     nsize: 3
     args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box 0.0+0.0i,0.25+0.25i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.75+0.75i,inf+infi
+    filter: sed -e s~Inf~inf~g
 
   test:
     suffix: 19
     requires: complex
     nsize: 3
     args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box -inf-infi,0.75+0.75i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.25+0.25i,1.+1.i
+    filter: sed -e s~Inf~inf~g
 
 TEST*/

@@ -229,7 +229,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
 
     nbcols = 0;
     for (k=0; k<ncolors; k+=bcols) {
-      coloring->currentcolor = k;
 
       /*
        (3-1) Loop over each column associated with color
@@ -239,6 +238,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
       dy_k = dy;
       if (k + bcols > ncolors) bcols = ncolors - k;
       for (i=0; i<bcols; i++) {
+        coloring->currentcolor = k+i;
 
         ierr = VecCopy(x1,w3);CHKERRQ(ierr);
         ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);

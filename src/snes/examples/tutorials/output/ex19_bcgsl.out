@@ -27,15 +27,15 @@ SNES Object: 2 MPI processes
     maximum iterations=40
   KSP Object:   2 MPI processes
     type: bcgsl
-      BCGSL: Ell = 3
-      BCGSL: Delta = 0
+      Ell = 3
+      Delta = 0
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object:   2 MPI processes
     type: bjacobi
-      block Jacobi: number of blocks = 2
+      number of blocks = 2
       Local solve is same for all blocks, in the following KSP and PC objects:
     KSP Object:    (sub_)     1 MPI processes
       type: preonly

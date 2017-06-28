@@ -455,7 +455,7 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
       if (blocks->fields) {
         PetscInt j;
 
-        ierr = PetscViewerASCIIPrintf(viewer, "Block %s Fields ", blocks->name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "  Block %s Fields ", blocks->name);CHKERRQ(ierr);
         ierr = PetscViewerASCIIUseTabs(viewer, PETSC_FALSE);CHKERRQ(ierr);
         for (j = 0; j < blocks->nfields; ++j) {
           if (j > 0) {
@@ -466,7 +466,7 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIUseTabs(viewer, PETSC_TRUE);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "Block %s Defined by IS\n", blocks->name);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "  Block %s Defined by IS\n", blocks->name);CHKERRQ(ierr);
       }
       ierr   = SNESView(blocks->snes, viewer);CHKERRQ(ierr);
       blocks = blocks->next;

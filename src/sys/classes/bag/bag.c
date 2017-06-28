@@ -744,7 +744,7 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
 
       ierr = PetscViewerBinaryWrite(view,(((char*)bag) + nitem->offset),nitem->msize,nitem->dtype,PETSC_FALSE);CHKERRQ(ierr);
       if (dtype == PETSC_ENUM) {
-        ierr = PetscViewerBinaryWriteStringArray(view,(char**)nitem->list);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryWriteStringArray(view,(const char* const*)nitem->list);CHKERRQ(ierr);
       }
       nitem = nitem->next;
     }

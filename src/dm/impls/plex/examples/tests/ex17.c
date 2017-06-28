@@ -1,5 +1,6 @@
 static char help[] = "Tests for point location\n\n";
 
+#include <petscsf.h>
 #include <petscdmplex.h>
 
 typedef struct {
@@ -30,7 +31,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -153,3 +154,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: triangle
+    args: -test_partition 0 -dm_view ascii::ascii_info_detail
+
+TEST*/

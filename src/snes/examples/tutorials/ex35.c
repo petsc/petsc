@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   PetscInt       its;                                  /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
-  PetscBool      use_ngs = PETSC_FALSE;                /* use the nonlinear Gauss-Seidel approximate solver */
+  PetscBool      use_ngs_as_npc = PETSC_FALSE;                /* use the nonlinear Gauss-Seidel approximate solver */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -87,9 +87,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_ngs_as_npc",&use_ngs_as_npc,0);CHKERRQ(ierr);
 
-  if (use_ngs) {
+  if (use_ngs_as_npc) {
     ierr = SNESGetNPC(snes,&psnes);CHKERRQ(ierr);
     ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
     ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  if (use_ngs) {
+  if (use_ngs_as_npc) {
     ierr = SNESShellSetContext(psnes,da);CHKERRQ(ierr);
   }
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

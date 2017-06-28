@@ -25,6 +25,9 @@ class Configure(config.package.CMakePackage):
     self.ssl      = framework.require('config.packages.ssl',self)
     self.triangle = framework.require('config.packages.Triangle',self)
     self.exodusii = framework.require('config.packages.exodusii',self)
+    self.flibs    = framework.require('config.packages.flibs',self)
+    self.cxxlibs  = framework.require('config.packages.cxxlibs',self)
+    self.mathlib  = framework.require('config.packages.mathlib',self)
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
@@ -89,7 +92,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=RELEASE')
       args.append('-DxSDKTrilinos_ENABLE_DEBUG=NO')
 
-    args.append('-DxSDKTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
+    args.append('-DxSDKTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.flibs.lib+self.cxxlibs.lib+self.mathlib.lib)+' '+self.compilers.LIBS+'"')
     args.append('-DxSDKTrilinos_ENABLE_TESTS=ON')
     return args
 

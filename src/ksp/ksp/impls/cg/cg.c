@@ -444,10 +444,10 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIIPrintf(viewer,"  CG or CGNE: variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  variant %s\n",KSPCGTypes[cg->type]);CHKERRQ(ierr);
 #endif
     if (cg->singlereduction) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  CG: using single-reduction variant\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  using single-reduction variant\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -515,7 +515,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
     It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 /*MC
-     KSPCG - The preconditioned conjugate gradient (PCG) iterative method
+     KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method
 
    Options Database Keys:
 +   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see KSPCGSetType()
@@ -524,10 +524,17 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 
    Level: beginner
 
-   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite
-          Only left preconditioning is supported.
+   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.  
+   
+   Only left preconditioning is supported; there are several ways to motivate preconditioned CG, but they all produce the same algorithm. 
+   One can interpret preconditioning A with B to mean any of the following\:
+.n  (1) Solve a left-preconditioned system BAx = Bb, using inv(B) to define an inner product in the algorithm.
+.n  (2) Solve a right-preconditioned system ABy = b, x = By, using B to define an inner product in the algorithm.
+.n  (3) Solve a symmetrically-preconditioned system, E^TAEy = E^Tb, x = Ey, where B = EE^T.
+.n  (4) Solve Ax=b with CG, but use the inner product defined by B to define the method [2].
+.n  In all cases, the resulting algorithm only requires application of B to vectors.
 
-   For complex numbers there are two different CG methods. One for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use
+   For complex numbers there are two different CG methods, one for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use
    KSPCGSetType() to indicate which type you are using.
 
    Developer Notes: KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to
@@ -536,6 +543,8 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    References:
 .   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
+.   2. - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs, 
+    SIAM, 2014.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
@@ -558,6 +567,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure

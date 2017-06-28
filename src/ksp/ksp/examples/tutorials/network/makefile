@@ -52,7 +52,7 @@ runex2_3:
 	   ${RM} -f ex2.tmp
 
 runex2_graphindex:
-	-@${MPIEXEC} -n 1 ./ex2 -petscpartitioner_type simple -n 20 -vertex_global_section_view -edge_global_section_view > ex2_graphindex.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex2 -n 20 -vertex_global_section_view -edge_global_section_view > ex2_graphindex.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_graphindex.out ex2_graphindex.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_graphindex, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_graphindex.tmp
@@ -62,7 +62,7 @@ runex2_graphindex_2:
 	   if (${DIFF} output/ex2_graphindex_2.out ex2_graphindex_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_graphindex_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_graphindex_2.tmp
-		
+
 runex1_nest:
 	-@${MPIEXEC} -n 1 ./ex1_nest -ksp_converged_reason > ex1_nest.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_nest.out ex1_nest.tmp) then true; \
@@ -75,6 +75,8 @@ runex1_nest_2:
 	   else printf "${PWD}\nPossible problem with ex1_nest_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_nest_2.tmp
 
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_graphindex runex2_graphindex_2 ex2.rm ex1_nest.PETSc runex1_nest runex1_nest_2 ex1_nest.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm \
+                                     ex2.PETSc runex2 runex2_2 runex2_3 runex2_graphindex runex2_graphindex_2 ex2.rm \
+                                     ex1_nest.PETSc runex1_nest runex1_nest_2 ex1_nest.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

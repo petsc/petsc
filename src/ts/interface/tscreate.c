@@ -28,6 +28,12 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
   Level: beginner
 
+  Developer Notes:  TS essentially always creates a SNES object even though explicit methods do not use it. This is
+                    unfortunate and should be fixed at some point. The flag snes->usessnes indicates if the
+                    particular method does use SNES and regulates if the information about the SNES is printed
+                    in TSView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
+                    by help messages about meaningless SNES options.
+
 .keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
@@ -78,9 +84,9 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->vec_costintegral = NULL;
   t->trajectory       = NULL;
 
-  /* All methods that do not do adaptivity at all
-   * should delete this object in their constructor */
-  ierr = TSGetAdapt(t,&t->adapt);CHKERRQ(ierr);
+  /* All methods that do adaptivity should specify
+   * its preferred adapt type in their constructor */
+  t->default_adapt_type = TSADAPTNONE;
 
   *ts = t;
   PetscFunctionReturn(0);

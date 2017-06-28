@@ -26,7 +26,7 @@ static PetscErrorCode ISDestroy_General(IS is)
 
   PetscFunctionBegin;
   if (is_general->allocated) {ierr = PetscFree(is_general->idx);CHKERRQ(ierr);}
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -539,36 +539,36 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISContiguousLocal_General,
                                ISLocate_General};
 
-static PetscErrorCode ISCreateGeneral_Private(IS is)
+PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
+
+PetscErrorCode ISSetUp_General(IS is)
 {
   PetscErrorCode ierr;
-  IS_General     *sub   = (IS_General*)is->data;
-  const PetscInt *idx   = sub->idx;
-  PetscBool      sorted = PETSC_TRUE;
+  IS_General     *sub = (IS_General*)is->data;
+  const PetscInt *idx = sub->idx;
   PetscInt       n,i,min,max;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+
+  sub->sorted = PETSC_TRUE;
   for (i=1; i<n; i++) {
-    if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
+    if (idx[i] < idx[i-1]) {sub->sorted = PETSC_FALSE; break;}
   }
   if (n) {
     min = max = idx[0];
+    for (i=1; i<n; i++) {
+      if (idx[i] < min) min = idx[i];
+      if (idx[i] > max) max = idx[i];
+    }
+    is->min = min;
+    is->max = max;
   } else {
-    min = -1;
-    max = -2;
+    is->min = PETSC_MAX_INT;
+    is->max = PETSC_MIN_INT;
   }
-  for (i=1; i<n; i++) {
-    if (idx[i] < min) min = idx[i];
-    if (idx[i] > max) max = idx[i];
-  }
-  sub->sorted    = sorted;
-  is->min        = min;
-  is->max        = max;
   is->isperm     = PETSC_FALSE;
   is->isidentity = PETSC_FALSE;
-  ierr = ISViewFromOptions(is,NULL,"-is_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -582,7 +582,7 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
 +  comm - the MPI communicator
 .  n - the length of the index set
 .  idx - the list of integers
--  mode - see PetscCopyMode for meaning of this flag.
+-  mode - PETSC_COPY_VALUES, PETSC_OWN_POINTER, or PETSC_USE_POINTER; see PetscCopyMode for meaning of this flag.
 
    Output Parameter:
 .  is - the new index set
@@ -599,7 +599,7 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
 @*/
 PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
@@ -648,21 +648,26 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,3);
 
-  if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
+
+  if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   if (mode == PETSC_COPY_VALUES) {
-    ierr           = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
-    ierr           = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {
-    sub->idx       = (PetscInt*)idx;
+    sub->idx = (PetscInt*)idx;
+    ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
   } else {
-    sub->idx       = (PetscInt*)idx;
+    sub->idx = (PetscInt*)idx;
     sub->allocated = PETSC_FALSE;
   }
-  ierr = ISCreateGeneral_Private(is);CHKERRQ(ierr);
+
+  ierr = ISSetUp_General(is);CHKERRQ(ierr);
+  ierr = ISViewFromOptions(is,NULL,"-is_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,9 +677,9 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
   IS_General     *sub;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
   is->data = (void *) sub;
+  ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

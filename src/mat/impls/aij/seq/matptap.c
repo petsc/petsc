@@ -27,13 +27,14 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    /* 
+    /*
      Alg 'scalable' determines which implementations to be used:
        "nonscalable": do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P;
-       "scalable":    do two sparse axpy in MatPtAPNumeric() - might slow, does not store structure of A*P. 
+       "scalable":    do two sparse axpy in MatPtAPNumeric() - might slow, does not store structure of A*P.
        "hypre":    use boomerAMGBuildCoarseOperator.
      */
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
     ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);

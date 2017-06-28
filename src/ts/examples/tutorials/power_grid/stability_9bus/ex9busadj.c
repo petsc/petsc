@@ -145,7 +145,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
     IGr = (Vr*PG[i] + Vi*QG[i])/Vm2;
     IGi = (Vi*PG[i] - Vr*QG[i])/Vm2;
 
-    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
+    delta = PetscAtan2Real(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
 
     theta = PETSC_PI/2.0 - delta;
 
@@ -829,7 +829,7 @@ int main(int argc,char **argv)
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -871,7 +871,7 @@ int main(int argc,char **argv)
 
   /* Disturbance period */
   ierr = TSSetDuration(ts,1000,user.tfaultoff);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaulton,.01);CHKERRQ(ierr);
 
   user.alg_flg = PETSC_FALSE;
@@ -898,7 +898,7 @@ int main(int argc,char **argv)
 
   /* Post-disturbance period */
   ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaultoff,.01);CHKERRQ(ierr);
 
   user.alg_flg = PETSC_TRUE;

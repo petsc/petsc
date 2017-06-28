@@ -213,6 +213,12 @@ PETSC_EXTERN void PETSC_STDCALL CSYTRF(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL CSYTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKsytri_(a,b,c,d,e,f,g)               CSYTRI((a),1,(b),(c),(d),(e),(f),(g))
 PETSC_EXTERN void PETSC_STDCALL CSYTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+#  define LAPACKhetrf_(a,b,c,d,e,f,g,h)             CHETRF((a),1,(b),(c),(d),(e),(f),(g),(h))
+PETSC_EXTERN void PETSC_STDCALL CHETRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKhetrs_(a,b,c,d,e,f,g,h,i)           CHETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
+PETSC_EXTERN void PETSC_STDCALL CHETRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKhetri_(a,b,c,d,e,f,g)               CHETRI((a),1,(b),(c),(d),(e),(f),(g))
+PETSC_EXTERN void PETSC_STDCALL CHETRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 #  define BLASgemv_(a,b,c,d,e,f,g,h,i,j,k)          CGEMV((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
 PETSC_EXTERN void PETSC_STDCALL CGEMV(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           CGETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
@@ -290,6 +296,12 @@ PETSC_EXTERN void PETSC_STDCALL ZSYTRF(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL ZSYTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKsytri_(a,b,c,d,e,f,g)               ZSYTRI((a),1,(b),(c),(d),(e),(f),(g))
 PETSC_EXTERN void PETSC_STDCALL ZSYTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+#  define LAPACKhetrf_(a,b,c,d,e,f,g,h)             ZHETRF((a),1,(b),(c),(d),(e),(f),(g),(h))
+PETSC_EXTERN void PETSC_STDCALL ZHETRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKhetrs_(a,b,c,d,e,f,g,h,i)           ZHETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
+PETSC_EXTERN void PETSC_STDCALL ZHETRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKhetri_(a,b,c,d,e,f,g)               ZHETRI((a),1,(b),(c),(d),(e),(f),(g))
+PETSC_EXTERN void PETSC_STDCALL ZHETRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 #  define BLASgemv_(a,b,c,d,e,f,g,h,i,j,k)          ZGEMV((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
 PETSC_EXTERN void PETSC_STDCALL ZGEMV(const char*,const int,const PetscBLASInt*,const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,const PetscScalar *,const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 #  define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           ZGETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
@@ -353,7 +365,6 @@ PETSC_EXTERN void PETSC_STDCALL LAPACKtgsen_(PetscBLASInt*,PetscBLASInt*,PetscBL
 
 
 PETSC_EXTERN PetscScalar PETSC_STDCALL BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_EXTERN PetscScalar PETSC_STDCALL BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN PetscReal PETSC_STDCALL BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL BLASscal_(const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL BLAScopy_(const PetscBLASInt*,const PetscScalar*,PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);

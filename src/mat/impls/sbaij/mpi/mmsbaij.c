@@ -4,9 +4,6 @@
 */
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-
-
 PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ*)mat->data;

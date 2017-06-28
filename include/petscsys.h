@@ -139,8 +139,20 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  if !defined(__MPIUNI_H)
 #    error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
 #  endif
+#elif defined(PETSC_HAVE_I_MPI_NUMVERSION)
+#  if !defined(I_MPI_NUMVERSION)
+#    error "PETSc was configured with I_MPI but now appears to be compiling using a non-I_MPI mpi.h"
+#  elif I_MPI_NUMVERSION != PETSC_HAVE_I_MPI_NUMVERSION
+#    error "PETSc was configured with one I_MPI mpi.h version but now appears to be compiling using a different I_MPI mpi.h version"
+#  endif
+#elif defined(PETSC_HAVE_MVAPICH2_NUMVERSION)
+#  if !defined(MVAPICH2_NUMVERSION)
+#    error "PETSc was configured with MVAPICH2 but now appears to be compiling using a non-MVAPICH2 mpi.h"
+#  elif MVAPICH2_NUMVERSION != PETSC_HAVE_MVAPICH2_NUMVERSION
+#    error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
+#  endif
 #elif defined(PETSC_HAVE_MPICH_NUMVERSION)
-#  if !defined(MPICH_NUMVERSION)
+#  if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
 #    error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
 #  elif MPICH_NUMVERSION != PETSC_HAVE_MPICH_NUMVERSION
 #    error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
@@ -151,6 +163,8 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION != PETSC_HAVE_OMPI_RELEASE_VERSION)
 #    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
+#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION)
+#  error "PETSc was configured with undetermined MPI - but now appears to be compiling using either of OpenMPI or a MPICH variant"
 #endif
 
 /*
@@ -1390,6 +1404,12 @@ PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const c
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
+  Unlike PetscMallocSet and PetscMallocClear which overwrite the existing settings, these two functions save the previous choice of allocator, and should be used in pair.
+*/
+PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
+PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
+
+/*
     PetscLogDouble variables are used to contain double precision numbers
   that are not used in the numerical computations, but rather in logging,
   timing etc.
@@ -2493,25 +2513,58 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 /*MC
 
+    PETSC_VERSION - This manual page provides information about how PETSc documents and uses its version information. This information is available to both C/C++
+                    and Fortran compilers when petscsys.h is included.
+
+
+    The current PETSc version and the API for accessing it are defined in petscversion.h
+
+    The complete version number is given as the triple  PETSC_VERSION_MAJOR.PETSC_VERSION_MINOR.PETSC_VERSION_SUBMINOR (in short hand x.y.z)
+
+    A change in the minor version number (y) indicates possible/likely changes in the PETSc API. Note this is different than with the semantic versioning convention
+    where only a change in the major version number (x) indicates a change in the API.
+
+    A subminor greater than zero indicates a patch release. Version x.y.z maintains source and binary compatibility with version x.y.w for all z and w
+
+    Use the macros PETSC_VERSION_EQ(x,y,z), PETSC_VERSION_LT(x,y,z), PETSC_VERSION_LE(x,y,z), PETSC_VERSION_GT(x,y,z),
+    PETSC_VERSION_GE(x,y,z) to determine if the current version is equal to, less than, less than or equal to, greater than or greater than or equal to a given
+    version number (x.y.z).
+
+    PETSC_RELEASE_DATE is the date the x.y version was released (i.e. the version before any patch releases)
+
+    PETSC_VERSION_DATE is the date the x.y.z version was released
+
+    PETSC_VERSION_GIT is the last git commit to the repository given in the form vx.y.z-wwwww
+
+    PETSC_VERSION_DATE_GIT is the date of the last git commit to the repository
+
+    Level: intermediate
+
+    PETSC_VERSION_() and PETSC_VERSION_PATCH are deprecated and will eventually be removed. For several releases PETSC_VERSION_PATCH is always 0
+
+M*/
+
+/*MC
+
     UsingFortran - To use PETSc with Fortran you must use both PETSc include files and modules. At the beginning
       of every function and module definition you need something like
 
 $
 $#include "petsc/finclude/petscXXX.h"
-$         use petscXXXX
+$         use petscXXX
 
-     You can delcare PETSc variables using either 
+     You can declare PETSc variables using either of the following.
 
 $    XXX variablename
 $    type(tXXX) variablename
 
-    for example
+    For example,
 
 $#include "petsc/finclude/petscvec.h"
 $         use petscvec
 $
-$    Vec  A
-$    type(tVec) A
+$    Vec b
+$    type(tVec) x
 
     Level: beginner
 

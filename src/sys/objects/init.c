@@ -216,6 +216,7 @@ PetscErrorCode  PetscEnd(void)
 
 PetscBool PetscOptionsPublish = PETSC_FALSE;
 extern PetscErrorCode PetscSetUseTrMalloc_Private(void);
+extern PetscErrorCode PetscSetUseHBWMalloc_Private(void);
 extern PetscBool      petscsetmallocvisited;
 static char           emacsmachinename[256];
 
@@ -258,7 +259,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscInt          intensity;
   int               i;
   PetscMPIInt       rank;
-  char              version[256];
+  char              version[256],helpoptions[256];
 #if !defined(PETSC_HAVE_THREADSAFETY)
   PetscReal         logthreshold;
 #endif
@@ -266,7 +267,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscViewerFormat format;
   PetscBool         flg4 = PETSC_FALSE;
 #endif
-  
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -309,6 +310,9 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
 #endif
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL);CHKERRQ(ierr);
@@ -346,16 +350,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
 
     ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/faq.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
   }
 
   /*
@@ -364,6 +366,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg3) {
     if (PetscExternalHelpFunction) {
       ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
+    }
+  }
+
+  ierr = PetscOptionsGetString(NULL,NULL,"-help",helpoptions,sizeof(helpoptions),&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStrcmp(helpoptions,"intro",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
+      ierr = PetscFreeMPIResources();CHKERRQ(ierr);
+      ierr = MPI_Finalize();CHKERRQ(ierr);
+      exit(0);
     }
   }
 

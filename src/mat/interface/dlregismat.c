@@ -1,11 +1,9 @@
 
 #include <petsc/private/matimpl.h>
 
-const char       *MatOptions[] = {"NEW_NONZERO_LOCATION_ERR",
-                                  "UNUSED_NONZERO_LOCATION_ERR",
-                                  "NEW_NONZERO_ALLOCATION_ERR",
+const char       *MatOptions_Shifted[] = {"UNUSED_NONZERO_LOCATION_ERR",
                                   "ROW_ORIENTED",
-                                  "NEW_NONZERO_LOCATIONS",
+                                  "NOT_A_VALID_OPTION",
                                   "SYMMETRIC",
                                   "STRUCTURALLY_SYMMETRIC",
                                   "NEW_DIAGONALS",
@@ -16,7 +14,7 @@ const char       *MatOptions[] = {"NEW_NONZERO_LOCATION_ERR",
                                   "USE_INODES",
                                   "HERMITIAN",
                                   "SYMMETRY_ETERNAL",
-                                  "DUMMY",
+                                  "NEW_NONZERO_LOCATION_ERR",
                                   "IGNORE_LOWER_TRIANGULAR",
                                   "ERROR_LOWER_TRIANGULAR",
                                   "GETROW_UPPERTRIANGULAR",
@@ -24,7 +22,11 @@ const char       *MatOptions[] = {"NEW_NONZERO_LOCATION_ERR",
                                   "NO_OFF_PROC_ZERO_ROWS",
                                   "NO_OFF_PROC_ENTRIES",
                                   "NEW_NONZERO_LOCATIONS",
+                                  "NEW_NONZERO_ALLOCATION_ERR",
+                                  "MAT_SUBSET_OFF_PROC_ENTRIES",
+                                  "MAT_SUBMAT_SINGLEIS",
                                   "MatOption","MAT_",0};
+const char *const* MatOptions = MatOptions_Shifted+2;
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 const char *const MatFactorShiftTypesDetail[] = {NULL,"diagonal shift to prevent zero pivot","Manteuffel shift","diagonal shift on blocks to prevent zero pivot"};
 const char *const MPPTScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPPTScotchStrategyType","MP_PTSCOTCH_",0};

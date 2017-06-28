@@ -43,8 +43,8 @@ SNES Object: 3 MPI processes
   total number of function evaluations=129
   KSP Object: 3 MPI processes
     type: fgmres
-      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     right preconditioning
@@ -62,7 +62,7 @@ SNES Object: 3 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_x_velocity_) 3 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 3
+          number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (fieldsplit_x_velocity_sub_) 1 MPI processes
           type: preonly
@@ -108,7 +108,7 @@ SNES Object: 3 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_y_velocity_) 3 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 3
+          number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (fieldsplit_y_velocity_sub_) 1 MPI processes
           type: preonly
@@ -154,7 +154,7 @@ SNES Object: 3 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_Omega_) 3 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 3
+          number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (fieldsplit_Omega_sub_) 1 MPI processes
           type: preonly
@@ -200,7 +200,7 @@ SNES Object: 3 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_temperature_) 3 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 3
+          number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (fieldsplit_temperature_sub_) 1 MPI processes
           type: preonly

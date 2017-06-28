@@ -16,7 +16,25 @@ To produce nice output, use
 
   -dm_refine 3 -show_error -dm_view hdf5:sol1.h5 -error_vec_view hdf5:sol1.h5::append -sol_vec_view hdf5:sol1.h5::append -exact_vec_view hdf5:sol1.h5::append
 
-Citcom: 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+Citcom:
+ 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+
+ *_vects.ascii
+ Nx Ny Nz
+ <Nx values in co-latitude = 90 - degrees latitude>
+ <Ny values in degrees longitude>
+ <Nz values in non-dimensionalized by the radius of the Earth R = 6.371137 10^6 m, and these are ordered bottom to top>
+
+ *_therm.bin
+  Temperature is non-dimensionalized [0 (top), 1 (bottom)]
+  The ordering is Y, X, Z where Z is the fastest dimension
+  X is lat, counts N to S
+  Y is long, counts W to E
+  Z is depth, count bottom to top
+
+ Parallel reads:
+  - Assume vects can be read by any process
+  - Can we do T with a GlobalToNatural reordering?
 */
 
 #include <petscdmplex.h>
@@ -45,6 +63,10 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
+  PetscInt      serRef;            /* Number of serial refinements before the mesh gets distributed */
+  char          mantleBasename[PETSC_MAX_PATH_LEN];
+  int           verts[3];          /* The number of vertices in each dimension for mantle problems */
+  int           perm[3] ;          /* The permutation of axes for mantle problems */
   /* Problem definition */
   SolutionType  solType;           /* The type of exact solution */
   PetscBag      bag;               /* Holds problem parameters */
@@ -71,7 +93,7 @@ static PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal 
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                 PetscReal t, const PetscReal x[], PetscScalar f0[])
+                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   f0[0] = 0.0;
   f0[1] = -sin(a[1]*PETSC_PI*x[1])*cos(a[0]*PETSC_PI*x[0]);
@@ -80,9 +102,9 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                               PetscReal t, const PetscReal x[], PetscScalar f1[])
+                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscReal nu = PetscExpReal(2.0*a[2]*x[0]);
+  const PetscReal nu = PetscExpReal(2.0*PetscRealPart(a[2])*x[0]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
@@ -95,9 +117,9 @@ static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                               PetscReal t, const PetscReal x[], PetscScalar f1[])
+                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
+  const PetscReal nu = x[0] < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
@@ -118,16 +140,16 @@ static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   A       = [[a, b, c], [d, e, f], [g, h, i]]
   Tr(A)^2 = a^2 + e^2 + i^2 + 2ae + 2ai + 2ei
 */
-static PetscReal SecondInvariantSymmetric(PetscInt dim, const PetscReal u_x[])
+static PetscReal SecondInvariantSymmetric(PetscInt dim, const PetscScalar u_x[])
 {
   switch (dim) {
   case 2:
-    return u_x[0]*u_x[3] - 0.25*(u_x[1]*u_x[1] + 2.0*u_x[1]*u_x[2] + u_x[2]*u_x[2]);
+    return PetscRealPart(u_x[0]*u_x[3] - 0.25*(u_x[1]*u_x[1] + 2.0*u_x[1]*u_x[2] + u_x[2]*u_x[2]));
   }
   return 0.0;
 }
 
-static PetscReal CompositeViscosity(PetscInt dim, const PetscReal u_x[], const PetscReal x[], PetscReal T)
+static PetscReal CompositeViscosity(PetscInt dim, const PetscScalar u_x[], const PetscReal x[], PetscReal T)
 {
   const PetscReal R       = 8.314459848e-3;                      /* Gas constant kJ/K mol */
   const PetscReal g       = 9.8;                                 /* Acceleration due to gravity m/s^2 */
@@ -160,9 +182,9 @@ static PetscReal CompositeViscosity(PetscInt dim, const PetscReal u_x[], const P
 static void stokes_momentum_composite(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                      PetscReal t, const PetscReal x[], PetscScalar f1[])
+                                      PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
-  const PetscReal nu = CompositeViscosity(dim, u_x, x, a[0]);
+  const PetscReal nu = CompositeViscosity(dim, u_x, x, PetscRealPart(a[0]));
   PetscInt        c, d;
 
   for (c = 0; c < dim; ++c) {
@@ -176,7 +198,7 @@ static void stokes_momentum_composite(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                        PetscReal t, const PetscReal x[], PetscScalar f0[])
+                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   PetscInt d;
   f0[0] = 0.0;
@@ -186,7 +208,7 @@ static void stokes_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void f1_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                    PetscReal t, const PetscReal x[], PetscScalar f1[])
+                    PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = 0.0;
@@ -196,7 +218,7 @@ static void f1_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_mass_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                          PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[])
+                          PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g1[d*dim+d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
@@ -206,7 +228,7 @@ static void stokes_mass_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                   PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g2[])
+                                   PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g2[d*dim+d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
@@ -217,9 +239,9 @@ static void stokes_momentum_pres_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  const PetscReal nu  = PetscExpReal(2.0*a[2]*x[0]);
+  const PetscReal nu  = PetscExpReal(2.0*PetscRealPart(a[2])*x[0]);
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -232,9 +254,9 @@ static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
+  const PetscReal nu = x[0] < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -248,9 +270,9 @@ static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void stokes_momentum_vel_J_composite(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+                                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
-  const PetscReal nu  = CompositeViscosity(dim, u_x, x, a[0]);
+  const PetscReal nu  = CompositeViscosity(dim, u_x, x, PetscRealPart(a[0]));
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -265,7 +287,7 @@ static void stokes_momentum_vel_J_composite(PetscInt dim, PetscInt Nf, PetscInt 
 static void stokes_identity_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   g0[0] = 1.0;
 }
@@ -309,7 +331,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   PetscReal u1,u2,u3,u4,u5,u6;
   PetscReal sum1,sum2,sum3,sum4,sum5,sum6;
   PetscReal kn,km,x,z;
-  PetscReal _C1,_C2,_C3,_C4;
+  PetscReal _PC1,_PC2,_PC3,_PC4;
   PetscReal Rp, UU, VV;
   PetscReal a,b,r,_aa,_bb,AA,BB,Rm;
   PetscReal num1,num2,num3,num4,den1;
@@ -605,7 +627,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t22 = exp(-0.2e1 * Rp);
   den1 = (-0.4e1 * t3 + 0.4e1 * t5) * t9 + ((0.8e1 * t1 + 0.8e1 * t4) * t2 * t15 - 0.8e1 * t5 - 0.8e1 * t2 * t4) * t22 - 0.4e1 * t3 + 0.4e1 * t5;
 
-  _C1=num1/den1; _C2=num2/den1; _C3=num3/den1; _C4=num4/den1;
+  _PC1=num1/den1; _PC2=num2/den1; _PC3=num3/den1; _PC4=num4/den1;
 
   t1 = Rm * x;
   t2 = cos(t1);
@@ -614,7 +636,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t12 = kn * x;
   t13 = cos(t12);
   t16 = sin(t12);
-  u1 = -km * (_C1 * t2 + _C2 * t4 + _C3 * t2 + _C4 * t4 + t10 * AA * t13 + t10 * BB * t16);
+  u1 = -km * (_PC1 * t2 + _PC2 * t4 + _PC3 * t2 + _PC4 * t4 + t10 * AA * t13 + t10 * BB * t16);
 
   t2 = Rm * x;
   t3 = cos(t2);
@@ -624,7 +646,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t24 = kn * x;
   t25 = cos(t24);
   t29 = sin(t24);
-  u2 = UU * _C1 * t3 + UU * _C2 * t6 - _C1 * t6 * Rm + _C2 * t3 * Rm - VV * _C3 * t3 - VV * _C4 * t6 - _C3 * t6 * Rm + _C4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
+  u2 = UU * _PC1 * t3 + UU * _PC2 * t6 - _PC1 * t6 * Rm + _PC2 * t3 * Rm - VV * _PC3 * t3 - VV * _PC4 * t6 - _PC3 * t6 * Rm + _PC4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
 
   t3 = exp(0.2e1 * x * B);
   t4 = t3 * B;
@@ -651,18 +673,18 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t90 = kn * x;
   t91 = sin(t90);
   t106 = cos(t90);
-  u3 = -((t19 * t21 + t36 * t37) * _C1 + (t36 * t21 - t19 * t37) * _C2 + (t53 * t21 + t64 * t37) * _C3 + (t64 * t21 - t53 * t37) * _C4 + (-0.3e1 * t8 * AA * kn - 0.8e1 * t76 * BB - 0.4e1 * BB * B * t80 + 0.4e1 * AA * t83 * kn - AA * t87) * t91 + (-0.4e1 * AA * t80 * B - 0.4e1 * t83 * BB * kn + 0.3e1 * t8 * BB * kn - sigma + BB * t87 - 0.8e1 * t76 * AA) * t106) / km;
+  u3 = -((t19 * t21 + t36 * t37) * _PC1 + (t36 * t21 - t19 * t37) * _PC2 + (t53 * t21 + t64 * t37) * _PC3 + (t64 * t21 - t53 * t37) * _PC4 + (-0.3e1 * t8 * AA * kn - 0.8e1 * t76 * BB - 0.4e1 * BB * B * t80 + 0.4e1 * AA * t83 * kn - AA * t87) * t91 + (-0.4e1 * AA * t80 * B - 0.4e1 * t83 * BB * kn + 0.3e1 * t8 * BB * kn - sigma + BB * t87 - 0.8e1 * t76 * AA) * t106) / km;
 
   t3 = exp(0.2e1 * x * B);
   t4 = km * km;
   t5 = t3 * t4;
   t6 = Rm * x;
   t7 = cos(t6);
-  t8 = _C1 * t7;
+  t8 = _PC1 * t7;
   t10 = sin(t6);
-  t11 = _C2 * t10;
-  t13 = _C3 * t7;
-  t15 = _C4 * t10;
+  t11 = _PC2 * t10;
+  t13 = _PC3 * t7;
+  t15 = _PC4 * t10;
   t18 = kn * x;
   t19 = cos(t18);
   t22 = sin(t18);
@@ -672,13 +694,13 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t38 = Rm * Rm;
   t39 = t7 * t38;
   t42 = t10 * t38;
-  t44 = t5 * t8 + t5 * t11 + t5 * t13 + t5 * t15 + t4 * AA * t19 + t4 * BB * t22 + t25 * t8 + t25 * t11 - 0.2e1 * t28 * _C1 * t10 * Rm + 0.2e1 * t28 * _C2 * t7 * Rm - t3 * _C1 * t39 - t3 * _C2 * t42;
+  t44 = t5 * t8 + t5 * t11 + t5 * t13 + t5 * t15 + t4 * AA * t19 + t4 * BB * t22 + t25 * t8 + t25 * t11 - 0.2e1 * t28 * _PC1 * t10 * Rm + 0.2e1 * t28 * _PC2 * t7 * Rm - t3 * _PC1 * t39 - t3 * _PC2 * t42;
   t45 = VV * VV;
   t46 = t3 * t45;
   t49 = t3 * VV;
   t62 = B * B;
   t78 = kn * kn;
-  t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _C3 * t10 * Rm - 0.2e1 * t49 * _C4 * t7 * Rm - t3 * _C3 * t39 - t3 * _C4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
+  t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _PC3 * t10 * Rm - 0.2e1 * t49 * _PC4 * t7 * Rm - t3 * _PC3 * t39 - t3 * _PC4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
   u4 = t44 + t82;
 
   t3 = exp(0.2e1 * x * B);
@@ -706,7 +728,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t86 = kn * x;
   t87 = sin(t86);
   t101 = cos(t86);
-  u5 = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-t8 * AA * kn - 0.4e1 * t72 * BB - 0.4e1 * BB * B * t76 + 0.4e1 * AA * t79 * kn - AA * t83) * t87 + (-0.4e1 * AA * t76 * B - 0.4e1 * t79 * BB * kn + t8 * BB * kn - sigma + BB * t83 - 0.4e1 * t72 * AA) * t101) / km;
+  u5 = ((t18 * t20 + t34 * t35) * _PC1 + (t34 * t20 - t18 * t35) * _PC2 + (t51 * t20 + t61 * t35) * _PC3 + (t61 * t20 - t51 * t35) * _PC4 + (-t8 * AA * kn - 0.4e1 * t72 * BB - 0.4e1 * BB * B * t76 + 0.4e1 * AA * t79 * kn - AA * t83) * t87 + (-0.4e1 * AA * t76 * B - 0.4e1 * t79 * BB * kn + t8 * BB * kn - sigma + BB * t83 - 0.4e1 * t72 * AA) * t101) / km;
 
   t3 = exp(0.2e1 * x * B);
   t4 = UU * UU;
@@ -732,9 +754,9 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t83 = kn * x;
   t84 = sin(t83);
   t96 = cos(t83);
-  u6 = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
+  u6 = -((t18 * t20 + t34 * t35) * _PC1 + (t34 * t20 - t18 * t35) * _PC2 + (t51 * t20 + t61 * t35) * _PC3 + (t61 * t20 - t51 * t35) * _PC4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
 
-  /*SS = sin(km*z)*(exp(UU*x)*(_C1*cos(Rm*x)+_C2*sin(Rm*x)) + exp(-VV*x)*(_C3*cos(Rm*x)+_C4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
+  /*SS = sin(km*z)*(exp(UU*x)*(_PC1*cos(Rm*x)+_PC2*sin(Rm*x)) + exp(-VV*x)*(_PC3*cos(Rm*x)+_PC4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
 
   /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
 
@@ -835,7 +857,7 @@ $  The viscosity eta jumps from etaA to etaB at x = xc.
 static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal xc, PetscReal etaA, PetscReal etaB,
                                     PetscScalar vel[], PetscScalar *p, PetscScalar s[], PetscScalar gamma[], PetscScalar *nu)
 {
-  PetscReal _C1A,_C2A,_C3A,_C4A,_C1B,_C2B,_C3B,_C4B,_C1,_C2,_C3,_C4;
+  PetscReal _PC1A,_PC2A,_PC3A,_PC4A,_PC1B,_PC2B,_PC3B,_PC4B,_PC1,_PC2,_PC3,_PC4;
   PetscReal t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40;
   PetscReal t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80;
   PetscReal t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t115,t116,t117,t118,t119,t120;
@@ -885,7 +907,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   PetscFunctionBegin;
   /* Note that there is no Fourier sum here. */
   /****************************************************************************************/
-  _C1A = 0;
+  _PC1A = 0;
   /****************************************************************************************/
   t1 = nx * 0.3141592654e1;
   t2 = sin(t1);
@@ -1139,7 +1161,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t987 = 0.4e1 * t773 * t695 + 0.4e1 * t736 * t150 * t24 + 0.4e1 * t722 * t842 * t17 - 0.16e2 * t877 * t447 * t945 + 0.2e1 * t87 * t714 * t28 + t313 * t713 * t916 * t45 - 0.4e1 * t853 * t615 * t774 - 0.32e2 * t877 * t713 * xc * t324 + 0.16e2 * t760 * t974 + 0.4e1 * t736 * t94 * t24 * ZB + t869 * t792 * t916 - 0.8e1 * t691 * t5 * xc * t616;
   t1021 = -t718 * t169 * t693 - 0.32e2 * t827 * t974 + 0.2e1 * t801 * t150 * t774 + 0.4e1 * t791 * t188 * t792 + 0.4e1 * t736 * t220 * t24 + 0.4e1 * t791 * t842 * t792 + 0.8e1 * t709 * t660 * t270 - t718 * t335 * t693 - 0.2e1 * t718 * t36 * t110 * t24 - 0.32e2 * t819 * t797 * t471 - t313 * t733 * t110 - 0.32e2 * t796 * t270 * t762;
 
-  _C2A = (t147 - 0.4e1 * t65 * t217 + t418 + 0.2e1 * t150 * t222 + t327 - 0.2e1 * t149 * t19 + 0.2e1 * t335 * ZB * t24 * ZA - 0.16e2 * t312 * t313 * t355 * t59 - 0.4e1 * t281 * ZB * ZA * t597 - 0.2e1 * t505 * t45 * t281 * t58 - 0.4e1 * t211 * t2 * t53 * t76 + 0.8e1 * t305 * t286 - 0.4e1 * t122 * t499 - 0.4e1 * t331 * t332 + 0.8e1 * t345 * t177 * t60 - 0.2e1 * t142 * t177 * t82 + 0.2e1 * t72 * t281 * t415 + 0.4e1 * t349 * t96 * t41 - 0.2e1 * t81 * t64 * t76 + 0.2e1 * t58 * t80 * t59 + 0.8e1 * t345 * t177 * t41 - 0.4e1 * t8 * t499 + t242 + 0.4e1 * t8 * t518 + t625 + t685 + 0.2e1 * t328 * t174 + 0.2e1 * t331 * t455 - 0.2e1 * t33 * t2 * t4 * ZA * t82 - 0.4e1 * t626 * t191 + 0.16e2 * t364 * t373 - 0.2e1 * t621 * t597 - 0.2e1 * t439 * t568 + t492 + t533 * t96 + t232 * t96 + 0.2e1 * t567 * t441 + t561) / (t740 + t789 + t834 + t874 + t911 + t948 + t987 + t1021);
+  _PC2A = (t147 - 0.4e1 * t65 * t217 + t418 + 0.2e1 * t150 * t222 + t327 - 0.2e1 * t149 * t19 + 0.2e1 * t335 * ZB * t24 * ZA - 0.16e2 * t312 * t313 * t355 * t59 - 0.4e1 * t281 * ZB * ZA * t597 - 0.2e1 * t505 * t45 * t281 * t58 - 0.4e1 * t211 * t2 * t53 * t76 + 0.8e1 * t305 * t286 - 0.4e1 * t122 * t499 - 0.4e1 * t331 * t332 + 0.8e1 * t345 * t177 * t60 - 0.2e1 * t142 * t177 * t82 + 0.2e1 * t72 * t281 * t415 + 0.4e1 * t349 * t96 * t41 - 0.2e1 * t81 * t64 * t76 + 0.2e1 * t58 * t80 * t59 + 0.8e1 * t345 * t177 * t41 - 0.4e1 * t8 * t499 + t242 + 0.4e1 * t8 * t518 + t625 + t685 + 0.2e1 * t328 * t174 + 0.2e1 * t331 * t455 - 0.2e1 * t33 * t2 * t4 * ZA * t82 - 0.4e1 * t626 * t191 + 0.16e2 * t364 * t373 - 0.2e1 * t621 * t597 - 0.2e1 * t439 * t568 + t492 + t533 * t96 + t232 * t96 + 0.2e1 * t567 * t441 + t561) / (t740 + t789 + t834 + t874 + t911 + t948 + t987 + t1021);
   /****************************************************************************************/
   t1 = nz * nz;
   t2 = t1 * nz;
@@ -1388,9 +1410,9 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t943 = 0.32e2 * t738 * t903 + 0.16e2 * t781 * t873 * t19 + 0.8e1 * t754 * t15 * t652 * t5 + 0.16e2 * t666 * t858 * t623 + 0.64e2 * t828 * t25 * t767 * xc - 0.16e2 * t762 * t456 * t19 + 0.64e2 * t923 * t924 + 0.16e2 * t927 * t668 - 0.64e2 * t768 * ZA * t790 * t66 - 0.64e2 * t773 * t903 + 0.16e2 * t927 * t937 + 0.16e2 * t666 * t667 * t562;
   t977 = 0.64e2 * t812 * t5 * t924 + 0.8e1 * t639 * t504 + 0.8e1 * t238 * t35 * t118 * t19 + 0.4e1 * t642 * t658 - 0.16e2 * t817 * t437 * t8 - 0.128e3 * t772 * ZB * t80 * t924 + 0.16e2 * t666 * t667 * t13 - 0.4e1 * t301 * t643 - 0.16e2 * t824 * t653 * t8 - 0.4e1 * t642 * t777 - 0.64e2 * t923 * t667 * t268 - 0.16e2 * t666 * t937;
 
-  _C3A = (t72 + t132 + t169 + t210 + t246 + t298 + t337 + t378 + t409 + t441 + t483 + t512 + t542 + t573 + t600 + t627) / (t682 + t717 + t758 + t809 + t855 + t901 + t943 + t977);
+  _PC3A = (t72 + t132 + t169 + t210 + t246 + t298 + t337 + t378 + t409 + t441 + t483 + t512 + t542 + t573 + t600 + t627) / (t682 + t717 + t758 + t809 + t855 + t901 + t943 + t977);
   /****************************************************************************************/
-  _C4A = 0;
+  _PC4A = 0;
   /****************************************************************************************/
   t1 = nx * 0.3141592654e1;
   t2 = t1 * xc;
@@ -1709,7 +1731,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t1225 = -0.32e2 * t965 * t10 * t652 * t1125 + 0.4e1 * t915 * t16 * t974 + 0.4e1 * t182 * t90 * t949 * ZA + 0.32e2 * t1195 * t968 * t10 - 0.8e1 * t1199 * t993 * t103 + 0.8e1 * t1203 * t118 * nz * t919 + 0.8e1 * t1170 * t136 * t955 + 0.64e2 * t1211 * t1044 + 0.16e2 * t1031 * t1032 * t4 + 0.8e1 * t987 * t943 + 0.8e1 * t1199 * t993 * t10 + 0.8e1 * t997 * t1050 * t4;
   t1263 = -0.128e3 * t1015 * t1178 * t1044 + 0.16e2 * t1005 * t988 * t1153 + 0.8e1 * t1058 * t1153 * t919 + 0.16e2 * t1010 * t1120 * xc - 0.8e1 * t954 * t1113 - 0.8e1 * t1203 * t14 * nz * t919 - 0.16e2 * t1203 * t14 * t31 * t4 - 0.8e1 * t1203 * t1113 - 0.32e2 * t1195 * t977 * t10 - 0.64e2 * t1211 * t1054 + 0.8e1 * t992 * t967 * t1153 + 0.128e3 * t1015 * t983 * t90 * t4 * t47;
 
-  _C1B = (t127 + t204 + t270 + t329 + t384 + t439 + t501 + t549 + t601 + t647 + t698 + t739 + t782 + t821 + t867 + t909) / (t953 + t1013 + t1057 + t1094 + t1140 + t1182 + t1225 + t1263);
+  _PC1B = (t127 + t204 + t270 + t329 + t384 + t439 + t501 + t549 + t601 + t647 + t698 + t739 + t782 + t821 + t867 + t909) / (t953 + t1013 + t1057 + t1094 + t1140 + t1182 + t1225 + t1263);
   /****************************************************************************************/
   t1 = nz * nz;
   t2 = t1 * nz;
@@ -2118,7 +2140,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t1564 = t1260 * t800;
   t1583 = 0.64e2 * t1285 * t1456 * t1474 - 0.64e2 * t1472 * t1288 * t40 - 0.8e1 * t1366 * t134 * t1242 + 0.8e1 * t1307 * t362 * t39 + 0.4e1 * t1235 * t2 * t17 * t39 + 0.32e2 * t1346 * t1371 - 0.16e2 * t1269 * t1564 - 0.16e2 * t1321 * t1259 * t1504 + 0.16e2 * t1331 * t1564 - 0.64e2 * t1312 * t29 * t25 * t402 - 0.4e1 * t1134 * t83 * t39 * ZB - 0.32e2 * t181 * t2 * t404;
 
-  _C2B = (t1133 + t1196 + t1068 + t811 + t466 + t1012 + t381 + t162 + t249 + t533 + t844 + t104 + t1159 + t571 + t211 + t874 + t607 + t339 + t296 + t638 + t908 + t671 + t419 + t983 + t705 + t1105 + t501 + t778 + t1040 + t1228 + t741 + t944) / (t1292 + t1344 + t1386 + t1427 + t1468 + t1511 + t1545 + t1583);
+  _PC2B = (t1133 + t1196 + t1068 + t811 + t466 + t1012 + t381 + t162 + t249 + t533 + t844 + t104 + t1159 + t571 + t211 + t874 + t607 + t339 + t296 + t638 + t908 + t671 + t419 + t983 + t705 + t1105 + t501 + t778 + t1040 + t1228 + t741 + t944) / (t1292 + t1344 + t1386 + t1427 + t1468 + t1511 + t1545 + t1583);
   /****************************************************************************************/
   t1 = nz * nz;
   t2 = t1 * nz;
@@ -2483,7 +2505,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t1393 = t1330 * t35;
   t1411 = 0.16e2 * t1145 * t1154 + 0.8e1 * t1149 * t998 + 0.4e1 * t1376 * t35 * t48 + 0.32e2 * t1189 * t1380 + 0.32e2 * t1193 * t11 * t1195 * t15 - 0.64e2 * t1304 * xc * t111 * t1135 - 0.16e2 * t1123 * t1146 + 0.64e2 * t1393 * t28 * t1192 * xc - 0.16e2 * t1123 * t1135 * t127 - 0.8e1 * t1122 * xc * t1128 * t127 - 0.32e2 * t1193 * xc * t112 + 0.16e2 * t1252 * t1316 * t46;
   t1450 = 0.2e1 * t1376 * t767 * t1161 + 0.2e1 * t1376 * t111 * t108 + 0.4e1 * t223 * t311 * t108 + 0.4e1 * t109 * t35 * t520 * ZA + 0.16e2 * t1123 * t1135 * t997 - 0.64e2 * t1181 * t1380 + 0.8e1 * t1150 * t903 - 0.32e2 * t1393 * t11 * t1192 * xc - 0.16e2 * t157 * t2 * xc * t560 * t1124 + 0.8e1 * t223 * t184 * t317 * t46 + 0.32e2 * t1336 * t10 * t1338 - 0.4e1 * t75 * t1119;
-  _C3B = (t606 + t722 + t1089 + t781 + 0.16e2 * t48 * t51 + t978 + t868 + t507 - t304 * t256 + 0.8e1 * t9 * t22 + t752 + 0.4e1 * t174 * t144 - 0.2e1 * t81 * t469 + 0.6e1 * t139 * t166 + t362 + 0.2e1 * t98 * t211 + t925 + t137 - t290 * t184 + 0.12e2 * t81 * t83 + t842 + 0.8e1 * t74 * t77 + 0.16e2 * t98 * t12 * t162 - 0.4e1 * t33 * t28 * t443 - 0.8e1 * t27 * t70 - 0.2e1 * t33 * t34 * t36 - 0.8e1 * t27 * t30 + 0.2e1 * t58 * t67 - 0.4e1 * t40 * t43 + 0.2e1 * t58 * t63 + t1033 - t290 * t256 + t290 * t35 + t193 + t1113 + t578 + t442 + t474 + t544 + t329 + t679 + t401 + t953 + t811 + t644 + t894 + t289 + t240 + t1055 + t1003) / (t1170 + t1218 + 0.2e1 * t1236 + t1280 + t1323 + t1370 + t1411 + t1450);
+  _PC3B = (t606 + t722 + t1089 + t781 + 0.16e2 * t48 * t51 + t978 + t868 + t507 - t304 * t256 + 0.8e1 * t9 * t22 + t752 + 0.4e1 * t174 * t144 - 0.2e1 * t81 * t469 + 0.6e1 * t139 * t166 + t362 + 0.2e1 * t98 * t211 + t925 + t137 - t290 * t184 + 0.12e2 * t81 * t83 + t842 + 0.8e1 * t74 * t77 + 0.16e2 * t98 * t12 * t162 - 0.4e1 * t33 * t28 * t443 - 0.8e1 * t27 * t70 - 0.2e1 * t33 * t34 * t36 - 0.8e1 * t27 * t30 + 0.2e1 * t58 * t67 - 0.4e1 * t40 * t43 + 0.2e1 * t58 * t63 + t1033 - t290 * t256 + t290 * t35 + t193 + t1113 + t578 + t442 + t474 + t544 + t329 + t679 + t401 + t953 + t811 + t644 + t894 + t289 + t240 + t1055 + t1003) / (t1170 + t1218 + 0.2e1 * t1236 + t1280 + t1323 + t1370 + t1411 + t1450);
   /****************************************************************************************/
   t1 = nz * nz;
   t2 = t1 * xc;
@@ -2852,15 +2874,15 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t1388 = 0.2e1 * t1138 * t1297 - 0.8e1 * t1148 * t1192 + 0.2e1 * t1138 * t1292 - 0.16e2 * t1119 * t1251 + 0.8e1 * t1175 * xc * t110 * t1113 * t3 - 0.2e1 * t1112 * t1153 * t1113 + 0.128e3 * t1369 * t1130 + 0.16e2 * t1119 * t1333 + 0.4e1 * t1138 * t78 * ZA * ZB + 0.8e1 * t1378 * t78 * t9 * ZB - 0.64e2 * t1383 * t1343 + 0.64e2 * t1383 * t1130;
   t1420 = 0.4e1 * t1138 * t119 * ZA - 0.128e3 * t1369 * t1343 - 0.4e1 * t187 * t1153 * t9 - 0.2e1 * t1138 * t1226 + 0.8e1 * t1296 * t1328 - 0.2e1 * t1112 * t1139 * t1113 - 0.8e1 * t1148 * t3 * t17 * t30 - 0.32e2 * t1296 * t1320 + 0.8e1 * t1176 * t1122 + 0.4e1 * t187 * t1292 * t9 + 0.8e1 * t1378 * t119 * t9 - 0.8e1 * t1103 * t1218;
 
-  _C4B = (-t424 * t508 + 0.8e1 * t412 * t750 - 0.2e1 * t232 * t595 - 0.4e1 * t126 * t323 + t1096 - t76 * t204 + t728 + 0.2e1 * t548 * t827 + 0.2e1 * t150 * t469 + t398 + 0.8e1 * t189 * t146 + t260 - 0.2e1 * t351 * t184 - 0.2e1 * t268 * t673 - 0.4e1 * t319 * t279 + t464 - 0.2e1 * t108 * t461 + 0.16e2 * t740 * t369 + 0.16e2 * t274 * t216 * t754 - 0.16e2 * t70 * t139 * t591 + 0.2e1 * t55 * t56 * t128 - 0.2e1 * t359 * t89 * t111 + 0.2e1 * t734 * t563 * t111 + 0.6e1 * t223 * t224 * t97 + 0.8e1 * t383 * t389 * t103 + 0.4e1 * t606 * ZA * t326 - 0.2e1 * t93 * t18 * t316 - 0.4e1 * t443 * t27 * t128 + 0.8e1 * t197 * t27 * t199 + 0.8e1 * t108 * t109 * t128 - t249 * t604 + 0.16e2 * t70 * t616 - 0.8e1 * t969 * t323 + t845 - t424 * t579 + 0.16e2 * t159 * t162 + t290 * t406 - 0.6e1 * t150 * t864 + t192 * t116 + 0.2e1 * t867 * t326 - 0.4e1 * t658 * t326 - 0.2e1 * t351 * t502 - t76 * t165 + t900 + 0.8e1 * t168 * t323 + t791 + 0.8e1 * t740 * t915 - 0.4e1 * t562 * t750 - 0.4e1 * t278 * t342 + 0.4e1 * t319 * t431 + 0.2e1 * t173 * t175 + t424 * t528 + 0.8e1 * t969 * t129 - 0.8e1 * t347 * t181 + t332 + t530 - 0.2e1 * t108 * t329 - 0.2e1 * t207 * t38 * t37 * t1 * ZA + t1001 + 0.4e1 * t408 * t379 + t76 * t448 + 0.2e1 * t102 * t184 + 0.2e1 * t426 * t329 + 0.16e2 * t740 * t98 - t282 * t127 - 0.16e2 * t1 * t44 * t69 * t552 * t116 + 0.2e1 * t168 * t169 + 0.2e1 * t28 * t134 - t290 * t604 - 0.16e2 * t484 * t485 - 0.8e1 * t740 * t480 + 0.2e1 * t173 * t601 - 0.2e1 * t335 * t336 + t600 + 0.2e1 * t62 * t864 + t952 + 0.8e1 * t347 * t134 - t192 * t355 + t192 * t194 + 0.2e1 * t228 * t461 + t663 + 0.4e1 * t383 * t27 * t417 * t16 + 0.4e1 * t138 * t20 * ZA * t10 - 0.4e1 * t20 * ZB * ZA * t326 + 0.4e1 * t196 * t88 * t77 * t744 - 0.16e2 * t67 * xc * t179 * t181 - 0.8e1 * t95 * t480 - t249 * t488 - t76 * t475 + t1055 - 0.4e1 * t408 * t22 - 0.10e2 * t28 * t379 + 0.2e1 * t335 * t974 + t153 - 0.8e1 * t95 * t1042 - 0.2e1 * t734 * t735) / (t1156 + t1201 + t1242 + t1282 + t1317 + t1350 + t1388 + t1420);
+  _PC4B = (-t424 * t508 + 0.8e1 * t412 * t750 - 0.2e1 * t232 * t595 - 0.4e1 * t126 * t323 + t1096 - t76 * t204 + t728 + 0.2e1 * t548 * t827 + 0.2e1 * t150 * t469 + t398 + 0.8e1 * t189 * t146 + t260 - 0.2e1 * t351 * t184 - 0.2e1 * t268 * t673 - 0.4e1 * t319 * t279 + t464 - 0.2e1 * t108 * t461 + 0.16e2 * t740 * t369 + 0.16e2 * t274 * t216 * t754 - 0.16e2 * t70 * t139 * t591 + 0.2e1 * t55 * t56 * t128 - 0.2e1 * t359 * t89 * t111 + 0.2e1 * t734 * t563 * t111 + 0.6e1 * t223 * t224 * t97 + 0.8e1 * t383 * t389 * t103 + 0.4e1 * t606 * ZA * t326 - 0.2e1 * t93 * t18 * t316 - 0.4e1 * t443 * t27 * t128 + 0.8e1 * t197 * t27 * t199 + 0.8e1 * t108 * t109 * t128 - t249 * t604 + 0.16e2 * t70 * t616 - 0.8e1 * t969 * t323 + t845 - t424 * t579 + 0.16e2 * t159 * t162 + t290 * t406 - 0.6e1 * t150 * t864 + t192 * t116 + 0.2e1 * t867 * t326 - 0.4e1 * t658 * t326 - 0.2e1 * t351 * t502 - t76 * t165 + t900 + 0.8e1 * t168 * t323 + t791 + 0.8e1 * t740 * t915 - 0.4e1 * t562 * t750 - 0.4e1 * t278 * t342 + 0.4e1 * t319 * t431 + 0.2e1 * t173 * t175 + t424 * t528 + 0.8e1 * t969 * t129 - 0.8e1 * t347 * t181 + t332 + t530 - 0.2e1 * t108 * t329 - 0.2e1 * t207 * t38 * t37 * t1 * ZA + t1001 + 0.4e1 * t408 * t379 + t76 * t448 + 0.2e1 * t102 * t184 + 0.2e1 * t426 * t329 + 0.16e2 * t740 * t98 - t282 * t127 - 0.16e2 * t1 * t44 * t69 * t552 * t116 + 0.2e1 * t168 * t169 + 0.2e1 * t28 * t134 - t290 * t604 - 0.16e2 * t484 * t485 - 0.8e1 * t740 * t480 + 0.2e1 * t173 * t601 - 0.2e1 * t335 * t336 + t600 + 0.2e1 * t62 * t864 + t952 + 0.8e1 * t347 * t134 - t192 * t355 + t192 * t194 + 0.2e1 * t228 * t461 + t663 + 0.4e1 * t383 * t27 * t417 * t16 + 0.4e1 * t138 * t20 * ZA * t10 - 0.4e1 * t20 * ZB * ZA * t326 + 0.4e1 * t196 * t88 * t77 * t744 - 0.16e2 * t67 * xc * t179 * t181 - 0.8e1 * t95 * t480 - t249 * t488 - t76 * t475 + t1055 - 0.4e1 * t408 * t22 - 0.10e2 * t28 * t379 + 0.2e1 * t335 * t974 + t153 - 0.8e1 * t95 * t1042 - 0.2e1 * t734 * t735) / (t1156 + t1201 + t1242 + t1282 + t1317 + t1350 + t1388 + t1420);
   /****************************************************************************************/
   /****************************************************************************************/
 
   if(x>xc) {
-    _C1=_C1B; _C2=_C2B; _C3=_C3B; _C4=_C4B; Z=ZB;
+    _PC1=_PC1B; _PC2=_PC2B; _PC3=_PC3B; _PC4=_PC4B; Z=ZB;
   }
   else {
-    _C1=_C1A; _C2=_C2A; _C3=_C3A; _C4=_C4A; Z=ZA;
+    _PC1=_PC1A; _PC2=_PC2A; _PC3=_PC3A; _PC4=_PC4A; Z=ZA;
   }
   /****************************************************************************************/
   /****************************************************************************************/
@@ -2870,7 +2892,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t4 = x * t3;
   t5 = 0.3141592654e1 * 0.3141592654e1;
   t6 = t5 * 0.3141592654e1;
-  t11 = _C3 * t6;
+  t11 = _PC3 * t6;
   t12 = x * nz;
   t13 = nx * nx;
   t14 = t13 * t13;
@@ -2878,27 +2900,27 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t19 = exp(t12 * 0.3141592654e1);
   t20 = t19 * t19;
   t21 = t4 * t20;
-  t24 = _C1 * t5;
+  t24 = _PC1 * t5;
   t25 = Z * t20;
-  t29 = _C1 * t6;
+  t29 = _PC1 * t6;
   t30 = t29 * Z;
   t31 = t1 * nz;
   t32 = x * t31;
   t33 = t32 * t13;
   t36 = t11 * x;
   t41 = nz * t20;
-  t45 = t6 * _C4;
+  t45 = t6 * _PC4;
   t49 = t20 * t1;
-  t51 = _C2 * Z;
-  t55 = -0.2e1 * t4 * t6 * _C2 * Z - 0.2e1 * t11 * t15 - 0.2e1 * t11 * t21 + 0.2e1 * t24 * t25 * t14 - t13 + 0.4e1 * t30 * t33 - 0.4e1 * t36 * t31 * t20 * t13 - 0.2e1 * t36 * t41 * t14 - 0.2e1 * t4 * t45 * t20 - t49 - 0.2e1 * t4 * t6 * t51 * t20;
+  t51 = _PC2 * Z;
+  t55 = -0.2e1 * t4 * t6 * _PC2 * Z - 0.2e1 * t11 * t15 - 0.2e1 * t11 * t21 + 0.2e1 * t24 * t25 * t14 - t13 + 0.4e1 * t30 * t33 - 0.4e1 * t36 * t31 * t20 * t13 - 0.2e1 * t36 * t41 * t14 - 0.2e1 * t4 * t45 * t20 - t49 - 0.2e1 * t4 * t6 * t51 * t20;
   t58 = t32 * t6;
-  t59 = _C4 * t20;
+  t59 = _PC4 * t20;
   t63 = t20 * t13;
   t67 = t12 * t6;
   t68 = t20 * t14;
   t87 = t49 * t13;
   t90 = -0.4e1 * t11 * t33 - 0.4e1 * t58 * t59 * t13 - 0.4e1 * t58 * t51 * t63 - 0.2e1 * t67 * t51 * t68 + 0.4e1 * t32 * t45 * t13 - 0.2e1 * t67 * t59 * t14 - 0.2e1 * t30 * t21 + t1 + 0.2e1 * t24 * t25 * t2 + 0.2e1 * t12 * t45 * t14 + 0.4e1 * t24 * Z * t87;
-  t106 = _C3 * t5;
+  t106 = _PC3 * t5;
   t120 = -0.4e1 * t30 * t32 * t63 + t63 + 0.4e1 * t24 * Z * t1 * t13 + 0.2e1 * t29 * Z * x * t3 - 0.4e1 * t58 * t51 * t13 - 0.2e1 * t106 * t2 + t32 * 0.3141592654e1 - 0.2e1 * t106 * t14 - 0.2e1 * t30 * t12 * t68 - 0.2e1 * t67 * t51 * t14 + 0.4e1 * t106 * t87;
   t129 = sin(nx * 0.3141592654e1 * x);
   t155 = 0.2e1 * t30 * t15 + x * 0.3141592654e1 * t41 * t13 - 0.4e1 * t19 * nx * t129 * nz + t32 * 0.3141592654e1 * t20 + 0.2e1 * t106 * t68 + 0.2e1 * t106 * t20 * t2 - 0.4e1 * t106 * t1 * t13 - 0.2e1 * t11 * t4 + 0.2e1 * t4 * t45 + 0.2e1 * t24 * Z * t2 + 0.2e1 * t24 * Z * t14 + t12 * 0.3141592654e1 * t13;
@@ -2913,26 +2935,26 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t4 = 0.3141592654e1 * 0.3141592654e1;
   t5 = t4 * 0.3141592654e1;
   t6 = t3 * t5;
-  t7 = _C2 * Z;
+  t7 = _PC2 * Z;
   t8 = nx * nx;
   t12 = t1 * t1;
   t13 = t12 * nz;
   t14 = x * t13;
-  t15 = t5 * _C4;
+  t15 = t5 * _PC4;
   t16 = x * nz;
   t18 = exp(t16 * 0.3141592654e1);
   t19 = t18 * t18;
   t23 = t16 * t5;
   t24 = t8 * t8;
-  t28 = _C3 * t5;
+  t28 = _PC3 * t5;
   t29 = t14 * t19;
-  t32 = _C1 * t5;
+  t32 = _PC1 * t5;
   t33 = t32 * Z;
   t34 = t16 * t24;
-  t37 = _C4 * t19;
-  t45 = _C2 * t4;
+  t37 = _PC4 * t19;
+  t45 = _PC2 * t4;
   t53 = t19 * t8;
-  t58 = _C4 * t4;
+  t58 = _PC4 * t4;
   t60 = t1 * t19 * t8;
   t63 = t19 * t24;
   t67 = t3 * t8;
@@ -2945,12 +2967,12 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t156 = -t3 * 0.3141592654e1 * t19 + 0.2e1 * t58 * t63 - 0.4e1 * t58 * t1 * t8 + 0.4e1 * t45 * Z * t1 * t8 - 0.2e1 * t28 * t34 + 0.2e1 * t86 * t73 * t24 + 0.4e1 * t3 * t15 * t8 + 0.4e1 * t45 * Z * t60 + 0.4e1 * t18 * t146 * t8 + 0.2e1 * t45 * Z * t24 + 0.2e1 * t16 * t15 * t24;
   t159 = t4 * Z;
 
-  u2 = (-0.4e1 * t6 * t7 * t8 + 0.2e1 * t14 * t15 * t19 - 0.2e1 * t23 * t7 * t24 + 0.2e1 * t28 * t29 + 0.2e1 * t33 * t34 + 0.4e1 * t6 * t37 * t8 - 0.2e1 * t14 * t5 * _C2 * Z + 0.2e1 * t45 * Z * t19 * t24 + 0.2e1 * t23 * t37 * t24 + 0.4e1 * t33 * t3 * t53 + t91 + t121 + t156) / (0.4e1 * t159 * t18 * t12 + 0.8e1 * t159 * t18 * t1 * t8 + 0.4e1 * t159 * t18 * t24);
+  u2 = (-0.4e1 * t6 * t7 * t8 + 0.2e1 * t14 * t15 * t19 - 0.2e1 * t23 * t7 * t24 + 0.2e1 * t28 * t29 + 0.2e1 * t33 * t34 + 0.4e1 * t6 * t37 * t8 - 0.2e1 * t14 * t5 * _PC2 * Z + 0.2e1 * t45 * Z * t19 * t24 + 0.2e1 * t23 * t37 * t24 + 0.4e1 * t33 * t3 * t53 + t91 + t121 + t156) / (0.4e1 * t159 * t18 * t12 + 0.8e1 * t159 * t18 * t1 * t8 + 0.4e1 * t159 * t18 * t24);
   /****************************************************************************************/
   /****************************************************************************************/
   t1 = 0.3141592654e1 * 0.3141592654e1;
   t2 = t1 * 0.3141592654e1;
-  t3 = _C1 * t2;
+  t3 = _PC1 * t2;
   t4 = t3 * Z;
   t5 = nz * nz;
   t6 = t5 * t5;
@@ -2963,23 +2985,23 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t16 = t5 * nz;
   t17 = x * t16;
   t18 = t17 * t2;
-  t19 = _C4 * t12;
+  t19 = _PC4 * t12;
   t20 = nx * nx;
-  t24 = t2 * _C4;
-  t28 = _C3 * t2;
+  t24 = t2 * _PC4;
+  t28 = _PC3 * t2;
   t29 = t28 * x;
   t30 = t12 * nz;
   t31 = t20 * t20;
-  t40 = _C2 * Z;
+  t40 = _PC2 * Z;
   t44 = t9 * t2;
   t48 = t12 * t20;
   t52 = t17 * t20;
-  t57 = -0.2e1 * t4 * t13 - 0.4e1 * t18 * t19 * t20 - 0.2e1 * t8 * t24 * t12 - 0.2e1 * t29 * t30 * t31 + 0.2e1 * t8 * t2 * _C2 * Z - 0.2e1 * t8 * t2 * t40 * t12 - 0.2e1 * t44 * t19 * t31 - 0.4e1 * t18 * t40 * t48 + t20 + 0.4e1 * t28 * t52 + t17 * 0.3141592654e1 * t12;
+  t57 = -0.2e1 * t4 * t13 - 0.4e1 * t18 * t19 * t20 - 0.2e1 * t8 * t24 * t12 - 0.2e1 * t29 * t30 * t31 + 0.2e1 * t8 * t2 * _PC2 * Z - 0.2e1 * t8 * t2 * t40 * t12 - 0.2e1 * t44 * t19 * t31 - 0.4e1 * t18 * t40 * t48 + t20 + 0.4e1 * t28 * t52 + t17 * 0.3141592654e1 * t12;
   t58 = t9 * t31;
-  t61 = _C3 * t1;
+  t61 = _PC3 * t1;
   t62 = t12 * t31;
   t73 = t5 * t20;
-  t78 = _C1 * t1;
+  t78 = _PC1 * t1;
   t90 = Z * t12;
   t94 = 0.2e1 * t28 * t58 + 0.2e1 * t61 * t62 + 0.2e1 * t61 * t12 * t6 - 0.4e1 * t4 * t17 * t48 + 0.2e1 * t28 * t8 + 0.4e1 * t61 * t73 - 0.2e1 * t8 * t24 - 0.2e1 * t78 * Z * t6 - 0.2e1 * t44 * t40 * t62 - 0.2e1 * t78 * Z * t31 - t9 * 0.3141592654e1 * t20 + 0.2e1 * t78 * t90 * t6;
   t101 = cos(nx * 0.3141592654e1 * x);
@@ -2993,7 +3015,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   u3 = (t57 + t94 + t128 + t156) / (0.4e1 * t159 * t6 + 0.8e1 * t159 * t73 + 0.4e1 * t159 * t31);
   /****************************************************************************************/
   /****************************************************************************************/
-  t1 = _C2 * Z;
+  t1 = _PC2 * Z;
   t2 = 0.3141592654e1 * 0.3141592654e1;
   t3 = t2 * 0.3141592654e1;
   t4 = nz * nz;
@@ -3004,7 +3026,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t12 = t11 * t3;
   t15 = exp(x * nz * 0.3141592654e1);
   t16 = t15 * t15;
-  t17 = _C3 * t16;
+  t17 = _PC3 * t16;
   t18 = nx * nx;
   t19 = t18 * t18;
   t23 = t5 * nz;
@@ -3012,15 +3034,15 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t28 = t1 * t3;
   t29 = t6 * x;
   t30 = t29 * t16;
-  t33 = _C4 * t3;
+  t33 = _PC4 * t3;
   t34 = t5 * x;
   t35 = t34 * t18;
   t41 = sin(nx * 0.3141592654e1 * x);
   t47 = t11 * t19;
-  t54 = t3 * _C3;
+  t54 = t3 * _PC3;
   t57 = 0.2e1 * t1 * t8 + 0.2e1 * t12 * t17 * t19 + 0.2e1 * t1 * t24 * t16 + 0.2e1 * t28 * t30 - 0.4e1 * t33 * t35 + 0.2e1 * t15 * nx * t41 * t4 + 0.4e1 * t28 * t35 - 0.2e1 * t33 * t47 - 0.2e1 * t1 * t24 - 0.2e1 * t33 * t29 + 0.2e1 * t29 * t54;
   t58 = 0.3141592654e1 * t16;
-  t60 = t2 * _C4;
+  t60 = t2 * _PC4;
   t69 = t4 * nz;
   t73 = t1 * t2;
   t75 = t69 * t16 * t18;
@@ -3029,12 +3051,12 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t84 = t83 * t19;
   t95 = -t34 * t58 + 0.2e1 * t60 * t23 * t16 + 0.2e1 * t60 * nz * t19 - t11 * 0.3141592654e1 * t18 + 0.4e1 * t60 * t69 * t18 + 0.4e1 * t73 * t75 + 0.4e1 * t33 * t5 * t79 * t18 + 0.2e1 * t73 * t84 + 0.2e1 * t60 * t84 + 0.2e1 * t33 * t4 * t79 * t19 + 0.4e1 * t60 * t75;
   t97 = t34 * t3;
-  t101 = Z * _C1;
+  t101 = Z * _PC1;
   t102 = t16 * t19;
   t106 = t16 * t18;
   t127 = t2 * t69;
   t131 = t2 * nz;
-  t135 = 0.4e1 * t97 * t17 * t18 + 0.2e1 * t12 * t101 * t102 + 0.4e1 * t28 * t34 * t106 + 0.2e1 * t28 * t11 * t102 - 0.2e1 * t29 * t3 * Z * _C1 - 0.4e1 * t97 * t101 * t18 - 0.2e1 * t12 * t101 * t19 + 0.2e1 * t60 * t23 - 0.2e1 * t83 * t18 - 0.4e1 * t1 * t127 * t18 - 0.2e1 * t1 * t131 * t19;
+  t135 = 0.4e1 * t97 * t17 * t18 + 0.2e1 * t12 * t101 * t102 + 0.4e1 * t28 * t34 * t106 + 0.2e1 * t28 * t11 * t102 - 0.2e1 * t29 * t3 * Z * _PC1 - 0.4e1 * t97 * t101 * t18 - 0.2e1 * t12 * t101 * t19 + 0.2e1 * t60 * t23 - 0.2e1 * t83 * t18 - 0.4e1 * t1 * t127 * t18 - 0.2e1 * t1 * t131 * t19;
   t164 = 0.2e1 * t28 * t47 + 0.2e1 * t11 * t54 * t19 + 0.2e1 * t8 * t101 * t16 + 0.2e1 * t33 * t30 - t11 * t58 * t18 + 0.2e1 * t29 * t54 * t16 + 0.4e1 * t34 * t54 * t18 + 0.4e1 * t97 * t101 * t106 - 0.2e1 * t15 * t18 * nx * t41 - t34 * 0.3141592654e1 + 0.2e1 * nz * t18;
 
   u4 = (t57 + t95 + t135 + t164) / (0.4e1 * t24 * t15 + 0.8e1 * t127 * t15 * t18 + 0.4e1 * t131 * t15 * t19);
@@ -3106,7 +3128,6 @@ static PetscErrorCode SolCxSolutionPressure(PetscInt dim, PetscReal time, const 
 
 static PetscErrorCode CompositeSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
-  Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3116,7 +3137,6 @@ static PetscErrorCode CompositeSolutionVelocity(PetscInt dim, PetscReal time, co
 
 static PetscErrorCode CompositeSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
 {
-  Parameter     *s = (Parameter *) ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3132,22 +3152,26 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
+  options->serRef          = 0;
   options->simplex         = PETSC_TRUE;
   options->testPartition   = PETSC_FALSE;
   options->showSolution    = PETSC_FALSE;
   options->showError       = PETSC_FALSE;
   options->solType         = SOLKX;
+  options->mantleBasename[0] = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Variable-Viscosity Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex69.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex69.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex69.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-serial_refinements", "Number of serial uniform refinements steps", "ex69.c", options->serRef, &options->serRef, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex69.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex69.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex69.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
+  ierr = PetscOptionsString("-mantle_basename", "The basename for mantle files", "ex69.c", options->mantleBasename, options->mantleBasename, sizeof(options->mantleBasename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -3189,12 +3213,74 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             dmDist   = NULL;
   PetscInt       dim      = user->dim;
-  const PetscInt cells[3] = {3, 3, 3};
+  PetscInt       cells[3] = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"dim %D is too big, must be <= 3",dim);
+  if (user->solType == COMPOSITE) {
+    PetscViewer viewer;
+    PetscInt    count;
+    char        filename[PETSC_MAX_PATH_LEN];
+    char        line[PETSC_MAX_PATH_LEN];
+    double     *axes[3];
+    int        *verts = user->verts;
+    int        *perm  = user->perm;
+    int         snum, d;
+
+    if (user->simplex) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Citom grids do not use simplices. Use -simplex 0");
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_vects.ascii");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
+    if (dim == 2) {perm[0] = 2; perm[1] = 0; perm[2] = 1;}
+    else          {perm[0] = 0; perm[1] = 1; perm[2] = 2;}
+    snum = sscanf(line, "%d %d %d", &verts[perm[0]], &verts[perm[1]], &verts[perm[2]]);
+    if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file header: %s", line);
+    for (d = 0; d < 3; ++d) {
+      ierr = PetscMalloc1(verts[perm[d]], &axes[perm[d]]);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, axes[perm[d]], verts[perm[d]], &count, PETSC_DOUBLE);CHKERRQ(ierr);
+      if (count != verts[perm[d]]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file dimension %d: %D %= %d", d, count, verts[perm[d]]);
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (dim == 2) {verts[perm[0]] = 1;}
+    for (d = 0; d < 3; ++d) cells[d] = verts[d]-1;
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    /* Remap coordinates to unit ball */
+    {
+      Vec           coordinates;
+      PetscSection  coordSection;
+      PetscScalar  *coords;
+      PetscInt      vStart, vEnd, v;
+
+      ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+      ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+      for (v = vStart; v < vEnd; ++v) {
+        PetscInt  vert[3] = {0, 0, 0};
+        PetscReal theta, phi, r;
+        PetscInt  off;
+
+        ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) vert[d] = round(PetscRealPart(coords[off+d])*cells[d]);
+        theta = axes[perm[0]][vert[perm[0]]]*2.0*PETSC_PI/360;
+        phi   = axes[perm[1]][vert[perm[1]]]*2.0*PETSC_PI/360;
+        r     = axes[perm[2]][vert[perm[2]]];
+        coords[off+0] = r*PetscSinReal(theta)*PetscSinReal(phi);
+        coords[off+1] = r*PetscSinReal(theta)*PetscCosReal(phi);
+        if (dim > 2) {coords[off+2] = r*PetscCosReal(theta);}
+      }
+      ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    }
+    for (d = 0; d < 3; ++d) {ierr = PetscFree(axes[d]);CHKERRQ(ierr);}
+  } else {
+    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
+    else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  }
   /* Make split labels so that we can have corners in multiple labels */
   {
     const char *names[4] = {"markerBottom", "markerRight", "markerTop", "markerLeft"};
@@ -3205,9 +3291,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     for (f = 0; f < 4; ++f) {
       ierr = DMGetStratumIS(*dm, "marker", ids[f],  &is);CHKERRQ(ierr);
+      if (!is) continue;
       ierr = DMCreateLabel(*dm, names[f]);CHKERRQ(ierr);
       ierr = DMGetLabel(*dm, names[f], &label);CHKERRQ(ierr);
-      ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      if (is) {
+        ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      }
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
@@ -3253,6 +3342,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+  }
+  {
+    PetscInt i;
+    for (i=0;i<user->serRef;i++) {
+      DM dmRefined;
+
+      ierr = DMPlexSetRefinementUniform(*dm,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = DMRefine(*dm,PetscObjectComm((PetscObject)*dm),&dmRefined);CHKERRQ(ierr);
+      if (dmRefined) {
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm  = dmRefined;
+      }
+    }
   }
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
@@ -3332,7 +3434,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", user->dim);
   }
   comp = 1;
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
@@ -3358,32 +3460,76 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmAux, &paramVec);CHKERRQ(ierr);
   ierr = VecGetArray(paramVec, &p);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
-    switch (user->solType) {
-    case SOLKX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->B;
-      break;
-    case SOLCX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->etaA;
-      a[3] = param->etaB;
-      a[4] = param->xc;
-      break;
-    case COMPOSITE:
-      a[0] = param->T;
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+  if (user->solType == COMPOSITE) {
+    PetscSection s;
+    PetscViewer  viewer;
+    PetscInt     count;
+    char         filename[PETSC_MAX_PATH_LEN];
+    float       *temp;
+    PetscInt     Nx = user->verts[user->perm[0]], Ny = user->verts[user->perm[1]], Nz = user->verts[user->perm[2]], vStart, vx, vy, vz;
+
+    ierr = DMGetDefaultSection(dmAux, &s);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dmAux, 0, &vStart, NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_therm.bin");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PetscObjectComm((PetscObject) dm), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nz, &temp);CHKERRQ(ierr);
+    /* The ordering is Y, X, Z where Z is the fastest dimension */
+    for (vy = 0; vy < Ny; ++vy) {
+      for (vx = 0; vx < Nx; ++vx) {
+        ierr = PetscViewerRead(viewer, temp, Nz, &count, PETSC_FLOAT);CHKERRQ(ierr);
+        if (count != Nz) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mantle temperature file %s had incorrect length", filename);
+        for (vz = 0; vz < Nz; ++vz) {
+          PetscInt off;
+
+          ierr = PetscSectionGetOffset(s, (vz*Ny + vy)*Nx + vx + vStart, &off);CHKERRQ(ierr);
+          p[off] = temp[vz];
+        }
+      }
+    }
+    ierr = PetscFree(temp);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+    for (c = cStart; c < cEnd; ++c) {
+      ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
+      switch (user->solType) {
+      case SOLKX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->B;
+        break;
+      case SOLCX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->etaA;
+        a[3] = param->etaB;
+        a[4] = param->xc;
+        break;
+      case COMPOSITE:
+        a[0] = param->T;
+        break;
+      default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+      }
     }
   }
   ierr = VecRestoreArray(paramVec, &p);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) paramVec);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmAux, NULL, "-dm_aux_view");CHKERRQ(ierr);
+  {
+    Vec gvec;
+
+    ierr = DMGetGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(gvec, NULL, "-vec_param_view");CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&paramVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3418,10 +3564,21 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
-    ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
+    char prefix[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "aux_%d_", f);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, prefix, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
+    if (user->solType == COMPOSITE) {
+      PetscSpace sp;
+      PetscInt   order;
+
+      ierr = PetscFEGetBasisSpace(feAux[f], &sp);CHKERRQ(ierr);
+      ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+      if (order != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Temperature element must be linear, not order %D", order);
+    }
   }
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -3485,11 +3642,9 @@ int main(int argc, char **argv)
   DM              dm;                   /* problem definition */
   Vec             u,r;                  /* solution, residual vectors */
   Mat             J, M;                 /* Jacobian matrix */
-#if 1
   MatNullSpace    nullSpace;            /* May be necessary for pressure */
   Vec             nullVec;
-  PetscReal       pint;
-#endif
+  PetscScalar     pint;
   AppCtx          user;                 /* user-defined work context */
   PetscInt        its;                  /* iterations for convergence */
   PetscReal       error = 0.0;          /* L_2 error in the solution */
@@ -3520,6 +3675,13 @@ int main(int argc, char **argv)
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(dm, &user, &nullVec, &nullSpace);CHKERRQ(ierr);
 
+  { /* set tolerances */
+    KSP ksp;
+
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,1.e-2*PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  }
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* There should be a way to express this using the DM */
@@ -3531,7 +3693,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n",(double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
@@ -3542,9 +3704,9 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
   ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", (double)error, (double)ferrors[0], (double)ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", (double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
   if (user.showError) {
     Vec r;
 
@@ -3573,3 +3735,78 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  build:
+    requires: !mpiuni
+
+  # 2D serial P2/P1 tests 0-2
+  test:
+    suffix: 0
+    requires: triangle
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+  test:
+    suffix: 1
+    requires: triangle
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+  test:
+    suffix: 2
+    requires: triangle
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+  # 2D serial discretization tests
+  test:
+    suffix: p2p1
+    requires: triangle
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: p2p1ref
+    requires: triangle
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q2q1
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q2q1ref
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q1p0
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q1p0ref
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q2p1
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -fieldsplit_pressure_pc_factor_shift_type -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: q2p1ref
+    requires:
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  # 2D serial mantle tests
+  test:
+    suffix: mantle_q1p0
+    requires: broken
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+  test:
+    suffix: mantle_q2q1
+    requires: broken
+    filter: sed  -e "s/SNES iterations *= *[123]/SNES iterations=4/g" -e "s/solver iterations *= *[123]/solver iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+
+TEST*/

@@ -1,9 +1,3 @@
-0 SNES Function norm 9.32898 
-    0 KSP Residual norm 9.32898 
-    1 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 1
-  1 SNES Function norm < 1.e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -20,8 +14,8 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: fgmres
-      GMRES: restart=10, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=10, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
@@ -36,8 +30,8 @@ SNES Object: 1 MPI processes
       KSP solver for A00 block
         KSP Object: (fieldsplit_velocity_) 1 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -66,8 +60,8 @@ SNES Object: 1 MPI processes
       KSP solver for S = A11 - A10 inv(A00) A01 
         KSP Object: (fieldsplit_pressure_) 1 MPI processes
           type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
+            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -98,8 +92,8 @@ SNES Object: 1 MPI processes
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 1 MPI processes
                   type: gmres
-                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                    GMRES: happy breakdown tolerance 1e-30
+                    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    happy breakdown tolerance 1e-30
                   maximum iterations=10000, initial guess is zero
                   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                   left preconditioning
@@ -148,4 +142,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 25 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 0.111 [2.48e-14, 0.111]
+L_2 Error: 0.111 [7.28e-15, 0.111]

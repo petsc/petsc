@@ -65,3 +65,10 @@
       call DMDestroy(dm,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
+
+! /*TEST
+!
+! test:
+!   suffix: 0
+!
+! TEST*/

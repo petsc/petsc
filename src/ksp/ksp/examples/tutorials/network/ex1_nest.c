@@ -309,16 +309,9 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Set up DM for use */
+  /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-
-  if (size > 1) {
-    DM distnetworkdm;
-    /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 

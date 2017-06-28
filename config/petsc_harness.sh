@@ -23,7 +23,9 @@ Usage: $0 [options]
 OPTIONS
   -a <args> ......... Override default arguments
   -c <cleanup> ...... Cleanup (remove generated files)
+  -d ................ Launch in debugger
   -e <args> ......... Add extra arguments to default
+  -f ................ force attempt to run test that would otherwise be skipped
   -h ................ help: print this message
   -n <integer> ...... Override the number of processors to use
   -j ................ Pass -j to petscdiff (just use diff)
@@ -41,13 +43,17 @@ EOF
 #
 verbose=false
 cleanup=false
+debugger=false
+force=false
 diff_flags=""
-while getopts "a:ce:hjJ:mn:vV" arg
+while getopts "a:cde:fhjJ:mn:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
     c ) cleanup=true         ;;  
+    d ) debugger=true        ;;  
     e ) extra_args="$OPTARG" ;;  
+    f ) force=true           ;;
     h ) print_usage; exit    ;;  
     n ) nsize="$OPTARG"      ;;  
     j ) diff_flags="-j"      ;;  
@@ -69,6 +75,10 @@ shift $(( $OPTIND - 1 ))
 if test -n "$extra_args"; then
   args="$args $extra_args"
 fi
+if $debugger; then
+  args="-start_in_debugger $args"
+fi
+
 
 # Init
 success=0; failed=0; failures=""; rmfiles=""
@@ -86,14 +96,11 @@ function petsc_testrun() {
   filter=$5
 
   if test -z "$filter"; then
-    if test "$2" == "$3"; then
-     cmd="$1 > $2 2>> $3"
-    else
-     cmd="$1 > $2 2> $3"
-    fi
+    cmd="$1 > $2 2> $3"
   else
     cmd="$1 2>&1 | $filter > $2 2> $3"
   fi
+  echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
   eval $cmd
   if test $? == 0; then
     if "${verbose}"; then

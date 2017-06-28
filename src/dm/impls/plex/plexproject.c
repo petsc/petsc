@@ -7,27 +7,27 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscReal time, PetscFE
                                                   PetscScalar values[])
 {
   PetscDS        prob;
-  PetscInt       Nf, *Nc, f, spDim, d, c, v;
+  PetscInt       Nf, *Nc, f, totDim, spDim, d, v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   /* Get values for closure */
   for (f = 0, v = 0; f < Nf; ++f) {
     void * const ctx = ctxs ? ctxs[f] : NULL;
 
     if (!sp[f]) continue;
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-    for (d = 0; d < spDim; ++d) {
+    for (d = 0; d < spDim; ++d, ++v) {
       if (funcs[f]) {
         if (isFE[f]) {ierr = PetscDualSpaceApply(sp[f], d, time, fegeom, Nc[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);}
         else         {ierr = PetscDualSpaceApplyFVM(sp[f], d, time, fvgeom, Nc[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);}
       } else {
-        for (c = 0; c < Nc[f]; ++c) values[v+c] = 0.0;
+        values[v] = 0.0;
       }
-      v += Nc[f];
     }
   }
   PetscFunctionReturn(0);
@@ -38,18 +38,19 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
                                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                                  PetscReal, const PetscReal[], PetscScalar[]), void **ctxs,
+                                                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void **ctxs,
                                                    PetscScalar values[])
 {
-  PetscDS        prob, probAux = NULL;
-  PetscSection   section, sectionAux = NULL;
-  PetscScalar   *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *refSpaceDer, *refSpaceDerAux = NULL;
-  PetscScalar   *coefficients   = NULL, *coefficientsAux   = NULL;
-  PetscScalar   *coefficients_t = NULL, *coefficientsAux_t = NULL;
-  PetscReal     *x;
-  PetscInt      *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscInt       dim, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
-  PetscErrorCode ierr;
+  PetscDS            prob, probAux = NULL;
+  PetscSection       section, sectionAux = NULL;
+  PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *refSpaceDer, *refSpaceDerAux = NULL, *bc;
+  PetscScalar       *coefficients   = NULL, *coefficientsAux   = NULL;
+  PetscScalar       *coefficients_t = NULL, *coefficientsAux_t = NULL;
+  const PetscScalar *constants;
+  PetscReal         *x;
+  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
+  PetscInt           dim, dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
+  PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -59,12 +60,31 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
-  ierr = PetscDSGetEvaluationArrays(prob, &u, NULL /*&u_t*/, &u_x);CHKERRQ(ierr);
+  ierr = PetscDSGetEvaluationArrays(prob, &u, &bc /*&u_t*/, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
+    DMLabel  spmap;
+    PetscInt subp;
+
+    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+    if (spmap) {
+      IS              subpointIS;
+      const PetscInt *subpoints;
+      PetscInt        numSubpoints;
+
+      ierr = DMPlexCreateSubpointIS(dmAux, &subpointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = PetscFindInt(p, numSubpoints, subpoints, &subp);CHKERRQ(ierr);
+      if (subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
+      ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+    } else subp = p;
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
@@ -73,30 +93,30 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
-    ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, p, NULL, &coefficientsAux);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, subp, NULL, &coefficientsAux);CHKERRQ(ierr);
   }
   /* Get values for closure */
   for (f = 0, v = 0; f < Nf; ++f) {
     if (!sp[f]) continue;
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-    for (d = 0; d < spDim; ++d) {
+    for (d = 0; d < spDim; ++d, ++v) {
       if (funcs[f]) {
         PetscQuadrature  quad;
-        const PetscReal *points;
+        const PetscReal *points, *weights;
         PetscInt         numPoints, q;
 
         ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
-        ierr = PetscQuadratureGetData(quad, NULL, &numPoints, &points, NULL);CHKERRQ(ierr);
+        ierr = PetscQuadratureGetData(quad, NULL, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
         for (q = 0; q < numPoints; ++q, ++tp) {
           CoordinatesRefToReal(dim, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
           EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, fegeom->invJ, coefficients, coefficients_t, u, u_x, u_t);
-          if (probAux) {EvaluateFieldJets(dim, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
-          (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, &values[v]);
+          if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
+          (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, numConstants, constants, bc);
+          for (c = 0; c < Nc[f]; ++c) values[v] += bc[c]*weights[c];
         }
       } else {
-        for (c = 0; c < Nc[f]; ++c) values[v+c] = 0.0;
+        values[v] = 0.0;
       }
-      v += Nc[f];
     }
   }
   ierr = DMPlexVecRestoreClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
@@ -133,7 +153,7 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscR
                                         (void (**)(PetscInt, PetscInt, PetscInt,
                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                   PetscReal, const PetscReal[], PetscScalar[])) funcs, ctxs, values);CHKERRQ(ierr);break;
+                                                   PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[])) funcs, ctxs, values);CHKERRQ(ierr);break;
   default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown boundary condition type: %d", (int) type);
   }
   PetscFunctionReturn(0);
@@ -151,20 +171,29 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   PetscDualSpace *sp, *cellsp;
   PetscReal     **basisTab = NULL, **basisDerTab = NULL, **basisTabAux = NULL, **basisDerTabAux = NULL;
   PetscInt       *Nc;
-  PetscInt        dim, dimEmbed, maxHeight, h, Nf, NfAux = 0, f;
-  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE;
+  PetscInt        dim, dimEmbed, minHeight, maxHeight, h, Nf, NfAux = 0, f;
+  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
+  if (!minHeight && dmAux) {
+    DMLabel spmap;
+
+    /* If dmAux is a surface, then force the projection to take place over a surface */
+    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+    if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+  }
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
+  maxHeight = PetscMax(maxHeight, minHeight);
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %d not in [0, %d)\n", maxHeight, dim);}
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -200,7 +229,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscReal *points;
     PetscInt   numPoints, spDim, d;
 
-    if (maxHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field proejction not supported for face interpolation");
+    if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     numPoints = 0;
     for (f = 0; f < Nf; ++f) {
       ierr = PetscDualSpaceGetDimension(cellsp[f], &spDim);CHKERRQ(ierr);
@@ -210,7 +239,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           PetscInt        Nq;
 
           ierr = PetscDualSpaceGetFunctional(cellsp[f], d, &quad);CHKERRQ(ierr);
-          ierr = PetscQuadratureGetData(quad, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
           numPoints += Nq;
         }
       }
@@ -226,7 +255,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           PetscInt         Nq, q;
 
           ierr = PetscDualSpaceGetFunctional(cellsp[f], d, &quad);CHKERRQ(ierr);
-          ierr = PetscQuadratureGetData(quad, NULL, &Nq, &qpoints, NULL);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, &qpoints, NULL);CHKERRQ(ierr);
           for (q = 0; q < Nq*dim; ++q) points[numPoints*dim+q] = qpoints[q];
           numPoints += Nq;
         }
@@ -245,7 +274,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     ierr = PetscFree(points);CHKERRQ(ierr);
   }
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
-  for (h = 0; h <= maxHeight; h++) {
+  for (h = minHeight; h <= maxHeight; h++) {
+    PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
@@ -261,14 +291,14 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     /* Compute totDim, the number of dofs in the closure of a point at this height */
     totDim = 0;
     for (f = 0; f < Nf; ++f) {
-      if (!h) {
+      if (!effectiveHeight) {
         sp[f] = cellsp[f];
       } else {
-        ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], h, &sp[f]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);
         if (!sp[f]) continue;
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-      totDim += spDim*Nc[f];
+      totDim += spDim;
     }
     ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The section point closure size %d != dual space dimension %d", numValues, totDim);
@@ -293,7 +323,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           const PetscInt  point = points[p];
 
           if ((point < pStart) || (point >= pEnd)) continue;
-          ierr = DMProjectPoint_Private(dm, dmAux, h, time, localU, localA, hasFE, hasFV, isFE, sp, point, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
+          ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+          ierr = DMProjectPoint_Private(dm, dmAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
             PetscErrorCode ierr2;
             ierr2 = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr2);
@@ -307,7 +338,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       }
     } else {
       for (p = pStart; p < pEnd; ++p) {
-        ierr = DMProjectPoint_Private(dm, dmAux, h, time, localU, localA, hasFE, hasFV, isFE, sp, p, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
+        ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = DMProjectPoint_Private(dm, dmAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {
           PetscErrorCode ierr2;
           ierr2 = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr2);
@@ -362,7 +394,7 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, PetscReal time, Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                       PetscReal, const PetscReal[], PetscScalar[]),
+                                                       PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                                         InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -376,7 +408,7 @@ PetscErrorCode DMProjectFieldLabelLocal_Plex(DM dm, PetscReal time, DMLabel labe
                                              void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                             const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                             const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                            PetscReal, const PetscReal[], PetscScalar[]),
+                                                            PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),
                                              InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;

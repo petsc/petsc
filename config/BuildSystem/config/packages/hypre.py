@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'xsdk-0.2.0-rc1'
+    self.gitcommit = 'xsdk-0.2.0-rc2'
     self.download  = ['git://https://github.com/LLNL/hypre','https://github.com/LLNL/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
@@ -16,21 +16,15 @@ class Configure(config.package.GNUPackage):
     self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
-    self.needsMath         = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.openmp     = framework.require('config.packages.openmp',self)
+    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack]
-
-  def generateLibList(self,dir):
-    '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
-    alllibs = config.package.GNUPackage.generateLibList(self,dir)
-    if self.getDefaultLanguage() == 'C':
-      alllibs[0].extend(self.compilers.cxxlibs)
-    return alllibs
+    self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
 
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')

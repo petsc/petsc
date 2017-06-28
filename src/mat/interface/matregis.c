@@ -58,13 +58,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 #endif
 
-/*
-    This is used by MatSetType() to make sure that at least one
-    MatRegisterAll() is called. In general, if there is more than one
-    DLL, then MatRegisterAll() may be called several times.
-*/
-extern PetscBool MatRegisterAllCalled;
-
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 

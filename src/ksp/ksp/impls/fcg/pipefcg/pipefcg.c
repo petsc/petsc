@@ -401,10 +401,10 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   }
 
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: max previous directions = %D\n",pipefcg->mmax);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: preallocated %D directions\n",PetscMin(pipefcg->nprealloc,pipefcg->mmax+1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: %s\n",truncstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  PIPEFCG: restarts performed = %D \n", pipefcg->n_restarts);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  max previous directions = %D\n",pipefcg->mmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(pipefcg->nprealloc,pipefcg->mmax+1));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  restarts performed = %D \n", pipefcg->n_restarts);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,
       "max previous directions = %D, preallocated %D directions, %s truncation strategy",
@@ -664,6 +664,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPEFCG;
   ksp->ops->solve          = KSPSolve_PIPEFCG;

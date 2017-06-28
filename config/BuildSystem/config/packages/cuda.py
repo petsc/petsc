@@ -33,8 +33,6 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers',self)
     self.headers      = framework.require('config.headers',self)
-    self.scalartypes  = framework.require('PETSc.options.scalarTypes', self)
-    self.languages    = framework.require('PETSc.options.languages',   self)
     return
 
   def getSearchDirectories(self):
@@ -83,11 +81,11 @@ class Configure(config.package.Package):
 
   def configureTypes(self):
     import config.setCompilers
-#    if self.scalartypes.scalartype == 'complex':
+#    if self.getDefaultScalarType() == 'complex':
 #      raise RuntimeError('Must use real numbers with CUDA')
     if not config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
       raise RuntimeError('Must use GNU compilers with CUDA')
-    if not self.scalartypes.precision in ['double', 'single']:
+    if not self.getDefaultPrecision() in ['double', 'single']:
       raise RuntimeError('Must use either single or double precision with CUDA')
     else:
       self.setCompilers.pushLanguage('CUDA')

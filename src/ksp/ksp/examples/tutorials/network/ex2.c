@@ -340,16 +340,9 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Set up DM for use */
+  /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-
-  if (size > 1) {
-    DM distnetworkdm;
-    /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
@@ -364,7 +357,7 @@ int main(int argc,char ** argv)
   ierr = DMCreateMatrix(networkdm,&A);CHKERRQ(ierr);
 
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  
+
   ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
   /* Assembly system of equations */
   ierr = FormOperator(networkdm,A,b);CHKERRQ(ierr);

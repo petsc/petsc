@@ -1,7 +1,4 @@
 #define PETSC_USE_FORTRAN_MODULES 1
-!/*T
-!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
-!T*/
 
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscbag.h>
@@ -127,6 +124,9 @@
 
 !
 !/*TEST
+!
+!   build:
+!      requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      args: -pbag_rarray 4,5,88

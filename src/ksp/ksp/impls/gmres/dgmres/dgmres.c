@@ -512,18 +512,18 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
   ierr = KSPView_GMRES(ksp,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (dgmres->force) PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: FALSE\n");
-    else PetscViewerASCIIPrintf(viewer, "   DGMRES: Adaptive strategy is used: TRUE\n");
+    if (dgmres->force) PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: FALSE\n");
+    else PetscViewerASCIIPrintf(viewer, "    Adaptive strategy is used: TRUE\n");
     ierr = PetscOptionsHasName(((PetscObject)ksp)->options,((PetscObject)ksp)->prefix, "-ksp_dgmres_harmonic_ritz", &isharmonic);CHKERRQ(ierr);
     if (isharmonic) {
-      ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Harmonic Ritz values \n", dgmres->neig);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "   Frequency of extracted eigenvalues = %D using Ritz values \n", dgmres->neig);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Total number of extracted eigenvalues = %D\n", dgmres->r);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "  DGMRES: Number of matvecs : %D\n", dgmres->matvecs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "   Total number of extracted eigenvalues = %D\n", dgmres->r);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "   Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "   relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "   Number of matvecs : %D\n", dgmres->matvecs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -568,8 +568,6 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
   dgmres->force = force;
   PetscFunctionReturn(0);
 }
-
-extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP);
 
 PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {

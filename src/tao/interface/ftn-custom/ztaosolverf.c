@@ -161,9 +161,11 @@ static PetscErrorCode ourtaomondestroy(void **ctx)
 {
     PetscErrorCode ierr = 0;
     Tao tao = *(Tao*)ctx;
-    (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)tao)->fortran_func_pointers[MONDESTROY]))
-      ((void*)(PETSC_UINTPTR_T)((PetscObject)tao)->fortran_func_pointers[MONCTX],&ierr);
-    CHKERRQ(ierr);
+    if (((PetscObject)tao)->fortran_func_pointers[MONDESTROY]) {
+      (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)tao)->fortran_func_pointers[MONDESTROY]))
+        ((void*)(PETSC_UINTPTR_T)((PetscObject)tao)->fortran_func_pointers[MONCTX],&ierr);
+      CHKERRQ(ierr);
+    }
     return 0;
 }
 static PetscErrorCode ourtaoconvergencetest(Tao tao, void *ctx)
@@ -336,11 +338,9 @@ PETSC_EXTERN void PETSC_STDCALL taosetmonitor_(Tao *tao, void (PETSC_STDCALL *fu
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (func) {
         ((PetscObject)*tao)->fortran_func_pointers[MON] = (PetscVoidFunction)func;
-        if (FORTRANNULLFUNCTION(mondestroy)){
-          *ierr = TaoSetMonitor(*tao,ourtaomonitor,ctx,NULL);
-        } else {
-          *ierr = TaoSetMonitor(*tao,ourtaomonitor,ctx,ourtaomondestroy);
-        }
+        CHKFORTRANNULLFUNCTION(mondestroy);
+        ((PetscObject)*tao)->fortran_func_pointers[MONDESTROY] = (PetscVoidFunction)mondestroy;
+        *ierr = TaoSetMonitor(*tao,ourtaomonitor,ctx,ourtaomondestroy);
     }
 }
 

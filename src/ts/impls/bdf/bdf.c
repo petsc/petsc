@@ -21,7 +21,6 @@ typedef struct {
   Vec       vec_lte;
 
   PetscInt     order;
-  PetscBool    adapt;
   TSStepStatus status;
 } TS_BDF;
 
@@ -322,7 +321,6 @@ static PetscErrorCode TSDestroy_BDF(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFUseAdapt_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -330,6 +328,7 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
   size_t         i,n = sizeof(bdf->work)/sizeof(Vec);
+  PetscReal      low,high,two = 2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -340,16 +339,8 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
   ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
-  if (!bdf->adapt) {
-    ierr = TSAdaptSetType(ts->adapt,TSADAPTNONE);CHKERRQ(ierr);
-  } else {
-    PetscReal low,high;
-    ierr = TSAdaptBasicGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
-    high = PetscMin(high,2.0);
-    ierr = TSAdaptBasicSetClip(ts->adapt,low,high);CHKERRQ(ierr);
-    if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
-      ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
-  }
+  ierr = TSAdaptGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
+  ierr = TSAdaptSetClip(ts->adapt,low,PetscMin(high,two));CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -365,11 +356,8 @@ static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,
   {
     PetscBool flg;
     PetscInt  order = bdf->order;
-    PetscBool adapt = bdf->adapt;
     ierr = PetscOptionsInt("-ts_bdf_order","Order of the BDF method","TSBDFSetOrder",order,&order,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSBDFSetOrder(ts,order);CHKERRQ(ierr);}
-    ierr = PetscOptionsBool("-ts_bdf_adapt","Use time-step adaptivity with the BDF method","TSBDFUseAdapt",adapt,&adapt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSBDFUseAdapt(ts,adapt);CHKERRQ(ierr);}
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -383,11 +371,9 @@ static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii)    {
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Order=%D\n",bdf->order);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
-  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -410,17 +396,6 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts,PetscInt *order)
 
   PetscFunctionBegin;
   *order = bdf->order;
-  PetscFunctionReturn(0);
-}
-
-static PetscErrorCode TSBDFUseAdapt_BDF(TS ts,PetscBool use)
-{
-  TS_BDF *bdf = (TS_BDF*)ts->data;
-
-  PetscFunctionBegin;
-  if (use == bdf->adapt) PetscFunctionReturn(0);
-  if (ts->setupcalled) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ORDER,"Cannot change adaptivity after TSSetUp()");
-  bdf->adapt = use;
   PetscFunctionReturn(0);
 }
 
@@ -450,17 +425,18 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   ts->ops->interpolate    = TSInterpolate_BDF;
   ts->ops->snesfunction   = SNESTSFormFunction_BDF;
   ts->ops->snesjacobian   = SNESTSFormJacobian_BDF;
+  ts->default_adapt_type  = TSADAPTBASIC;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&bdf);CHKERRQ(ierr);
   ts->data = (void*)bdf;
 
   bdf->order  = 2;
-  bdf->adapt  = PETSC_FALSE;
   bdf->status = TS_STEP_COMPLETE;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFSetOrder_C",TSBDFSetOrder_BDF);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFGetOrder_C",TSBDFGetOrder_BDF);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSBDFUseAdapt_C",TSBDFUseAdapt_BDF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -514,32 +490,5 @@ PetscErrorCode TSBDFGetOrder(TS ts,PetscInt *order)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(order,2);
   ierr = PetscUseMethod(ts,"TSBDFGetOrder_C",(TS,PetscInt*),(ts,order));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  TSBDFUseAdapt - Use time-step adaptivity with the BDF method
-
-  Logically Collective on TS
-
-  Input Parameter:
-+  ts - timestepping context
--  use - flag to use adaptivity
-
-  Options Database:
-.  -ts_bdf_adapt
-
-  Level: intermediate
-
-.seealso: TSAdapt
-@*/
-PetscErrorCode TSBDFUseAdapt(TS ts,PetscBool use)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidLogicalCollectiveBool(ts,use,2);
-  ierr = PetscTryMethod(ts,"TSBDFUseAdapt_C",(TS,PetscBool),(ts,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

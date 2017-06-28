@@ -372,7 +372,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
     IGr = (Vr*PG[i] + Vi*QG[i])/Vm2;
     IGi = (Vi*PG[i] - Vr*QG[i])/Vm2;
 
-    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
+    delta = PetscAtan2Real(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); /* Machine angle */
 
     theta = PETSC_PI/2.0 - delta;
 
@@ -1149,7 +1149,7 @@ int main(int argc,char **argv)
   user.stepnum++;
 
   ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);

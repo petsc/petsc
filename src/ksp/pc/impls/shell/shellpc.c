@@ -262,9 +262,9 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (shell->name) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Shell: %s\n",shell->name);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",shell->name);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  no name\n");CHKERRQ(ierr);
     }
   }
   if (shell->view) {

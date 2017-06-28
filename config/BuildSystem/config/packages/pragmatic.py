@@ -5,11 +5,10 @@ class Configure(config.package.CMakePackage):
     import os
     config.package.CMakePackage.__init__(self, framework)
     self.download          = ['git://https://github.com/meshadaptation/pragmatic.git']
-    self.gitcommit         = '29b85a2c29b3344c67abdf6dc010a998bec03cf0'
+    self.gitcommit         = 'f56251de6ff39680d4ead2140b635e16fa6d604e'
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
-    self.needsMath         = 1
     self.includedir        = os.path.join('include', 'pragmatic')
     return
 
@@ -21,7 +20,8 @@ class Configure(config.package.CMakePackage):
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
     self.metis           = framework.require('config.packages.metis', self)
     self.eigen           = framework.require('config.packages.eigen', self)
-    self.deps            = [self.metis, self.eigen]
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.metis, self.eigen, self.mathlib]
     return
 
   def formCMakeConfigureArgs(self):

@@ -100,7 +100,7 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Kaczmarz: lambda = %g\n",(double)jac->lambda);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  lambda = %g\n",(double)jac->lambda);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

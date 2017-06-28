@@ -703,7 +703,7 @@ PetscErrorCode  PetscStrtolower(char a[])
 }
 
 /*@C
-   PetscStrtolower - Converts string to upper case
+   PetscStrtoupper - Converts string to upper case
 
    Not Collective
 
@@ -774,6 +774,9 @@ PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
    Notes:     Not for use in Fortran
 
    Level: intermediate
+
+.seealso: PetscStrendswithwhich(), PetscStrendswith(), PetscStrtoupper, PetscStrtolower(), PetscStrrchr(), PetscStrchr(),
+          PetscStrncmp(), PetscStrlen(), PetscStrncmp(), PetscStrcmp()
 
 @*/
 PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)

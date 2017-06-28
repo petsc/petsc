@@ -15,10 +15,9 @@ lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
  13 SNES Function norm 2.214631860248e-05 
 SNES Object: 1 MPI processes
   type: ngs
-    NGS:  Use finite difference secant approximation with coloring with h = 1e-08 
+    Use finite difference secant approximation with coloring with h = 1e-08 
   maximum iterations=10000, maximum function evaluations=10000
   tolerances: relative=0.0001, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=0
   total number of function evaluations=14
   norm schedule ALWAYS
   SNESLineSearch Object:   1 MPI processes

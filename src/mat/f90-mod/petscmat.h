@@ -71,8 +71,9 @@
       PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
       PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
-      PetscEnum MAT_OPTION_MAX
       PetscEnum MAT_SUBMAT_SINGLEIS
+      PetscEnum MAT_STRUCTURE_ONLY
+      PetscEnum MAT_OPTION_MAX
 
       parameter(MAT_OPTION_MIN = -3)
       parameter(MAT_UNUSED_NONZERO_LOCATION_ERR = -2)
@@ -98,7 +99,8 @@
       parameter(MAT_NEW_NONZERO_ALLOCATION_ERR = 19)
       parameter(MAT_SUBSET_OFF_PROC_ENTRIES = 20)
       parameter(MAT_SUBMAT_SINGLEIS = 21)
-      parameter(MAT_OPTION_MAX = 22)
+      parameter(MAT_STRUCTURE_ONLY = 22)
+      parameter(MAT_OPTION_MAX = 23)
 !
 !  MatFactorShiftType
 !
@@ -353,7 +355,7 @@
       PetscEnum MATOP_GET_ROW_UPPER_TRIANGULAR
       PetscEnum MATOP_RESTORE_ROW_UPPER_TRIANG
       PetscEnum MATOP_MAT_SOLVE
-      PetscEnum MATOP_GET_REDUNDANT_MATRIX
+      PetscEnum MATOP_MAT_SOLVE_TRANSPOSE
       PetscEnum MATOP_GET_ROW_MIN
       PetscEnum MATOP_GET_COLUMN_VECTOR
       PetscEnum MATOP_MISSING_DIAGONAL
@@ -498,7 +500,7 @@
       parameter(MATOP_GET_ROW_UPPER_TRIANGULAR=107)
       parameter(MATOP_RESTORE_ROW_UPPER_TRIANG=108)
       parameter(MATOP_MAT_SOLVE=109)
-      parameter(MATOP_GET_REDUNDANT_MATRIX=110)
+      parameter(MATOP_MAT_SOLVE_TRANSPOSE=110)
       parameter(MATOP_GET_ROW_MIN=111)
       parameter(MATOP_GET_COLUMN_VECTOR=112)
       parameter(MATOP_MISSING_DIAGONAL=113)

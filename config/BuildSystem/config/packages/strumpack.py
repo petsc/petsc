@@ -17,7 +17,6 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.scalapack      = framework.require('config.packages.scalapack',self)
     self.metis          = framework.require('config.packages.metis',self)

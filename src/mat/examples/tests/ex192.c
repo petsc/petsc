@@ -174,7 +174,7 @@ int main(int argc,char **args)
     } else {
       ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
     }
-    ierr = MatFactorCreateSchurComplement(F,&S);CHKERRQ(ierr);
+    ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
     ierr = VecDuplicate(xschur,&uschur);CHKERRQ(ierr);
     if (nfact == 1) {
@@ -253,6 +253,26 @@ int main(int argc,char **args)
       if (norm > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
       }
+    }
+    if (isolver == 0) {
+      Mat spRHS,spRHST,RHST;
+
+      ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
+      ierr = MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
+      ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+      for (nsolve = 0; nsolve < 2; nsolve++) {
+        ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+
+        /* Check the error */
+        ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        if (norm > tol) {
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,norm);CHKERRQ(ierr);
+        }
+      }
+      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+      ierr = MatDestroy(&RHST);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&S);CHKERRQ(ierr);
     ierr = VecDestroy(&xschur);CHKERRQ(ierr);

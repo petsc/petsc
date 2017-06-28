@@ -172,7 +172,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex7.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
 {
@@ -412,7 +412,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     } else {
       const PetscInt cells[3] = {2, 2, 2};
 
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
     }
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -448,8 +448,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     *dm  = interpolatedMesh;
   }
   {
-    DM distributedMesh = NULL;
+    DM               distributedMesh = NULL;
+    PetscPartitioner part;
 
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
@@ -477,3 +480,55 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Two cell test meshes 0-7
+  test:
+    suffix: 0
+    args: -dim 2 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 1
+    nsize: 2
+    args: -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 2
+    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 3
+    nsize: 2
+    args: -petscpartitioner_type simple -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 4
+    args: -dim 3 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 5
+    nsize: 2
+    args: -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 6
+    args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 7
+    nsize: 2
+    args: -petscpartitioner_type simple -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
+  # 2D Hybrid Mesh 8
+  test:
+    suffix: 8
+    args: -dim 2 -cell_simplex 0 -testnum 1 -dm_view ascii::ascii_info_detail
+  # TetGen meshes 9-10
+  test:
+    suffix: 9
+    requires: triangle
+    args: -dim 2 -use_generator -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 10
+    requires: ctetgen
+    args: -dim 3 -use_generator -dm_view ascii::ascii_info_detail
+  # Cubit meshes 11
+  test:
+    suffix: 11
+    requires: exodusii
+    args: -dim 3 -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail
+
+TEST*/

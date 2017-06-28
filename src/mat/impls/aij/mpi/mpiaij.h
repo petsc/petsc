@@ -93,7 +93,9 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat,MatCreateSubMatrix
 
 
 PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat,IS,IS,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
@@ -118,6 +120,8 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+
+PETSC_INTERN PetscErrorCode MatRARt_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PETSC_INTERN PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);

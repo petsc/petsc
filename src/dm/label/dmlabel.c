@@ -1011,6 +1011,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   /* Turn leafStrata into indices rather than stratum values */
   offset = 0;
   ierr = PetscHashIGetKeys(stratumHash, &offset, (*labelNew)->stratumValues);CHKERRQ(ierr);
+  ierr = PetscSortInt((*labelNew)->numStrata,(*labelNew)->stratumValues);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) {
     for (s = 0; s < (*labelNew)->numStrata; ++s) {
       if (leafStrata[p] == (*labelNew)->stratumValues[s]) {leafStrata[p] = s; break;}

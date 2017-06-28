@@ -44,6 +44,8 @@ typedef struct {
   PCFieldSplitSchurFactType schurfactorization;
   KSP                       kspschur;              /* The solver for S */
   KSP                       kspupper;              /* The solver for A in the upper diagonal part of the factorization (H_2 in [El08]) */
+  PetscScalar               schurscale;            /* Scaling factor for the Schur complement solution with DIAG factorization */
+
   PC_FieldSplitLink         head;
   PetscBool                 isrestrict;             /* indicates PCFieldSplitRestrictIS() has been last called on this object, hack */
   PetscBool                 suboptionsset;          /* Indicates that the KSPSetFromOptions() has been called on the sub-KSPs */
@@ -640,11 +642,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS          ccis;
+    PetscBool   isspd;
     PetscInt    rstart,rend;
     char        lscname[256];
     PetscObject LSC_L;
 
     if (nsplit != 2) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"To use Schur complement preconditioner you must have exactly 2 fields");
+
+    /* If pc->mat is SPD, don't scale by -1 the Schur complement */
+    if (jac->schurscale == (PetscScalar)-1.0) {
+      ierr = MatGetOption(pc->pmat,MAT_SPD,&isspd);CHKERRQ(ierr);
+      jac->schurscale = (isspd == PETSC_TRUE) ? 1.0 : -1.0;
+    }
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
@@ -788,7 +797,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac));CHKERRQ(ierr);
       ierr = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(jac->kspschur,         Dprefix);CHKERRQ(ierr);
-      /* propogate DM */
+      /* propagate DM */
       {
         DM sdm;
         ierr = KSPGetDM(jac->head->next->ksp, &sdm);CHKERRQ(ierr);
@@ -859,7 +868,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
     ierr = PetscLogEventBegin(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
     ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(KSP_Solve_FS_S,jac->kspschur,ilinkD->x,ilinkD->y,NULL);CHKERRQ(ierr);
-    ierr = VecScale(ilinkD->y,-1.);CHKERRQ(ierr);
+    ierr = VecScale(ilinkD->y,jac->schurscale);CHKERRQ(ierr);
     ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1261,6 +1270,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
     if (flg) {ierr = PetscInfo(pc,"Deprecated use of -pc_fieldsplit_schur_factorization_type\n");CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_fact_type","Which off-diagonal parts of the block factorization to use","PCFieldSplitSetSchurFactType",PCFieldSplitSchurFactTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSetSchurPre",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-pc_fieldsplit_schur_scale","Scale Schur complement","PCFieldSplitSetSchurScale",jac->schurscale,&jac->schurscale,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1489,7 +1499,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PCFieldSplitSetFields - Sets the fields for one particular split in the field split preconditioner
 
     Logically Collective on PC
@@ -1694,7 +1704,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PCFieldSplitGetIS - Retrieves the elements for a field as an IS
 
     Logically Collective on PC
@@ -1976,7 +1986,7 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
 }
 
 /*@
-    PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain
+    PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner
 
     Collective on PC
 
@@ -1993,25 +2003,29 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
     Notes:
     The FULL factorization is
 
-$   (A   B)  = (1       0) (A   0) (1  Ainv*B)
-$   (C   D)    (C*Ainv  1) (0   S) (0     1  )
+$   (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
+$   (C   E)    (C*Ainv  1) (0   S) (0     1  )
 
-    where S = D - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D,
-    and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
+    where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D,
+    and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES). Sign flipping of S can be turned off with PCFieldSplitSetSchurScale().
 
-    If applied exactly, FULL factorization is a direct solver. The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial
-    of degree 2, so KSPGMRES converges in 2 iterations. If the iteration count is very low, consider using KSPFGMRES or KSPGCR which can use one less preconditioner
-    application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice. With DIAG,
-    the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so KSPGMRES converges in at most 4 iterations.
+$    If A and S are solved exactly
+$      *) FULL factorization is a direct solver.
+$      *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so KSPGMRES converges in 2 iterations.
+$      *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so KSPGMRES converges in at most 4 iterations.
 
-    For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with KSPMINRES. Note that a flexible method like KSPFGMRES
-    or KSPGCR must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used inside a split).
+    If the iteration count is very low, consider using KSPFGMRES or KSPGCR which can use one less preconditioner
+    application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
+
+    For symmetric problems in which A is positive definite and S is negative definite, DIAG can be used with KSPMINRES.
+
+    Note that a flexible method like KSPFGMRES or KSPGCR must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
 
     References:
 +   1. - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
 -   2. - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCFieldSplitSetSchurScale()
 @*/
 PetscErrorCode  PCFieldSplitSetSchurFactType(PC pc,PCFieldSplitSchurFactType ftype)
 {
@@ -2029,6 +2043,42 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc,PCFieldSplit
 
   PetscFunctionBegin;
   jac->schurfactorization = ftype;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    PCFieldSplitSetSchurScale -  Controls the sign flip of S for PC_FIELDSPLIT_SCHUR_FACT_DIAG.
+
+    Collective on PC
+
+    Input Parameters:
++   pc    - the preconditioner context
+-   scale - scaling factor for the Schur complement
+
+    Options Database:
+.     -pc_fieldsplit_schur_scale - default is -1.0
+
+    Level: intermediate
+
+.seealso: PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurFactType, PCFieldSplitSetSchurScale()
+@*/
+PetscErrorCode PCFieldSplitSetSchurScale(PC pc,PetscScalar scale)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveScalar(pc,scale,2);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetSchurScale_C",(PC,PetscScalar),(pc,scale));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCFieldSplitSetSchurScale_FieldSplit(PC pc,PetscScalar scale)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->schurscale = scale;
   PetscFunctionReturn(0);
 }
 
@@ -2079,6 +2129,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",PCFieldSplitSetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",PCFieldSplitGetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",PCFieldSplitSetSchurScale_FieldSplit);CHKERRQ(ierr);
 
   } else {
     pc->ops->apply = PCApply_FieldSplit;
@@ -2088,6 +2139,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurScale_C",0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2279,7 +2331,8 @@ $              S = A11 - A10 ksp(A00) A01
      diag gives
 $              ( inv(A00)     0   )
 $              (   0      -ksp(S) )
-     note that slightly counter intuitively there is a negative in front of the ksp(S) so that the preconditioner is positive definite. The lower factorization is the inverse of
+     note that slightly counter intuitively there is a negative in front of the ksp(S) so that the preconditioner is positive definite. For SPD matrices J, the sign flip
+     can be turned off with PCFieldSplitSetSchurScale() or by command line -pc_fieldsplit_schur_scale 1.0. The lower factorization is the inverse of
 $              (  A00   0 )
 $              (  A10   S )
      where the inverses of A00 and S are applied using KSPs. The upper factorization is the inverse of
@@ -2310,7 +2363,7 @@ $              (  0   S  )
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
-	   MatSchurComplementSetAinvType()
+          MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale()
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
@@ -2326,6 +2379,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   jac->type               = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre           = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
   jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
+  jac->schurscale         = -1.0;
   jac->dm_splits          = PETSC_TRUE;
 
   pc->data = (void*)jac;

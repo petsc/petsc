@@ -251,7 +251,7 @@ PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 /*S
-     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step)
+     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/ADE at each time step)
 
    Level: advanced
 
@@ -291,10 +291,13 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryRegister(const char[],PetscErrorCode (*)
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory,const char * const*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetTransform(TSTrajectory,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
+PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS,TSTrajectory*);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS,PetscInt*,Vec**,Vec**);
-PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscBool,void*);
+PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),PetscBool,void*);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
@@ -579,10 +582,10 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
-#define TSADAPTGLEE  "glee"
-#define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
+#define TSADAPTBASIC "basic"
 #define TSADAPTCFL   "cfl"
+#define TSADAPTGLEE  "glee"
 
 PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
@@ -590,6 +593,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
+PETSC_EXTERN PetscErrorCode TSAdaptGetType(TSAdapt,TSAdaptType*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
@@ -602,11 +606,14 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptionItems*,TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptSetSafety(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetSafety(TSAdapt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSAdaptSetClip(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
-
-PETSC_EXTERN PetscErrorCode TSAdaptBasicSetClip(TSAdapt,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode TSAdaptBasicGetClip(TSAdapt,PetscReal*,PetscReal*);
 
 /*S
    TSGLLEAdapt - Abstract object that manages time-step adaptivity
@@ -701,6 +708,8 @@ typedef const char* TSRKType;
 #define TSRK4     "4"
 #define TSRK5F    "5f"
 #define TSRK5DP   "5dp"
+#define TSRK5BS   "5bs"
+
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
@@ -804,7 +813,6 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSBDFUseAdapt(TS,PetscBool);
 
 /*
        PETSc interface to Sundials
@@ -833,12 +841,10 @@ PETSC_EXTERN PetscErrorCode TSThetaGetTheta(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSThetaGetEndpoint(TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSThetaSetEndpoint(TS,PetscBool);
 
-PETSC_EXTERN PetscErrorCode TSAlphaUseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlphaSetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaSetParams(TS,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlphaGetParams(TS,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode TSAlpha2UseAdapt(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetRadius(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2SetParams(TS,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*);

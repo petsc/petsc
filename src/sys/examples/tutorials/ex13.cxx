@@ -6,7 +6,6 @@ static char help[] = "Demonstrates call PETSc first and then Trilinos in the sam
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
-   requires: trilinos
 T*/
 
 
@@ -72,6 +71,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
+
+   build:
+     requires: trilinos
 
    test:
       nsize: 3

@@ -70,8 +70,8 @@
   3 KSP Residual norm 2.075e-10 
 KSP Object: (fc_) 1 MPI processes
   type: fgmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
@@ -93,7 +93,6 @@ PC Object: (fc_) 1 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_velocity_) 1 MPI processes
         type: cholesky
-          Cholesky: out-of-place factorization
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
@@ -116,8 +115,8 @@ PC Object: (fc_) 1 MPI processes
     KSP solver for S = A11 - A10 inv(A00) A01 
       KSP Object: (fc_fieldsplit_pressure_) 1 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
         maximum iterations=100, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -183,7 +182,6 @@ PC Object: (fc_) 1 MPI processes
                 using PRECONDITIONED norm type for convergence test
               PC Object: (fc_fieldsplit_velocity_) 1 MPI processes
                 type: cholesky
-                  Cholesky: out-of-place factorization
                   out-of-place factorization
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: nd

@@ -11,20 +11,20 @@ static PetscReal s_soft_alpha=1.e-3;
 static PetscReal s_mu=0.4;
 static PetscReal s_lambda=0.4;
 
-void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+static void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   f0[0] = 1;     /* x direction pull */
   f0[1] = -x[2]; /* add a twist around x-axis */
   f0[2] =  x[1];
 }
 
-void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-             PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
+static void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscInt Ncomp = dim;
   PetscInt       comp, d;
@@ -36,10 +36,10 @@ void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
+static void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   PetscReal trace,mu=s_mu,lambda=s_lambda,rad;
   PetscInt i,j;
@@ -64,10 +64,10 @@ void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
+static void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   PetscReal trace,mu=s_mu,lambda=s_lambda;
   PetscInt i,j;
@@ -116,9 +116,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
     g3[80] += mu;
     g3[80] += mu;
   } else {
+    int        i,j,k,l;
     static int cc=-1;
     cc++;
-    int i,j,k,l;
     for (i = 0; i < 3; ++i) {
       for (j = 0; j < 3; ++j) {
         for (k = 0; k < 3; ++k) {
@@ -126,9 +126,9 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
             if (k==l && i==j) g3[IDX(i,j,k,l)] += lambda;
             if (i==k && j==l) g3[IDX(i,j,k,l)] += mu;
             if (i==l && j==k) g3[IDX(i,j,k,l)] += mu;
-	    if (k==l && i==j && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
-	    if (i==k && j==l && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
-	    if (i==l && j==k && !cc) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+	    if (k==l && i==j && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += lambda;\n",IDX(i,j,k,l));
+	    if (i==k && j==l && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
+	    if (i==l && j==k && !cc) (void) PetscPrintf(PETSC_COMM_WORLD,"g3[%d] += mu;\n",IDX(i,j,k,l));
           }
         }
       }
@@ -136,10 +136,10 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
   }
 }
 
-void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+static void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   PetscReal mu=s_mu, lambda=s_lambda,rad;
   PetscInt i;
@@ -155,18 +155,18 @@ void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g3_uu_3d_private(g3,mu,lambda);
 }
 
-void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+static void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   g3_uu_3d_private(g3,s_mu,s_lambda);
 }
 
-void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
+static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                 PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const    PetscInt Ncomp = dim;
   PetscInt comp;
@@ -175,10 +175,10 @@ void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /* PI_i (x_i^4 - x_i^2) */
-void f0_u_x4(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-             PetscReal t, const PetscReal x[], PetscScalar f0[])
+static void f0_u_x4(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const    PetscInt Ncomp = dim;
   PetscInt comp,i;
@@ -207,7 +207,7 @@ int main(int argc,char **args)
   SNES           snes;
   KSP            ksp;
   MPI_Comm       comm;
-  PetscMPIInt    npe,rank;
+  PetscMPIInt    rank;
   PetscLogStage  stage[7];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
@@ -230,7 +230,6 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
   /* options */
   ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
@@ -307,10 +306,11 @@ int main(int argc,char **args)
     }
   }
   {
-    PetscInt dimEmbed, i;
-    PetscInt nCoords;
-    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
-    Vec coordinates;
+    PetscInt    dimEmbed, i;
+    PetscInt    nCoords;
+    PetscScalar *coords,bounds[] = {0,0,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    Vec         coordinates;
+    bounds[1] = Lx;
     if (run_type==1) {
       for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
     }
@@ -321,7 +321,7 @@ int main(int argc,char **args)
     if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
-      PetscInt j;
+      PetscInt    j;
       PetscScalar *coord = &coords[i];
       for (j = 0; j < dimEmbed; j++) {
         coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
@@ -351,7 +351,12 @@ int main(int argc,char **args)
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
   } else {
+    PetscPartitioner part;
     /* Plex Distribute mesh over processes */
+#if 1
+    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+#endif
     ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
     if (distdm) {
       const char *prefix;
@@ -383,9 +388,9 @@ int main(int argc,char **args)
       const PetscInt Nfid = 1, Npid = 1;
       const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
       const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
-      PetscFE         fe;
-      PetscDS         prob;
-      DM              cdm = dm;
+      PetscFE        fe;
+      PetscDS        prob;
+      DM             cdm = dm;
 
       ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
@@ -423,7 +428,7 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,PETSC_FUNCTION_NAME,N,N/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D global equations, %D vertices\n",rank,N,N/dim);CHKERRQ(ierr);
     if (use_nearnullspace && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -456,7 +461,7 @@ int main(int argc,char **args)
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,PETSC_FUNCTION_NAME,i,i/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D equations in vector, %D vertices\n",rank,i,i/dim);CHKERRQ(ierr);
     /* setup solver, dummy solve to really setup */
     if (0) {
       ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
@@ -502,11 +507,36 @@ int main(int argc,char **args)
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
-                rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
-                mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],mdisp[iter],
+                mdisp[iter]-mdisp[iter-1],err[iter],PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.));CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    nsize: 4
+    requires: !single
+    args: -cells 2,2,1 -max_conv_its 3 -petscspace_poly_tensor -petscspace_order 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -matrap 0 -matptap_scalable -ex56_dm_view -run_type 1
+
+  test:
+    suffix: hypre
+    requires: hypre !single
+    nsize: 4
+    args: -cells 2,2,1 -max_conv_its 3 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -mat_block_size 3 -petscpartitioner_type simple
+
+  test:
+    suffix: ml
+    requires: ml !single
+    nsize: 4
+    args: -cells 2,2,1 -max_conv_its 3 -lx 1. -alpha .01 -ex56_dm_refine 1 -petscspace_poly_tensor -petscspace_order 2 -ksp_type cg -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1.e-8 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -mg_levels_esteig_ksp_type cg -mat_block_size 3 -petscpartitioner_type simple -use_mat_nearnullspace
+TEST*/
+
+/*NONE
+
+
+NONE*/

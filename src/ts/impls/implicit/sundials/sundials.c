@@ -888,8 +888,11 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   ts->ops->step           = TSStep_Sundials;
   ts->ops->interpolate    = TSInterpolate_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
+  ts->default_adapt_type  = TSADAPTNONE;
 
   ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
+
+  ts->usessnes = PETSC_TRUE;
 
   ts->data           = (void*)cvode;
   cvode->cvode_type  = SUNDIALS_BDF;

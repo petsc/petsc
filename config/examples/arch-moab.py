@@ -6,6 +6,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--download-hdf5',
+    '--download-zlib=1',
     '--download-moab',
     '--download-mpich',
     '--download-netcdf',

@@ -376,6 +376,8 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
     ext->nstages = ext->max_rows; /* by default nstages is the same as max_rows, this can be changed by setting order adaptivity */
   }
 
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+
   ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);/* full T table */
   ierr = VecDuplicate(ts->vec_sol,&ext->YdotI);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ext->YdotRHS);CHKERRQ(ierr);
@@ -419,16 +421,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObjec
 
 static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 {
-  /*  TS_EIMEX         *ext = (TS_EIMEX*)ts->data; */
-  PetscBool        iascii;
-  PetscErrorCode   ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  EIMEX\n");CHKERRQ(ierr);
-  }
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -593,6 +586,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_EIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_EIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_EIMEX;
+  ts->default_adapt_type  = TSADAPTNONE;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&ext);CHKERRQ(ierr);
   ts->data = (void*)ext;

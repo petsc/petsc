@@ -7,6 +7,7 @@
 /* Logging support */
 PetscClassId  KSP_CLASSID;
 PetscClassId  DMKSP_CLASSID;
+PetscClassId  KSPGUESS_CLASSID;
 PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*
@@ -132,7 +133,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (ksp->guess_zero) {
       ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, nonzero initial guess\n", ksp->max_it);CHKERRQ(ierr);
     }
     if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",(double)ksp->rtol,(double)ksp->abstol,(double)ksp->divtol);CHKERRQ(ierr);
@@ -143,9 +144,12 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);
     }
-    if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
+    if (ksp->guess) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = KSPGuessView(ksp->guess,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
-    if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscInt    classid = KSP_FILE_CLASSID;
@@ -367,8 +371,6 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->pc_side  = ksp->pc_side_set;
   ksp->normtype = ksp->normtype_set;
   PetscFunctionReturn(0);
@@ -513,9 +515,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
-  if (ksp->guess) {
-    ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

@@ -108,7 +108,7 @@ static uint32_t DMPforestHash(const uint32_t *blocks, uint32_t nblocks)
   uint32_t n    = 0xe6546b64;
   uint32_t hash = 0;
   int      len  = nblocks * 4;
-  int      i;
+  uint32_t i;
 
   for (i = 0; i < nblocks; i++) {
     uint32_t k;
@@ -2350,7 +2350,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
   PetscInt          pStartF, pEndF, pStartC, pEndC;
   PetscBool         saveInCoarse = PETSC_FALSE;
   PetscBool         saveInFine   = PETSC_FALSE;
-  PetscBool         formCids     = (childIds != NULL);
+  PetscBool         formCids     = (childIds != NULL) ? PETSC_TRUE : PETSC_FALSE;
   PetscInt          *cids        = NULL;
   PetscErrorCode    ierr;
 
@@ -2462,7 +2462,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
         PetscInt     q;
 
         ierr = PetscMemcpy(&coverQuadsSend[count],tree->quadrants.array,tree->quadrants.elem_count * sizeof(p4est_quadrant_t));CHKERRQ(ierr);
-        for (q = 0; q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
+        for (q = 0; (size_t) q < tree->quadrants.elem_count; q++) coverQuadsSend[count+q].p.which_tree = t;
         count += tree->quadrants.elem_count;
       }
       ierr           = MPI_Type_create_struct(5,blockSizes,blockOffsets,blockTypes,&quadType);CHKERRQ(ierr);
@@ -3738,7 +3738,7 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
           for (t = flt; t <= llt; t++) {
             p4est_tree_t *tree = &(trees[t]);
 
-            if (cell >= tree->quadrants_offset && cell < tree->quadrants_offset + tree->quadrants.elem_count) {
+            if (cell >= tree->quadrants_offset && (size_t) cell < tree->quadrants_offset + tree->quadrants.elem_count) {
               coarsePoint = t;
               break;
             }
@@ -4197,7 +4197,7 @@ static PetscErrorCode DMForestTransferVec_pforest(DM dmIn, Vec vecIn, DM dmOut, 
   PetscFunctionBegin;
   ierr        = DMForestGetAdaptivityForest(dmOut,&adapt);CHKERRQ(ierr);
   forestIn    = (DM_Forest *) dmIn->data;
-  forestAdapt = (DM_Forest *) adapt ? adapt->data : NULL;
+  forestAdapt = adapt ? (DM_Forest *) adapt->data : NULL;
 
   if (forestAdapt != forestIn) SETERRQ(PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Only support transfer from pre-adaptivity to post-adaptivity right now");
   ierr = DMForestGetAdaptivityPurpose(dmOut,&purpose);CHKERRQ(ierr);
@@ -4377,7 +4377,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
 PetscErrorCode DMProjectFieldLocal_pforest(DM dm, PetscReal time, Vec localU,void (**funcs) (PetscInt, PetscInt, PetscInt,
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                                             PetscReal, const PetscReal[], PetscScalar[]),InsertMode mode, Vec localX)
+                                                                             PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]),InsertMode mode, Vec localX)
 {
   DM             plex;
   PetscErrorCode ierr;

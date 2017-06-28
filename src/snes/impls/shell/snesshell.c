@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->ops->reset          = SNESReset_Shell;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 

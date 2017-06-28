@@ -5,8 +5,6 @@ extern PetscErrorCode SNESReset_NGMRES(SNES);
 extern PetscErrorCode SNESSetUp_NGMRES(SNES);
 extern PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
 
-PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
-
 static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -78,9 +76,9 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 
   /* r = F(x) */
 
-  if (snes->pc && snes->pcside == PC_LEFT) {
+  if (snes->npc && snes->npcside== PC_LEFT) {
     ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -109,15 +107,15 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
   ivec      = 0;
   for (k=1; k < snes->max_its+1; k++) {
     /* select which vector of the stored subspace will be updated */
-    if (snes->pc && snes->pcside == PC_RIGHT) {
+    if (snes->npc && snes->npcside== PC_RIGHT) {
       ierr = VecCopy(X,XM);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunction(snes->pc,F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->npc,F);CHKERRQ(ierr);
 
-      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc,B,XM);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,XM,B,0);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->npc,B,XM);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->npc,XM,B,0);CHKERRQ(ierr);
 
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -227,9 +225,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   snes->ops->solve          = SNESSolve_Anderson;
   snes->ops->reset          = SNESReset_NGMRES;
 
-  snes->usespc  = PETSC_TRUE;
+  snes->usesnpc = PETSC_TRUE;
   snes->usesksp = PETSC_FALSE;
-  snes->pcside  = PC_RIGHT;
+  snes->npcside = PC_RIGHT;
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

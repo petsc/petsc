@@ -1,4 +1,4 @@
-0 SNES Function norm 8.32828 
+  0 SNES Function norm 8.32828 
     0 KSP Residual norm 8.24364 
     1 KSP Residual norm 3.76271 
     2 KSP Residual norm 0.578182 
@@ -32,16 +32,16 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: gmres
-      GMRES: restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: asm
-      Additive Schwarz: total subdomain blocks = 4, amount of overlap = 1
-      Additive Schwarz: restriction/interpolation type - RESTRICT
+      total subdomain blocks = 4, amount of overlap = 1
+      restriction/interpolation type - RESTRICT
       Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (sub_) 1 MPI processes
         type: preonly

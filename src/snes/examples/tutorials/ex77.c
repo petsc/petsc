@@ -4,9 +4,9 @@ We solve a nonlinear elasticity problem, modelled as an incompressible Neo-Hooke
 
 /*
 Nonlinear elasticity problem, which we discretize using the finite
-element method on an unstructured mesh. This uses both Dirichlet boundary conditions (fixed faces) 
+element method on an unstructured mesh. This uses both Dirichlet boundary conditions (fixed faces)
 and nonlinear Neumann boundary conditions (pressure loading).
-The Lagrangian density (modulo boundary conditions) for this problem is given by 
+The Lagrangian density (modulo boundary conditions) for this problem is given by
 \begin{equation}
   \frac{\mu}{2} (\mathrm{Tr}{C}-3) + J p + \frac{\kappa}{2} (J-1).
 \end{equation}
@@ -117,14 +117,14 @@ PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
 PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx; 
+  AppCtx *user = (AppCtx *) ctx;
   u[0] = user->mu;
   return 0;
 }
 
 PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx *user = (AppCtx *) ctx; 
+  AppCtx *user = (AppCtx *) ctx;
   u[0] = user->p_wall;
   return 0;
 }
@@ -132,7 +132,7 @@ PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], P
 void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
+          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = a[0], kappa = 3.0;
@@ -154,7 +154,7 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+          PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   const PetscInt  Ncomp = dim;
   const PetscReal mu = a[0], kappa = 3.0;
@@ -186,7 +186,7 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscInt    Ncomp = dim;
   const PetscScalar p = a[aOff[1]];
@@ -203,7 +203,7 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[])
+    PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
   const PetscInt Ncomp = dim;
   PetscScalar    p = a[aOff[1]];
@@ -227,7 +227,7 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
+          PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   PetscReal detu_x;
   Det3D(&detu_x, u_x);
@@ -237,7 +237,7 @@ void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g1[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
 {
   Cof3D(g1, u_x);
 }
@@ -245,7 +245,7 @@ void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscReal u[], const PetscReal u_t[], const PetscReal u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscReal a[], const PetscReal a_t[], const PetscReal a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscReal g2[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscReal g2[])
 {
   Cof3D(g2, u_x);
 }
@@ -558,7 +558,6 @@ int main(int argc, char **argv)
   DM             dm;                   /* problem definition */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
-  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
   PetscErrorCode ierr;
@@ -618,8 +617,7 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
     /* Check Jacobian */
     {
-      Vec          b;
-      PetscBool    isNull;
+      Vec b;
 
       ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
@@ -646,3 +644,14 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  build:
+    requires: !complex
+
+  test:
+    suffix: 0
+    requires: ctetgen
+    args: -run_type full -dim 3 -dm_refine 3 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+
+TEST*/

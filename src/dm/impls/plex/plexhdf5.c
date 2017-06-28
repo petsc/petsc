@@ -102,8 +102,10 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   if (format == PETSC_VIEWER_HDF5_VIZ) {
     /* Output visualization representation */
     PetscInt numFields, f;
+    DMLabel  cutLabel;
 
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       Vec         subv;
       IS          is;
@@ -118,14 +120,65 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
       if (!fname) continue;
       ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
-      ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      if (cutLabel) {
+        const PetscScalar *ga;
+        PetscScalar       *suba;
+        PetscInt           Nc, gstart, subSize = 0, extSize = 0, subOff = 0, newOff = 0, p;
+
+        ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
+        for (p = pStart; p < pEnd; ++p) {
+          PetscInt gdof, fdof = 0, val;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);}
+          subSize += fdof;
+          ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+          if (val == 1) extSize += fdof;
+        }
+        ierr = VecCreate(PetscObjectComm((PetscObject) gv), &subv);CHKERRQ(ierr);
+        ierr = VecSetSizes(subv, subSize+extSize, PETSC_DETERMINE);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(subv, Nc);CHKERRQ(ierr);
+        ierr = VecSetType(subv, VECSTANDARD);CHKERRQ(ierr);
+        ierr = VecGetOwnershipRange(gv, &gstart, NULL);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(gv, &ga);CHKERRQ(ierr);
+        ierr = VecGetArray(subv, &suba);CHKERRQ(ierr);
+        for (p = pStart; p < pEnd; ++p) {
+          PetscInt gdof, goff, val;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {
+            PetscInt fdof, fc, f2, poff = 0;
+
+            ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+            /* Can get rid of this loop by storing field information in the global section */
+            for (f2 = 0; f2 < f; ++f2) {
+              ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+              poff += fdof;
+            }
+            ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+            for (fc = 0; fc < fdof; ++fc, ++subOff) suba[subOff] = ga[goff+poff+fc - gstart];
+            ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+            if (val == 1) {
+              for (fc = 0; fc < fdof; ++fc, ++newOff) suba[subSize+newOff] = ga[goff+poff+fc - gstart];
+            }
+          }
+        }
+        ierr = VecRestoreArrayRead(gv, &ga);CHKERRQ(ierr);
+        ierr = VecRestoreArray(subv, &suba);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      }
       ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
       ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
       ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
-      ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      if (cutLabel) {
+        ierr = VecDestroy(&subv);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      }
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, subname);CHKERRQ(ierr);
       ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);
@@ -285,10 +338,14 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
 
 static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel label, PetscInt labelId, PetscViewer viewer)
 {
+  DMLabel         cutLabel;
+  PetscSection    cSection;
   IS              cellIS, globalVertexNumbers;
   const PetscInt *gvertex;
   PetscInt       *vertices;
-  PetscInt        dim, depth, vStart, vEnd, v, cellHeight, cStart, cMax, cEnd, cell, conesSize = 0, numCornersLocal = 0, numCorners;
+  IS              cutvertices;
+  const PetscInt *cutverts;
+  PetscInt        dim, depth, vStart, vEnd, vExtra = 0, v, cellHeight, cStart, cMax, cEnd, cell, conesSize = 0, numCornersLocal = 0, numCorners;
   hid_t           fileId, groupId;
   PetscErrorCode  ierr;
 
@@ -296,6 +353,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -326,17 +384,29 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   PetscStackCallHDF5(H5Gclose,(groupId));
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
 
+  ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
+  if (cutLabel) {
+    ierr = DMLabelGetStratumIS(cutLabel, 1, &cutvertices);CHKERRQ(ierr);
+    ierr = ISGetIndices(cutvertices, &cutverts);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(cutvertices, &vExtra);CHKERRQ(ierr);
+  }
   ierr = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscMalloc1(conesSize, &vertices);CHKERRQ(ierr);
   for (cell = cStart, v = 0; cell < cEnd; ++cell) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, Nc = 0, p;
+    PetscBool replace = PETSC_FALSE;
 
     if (label) {
       PetscInt value;
       ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
       if (value == labelId) continue;
+    }
+    if (cutLabel) {
+      PetscInt value;
+      ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);
+      if (value == 2) replace = PETSC_TRUE;
     }
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (p = 0; p < closureSize*2; p += 2) {
@@ -348,8 +418,17 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     for (p = 0; p < Nc; ++p) {
       const PetscInt gv = gvertex[closure[p] - vStart];
       vertices[v++] = gv < 0 ? -(gv+1) : gv;
+      if (replace) {
+        PetscInt newv;
+        ierr = PetscFindInt(closure[p], vExtra, cutverts, &newv);CHKERRQ(ierr);
+        if (newv >= 0) vertices[v-1] = vEnd - vStart + newv;
+      }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  }
+  if (cutLabel) {
+    ierr = ISRestoreIndices(cutvertices, &cutverts);CHKERRQ(ierr);
+    ierr = ISDestroy(&cutvertices);CHKERRQ(ierr);
   }
   if (v != conesSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cell vertices %d != %d", v, conesSize);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, vertices, PETSC_OWN_POINTER, &cellIS);CHKERRQ(ierr);
@@ -357,16 +436,7 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   ierr = PetscObjectSetName((PetscObject) cellIS, "cells");CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/viz/topology");CHKERRQ(ierr);
   ierr = ISView(cellIS, viewer);CHKERRQ(ierr);
-#if 0
-  if (numCorners == 1) {
-    ierr = ISView(coneIS, viewer);CHKERRQ(ierr);
-  } else {
-    ierr = PetscViewerHDF5WriteAttribute(viewer, "/viz/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
-  }
-  ierr = ISDestroy(&coneIS);CHKERRQ(ierr);
-#else
   ierr = PetscViewerHDF5WriteAttribute(viewer, "/viz/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
-#endif
   ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
 
   ierr = PetscViewerHDF5WriteAttribute(viewer, "/viz/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
@@ -410,11 +480,12 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   Vec              coordinates, newcoords;
   PetscSection     cSection;
   PetscScalar     *coords, *ncoords;
+  DMLabel          cutLabel;
   const PetscReal *L;
   const DMBoundaryType *bd;
   PetscReal        lengthScale;
-  PetscInt         vStart, vEnd, v, bs, coordSize, dof, off, d;
-  PetscBool        localized;
+  PetscInt         vStart, vEnd, vExtra = 0, v, bs, coordSize, dof, off, d;
+  PetscBool        localized, embedded;
   hid_t            fileId, groupId;
   PetscErrorCode   ierr;
 
@@ -426,42 +497,107 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
+  ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
+  if (cutLabel) {
+    IS              vertices;
+    const PetscInt *verts;
+    PetscInt        n;
+
+    ierr = DMLabelGetStratumIS(cutLabel, 1, &vertices);CHKERRQ(ierr);
+    ierr = ISGetIndices(vertices, &verts);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(vertices, &n);CHKERRQ(ierr);
+    for (v = 0; v < n; ++v) {
+      if ((verts[v] >= vStart) && (verts[v] < vEnd)) ++vExtra;
+    }
+    ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
+    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
+  }
   ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(cSection, vStart, &dof);CHKERRQ(ierr);
+  embedded  = (PetscBool) (L && dof == 2 && !cutLabel);
   coordSize = 0;
+  coordSize += dof*vExtra;
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
-    if (L && dof == 2) coordSize += dof+1;
-    else               coordSize += dof;
+    if (embedded) coordSize += dof+1;
+    else          coordSize += dof;
   }
-  if (L && bs == 2) {ierr = VecSetBlockSize(newcoords, bs+1);CHKERRQ(ierr);}
-  else              {ierr = VecSetBlockSize(newcoords, bs);CHKERRQ(ierr);}
+  if (embedded) {ierr = VecSetBlockSize(newcoords, bs+1);CHKERRQ(ierr);}
+  else          {ierr = VecSetBlockSize(newcoords, bs);CHKERRQ(ierr);}
   ierr = VecSetSizes(newcoords, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetType(newcoords,VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecSetType(newcoords, VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(newcoords,   &ncoords);CHKERRQ(ierr);
   coordSize = 0;
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
-    if (L && dof == 2) {
-      /* Need to do torus */
-      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot embed doubly periodic domain yet");}
-      else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
+    if (embedded) {
+      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {
+        PetscReal theta, phi, r, R;
+        /* XY-periodic */
+        /* Suppose its an y-z circle, then
+             \hat r = (0, cos(th), sin(th)) \hat x = (1, 0, 0)
+           and the circle in that plane is
+             \hat r cos(phi) + \hat x sin(phi) */
+        theta = 2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1];
+        phi   = 2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0];
+        r     = L[0]/(2.0*PETSC_PI * 2.0*L[1]);
+        R     = L[1]/(2.0*PETSC_PI);
+        ncoords[coordSize++] =  PetscSinReal(phi) * r;
+        ncoords[coordSize++] = -PetscCosReal(theta) * (R + r * PetscCosReal(phi));
+        ncoords[coordSize++] =  PetscSinReal(theta) * (R + r * PetscCosReal(phi));
+      } else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
         /* X-periodic */
-        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
         ncoords[coordSize++] = coords[off+1];
-        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0])*(L[0]/(2.0*PETSC_PI));
       } else if ((bd[1] == DM_BOUNDARY_PERIODIC)) {
         /* Y-periodic */
         ncoords[coordSize++] = coords[off+0];
-        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
-        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*PetscRealPart(coords[off+1])/L[1])*(L[1]/(2.0*PETSC_PI));
+      } else if ((bd[0] == DM_BOUNDARY_TWIST)) {
+        PetscReal phi, r, R;
+        /* Mobius strip */
+        /* Suppose its an x-z circle, then
+             \hat r = (-cos(phi), 0, sin(phi)) \hat y = (0, 1, 0)
+           and in that plane we rotate by pi as we go around the circle
+             \hat r cos(phi/2) + \hat y sin(phi/2) */
+        phi   = 2.0*PETSC_PI*PetscRealPart(coords[off+0])/L[0];
+        R     = L[0];
+        r     = PetscRealPart(coords[off+1]) - L[1]/2.0;
+        ncoords[coordSize++] = -PetscCosReal(phi) * (R + r * PetscCosReal(phi/2.0));
+        ncoords[coordSize++] =  PetscSinReal(phi/2.0) * r;
+        ncoords[coordSize++] =  PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
-      for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
+      if (cutLabel) {
+        ierr = DMLocalizeCoordinate(dm, &coords[off], PETSC_TRUE, &ncoords[coordSize]);CHKERRQ(ierr);
+        coordSize += dof;
+      } else {
+        for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
+      }
     }
+  }
+  if (cutLabel) {
+    IS              vertices;
+    const PetscInt *verts;
+    PetscInt        n;
+
+    ierr = DMLabelGetStratumIS(cutLabel, 1, &vertices);CHKERRQ(ierr);
+    ierr = ISGetIndices(vertices, &verts);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(vertices, &n);CHKERRQ(ierr);
+    for (v = 0; v < n; ++v) {
+      if ((verts[v] < vStart) || (verts[v] >= vEnd)) continue;
+      ierr = PetscSectionGetDof(cSection, verts[v], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(cSection, verts[v], &off);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d] + ((bd[d] == DM_BOUNDARY_PERIODIC) ? L[d] : 0.0);
+    }
+    ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
+    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(newcoords,   &ncoords);CHKERRQ(ierr);

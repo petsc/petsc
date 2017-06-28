@@ -303,9 +303,9 @@ static PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
 
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FCG: m_max=%D\n",fcg->mmax);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FCG: preallocated %D directions\n",PetscMin(fcg->nprealloc,fcg->mmax+1));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FCG: %s\n",truncstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  m_max=%D\n",fcg->mmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  preallocated %D directions\n",PetscMin(fcg->nprealloc,fcg->mmax+1));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  %s\n",truncstr);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"m_max %D nprealloc %D %s",fcg->mmax,fcg->nprealloc,truncstr);CHKERRQ(ierr);
   }
@@ -557,6 +557,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_FCG;
   ksp->ops->solve          = KSPSolve_FCG;

@@ -19,8 +19,8 @@ struct _RKTableau {
   char      *name;
   PetscInt   order;               /* Classical approximation order of the method i              */
   PetscInt   s;                   /* Number of stages                                           */
+  PetscInt   p;                   /* Interpolation order                                        */
   PetscBool  FSAL;                /* flag to indicate if tableau is FSAL                        */
-  PetscInt   pinterp;             /* Interpolation order                                        */
   PetscReal *A,*b,*c;             /* Tableau                                                    */
   PetscReal *bembed;              /* Embedded formula of order one less (order-1)               */
   PetscReal *binterp;             /* Dense output formula                                       */
@@ -49,67 +49,106 @@ typedef struct {
 } TS_RK;
 
 /*MC
-     TSRK1 - First order forward Euler scheme.
+     TSRK1FE - First order forward Euler scheme.
 
      This method has one stage.
 
+     Options database:
+.     -ts_rk_type 1fe
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK2A - Second order RK scheme.
 
      This method has two stages.
 
+     Options database:
+.     -ts_rk_type 2a
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
 
+     Options database:
+.     -ts_rk_type 3
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
-     This method has four stages.
+     This method has four stages with the First Same As Last (FSAL) property.
+
+     Options database:
+.     -ts_rk_type 3bs
 
      Level: advanced
 
-.seealso: TSRK
+     References: https://doi.org/10.1016/0893-9659(89)90079-7
+
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
      This is the classical Runge-Kutta method with four stages.
 
+     Options database:
+.     -ts_rk_type 4
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
+     Options database:
+.     -ts_rk_type 5f
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
-     This method has seven stages.
+     This method has seven stages with the First Same As Last (FSAL) property.
+
+     Options database:
+.     -ts_rk_type 5dp
 
      Level: advanced
 
-.seealso: TSRK
+     References: https://doi.org/10.1016/0771-050X(80)90013-3
+
+.seealso: TSRK, TSRKType, TSRKSetType()
+M*/
+/*MC
+     TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
+
+     This method has eight stages with the First Same As Last (FSAL) property.
+
+     Options database:
+.     -ts_rk_type 5bs
+
+     Level: advanced
+
+     References: https://doi.org/10.1016/0898-1221(96)00141-1
+
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 
 /*@C
@@ -131,72 +170,88 @@ PetscErrorCode TSRKRegisterAll(void)
   if (TSRKRegisterAllCalled) PetscFunctionReturn(0);
   TSRKRegisterAllCalled = PETSC_TRUE;
 
+#define RC PetscRealConstant
   {
     const PetscReal
-      A[1][1] = {{0.0}},
-      b[1]    = {1.0};
-    ierr = TSRKRegister(TSRK1FE,1,1,&A[0][0],b,NULL,NULL,1,b);CHKERRQ(ierr);
+      A[1][1] = {{0}},
+      b[1]    = {RC(1.0)};
+    ierr = TSRKRegister(TSRK1FE,1,1,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
-      A[2][2]     = {{0.0,0.0},
-                    {1.0,0.0}},
-      b[2]        = {0.5,0.5},
-      bembed[2]   = {1.0,0};
-    ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
+      A[2][2]   = {{0,0},
+                   {RC(1.0),0}},
+      b[2]      =  {RC(0.5),RC(0.5)},
+      bembed[2] =  {RC(1.0),0};
+    ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
       A[3][3] = {{0,0,0},
-                 {2.0/3.0,0,0},
-                 {-1.0/3.0,1.0,0}},
-      b[3]    = {0.25,0.5,0.25};
-    ierr = TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,1,b);CHKERRQ(ierr);
+                 {RC(2.0)/RC(3.0),0,0},
+                 {RC(-1.0)/RC(3.0),RC(1.0),0}},
+      b[3]    =  {RC(0.25),RC(0.5),RC(0.25)};
+    ierr = TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[4][4]   = {{0,0,0,0},
+                   {RC(1.0)/RC(2.0),0,0,0},
+                   {0,RC(3.0)/RC(4.0),0,0},
+                   {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0}},
+      b[4]      =  {RC(2.0)/RC(9.0),RC(1.0)/RC(3.0),RC(4.0)/RC(9.0),0},
+      bembed[4] =  {RC(7.0)/RC(24.0),RC(1.0)/RC(4.0),RC(1.0)/RC(3.0),RC(1.0)/RC(8.0)};
+    ierr = TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
       A[4][4] = {{0,0,0,0},
-                 {1.0/2.0,0,0,0},
-                 {0,3.0/4.0,0,0},
-                 {2.0/9.0,1.0/3.0,4.0/9.0,0}},
-      b[4]    = {2.0/9.0,1.0/3.0,4.0/9.0,0},
-      bembed[4] = {7.0/24.0,1.0/4.0,1.0/3.0,1.0/8.0};
-    ierr = TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
-  }
-  {
-    const PetscReal
-      A[4][4] = {{0,0,0,0},
-                 {0.5,0,0,0},
-                 {0,0.5,0,0},
-                 {0,0,1.0,0}},
-      b[4]    = {1.0/6.0,1.0/3.0,1.0/3.0,1.0/6.0};
-    ierr = TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,1,b);CHKERRQ(ierr);
+                 {RC(0.5),0,0,0},
+                 {0,RC(0.5),0,0},
+                 {0,0,RC(1.0),0}},
+      b[4]    =  {RC(1.0)/RC(6.0),RC(1.0)/RC(3.0),RC(1.0)/RC(3.0),RC(1.0)/RC(6.0)};
+    ierr = TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
       A[6][6]   = {{0,0,0,0,0,0},
-                   {0.25,0,0,0,0,0},
-                   {3.0/32.0,9.0/32.0,0,0,0,0},
-                   {1932.0/2197.0,-7200.0/2197.0,7296.0/2197.0,0,0,0},
-                   {439.0/216.0,-8.0,3680.0/513.0,-845.0/4104.0,0,0},
-                   {-8.0/27.0,2.0,-3544.0/2565.0,1859.0/4104.0,-11.0/40.0,0}},
-      b[6]      = {16.0/135.0,0,6656.0/12825.0,28561.0/56430.0,-9.0/50.0,2.0/55.0},
-      bembed[6] = {25.0/216.0,0,1408.0/2565.0,2197.0/4104.0,-1.0/5.0,0};
-    ierr = TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
+                   {RC(0.25),0,0,0,0,0},
+                   {RC(3.0)/RC(32.0),RC(9.0)/RC(32.0),0,0,0,0},
+                   {RC(1932.0)/RC(2197.0),RC(-7200.0)/RC(2197.0),RC(7296.0)/RC(2197.0),0,0,0},
+                   {RC(439.0)/RC(216.0),RC(-8.0),RC(3680.0)/RC(513.0),RC(-845.0)/RC(4104.0),0,0},
+                   {RC(-8.0)/RC(27.0),RC(2.0),RC(-3544.0)/RC(2565.0),RC(1859.0)/RC(4104.0),RC(-11.0)/RC(40.0),0}},
+      b[6]      =  {RC(16.0)/RC(135.0),0,RC(6656.0)/RC(12825.0),RC(28561.0)/RC(56430.0),RC(-9.0)/RC(50.0),RC(2.0)/RC(55.0)},
+      bembed[6] =  {RC(25.0)/RC(216.0),0,RC(1408.0)/RC(2565.0),RC(2197.0)/RC(4104.0),RC(-1.0)/RC(5.0),0};
+    ierr = TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
       A[7][7]   = {{0,0,0,0,0,0,0},
-                   {1.0/5.0,0,0,0,0,0,0},
-                   {3.0/40.0,9.0/40.0,0,0,0,0,0},
-                   {44.0/45.0,-56.0/15.0,32.0/9.0,0,0,0,0},
-                   {19372.0/6561.0,-25360.0/2187.0,64448.0/6561.0,-212.0/729.0,0,0,0},
-                   {9017.0/3168.0,-355.0/33.0,46732.0/5247.0,49.0/176.0,-5103.0/18656.0,0,0},
-                   {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0}},
-      b[7]      = {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0},
-      bembed[7] = {5179.0/57600.0,0,7571.0/16695.0,393.0/640.0,-92097.0/339200.0,187.0/2100.0,1.0/40.0};
-    ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
+                   {RC(1.0)/RC(5.0),0,0,0,0,0,0},
+                   {RC(3.0)/RC(40.0),RC(9.0)/RC(40.0),0,0,0,0,0},
+                   {RC(44.0)/RC(45.0),RC(-56.0)/RC(15.0),RC(32.0)/RC(9.0),0,0,0,0},
+                   {RC(19372.0)/RC(6561.0),RC(-25360.0)/RC(2187.0),RC(64448.0)/RC(6561.0),RC(-212.0)/RC(729.0),0,0,0},
+                   {RC(9017.0)/RC(3168.0),RC(-355.0)/RC(33.0),RC(46732.0)/RC(5247.0),RC(49.0)/RC(176.0),RC(-5103.0)/RC(18656.0),0,0},
+                   {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0}},
+      b[7]      =  {RC(35.0)/RC(384.0),0,RC(500.0)/RC(1113.0),RC(125.0)/RC(192.0),RC(-2187.0)/RC(6784.0),RC(11.0)/RC(84.0),0},
+      bembed[7] =  {RC(5179.0)/RC(57600.0),0,RC(7571.0)/RC(16695.0),RC(393.0)/RC(640.0),RC(-92097.0)/RC(339200.0),RC(187.0)/RC(2100.0),RC(1.0)/RC(40.0)};
+    ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
   }
+  {
+    const PetscReal
+      A[8][8]   = {{0,0,0,0,0,0,0,0},
+                   {RC(1.0)/RC(6.0),0,0,0,0,0,0,0},
+                   {RC(2.0)/RC(27.0),RC(4.0)/RC(27.0),0,0,0,0,0,0},
+                   {RC(183.0)/RC(1372.0),RC(-162.0)/RC(343.0),RC(1053.0)/RC(1372.0),0,0,0,0,0},
+                   {RC(68.0)/RC(297.0),RC(-4.0)/RC(11.0),RC(42.0)/RC(143.0),RC(1960.0)/RC(3861.0),0,0,0,0},
+                   {RC(597.0)/RC(22528.0),RC(81.0)/RC(352.0),RC(63099.0)/RC(585728.0),RC(58653.0)/RC(366080.0),RC(4617.0)/RC(20480.0),0,0,0},
+                   {RC(174197.0)/RC(959244.0),RC(-30942.0)/RC(79937.0),RC(8152137.0)/RC(19744439.0),RC(666106.0)/RC(1039181.0),RC(-29421.0)/RC(29068.0),RC(482048.0)/RC(414219.0),0,0},
+                   {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0}},
+      b[8]      =  {RC(587.0)/RC(8064.0),0,RC(4440339.0)/RC(15491840.0),RC(24353.0)/RC(124800.0),RC(387.0)/RC(44800.0),RC(2152.0)/RC(5985.0),RC(7267.0)/RC(94080.0),0},
+      bembed[8] =  {RC(2479.0)/RC(34992.0),0,RC(123.0)/RC(416.0),RC(612941.0)/RC(3411720.0),RC(43.0)/RC(1440.0),RC(2272.0)/RC(6561.0),RC(79937.0)/RC(1113912.0),RC(3293.0)/RC(556956.0)};
+    ierr = TSRKRegister(TSRK5BS,5,8,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
+  }
+#undef RC
   PetscFunctionReturn(0);
 }
 
@@ -283,8 +338,8 @@ PetscErrorCode TSRKFinalizePackage(void)
 .  b - step completion table (dimension s; NULL to use last row of A)
 .  c - abscissa (dimension s; NULL to use row sums of A)
 .  bembed - completion table for embedded method (dimension s; NULL if not available)
-.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterp
--  binterp - Coefficients of the interpolation formula (dimension s*pinterp; NULL to reuse binterpt)
+.  p - Order of the interpolation scheme, equal to the number of columns of binterp
+-  binterp - Coefficients of the interpolation formula (dimension s*p; NULL to reuse b with p=1)
 
    Notes:
    Several RK methods are provided, this function is only needed to create new methods.
@@ -296,9 +351,8 @@ PetscErrorCode TSRKFinalizePackage(void)
 .seealso: TSRK
 @*/
 PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
-                                 const PetscReal A[],const PetscReal b[],const PetscReal c[],
-                                 const PetscReal bembed[],
-                                 PetscInt pinterp,const PetscReal binterp[])
+                            const PetscReal A[],const PetscReal b[],const PetscReal c[],
+                            const PetscReal bembed[],PetscInt p,const PetscReal binterp[])
 {
   PetscErrorCode  ierr;
   RKTableauLink   link;
@@ -306,28 +360,39 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   PetscInt        i,j;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(&link);CHKERRQ(ierr);
-  t        = &link->tab;
-  ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
+  PetscValidCharPointer(name,1);
+  PetscValidRealPointer(A,4);
+  if (b) PetscValidRealPointer(b,5);
+  if (c) PetscValidRealPointer(c,6);
+  if (bembed) PetscValidRealPointer(bembed,7);
+  if (binterp || p > 1) PetscValidRealPointer(binterp,9);
+
+  ierr = PetscNew(&link);CHKERRQ(ierr);
+  t = &link->tab;
+
+  ierr = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
-  t->s     = s;
-  ierr     = PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
-  ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
+  t->s = s;
+  ierr = PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   if (b)  { ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];
   if (c)  { ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr); }
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
   t->FSAL = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->A[(s-1)*s+i] != t->b[i]) t->FSAL = PETSC_FALSE;
+
   if (bembed) {
     ierr = PetscMalloc1(s,&t->bembed);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
   }
 
-  t->pinterp     = pinterp;
-  ierr           = PetscMalloc1(s*pinterp,&t->binterp);CHKERRQ(ierr);
-  ierr           = PetscMemcpy(t->binterp,binterp,s*pinterp*sizeof(binterp[0]));CHKERRQ(ierr);
-  link->next     = RKTableauList;
+  if (!binterp) { p = 1; binterp = t->b; }
+  t->p = p;
+  ierr = PetscMalloc1(s*p,&t->binterp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->binterp,binterp,s*p*sizeof(binterp[0]));CHKERRQ(ierr);
+
+  link->next = RKTableauList;
   RKTableauList = link;
   PetscFunctionReturn(0);
 }
@@ -469,6 +534,7 @@ static PetscErrorCode TSStep_RK(TS ts)
   const PetscReal *A = tab->A,*c = tab->c;
   PetscScalar     *w = rk->work;
   Vec             *Y = rk->Y,*YdotRHS = rk->YdotRHS;
+  PetscBool        FSAL = tab->FSAL;
   TSAdapt          adapt;
   PetscInt         i,j;
   PetscInt         rejections = 0;
@@ -477,6 +543,9 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (ts->steprollback || ts->steprestart) FSAL = PETSC_FALSE;
+  if (FSAL) { ierr = VecCopy(YdotRHS[s-1],YdotRHS[0]);CHKERRQ(ierr); }
+
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
     PetscReal t = ts->ptime;
@@ -491,6 +560,7 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok);CHKERRQ(ierr);
       if (!stageok) goto reject_step;
+      if (FSAL && !i) continue;
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
 
@@ -499,7 +569,7 @@ static PetscErrorCode TSStep_RK(TS ts)
     rk->status = TS_STEP_PENDING;
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
     rk->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
@@ -612,7 +682,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
 static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
-  PetscInt         s  = rk->tableau->s,pinterp = rk->tableau->pinterp,i,j;
+  PetscInt         s  = rk->tableau->s,p = rk->tableau->p,i,j;
   PetscReal        h;
   PetscReal        tt,t;
   PetscScalar     *b;
@@ -636,9 +706,9 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
   }
   ierr = PetscMalloc1(s,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) b[i] = 0;
-  for (j=0,tt=t; j<pinterp; j++,tt*=t) {
+  for (j=0,tt=t; j<p; j++,tt*=t) {
     for (i=0; i<s; i++) {
-      b[i]  += h * B[i*pinterp+j] * tt;
+      b[i]  += h * B[i*p+j] * tt;
     }
   }
 
@@ -835,12 +905,12 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     TSRKType  rktype;
     char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RK %s\n",rktype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"FSAL: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -864,9 +934,12 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 +  ts - timestepping context
 -  rktype - type of RK-scheme
 
+  Options Database:
+.   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
+
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRK2, TSRK3, TSRKPRSSP2, TSRK4, TSRK5
+.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {
@@ -874,6 +947,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidCharPointer(rktype,2);
   ierr = PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -929,6 +1003,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
       if (ts->setupcalled) {ierr = TSRKTableauReset(ts);CHKERRQ(ierr);}
       rk->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = rk->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }
@@ -955,7 +1030,7 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
   using TSSetRHSFunction().
 
   Notes:
-  The default is TSRK3, it can be changed with TSRKSetType() or -ts_rk_type
+  The default is TSRK3BS, it can be changed with TSRKSetType() or -ts_rk_type
 
   Level: beginner
 

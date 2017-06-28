@@ -195,9 +195,9 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     if (pc->useAmat) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using Amat local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Amat local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: number of blocks = %D\n",jac->n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);

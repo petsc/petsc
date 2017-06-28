@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
-    self.needsMath        = 1
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.precisions       = ['single','double']
     self.hastests         = 1
@@ -16,9 +15,9 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.x               = framework.require('config.packages.X', self)
-    self.deps = []
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.mathlib]
     return
 
   def Install(self):

@@ -15,8 +15,6 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.scalartypes  = framework.require('PETSc.options.scalarTypes',self)
-    self.languages    = framework.require('PETSc.options.languages',self)
     self.cuda = framework.require('config.packages.cuda',self)
     self.opencl = framework.require('config.packages.opencl',self)
     self.openmp = framework.require('config.packages.openmp',self)

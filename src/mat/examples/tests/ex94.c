@@ -3,7 +3,7 @@ static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), 
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
 /* Example of usage:
-   ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view ::ascii_info -matmatmulttr_mat_view
+   ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view ascii::ascii_info -matmatmulttr_mat_view
    mpiexec -n 3 ./ex94 -f0 medium -f1 medium -f2 arco1 -f3 arco1 -matmatmult_mat_view
 */
 
@@ -26,6 +26,8 @@ int main(int argc,char **args)
   PetscBool      Test_MatAXPY=PETSC_FALSE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
+  PetscBool      seqaij;
+  MatType        mattype;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -58,6 +60,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatLoad(B,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+  ierr = MatGetType(B,&mattype);CHKERRQ(ierr);
 
   ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
   nzp  = PetscMax((PetscInt)(0.1*M),5);
@@ -134,7 +138,7 @@ int main(int argc,char **args)
     nzp  = 5; /* num of nonzeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
     ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr);
-    ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(P,mattype);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(P,&rstart,&rend);CHKERRQ(ierr);
@@ -188,7 +192,8 @@ int main(int argc,char **args)
     ierr = MatDestroy(&C);CHKERRQ(ierr);
 
     /* C = B*R^T */
-    if (size == 1) {
+    ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    if (size == 1 && seqaij) {
       ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
       ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
@@ -223,7 +228,7 @@ int main(int argc,char **args)
     nzp  = (PetscInt)(0.1*PN+1); /* num of nozeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
     ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr);
-    ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(P,mattype);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,NULL,nzp,NULL);CHKERRQ(ierr);
     for (i=0; i<nzp; i++) {
@@ -262,20 +267,23 @@ int main(int argc,char **args)
       ierr = MatConvert(P,MATSEQDENSE,MAT_INITIAL_MATRIX,&Pdense);CHKERRQ(ierr);
 
       /* test with A SeqAIJ */
-      ierr = MatPtAP(A,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense: %g\n",norm);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+      if (seqaij) {
+        ierr = MatPtAP(A,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+        ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        if (norm > PETSC_SMALL) {
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense: %g\n",norm);CHKERRQ(ierr);
+        }
+        ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
+        ierr = MatPtAP(A,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
+        ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        if (norm > PETSC_SMALL) {
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);CHKERRQ(ierr);
+        }
+        ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
       }
-      ierr = MatScale(Cdense,-1.);CHKERRQ(ierr);
-      ierr = MatPtAP(A,Pdense,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
-      ierr = MatAXPY(Cdense,-1.0,Cdensetest,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(Cdense,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-      if (norm > PETSC_SMALL) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP with A SeqAIJ and P SeqDense and MAT_REUSE_MATRIX: %g\n",norm);CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
 
       /* test with A SeqDense */
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
@@ -302,7 +310,7 @@ int main(int argc,char **args)
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Cdup);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdup);CHKERRQ(ierr);
 
-    if (size>1) Test_MatRARt = PETSC_FALSE;
+    if (size>1 || !seqaij) Test_MatRARt = PETSC_FALSE;
     /* 4) Test MatRARt() */
     /* ----------------- */
     if (Test_MatRARt) {

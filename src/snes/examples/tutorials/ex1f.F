@@ -272,7 +272,7 @@
       A(2) = lx_a(1)
       A(3) = lx_a(2)
       A(4) = lx_a(1) + 2.0*lx_a(2)
-      call MatSetValues(jac,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
+      call MatSetValues(B,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
 
 !  Restore vector
 
@@ -280,8 +280,12 @@
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+      if (B .ne. jac) then
+        call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+        call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      endif
 
       return
       end

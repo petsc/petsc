@@ -18,19 +18,23 @@ Timestep   3: step size = 0.000526001, time = 0.00114795, 2-norm error = 0.00153
 avg. error (2 norm) = 0.000957327, avg. error (max norm) = 0.00138698
 TS Object: 1 MPI processes
   type: rosw
-  maximum steps=3
-  maximum time=100.
-  total number of linear solver iterations=12
-  total number of rejected steps=0
-  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Rosenbrock-W ra34pw2
     Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
+  maximum steps=3
+  maximum time=100.
+  total number of linear solver iterations=12
+  total number of linear solve failures=0
+  total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI processes
     type: basic
-    number of candidates 1
-      Basic: clip fastest decrease 0.1, fastest increase 10.
-      Basic: safety factor 0.9, extra factor after step rejection 0.5
+    safety factor 0.9
+    extra safety factor after step rejection 0.5
+    clip fastest increase 10.
+    clip fastest decrease 0.1
+    maximum allowed timestep 1e+20
+    minimum allowed timestep 1e-20
   SNES Object: 1 MPI processes
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
@@ -46,8 +50,8 @@ TS Object: 1 MPI processes
       maximum iterations=1
     KSP Object: 1 MPI processes
       type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning

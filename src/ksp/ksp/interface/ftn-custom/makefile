@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zitclf.c  zitcreatef.c  zitfuncf.c  zxonf.c zdmkspf.c
+SOURCEC  = zitclf.c  zitcreatef.c  zitfuncf.c  zxonf.c zdmkspf.c ziguess.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

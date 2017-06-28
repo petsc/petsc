@@ -122,4 +122,12 @@
         end interface
         end module
 
+        module petscdt
+        use petscdmdef
+#include <../src/dm/f90-mod/petscdt.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdt.h90>
+        end interface
+        end module
+
 

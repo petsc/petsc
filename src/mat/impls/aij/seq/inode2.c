@@ -1,7 +1,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-extern PetscErrorCode MatSeqAIJCheckInode(Mat);
 extern PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
 extern PetscErrorCode MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 

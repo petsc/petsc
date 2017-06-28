@@ -8,7 +8,6 @@ class Configure(config.package.GNUPackage):
     self.includes     = ['sundials/sundials_nvector.h']
     self.liblist      = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
     self.license      = 'http://www.llnl.gov/CASC/sundials/download/download.html'
-    self.needsMath    = 1
     self.parallelMake = 0  # uses recursive make so better be safe and not use make -j np
     self.complex      = 0
     self.precisions   = ['double']
@@ -18,7 +17,8 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.deps       = [self.mpi,self.blasLapack,self.mathlib]
 
   def formGNUConfigureArgs(self):
     import os
@@ -57,6 +57,8 @@ class Configure(config.package.GNUPackage):
         args.append('--with-mpi-libs="-lc"')
 
     self.framework.popLanguage()
+
+    args = self.rmArgsStartsWith(args,['F77=','F90=','FC=','FFLAGS=','FCFLAGS=','F90FLAGS='])
     args.append('--without-mpif77')
     args.append('--disable-examples')
     args.append('--disable-cvodes')

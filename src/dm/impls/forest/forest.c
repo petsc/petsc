@@ -213,7 +213,6 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   ierr = DMDestroy(&forest->adapt);CHKERRQ(ierr);
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscFree(forest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1637,7 +1636,7 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
   dm->ops->createsubdm    = DMCreateSubDM_Forest;
   dm->ops->refine         = DMRefine_Forest;
   dm->ops->coarsen        = DMCoarsen_Forest;
-  ierr                    = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Forest);CHKERRQ(ierr);
+  dm->ops->adaptlabel     = DMAdaptLabel_Forest;
   PetscFunctionReturn(0);
 }
 

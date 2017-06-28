@@ -1,5 +1,4 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <../src/sys/utils/hash.h>
 
 /*
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell
@@ -457,7 +456,9 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
       remotePointsNew[p].index = remotePoints[p].index;
       remotePointsNew[p].rank = remotePoints[p].rank;
     }
-    p = numLeaves; ierr = PetscHashIGetKeys(claimshash, &p, localPointsNew);CHKERRQ(ierr);
+    p = numLeaves;
+    ierr = PetscHashIGetKeys(claimshash, &p, localPointsNew);CHKERRQ(ierr);
+    ierr = PetscSortInt(numLocalNew,&localPointsNew[numLeaves]);CHKERRQ(ierr);
     for (p = numLeaves; p < numLeaves + numLocalNew; ++p) {
       PetscHashIMap(claimshash, localPointsNew[p], offset);
       remotePointsNew[p] = claims[offset];

@@ -1,16 +1,15 @@
 TS Object: 1 MPI processes
   type: alpha2
+    Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5, Beta=0.25
   maximum steps=10
   maximum time=31.4159
   total number of nonlinear solver iterations=12
-  total number of nonlinear solve failures=0
   total number of linear solver iterations=12
+  total number of nonlinear solve failures=0
   total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
-    Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5, Beta=0.25
   TSAdapt Object: 1 MPI processes
     type: none
-    number of candidates 0
   SNES Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
@@ -27,8 +26,8 @@ TS Object: 1 MPI processes
       maximum iterations=40
     KSP Object: 1 MPI processes
       type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning

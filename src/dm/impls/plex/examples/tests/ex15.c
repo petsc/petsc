@@ -38,8 +38,11 @@ int main(int argc, char **argv)
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMSetUseNatural(dm, PETSC_TRUE);CHKERRQ(ierr);
   {
-    DM dmDist;
+    PetscPartitioner part;
+    DM               dmDist;
 
+    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -134,3 +137,19 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  build:
+    requires: triangle hdf5
+  test:
+    suffix: 0
+    requires: triangle hdf5
+    nsize: 2
+    args: -petscpartitioner_type simple -verbose -globaltonatural_sf_view
+  test:
+    suffix: 1
+    requires: triangle hdf5
+    nsize: 2
+    args: -petscpartitioner_type simple -verbose -global_vec_view hdf5:V.h5:native -test_read
+
+TEST*/

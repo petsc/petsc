@@ -311,9 +311,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   snes->norm = 0.;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
-  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+  if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -327,9 +327,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     SNESCheckFunctionNorm(snes,fnorm);
   }
-  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+  if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -348,11 +348,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-  if (snes->pc && snes->pcside == PC_RIGHT) {
-    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+  if (snes->npc && snes->npcside== PC_RIGHT) {
+    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->npc,snes->vec_rhs,X);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->npc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -417,11 +417,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     /* convergence monitoring */
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
 
-    if (snes->pc && snes->pcside == PC_RIGHT) {
-      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (snes->npc && snes->npcside== PC_RIGHT) {
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,X,0,0);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->npc,snes->vec_rhs,X);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->npc,X,0,0);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -437,9 +437,9 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     /* set parameter for default relative tolerance convergence test */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
-    if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+    if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -537,7 +537,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   }
-  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) {snes->functype = SNES_FUNCTION_UNPRECONDITIONED;}
+  if (snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) {snes->functype = SNES_FUNCTION_UNPRECONDITIONED;}
   PetscFunctionReturn(0);
 }
 
@@ -625,7 +625,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  QN type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %D\n", qn->m);CHKERRQ(ierr);
     if (qn->singlereduction) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using the single reduction variant.\n");CHKERRQ(ierr);
@@ -814,9 +814,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   snes->ops->view           = SNESView_QN;
   snes->ops->reset          = SNESReset_QN;
 
-  snes->pcside = PC_LEFT;
+  snes->npcside= PC_LEFT;
 
-  snes->usespc  = PETSC_TRUE;
+  snes->usesnpc = PETSC_TRUE;
   snes->usesksp = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;

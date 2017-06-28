@@ -171,9 +171,9 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (richardsonP->selfscale) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: using self-scale best computed damping factor\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  using self-scale best computed damping factor\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",(double)richardsonP->scale);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  damping factor=%g\n",(double)richardsonP->scale);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -273,6 +273,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);  
 
   ksp->ops->setup          = KSPSetUp_Richardson;
   ksp->ops->solve          = KSPSolve_Richardson;

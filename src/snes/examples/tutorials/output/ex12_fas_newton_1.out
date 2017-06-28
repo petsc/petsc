@@ -1,4 +1,4 @@
-0 SNES Function norm 8.32828 
+  0 SNES Function norm 8.32828 
     0 SNES Function norm 8.32828 
     1 SNES Function norm 9.863e-10 
       0 SNES Function norm 8.100e-10 
@@ -13,9 +13,9 @@
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: fas
-  FAS: type is MULTIPLICATIVE, levels=3, cycles=1
-      Not using Galerkin computed coarse grid function evaluation
-  Coarse grid solver -- level 0 -------------------------------
+    type is MULTIPLICATIVE, levels=3, cycles=1
+    Not using Galerkin computed coarse grid function evaluation
+    Coarse grid solver -- level 0 -------------------------------
     SNES Object: (fas_coarse_) 1 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
@@ -29,8 +29,8 @@ SNES Object: 1 MPI processes
         maximum iterations=40
       KSP Object: (fas_coarse_) 1 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -56,7 +56,7 @@ SNES Object: 1 MPI processes
           total: nonzeros=41, allocated nonzeros=41
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
-  Down solver (pre-smoother) on level 1 -------------------------------
+    Down solver (pre-smoother) on level 1 -------------------------------
     SNES Object: (fas_levels_1_) 1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
@@ -71,8 +71,8 @@ SNES Object: 1 MPI processes
         maximum iterations=40
       KSP Object: (fas_levels_1_) 1 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -99,8 +99,8 @@ SNES Object: 1 MPI processes
           total: nonzeros=289, allocated nonzeros=289
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  Down solver (pre-smoother) on level 2 -------------------------------
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
     SNES Object: (fas_levels_2_) 1 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
@@ -115,8 +115,8 @@ SNES Object: 1 MPI processes
         maximum iterations=40
       KSP Object: (fas_levels_2_) 1 MPI processes
         type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
         left preconditioning
@@ -143,10 +143,9 @@ SNES Object: 1 MPI processes
           total: nonzeros=1457, allocated nonzeros=1457
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
-  Up solver (post-smoother) same as down solver (pre-smoother)
+    Up solver (post-smoother) same as down solver (pre-smoother)
   maximum iterations=10000, maximum function evaluations=30000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=0
   total number of function evaluations=1
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes

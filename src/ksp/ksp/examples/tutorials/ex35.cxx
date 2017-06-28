@@ -477,7 +477,7 @@ PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], P
   int i,j;
   PetscReal centroid[3];
   const PetscReal GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
-  PetscReal dx = fabs(verts[0+2*3] - verts[0+0*3])/2, dy = fabs( verts[1+2*3] - verts[1+0*3] )/2;
+  PetscReal dx = PetscAbsReal(verts[0+2*3] - verts[0+0*3])/2, dy = PetscAbsReal( verts[1+2*3] - verts[1+0*3] )/2;
   PetscReal ejac = dx*dy;
   
   centroid[0] = centroid[1] = centroid[2] = 0.0;

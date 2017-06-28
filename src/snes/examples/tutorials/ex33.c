@@ -90,10 +90,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].p = u[i].p - user->pl;
     } else {
       PetscScalar K          = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
-      PetscReal   lambdaWet  = kappaWet*PetscPowScalar(u[i].s, alpha);
-      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscPowScalar(1-u[i].s, beta);
-      PetscReal   lambdaWetL = kappaWet*PetscPowScalar(u[i-1].s, alpha);
-      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscPowScalar(1-u[i-1].s, beta);
+      PetscReal   lambdaWet  = kappaWet*PetscRealPart(PetscPowScalar(u[i].s, alpha));
+      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscRealPart(PetscPowScalar(1.-u[i].s, beta));
+      PetscReal   lambdaWetL = kappaWet*PetscRealPart(PetscPowScalar(u[i-1].s, alpha));
+      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscRealPart(PetscPowScalar(1.-u[i-1].s, beta));
 
       f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*((lambdaWet/lambda)*u[i].v - (lambdaWetL/lambdaL)*u[i-1].v);
 
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
   DM             da;     /* grid */
   Vec            u;      /* solution vector */
   AppCtx         user;   /* user-defined work context */
-  PetscReal      t;      /* time */
+  PetscReal      t = 0.0;/* time */
   PetscErrorCode ierr;
   PetscInt       n;
 
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
   /* Time Loop */
   user.dt = 0.1;
   for (n = 0; n < 100; ++n, t += user.dt) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -173,3 +173,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: !single
+    args: -snes_converged_reason -snes_monitor_short
+
+TEST*/

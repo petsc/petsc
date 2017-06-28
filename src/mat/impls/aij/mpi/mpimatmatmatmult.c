@@ -104,3 +104,18 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D
   ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode MatRARt_MPIAIJ_MPIAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat            Rt;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,*C);CHKERRQ(ierr);
+  ierr = MatDestroy(&Rt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

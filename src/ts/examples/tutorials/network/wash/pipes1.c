@@ -5,6 +5,7 @@
 */
 
 #include "wash.h"
+#include <petscdmnetwork.h>
 
 PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 {
@@ -546,7 +547,7 @@ int main(int argc,char ** argv)
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
-  const PetscInt    *cone; 
+  const PetscInt    *cone;
   DM                networkdm;
   PetscMPIInt       size,rank;
   PetscReal         ftime = 2500.0;
@@ -620,16 +621,11 @@ int main(int argc,char ** argv)
   ierr = WashNetworkCleanUp(wash,edgelist);CHKERRQ(ierr);
 
   /* Network partitioning and distribution of data */
-  if (size > 1) { 
-    DM distnetworkdm;
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
-  }
-  
+  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
+
   /* PipeSetUp -- each process only sets its own pipes */
   /*---------------------------------------------------*/
-  ierr = DMNetworkGetComponentDataArray(networkdm,&nwarr);CHKERRQ(ierr); 
+  ierr = DMNetworkGetComponentDataArray(networkdm,&nwarr);CHKERRQ(ierr);
 
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (e=eStart; e<eEnd; e++) { /* each edge has only one component, pipe */
@@ -638,16 +634,16 @@ int main(int argc,char ** argv)
     pipe = (Pipe)(nwarr + pipeoffset);
 
     /* Setup conntected vertices */
-    ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr); 
+    ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
     vfrom = cone[0]; /* local ordering */
     vto   = cone[1];
 
     /* vfrom */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,vfrom,0,&vkey,&fromOffset);CHKERRQ(ierr); 
+    ierr = DMNetworkGetComponentTypeOffset(networkdm,vfrom,0,&vkey,&fromOffset);CHKERRQ(ierr);
     junction = (Junction)(nwarr+fromOffset);
     from_nedge_in  = junction->nedges_in;
     from_nedge_out = junction->nedges_out;
-       
+
     /* vto */
     ierr = DMNetworkGetComponentTypeOffset(networkdm,vto,0,&vkey,&toOffset);CHKERRQ(ierr);  
     junction    = (Junction)(nwarr+toOffset);

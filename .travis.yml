@@ -96,4 +96,5 @@ install:
   - make test       CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
 
 script:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$MPI" == "openmpi" ]]; then export TMPDIR=/tmp; fi
   - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND

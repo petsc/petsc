@@ -1,14 +1,14 @@
 DM Object: 1 MPI processes
   type: plex
-DM_0x84000000_0 in 2 dimensions:
+Mesh in 2 dimensions:
   0-cells: 156
   1-cells: 300
   2-cells: 168 (24)
 Labels:
   ghost: 0 strata of sizes ()
   vtk: 1 strata of sizes (144)
-  Face Sets: 2 strata of sizes (21, 21)
   marker: 1 strata of sizes (48)
+  Face Sets: 2 strata of sizes (21, 21)
   depth: 3 strata of sizes (156, 300, 168)
   0  time        0  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0,           0] int            0
   1  time  0.08333  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0,       4e-06] int  5.55556e-08
@@ -80,4 +80,5 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of linear solver iterations=0
   total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
 CONVERGED_TIME at time 5.08331 after 61 steps

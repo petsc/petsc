@@ -110,6 +110,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
       ierr = PetscMalloc1(nasm->n,&nasm->subsnes);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
         ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)nasm->subsnes[i], (PetscObject)snes, 1);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
         ierr = SNESSetDM(nasm->subsnes[i],subdms[i]);CHKERRQ(ierr);
@@ -215,7 +216,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&nasm->n,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, "  Nonlinear Additive Schwarz: total subdomain blocks = %D\n",N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %D\n",N);CHKERRQ(ierr);
     if (nasm->same_local_solves) {
       if (nasm->subsnes) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is the same for all blocks:\n");CHKERRQ(ierr);
@@ -894,7 +895,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   snes->ops->reset          = SNESReset_NASM;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
@@ -916,6 +917,60 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetDamping_C",SNESNASMGetDamping_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomainVecs_C",SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C",SNESNASMSetComputeFinalJacobian_NASM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESNASMGetSNES - Gets a subsolver
+
+   Not collective
+
+   Input Parameters:
++  snes - the SNES context
+-  i - the number of the subsnes to get
+
+   Output Parameters:
+.  subsnes - the subsolver context
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM, SNESNASMGetNumber()
+@*/
+PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  if (i < 0 || i >= nasm->n) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
+  *subsnes = nasm->subsnes[i];
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESNASMGetNumber - Gets number of subsolvers
+
+   Not collective
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameters:
+.  n - the number of subsolvers
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM, SNESNASMGetSNES()
+@*/
+PetscErrorCode SNESNASMGetNumber(SNES snes,PetscInt *n)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  *n = nasm->n;
   PetscFunctionReturn(0);
 }
 

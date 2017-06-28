@@ -75,11 +75,15 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
-  PetscViewer monitor;
-  PetscInt    setupcalled;             /* true if setup has been called */
-  PetscInt    recomps;                 /* counter for recomputations in the adjoint run */
-  PetscInt    diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
-  void        *data;
+  PetscViewer    monitor;
+  PetscInt       setupcalled;             /* true if setup has been called */
+  PetscInt       recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt       diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  char           **names;                 /* the name of each variable; each process has only the local names */
+  PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
+  void*          transformctx;
+  void           *data;
 };
 
 struct _p_TS {
@@ -91,6 +95,7 @@ struct _p_TS {
   Vec            vec_sol; /* solution vector in first and second order equations */
   Vec            vec_dot; /* time derivative vector in second order equations */
   TSAdapt        adapt;
+  TSAdaptType    default_adapt_type;
   TSEvent        event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
@@ -142,14 +147,14 @@ struct _p_TS {
    * The present use case is that TSComputeRHSFunctionLinear() evaluates the Jacobian once and we don't want it to be immeditely re-evaluated.
    */
   struct {
-    PetscReal time;             /* The time at which the matrices were last evaluated */
-    Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
-    PetscObjectState Xstate;    /* State of the solution vector */
-    MatStructure mstructure;    /* The structure returned */
+    PetscReal        time;          /* The time at which the matrices were last evaluated */
+    PetscObjectId    Xid;           /* Unique ID of solution vector at which the Jacobian was last evaluated */
+    PetscObjectState Xstate;        /* State of the solution vector */
+    MatStructure     mstructure;    /* The structure returned */
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
-    PetscBool reuse;
-    PetscReal scale,shift;
+    PetscBool        reuse;
+    PetscReal        scale,shift;
   } rhsjacobian;
 
   struct {
@@ -158,6 +163,8 @@ struct _p_TS {
 
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES     snes;
+  PetscBool usessnes;   /* Flag set by each TSType to indicate if the type actually uses a SNES;
+                           this works around the design flaw that a SNES is ALWAYS created with TS even when it is not needed.*/
   PetscInt ksp_its;                /* total number of linear solver iterations */
   PetscInt snes_its;               /* total number of nonlinear solver iterations */
   PetscInt num_snes_failures;
@@ -220,10 +227,15 @@ struct _p_TSAdapt {
     PetscReal  ccfl[16];         /* stability limit relative to explicit Euler */
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
-  PetscReal   dt_min,dt_max;
-  PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
-  PetscViewer monitor;
+  PetscBool   always_accept;
+  PetscReal   safety;             /* safety factor relative to target error/stability goal */
+  PetscReal   reject_safety;      /* extra safety factor if the last step was rejected */
+  PetscReal   clip[2];            /* admissible time step decrease/increase factors */
+  PetscReal   dt_min,dt_max;      /* admissible minimum and maximum time step */
+  PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   NormType    wnormtype;
+  PetscViewer monitor;
+  PetscInt    timestepjustincreased;
 };
 
 typedef struct _p_DMTS *DMTS;

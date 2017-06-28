@@ -7,10 +7,10 @@ static PetscFunctionList TSAdaptList;
 static PetscBool         TSAdaptPackageInitialized;
 static PetscBool         TSAdaptRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt);
 
 /*@C
    TSAdaptRegister -  adds a TSAdapt implementation
@@ -67,10 +67,10 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscFunctionBegin;
   if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
   TSAdaptRegisterAllCalled = PETSC_TRUE;
-  ierr = TSAdaptRegister(TSADAPTGLEE ,TSAdaptCreate_GLEE);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTGLEE ,TSAdaptCreate_GLEE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -97,7 +97,7 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
 /*@C
   TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
-  TSCreate_GLLE() when using static libraries.
+  TSAdaptCreate() when using static libraries.
 
   Level: developer
 
@@ -123,7 +123,7 @@ PetscErrorCode  TSAdaptInitializePackage(void)
   Logicially Collective on TSAdapt
 
   Input Parameter:
-+ adapt - the TS error adapter, most likely obtained with TSGetAdapt()
++ adapt - the TS adapter, most likely obtained with TSGetAdapt()
 - type - either  TSADAPTBASIC or TSADAPTNONE
 
   Options Database:
@@ -142,6 +142,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
@@ -150,6 +151,31 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
   ierr = (*r)(adapt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSAdaptGetType - gets the TS adapter method type (as a string).
+
+  Not Collective
+
+  Input Parameter:
+. adapt - The TS adapter, most likely obtained with TSGetAdapt()
+
+  Output Parameter:
+. type - The name of TS adapter method
+
+  Level: intermediate
+
+.keywords: TSAdapt, get, type
+.seealso TSAdaptSetType()
+@*/
+PetscErrorCode TSAdaptGetType(TSAdapt adapt,TSAdaptType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)adapt)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -213,7 +239,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii,isbinary;
+  PetscBool      iascii,isbinary,isnone;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -224,7 +250,16 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+    if (!isnone) {
+      if (adapt->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  always accepting steps\n");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer,"  safety factor %g\n",(double)adapt->safety);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  extra safety factor after step rejection %g\n",(double)adapt->reject_safety);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  clip fastest increase %g\n",(double)adapt->clip[1]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  clip fastest decrease %g\n",(double)adapt->clip[0]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);
+    }
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
@@ -290,6 +325,9 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 +  adapt - adaptive controller context
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
+   Options Database Keys:
+.  -ts_adapt_monitor
+
    Level: intermediate
 
 .seealso: TSAdaptChoose()
@@ -310,7 +348,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
 }
 
 /*@C
-   TSAdaptSetCheckStage - set a callback to check convergence for a stage
+   TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
    Logically collective on TSAdapt
 
@@ -339,9 +377,153 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 }
 
 /*@
-   TSAdaptSetStepLimits - Set minimum and maximum step sizes to be considered by the controller
+   TSAdaptSetAlwaysAccept - Set whether to always accept steps regardless of
+   any error or stability condition not meeting the prescribed goal.
 
-   Logically Collective
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
+-  flag - whether to always accept steps
+
+   Options Database Keys:
+.  -ts_adapt_always_accept
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(adapt,flag,2);
+  adapt->always_accept = flag;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptSetSafety - Set safety factors
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+.  safety - safety factor relative to target error/stability goal
++  reject_safety - extra safety factor to apply if the last step was rejected
+
+   Options Database Keys:
++  -ts_adapt_safety
+-  -ts_adapt_reject_safety
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptGetSafety(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetSafety(TSAdapt adapt,PetscReal safety,PetscReal reject_safety)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(adapt,safety,2);
+  PetscValidLogicalCollectiveReal(adapt,reject_safety,3);
+  if (safety != PETSC_DEFAULT && safety < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be non negative",(double)safety);
+  if (safety != PETSC_DEFAULT && safety > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be less than one",(double)safety);
+  if (reject_safety != PETSC_DEFAULT && reject_safety < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be non negative",(double)reject_safety);
+  if (reject_safety != PETSC_DEFAULT && reject_safety > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be less than one",(double)reject_safety);
+  if (safety != PETSC_DEFAULT) adapt->safety = safety;
+  if (reject_safety != PETSC_DEFAULT) adapt->reject_safety = reject_safety;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetSafety - Get safety factors
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
+.  safety - safety factor relative to target error/stability goal
++  reject_safety - extra safety factor to apply if the last step was rejected
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptSetSafety(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptGetSafety(TSAdapt adapt,PetscReal *safety,PetscReal *reject_safety)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (safety)        PetscValidRealPointer(safety,2);
+  if (reject_safety) PetscValidRealPointer(reject_safety,3);
+  if (safety)        *safety        = adapt->safety;
+  if (reject_safety) *reject_safety = adapt->reject_safety;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptSetClip - Sets the admissible decrease/increase factor in step size
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+.  low - admissible decrease factor
++  high - admissible increase factor
+
+   Options Database Keys:
+.  -ts_adapt_clip
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose(), TSAdaptGetClip()
+@*/
+PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(adapt,low,2);
+  PetscValidLogicalCollectiveReal(adapt,high,3);
+  if (low  != PETSC_DEFAULT && low  < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be non negative",(double)low);
+  if (low  != PETSC_DEFAULT && low  > 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be less than one",(double)low);
+  if (high != PETSC_DEFAULT && high < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be geather than one",(double)high);
+  if (low  != PETSC_DEFAULT) adapt->clip[0] = low;
+  if (high != PETSC_DEFAULT) adapt->clip[1] = high;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetClip - Gets the admissible decrease/increase factor in step size
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - adaptive controller context
+
+   Ouput Arguments:
++  low - optional, admissible decrease factor
+-  high - optional, admissible increase factor
+
+   Level: intermediate
+
+.seealso: TSAdaptChoose(), TSAdaptSetClip()
+@*/
+PetscErrorCode TSAdaptGetClip(TSAdapt adapt,PetscReal *low,PetscReal *high)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (low)  PetscValidRealPointer(low,2);
+  if (high) PetscValidRealPointer(high,3);
+  if (low)  *low  = adapt->clip[0];
+  if (high) *high = adapt->clip[1];
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptSetStepLimits - Set the minimum and maximum step sizes to be considered by the controller
+
+   Logically collective on TSAdapt
 
    Input Arguments:
 +  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
@@ -354,7 +536,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
    Level: intermediate
 
-.seealso: TSAdapt
+.seealso: TSAdapt, TSAdaptGetStepLimits(), TSAdaptChoose()
 @*/
 PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 {
@@ -367,11 +549,37 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
   if (hmax != PETSC_DEFAULT && hmax < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmax);
   if (hmin != PETSC_DEFAULT) adapt->dt_min = hmin;
   if (hmax != PETSC_DEFAULT) adapt->dt_max = hmax;
-#if defined(PETSC_USE_DEBUG)
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
   if (hmax <= hmin) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must geather than minimum time step %g",(double)hmax,(double)hmin);
-#endif
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSAdaptGetStepLimits - Get the minimum and maximum step sizes to be considered by the controller
+
+   Not Collective
+
+   Input Arguments:
+.  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
+
+   Output Arguments:
++  hmin - minimum time step
+-  hmax - maximum time step
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptSetStepLimits(), TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt,PetscReal *hmin,PetscReal *hmax)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (hmin) PetscValidRealPointer(hmin,2);
+  if (hmax) PetscValidRealPointer(hmax,3);
+  if (hmin) *hmin = adapt->dt_min;
+  if (hmax) *hmax = adapt->dt_max;
   PetscFunctionReturn(0);
 }
 
@@ -384,7 +592,11 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 .  adapt - the TSAdapt context
 
    Options Database Keys:
-+  -ts_adapt_type <type> - basic
++  -ts_adapt_type <type> - algorithm to use for adaptivity
+.  -ts_adapt_always_accept - always accept steps regardless of error/stability goals
+.  -ts_adapt_safety <safety> - safety factor relative to target error/stability goal
+.  -ts_adapt_reject_safety <safety> - extra safety factor to apply if the last step was rejected
+.  -ts_adapt_clip <low,high> - admissible time step decrease and increase factors
 .  -ts_adapt_dt_min <min> - minimum timestep to use
 .  -ts_adapt_dt_max <max> - maximum timestep to use
 .  -ts_adapt_scale_solve_failed <scale> - scale timestep by this factor if a solve fails
@@ -397,13 +609,16 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
 .keywords: TS, TSGetAdapt(), TSAdaptSetType(), TSAdaptSetStepLimits()
 
-.seealso: TSGetType()
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptSetAlwaysAccept(), TSAdaptSetSafety(),
+          TSAdaptSetClip(), TSAdaptSetStepLimits(), TSAdaptSetMonitor()
 */
 PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;
+  PetscReal      safety,reject_safety,clip[2],hmin,hmax;
   PetscBool      set,flg;
+  PetscInt       two;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
@@ -414,13 +629,33 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBool("-ts_adapt_always_accept","Always accept the step","TSAdaptSetAlwaysAccept",adapt->always_accept,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSAdaptSetAlwaysAccept(adapt,flg);CHKERRQ(ierr);}
+
+  safety = adapt->safety; reject_safety = adapt->reject_safety;
+  ierr = PetscOptionsReal("-ts_adapt_safety","Safety factor relative to target error/stability goal","TSAdaptSetSafety",safety,&safety,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_reject_safety","Extra safety factor to apply if the last step was rejected","TSAdaptSetSafety",reject_safety,&reject_safety,&flg);CHKERRQ(ierr);
+  if (set || flg) {ierr = TSAdaptSetSafety(adapt,safety,reject_safety);CHKERRQ(ierr);}
+
+  two = 2; clip[0] = adapt->clip[0]; clip[1] = adapt->clip[1];
+  ierr = PetscOptionsRealArray("-ts_adapt_clip","Admissible decrease/increase factor in step size","TSAdaptSetClip",clip,&two,&set);CHKERRQ(ierr);
+  if (set && (two != 2)) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_clip");
+  if (set) {ierr = TSAdaptSetClip(adapt,clip[0],clip[1]);CHKERRQ(ierr);}
+
+  hmin = adapt->dt_min; hmax = adapt->dt_max;
+  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",hmin,&hmin,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",hmax,&hmax,&flg);CHKERRQ(ierr);
+  if (set || flg) {ierr = TSAdaptSetStepLimits(adapt,hmin,hmax);CHKERRQ(ierr);}
+
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
   if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
+
+  ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
+
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(PetscOptionsObject,adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -429,7 +664,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
 
-   Logically Collective
+   Logically collective on TSAdapt
 
    Input Argument:
 .  adapt - adaptive controller
@@ -451,7 +686,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
-   Logically Collective
+   Logically collective on TSAdapt
 
    Input Arguments:
 +  adapt - time step adaptivity context, obtained with TSGetAdapt() or TSAdaptCreate()
@@ -529,7 +764,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
 /*@C
    TSAdaptChoose - choose which method and step size to use for the next step
 
-   Logically Collective
+   Collective on TSAdapt
 
    Input Arguments:
 +  adapt - adaptive contoller
@@ -590,10 +825,9 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
     const char *sc_name = (scheme < ncandidates) ? adapt->candidates.name[scheme] : "";
     ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
     if (wlte < 0) {
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,((PetscObject)ts)->type_name,scheme,sc_name,(double)*next_h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s %s %D:%s step %3D %s t=%-11g+%10.3e dt=%-10.3e\n",((PetscObject)adapt)->type_name,((PetscObject)ts)->type_name,scheme,sc_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,(double)*next_h);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D %s t=%-11g+%10.3e wlte=%5.3g family='%s' scheme=%D:'%s' dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,(double)wlte,((PetscObject)ts)->type_name,scheme,sc_name,(double)*next_h);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"            wlte=%5.3g wltea=%5.3g wlter=%5.3g \n",(double)wlte,(double)wltea,(double)wlter);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s %s %D:%s step %3D %s t=%-11g+%10.3e dt=%-10.3e wlte=%5.3g  wltea=%5.3g wlter=%5.3g\n",((PetscObject)adapt)->type_name,((PetscObject)ts)->type_name,scheme,sc_name,ts->steps,*accept ? "accepted" : "rejected",(double)ts->ptime,(double)h,(double)*next_h,(double)wlte,(double)wltea,(double)wlter);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
   }
@@ -603,7 +837,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
 /*@
    TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails)
 
-   Collective
+   Collective on TSAdapt
 
    Input Arguments:
 +  adapt - adaptive controller context
@@ -636,7 +870,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
       ierr = PetscInfo2(ts,"Step=%D, nonlinear solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
       if (adapt->monitor) {
         ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D stage rejected t=%-11g+%10.3e, nonlinear solve failures %D greater than current TS allowed\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)ts->time_step,ts->num_snes_failures);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected t=%-11g+%10.3e, nonlinear solve failures %D greater than current TS allowed\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)ts->time_step,ts->num_snes_failures);CHKERRQ(ierr);
         ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
       }
     }
@@ -653,9 +887,10 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
     ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
     new_dt = dt * adapt->scale_solve_failed;
     ierr = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
+    adapt->timestepjustincreased += 4;
     if (adapt->monitor) {
       ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt '%s': step %3D stage rejected t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected (%s) t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,SNESConvergedReasons[snesreason],(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
     }
   }
@@ -693,11 +928,15 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 
   ierr = PetscHeaderCreate(adapt,TSADAPT_CLASSID,"TSAdapt","Time stepping adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
+  adapt->always_accept      = PETSC_FALSE;
+  adapt->safety             = 0.9;
+  adapt->reject_safety      = 0.5;
+  adapt->clip[0]            = 0.1;
+  adapt->clip[1]            = 10.;
   adapt->dt_min             = 1e-20;
-  adapt->dt_max             = 1e50;
+  adapt->dt_max             = 1e+20;
   adapt->scale_solve_failed = 0.25;
   adapt->wnormtype          = NORM_2;
-  ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

@@ -47,7 +47,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscInt       dm_levels;
   Vec            vec_sol, vec_func, vec_sol_update, vec_rhs; /* preserve these if they're set through the reset */
   SNES           next;
-  PetscBool      isFine;
+  PetscBool      isFine, hasCreateRestriction;
   SNESLineSearch linesearch;
   SNESLineSearch slinesearch;
   void           *lsprectx,*lspostctx;
@@ -105,8 +105,14 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
       if (!fas->interpolate) {
         ierr = DMCreateInterpolation(next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
         if (!fas->restrct) {
-          ierr         = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
-          fas->restrct = fas->interpolate;
+          ierr = DMHasCreateRestriction(next->dm, &hasCreateRestriction);CHKERRQ(ierr);
+          /* DM can create restrictions, use that */
+          if (hasCreateRestriction) {
+            ierr = DMCreateRestriction(next->dm, snes->dm, &fas->restrct);CHKERRQ(ierr);
+          } else {
+            ierr         = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
+            fas->restrct = fas->interpolate;
+          }
         }
       }
       /* set the injection from the DM */
@@ -321,20 +327,20 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
     if (iascii) {
-      ierr = PetscViewerASCIIPrintf(viewer, "FAS: type is %s, levels=%D, cycles=%D\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%D, cycles=%D\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles);CHKERRQ(ierr);
       if (fas->galerkin) {
-        ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Not using Galerkin computed coarse grid function evaluation\n");CHKERRQ(ierr);
       }
       for (i=0; i<fas->levels; i++) {
         ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
         ierr = SNESFASCycleGetSmootherUp(levelsnes, &smoothu);CHKERRQ(ierr);
         ierr = SNESFASCycleGetSmootherDown(levelsnes, &smoothd);CHKERRQ(ierr);
         if (!i) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  Coarse grid solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         if (smoothd) {
@@ -344,9 +350,9 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
         }
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         if (i && (smoothd == smoothu)) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
         } else if (i) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           if (smoothu) {
             ierr = SNESView(smoothu,viewer);CHKERRQ(ierr);
@@ -951,7 +957,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   snes->ops->reset          = SNESReset_FAS;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;

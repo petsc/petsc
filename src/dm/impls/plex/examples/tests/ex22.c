@@ -240,3 +240,11 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    args: -petscspace_order 2 -tensor_petscspace_order 2 -tensor_petscspace_poly_tensor 1
+
+TEST*/

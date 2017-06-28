@@ -1211,31 +1211,40 @@ compilation of that file.  The general skeleton of the file is:
 \begin{lstlisting}
       static char help[] = "A simple MOAB example\n\
 
-      /*T
-         Concepts: Demonstrate MOAB bindings for DM
-         requires: moab
-      T*/
-      
       ...
       <source code>
       ...
 
-      /*TESTS
-         test:
+      /*TEST
+         build:
+           requires: moab
+         testset:
            suffix: 1
            requires: !complex
-         test:
+         testset:
            suffix: 2
            args: -debug -fields v1,v2,v3 
-      TESTS*/
+           test:
+           test:
+             args: -foo bar
+      TEST*/
 
 \end{lstlisting}
 
-For our language, a \emph{test} is associated with a shell script and
-makefile target.  A \emph{subtest} is a command invoked within the test
-script.  A typical test will have two subtests: one to execute the
-executable and one to compare the output with the \emph{expected results}.
-For example:
+For our language, a \emph{test} is associated with a:
+\begin{itemize}
+  \item[] Single shell script
+  \item[] Single makefile 
+  \item[] Single output file that represents the \emph{expected
+        results}.
+  \item[] Two or more command tests.  Usually, one (or more) mpiexec
+        test that runs the executable, and one (or more) diff tests to
+        compare output with the expected result.
+\end{itemize}
+Our language also supports that a \emph{testset} that specifies
+specifies either a new test entirely, or multiple executable/diff tests
+within a single test.  At the core, the executable/diff test combination
+will look something like this:
 %
 \begin{lstlisting}
       mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
@@ -1284,11 +1293,12 @@ With this background, these keywords are are:
 
 \begin{itemize}
 
-  \item[] \textbf{test}: (\emph{Required})
+  \item[] \textbf{testset} or \textbf{test}: (\emph{Required})
+
     \begin{itemize}
 
-      \item[] This is the top level keyword for the tests.  All other are
-    subsets of this keyword
+      \item[] At the top level, either a single test, or a testset must
+            be specified.   All other are subsets of this keyword.
 
     \end{itemize}
 
@@ -1392,7 +1402,7 @@ With this background, these keywords are are:
     \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
 
-        \item A space-delimited list of requirements of run requirements (not
+        \item A space-delimited list of run requirements (not
         build requirements. See Build requirements below)
 
         \item In general, the language supports \lstinline{and} and \lstinline{not} constructs
@@ -1427,9 +1437,14 @@ supported:
 %
 \begin{itemize}
 
-\item for loops:  Specifying $\{\{ ... \}\} $ will create for loops over
-enclosed space-delmited list.  For loops are supported within nsize
-and args.  An example would be:
+\item for loops:  Specifying $\{\{ ... \}shared output\} $ 
+      or $\{\{ ... \}separate output\} $ 
+      will create for loops over enclosed space-delmited list.  
+      If the loop causes a different output, then separate output would
+      be used.  If the loop does not cause separate output, then the
+      shared (or $\{\{ ... \}\} $) syntax must be used.
+
+For loops are supported within nsize and args.  An example would be:
 %
 \begin{lstlisting}
              args: -matload_block_size {{2,3}}
@@ -1455,6 +1470,20 @@ This is the simplest test block:
         test: 
       TESTS*/
 \end{lstlisting}
+which is equivalent to:
+\begin{lstlisting}
+      /*TESTS
+        testset: 
+          test: 
+      TESTS*/
+\end{lstlisting}
+which is equivalent to:
+\begin{lstlisting}
+      /*TESTS
+        testset: 
+      TESTS*/
+\end{lstlisting}
+
 
 If this block is in ex1.c, then it will create a \lstinline{runex1} test that
 requires only one processor/thread, with no arguments, and diff the
@@ -1484,19 +1513,59 @@ A fuller example would be:
 This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
 be \lstinline{runex1} and \lstinline{runex1\_1}.
 
+
+An example of how one tests a permutuation of arguments against the same
+output file:
+%
+\begin{lstlisting}
+      /*TESTS
+        testset:
+            suffix: 19
+            requires: datafilespath
+            args: -f0 ${DATAFILESPATH}/matrices/poisson1
+            args: -ksp\_type cg -pc\_type icc -pc\_factor\_levels 2
+            test:
+            test:
+               args: -mat\_type seqsbaij 
+      */TESTS
+\end{lstlisting}
+
+Assuming that this is \lstinline{ex10.c}, there would be two
+mpiexec/diff invocations in \lstinline{runex10_19.sh}.
+
+Here is a similar example, but the permation of arguments create
+different output:
+
+\begin{lstlisting}
+      /*TESTS
+         testset:
+            requires: datafilespath
+            args: -f0 ${DATAFILESPATH}/matrices/medium
+            args: -ksp\_type bicg
+            test:
+               suffix: 4
+               args: -pc\_type lu
+            test:
+               suffix: 5 
+      */TESTS
+\end{lstlisting}
+Assuming that this is \lstinline{ex10.c}, there would be two shell
+scripts created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
+
 An example using a for loop would be:
 %
 \begin{lstlisting}
 
       /*TESTS
-        test:
+        testset:
              suffix: 1
              args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
              requires: datafilespath
-         test:
+         testset:
              suffix: 2
-             output\_file: output/ex138.out
-             args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij -matload\_block\_size {{2,3}}
+             output\_file: output/ex138\_1.out
+             args: -f ${DATAFILESPATH}/matrices/small
+             args: -mat\_type baij -matload\_block\_size {{2,3}shared output}
              requires: datafilespath
       */TESTS
 
@@ -1505,33 +1574,47 @@ An example using a for loop would be:
 In this example, runex138\_2 will invoke ex138 twice with two different
 arguments, but both are diffed with the same file.
 
-An example for showing the hieararchial nature of the test specification is:
+An example for showing the hierarchial nature of the test specification is:
 %
 \begin{lstlisting}
-
-      test: 
+      testset: 
         suffix:2
-        output\_file: output/ex1.out
+        output\_file: output/ex138\_1.out
         args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
         test:
              args: -matload\_block\_size 2
         test:
              args: -matload\_block\_size 3
-
-
 \end{lstlisting}
-
 This is functionally equivalent to the for loop shown above.
-If you have different output files, this example is more extensible
-however as the different output\_files can be placed under tests.
 
-
+Here is a more complex example using for loops:
+\begin{lstlisting}
+   testset:
+      suffix: 19
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp\_type cg -pc\_type icc 
+      args: -pc\_factor\_levels {{0 2 4}separate output}
+      test:
+      test:
+         args: -mat\_type seqsbaij
+\end{lstlisting}
+If this is in \lstinline{ex10.c}, then the shell scripts generated would
+be:
+\begin{lstlisting}
+      runex10\_19\_pc\_factor\_levels-0.sh
+      runex10\_19\_pc\_factor\_levels-2.sh
+      runex10\_19\_pc\_factor\_levels-4.sh
+\end{lstlisting}
+Each shell script would invoke mpiexec twice.
+ 
 \subsection{Build language options%
   \label{build-language-options}%
 }
 
 It is possible to specify issues related to the compilation of the
-source file.  The language is:
+source file with the \lstinline{build:} block.  The language is:
 %
 \begin{quote}
 %
@@ -1551,6 +1634,8 @@ but also requirements related to types:
 A. Precision types: single, double, quad, int32
 B. Scalar types: complex  (and !complex)
 \end{list}
+In addition, \lstinline{TODO}  is available to allow one to skip the
+build of this file but still maintain it in the source tree.
 
 \end{description}
 
