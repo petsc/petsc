@@ -119,6 +119,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   static PetscBool  cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (!A->rmap->n) PetscFunctionReturn(0);
   ierr = PetscCitationsRegister("@article{davis2004algorithm,\n  title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},\n  author={Davis, Timothy A},\n  journal={ACM Transactions on Mathematical Software (TOMS)},\n  volume={30},\n  number={2},\n  pages={196--199},\n  year={2004},\n  publisher={ACM}\n}\n",&cite);CHKERRQ(ierr);
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
@@ -175,6 +176,7 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!A->rmap->n) PetscFunctionReturn(0);
   /* numeric factorization of A' */
   /* ----------------------------*/
 
@@ -220,6 +222,8 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscInt       status;
 
   PetscFunctionBegin;
+  (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
+  if (!n) PetscFunctionReturn(0);
   if (lu->PetscMatOrdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
     ierr = PetscMalloc1(m,&lu->perm_c);CHKERRQ(ierr);
@@ -256,7 +260,6 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
 
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpUMFPACK        = PETSC_TRUE;
-  (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   PetscFunctionReturn(0);
 }
 
