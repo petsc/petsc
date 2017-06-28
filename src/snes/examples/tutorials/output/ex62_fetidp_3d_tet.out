@@ -14,9 +14,9 @@ SNES Object: 5 MPI processes
     maximum iterations=40
   KSP Object: 5 MPI processes
     type: fetidp
-      FETI-DP: fully redundant: 0
-      FETI-DP: saddle point:    1
-      FETI-DP: inner solver details
+      fully redundant: 0
+      saddle point:    1
+      inner solver details
         KSP Object: (fetidp_) 5 MPI processes
           type: cg
           maximum iterations=10000, initial guess is zero
@@ -39,7 +39,7 @@ SNES Object: 5 MPI processes
                 using NONE norm type for convergence test
               PC Object: 5 MPI processes
                 type: shell
-                  Shell: no name
+                  no name
                     FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                       Mat Object: 1 MPI processes
                         type: schurcomplement
@@ -68,7 +68,6 @@ SNES Object: 5 MPI processes
                               using NONE norm type for convergence test
                             PC Object: (fetidp_harmonic_) 1 MPI processes
                               type: cholesky
-                                Cholesky: out-of-place factorization
                                 out-of-place factorization
                                 tolerance for zero pivot 2.22045e-14
                                 matrix ordering: natural
@@ -134,13 +133,8 @@ SNES Object: 5 MPI processes
                         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
-<<<<<<< HEAD
-                      PC Object: (fetidp_harmonic_) 1 MPI processes
-                        type: cholesky
-=======
                       PC Object: (fetidp_bddelta_) 1 MPI processes
                         type: lu
->>>>>>> stefano_zampini/feature-fetidp-ex69
                           out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
                           matrix ordering: nd
@@ -188,7 +182,7 @@ SNES Object: 5 MPI processes
             KSP solver for S = A11 - A10 inv(A00) A01 
               KSP Object: (fetidp_fieldsplit_p_) 5 MPI processes
                 type: richardson
-                  Richardson: damping factor=1000.
+                  damping factor=1000.
                 maximum iterations=1, initial guess is zero
                 tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
@@ -217,7 +211,7 @@ SNES Object: 5 MPI processes
                         using NONE norm type for convergence test
                       PC Object: 5 MPI processes
                         type: shell
-                          Shell: no name
+                          no name
                             FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                               Mat Object: 1 MPI processes
                                 type: schurcomplement
@@ -246,7 +240,6 @@ SNES Object: 5 MPI processes
                                       using NONE norm type for convergence test
                                     PC Object: (fetidp_harmonic_) 1 MPI processes
                                       type: cholesky
-                                        Cholesky: out-of-place factorization
                                         out-of-place factorization
                                         tolerance for zero pivot 2.22045e-14
                                         matrix ordering: natural
@@ -367,32 +360,12 @@ SNES Object: 5 MPI processes
                   rows=55, cols=55
                   total: nonzeros=55, allocated nonzeros=55
                   total number of mallocs used during MatSetValues calls =0
-<<<<<<< HEAD
-                    using I-node routines: found 47 nodes, limit used is 5
-              FETI-DP pressure preconditioner
-                KSP Object: (fetidp_p_) 5 MPI processes
-                  type: richardson
-                    damping factor=1000.
-                  maximum iterations=1, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                  left preconditioning
-                  using PRECONDITIONED norm type for convergence test
-                PC Object: (fetidp_p_) 5 MPI processes
-                  type: none
-                  linear system matrix = precond matrix:
-                  Mat Object: 5 MPI processes
-                    type: is
-                    rows=55, cols=55
-                    total: nonzeros=735, allocated nonzeros=735
-                    total number of mallocs used during MatSetValues calls =0
-=======
                     not using I-node (on process 0) routines
->>>>>>> stefano_zampini/feature-fetidp-ex69
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
             rows=454, cols=454
-      FETI-DP: BDDC solver details
+      BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
             Use verbose output: 0
@@ -508,4 +481,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 2.09e-08 [7.75e-10, 2.09e-08]
+L_2 Error: 2.08811e-08 [7.62942e-10, 2.08671e-08]
