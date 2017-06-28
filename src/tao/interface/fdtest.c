@@ -16,7 +16,8 @@ PetscErrorCode TaoSolve_Test(Tao tao)
   Vec            x = tao->solution,g1,g2;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscReal      nrm,gnorm,hcnorm,fdnorm;
+  PetscReal      nrm,gnorm,hcnorm,fdnorm,hcmax,fdmax,diffmax,diffnorm;
+  PetscScalar    dot;
   MPI_Comm       comm;
   Tao_Test        *fd = (Tao_Test*)tao->data;
 
@@ -54,13 +55,17 @@ PetscErrorCode TaoSolve_Test(Tao tao)
         ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
       }
 
-      ierr = VecAXPY(g2,-1.0,g1);CHKERRQ(ierr);
-      ierr = VecNorm(g1,NORM_2,&hcnorm);CHKERRQ(ierr);
       ierr = VecNorm(g2,NORM_2,&fdnorm);CHKERRQ(ierr);
-
-      if (!hcnorm) hcnorm=1.0e-20;
-      ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %g, difference ||fd-hc|| = %g\n", (double)(fdnorm/hcnorm), (double)fdnorm);CHKERRQ(ierr);
-
+      ierr = VecNorm(g1,NORM_2,&hcnorm);CHKERRQ(ierr);
+      ierr = VecNorm(g2,NORM_INFINITY,&fdmax);CHKERRQ(ierr);
+      ierr = VecNorm(g1,NORM_INFINITY,&hcmax);CHKERRQ(ierr);
+      ierr = VecDot(g1,g2,&dot);CHKERRQ(ierr);
+      ierr = VecAXPY(g2,-1.0,g1);CHKERRQ(ierr);
+      ierr = VecNorm(g2,NORM_2,&diffnorm);CHKERRQ(ierr);
+      ierr = VecNorm(g2,NORM_INFINITY,&diffmax);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"||fd|| %g, ||hc|| = %g, angle cosine = (fd'hc)/||fd||||hc|| = %g\n", (double)fdnorm, (double)hcnorm, (double)(PetscRealPart(dot)/(fdnorm*hcnorm)));CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"2-norm ||fd-hc||/max(||hc||,||fd||) = %g, difference ||fd-hc|| = %g\n", (double)(diffnorm/PetscMax(hcnorm,fdnorm)), (double)diffnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"max-norm ||fd-hc||/max(||hc||,||fd||) = %g, difference ||fd-hc|| = %g\n", (double)(diffmax/PetscMax(hcmax,fdmax)), (double)diffmax);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&g1);CHKERRQ(ierr);
     ierr = VecDestroy(&g2);CHKERRQ(ierr);
