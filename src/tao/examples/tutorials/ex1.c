@@ -214,9 +214,9 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   user->exactFuncs[0] = quadratic_u_2d;
   user->exactFuncs[1] = linear_a_2d;
   user->exactFuncs[2] = zero;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 1, 0, NULL, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 2, 0, NULL, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 1, 0, NULL, (void (*)(void)) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 2, 0, NULL, (void (*)(void)) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
