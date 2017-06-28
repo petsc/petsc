@@ -26,7 +26,7 @@ extern PetscErrorCode DMClone_Network(DM, DM*);
 
 static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
   PetscInt          i,e,v,Start,End,offset,nvar;
   const PetscScalar *xv;
 
@@ -81,6 +81,162 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,e,v,Start,End,vStart,vEnd,offset,nvar,len_loc,len,k;
+  const PetscScalar *xv;
+  MPI_Comm          comm;
+  PetscMPIInt       size,rank,tag = ((PetscObject)viewer)->tag;
+  Vec               localX;
+  PetscBool         ghostvtex;
+  PetscScalar       *values;
+  PetscInt          j,n,ne,nv,ii;
+  MPI_Status        status;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(localX,&xv);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(localX,&len_loc);CHKERRQ(ierr);
+
+  ierr = DMNetworkGetEdgeRange(networkdm,&Start,&End);CHKERRQ(ierr);
+  ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+  len_loc += 2*(1 + End-Start + vEnd-vStart);
+
+  /* values = [nedges, offset, nvar, xe; nvertices, offsets, nvars, xv] */
+  ierr = MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = PetscCalloc1(len,&values);CHKERRQ(ierr);
+
+  if (!rank) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);
+  }
+
+  /* iterate over edges */
+  k = 2;
+  for (e=Start; e<End; e++) {
+    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
+    if (!nvar) continue;
+
+    values[0]  += 1; /* nedges */
+    values[k++] = offset;
+    values[k++] = nvar;
+
+    if (!rank) { /* print its own entries */
+      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-Start);CHKERRQ(ierr);
+    }
+
+    for (i=offset; i< offset+nvar; i++) {
+      if (!rank) {
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(xv[i]) > 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]);CHKERRQ(ierr);
+#endif
+      } else {
+        values[k++] = xv[i];
+      }
+    }
+  }
+
+  /* iterate over vertices */
+  for (v=vStart; v<vEnd; v++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(networkdm,v,&nvar);CHKERRQ(ierr);
+    if (!nvar) continue;
+
+    values[1]  += 1; /* nvertices */
+    values[k++] = offset;
+    values[k++] = nvar;
+
+    if (!rank) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-Start);CHKERRQ(ierr);
+    }
+
+    for (i=offset; i< offset+nvar; i++) {
+      if (!rank) {
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(xv[i]) > 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]);CHKERRQ(ierr);
+#endif
+      } else {
+        values[k++] = xv[i];
+      }
+    }
+  }
+
+  if (!rank) {
+    /* proc[0] receives and prints messages */
+    for (j=1; j<size; j++) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
+
+      ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
+
+      ne = (PetscInt)values[0];
+      nv = (PetscInt)values[1];
+
+      /* print received edges */
+      k  = 2;
+      for (i=0; i<ne; i++) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",i);CHKERRQ(ierr);
+      }
+
+      /* print received vertices */
+      for (i=0; i<nv; i++) {
+        offset = (PetscInt)values[k++];
+        nvar   = (PetscInt)values[k++];
+        ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",i);CHKERRQ(ierr);
+        for (ii=0; ii<nvar; ii++) {
+#if defined(PETSC_USE_COMPLEX)
+          if (PetscImaginaryPart(xv[i]) > 0.0) {
+            ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[k]),(double)PetscImaginaryPart(xv[k]));CHKERRQ(ierr);
+            k++;
+          } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+            ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[k]),-(double)PetscImaginaryPart(xv[k]));CHKERRQ(ierr);
+            k++;
+          } else {
+            ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[k++]));CHKERRQ(ierr);
+          }
+#else
+          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)values[k++]);CHKERRQ(ierr);
+#endif
+        }
+      }
+    }
+  } else {
+    /* sends values to proc[0] */
+    ierr = MPI_Send((void*)values,k,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
+  }
+
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(localX,&xv);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
 {
   DM             dm;
@@ -88,14 +244,13 @@ PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
   PetscBool      isseq;
 
   PetscFunctionBegin;
-  printf("VecView_Network...\n");
   ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq);CHKERRQ(ierr);
   if (isseq) {
     ierr = VecView_Network_Seq(dm,v,viewer);CHKERRQ(ierr);
   } else {
-    printf("not done yet\n");
+    ierr = VecView_Network_MPI(dm,v,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
