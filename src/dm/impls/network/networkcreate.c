@@ -24,6 +24,81 @@ extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM*);
 
+static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
+{
+  PetscErrorCode   ierr;
+  PetscInt          i,e,v,Start,End,offset,nvar;
+  const PetscScalar *xv;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(X,&xv);CHKERRQ(ierr);
+
+  /* iterate over edges */
+  ierr = DMNetworkGetEdgeRange(networkdm,&Start,&End);CHKERRQ(ierr);
+  for (e=Start; e<End; e++) {
+    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
+    if (!nvar) continue;
+    ierr = PetscViewerASCIIPrintf(viewer,"Edge %D:\n",e-Start);CHKERRQ(ierr);
+    for (i=offset; i< offset+nvar; i++) {
+#if defined(PETSC_USE_COMPLEX)
+      if (PetscImaginaryPart(xv[i]) > 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
+      }
+#else
+      ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)xv[i]);CHKERRQ(ierr);
+#endif
+    }
+  }
+
+  /* iterate over vertices */
+  ierr = DMNetworkGetVertexRange(networkdm,&Start,&End);CHKERRQ(ierr);
+  for (v=Start; v<End; v++) {
+    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(networkdm,v,&nvar);CHKERRQ(ierr);
+    if (!nvar) continue;
+    ierr = PetscViewerASCIIPrintf(viewer,"Vertex %D:\n",v-Start);CHKERRQ(ierr);
+    for (i=offset; i< offset+nvar; i++) {
+#if defined(PETSC_USE_COMPLEX)
+      if (PetscImaginaryPart(xv[i]) > 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
+      }
+#else
+      ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)xv[i]);CHKERRQ(ierr);
+#endif
+    }
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+  PetscBool      isseq;
+
+  PetscFunctionBegin;
+  printf("VecView_Network...\n");
+  ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq);CHKERRQ(ierr);
+  if (isseq) {
+    ierr = VecView_Network_Seq(dm,v,viewer);CHKERRQ(ierr);
+  } else {
+    printf("not done yet\n");
+  }
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode DMCreateGlobalVector_Network(DM dm,Vec *vec)
 {
@@ -32,6 +107,7 @@ static PetscErrorCode DMCreateGlobalVector_Network(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(network->plex,vec);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Network);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -6,7 +6,7 @@
   DMNetworkGetPlex - Gets the Plex DM associated with this network DM
 
   Not collective
-  
+
   Input Parameters:
 + netdm - the dm object
 - plexmdm - the plex dm object
@@ -28,7 +28,7 @@ PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
   DMNetworkSetSizes - Sets the local and global vertices and edges.
 
   Collective on DM
-  
+
   Input Parameters:
 + dm - the dm object
 . nV - number of local vertices
@@ -90,7 +90,7 @@ PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
 PetscErrorCode DMNetworkSetEdgeList(DM dm, int edgelist[])
 {
   DM_Network *network = (DM_Network*) dm->data;
-  
+
   PetscFunctionBegin;
   network->edges = edgelist;
   PetscFunctionReturn(0);
@@ -193,7 +193,7 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,PetscInt size,P
       PetscFunctionReturn(0);
     }
   }
-  
+
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
   component->size = size/sizeof(DMNetworkComponentGenericDataType);
   *key = network->ncomponent;
@@ -275,14 +275,14 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
   DMNetworkComponentHeader header = &network->header[p];
   DMNetworkComponentValue  cvalue = &network->cvalue[p];
   PetscErrorCode           ierr;
-  
+
   PetscFunctionBegin;
   if (header->ndata == MAX_DATA_AT_POINT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components at a point exceeds the max %D",MAX_DATA_AT_POINT);
 
   header->size[header->ndata] = component->size;
   ierr = PetscSectionAddDof(network->DataSection,p,component->size);CHKERRQ(ierr);
   header->key[header->ndata] = componentkey;
-  if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1]; 
+  if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1];
 
   cvalue->data[header->ndata] = (void*)compvalue;
   header->ndata++;
@@ -292,7 +292,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
 /*@
   DMNetworkGetNumComponents - Get the number of components at a vertex/edge
 
-  Not Collective 
+  Not Collective
 
   Input Parameters:
 + dm - The DMNetwork object
@@ -318,7 +318,7 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 }
 
 /*@
-  DMNetworkGetComponentTypeOffset - Gets the type along with the offset for indexing the 
+  DMNetworkGetComponentTypeOffset - Gets the type along with the offset for indexing the
                                     component value from the component data array
 
   Not Collective
@@ -327,7 +327,7 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 + dm      - The DMNetwork object
 . p       - vertex/edge point
 - compnum - component number
-	
+
   Output Parameters:
 + compkey - the key obtained when registering the component
 - offset  - offset into the component data array associated with the vertex/edge point
@@ -342,10 +342,10 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
     Loop over numcomps
       DMNetworkGetComponentTypeOffset(dm,v,compnum,&key,&offset);
       compdata = (UserCompDataType)(arr+offset);
-  
+
   Level: intermediate
 
-.seealso: DMNetworkGetNumComponents, DMNetworkGetComponentDataArray, 
+.seealso: DMNetworkGetNumComponents, DMNetworkGetComponentDataArray,
 @*/
 PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
@@ -840,7 +840,6 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
 
   PetscFunctionReturn(0);
 }
-
 
 /*@C
   DMNetworkGetSupportingEdges - Return the supporting edges for this vertex point
