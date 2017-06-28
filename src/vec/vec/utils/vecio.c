@@ -186,6 +186,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   int            rdim, dim;
   hsize_t        dims[4];
   PetscInt       bsInd, lenInd, timestep;
+  PetscBool      complexVal = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -201,15 +202,21 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   if (timestep >= 0) ++dim;
   ++dim; /* length in blocks */
   ++dim; /* block size */
-#if defined(PETSC_USE_COMPLEX)
-  ++dim;
-#endif
+  {
+    const char *groupname;
+    char       vecgroup[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,name);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5HasAttribute(viewer,vecgroup,"complex",&complexVal);CHKERRQ(ierr);
+  }
+  if (complexVal) ++dim;
   PetscStackCallHDF5Return(rdim,H5Sget_simple_extent_dims,(filespace, dims, NULL));
-#if defined(PETSC_USE_COMPLEX)
-  bsInd = rdim-2;
-#else
-  bsInd = rdim-1;
-#endif
+  if (complexVal) {
+    bsInd = rdim-2;
+  } else {
+    bsInd = rdim-1;
+  }
   lenInd = timestep >= 0 ? 1 : 0;
   if (rdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
   /* Close/release resources */
