@@ -84,7 +84,7 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
 static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,e,v,Start,End,vStart,vEnd,offset,nvar,len_loc,len,k;
+  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,offset,nvar,len_loc,len,k;
   const PetscScalar *xv;
   MPI_Comm          comm;
   PetscMPIInt       size,rank,tag = ((PetscObject)viewer)->tag;
@@ -106,9 +106,9 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
   ierr = VecGetLocalSize(localX,&len_loc);CHKERRQ(ierr);
 
-  ierr = DMNetworkGetEdgeRange(networkdm,&Start,&End);CHKERRQ(ierr);
+  ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  len_loc += 2*(1 + End-Start + vEnd-vStart);
+  len_loc += 2*(1 + eEnd-eStart + vEnd-vStart);
 
   /* values = [nedges, offset, nvar, xe; nvertices, offsets, nvars, xv] */
   ierr = MPI_Allreduce(&len_loc,&len,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
   /* iterate over edges */
   k = 2;
-  for (e=Start; e<End; e++) {
+  for (e=eStart; e<eEnd; e++) {
     ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
@@ -130,7 +130,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     values[k++] = nvar;
 
     if (!rank) { /* print its own entries */
-      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-Start);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-eStart);CHKERRQ(ierr);
     }
 
     for (i=offset; i< offset+nvar; i++) {
@@ -165,7 +165,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     values[k++] = nvar;
 
     if (!rank) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-Start);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-vStart);CHKERRQ(ierr);
     }
 
     for (i=offset; i< offset+nvar; i++) {
