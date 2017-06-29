@@ -198,6 +198,7 @@ PETSC_EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCHYPREGetType(PC,const char*[]);
 PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteGradient(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteCurl(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetInterpolations(PC,PetscInt,Mat,Mat[],Mat,Mat[]);
 PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
