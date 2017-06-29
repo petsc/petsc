@@ -1,3 +1,5 @@
+#requirespackage 'PETSC_HAVE_MKL'
+
 ALL: lib
 
 CFLAGS   =
