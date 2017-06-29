@@ -308,7 +308,7 @@ int main(int argc,char **args)
   {
     PetscInt    dimEmbed, i;
     PetscInt    nCoords;
-    PetscScalar *coords,bounds[] = {0,0,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    PetscScalar *coords,bounds[] = {0,1,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
     Vec         coordinates;
     bounds[1] = Lx;
     if (run_type==1) {

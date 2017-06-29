@@ -129,7 +129,7 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
 {
   DM             da;
   DMDALocalInfo  info;
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3], d;
+  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3] = {0, 0, 0}, d;
   PetscReal      h[3];
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -172,7 +172,7 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
 
 static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
 {
-  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3], d;
+  PetscInt       N = 3, n = 0, spaceDim, i, j, k, ind[3] = {0, 0, 0}, d;
   PetscReal      h[3];
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -209,6 +209,7 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *pointsAllProcs = PETSC_FALSE;
   switch (ctx->pointType) {
   case CENTROID:        ierr = CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;
   case GRID:            ierr = CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx);CHKERRQ(ierr);break;

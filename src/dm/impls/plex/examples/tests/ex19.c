@@ -73,7 +73,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   Vec                coordinates;
   const PetscScalar *coords;
   PetscScalar       *met;
-  PetscReal          h, lambda[3], lbd, lmax;
+  PetscReal          h, lambda[3] = {0.0, 0.0, 0.0}, lbd, lmax;
   PetscInt           pStart, pEnd, p, d;
   const PetscInt     dim = user->dim, Nd = dim*dim;
   PetscErrorCode     ierr;
