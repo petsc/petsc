@@ -22,6 +22,7 @@ struct _PetscSpaceOps {
 
   PetscErrorCode (*getdimension)(PetscSpace,PetscInt*);
   PetscErrorCode (*evaluate)(PetscSpace,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+  PetscErrorCode (*getheightsubspace)(PetscSpace,PetscInt,PetscSpace *);
 };
 
 struct _p_PetscSpace {
@@ -33,10 +34,11 @@ struct _p_PetscSpace {
 };
 
 typedef struct {
-  PetscInt   numVariables; /* The number of variables in the space, e.g. x and y */
-  PetscBool  symmetric;    /* Use only symmetric polynomials */
-  PetscBool  tensor;       /* Flag for tensor product */
-  PetscInt  *degrees;      /* Degrees of single variable which we need to compute */
+  PetscInt    numVariables; /* The number of variables in the space, e.g. x and y */
+  PetscBool   symmetric;    /* Use only symmetric polynomials */
+  PetscBool   tensor;       /* Flag for tensor product */
+  PetscInt   *degrees;      /* Degrees of single variable which we need to compute */
+  PetscSpace *subspaces;    /* Subspaces for each dimension */
 } PetscSpace_Poly;
 
 typedef struct {
@@ -111,6 +113,7 @@ struct _p_PetscFE {
   PetscInt        numComponents;         /* The number of field components */
   PetscQuadrature quadrature;            /* Suitable quadrature on K */
   PetscQuadrature faceQuadrature;        /* Suitable face quadrature on \partial K */
+  PetscFE        *subspaces;             /* Subspaces for each dimension */
   PetscReal      *invV;                  /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B,  *D,  *H;           /* Tabulation of basis and derivatives at quadrature points */
   PetscReal      *Bf, *Df, *Hf;          /* Tabulation of basis and derivatives at quadrature points on each face */
