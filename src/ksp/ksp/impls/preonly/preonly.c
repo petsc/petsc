@@ -41,6 +41,12 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
    Level: beginner
 
+   Notes: Since this does not involve an iteration the basic KSP parameters such as tolerances and iteration counts
+          do not apply
+
+   Developer Notes: Even though this method does not use any norms, the user is allowed to set the KSPNormType to any value.
+    This is so the users does not have to change KSPNormType options when they switch from other KSP methods to this one.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 
 M*/
@@ -50,10 +56,15 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,3);CHKERRQ(ierr); /* LEFT/RIGHT is arbitrary, so "support" both */
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
-  ksp->data                = (void*)0;
+  ksp->data                = NULL;
   ksp->ops->setup          = KSPSetUp_PREONLY;
   ksp->ops->solve          = KSPSolve_PREONLY;
   ksp->ops->destroy        = KSPDestroyDefault;
