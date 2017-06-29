@@ -469,7 +469,7 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)(void)) coordinates, 0, NULL, user);CHKERRQ(ierr);
   ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -213,7 +213,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
     break;
   }
   ctx->exactFuncs[0] = analytic_phi;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

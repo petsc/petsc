@@ -101,7 +101,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    const PetscScalar *pcoords;
+    PetscScalar       *pcoords;
     PetscScalar       *pmet;
 
     ierr = DMPlexPointLocalRead(cdm, p, coords, &pcoords);CHKERRQ(ierr);
