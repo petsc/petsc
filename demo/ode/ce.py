@@ -33,6 +33,7 @@ lambda_ = OptDB.getScalar('lambda', 10.0)
 ode = CE(lambda_)
 
 J = PETSc.Mat().createDense([ode.n,ode.n], comm=ode.comm)
+J.setUp()
 x = PETSc.Vec().createSeq(ode.n, comm=ode.comm)
 f = x.duplicate()
 
@@ -47,6 +48,7 @@ ts.setTime(0.0)
 ts.setTimeStep(0.001)
 ts.setMaxTime(10)
 ts.setMaxSteps(10000)
+ts.setExactFinalTime(PETSc.TS.ExactFinalTime.INTERPOLATE)
 
 class Monitor(object):
     def __init__(self, ode):

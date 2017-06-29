@@ -109,6 +109,7 @@ ts.setTime(0.0)
 ts.setTimeStep(ode.h**2)
 ts.setMaxTime(1)
 ts.setMaxSteps(100)
+ts.setExactFinalTime(PETSc.TS.ExactFinalTime.INTERPOLATE)
 ts.setMaxSNESFailures(-1)       # allow an unlimited number of failures (step will be rejected and retried)
 
 snes = ts.getSNES()             # Nonlinear solver
