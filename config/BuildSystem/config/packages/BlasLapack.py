@@ -422,6 +422,7 @@ class Configure(config.package.Package):
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
+      self.addDefine('HAVE_MKL',1)
     self.logWrite(self.libraries.restoreLog())
     return
 
