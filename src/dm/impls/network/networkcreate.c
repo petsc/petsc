@@ -24,10 +24,32 @@ extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM*);
 
+static PetscErrorCode VecArrayPrint_private(PetscViewer viewer,PetscInt n,const PetscScalar *xv)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+#if defined(PETSC_USE_COMPLEX)
+    if (PetscImaginaryPart(xv[i]) > 0.0) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+    } else if (PetscImaginaryPart(xv[i]) < 0.0) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
+    }
+#else
+    ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]);CHKERRQ(ierr);
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,e,v,Start,End,offset,nvar;
+  PetscInt          e,v,Start,End,offset,nvar;
   const PetscScalar *xv;
 
   PetscFunctionBegin;
@@ -39,20 +61,9 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
-    ierr = PetscViewerASCIIPrintf(viewer,"Edge %D:\n",e-Start);CHKERRQ(ierr);
-    for (i=offset; i< offset+nvar; i++) {
-#if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(xv[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
-      }
-#else
-      ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)xv[i]);CHKERRQ(ierr);
-#endif
-    }
+
+    ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-Start);CHKERRQ(ierr);
+    ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
 
   /* iterate over vertices */
@@ -61,20 +72,9 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,v,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
-    ierr = PetscViewerASCIIPrintf(viewer,"Vertex %D:\n",v-Start);CHKERRQ(ierr);
-    for (i=offset; i< offset+nvar; i++) {
-#if defined(PETSC_USE_COMPLEX)
-      if (PetscImaginaryPart(xv[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-      } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
-      }
-#else
-      ierr = PetscViewerASCIIPrintf(viewer,"  %g\n",(double)xv[i]);CHKERRQ(ierr);
-#endif
-    }
+
+    ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-Start);CHKERRQ(ierr);
+    ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&xv);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   Vec               localX;
   PetscBool         ghostvtex;
   PetscScalar       *values;
-  PetscInt          j,n,ne,nv,ii;
+  PetscInt          j,n,ne,nv;
   MPI_Status        status;
 
   PetscFunctionBegin;
@@ -131,22 +131,9 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
     if (!rank) { /* print its own entries */
       ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-eStart);CHKERRQ(ierr);
-    }
-
-    for (i=offset; i< offset+nvar; i++) {
-      if (!rank) {
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(xv[i]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-        } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-        } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
-        }
-#else
-        ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]);CHKERRQ(ierr);
-#endif
-      } else {
+      ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
+    } else {
+      for (i=offset; i< offset+nvar; i++) {
         values[k++] = xv[i];
       }
     }
@@ -168,20 +155,10 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-vStart);CHKERRQ(ierr);
     }
 
-    for (i=offset; i< offset+nvar; i++) {
-      if (!rank) {
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(xv[i]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-        } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
-        } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
-        }
-#else
-        ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)xv[i]);CHKERRQ(ierr);
-#endif
-      } else {
+    if (!rank) {
+      ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
+    } else {
+      for (i=offset; i< offset+nvar; i++) {
         values[k++] = xv[i];
       }
     }
@@ -201,7 +178,11 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       /* print received edges */
       k  = 2;
       for (i=0; i<ne; i++) {
+        offset = (PetscInt)values[k++];
+        nvar   = (PetscInt)values[k++];
         ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",i);CHKERRQ(ierr);
+        ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
+        k   += nvar;
       }
 
       /* print received vertices */
@@ -209,21 +190,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
         offset = (PetscInt)values[k++];
         nvar   = (PetscInt)values[k++];
         ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",i);CHKERRQ(ierr);
-        for (ii=0; ii<nvar; ii++) {
-#if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginaryPart(xv[i]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"    %g + %g i\n",(double)PetscRealPart(xv[k]),(double)PetscImaginaryPart(xv[k]));CHKERRQ(ierr);
-            k++;
-          } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"    %g - %g i\n",(double)PetscRealPart(xv[k]),-(double)PetscImaginaryPart(xv[k]));CHKERRQ(ierr);
-            k++;
-          } else {
-            ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)PetscRealPart(xv[k++]));CHKERRQ(ierr);
-          }
-#else
-          ierr = PetscViewerASCIIPrintf(viewer,"    %g\n",(double)values[k++]);CHKERRQ(ierr);
-#endif
-        }
+        ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
+        k   += nvar;
       }
     }
   } else {
