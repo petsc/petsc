@@ -635,7 +635,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
 #include <unistd.h>
 #endif
 
-#if !defined(PETSC_HAVE_WINDOWS_H)
+#if defined(PETSC_USE_SOCKET_VIEWER)
 static PetscErrorCode (*PetscViewerDestroy_ASCII)(PetscViewer);
 
 static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
@@ -655,7 +655,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
 
 static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostname,PetscInt port,PetscViewer* viewer)
 {
-#if defined(PETSC_HAVE_WINDOWS_H)
+#if !defined(PETSC_USE_SOCKET_VIEWER)
   PetscFunctionBegin;
   SETERRQ(comm,PETSC_ERR_SUP,"Not implemented for Windows");
 #else
