@@ -24,6 +24,10 @@
       PetscInt         ctx
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       i3 = 3
       i1 = 1

@@ -106,6 +106,10 @@
       real :: ttime
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call assert(ierr.eq.0,'PetscInitialize return ',ierr)
 
       nrow = n*n
