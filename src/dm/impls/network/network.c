@@ -147,6 +147,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
+    network->header[i].id    = i;
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
