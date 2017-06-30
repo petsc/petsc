@@ -1144,7 +1144,7 @@ class Configure(config.base.Configure):
     '''Determine whether the Fortran compiler handles F90FreeForm
        We also require that the compiler handles lines longer than 132 characters'''
     self.pushLanguage('FC')
-    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr;       ierr                            = 1'):
+    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr;       ierr                            =                                                                                                               1'):
       self.addDefine('USING_F90FREEFORM', 1)
       self.fortranIsF90FreeForm = 1
       self.logPrint('Fortran compiler supports F90FreeForm')
