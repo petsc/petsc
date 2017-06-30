@@ -142,11 +142,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
     if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
   }
-  if (dm->maxCell) {
-    const PetscReal *maxCell, *L;
+  {
+    PetscBool             isper;
+    const PetscReal      *maxCell, *L;
     const DMBoundaryType *bd;
-    ierr = DMGetPeriodicity(dm,     &maxCell, &L, &bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*newdm,  maxCell,  L,  bd);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*newdm, isper, maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3032,11 +3033,12 @@ foundconv:
     ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(dm,newtype,M);CHKERRQ(ierr);
     /* Things that are independent of DM type: We should consult DMClone() here */
-    if (dm->maxCell) {
-      const PetscReal *maxCell, *L;
+    {
+      PetscBool             isper;
+      const PetscReal      *maxCell, *L;
       const DMBoundaryType *bd;
-      ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
-      ierr = DMSetPeriodicity(*M,  maxCell,  L,  bd);CHKERRQ(ierr);
+      ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(*M, isper, maxCell,  L,  bd);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
   }
@@ -4294,10 +4296,13 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 }
 
 /*@C
-  DMSetPeriodicity - Set the description of mesh periodicity
+  DMGetPeriodicity - Get the description of mesh periodicity
 
   Input Parameters:
-+ dm      - The DM object
+. dm      - The DM object
+
+  Output Parameters:
++ per     - Whether the DM is periodic or not
 . maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
@@ -4306,10 +4311,11 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 .seealso: DMGetPeriodicity()
 @*/
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
+PetscErrorCode DMGetPeriodicity(DM dm, PetscBool *per, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (per)     *per     = dm->periodic;
   if (L)       *L       = dm->L;
   if (maxCell) *maxCell = dm->maxCell;
   if (bd)      *bd      = dm->bdtype;
@@ -4321,6 +4327,7 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 
   Input Parameters:
 + dm      - The DM object
+. per     - Whether the DM is periodic or not. If maxCell is not provided, coordinates need to be localized
 . maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
@@ -4329,18 +4336,28 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 
 .seealso: DMGetPeriodicity()
 @*/
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
+PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
   PetscInt       dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(L,3);PetscValidPointer(maxCell,2);PetscValidPointer(bd,4);
+  PetscValidLogicalCollectiveBool(dm,per,2);
+  if (maxCell) {
+    PetscValidPointer(maxCell,3);
+    PetscValidPointer(L,4);
+    PetscValidPointer(bd,5);
+  }
   ierr = PetscFree3(dm->L,dm->maxCell,dm->bdtype);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
+  if (maxCell) {
+    ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
+    dm->periodic = PETSC_TRUE;
+  } else {
+    dm->periodic = per;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4502,7 +4519,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->maxCell) {
+  if (!dm->periodic) {
     *areLocalized = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -4560,7 +4577,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->maxCell) PetscFunctionReturn(0);
+  if (!dm->periodic) PetscFunctionReturn(0);
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   {

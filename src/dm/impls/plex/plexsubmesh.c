@@ -622,12 +622,15 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
 
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
-  PetscSF         sf;
-  IS              valueIS;
-  const PetscInt *values, *leaves;
-  PetscInt       *depthShift;
-  PetscInt        d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
-  PetscErrorCode  ierr;
+  PetscSF               sf;
+  IS                    valueIS;
+  const PetscInt       *values, *leaves;
+  PetscInt             *depthShift;
+  PetscInt              d, depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
+  PetscBool             isper;
+  const PetscReal      *maxCell, *L;
+  const DMBoundaryType *bd;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
@@ -736,12 +739,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftTree_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
   /* Step 7: Periodicity */
-  if (dm->maxCell) {
-    const PetscReal *maxCell, *L;
-    const DMBoundaryType *bd;
-    ierr = DMGetPeriodicity(dm,  &maxCell, &L, &bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(gdm,  maxCell,  L,  bd);CHKERRQ(ierr);
-  }
+  ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+  ierr = DMSetPeriodicity(gdm, isper, maxCell,  L,  bd);CHKERRQ(ierr);
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }
