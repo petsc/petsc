@@ -73,7 +73,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,'')
+         SETERRA(PETSC_COMM_SELF,1,'')
       endif
 
       i2  = 2

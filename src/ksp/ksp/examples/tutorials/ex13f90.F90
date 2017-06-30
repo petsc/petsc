@@ -86,18 +86,18 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_WORLD,1,' ')
+         SETERRA(PETSC_COMM_WORLD,1,' ')
       endif
 
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr);CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr);CHKERRA(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRA(ierr)
 
 !  Create the empty sparse matrix and linear solver data structures
 
-      call UserInitializeLinearSolver(m,n,userctx,ierr);CHKERRQ(ierr)
+      call UserInitializeLinearSolver(m,n,userctx,ierr);CHKERRA(ierr)
 
 !  Allocate arrays to hold the solution to the linear system.  This
 !  approach is not normally done in PETSc programs, but in this case,
@@ -138,7 +138,7 @@
 !  demonstrate how one may reuse the linear solvers in each time-step.
 
       do 100 t=1,tmax
-         call UserDoLinearSolver(rho,userctx,userb,userx,ierr);CHKERRQ(ierr)
+         call UserDoLinearSolver(rho,userctx,userb,userx,ierr);CHKERRA(ierr)
 
 !        Compute error: Note that this could (and usually should) all be done
 !        using the PETSc vector operations. Here we demonstrate using more
@@ -161,7 +161,7 @@
 
       DEALLOCATE (userx,userb,solution,rho)
 
-      call UserFinalizeLinearSolver(userctx,ierr);CHKERRQ(ierr)
+      call UserFinalizeLinearSolver(userctx,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
 

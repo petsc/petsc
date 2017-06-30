@@ -21,16 +21,16 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRQ(ierr)
+      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
       firstCell = 0
       numCells = 2
       numVertices = 6
       numPoints = numCells+numVertices
-      call DMPlexSetChart(dm, i0, numPoints, ierr);CHKERRQ(ierr)
+      call DMPlexSetChart(dm, i0, numPoints, ierr);CHKERRA(ierr)
       do c=firstCell,numCells-1
-         call DMPlexSetConeSize(dm, c, i4, ierr);CHKERRQ(ierr)
+         call DMPlexSetConeSize(dm, c, i4, ierr);CHKERRA(ierr)
       end do
-      call DMSetUp(dm, ierr);CHKERRQ(ierr)
+      call DMSetUp(dm, ierr);CHKERRA(ierr)
 
       EC(1) = 2
       EC(2) = 3
@@ -39,8 +39,8 @@
       pEC => EC
       c = 0
       write(*,*) 'cell',c,pEC
-      call DMPlexSetCone(dm, c , pEC, ierr);CHKERRQ(ierr)
-      call DMPlexGetCone(dm, c , pEC, ierr);CHKERRQ(ierr)
+      call DMPlexSetCone(dm, c , pEC, ierr);CHKERRA(ierr)
+      call DMPlexGetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       write(*,*) 'cell',c,pEC
       EC(1) = 4
       EC(2) = 5
@@ -49,20 +49,20 @@
       pEC => EC
       c = 1
       write(*,*) 'cell',c,pEC
-      call DMPlexSetCone(dm, c , pEC, ierr);CHKERRQ(ierr)
-      call DMPlexGetCone(dm, c , pEC, ierr);CHKERRQ(ierr)
+      call DMPlexSetCone(dm, c , pEC, ierr);CHKERRA(ierr)
+      call DMPlexGetCone(dm, c , pEC, ierr);CHKERRA(ierr)
       write(*,*) 'cell',c,pEC
-      call DMPlexRestoreCone(dm, c , pEC, ierr);CHKERRQ(ierr)
+      call DMPlexRestoreCone(dm, c , pEC, ierr);CHKERRA(ierr)
 
-      call DMPlexSymmetrize(dm, ierr);CHKERRQ(ierr)
-      call DMPlexStratify(dm, ierr);CHKERRQ(ierr)
+      call DMPlexSymmetrize(dm, ierr);CHKERRA(ierr)
+      call DMPlexStratify(dm, ierr);CHKERRA(ierr)
 
       v = 4
-      call DMPlexGetSupport(dm, v , pES, ierr);CHKERRQ(ierr)
+      call DMPlexGetSupport(dm, v , pES, ierr);CHKERRA(ierr)
       write(*,*) 'vertex',v,pES
-      call DMPlexRestoreSupport(dm, v , pES, ierr);CHKERRQ(ierr)
+      call DMPlexRestoreSupport(dm, v , pES, ierr);CHKERRA(ierr)
 
-      call DMDestroy(dm,ierr);CHKERRQ(ierr)
+      call DMDestroy(dm,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
 

@@ -25,10 +25,10 @@
 !     Test IS of size 0
 
        n = 0
-       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRQ(ierr);
-       call ISGetLocalSize(is,n,ierr);CHKERRQ(ierr);
+       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr);
+       call ISGetLocalSize(is,n,ierr);CHKERRA(ierr);
        if (n .ne. 0) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error getting size of zero IS')
+         SETERRA(PETSC_COMM_SELF,1,'Error getting size of zero IS')
        endif
        call ISDestroy(is,ierr)
 
@@ -39,63 +39,63 @@
       do 10, i=1,n
         indices(i) = i-1
  10   continue
-      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRQ(ierr)
-      call ISGetIndices(is,ii,iis,ierr);CHKERRQ(ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr)
+      call ISGetIndices(is,ii,iis,ierr);CHKERRA(ierr)
       do 20, i=1,n
         if (ii(i+iis) .ne. indices(i)) then
-           SETERRQ(PETSC_COMM_SELF,1,'Error getting indices')
+           SETERRA(PETSC_COMM_SELF,1,'Error getting indices')
         endif
  20   continue
-      call ISRestoreIndices(is,ii,iis,ierr);CHKERRQ(ierr)
+      call ISRestoreIndices(is,ii,iis,ierr);CHKERRA(ierr)
 
 !     Check identity and permutation
 
-      call ISPermutation(is,flag,ierr);CHKERRQ(ierr)
+      call ISPermutation(is,flag,ierr);CHKERRA(ierr)
       if (flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking permutation')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking permutation')
       endif
-      call ISIdentity(is,flag,ierr);CHKERRQ(ierr)
+      call ISIdentity(is,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking identity')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking identity')
       endif
-      call ISSetPermutation(is,ierr);CHKERRQ(ierr)
-      call ISSetIdentity(is,ierr);CHKERRQ(ierr)
-      call ISPermutation(is,flag,ierr);CHKERRQ(ierr)
+      call ISSetPermutation(is,ierr);CHKERRA(ierr)
+      call ISSetIdentity(is,ierr);CHKERRA(ierr)
+      call ISPermutation(is,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking permutation second time')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking permutation second time')
       endif
-      call ISIdentity(is,flag,ierr);CHKERRQ(ierr)
+      call ISIdentity(is,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking identity second time')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking identity second time')
       endif
 
 !     Check equality of index sets
 
-      call ISEqual(is,is,flag,ierr);CHKERRQ(ierr)
+      call ISEqual(is,is,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking equal')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking equal')
       endif
 
 !     Sorting
 
-      call ISSort(is,ierr);CHKERRQ(ierr)
-      call ISSorted(is,flag,ierr);CHKERRQ(ierr)
+      call ISSort(is,ierr);CHKERRA(ierr)
+      call ISSorted(is,flag,ierr);CHKERRA(ierr)
       if (.not. flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking sorted')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking sorted')
       endif
 
 !     Thinks it is a different type?
 
-      call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr);CHKERRQ(ierr)
+      call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr);CHKERRA(ierr)
       if (flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking stride')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking stride')
       endif
-      call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr);CHKERRQ(ierr)
+      call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr);CHKERRA(ierr)
       if (flag) then
-         SETERRQ(PETSC_COMM_SELF,1,'Error checking block')
+         SETERRA(PETSC_COMM_SELF,1,'Error checking block')
       endif
 
-      call ISDestroy(is,ierr);CHKERRQ(ierr)
+      call ISDestroy(is,ierr);CHKERRA(ierr)
 
 !     Inverting permutation
 
@@ -103,18 +103,18 @@
         indices(i) = n - i
  30   continue
 
-      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRQ(ierr)
-      call ISSetPermutation(is,ierr);CHKERRQ(ierr)
-      call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr);CHKERRQ(ierr)
-      call ISGetIndices(newis,ii,iis,ierr);CHKERRQ(ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr);CHKERRA(ierr)
+      call ISSetPermutation(is,ierr);CHKERRA(ierr)
+      call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr);CHKERRA(ierr)
+      call ISGetIndices(newis,ii,iis,ierr);CHKERRA(ierr)
       do 40, i=1,n
         if (ii(iis+i) .ne. n - i) then
-          SETERRQ(PETSC_COMM_SELF,1,'Error getting permutation indices')
+          SETERRA(PETSC_COMM_SELF,1,'Error getting permutation indices')
        endif
  40   continue
-      call ISRestoreIndices(newis,ii,iis,ierr);CHKERRQ(ierr)
-      call ISDestroy(newis,ierr);CHKERRQ(ierr)
-      call ISDestroy(is,ierr);CHKERRQ(ierr)
+      call ISRestoreIndices(newis,ii,iis,ierr);CHKERRA(ierr)
+      call ISDestroy(newis,ierr);CHKERRA(ierr)
+      call ISDestroy(is,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
 

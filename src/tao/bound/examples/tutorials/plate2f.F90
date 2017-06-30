@@ -74,23 +74,23 @@
 
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-mx',mx,flg,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-my',my,flg,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       bmx = mx/2
       bmy = my/2
 
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-bmx',bmx,flg,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-bmy',bmy,flg,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                         '-bheight',bheight,flg,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 ! Calculate any derived values from parameters
@@ -108,7 +108,7 @@
      &     DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,                              &
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call DMSetFromOptions(dm,ierr)
       call DMSetUp(dm,ierr)
 
@@ -118,11 +118,11 @@
 ! the same types.
 
       call DMCreateGlobalVector(dm,x,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call DMCreateLocalVector(dm,localX,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call VecDuplicate(localX,localV,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Create a matrix data structure to store the Hessian.
 ! Here we (optionally) also associate the local numbering scheme
@@ -130,17 +130,17 @@
 ! assembly
 
       call VecGetLocalSize(x,m,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,i7,PETSC_NULL_INTEGER,   &
      &     i3,PETSC_NULL_INTEGER,H,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call DMGetLocalToGlobalMapping(dm,isltog,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call MatSetLocalToGlobalMapping(H,isltog,isltog,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 ! The Tao code begins here
@@ -149,44 +149,44 @@
 ! method must either be 'tao_tron' or 'tao_blmvm'
 
       call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetType(tao,TAOBLMVM,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !     Set minimization function and gradient, hessian evaluation functions
 
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &     FormFunctionGradient,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     0, ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Set Variable bounds
       call MSA_BoundaryConditions(ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
      &     0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Set the initial solution guess
       call MSA_InitialPoint(x, ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetInitialVector(tao,x,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Check for any tao command line options
       call TaoSetFromOptions(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Solve the application
       call TaoSolve(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Free TAO data structures
       call TaoDestroy(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 ! Free PETSc data structures
       call VecDestroy(x,ierr)

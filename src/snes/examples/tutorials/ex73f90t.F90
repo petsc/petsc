@@ -132,7 +132,7 @@
          print*,'PetscInitialize failed'
          stop
       endif
-      call MPI_Comm_rank(PETSC_COMM_WORLD,solver%rank,ierr);CHKERRQ(ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,solver%rank,ierr);CHKERRA(ierr)
 
 !  Initialize problem parameters
       lambda_max  = 6.81_PETSC_REAL_KIND
@@ -141,10 +141,10 @@
       ione = 1
       nfour = 4
       itwo = 2
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRA(ierr)
       if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
          if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ')
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,75 +152,75 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr);CHKERRQ(ierr)
-      call DMSetFromOptions(daphi,ierr);CHKERRQ(ierr)
-      call DMSetUp(daphi,ierr);CHKERRQ(ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr);CHKERRA(ierr)
+      call DMSetFromOptions(daphi,ierr);CHKERRA(ierr)
+      call DMSetUp(daphi,ierr);CHKERRA(ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
-     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRA(ierr)
       if (flg) then
          N2 = 0
       endif
 
-      call DMDestroy(daphi,ierr);CHKERRQ(ierr)
+      call DMDestroy(daphi,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMShellCreate(PETSC_COMM_WORLD,daphi,ierr);CHKERRQ(ierr)
-      call DMSetOptionsPrefix(daphi,'phi_',ierr);CHKERRQ(ierr)
-      call DMSetFromOptions(daphi,ierr);CHKERRQ(ierr)
+      call DMShellCreate(PETSC_COMM_WORLD,daphi,ierr);CHKERRA(ierr)
+      call DMSetOptionsPrefix(daphi,'phi_',ierr);CHKERRA(ierr)
+      call DMSetFromOptions(daphi,ierr);CHKERRA(ierr)
 
-      call VecCreate(PETSC_COMM_WORLD,x1,ierr);CHKERRQ(ierr)
-      call VecSetSizes(x1,PETSC_DECIDE,N1,ierr);CHKERRQ(ierr)
-      call VecSetFromOptions(x1,ierr);CHKERRQ(ierr)
+      call VecCreate(PETSC_COMM_WORLD,x1,ierr);CHKERRA(ierr)
+      call VecSetSizes(x1,PETSC_DECIDE,N1,ierr);CHKERRA(ierr)
+      call VecSetFromOptions(x1,ierr);CHKERRA(ierr)
 
-      call VecGetOwnershipRange(x1,low,high,ierr);CHKERRQ(ierr)
+      call VecGetOwnershipRange(x1,low,high,ierr);CHKERRA(ierr)
       nloc = high - low
 
-      call MatCreate(PETSC_COMM_WORLD,Amat,ierr);CHKERRQ(ierr)
-      call MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,N1,N1,ierr);CHKERRQ(ierr)
-      call MatSetUp(Amat,ierr);CHKERRQ(ierr)
+      call MatCreate(PETSC_COMM_WORLD,Amat,ierr);CHKERRA(ierr)
+      call MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,N1,N1,ierr);CHKERRA(ierr)
+      call MatSetUp(Amat,ierr);CHKERRA(ierr)
 
-      call MatCreate(PETSC_COMM_WORLD,solver%AmatLin,ierr);CHKERRQ(ierr)
-      call MatSetSizes(solver%AmatLin,PETSC_DECIDE,PETSC_DECIDE,N1,N1,ierr);CHKERRQ(ierr)
-      call MatSetUp(solver%AmatLin,ierr);CHKERRQ(ierr)
+      call MatCreate(PETSC_COMM_WORLD,solver%AmatLin,ierr);CHKERRA(ierr)
+      call MatSetSizes(solver%AmatLin,PETSC_DECIDE,PETSC_DECIDE,N1,N1,ierr);CHKERRA(ierr)
+      call MatSetUp(solver%AmatLin,ierr);CHKERRA(ierr)
 
-      call FormJacobianLocal(x1,solver%AmatLin,solver,.false.,ierr);CHKERRQ(ierr)
-      call MatAssemblyBegin(solver%AmatLin,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(solver%AmatLin,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call FormJacobianLocal(x1,solver%AmatLin,solver,.false.,ierr);CHKERRA(ierr)
+      call MatAssemblyBegin(solver%AmatLin,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyEnd(solver%AmatLin,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
 
-      call DMShellSetGlobalVector(daphi,x1,ierr);CHKERRQ(ierr)
-      call DMShellSetMatrix(daphi,Amat,ierr);CHKERRQ(ierr)
+      call DMShellSetGlobalVector(daphi,x1,ierr);CHKERRA(ierr)
+      call DMShellSetMatrix(daphi,Amat,ierr);CHKERRA(ierr)
 
-      call VecCreate(PETSC_COMM_SELF,x1loc,ierr);CHKERRQ(ierr)
-      call VecSetSizes(x1loc,nloc,nloc,ierr);CHKERRQ(ierr)
-      call VecSetFromOptions(x1loc,ierr);CHKERRQ(ierr)
-      call DMShellSetLocalVector(daphi,x1loc,ierr);CHKERRQ(ierr)
+      call VecCreate(PETSC_COMM_SELF,x1loc,ierr);CHKERRA(ierr)
+      call VecSetSizes(x1loc,nloc,nloc,ierr);CHKERRA(ierr)
+      call VecSetFromOptions(x1loc,ierr);CHKERRA(ierr)
+      call DMShellSetLocalVector(daphi,x1loc,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create B, C, & D matrices
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call MatCreate(PETSC_COMM_WORLD,Cmat,ierr);CHKERRQ(ierr)
-      call MatSetSizes(Cmat,PETSC_DECIDE,PETSC_DECIDE,N2,N1,ierr);CHKERRQ(ierr)
-      call MatSetUp(Cmat,ierr);CHKERRQ(ierr)
+      call MatCreate(PETSC_COMM_WORLD,Cmat,ierr);CHKERRA(ierr)
+      call MatSetSizes(Cmat,PETSC_DECIDE,PETSC_DECIDE,N2,N1,ierr);CHKERRA(ierr)
+      call MatSetUp(Cmat,ierr);CHKERRA(ierr)
 !      create data for C and B
-      call MatCreate(PETSC_COMM_WORLD,Bmat,ierr);CHKERRQ(ierr)
-      call MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,N1,N2,ierr);CHKERRQ(ierr)
-      call MatSetUp(Bmat,ierr);CHKERRQ(ierr)
+      call MatCreate(PETSC_COMM_WORLD,Bmat,ierr);CHKERRA(ierr)
+      call MatSetSizes(Bmat,PETSC_DECIDE,PETSC_DECIDE,N1,N2,ierr);CHKERRA(ierr)
+      call MatSetUp(Bmat,ierr);CHKERRA(ierr)
 !     create data for D
-      call MatCreate(PETSC_COMM_WORLD,Dmat,ierr);CHKERRQ(ierr)
-      call MatSetSizes(Dmat,PETSC_DECIDE,PETSC_DECIDE,N2,N2,ierr);CHKERRQ(ierr)
-      call MatSetUp(Dmat,ierr);CHKERRQ(ierr)
+      call MatCreate(PETSC_COMM_WORLD,Dmat,ierr);CHKERRA(ierr)
+      call MatSetSizes(Dmat,PETSC_DECIDE,PETSC_DECIDE,N2,N2,ierr);CHKERRA(ierr)
+      call MatSetUp(Dmat,ierr);CHKERRA(ierr)
 
-      call VecCreate(PETSC_COMM_WORLD,x2,ierr);CHKERRQ(ierr)
-      call VecSetSizes(x2,PETSC_DECIDE,N2,ierr);CHKERRQ(ierr)
-      call VecSetFromOptions(x2,ierr);CHKERRQ(ierr)
+      call VecCreate(PETSC_COMM_WORLD,x2,ierr);CHKERRA(ierr)
+      call VecSetSizes(x2,PETSC_DECIDE,N2,ierr);CHKERRA(ierr)
+      call VecSetFromOptions(x2,ierr);CHKERRA(ierr)
 
-      call VecGetOwnershipRange(x2,lamlow,lamhigh,ierr);CHKERRQ(ierr)
+      call VecGetOwnershipRange(x2,lamlow,lamhigh,ierr);CHKERRA(ierr)
       nloclam = lamhigh-lamlow
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,16 +239,16 @@
             if (i .eq. 0 .or. j .eq. 0 .or. i .eq. solver%mx-1 .or. j .eq. solver%my-1 ) then
                !     no op
             else
-               call MatSetValues(Bmat,ione,row,ione,col,bval,INSERT_VALUES,ierr);CHKERRQ(ierr)
+               call MatSetValues(Bmat,ione,row,ione,col,bval,INSERT_VALUES,ierr);CHKERRA(ierr)
             endif
             row(1) = j
-            call MatSetValues(Cmat,ione,row,ione,row,cval,INSERT_VALUES,ierr);CHKERRQ(ierr)
+            call MatSetValues(Cmat,ione,row,ione,row,cval,INSERT_VALUES,ierr);CHKERRA(ierr)
  20   continue
       endif
-      call MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyBegin(Bmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyEnd(Bmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set D (indentity)
@@ -256,34 +256,34 @@
       do 30 j=lamlow,lamhigh-1
          row(1) = j
          cval(1) = one
-         call MatSetValues(Dmat,ione,row,ione,row,cval,INSERT_VALUES,ierr);CHKERRQ(ierr)
+         call MatSetValues(Dmat,ione,row,ione,row,cval,INSERT_VALUES,ierr);CHKERRA(ierr)
  30   continue
-      call MatAssemblyBegin(Dmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
-      call MatAssemblyEnd(Dmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyBegin(Dmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
+      call MatAssemblyEnd(Dmat,MAT_FINAL_ASSEMBLY,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  DM for lambda (dalam) : temp driver for A block, setup A block solver data
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMShellCreate(PETSC_COMM_WORLD,dalam,ierr);CHKERRQ(ierr)
-      call DMShellSetGlobalVector(dalam,x2,ierr);CHKERRQ(ierr)
-      call DMShellSetMatrix(dalam,Dmat,ierr);CHKERRQ(ierr)
+      call DMShellCreate(PETSC_COMM_WORLD,dalam,ierr);CHKERRA(ierr)
+      call DMShellSetGlobalVector(dalam,x2,ierr);CHKERRA(ierr)
+      call DMShellSetMatrix(dalam,Dmat,ierr);CHKERRA(ierr)
 
-      call VecCreate(PETSC_COMM_SELF,x2loc,ierr);CHKERRQ(ierr)
-      call VecSetSizes(x2loc,nloclam,nloclam,ierr);CHKERRQ(ierr)
-      call VecSetFromOptions(x2loc,ierr);CHKERRQ(ierr)
-      call DMShellSetLocalVector(dalam,x2loc,ierr);CHKERRQ(ierr)
+      call VecCreate(PETSC_COMM_SELF,x2loc,ierr);CHKERRA(ierr)
+      call VecSetSizes(x2loc,nloclam,nloclam,ierr);CHKERRA(ierr)
+      call VecSetFromOptions(x2loc,ierr);CHKERRA(ierr)
+      call DMShellSetLocalVector(dalam,x2loc,ierr);CHKERRA(ierr)
 
-      call DMSetOptionsPrefix(dalam,'lambda_',ierr);CHKERRQ(ierr)
-      call DMSetFromOptions(dalam,ierr);CHKERRQ(ierr)
+      call DMSetOptionsPrefix(dalam,'lambda_',ierr);CHKERRA(ierr)
+      call DMSetFromOptions(dalam,ierr);CHKERRA(ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create field split DA
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMCompositeCreate(PETSC_COMM_WORLD,solver%da,ierr);CHKERRQ(ierr)
-      call DMCompositeAddDM(solver%da,daphi,ierr);CHKERRQ(ierr)
-      call DMCompositeAddDM(solver%da,dalam,ierr);CHKERRQ(ierr)
-      call DMSetFromOptions(solver%da,ierr);CHKERRQ(ierr)
-      call DMSetUp(solver%da,ierr);CHKERRQ(ierr)
-      call DMCompositeGetGlobalISs(solver%da,isglobal,ierr);CHKERRQ(ierr)
+      call DMCompositeCreate(PETSC_COMM_WORLD,solver%da,ierr);CHKERRA(ierr)
+      call DMCompositeAddDM(solver%da,daphi,ierr);CHKERRA(ierr)
+      call DMCompositeAddDM(solver%da,dalam,ierr);CHKERRA(ierr)
+      call DMSetFromOptions(solver%da,ierr);CHKERRA(ierr)
+      call DMSetUp(solver%da,ierr);CHKERRA(ierr)
+      call DMCompositeGetGlobalISs(solver%da,isglobal,ierr);CHKERRA(ierr)
       solver%isPhi = isglobal(1)
       solver%isLambda = isglobal(2)
 
@@ -298,33 +298,33 @@
       matArray(3) = Cmat
       matArray(4) = Dmat
 
-      call MatCreateNest(PETSC_COMM_WORLD,itwo,isglobal,itwo,isglobal,matArray,KKTmat,ierr);CHKERRQ(ierr)
-      call MatSetFromOptions(KKTmat,ierr);CHKERRQ(ierr)
+      call MatCreateNest(PETSC_COMM_WORLD,itwo,isglobal,itwo,isglobal,matArray,KKTmat,ierr);CHKERRA(ierr)
+      call MatSetFromOptions(KKTmat,ierr);CHKERRA(ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
       x = tVec(0)
-      call MatCreateVecs(KKTmat,x,PETSC_NULL_VEC,ierr);CHKERRQ(ierr)
-      call VecDuplicate(x,r,ierr);CHKERRQ(ierr)
+      call MatCreateVecs(KKTmat,x,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
+      call VecDuplicate(x,r,ierr);CHKERRA(ierr)
 
-      call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr);CHKERRQ(ierr)
+      call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr);CHKERRA(ierr)
 
-      call SNESSetDM(mysnes,solver%da,ierr);CHKERRQ(ierr)
+      call SNESSetDM(mysnes,solver%da,ierr);CHKERRA(ierr)
 
-      call SNESSetApplicationContext(mysnes,solver,ierr);CHKERRQ(ierr)
+      call SNESSetApplicationContext(mysnes,solver,ierr);CHKERRA(ierr)
 
-      call SNESSetDM(mysnes,solver%da,ierr);CHKERRQ(ierr)
+      call SNESSetDM(mysnes,solver%da,ierr);CHKERRA(ierr)
 
 !  Set function evaluation routine and vector
-      call SNESSetFunction(mysnes,r,FormFunction,solver,ierr);CHKERRQ(ierr)
+      call SNESSetFunction(mysnes,r,FormFunction,solver,ierr);CHKERRA(ierr)
 
-      call SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,ierr);CHKERRQ(ierr)
+      call SNESSetJacobian(mysnes,KKTmat,KKTmat,FormJacobian,solver,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
-      call SNESSetFromOptions(mysnes,ierr);CHKERRQ(ierr)
+      call SNESSetFromOptions(mysnes,ierr);CHKERRA(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
@@ -334,9 +334,9 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(mysnes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
-      call SNESGetIterationNumber(mysnes,its,ierr);CHKERRQ(ierr)
+      call FormInitialGuess(mysnes,x,ierr);CHKERRA(ierr)
+      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRA(ierr)
+      call SNESGetIterationNumber(mysnes,its,ierr);CHKERRA(ierr)
       if (solver%rank .eq. 0) then
          write(6,100) its
       endif
@@ -346,24 +346,24 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call MatDestroy(KKTmat,ierr);CHKERRQ(ierr)
-      call MatDestroy(Amat,ierr);CHKERRQ(ierr)
-      call MatDestroy(Dmat,ierr);CHKERRQ(ierr)
-      call MatDestroy(Bmat,ierr);CHKERRQ(ierr)
-      call MatDestroy(Cmat,ierr);CHKERRQ(ierr)
-      call MatDestroy(solver%AmatLin,ierr);CHKERRQ(ierr)
-      call ISDestroy(solver%isPhi,ierr);CHKERRQ(ierr)
-      call ISDestroy(solver%isLambda,ierr);CHKERRQ(ierr)
-      call VecDestroy(x,ierr);CHKERRQ(ierr)
-      call VecDestroy(x2,ierr);CHKERRQ(ierr)
-      call VecDestroy(x1,ierr);CHKERRQ(ierr)
-      call VecDestroy(x1loc,ierr);CHKERRQ(ierr)
-      call VecDestroy(x2loc,ierr);CHKERRQ(ierr)
-      call VecDestroy(r,ierr);CHKERRQ(ierr)
-      call SNESDestroy(mysnes,ierr);CHKERRQ(ierr)
-      call DMDestroy(solver%da,ierr);CHKERRQ(ierr)
-      call DMDestroy(daphi,ierr);CHKERRQ(ierr)
-      call DMDestroy(dalam,ierr);CHKERRQ(ierr)
+      call MatDestroy(KKTmat,ierr);CHKERRA(ierr)
+      call MatDestroy(Amat,ierr);CHKERRA(ierr)
+      call MatDestroy(Dmat,ierr);CHKERRA(ierr)
+      call MatDestroy(Bmat,ierr);CHKERRA(ierr)
+      call MatDestroy(Cmat,ierr);CHKERRA(ierr)
+      call MatDestroy(solver%AmatLin,ierr);CHKERRA(ierr)
+      call ISDestroy(solver%isPhi,ierr);CHKERRA(ierr)
+      call ISDestroy(solver%isLambda,ierr);CHKERRA(ierr)
+      call VecDestroy(x,ierr);CHKERRA(ierr)
+      call VecDestroy(x2,ierr);CHKERRA(ierr)
+      call VecDestroy(x1,ierr);CHKERRA(ierr)
+      call VecDestroy(x1loc,ierr);CHKERRA(ierr)
+      call VecDestroy(x2loc,ierr);CHKERRA(ierr)
+      call VecDestroy(r,ierr);CHKERRA(ierr)
+      call SNESDestroy(mysnes,ierr);CHKERRA(ierr)
+      call DMDestroy(solver%da,ierr);CHKERRA(ierr)
+      call DMDestroy(daphi,ierr);CHKERRA(ierr)
+      call DMDestroy(dalam,ierr);CHKERRA(ierr)
 
       call PetscFinalize(ierr)
       end 

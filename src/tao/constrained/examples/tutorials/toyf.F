@@ -31,92 +31,92 @@
       call PetscPrintf(PETSC_COMM_SELF,                                 &
      &           '\n---- TOY Problem -----\n',                          &
      &           ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call PetscPrintf(PETSC_COMM_SELF,'Solution should be f(1,1)=-2\n',&
      &     ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call InitializeProblem(ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetType(tao,TAOIPM,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetInitialVector(tao,x0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetVariableBounds(tao,xl,xu,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,   &
      &     0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetEqualityConstraintsRoutine(tao,ce,                      &
      &     FormEqualityConstraints,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetInequalityConstraintsRoutine(tao,ci,                      &
      &     FormInequalityConstraints,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetJacobianEqualityRoutine(tao,Ae,Ae,FormEqualityJacobian, &
      &      0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetJacobianInequalityRoutine(tao,Ai,Ai,                    &
      &     FormInequalityJacobian,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetHessianRoutine(tao,Hess,Hess,FormHessian,               &
      &     0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetTolerances(tao,0,0,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetFromOptions(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoGetKSP(tao,ksp,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call KSPGetPC(ksp,pc,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU)
-!      CHKERRQ(ierr)
+!      CHKERRA(ierr)
 
       call PetscOptionsSetValue(PETSC_NULL_OPTIONS,                      &
      &              '-pc_factor_mat_solver_package','superlu',ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call PCSetType(pc,PCLU,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call KSPSetType(ksp,KSPPREONLY,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call KSPSetFromOptions(ksp,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoSetTolerances(tao,0.0d0,0.0d0,0.0d0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       ! Solve
       call TaoSolve(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       ! Finalize Memory
       call DestroyProblem(ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call TaoDestroy(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
       call PetscFinalize(ierr)
 

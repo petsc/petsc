@@ -63,7 +63,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,' ')
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
 
 !  Initialize problem parameters
@@ -80,34 +80,34 @@
 
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetType(tao,TAOPOUNDERS,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 !  Set routines for function, gradient, and hessian evaluation
 
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
      &      FormFunction,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !  Optional: Set initial guess
       call InitializeData()
       call FormStartingPoint(x)
       call TaoSetInitialVector(tao, x, ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       oh = 100
       call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
      &     oh,PETSC_TRUE,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoGetConvergenceHistory(tao,nhist,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Tao failed.'

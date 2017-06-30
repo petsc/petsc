@@ -47,9 +47,9 @@
       endif
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !  Initialize problem parameters
       call InitializeData()
@@ -57,52 +57,52 @@
       if (rank .eq. 0) then
 !  Allocate vectors for the solution and gradient
          call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
          call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 
 !     The TAO code begins here
 
 !     Create TAO solver
          call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
          call TaoSetType(tao,TAOPOUNDERS,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 !     Set routines for function, gradient, and hessian evaluation
          call TaoSetSeparableObjectiveRoutine(tao,f,                    &
      &        FormFunction,0,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 !     Optional: Set initial guess
          call FormStartingPoint(x)
          call TaoSetInitialVector(tao, x, ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 
 !     Check for TAO command line options
          call TaoSetFromOptions(tao,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 !     SOLVE THE APPLICATION
          call TaoSolve(tao,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 !     Free TAO data structures
          call TaoDestroy(tao,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
 !     Free PETSc data structures
          call VecDestroy(x,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
          call VecDestroy(f,ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
          call StopWorkers(ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
 
       else
          call TaskWorker(ierr)
-         CHKERRQ(ierr)
+         CHKERRA(ierr)
       endif
 
       call PetscFinalize(ierr)

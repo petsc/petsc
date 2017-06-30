@@ -90,7 +90,7 @@
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,                        &
      &             PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-         SETERRQ(PETSC_COMM_WORLD,1,'Lambda out of range')
+         SETERRA(PETSC_COMM_WORLD,1,'Lambda out of range')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

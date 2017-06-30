@@ -52,29 +52,29 @@
         stop
       endif
 
-      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRQ(ierr)
-      call PetscObjectSetName(dm, 'testplex', ierr);CHKERRQ(ierr)
-      call DMSetDimension(dm, dim, ierr);CHKERRQ(ierr)
+      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRA(ierr)
+      call PetscObjectSetName(dm, 'testplex', ierr);CHKERRA(ierr)
+      call DMSetDimension(dm, dim, ierr);CHKERRA(ierr)
 
-      call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,coneOrientations, vertexCoords, ierr);CHKERRQ(ierr)
+      call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,coneOrientations, vertexCoords, ierr);CHKERRA(ierr)
 
-      call DMPlexInterpolate(dm, dmi, ierr);CHKERRQ(ierr)
-      call DMPlexCopyCoordinates(dm, dmi, ierr);CHKERRQ(ierr)
-      call DMDestroy(dm, ierr);CHKERRQ(ierr)
+      call DMPlexInterpolate(dm, dmi, ierr);CHKERRA(ierr)
+      call DMPlexCopyCoordinates(dm, dmi, ierr);CHKERRA(ierr)
+      call DMDestroy(dm, ierr);CHKERRA(ierr)
       dm = dmi
 
-      call DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRQ(ierr)
+      call DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
 
       do i = 0, 1
-        call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr);CHKERRQ(ierr)
+        call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr);CHKERRA(ierr)
         write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))'),'cell: ', i, ' volume: ', vol, ' centroid: ',pcentroid(1), pcentroid(2), pcentroid(3)
-        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr);CHKERRQ(ierr)
+        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr);CHKERRA(ierr)
       end do
 
-      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr);CHKERRQ(ierr)
-      call PetscFVSetUp(fvm, ierr);CHKERRQ(ierr)
-      call PetscFVDestroy(fvm, ierr);CHKERRQ(ierr)
+      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr);CHKERRA(ierr)
+      call PetscFVSetUp(fvm, ierr);CHKERRA(ierr)
+      call PetscFVDestroy(fvm, ierr);CHKERRA(ierr)
 
-      call DMDestroy(dm, ierr);CHKERRQ(ierr)
+      call DMDestroy(dm, ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end program main

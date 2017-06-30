@@ -64,7 +64,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then
-         SETERRQ(PETSC_COMM_WORLD,1,'requires one process')
+         SETERRA(PETSC_COMM_WORLD,1,'requires one process')
       endif
 
       big  = 2.88
