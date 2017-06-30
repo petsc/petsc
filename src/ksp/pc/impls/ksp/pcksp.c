@@ -106,16 +106,16 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (pc->useAmat) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Using Amat (not Pmat) as operator on inner solve\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Using Amat (not Pmat) as operator on inner solve\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on KSP preconditioner follow\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  KSP and PC on KSP preconditioner follow\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

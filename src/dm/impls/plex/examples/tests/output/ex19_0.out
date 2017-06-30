@@ -8,7 +8,7 @@ Labels:
   Face Sets: 1 strata with value/size (1 (16))
   marker: 1 strata with value/size (1 (32))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
-DM Object: DMadapt 1 MPI processes
+DM Object: DMadapt (adapt_) 1 MPI processes
   type: plex
 DMadapt in 2 dimensions:
   0-cells: 95

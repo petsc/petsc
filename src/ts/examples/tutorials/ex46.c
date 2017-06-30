@@ -17,10 +17,6 @@ Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
   div u  = 0
 */
 
-/*T
-  requires: !mpiuni
-T*/
-
 typedef struct {
   PetscInt          dim;
   PetscBool         simplex;
@@ -435,6 +431,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # Full solves
   test:

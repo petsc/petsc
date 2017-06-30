@@ -511,8 +511,8 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     cstr = "unknown orthogonalization";
   }
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)gmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  happy breakdown tolerance %g\n",(double)gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   }

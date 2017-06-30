@@ -49,82 +49,106 @@ typedef struct {
 } TS_RK;
 
 /*MC
-     TSRK1 - First order forward Euler scheme.
+     TSRK1FE - First order forward Euler scheme.
 
      This method has one stage.
 
+     Options database:
+.     -ts_rk_type 1fe
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK2A - Second order RK scheme.
 
      This method has two stages.
 
+     Options database:
+.     -ts_rk_type 2a
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
 
+     Options database:
+.     -ts_rk_type 3
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
      This method has four stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 3bs
+
      Level: advanced
 
      References: https://doi.org/10.1016/0893-9659(89)90079-7
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
      This is the classical Runge-Kutta method with four stages.
 
+     Options database:
+.     -ts_rk_type 4
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
+     Options database:
+.     -ts_rk_type 5f
+
      Level: advanced
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
      This method has seven stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 5dp
+
      Level: advanced
 
      References: https://doi.org/10.1016/0771-050X(80)90013-3
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
      TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
 
      This method has eight stages with the First Same As Last (FSAL) property.
 
+     Options database:
+.     -ts_rk_type 5bs
+
      Level: advanced
 
      References: https://doi.org/10.1016/0898-1221(96)00141-1
 
-.seealso: TSRK
+.seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 
 /*@C
@@ -881,13 +905,12 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     TSRKType  rktype;
     char      buf[512];
     ierr = TSRKGetType(ts,&rktype);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  RK: %s\n",rktype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  RK type %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Order: %D\n",tab->order);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  FSAL property: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa c = %s\n",buf);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -911,9 +934,12 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 +  ts - timestepping context
 -  rktype - type of RK-scheme
 
+  Options Database:
+.   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
+
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRK2, TSRK3, TSRKPRSSP2, TSRK4, TSRK5
+.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {

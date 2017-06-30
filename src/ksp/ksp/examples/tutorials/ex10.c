@@ -24,7 +24,6 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*T
    Concepts: KSP^solving a linear system
    Processors: n
-   requires: !complex 
 T*/
 
 
@@ -49,7 +48,7 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
-  PetscBool      outputSoln=PETSC_FALSE;
+  PetscBool      outputSoln=PETSC_FALSE,constantnullspace = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M,nearnulldim = 0;
   PetscReal      norm;
@@ -60,6 +59,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-constantnullspace",&constantnullspace,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-initialguess",&initialguess,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-output_solution",&outputSoln,NULL);CHKERRQ(ierr);
@@ -126,7 +126,12 @@ int main(int argc,char **args)
     ierr = PetscFree(nullvecs);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
   }
-
+  if (constantnullspace) {
+    MatNullSpace constant;
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&constant);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(A,constant);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&constant);CHKERRQ(ierr);
+  }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetString(NULL,NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
@@ -450,6 +455,9 @@ int main(int argc,char **args)
 
 /*TEST
    
+   build:
+      requires: !complex 
+
    testset:
       suffix: 1
       nsize: 2

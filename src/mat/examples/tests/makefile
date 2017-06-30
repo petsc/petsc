@@ -271,7 +271,7 @@ ex58f: ex58f.o chkopts
 	${RM} ex58f.o
 
 ex59: ex59.o chkopts
-	-${CLINKER} -o ex59 ex59.o ${PETSC_DM_LIB}
+	-${CLINKER} -o ex59 ex59.o ${PETSC_MAT_LIB}
 	${RM} ex59.o
 
 ex60: ex60.o chkopts
@@ -2305,12 +2305,12 @@ runex128_2:
 	   ${RM} -f ex128.tmp
 
 runex129:
-	-@${MPIEXEC} -n 1 ./ex129 -mat_type aij -dof 1 > ex129.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex129 -dm_mat_type aij -dof 1 > ex129.tmp 2>&1; \
 	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex129, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex129.tmp
 runex129_2:
-	-@${MPIEXEC} -n 1 ./ex129 -mat_type aij -dof 1 -inplacelu > ex129.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex129 -dm_mat_type aij -dof 1 -inplacelu > ex129.tmp 2>&1; \
 	   if (${DIFF} output/ex129.out ex129.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex129_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex129.tmp

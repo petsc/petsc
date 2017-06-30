@@ -230,38 +230,41 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
-    PetscFE    fem;
+    PetscInt   effectiveHeight = auxBd ? minHeight : 0;
+    PetscFE    fem, subfem;
     PetscReal *points;
-    PetscInt   numPoints, spDim, d;
+    PetscInt   numPoints, spDim, qdim = 0, d;
 
     if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     numPoints = 0;
     for (f = 0; f < Nf; ++f) {
-      ierr = PetscDualSpaceGetDimension(cellsp[f], &spDim);CHKERRQ(ierr);
+      if (!effectiveHeight) {sp[f] = cellsp[f];}
+      else                  {ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);}
+      ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         if (funcs[f]) {
           PetscQuadrature quad;
           PetscInt        Nq;
 
-          ierr = PetscDualSpaceGetFunctional(cellsp[f], d, &quad);CHKERRQ(ierr);
-          ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(quad, &qdim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
           numPoints += Nq;
         }
       }
     }
-    ierr = PetscMalloc1(numPoints*dim, &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numPoints*qdim, &points);CHKERRQ(ierr);
     numPoints = 0;
     for (f = 0; f < Nf; ++f) {
-      ierr = PetscDualSpaceGetDimension(cellsp[f], &spDim);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         if (funcs[f]) {
           PetscQuadrature  quad;
           const PetscReal *qpoints;
           PetscInt         Nq, q;
 
-          ierr = PetscDualSpaceGetFunctional(cellsp[f], d, &quad);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, &qpoints, NULL);CHKERRQ(ierr);
-          for (q = 0; q < Nq*dim; ++q) points[numPoints*dim+q] = qpoints[q];
+          for (q = 0; q < Nq*qdim; ++q) points[numPoints*qdim+q] = qpoints[q];
           numPoints += Nq;
         }
       }
@@ -270,11 +273,15 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     for (f = 0; f < Nf; ++f) {
       if (!isFE[f]) continue;
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fem);CHKERRQ(ierr);
-      ierr = PetscFEGetTabulation(fem, numPoints, points, &basisTab[f], &basisDerTab[f], NULL);CHKERRQ(ierr);
+      if (!effectiveHeight) {subfem = fem;}
+      else                  {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
+      ierr = PetscFEGetTabulation(subfem, numPoints, points, &basisTab[f], &basisDerTab[f], NULL);CHKERRQ(ierr);
     }
     for (f = 0; f < NfAux; ++f) {
       ierr = PetscDSGetDiscretization(probAux, f, (PetscObject *) &fem);CHKERRQ(ierr);
-      ierr = PetscFEGetTabulation(fem, numPoints, points, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
+      if (!effectiveHeight || auxBd) {subfem = fem;}
+      else                           {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
+      ierr = PetscFEGetTabulation(subfem, numPoints, points, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree(points);CHKERRQ(ierr);
   }
@@ -359,16 +366,21 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   }
   /* Cleanup */
   if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
-    PetscFE fem;
+    PetscInt effectiveHeight = auxBd ? minHeight : 0;
+    PetscFE  fem, subfem;
 
     for (f = 0; f < Nf; ++f) {
       if (!isFE[f]) continue;
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fem);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation(fem, 0, NULL, &basisTab[f], &basisDerTab[f], NULL);CHKERRQ(ierr);
+      if (!effectiveHeight) {subfem = fem;}
+      else                  {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
+      ierr = PetscFERestoreTabulation(subfem, 0, NULL, &basisTab[f], &basisDerTab[f], NULL);CHKERRQ(ierr);
     }
     for (f = 0; f < NfAux; ++f) {
       ierr = PetscDSGetDiscretization(probAux, f, (PetscObject *) &fem);CHKERRQ(ierr);
-      ierr = PetscFERestoreTabulation(fem, 0, NULL, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
+      if (!effectiveHeight || auxBd) {subfem = fem;}
+      else                           {ierr = PetscFEGetHeightSubspace(fem, effectiveHeight, &subfem);CHKERRQ(ierr);}
+      ierr = PetscFERestoreTabulation(subfem, 0, NULL, &basisTabAux[f], &basisDerTabAux[f], NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree4(basisTab, basisDerTab, basisTabAux, basisDerTabAux);CHKERRQ(ierr);
   }

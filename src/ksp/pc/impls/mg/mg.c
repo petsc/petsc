@@ -460,7 +460,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply);CHKERRQ(ierr);
     }
@@ -953,10 +953,10 @@ PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
 
    Input Parameters:
 +  pc - the multigrid context
--  PC_MG_CYCLE_V or PC_MG_CYCLE_W
+-  n - either PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-.  -pc_mg_cycle_type <v,w>
+.  -pc_mg_cycle_type <v,w> - provide the cycle desired
 
    Level: advanced
 

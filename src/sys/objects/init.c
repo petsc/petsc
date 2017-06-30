@@ -259,7 +259,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscInt          intensity;
   int               i;
   PetscMPIInt       rank;
-  char              version[256];
+  char              version[256],helpoptions[256];
 #if !defined(PETSC_HAVE_THREADSAFETY)
   PetscReal         logthreshold;
 #endif
@@ -350,16 +350,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
 
     ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/faq.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
-------------------------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
   }
 
   /*
@@ -368,6 +366,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg3) {
     if (PetscExternalHelpFunction) {
       ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
+    }
+  }
+
+  ierr = PetscOptionsGetString(NULL,NULL,"-help",helpoptions,sizeof(helpoptions),&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscStrcmp(helpoptions,"intro",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
+      ierr = PetscFreeMPIResources();CHKERRQ(ierr);
+      ierr = MPI_Finalize();CHKERRQ(ierr);
+      exit(0);
     }
   }
 

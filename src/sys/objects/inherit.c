@@ -180,6 +180,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
     ierr = PetscFree(dest->fortrancallback[cbtype]);CHKERRQ(ierr);
     ierr = PetscCalloc1(numcb[cbtype],&dest->fortrancallback[cbtype]);CHKERRQ(ierr);
     ierr = PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
+    dest->num_fortrancallback[cbtype] = src->num_fortrancallback[cbtype];
   }
   PetscFunctionReturn(0);
 }

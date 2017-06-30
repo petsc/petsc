@@ -71,7 +71,7 @@
 
 !  Store parameters in common block
 
-      common /params/ lambda,mx,my
+      common /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -104,12 +104,9 @@
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                        '-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                        '-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,  &
-     &                         '-par',lambda,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ')
@@ -148,11 +145,9 @@
 !  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
-     &                         '-snes_mf',matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr)
       if (.not. matrix_free) then
-        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
-     &        J,ierr)
+        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER,J,ierr)
       endif
 
 !
@@ -160,8 +155,7 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
-     &                         '-snes_fd_coloring',fd_coloring,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_fd_coloring',fd_coloring,ierr)
       if (fd_coloring) then
 
 !
@@ -184,16 +178,14 @@
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
-        call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
-     &                                0,ierr)
+        call MatFDColoringSetFunction(fdcoloring,FormFunction,0,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
         call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
 !        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
 !
-        call SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,    &
-     &                     fdcoloring,ierr)
+        call SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring,ierr)
         call ISColoringDestroy(iscoloring,ierr)
 
       else if (.not. matrix_free) then
@@ -242,13 +234,11 @@
 
 !  PetscDraw contour plot of solution
 
-      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,          &
-     &     'Solution',300,0,300,300,draw,ierr)
+      call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',300,0,300,300,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArrayRead(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
-     &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
       call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -342,7 +332,9 @@
 !  Common blocks:
       PetscReal   lambda
       PetscInt     mx,my
-      common      /params/ lambda,mx,my
+      MatFDColoring     fdcoloring
+      PetscBool         fd_coloring
+      common      /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Input/output variables:
       PetscScalar x(mx,my)
@@ -363,12 +355,10 @@
       do 20 j=1,my
          temp = min(j-1,my-j)*hy
          do 10 i=1,mx
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *                                          &
-     &          sqrt(min(min(i-1,mx-i)*hx,temp))
+              x(i,j) = temp1 * sqrt(min(min(i-1,mx-i)*hx,temp))
             endif
  10      continue
  20   continue
@@ -410,11 +400,15 @@
 !  Common blocks:
       PetscReal         lambda
       PetscInt          mx,my
-      common            /params/ lambda,mx,my
+      MatFDColoring     fdcoloring
+      PetscBool         fd_coloring
+      common            /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Declarations for use with local arrays:
       PetscScalar       lx_v(0:1),lf_v(0:1)
       PetscOffset       lx_i,lf_i
+
+      PetscInt, pointer :: indices(:)
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -437,7 +431,16 @@
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
       call PetscLogFlops(11.0d0*mx*my,ierr)
-
+!
+!     fdcoloring is in the common block and used here ONLY to test the
+!     calls to MatFDColoringGetPerturbedColumnsF90() and  MatFDColoringRestorePerturbedColumnsF90()
+!
+      if (fd_coloring) then
+         call MatFDColoringGetPerturbedColumnsF90(fdcoloring,indices,ierr)
+         print*,'Indices from GetPerturbedColumnsF90'
+         print*,indices
+         call MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr)
+      endif
       return
       end
 
@@ -463,7 +466,9 @@
 !  Common blocks:
       PetscReal      lambda
       PetscInt        mx,my
-      common         /params/ lambda,mx,my
+      MatFDColoring     fdcoloring
+      PetscBool         fd_coloring
+      common         /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Input/output variables:
       PetscScalar    x(mx,my),f(mx,my)
@@ -488,13 +493,11 @@
 
       do 20 j=1,my
          do 10 i=1,mx
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j)
-               uxx = hydhx * (two*u                                     &
-     &                - x(i-1,j) - x(i+1,j))
+               uxx = hydhx * (two*u - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
             endif
@@ -541,7 +544,9 @@
 !  Common blocks:
       PetscReal     lambda
       PetscInt       mx,my
-      common        /params/ lambda,mx,my
+      MatFDColoring     fdcoloring
+      PetscBool         fd_coloring
+      common        /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Declarations for use with local array:
       PetscScalar   lx_v(0:1)
@@ -591,7 +596,9 @@
 !  Common blocks:
       PetscReal    lambda
       PetscInt      mx,my
-      common       /params/ lambda,mx,my
+      MatFDColoring     fdcoloring
+      PetscBool         fd_coloring
+      common       /params/ lambda,mx,my,fdcoloring,fd_coloring
 
 !  Input/output variables:
       PetscScalar  x(mx,my)
@@ -625,16 +632,13 @@
          do 10 i=1,mx
             row(1) = row(1) + 1
 !           boundary points
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac_prec,i1,row,i1,row,one,              &
-     &                           INSERT_VALUES,ierr)
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
+               call MatSetValues(jac_prec,i1,row,i1,row,one,INSERT_VALUES,ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy)                               &
-     &                  - sc*lambda*exp(x(i,j))
+               v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
                col(1) = row(1) - mx
@@ -642,8 +646,7 @@
                col(3) = row(1)
                col(4) = row(1) + 1
                col(5) = row(1) + mx
-               call MatSetValues(jac_prec,i1,row,i5,col,v,                &
-     &                           INSERT_VALUES,ierr)
+               call MatSetValues(jac_prec,i1,row,i5,col,v,INSERT_VALUES,ierr)
             endif
  10      continue
  20   continue

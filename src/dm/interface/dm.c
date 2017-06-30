@@ -903,12 +903,12 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
     if (section) {
       const PetscInt *cdofs;
       PetscInt       *ltog;
-      PetscInt        pStart, pEnd, size, p, l;
+      PetscInt        pStart, pEnd, n, p, k, l;
 
       ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-      ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
+      ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
         PetscInt bdof, cdof, dof, off, c, cind = 0;
 
@@ -937,8 +937,11 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       else                {bs = bsMax;}
       bs   = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
-      if (bs > 1) for (l = 0; l < size; ++l) ltog[l] /= bs;
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      if (bs > 1) {
+        for (l = 0, k = 0; l < n; l += bs, ++k) ltog[k] = ltog[l]/bs;
+        n /= bs;
+      }
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, n, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");

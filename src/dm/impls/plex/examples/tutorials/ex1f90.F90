@@ -103,6 +103,8 @@
       end program DMPlexTestField
 
 !/*TEST
+!  build:
+!    requires: define(PETSC_USING_F90FREEFORM)
 !
 !  test:
 !    suffix: 0

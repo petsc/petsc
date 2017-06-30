@@ -266,7 +266,7 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     if (!sred->psubcomm) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: preconditioner not yet setup\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  preconditioner not yet setup\n");CHKERRQ(ierr);
     } else {
       MPI_Comm    comm,subcomm;
       PetscMPIInt comm_size,subcomm_size;
@@ -279,14 +279,14 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
       ierr = MPI_Comm_size(comm,&comm_size);CHKERRQ(ierr);
       ierr = MPI_Comm_size(subcomm,&subcomm_size);CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: comm_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  parent comm size reduction factor = %D\n",sred->redfactor);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  comm_size = %d , subcomm_size = %d\n",(int)comm_size,(int)subcomm_size);CHKERRQ(ierr);
       switch (sred->subcommtype) {
         case PETSC_SUBCOMM_INTERLACED :
-          ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: subcomm type: interlaced\n",sred->subcommtype);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  subcomm type: interlaced\n",sred->subcommtype);CHKERRQ(ierr);
           break;
         case PETSC_SUBCOMM_CONTIGUOUS :
-          ierr = PetscViewerASCIIPrintf(viewer,"  Telescope: subcomm type: contiguous\n",sred->subcommtype);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  subcomm type: contiguous\n",sred->subcommtype);CHKERRQ(ierr);
           break;
         default :
           SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"General subcomm type not supported by PCTelescope");
@@ -296,21 +296,21 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);
 
         if (dm && sred->ignore_dm) {
-          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring DM\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  ignoring DM\n");CHKERRQ(ierr);
         }
         if (sred->ignore_kspcomputeoperators) {
-          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: ignoring KSPComputeOperators\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  ignoring KSPComputeOperators\n");CHKERRQ(ierr);
         }
         switch (sred->sr_type) {
         case TELESCOPE_DEFAULT:
-          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: using default setup\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  using default setup\n");CHKERRQ(ierr);
           break;
         case TELESCOPE_DMDA:
-          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMDA detected\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  DMDA detected\n");CHKERRQ(ierr);
           ierr = DMView_DMDAShort(subdm,subviewer);CHKERRQ(ierr);
           break;
         case TELESCOPE_DMPLEX:
-          ierr = PetscViewerASCIIPrintf(subviewer,"  Telescope: DMPLEX detected\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(subviewer,"  DMPLEX detected\n");CHKERRQ(ierr);
           break;
         }
 

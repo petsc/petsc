@@ -82,7 +82,7 @@ int main(int Argc,char **Args)
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void (*)(void))interpolate);CHKERRQ(ierr);
     ierr = PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
-    ierr = PCMGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
+    ierr = PCMGSetCycleTypeOnLevel(pcmg,levels - 1 - i,(PCMGCycleType)cycles);CHKERRQ(ierr);
 
     /* set smoother */
     ierr = PCMGGetSmoother(pcmg,levels - 1 - i,&ksp[i]);CHKERRQ(ierr);

@@ -6,7 +6,6 @@
 *.gcda
 *.swp
 *.log
-*.dat
 *.vt[ksu]
 *.pvt[ksu]
 *.h5m

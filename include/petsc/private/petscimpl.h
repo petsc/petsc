@@ -189,6 +189,9 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortr
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(PetscOptions,const char[],const char[],char**,PetscBool*);
+PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
+
+
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 

@@ -1107,6 +1107,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       ierr = ISGetLocalSize(msolv_ctx->is_R,&n_R);CHKERRQ(ierr);
       ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n_R,n_R,0,NULL,&Afake);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(Afake,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(Afake,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = PCSetOperators(msolv_ctx->correction_solver,Afake,Afake);CHKERRQ(ierr);
       ierr = MatDestroy(&Afake);CHKERRQ(ierr);
       ierr = VecDestroy(&vec1_B);CHKERRQ(ierr);
@@ -1125,6 +1127,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = VecRestoreArray(msolv_ctx->benign_corr_work,&array);CHKERRQ(ierr);
         msolv_ctx->benign_AIIm1ones = benign_AIIm1_ones_mat;
       }
+    } else {
+      if (sub_schurs->reuse_solver) {
+        ierr = PCBDDCReuseSolversReset(sub_schurs->reuse_solver);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(sub_schurs->reuse_solver);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);

@@ -44,10 +44,10 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   DM             dm;
 
   PetscFunctionBegin;
-  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+  if (snes->npc && snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
     SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNGMRES does not support left preconditioning with unpreconditioned function");
   }
-  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
+  if (snes->npcside== PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   ierr = SNESSetWorkVecs(snes,5);CHKERRQ(ierr);
 
   if (!snes->vec_sol) {
@@ -205,9 +205,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   /* initialization */
 
-  if (snes->pc && snes->pcside == PC_LEFT) {
+  if (snes->npc && snes->npcside== PC_LEFT) {
     ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -237,15 +237,15 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   ivec      = 0;
   for (k=1; k < snes->max_its+1; k++) {
     /* Computation of x^M */
-    if (snes->pc && snes->pcside == PC_RIGHT) {
+    if (snes->npc && snes->npcside== PC_RIGHT) {
       ierr = VecCopy(X,XM);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunction(snes->pc,F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->npc,F);CHKERRQ(ierr);
 
-      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc,B,XM);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->npc,XM,B,0);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->npc,B,XM);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->npc,XM,B,0);CHKERRQ(ierr);
 
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -538,9 +538,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->ops->solve          = SNESSolve_NGMRES;
   snes->ops->reset          = SNESReset_NGMRES;
 
-  snes->usespc   = PETSC_TRUE;
+  snes->usesnpc  = PETSC_TRUE;
   snes->usesksp  = PETSC_FALSE;
-  snes->pcside   = PC_RIGHT;
+  snes->npcside  = PC_RIGHT;
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

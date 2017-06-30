@@ -19,7 +19,7 @@ KSP Object: 8 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
   type: gamg
-    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+    type is MULTIPLICATIVE, levels=3 cycles=v
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
@@ -50,25 +50,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 10, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 10, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
@@ -108,25 +107,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        eigenvalues estimate via cg min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 79, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 79, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_2_sub_) 1 MPI processes
         type: preonly
@@ -193,7 +191,7 @@ KSP Object: 8 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
   type: gamg
-    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+    type is MULTIPLICATIVE, levels=3 cycles=v
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
@@ -224,25 +222,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 10, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 10, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
@@ -282,25 +279,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        eigenvalues estimate via cg min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 79, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 79, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_2_sub_) 1 MPI processes
         type: preonly
@@ -367,7 +363,7 @@ KSP Object: 8 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 8 MPI processes
   type: gamg
-    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+    type is MULTIPLICATIVE, levels=3 cycles=v
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
@@ -398,25 +394,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 10, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 10, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_1_sub_) 1 MPI processes
         type: preonly
@@ -456,25 +451,24 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
-        Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        eigenvalues estimate via cg min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        Chebyshev: estimating eigenvalues using noisy right hand side
-      maximum iterations=1
+        estimating eigenvalues using noisy right hand side
+      maximum iterations=1, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using nonzero initial guess
       using NONE norm type for convergence test
     PC Object: (mg_levels_2_) 8 MPI processes
       type: asm
-        Additive Schwarz: total subdomain blocks = 79, amount of overlap = 0
-        Additive Schwarz: restriction/interpolation type - BASIC
+        total subdomain blocks = 79, amount of overlap = 0
+        restriction/interpolation type - BASIC
         Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (mg_levels_2_sub_) 1 MPI processes
         type: preonly

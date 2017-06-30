@@ -56,7 +56,7 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESDestroy(&snes->pc);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes->npc);CHKERRQ(ierr);
   /* reset NEWTONLS and free the data */
   ierr = SNESReset(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);

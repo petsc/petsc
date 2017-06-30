@@ -1009,7 +1009,7 @@ runex18:
 	   ${DIFF} output/ex18_1.out ex18_1.tmp || printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_1.tmp
 runex18_bas:
-	-@${MPIEXEC} -n 1 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1 | grep -v "CG or CGNE: variant" > ex18_bas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex18 -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1 | grep -v "variant " > ex18_bas.tmp 2>&1; \
 	   ${DIFF} output/ex18_bas.out ex18_bas.tmp || printf "${PWD}\nPossible problem with ex18_bas, diffs above\n=========================================\n"; \
 	   ${RM} -f ex18_bas.tmp
 runex18_2:
@@ -1155,11 +1155,11 @@ runex43_3:
 	   ${RM} -f ex43_3.tmp
 
 runex43_bjacobi:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -dm_mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 runex43_bjacobi_baij:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_rtol 1.e-4 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -dm_mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || printf "${PWD}\nPossible problem with ex43_bjacobi_baij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43.tmp
 

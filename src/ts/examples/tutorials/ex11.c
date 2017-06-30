@@ -408,12 +408,13 @@ static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
 #endif
   SWNodeUnion  fL,fR;
   PetscInt     i;
+  PetscReal    zero=0.;
 
 #if defined(PETSC_USE_COMPLEX)
   for (i = 0; i < 1+dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);
   for (i = 0; i < 1+dim; i++) uRreal.vals[i] = PetscRealPart(xR[i]);
 #endif
-  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+dim; i++) flux[i] = 0./0.; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
+  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+dim; i++) flux[i] = zero/zero; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2Real(nn);

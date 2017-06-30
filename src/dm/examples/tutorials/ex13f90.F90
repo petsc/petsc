@@ -20,10 +20,6 @@ program main
 !
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
-!/*T
-!   requires: !complex
-!   depends:  ex13f90aux.F90
-!T*/
 
 
   use ex13f90aux
@@ -169,3 +165,12 @@ program main
 101 format(F5.1,2F11.6)
 
 end program main
+
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!      depends:  ex13f90aux.F90
+!
+!TEST*/
+

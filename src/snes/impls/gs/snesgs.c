@@ -215,7 +215,7 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
   if (iascii) {
     ierr = DMSNESGetNGS(snes->dm,&f,NULL);CHKERRQ(ierr);
     if (f == SNESComputeNGSDefaultSecant) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  NGS:  Use finite difference secant approximation with coloring with h = %g \n",(double)gs->h);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Use finite difference secant approximation with coloring with h = %g \n",(double)gs->h);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -351,7 +351,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
   snes->ops->reset          = SNESReset_NGS;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
