@@ -1839,6 +1839,7 @@ static PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
   } else {
     ierr = PetscMemcpy(b->v,a->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

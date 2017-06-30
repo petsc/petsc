@@ -901,6 +901,7 @@ static PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Need to be implemented");
   b = (Mat_IS*)B->data;
   ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1759,6 +1759,7 @@ PetscErrorCode MatCopy_MPISBAIJ(Mat A,Mat B,MatStructure str)
     ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
     ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);
   }
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

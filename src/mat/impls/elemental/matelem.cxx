@@ -503,6 +503,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   El::Copy(*a->emat,*b->emat);
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

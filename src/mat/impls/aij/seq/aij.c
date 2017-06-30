@@ -2639,6 +2639,7 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 
     if (a->i[A->rmap->n] != b->i[B->rmap->n]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
     ierr = PetscMemcpy(b->a,a->a,(a->i[A->rmap->n])*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   } else {
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
