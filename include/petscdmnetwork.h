@@ -42,6 +42,7 @@ PETSC_EXTERN PetscErrorCode DMNetworkEdgeSetMatrix(DM,PetscInt,Mat[]);
 PETSC_EXTERN PetscErrorCode DMNetworkVertexSetMatrix(DM,PetscInt,Mat[]);
 PETSC_EXTERN PetscErrorCode DMNetworkHasJacobian(DM,PetscBool,PetscBool);
 PETSC_EXTERN PetscErrorCode DMNetworkGetPlex(DM,DM*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeVertexID(DM,PetscInt,PetscInt*);
 
 typedef struct _p_DMNetworkMonitorList *DMNetworkMonitorList;
 struct _p_DMNetworkMonitorList

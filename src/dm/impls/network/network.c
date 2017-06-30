@@ -147,7 +147,11 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
-    network->header[i].id    = i;
+    if (i < network->vStart) {
+      network->header[i].id = i;
+    } else {
+      network->header[i].id = i - network->vStart;
+    }
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
@@ -251,6 +255,37 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
   PetscFunctionBegin;
   if (eStart) *eStart = network->eStart;
   if (eEnd) *eEnd = network->eEnd;
+  PetscFunctionReturn(0);
+}
+
+
+/*@
+  DMNetworkGetEdgeVertexID - Get the user numbering for the edge or vertex.
+
+  Not Collective
+
+  Input Parameters:
++ dm - DMNetwork object
+- p  - vertex/edge point
+
+  Output Paramters:
+. id - user numbering
+
+  Level: intermediate
+
+.seealso: DMNetworkGetEdgeRange, DMNetworkGetVertexRange
+@*/
+PetscErrorCode DMNetworkGetEdgeVertexID(DM dm,PetscInt p,PetscInt *id)
+{
+  PetscErrorCode    ierr;
+  DM_Network        *network = (DM_Network*)dm->data;
+  PetscInt          offsetp;
+  DMNetworkComponentHeader header;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
+  header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
+  *id    = header->id;
   PetscFunctionReturn(0);
 }
 
@@ -709,6 +744,7 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 
   PetscFunctionReturn(0);
 }
+
 /*@
   DMNetworkDistribute - Distributes the network and moves associated component data.
 

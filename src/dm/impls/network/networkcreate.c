@@ -49,9 +49,8 @@ static PetscErrorCode VecArrayPrint_private(PetscViewer viewer,PetscInt n,const 
 static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          e,v,Start,End,offset,nvar;
+  PetscInt          e,v,Start,End,offset,nvar,id;
   const PetscScalar *xv;
-  DM_Network        *network = (DM_Network*)networkdm->data;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&xv);CHKERRQ(ierr);
@@ -59,24 +58,26 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
   /* iterate over edges */
   ierr = DMNetworkGetEdgeRange(networkdm,&Start,&End);CHKERRQ(ierr);
   for (e=Start; e<End; e++) {
-    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-Start);CHKERRQ(ierr);
+    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetEdgeVertexID(networkdm,e,&id);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
     ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
 
   /* iterate over vertices */
   ierr = DMNetworkGetVertexRange(networkdm,&Start,&End);CHKERRQ(ierr);
   for (v=Start; v<End; v++) {
-    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,v,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    printf("network->header[%d].id = %d\n",v,network->header[v].id);
+    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetEdgeVertexID(networkdm,v,&id);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-Start);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
     ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -94,9 +95,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   Vec               localX;
   PetscBool         ghostvtex;
   PetscScalar       *values;
-  PetscInt          j,n,ne,nv;
+  PetscInt          j,ne,nv,id;
   MPI_Status        status;
-  DM_Network        *network = (DM_Network*)networkdm->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
@@ -125,24 +125,20 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   /* iterate over edges */
   k = 2;
   for (e=eStart; e<eEnd; e++) {
-    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,e,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    values[0]  += 1; /* nedges */
-    values[k++] = offset;
-    values[k++] = nvar;
-
-    //printf("network->header[%d].id = %p\n",e,&network->header[e]);
-    printf("network->header[%d].id = %d\n",e,network->header[e].id);
+    ierr = DMNetworkGetVariableOffset(networkdm,e,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetEdgeVertexID(networkdm,e,&id);CHKERRQ(ierr);
 
     if (!rank) { /* print its own entries */
-      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",e-eStart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
-      for (i=offset; i< offset+nvar; i++) {
-        values[k++] = xv[i];
-      }
+      values[0]  += 1; /* number of edges */
+      values[k++] = id;
+      values[k++] = nvar;
+      for (i=offset; i< offset+nvar; i++) values[k++] = xv[i];
     }
   }
 
@@ -150,25 +146,20 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   for (v=vStart; v<vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     if (ghostvtex) continue;
-    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,v,&nvar);CHKERRQ(ierr);
     if (!nvar) continue;
 
-    values[1]  += 1; /* nvertices */
-    values[k++] = offset;
-    values[k++] = nvar;
+    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetEdgeVertexID(networkdm,v,&id);CHKERRQ(ierr);
 
     if (!rank) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",v-vStart);CHKERRQ(ierr);
-      printf("network->header[%d].id = %d\n",v,network->header[v].id);
-    }
-
-    if (!rank) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
-      for (i=offset; i< offset+nvar; i++) {
-        values[k++] = xv[i];
-      }
+      values[1]  += 1; /* number of vertices */
+      values[k++] = id;
+      values[k++] = nvar;
+      for (i=offset; i< offset+nvar; i++) values[k++] = xv[i];
     }
   }
 
@@ -178,26 +169,25 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
 
       ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
 
       ne = (PetscInt)values[0];
       nv = (PetscInt)values[1];
 
       /* print received edges */
-      k  = 2;
+      k = 2;
       for (i=0; i<ne; i++) {
-        offset = (PetscInt)values[k++];
-        nvar   = (PetscInt)values[k++];
-        ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",i);CHKERRQ(ierr);
+        id   = (PetscInt)values[k++];
+        nvar = (PetscInt)values[k++];
+        ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
       }
 
       /* print received vertices */
       for (i=0; i<nv; i++) {
-        offset = (PetscInt)values[k++];
-        nvar   = (PetscInt)values[k++];
-        ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",i);CHKERRQ(ierr);
+        id   = (PetscInt)values[k++];
+        nvar = (PetscInt)values[k++];
+        ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
       }
