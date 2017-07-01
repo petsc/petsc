@@ -316,6 +316,7 @@ int main(int argc,char ** argv)
   ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
+  ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = VecDestroy(&x);CHKERRQ(ierr);

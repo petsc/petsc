@@ -9,7 +9,7 @@
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
-  PetscInt id;    /* id for user input sequential edge and vertex */
+  PetscInt index;    /* index for user input global edge and vertex */
   PetscInt ndata;
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];

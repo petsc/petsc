@@ -1,13 +1,23 @@
 Linear solve converged due to CONVERGED_RTOL iterations 3
 Vec Object: 1 MPI processes
   type: seq
--1.
-7.
--4.
--2.
--1.
-3.
--2.
--1.
-3.
-0.
+  Edge 0:
+    -1.
+  Edge 1:
+    7.
+  Edge 2:
+    -4.
+  Edge 3:
+    -2.
+  Edge 4:
+    -1.
+  Edge 5:
+    3.
+  Vertex 0:
+    -2.
+  Vertex 1:
+    -1.
+  Vertex 2:
+    3.
+  Vertex 3:
+    0.
