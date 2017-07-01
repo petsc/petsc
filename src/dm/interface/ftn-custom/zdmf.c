@@ -18,6 +18,7 @@
 #define dmsetlabelvalue_             DMSETLABELVALUE
 #define dmgetlabelsize_              DMGETLABELSIZE
 #define dmgetlabelidis_              DMGETLABELIDIS
+#define dmgetlabelname_              DMGETLABELNAME
 #define dmgetlabel_                  DMGETLABEL
 #define dmgetstratumsize_            DMGETSTRATUMSIZE
 #define dmgetstratumis_              DMGETSTRATUMIS
@@ -39,6 +40,7 @@
 #define dmsetlabelvalue_             dmsetlabelvalue
 #define dmgetlabelsize_              dmlabelsize
 #define dmgetlabelidis_              dmlabelidis
+#define dmgetlabelname_              dmgetlabelname
 #define dmgetlabel_                  dmgetlabel
 #define dmgetstratumsize_            dmgetstratumsize
 #define dmgetstratumis_              dmgetstratumis
@@ -176,6 +178,14 @@ PETSC_EXTERN void PETSC_STDCALL dmgetlabelidis_(DM *dm, char* name PETSC_MIXED_L
   FIXCHAR(name, lenN, lname);
   *ierr = DMGetLabelIdIS(*dm, lname, ids);
   FREECHAR(name, lname);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmgetlabelname_(DM *dm,PetscInt *n,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *tmp;
+  *ierr = DMGetLabelName(*dm,*n,&tmp);
+  *ierr = PetscStrncpy(name,tmp,len);if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmgetlabel_(DM *dm, char* name PETSC_MIXED_LEN(lenN), DMLabel *label, int *ierr PETSC_END_LEN(lenN))
