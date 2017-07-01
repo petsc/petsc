@@ -319,7 +319,7 @@ PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm,PetscInt p,PetscInt *index)
 }
 
 /*@
-  Dmnetworkaddcomponent - Adds a network component at the given point (vertex/edge)
+  DMNetworkAddComponent - Adds a network component at the given point (vertex/edge)
 
   Not Collective
 
