@@ -170,14 +170,14 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
       ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,comm,&status);CHKERRQ(ierr);
 
-      ne = (PetscInt)values[0];
-      nv = (PetscInt)values[1];
+      ne = (PetscInt)PetscAbsScalar(values[0]);
+      nv = (PetscInt)PetscAbsScalar(values[1]);
 
       /* print received edges */
       k = 2;
       for (i=0; i<ne; i++) {
-        id   = (PetscInt)values[k++];
-        nvar = (PetscInt)values[k++];
+        id   = (PetscInt)PetscAbsScalar(values[k++]);
+        nvar = (PetscInt)PetscAbsScalar(values[k++]);
         ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
@@ -185,8 +185,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
 
       /* print received vertices */
       for (i=0; i<nv; i++) {
-        id   = (PetscInt)values[k++];
-        nvar = (PetscInt)values[k++];
+        id   = (PetscInt)PetscAbsScalar(values[k++]);
+        nvar = (PetscInt)PetscAbsScalar(values[k++]);
         ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
