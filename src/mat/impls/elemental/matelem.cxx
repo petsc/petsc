@@ -500,6 +500,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 {
   Mat_Elemental *a=(Mat_Elemental*)A->data;
   Mat_Elemental *b=(Mat_Elemental*)B->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   El::Copy(*a->emat,*b->emat);
