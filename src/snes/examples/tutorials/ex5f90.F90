@@ -218,7 +218,8 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione, &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
       call DMSetFromOptions(da,ierr)
       call DMSetUp(da,ierr)
 

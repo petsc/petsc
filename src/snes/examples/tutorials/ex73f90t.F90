@@ -152,7 +152,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !     just get size
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr);CHKERRA(ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione, &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr);CHKERRA(ierr)
       call DMSetFromOptions(daphi,ierr);CHKERRA(ierr)
       call DMSetUp(daphi,ierr);CHKERRA(ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &

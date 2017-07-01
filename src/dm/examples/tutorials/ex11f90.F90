@@ -44,7 +44,8 @@
       call DMRestoreGlobalVector(ada,g,ierr);CHKERRA(ierr)
       call DMDestroy(ada,ierr);CHKERRA(ierr)
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,  &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
       call DMSetUp(ada,ierr);CHKERRA(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
@@ -102,7 +103,8 @@
       call DMDestroy(ada,ierr);CHKERRA(ierr)
 
       dof = 2
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,   &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRA(ierr)
       call DMSetUp(ada,ierr);CHKERRA(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRA(ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRA(ierr)
