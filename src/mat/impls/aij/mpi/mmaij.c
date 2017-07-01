@@ -271,17 +271,18 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A,Vec scale)
 
 PetscErrorCode  MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
 {
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*) A->data; /*access private part of matrix */
-  PetscErrorCode ierr;
-  PetscInt       n,i;
-  PetscScalar    *d,*o,*s;
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*) A->data; /*access private part of matrix */
+  PetscErrorCode    ierr;
+  PetscInt          n,i;
+  PetscScalar       *d,*o;
+  const PetscScalar *s;
 
   PetscFunctionBegin;
   if (!auglyrmapd) {
     ierr = MatMPIAIJDiagonalScaleLocalSetUp(A,scale);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(scale,&s);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(scale,&s);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(auglydd,&n);CHKERRQ(ierr);
   ierr = VecGetArray(auglydd,&d);CHKERRQ(ierr);
@@ -297,7 +298,7 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIAIJ(Mat A,Vec scale)
   for (i=0; i<n; i++) {
     o[i] = s[auglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   }
-  ierr = VecRestoreArray(scale,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(scale,&s);CHKERRQ(ierr);
   ierr = VecRestoreArray(auglyoo,&o);CHKERRQ(ierr);
   /* column scale "off-diagonal" portion of local matrix */
   ierr = MatDiagonalScale(a->B,NULL,auglyoo);CHKERRQ(ierr);
