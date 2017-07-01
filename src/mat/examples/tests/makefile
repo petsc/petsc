@@ -25,7 +25,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
                 ex202.c ex203.c ex205.c ex206.c ex207.c
 
-EXAMPLESF	 = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F
+EXAMPLESF	 = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

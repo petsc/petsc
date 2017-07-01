@@ -17,11 +17,11 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call DMPlexCreateDoublet(PETSC_COMM_WORLD, dim, simplex,interpolate, refinementUniform, refinementLimit, dm, ierr);CHKERRQ(ierr)
-      call DMSetUp(dm,ierr);CHKERRQ(ierr)
-      call PetscDSCreate(PETSC_COMM_WORLD,prob,ierr);CHKERRQ(ierr)
-      call DMGetDS(dm,prob,ierr);CHKERRQ(ierr)
+      call DMPlexCreateDoublet(PETSC_COMM_WORLD, dim, simplex,interpolate, refinementUniform, refinementLimit, dm, ierr);CHKERRA(ierr)
+      call DMSetUp(dm,ierr);CHKERRA(ierr)
+      call PetscDSCreate(PETSC_COMM_WORLD,prob,ierr);CHKERRA(ierr)
+      call DMGetDS(dm,prob,ierr);CHKERRA(ierr)
 
-      call DMDestroy(dm, ierr);CHKERRQ(ierr)
+      call DMDestroy(dm, ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end program main

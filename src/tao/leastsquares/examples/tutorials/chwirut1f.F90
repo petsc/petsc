@@ -5,39 +5,50 @@
 !  Chwirut function:
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 !
-!  The C version of this code is chwirut1.c
+!  The C version of this code is test_chwirut1.c
 !
 !/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
-!  Routines: TaoSetSeparableObjectiveRoutine();
 !  Routines: TaoSetInitialVector();
+!  Routines: TaoSetSeparableObjectiveRoutine();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
 !  Routines: TaoDestroy();
-!  Processors: n
+!  Processors: 1
 !T*/
 !
 ! ----------------------------------------------------------------------
 !
-#include "chwirut2f.h"
+#include "chwirut1f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  See additional variable declarations in the file chwirut2f.h
+!  See additional variable declarations in the file chwirut1f.h
 
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
       Tao        tao     ! Tao context
+      PetscInt         nhist
+      PetscMPIInt  size,rank    ! number of processes running
+      PetscReal      zero
+      PetscReal      hist(100) ! objective value history
+      PetscReal      resid(100)! residual history
+      PetscReal      cnorm(100)! cnorm history
+      PetscInt      lits(100)   ! #ksp history
+      PetscInt oh
+      TaoConvergedReason reason
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
 
       external FormFunction
+
+      zero = 0.0
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -47,65 +58,72 @@
       endif
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      CHKERRQ(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      CHKERRQ(ierr)
-
-!  Initialize problem parameters
-      call InitializeData()
-
-      if (rank .eq. 0) then
-!  Allocate vectors for the solution and gradient
-         call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
-         CHKERRQ(ierr)
-         call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
-         CHKERRQ(ierr)
-
-
-!     The TAO code begins here
-
-!     Create TAO solver
-         call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-         CHKERRQ(ierr)
-         call TaoSetType(tao,TAOPOUNDERS,ierr)
-         CHKERRQ(ierr)
-
-!     Set routines for function, gradient, and hessian evaluation
-         call TaoSetSeparableObjectiveRoutine(tao,f,                    &
-     &        FormFunction,0,ierr)
-         CHKERRQ(ierr)
-
-!     Optional: Set initial guess
-         call FormStartingPoint(x)
-         call TaoSetInitialVector(tao, x, ierr)
-         CHKERRQ(ierr)
-
-
-!     Check for TAO command line options
-         call TaoSetFromOptions(tao,ierr)
-         CHKERRQ(ierr)
-!     SOLVE THE APPLICATION
-         call TaoSolve(tao,ierr)
-         CHKERRQ(ierr)
-
-!     Free TAO data structures
-         call TaoDestroy(tao,ierr)
-         CHKERRQ(ierr)
-
-!     Free PETSc data structures
-         call VecDestroy(x,ierr)
-         CHKERRQ(ierr)
-         call VecDestroy(f,ierr)
-         CHKERRQ(ierr)
-         call StopWorkers(ierr)
-         CHKERRQ(ierr)
-
-      else
-         call TaskWorker(ierr)
-         CHKERRQ(ierr)
+      if (size .ne. 1) then
+         if (rank .eq. 0) then
+            write(6,*) 'This is a uniprocessor example only!'
+         endif
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
 
+!  Initialize problem parameters
+      m = 214
+      n = 3
+
+
+!  Allocate vectors for the solution and gradient
+      call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
+
+
+!  The TAO code begins here
+
+!  Create TAO solver
+      call TaoCreate(PETSC_COMM_SELF,tao,ierr)
+      CHKERRA(ierr)
+      call TaoSetType(tao,TAOPOUNDERS,ierr)
+      CHKERRA(ierr)
+!  Set routines for function, gradient, and hessian evaluation
+
+      call TaoSetSeparableObjectiveRoutine(tao,f,                       &
+     &      FormFunction,0,ierr)
+      CHKERRA(ierr)
+
+!  Optional: Set initial guess
+      call InitializeData()
+      call FormStartingPoint(x)
+      call TaoSetInitialVector(tao, x, ierr)
+      CHKERRA(ierr)
+
+
+!  Check for TAO command line options
+      call TaoSetFromOptions(tao,ierr)
+      CHKERRA(ierr)
+      oh = 100
+      call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
+     &     oh,PETSC_TRUE,ierr)
+      CHKERRA(ierr)
+!  SOLVE THE APPLICATION
+      call TaoSolve(tao,ierr)
+      CHKERRA(ierr)
+      call TaoGetConvergenceHistory(tao,nhist,ierr)
+      CHKERRA(ierr)
+      call TaoGetConvergedReason(tao, reason, ierr)
+      if (reason .le. 0) then
+         print *,'Tao failed.'
+         print *,'Try a different TAO method, adjust some parameters,'
+         print *,'or check the function evaluation routines.'
+      endif
+
+!  Free TAO data structures
+      call TaoDestroy(tao,ierr)
+
+!  Free PETSc data structures
+      call VecDestroy(x,ierr)
+      call VecDestroy(f,ierr)
+
       call PetscFinalize(ierr)
+
       end
 
 
@@ -121,23 +139,21 @@
 !  f - function vector
 
       subroutine FormFunction(tao, x, f, dummy, ierr)
-#include "chwirut2f.h"
+#include "chwirut1f.h"
 
       Tao        tao
       Vec              x,f
       PetscErrorCode   ierr
       PetscInt         dummy
 
-      PetscInt         i,checkedin
-      PetscInt         finished_tasks
-      integer          next_task,status(MPI_STATUS_SIZE),tag,source
+      PetscInt         i
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
 ! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        f_v(0:1),x_v(0:1),fval
+      PetscReal        f_v(0:1),x_v(0:1)
       PetscOffset      f_i,x_i
 
       ierr = 0
@@ -150,51 +166,25 @@
 
 
 !     Compute F(X)
-      if (size .eq. 1) then
-         ! Single processor
-         do i=0,m-1
-            call RunSimulation(x_v(x_i),i,f_v(i+f_i),ierr)
-         enddo
-      else
-         ! Multiprocessor master
-         next_task = 0
-         finished_tasks = 0
-         checkedin = 0
+      do i=0,m-1
+         f_v(f_i+i) = y(i) - exp(-x_v(x_i+0)*t(i))/                      &
+     &    (x_v(x_i+1) + x_v(x_i+2)*t(i))
 
-         do while (finished_tasks .lt. m .or. checkedin .lt. size-1)
-            call MPI_Recv(fval,1,MPIU_SCALAR,MPI_ANY_SOURCE,               &
-     &           MPI_ANY_TAG,PETSC_COMM_WORLD,status,ierr)
-            tag = status(MPI_TAG)
-            source = status(MPI_SOURCE)
-            if (tag .eq. IDLE_TAG) then
-               checkedin = checkedin + 1
-            else
-               f_v(f_i+tag) = fval
-               finished_tasks = finished_tasks + 1
-            endif
-            if (next_task .lt. m) then
-               ! Send task to worker
-               call MPI_Send(x_v(x_i),n,MPIU_SCALAR,source,next_task,             &
-     &              PETSC_COMM_WORLD,ierr)
-               next_task = next_task + 1
-            else
-               ! Send idle message to worker
-               call MPI_Send(x_v(x_i),n,MPIU_SCALAR,source,IDLE_TAG,              &
-     &              PETSC_COMM_WORLD,ierr)
-            end if
-         enddo
-      endif
+      enddo
+
 
 !     Restore vectors
-      call VecRestoreArray(x,x_v,x_i,ierr)
+      call VecRestoreArray(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecRestoreArray(F,f_v,f_i,ierr)
       CHKERRQ(ierr)
+
+
       return
       end
 
       subroutine FormStartingPoint(x)
-#include "chwirut2f.h"
+#include "chwirut1f.h"
 
       Vec             x
       PetscReal       x_v(0:1)
@@ -202,20 +192,17 @@
       PetscErrorCode  ierr
 
       call VecGetArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
       x_v(x_i) = 0.15
       x_v(x_i+1) = 0.008
       x_v(x_i+2) = 0.01
       call VecRestoreArray(x,x_v,x_i,ierr)
-      CHKERRQ(ierr)
       return
       end
 
-
       subroutine InitializeData()
-#include "chwirut2f.h"
+#include "chwirut1f.h"
 
-      PetscInt i
+      integer i
       i=0
       y(i) =    92.9000;  t(i) =  0.5000; i=i+1
       y(i) =    78.7000;  t(i) =   0.6250; i=i+1
@@ -434,88 +421,5 @@
 
       return
       end
-
-
-
-      subroutine TaskWorker(ierr)
-#include "chwirut2f.h"
-
-      PetscErrorCode ierr
-      PetscReal x(n),f
-      integer tag
-      PetscInt index
-      integer status(MPI_STATUS_SIZE)
-
-      tag = IDLE_TAG
-      f   = 0.0
-      ! Send check-in message to master
-      call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
-      CHKERRQ(ierr)
-      do while (tag .ne. DIE_TAG)
-         call MPI_Recv(x,n,MPIU_SCALAR,0,MPI_ANY_TAG,PETSC_COMM_WORLD,     &
-     &        status,ierr)
-         CHKERRQ(ierr)
-         tag = status(MPI_TAG)
-         if (tag .eq. IDLE_TAG) then
-            call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,     &
-     &           ierr)
-            CHKERRQ(ierr)
-         else if (tag .ne. DIE_TAG) then
-            index = tag
-            ! Compute local part of residual
-            call RunSimulation(x,index,f,ierr)
-            CHKERRQ(ierr)
-
-            ! Return residual to master
-            call MPI_Send(f,1,MPIU_SCALAR,0,tag,PETSC_COMM_WORLD,ierr)
-            CHKERRQ(ierr)
-         end if
-      enddo
-      ierr = 0
-      return
-      end
-
-
-
-      subroutine RunSimulation(x,i,f,ierr)
-#include "chwirut2f.h"
-
-      PetscReal x(n),f
-      PetscInt i
-      PetscErrorCode ierr
-      f = y(i) - exp(-x(1)*t(i))/(x(2)+x(3)*t(i))
-      ierr = 0
-      return
-      end
-
-      subroutine StopWorkers(ierr)
-#include "chwirut2f.h"
-
-      integer checkedin
-      integer status(MPI_STATUS_SIZE)
-      integer source
-      PetscReal f,x(n)
-      PetscErrorCode ierr
-      PetscInt i
-
-      checkedin=0
-      do while (checkedin .lt. size-1)
-         call MPI_Recv(f,1,MPIU_SCALAR,MPI_ANY_SOURCE,MPI_ANY_TAG,         &
-     &        PETSC_COMM_WORLD,status,ierr)
-         CHKERRQ(ierr)
-         checkedin=checkedin+1
-         source = status(MPI_SOURCE)
-         do i=1,n
-           x(i) = 0.0
-         enddo
-         call MPI_Send(x,n,MPIU_SCALAR,source,DIE_TAG,PETSC_COMM_WORLD,    &
-     &        ierr)
-         CHKERRQ(ierr)
-      enddo
-      ierr=0
-      return
-      end
-
-
 
 

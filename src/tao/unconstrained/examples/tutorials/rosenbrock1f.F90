@@ -61,7 +61,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,' ')
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
 
 !  Initialize problem parameters
@@ -90,28 +90,28 @@
 
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetType(tao,TAOLMVM,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !  Set routines for function, gradient, and hessian evaluation
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &      FormFunctionGradient,0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     0,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 !  Optional: Set initial guess
       call VecSet(x, zero, ierr)
       call TaoSetInitialVector(tao, x, ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)

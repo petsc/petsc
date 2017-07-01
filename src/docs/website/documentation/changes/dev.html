@@ -189,7 +189,10 @@
       <h4>Fortran:</h4>
       <ul>
         <li>Simplified Fortran usage. Now you only include petsc/finclude/petscXXX and use petscXXX</li>
-        <li>SETERRQ() from Fortran has one fewer argument, there is no ierr as the final argument</li>
+        <li>New shorter calling sequence for PetscError() from Fortran</li>
+        <li>SETERRQ(), and CHKERRQ from Fortran now have the same behavior as in C and automatically return on errors, they do not abort.
+            Correspondingly SERERRA() and CHKERRA() should be used in 'program main' - as return is not possible from it.
+            These macros should be used from .F90 files because they require long lines</li>
     </div>
 
     <PRE>

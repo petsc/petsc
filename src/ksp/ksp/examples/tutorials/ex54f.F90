@@ -209,7 +209,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,bvec,xvec,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

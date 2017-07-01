@@ -327,6 +327,10 @@ static void PetscCxxErrorThrow() {
    sequence
 $     SETERRQ(comm,n,mess)
 
+   Fortran Note:
+   This routine is used differently from Fortran
+$    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
+
    Experienced users can set the error handler with PetscPushErrorHandler().
 
    Developer Note: Since this is called after an error condition it should not be calling any error handlers (currently it ignores any error codes)

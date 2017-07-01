@@ -94,7 +94,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,' ')
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
 
 !  Initialize problem parameters
@@ -109,7 +109,7 @@
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ')
+         SETERRA(PETSC_COMM_SELF,1,' ')
       endif
       N       = mx*my
 
