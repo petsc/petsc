@@ -2644,7 +2644,9 @@ PETSC_EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char[],size_t,PetscBool *);
+#if defined(PETSC_USE_SOCKET_VIEWER)
 PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[],int,int*);
+#endif
 
 /*
    In binary files variables are stored using the following lengths,

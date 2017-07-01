@@ -666,7 +666,11 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
   PetscFunctionBegin;
   PetscValidPointer(hostname,2);
   PetscValidPointer(viewer,4);
+#if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOpenSocket(hostname,port,&fd);
+#else
+  SETERRQ(comm,PETSC_ERR_SUP,"Missing Socket viewer");
+#endif
   if (ierr) {
     PetscInt sierr = ierr;
     char     err[1024];
