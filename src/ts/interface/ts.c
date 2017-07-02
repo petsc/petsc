@@ -2563,12 +2563,13 @@ PetscErrorCode  TSSetUp(TS ts)
     /* Matching matrices implies that an IJacobian is NOT set, because if it had been set, the IJacobian's matrix would
      * have displaced the RHS matrix */
     if (Amat == ts->Arhs) {
-      ierr = MatDuplicate(ts->Arhs,MAT_DO_NOT_COPY_VALUES,&Amat);CHKERRQ(ierr);
+      /* we need to copy the values of the matrix because for the constant Jacobian case the user will never set the numerical values in this new location */
+      ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&Amat);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,Amat,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = MatDestroy(&Amat);CHKERRQ(ierr);
     }
     if (Pmat == ts->Brhs) {
-      ierr = MatDuplicate(ts->Brhs,MAT_DO_NOT_COPY_VALUES,&Pmat);CHKERRQ(ierr);
+      ierr = MatDuplicate(ts->Brhs,MAT_COPY_VALUES,&Pmat);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,NULL,Pmat,NULL,NULL);CHKERRQ(ierr);
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
     }
