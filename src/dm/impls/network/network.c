@@ -383,7 +383,7 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 }
 
 /*@
-  DMNetworkGetComponentTypeOffset - Gets the type along with the offset for indexing the
+  DMNetworkGetComponentKeyOffset - Gets the type along with the offset for indexing the
                                     component value from the component data array
 
   Not Collective
@@ -405,14 +405,14 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
   Loop over vertices or edges
     DMNetworkGetNumComponents(dm,v,&numcomps);
     Loop over numcomps
-      DMNetworkGetComponentTypeOffset(dm,v,compnum,&key,&offset);
+      DMNetworkGetComponentKeyOffset(dm,v,compnum,&key,&offset);
       compdata = (UserCompDataType)(arr+offset);
 
   Level: intermediate
 
 .seealso: DMNetworkGetNumComponents, DMNetworkGetComponentDataArray,
 @*/
-PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
+PetscErrorCode DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
   PetscErrorCode           ierr;
   PetscInt                 offsetp;
@@ -667,7 +667,7 @@ PetscErrorCode DMNetworkVariablesSetUp(DM dm)
 
   Level: intermediate
 
-.seealso: DMNetworkGetComponentTypeOffset, DMNetworkGetNumComponents
+.seealso: DMNetworkGetComponentKeyOffset, DMNetworkGetNumComponents
 @*/
 PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray)
 {

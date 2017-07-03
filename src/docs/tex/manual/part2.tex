@@ -6059,7 +6059,7 @@ DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **compone
 \end{lstlisting}
   Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
 \begin{lstlisting}
-DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
 \end{lstlisting}
 \lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
 
@@ -6072,7 +6072,7 @@ DMNetworkGetVertexRange(dm, &Start, &End);
 for(v=Start; v  < End; v++) { 
   DMNetworkGetNumComponents(dm,v, &numcomps); 
   for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponentTypeOffset(dm,v,compnum, &key, &offset); 
+    DMNetworkGetComponentKeyOffset(dm,v,compnum, &key, &offset); 
     compdata = (UserCompDataType)(arr+offset); 
   }
 }

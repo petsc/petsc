@@ -34,7 +34,7 @@ PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
   return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
 
-/* 
+/*
   The algorithm for network formation is based on the paper:
   Routing of Multipoint Connections, Bernard M. Waxman. 1988
 */
@@ -208,7 +208,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   /* Branch equations: i/r + uj - ui = battery */
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,NULL,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,NULL,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
     ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
@@ -226,7 +226,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     ierr = MatSetValuesLocal(A,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* from node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,NULL,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[0],0,NULL,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -236,7 +236,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,NULL,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[1],0,NULL,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -250,7 +250,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,NULL,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,0,NULL,&compoffset);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableOffset(networkdm,v,&lofst);CHKERRQ(ierr);
       node = (Node*)(arr + compoffset);
 
@@ -269,7 +269,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   ierr = DMLocalToGlobalBegin(networkdm,localb,ADD_VALUES,b);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localb,ADD_VALUES,b);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localb);CHKERRQ(ierr);
-  
+
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
