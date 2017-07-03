@@ -405,7 +405,7 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogStageRegister"
 /*@C
-  PetscLogStageRegister - Attaches a charactor string name to a logging stage.
+  PetscLogStageRegister - Attaches a character string name to a logging stage.
 
   Not Collective
 
