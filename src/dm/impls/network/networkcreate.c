@@ -312,11 +312,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   ierr     = PetscNewLog(dm,&network);CHKERRQ(ierr);
   dm->data = network;
 
-  network->refct          = 1;
-  network->NNodes         = -1;
-  network->NEdges         = -1;
-  network->nNodes         = -1;
-  network->nEdges         = -1;
+  network->refct     = 1;
+  network->NVertices = -1;
+  network->NEdges    = -1;
+  network->nVertices = -1;
+  network->nEdges    = -1;
 
 
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);
