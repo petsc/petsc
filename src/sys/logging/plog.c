@@ -390,7 +390,7 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
 /*@C
-  PetscLogStageRegister - Attaches a charactor string name to a logging stage.
+  PetscLogStageRegister - Attaches a character string name to a logging stage.
 
   Not Collective
 
