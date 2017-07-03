@@ -573,7 +573,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           Yfti = branch->yft[0];
           Yftr = branch->yft[1];
 
-          ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+          ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
 
           vfrom = cone[0];
           vto   = cone[1];
@@ -812,7 +812,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           Yfti = branch->yft[0];
           Yftr = branch->yft[1];
 
-          ierr  = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+          ierr  = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
           vfrom = cone[0];
           vto   = cone[1];
 

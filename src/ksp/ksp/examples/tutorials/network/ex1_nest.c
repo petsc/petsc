@@ -185,7 +185,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetEdgeOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
-    ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+    ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
     branch = (Branch*)(arr + compoffset);

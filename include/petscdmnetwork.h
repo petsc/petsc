@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMNetworkAssembleGraphStructures(DM);
 PETSC_EXTERN PetscErrorCode PetscSFGetSubSF(PetscSF,ISLocalToGlobalMapping,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMNetworkDistribute(DM*,PetscInt);
 PETSC_EXTERN PetscErrorCode DMNetworkGetSupportingEdges(DM,PetscInt,PetscInt*,const PetscInt*[]);
-PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedNodes(DM,PetscInt,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedVertices(DM,PetscInt,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMNetworkIsGhostVertex(DM,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMNetworkEdgeSetMatrix(DM,PetscInt,Mat[]);
 PETSC_EXTERN PetscErrorCode DMNetworkVertexSetMatrix(DM,PetscInt,Mat[]);

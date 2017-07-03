@@ -6046,7 +6046,7 @@ DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
 In network applications, one frequently needs to find the supporting edges for a node or
 the connecting nodes covering an edge. These can be obtained by the following two routines.
 \begin{lstlisting}
-DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
+DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[]);
 \end{lstlisting}
 \begin{lstlisting}
 DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;

@@ -118,7 +118,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	  Gtt = branch->ytt[0];
 	  Btt = branch->ytt[1];
 
-	  ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+	  ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
 	  vfrom = cone[0];
 	  vto   = cone[1];
 
@@ -263,7 +263,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	  Gtt = branch->ytt[0];
 	  Btt = branch->ytt[1];
 
-	  ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+	  ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
 	  vfrom = cone[0];
 	  vto   = cone[1];
 
@@ -569,6 +569,7 @@ int main(int argc,char ** argv)
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+    /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     
     ierr = VecDestroy(&X);CHKERRQ(ierr);
     ierr = VecDestroy(&F);CHKERRQ(ierr);

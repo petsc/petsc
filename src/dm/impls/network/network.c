@@ -903,7 +903,6 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
   ierr = PetscSFSetGraph(*subSF,nroots_sub,nleaves_sub,ilocal_sub,PETSC_OWN_POINTER,iremote_sub,PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(ilocal_map);CHKERRQ(ierr);
   ierr = PetscFree(iremote_sub);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -926,7 +925,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMNetworkCreate, DMNetworkGetConnectedNodes
+.seealso: DMNetworkCreate, DMNetworkGetConnectedVertices
 @*/
 PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[])
 {
@@ -940,7 +939,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 }
 
 /*@C
-  DMNetworkGetConnectedNodes - Return the connected vertices for this edge point
+  DMNetworkGetConnectedVertices - Return the connected vertices for this edge point
 
   Not Collective
 
@@ -959,7 +958,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 
 .seealso: DMNetworkCreate, DMNetworkGetSupportingEdges
 @*/
-PetscErrorCode DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[])
+PetscErrorCode DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[])
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*)dm->data;
@@ -983,7 +982,7 @@ PetscErrorCode DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *ve
 
   Level: intermediate
 
-.seealso: DMNetworkCreate, DMNetworkGetConnectedNodes, DMNetworkGetVertexRange
+.seealso: DMNetworkCreate, DMNetworkGetConnectedVertices, DMNetworkGetVertexRange
 @*/
 PetscErrorCode DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost)
 {
@@ -1048,7 +1047,7 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
 .   p  - the edge point
 -   J - array (size = 3) of Jacobian submatrices for this edge point:
         J[0]: this edge
-        J[1] and J[2]: connected vertices, obtained by calling DMNetworkGetConnectedNodes()
+        J[1] and J[2]: connected vertices, obtained by calling DMNetworkGetConnectedVertices()
 
     Level: intermediate
 
@@ -1232,7 +1231,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,Pet
   PetscFunctionReturn(0);
 }
 
-
 /* Creates a GlobalToLocal mapping with a Local and Global section. This is akin to the routine DMGetLocalToGlobalMapping but without the need of providing a dm.
 */
 PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, PetscSection localsec, ISLocalToGlobalMapping *ltog)
@@ -1381,7 +1379,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       for (j=0; j<nrows; j++) rows[j] = j + rstart;
 
       /* Set preallocation for conntected vertices */
-      ierr = DMNetworkGetConnectedNodes(dm,e,&cone);CHKERRQ(ierr);
+      ierr = DMNetworkGetConnectedVertices(dm,e,&cone);CHKERRQ(ierr);
       for (v=0; v<2; v++) {
         ierr = DMNetworkGetNumVariables(dm,cone[v],&ncols);CHKERRQ(ierr);
 
@@ -1433,7 +1431,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       ierr = MatSetPreallocationblock_private(Juser,nrows,rows_v,ncols,ghost,vd_nz,vo_nz);CHKERRQ(ierr);
 
       /* Connected vertices */
-      ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
+      ierr = DMNetworkGetConnectedVertices(dm,edges[e],&cone);CHKERRQ(ierr);
       vc = (v == cone[0]) ? cone[1]:cone[0];
       ierr = DMNetworkIsGhostVertex(dm,vc,&ghost_vc);CHKERRQ(ierr);
 
@@ -1497,7 +1495,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       for (j=0; j<nrows; j++) rows[j] = j + rstart;
 
       /* Set matrix entries for conntected vertices */
-      ierr = DMNetworkGetConnectedNodes(dm,e,&cone);CHKERRQ(ierr);
+      ierr = DMNetworkGetConnectedVertices(dm,e,&cone);CHKERRQ(ierr);
       for (v=0; v<2; v++) {
         ierr = DMNetworkGetVariableGlobalOffset(dm,cone[v],&cstart);CHKERRQ(ierr);
         ierr = DMNetworkGetNumVariables(dm,cone[v],&ncols);CHKERRQ(ierr);
@@ -1541,7 +1539,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
       ierr = MatSetblock_private(Juser,nrows,rows_v,ncols,cstart,J);CHKERRQ(ierr);
 
       /* Connected vertices */
-      ierr = DMNetworkGetConnectedNodes(dm,edges[e],&cone);CHKERRQ(ierr);
+      ierr = DMNetworkGetConnectedVertices(dm,edges[e],&cone);CHKERRQ(ierr);
       vc = (v == cone[0]) ? cone[1]:cone[0];
 
       ierr = DMNetworkGetVariableGlobalOffset(dm,vc,&cstart);CHKERRQ(ierr);
