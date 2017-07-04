@@ -43,16 +43,16 @@ typedef struct {
 } DMNetworkEdgeInfo;
 
 typedef struct {
-  PetscInt                          refct;  /* reference count */
-  PetscInt                          NEdges; /* Number of global edges */
-  PetscInt                          NNodes; /* Number of global nodes */
-  PetscInt                          nEdges; /* Number of local edges */
-  PetscInt                          nNodes; /* Number of local nodes */
-  int                               *edges; /* Edge list */
+  PetscInt                          refct;       /* reference count */
+  PetscInt                          NEdges;      /* Number of global edges */
+  PetscInt                          NVertices;   /* Number of global vertices */
+  PetscInt                          nEdges;      /* Number of local edges */
+  PetscInt                          nVertices;   /* Number of local vertices */
+  int                               *edges;      /* Edge list */
   PetscInt                          pStart,pEnd; /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd; /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd; /* Start and end indices for edges */
-  DM                                plex;     /* DM created from Plex */
+  DM                                plex;        /* DM created from Plex */
   PetscSection                      DataSection; /* Section for managing parameter distribution */
   PetscSection                      DofSection;  /* Section for managing data distribution */
   PetscSection                      GlobalDofSection; /* Global Dof section */

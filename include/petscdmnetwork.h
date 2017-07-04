@@ -12,7 +12,7 @@
             For compatibility with PetscSF, which is used for data distribution, its declared as PetscInt.
 	    To get the user-specific data type, one needs to cast it to the appropriate type.
 */
-typedef PetscInt DMNetworkComponentGenericDataType; 
+typedef PetscInt DMNetworkComponentGenericDataType;
 
 PETSC_EXTERN PetscErrorCode DMNetworkCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMNetworkSetSizes(DM,PetscInt,PetscInt,PetscInt,PetscInt);
@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode DMNetworkGetVertexRange(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeRange(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkAddComponent(DM,PetscInt,PetscInt,void*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetNumComponents(DM,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMNetworkGetComponentTypeOffset(DM,PetscInt,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMNetworkGetComponentKeyOffset(DM,PetscInt,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetVariableOffset(DM,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetVariableGlobalOffset(DM,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeOffset(DM,PetscInt,PetscInt*);
@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMNetworkAssembleGraphStructures(DM);
 PETSC_EXTERN PetscErrorCode PetscSFGetSubSF(PetscSF,ISLocalToGlobalMapping,PetscSF*);
 PETSC_EXTERN PetscErrorCode DMNetworkDistribute(DM*,PetscInt);
 PETSC_EXTERN PetscErrorCode DMNetworkGetSupportingEdges(DM,PetscInt,PetscInt*,const PetscInt*[]);
-PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedNodes(DM,PetscInt,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMNetworkGetConnectedVertices(DM,PetscInt,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMNetworkIsGhostVertex(DM,PetscInt,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMNetworkEdgeSetMatrix(DM,PetscInt,Mat[]);
 PETSC_EXTERN PetscErrorCode DMNetworkVertexSetMatrix(DM,PetscInt,Mat[]);

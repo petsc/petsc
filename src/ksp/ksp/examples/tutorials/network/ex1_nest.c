@@ -182,10 +182,10 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
 
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetEdgeOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
-    ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+    ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
     branch = (Branch*)(arr + compoffset);
@@ -202,7 +202,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 
     /* These are edge-vertex and go to c12 */
     /* from node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -212,7 +212,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -229,7 +229,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
       ierr = DMNetworkGetVertexOffset(networkdm,v,&lofst);CHKERRQ(ierr);
       node = (Node*)(arr + compoffset);
 
