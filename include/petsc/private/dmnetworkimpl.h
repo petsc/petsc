@@ -10,6 +10,7 @@
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
+  PetscInt subnetid; /* Id for subnetwork */
   PetscInt ndata;
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
@@ -43,6 +44,15 @@ typedef struct {
 } DMNetworkEdgeInfo;
 
 typedef struct {
+  PetscInt  id;             /* Subnetwork id */
+  PetscInt  Nvtx, nvtx;     /* Number of global/local vertices */
+  PetscInt  Nedge,nedge;  /* Number of global/local edges */
+  PetscInt eStart, eEnd;   /* Range of edge numbers (start, end+1) */
+  PetscInt vStart, vEnd;    /* Range of vertex numbers (start, end+1) */
+  int      *edgelist;       /* List of edges. Each edge has the format [from to] where from and to are the vertices covering the edge */
+} DMSubnetwork;
+
+typedef struct {
   PetscInt                          refct;       /* reference count */
   PetscInt                          NEdges;      /* Number of global edges */
   PetscInt                          NVertices;   /* Number of global vertices */
@@ -66,6 +76,9 @@ typedef struct {
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+
+  PetscInt                          nsubnet;  /* Number of subnetworks */
+  DMSubnetwork                      *subnet; /* Subnetworks */
 
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
   Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */
