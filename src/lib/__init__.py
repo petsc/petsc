@@ -60,8 +60,8 @@ def Import(pkg, name, path, arch):
         return module
     # import extension module from 'path/arch' directory
     pathlist = [os.path.join(path, arch)]
-    fo, fn, stuff = imp.find_module(name, pathlist)
-    module = imp.load_module(fullname, fo, fn, stuff)
+    f, fn, info = imp.find_module(name, pathlist)
+    with f: module = imp.load_module(fullname, f, fn, info)
     module.__arch__ = arch # save arch value
     setattr(sys.modules[pkg], name, module)
     return module
