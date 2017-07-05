@@ -74,6 +74,10 @@ class PCMGType(object):
     FULL           = PC_MG_FULL
     KASKADE        = PC_MG_KASKADE
 
+class PCMGCycleType(object):
+    V = PC_MG_CYCLE_V
+    W = PC_MG_CYCLE_W
+
 class PCGAMGType(object):
     AGG       = S_(PCGAMGAGG)
     GEO       = S_(PCGAMGGEO)
@@ -109,6 +113,7 @@ cdef class PC(Object):
     ASMType       = PCASMType
     GASMType      = PCGASMType
     MGType        = PCMGType
+    MGCycleType   = PCMGCycleType
     GAMGType      = PCGAMGType
     CompositeType = PCCompositeType
     SchurFactType = PCFieldSplitSchurFactType
@@ -552,10 +557,14 @@ cdef class PC(Object):
         PetscINCREF(ksp.obj)
         return ksp
 
-    def setMGCyclesOnLevel(self, level, ncycle):
+    def setMGCycleType(self, cycle_type):
+        cdef PetscPCMGCycleType ctype = cycle_type
+        CHKERR( PCMGSetCycleType(self.pc, ctype) )
+
+    def setMGCycleTypeOnLevel(self, level, cycle_type):
         cdef PetscInt clevel = asInt(level)
-        cdef PetscInt c = asInt(ncycle)
-        CHKERR( PCMGSetCyclesOnLevel(self.pc, clevel, c) )
+        cdef PetscPCMGCycleType ctype = cycle_type
+        CHKERR( PCMGSetCycleTypeOnLevel(self.pc, clevel, ctype) )
 
     def setMGRhs(self, level, Vec rhs not None):
         cdef PetscInt clevel = asInt(level)
@@ -576,6 +585,7 @@ del PCSide
 del PCASMType
 del PCGASMType
 del PCMGType
+del PCMGCycleType
 del PCGAMGType
 del PCCompositeType
 del PCFieldSplitSchurPreType

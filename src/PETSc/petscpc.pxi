@@ -69,6 +69,10 @@ cdef extern from * nogil:
         PC_MG_FULL
         PC_MG_KASKADE
 
+    ctypedef enum PetscPCMGCycleType "PCMGCycleType":
+        PC_MG_CYCLE_V
+        PC_MG_CYCLE_W
+
     ctypedef char* PetscPCGAMGType "const char*"
     PetscPCGAMGType PCGAMGAGG
     PetscPCGAMGType PCGAMGGEO
@@ -213,7 +217,8 @@ cdef extern from * nogil:
     int PCMGSetX(PetscPC,PetscInt,PetscVec)
     int PCMGSetR(PetscPC,PetscInt,PetscVec)
     int PCMGGetLevels(PetscPC,PetscInt*)
-    int PCMGSetCyclesOnLevel(PetscPC,PetscInt,PetscInt)
+    int PCMGSetCycleType(PetscPC,PetscPCMGCycleType)
+    int PCMGSetCycleTypeOnLevel(PetscPC,PetscInt,PetscPCMGCycleType)
 
 # --------------------------------------------------------------------
 
