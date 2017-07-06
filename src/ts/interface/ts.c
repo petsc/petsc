@@ -3139,10 +3139,19 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,Petsc
     ierr = PetscObjectReference((PetscObject)costintegral);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
     ts->vec_costintegral = costintegral;
-  } else { ierr = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr); /* works for serial only */ }
-
+  } else {
+    if (!ts->vec_costintegral) { /* Create a seq vec if user does not provide one */
+      ierr = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
+    } else {
+      ierr = VecSet(ts->vec_costintegral,0.0);CHKERRQ(ierr);
+    }
+  }
+  if (!ts->vec_costintegrand) {
+    ierr = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(ts->vec_costintegrand,0.0);CHKERRQ(ierr);
+  }
   ts->costintegralfwd  = fwd; /* Evaluate the cost integral in forward run if fwd is true */
-  ierr                 = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand    = rf;
   ts->costintegrandctx = ctx;
   ts->drdyfunction     = drdyf;

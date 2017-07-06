@@ -421,13 +421,17 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     One can set up the integral to be evaluated during the forward run
+     instead by calling this function before TSSolve and specifying
+     PETSC_TRUE for the second last argument
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
-  /* ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
   ierr = VecCopy(mu[0],G);CHKERRQ(ierr);
 
