@@ -188,8 +188,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     ierr = PetscCalloc1(network->subnet[j].nvtx,&network->subnet[j].vertices);CHKERRQ(ierr);
     /* Temporarily setting nvtx and nedge to 0 so we can use them as counters in the below for loop.
        These get updated when the vertices and edges are added. */
-    network->subnet[j].nvtx = network->subnet[j].nedge = 0;
-       
+    network->subnet[j].nvtx = network->subnet[j].nedge = 0;       
   }
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
@@ -898,6 +897,8 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   PetscSF        pointsf;
   DM             newDM;
   PetscPartitioner part;
+  PetscInt         j,e,v,offset;
+  DMNetworkComponentHeader header;
 
   PetscFunctionBegin;
 
@@ -935,6 +936,51 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
   /* Set Dof section as the default section for dm */
   ierr = DMSetDefaultSection(newDMnetwork->plex,newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(newDMnetwork->plex,&newDMnetwork->GlobalDofSection);CHKERRQ(ierr);
+
+  /* Set up subnetwork info in the newDM */
+  newDMnetwork->nsubnet = oldDMnetwork->nsubnet;
+  ierr = PetscCalloc1(newDMnetwork->nsubnet,&newDMnetwork->subnet);CHKERRQ(ierr);
+  /* Copy over the global number of vertices and edges in each subnetwork. Note that these are already
+     calculated in DMNetworkLayoutSetUp()
+  */
+  for(j=0; j < newDMnetwork->nsubnet; j++) {
+    newDMnetwork->subnet[j].Nvtx = oldDMnetwork->subnet[j].Nvtx;
+    newDMnetwork->subnet[j].Nedge = oldDMnetwork->subnet[j].Nedge;
+  }
+  
+  for(e = newDMnetwork->eStart; e < newDMnetwork->eEnd; e++ ) {
+    ierr = PetscSectionGetOffset(newDMnetwork->DataSection,e,&offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+    newDMnetwork->subnet[header->subnetid].nedge++;
+  }
+
+  for(v = newDMnetwork->vStart; v < newDMnetwork->vEnd; v++ ) {
+    ierr = PetscSectionGetOffset(newDMnetwork->DataSection,v,&offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+    newDMnetwork->subnet[header->subnetid].nvtx++;
+  }
+
+  /* Now create the vertices and edge arrays for the subnetworks */
+  for(j=0; j < newDMnetwork->nsubnet; j++) {
+    ierr = PetscCalloc1(newDMnetwork->subnet[j].nedge,&newDMnetwork->subnet[j].edges);CHKERRQ(ierr);
+    ierr = PetscCalloc1(newDMnetwork->subnet[j].nvtx,&newDMnetwork->subnet[j].vertices);CHKERRQ(ierr);
+    /* Temporarily setting nvtx and nedge to 0 so we can use them as counters in the below for loop.
+       These get updated when the vertices and edges are added. */
+    newDMnetwork->subnet[j].nvtx = newDMnetwork->subnet[j].nedge = 0;
+  }
+
+  /* Set the vertices and edges in each subnetwork */
+  for(e = newDMnetwork->eStart; e < newDMnetwork->eEnd; e++ ) {
+    ierr = PetscSectionGetOffset(newDMnetwork->DataSection,e,&offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+    newDMnetwork->subnet[header->subnetid].edges[newDMnetwork->subnet[header->subnetid].nedge++]  = e;
+  }
+
+  for(v = newDMnetwork->vStart; v < newDMnetwork->vEnd; v++ ) {
+    ierr = PetscSectionGetOffset(newDMnetwork->DataSection,v,&offset);CHKERRQ(ierr);
+    header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
+    newDMnetwork->subnet[header->subnetid].vertices[newDMnetwork->subnet[header->subnetid].nvtx++]  = v;
+  }
 
   /* Destroy point SF */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
