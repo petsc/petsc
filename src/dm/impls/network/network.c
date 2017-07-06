@@ -182,6 +182,16 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DataSection,network->pStart,network->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
+  /* Create vertices and edges array for the subnetworks */
+  for(j=0; j < network->nsubnet; j++) {
+    ierr = PetscCalloc1(network->subnet[j].nedge,&network->subnet[j].edges);CHKERRQ(ierr);
+    ierr = PetscCalloc1(network->subnet[j].nvtx,&network->subnet[j].vertices);CHKERRQ(ierr);
+    /* Temporarily setting nvtx and nedge to 0 so we can use them as counters in the below for loop.
+       These get updated when the vertices and edges are added. */
+    network->subnet[j].nvtx = network->subnet[j].nedge = 0;
+       
+  }
+
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   ierr = PetscCalloc1(network->pEnd-network->pStart,&network->header);CHKERRQ(ierr);
   for(i=network->eStart; i < network->eEnd; i++) {
@@ -189,6 +199,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     for(j=0; j < network->nsubnet; j++) {
       if((network->subnet[j].eStart <= i) && (i < network->subnet[j].eEnd)) {
 	network->header[i].subnetid = j; /* Subnetwork id */
+	network->subnet[j].edges[network->subnet[j].nedge++] = i;
 	break;
       }
     }
@@ -203,6 +214,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     for(j=0; j < network->nsubnet; j++) {
       if((network->subnet[j].vStart <= i-network->vStart) && (i-network->vStart < network->subnet[j].vEnd)) {
 	network->header[i].subnetid = j;
+	network->subnet[j].vertices[network->subnet[j].nvtx++] = i;
 	break;
       }
     }
@@ -214,6 +226,36 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   ierr = PetscMalloc1(network->pEnd-network->pStart,&network->cvalue);CHKERRQ(ierr);
   
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMNetworkGetSubnetworkInfo - Returns the info for the subnetwork
+
+  Input Parameters
++ dm   - the number object
+- id   - the ID (integer) of the subnetwork
+
+  Output Parameters
++ nv    - number of vertices (local)
+. ne    - number of edges (local)
+. vtx   - local vertices for this subnetwork
+. edge  - local edges for this subnetwork
+
+  Notes:
+  Cannot call this routine before DMNetworkLayoutSetup()
+
+.seealso: DMNetworkLayoutSetUp, DMNetworkCreate
+@*/
+PetscErrorCode DMNetworkGetSubnetworkInfo(DM netdm,PetscInt id,PetscInt *nv, PetscInt *ne,const PetscInt **vtx, const PetscInt **edge)
+{
+  DM_Network     *network = (DM_Network*) netdm->data;
+  
+  PetscFunctionBegin;
+  *nv = network->subnet[id].nvtx;
+  *ne = network->subnet[id].nedge;
+  *vtx = network->subnet[id].vertices;
+  *edge = network->subnet[id].edges;
   PetscFunctionReturn(0);
 }
 
@@ -1629,6 +1671,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
+  PetscInt       j;
 
   PetscFunctionBegin;
   if (--network->refct > 0) PetscFunctionReturn(0);
@@ -1658,6 +1701,10 @@ PetscErrorCode DMDestroy_Network(DM dm)
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&network->DofSection);CHKERRQ(ierr);
 
+  for(j=0; j < network->nsubnet; j++) {
+    ierr = PetscFree(network->subnet[j].edges);CHKERRQ(ierr);
+    ierr = PetscFree(network->subnet[j].vertices);CHKERRQ(ierr);
+  }
   ierr = PetscFree(network->subnet);CHKERRQ(ierr);
   ierr = PetscFree(network->componentdataarray);CHKERRQ(ierr);
   ierr = PetscFree(network->cvalue);CHKERRQ(ierr);
