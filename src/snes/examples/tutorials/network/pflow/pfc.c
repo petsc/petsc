@@ -407,7 +407,7 @@ int main(int argc,char ** argv)
   PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata;
-  PetscInt         numEdges=0,numVertices=0;
+  PetscInt         numEdges=0,numVertices=0,NumEdges=PETSC_DETERMINE,NumVertices=PETSC_DETERMINE;
   int              *edges = NULL;
   PetscInt         i;
   DM               networkdm;
@@ -462,9 +462,9 @@ int main(int argc,char ** argv)
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
-    ierr = DMNetworkSetSizes(networkdm,numVertices,numEdges,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = DMNetworkSetSizes(networkdm,1, &numVertices,&numEdges,&NumVertices,&NumEdges);CHKERRQ(ierr);
     /* Add edge connectivity */
-    ierr = DMNetworkSetEdgeList(networkdm,edges);CHKERRQ(ierr);
+    ierr = DMNetworkSetEdgeList(networkdm,&edges);CHKERRQ(ierr);
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
