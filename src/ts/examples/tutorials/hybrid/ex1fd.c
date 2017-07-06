@@ -207,7 +207,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
   app.mode = 1;
@@ -324,7 +324,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&mu[1]);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return(0);
+  return ierr;
 }
 
 PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)

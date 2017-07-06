@@ -1152,6 +1152,6 @@ int main(int argc,char ** argv)
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  PetscFinalize();
-  return(0);
+  ierr = PetscFinalize();
+  return ierr;
  }
