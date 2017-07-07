@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     '--with-debugging=no',
     '--with-memalign=64',
-    '--with-mpiexec=srun',
+    '--with-mpiexec=srun', # Some systems (e.g., ALCF Theta) use '--with-mpiexec=aprun' instead.
     '--known-mpi-shared-libraries=1',
     '--with-clib-autodetect=0',
     '--with-fortranlib-autodetect=0',
