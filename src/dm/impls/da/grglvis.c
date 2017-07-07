@@ -108,7 +108,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   const char         **dafieldname;
   char               **fec_type,**fieldname,fec[64];
   const PetscInt     *lx,*ly,*lz;
-  PetscInt           *nlocal,*bss;
+  PetscInt           *nlocal,*bss,*dims;
   PetscInt           dim,M,N,P,m,n,p,dof,s,i,nf;
   PetscBool          bsset;
   PetscErrorCode     ierr;
@@ -159,7 +159,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   /* customize the viewer */
   ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
   ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&fieldname);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname);CHKERRQ(ierr);
   for (i=0;i<dof;i++) bss[i] = 1;
   nf = dof;
 
@@ -192,6 +192,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       }
       ierr = PetscStrcat(fieldname[i],dafieldname[s+b]);CHKERRQ(ierr);
     }
+    dims[i] = dim;
     nlocal[i] = M*N*P*bss[i];
     s += bss[i];
   }
@@ -200,12 +201,12 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ctx->xlocal = xlocal;
 
-  ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fieldname,(const char**)fec_type,nlocal,bss,DMDASampleGLVisFields_Private,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fieldname,(const char**)fec_type,nlocal,bss,dims,DMDASampleGLVisFields_Private,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
   for (i=0;i<nf;i++) {
     ierr = PetscFree(fec_type[i]);CHKERRQ(ierr);
     ierr = PetscFree(fieldname[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree4(fec_type,nlocal,bss,fieldname);CHKERRQ(ierr);
+  ierr = PetscFree5(fec_type,nlocal,bss,dims,fieldname);CHKERRQ(ierr);
   ierr = DMDestroy(&dacoord);CHKERRQ(ierr);
   ierr = DMDestroy(&daview);CHKERRQ(ierr);
   PetscFunctionReturn(0);

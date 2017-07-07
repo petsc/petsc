@@ -50,7 +50,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
   PetscBT        vown;
   char           **fieldname = NULL,**fec_type = NULL;
   const PetscInt *gNum;
-  PetscInt       *nlocal,*bs,*idxs;
+  PetscInt       *nlocal,*bs,*idxs,*dims;
   PetscInt       f,maxfields,nfields,c,totc,totdofs,Nv,cum,i;
   PetscInt       dim,cStart,cEnd,cEndInterior,vStart,vEnd;
   GLVisViewerCtx *ctx;
@@ -92,7 +92,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
     ierr = PetscSectionGetFieldComponents(s,f,&bs);CHKERRQ(ierr);
     maxfields += bs;
   }
-  ierr = PetscCalloc5(maxfields,&fieldname,maxfields,&nlocal,maxfields,&bs,maxfields,&fec_type,totdofs,&idxs);CHKERRQ(ierr);
+  ierr = PetscCalloc6(maxfields,&fieldname,maxfields,&nlocal,maxfields,&bs,maxfields,&dims,maxfields,&fec_type,totdofs,&idxs);CHKERRQ(ierr);
   ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ierr = PetscCalloc1(maxfields,&ctx->scctx);CHKERRQ(ierr);
   ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
@@ -139,7 +139,8 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%dD_P%d",dim,order);CHKERRQ(ierr);
           }
           ierr = PetscStrallocpy(name,&fieldname[ctx->nf]);CHKERRQ(ierr);
-          bs[ctx->nf] = Nc;
+          bs[ctx->nf]   = Nc;
+          dims[ctx->nf] = dim;
           if (H1) {
             nlocal[ctx->nf] = Nc * Nv;
             ierr = PetscStrallocpy(fec,&fec_type[ctx->nf]);CHKERRQ(ierr);
@@ -180,6 +181,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             ierr = PetscStrallocpy(comp,&fieldname[ctx->nf]);CHKERRQ(ierr);
             bs[ctx->nf] = 1; /* Does PetscFV support components with different block size? */
             nlocal[ctx->nf] = totc;
+            dims[ctx->nf] = dim;
             ierr = PetscStrallocpy(fec,&fec_type[ctx->nf]);CHKERRQ(ierr);
             ierr = VecCreateSeq(PETSC_COMM_SELF,totc,&xfield);CHKERRQ(ierr);
             for (i=0,cum=0;i<cEnd-cStart;i++) {
@@ -204,12 +206,12 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
   ierr = ISRestoreIndices(globalNum,&gNum);CHKERRQ(ierr);
 
   /* customize the viewer */
-  ierr = PetscViewerGLVisSetFields(viewer,ctx->nf,(const char**)fieldname,(const char**)fec_type,nlocal,bs,DMPlexSampleGLVisFields_Private,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisSetFields(viewer,ctx->nf,(const char**)fieldname,(const char**)fec_type,nlocal,bs,dims,DMPlexSampleGLVisFields_Private,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
   for (f=0;f<ctx->nf;f++) {
     ierr = PetscFree(fieldname[f]);CHKERRQ(ierr);
     ierr = PetscFree(fec_type[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree5(fieldname,nlocal,bs,fec_type,idxs);CHKERRQ(ierr);
+  ierr = PetscFree6(fieldname,nlocal,bs,dims,fec_type,idxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

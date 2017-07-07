@@ -72,7 +72,7 @@ E*/
 typedef enum {PETSC_VIEWER_GLVIS_DUMP, PETSC_VIEWER_GLVIS_SOCKET} PetscViewerGLVisType;
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm,PetscViewerGLVisType,const char*,PetscInt,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],const char*[],PetscInt[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),void*,PetscErrorCode(*)(void*));
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],const char*[],PetscInt[],PetscInt[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),void*,PetscErrorCode(*)(void*));
 
 PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
