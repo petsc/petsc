@@ -517,7 +517,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   PetscErrorCode     ierr;
   PetscInt           cnt = 0;
   const char         *prefix;
-  char               newprefix[8];
+  char               newprefix[20];
   DM                 dm;
 
   PetscFunctionBegin;
