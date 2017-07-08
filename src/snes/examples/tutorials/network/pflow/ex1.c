@@ -170,9 +170,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  //ierr = DMGlobalToLocalBegin(networkdm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
-  //ierr = DMGlobalToLocalEnd(networkdm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
-
   /* Form Function for first subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = FormFunction_Subnet(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
@@ -430,6 +427,50 @@ PetscErrorCode SetInitialValues_Subnet(DM networkdm,Vec localX,PetscInt nv,Petsc
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscInt ne, const PetscInt *vtx, const PetscInt *edges,void* appctx)
+{
+  PetscErrorCode ierr;
+  PetscBool      ghostvtex;
+  PetscScalar    *xarr;
+  PetscInt       i,key,numComps,j,offset,offsetd,k,nvar;
+  DMNetworkComponentGenericDataType *arr;
+
+  PetscFunctionBegin;
+
+  ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
+  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
+  for (i = 0; i < ne; i++) {
+    ierr = DMNetworkGetVariableOffset(networkdm,edges[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumComponents(networkdm,edges[i],&numComps);CHKERRQ(ierr);
+    for (j=0; j < numComps; j++) {
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[i],j,&key,&offsetd);CHKERRQ(ierr);
+      if (key == 4) { /* pipe */
+        ierr = DMNetworkGetNumVariables(networkdm,edges[i],&nvar);CHKERRQ(ierr);
+        /* printf("SetInitialValues_Wash edge %d, nvar %d\n",edges[i],nvar); */
+        for (k=0; k<nvar; k++) xarr[offset + k] = 1.0;
+      }
+    }
+  }
+
+  for (i = 0; i < nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumComponents(networkdm,vtx[i],&numComps);CHKERRQ(ierr);
+    for (j=0; j < numComps; j++) {
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[i],j,&key,&offsetd);CHKERRQ(ierr);
+      if (key == 5) { /* junction */
+        ierr = DMNetworkGetNumVariables(networkdm,vtx[i],&nvar);CHKERRQ(ierr);
+        /* printf("SetInitialValues_Wash vertex %d, nvar %d\n",vtx[i],nvar); */
+        for (k=0; k<nvar; k++) xarr[offset + k] = 1.0;
+      }
+    }
+  }
+  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx) 
 {
   PetscErrorCode ierr;
@@ -438,7 +479,6 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
   Vec            localX;
 
   PetscFunctionBegin;
-
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = VecSet(X,0.0);CHKERRQ(ierr);
@@ -451,12 +491,12 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 
   /* Set initial guess for second subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialValues_Subnet(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  ierr = SetInitialValues_Wash(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
+
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -486,6 +526,8 @@ int main(int argc,char ** argv)
 
   Wash             wash;
   PetscInt         KeyPipe,KeyJunction;
+  Pipe             pipe;
+  Junction         junction;
 
 
   ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
@@ -512,13 +554,10 @@ int main(int argc,char ** argv)
     ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
     PetscLogStagePush(stage1);
 
-    /* READ THE DATA */
+    /* READ THE DATA - Only rank 0 reads the data */
     if (!crank) {
-      /* Only rank 0 reads the data */
+      /* READ DATA FOR THE FIRST SUBNETWORK */
       ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
-      /* HERE WE CREATE COPIES OF THE SAME NETWORK THAT WILL BE TREATED AS SUBNETWORKS */
-
-      /*    READ DATA FOR THE FIRST SUBNETWORK */
       ierr = PetscNew(&pfdata1);CHKERRQ(ierr);
       ierr = PFReadMatPowerData(pfdata1,pfdata_file);CHKERRQ(ierr);
       User.Sbase = pfdata1->sbase;
@@ -529,28 +568,12 @@ int main(int argc,char ** argv)
       ierr = PetscMalloc1(2*numEdges1,&edgelist1);CHKERRQ(ierr);
       ierr = GetListofEdges(pfdata1->nbranch,pfdata1->branch,edgelist1);CHKERRQ(ierr);
 
-      /*    READ DATA FOR THE SECOND SUBNETWORK */
-      ierr = PetscNew(&pfdata2);CHKERRQ(ierr);
-      ierr = PFReadMatPowerData(pfdata2,pfdata_file);CHKERRQ(ierr);
-      User.Sbase = pfdata2->sbase;
-
-      numEdges2 = pfdata2->nbranch;
-      numVertices2 = pfdata2->nbus;
-
-      ierr = PetscMalloc1(2*numEdges2,&edgelist2);CHKERRQ(ierr);
-      ierr = GetListofEdges(pfdata2->nbranch,pfdata2->branch,edgelist2);CHKERRQ(ierr);
-
-      /* WASH SUBNETWORK */
-      PetscInt numEdges3,numVertices3;
-      int      *edgelist3 = NULL;
+      /* GET DATA FOR THE SECOND SUBNETWORK - WASH SUBNETWORK */
       ierr = WashNetworkCreate(PETSC_COMM_SELF,0,NULL,&wash);CHKERRQ(ierr);
-      numEdges3    = wash->npipes;
-      numVertices3 = wash->njunctions;
-      edgelist3    = wash->edgelist;
-      printf("npipes %d, njunctions %d\n",numEdges3,numVertices3);
-
-      ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
-      ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
+      numEdges2    = wash->npipes;
+      numVertices2 = wash->njunctions;
+      edgelist2    = wash->edgelist;
+      printf("npipes %d, njunctions %d\n",numEdges2,numVertices2);
     }
 
     PetscLogStagePop();
@@ -558,16 +581,15 @@ int main(int argc,char ** argv)
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
     PetscLogStagePush(stage2);
 
+    /* Set number of nodes/edges */
     numVertices[0] = numVertices1; numVertices[1] = numVertices2;
     NumVertices[0] = PETSC_DETERMINE; NumVertices[1] = PETSC_DETERMINE;
     numEdges[0] = numEdges1; numEdges[1] = numEdges2;
     NumEdges[0] = PETSC_DETERMINE; NumEdges[1] = PETSC_DETERMINE;
-    /* Set number of nodes/edges */
     ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
-    edgelist[0] = edgelist1; edgelist[1] = edgelist2;
-
     /* Add edge connectivity */
+    edgelist[0] = edgelist1; edgelist[1] = edgelist2;
     ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
 
     /* Set up the network layout */
@@ -600,27 +622,22 @@ int main(int argc,char ** argv)
         ierr = DMNetworkAddNumVariables(networkdm,vtx[i],2);CHKERRQ(ierr);
       }
 
-      genj=0; loadj=0;
-
-      /* ADD VARIABLES AND COMPONENTS FOR THE SECOND SUBNETWORK */
+      /* ADD VARIABLES AND COMPONENTS FOR THE SECOND SUBNETWORK -- WASH */
       ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
+      pipe = wash->pipe;
       for (i = 0; i < ne; i++) {
-        ierr = DMNetworkAddComponent(networkdm,edges[i],componentkey[0],&pfdata2->branch[i]);CHKERRQ(ierr);
+        ierr = DMNetworkAddComponent(networkdm,edges[i],KeyPipe,&pipe[i]);CHKERRQ(ierr);
+
+        /* Add number of variables to each pipe */
+        printf(" edge %d, num var %d\n",edges[i],2*pipe[i].nnodes);
+        ierr = DMNetworkAddNumVariables(networkdm,edges[i],2*pipe[i].nnodes);CHKERRQ(ierr);
       }
 
+      junction = wash->junction;
       for (i = 0; i < nv; i++) {
-        ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[1],&pfdata2->bus[i]);CHKERRQ(ierr);
-        if (pfdata2->bus[i].ngen) {
-          for (j = 0; j < pfdata2->bus[i].ngen; j++) {
-            ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[2],&pfdata2->gen[genj++]);CHKERRQ(ierr);
-          }
-        }
-        if (pfdata2->bus[i].nload) {
-          for (j=0; j < pfdata2->bus[i].nload; j++) {
-            ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[3],&pfdata2->load[loadj++]);CHKERRQ(ierr);
-          }
-        }
+        ierr = DMNetworkAddComponent(networkdm,vtx[i],KeyJunction,&junction[i]);CHKERRQ(ierr);
+
         /* Add number of variables */
         ierr = DMNetworkAddNumVariables(networkdm,vtx[i],2);CHKERRQ(ierr);
       }
@@ -631,21 +648,14 @@ int main(int argc,char ** argv)
 
     if (!crank) {
       ierr = PetscFree(edgelist1);CHKERRQ(ierr);
-      ierr = PetscFree(edgelist2);CHKERRQ(ierr);
-    }
-
-    if (!crank) {
       ierr = PetscFree(pfdata1->bus);CHKERRQ(ierr);
       ierr = PetscFree(pfdata1->gen);CHKERRQ(ierr);
       ierr = PetscFree(pfdata1->branch);CHKERRQ(ierr);
       ierr = PetscFree(pfdata1->load);CHKERRQ(ierr);
       ierr = PetscFree(pfdata1);CHKERRQ(ierr);
 
-      ierr = PetscFree(pfdata2->bus);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata2->gen);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata2->branch);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata2->load);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata2);CHKERRQ(ierr);
+      ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
+      ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
     }
 
     /* Distribute networkdm to multiple processes */
@@ -660,19 +670,20 @@ int main(int argc,char ** argv)
     ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
     ierr = SetInitialValues(networkdm,X,&User);CHKERRQ(ierr);
+    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     /* HOOK UP SOLVER */
     ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction,&User);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-
+#if 0
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
+#endif
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
     ierr = VecDestroy(&X);CHKERRQ(ierr);
     ierr = VecDestroy(&F);CHKERRQ(ierr);
-    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
