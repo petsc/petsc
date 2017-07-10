@@ -444,6 +444,9 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
           For SeqBAIJ the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected 
           the computation is stopped with an error
 
+          If used with KSPRICHARDSON and no monitors the convergence test is skipped to improve speed, thus it always iterates 
+          the maximum number of iterations you've selected for KSP. It is usually used in this mode as a smoother for multigrid.
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
 M*/
