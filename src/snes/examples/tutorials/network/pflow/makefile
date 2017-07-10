@@ -2,15 +2,15 @@
 
 ALL:pf
 CFLAGS	         = -I/scratch/hzhang/wash/src/
-FFLAGS	         = 
-CPPFLAGS         = 
+FFLAGS	         =
+CPPFLAGS         =
 FPPFLAGS         =
 EXAMPLESC        = pfc.c
 LOCDIR           = src/snes/examples/tutorials/network/pflow/
 
 OBJECTS_PF2 = pf2.o PFReadData.o
-WASH_LOC = /scratch/hzhang/wash/src/
-OBJECTS_EX1 = PFReadData.o ${WASH_LOC}/washnetwork.o ${WASH_LOC}/parse.o ${WASH_LOC}/pipe/pipeImpls.o ${WASH_LOC}/pipe/pipeInterface.o
+WASH_LOC = /scratch/hzhang/wash
+OBJECTS_EX1 = PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -38,4 +38,8 @@ runex1_2:
 	   if (${DIFF} output/ex1_2.out ex1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1.tmp
+runex1_epa:
+	-@${MPIEXEC} -n 1 ./ex1 -washdata ${WASH_LOC}/tests/cases/HG-SP-1-1.inp -ksp_monitor -pc_type lu -pc_factor_shift_type NONZERO
+runex1_epa_2:
+	-@${MPIEXEC} -n 4 ./ex1 -washdata ${WASH_LOC}/tests/cases/HG-SP-1-1.inp -ksp_monitor -pc_type lu
 include ${PETSC_DIR}/lib/petsc/conf/test

@@ -1,7 +1,8 @@
-static char help[] = "This example demonstrates the use of DMNetwork interface with subnetworks for solving a nonlinear \n\
+static char help[] = "This example demonstrates the use of DMNetwork interface with subnetworks for solving a coupled nonlinear \n\
                       electric power grid and water pipe problem.\n\
                       The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
-                      The electric power grid data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
+                      The electric power grid data file format used is from the MatPower package \n\
+                      (http://www.pserc.cornell.edu//matpower/).\n\
                       This example shows the use of subnetwork feature in DMNetwork. \n\
                       Run this program: mpiexec -n <n> ./ex1 \n\\n";
 
@@ -31,7 +32,7 @@ typedef struct{
   PetscScalar  Sbase;
 }UserCtx;
 
-PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
+PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
   PetscErrorCode ierr;
   UserCtx       *User=(UserCtx*)appctx;
@@ -160,6 +161,8 @@ PetscErrorCode FormFunction_Wash(DM networkdm,Vec localX, Vec localF,PetscInt nv
   Pipe              pipe;
   PipeField         *pipex,*juncx;
   PetscBool         ghostvtex;
+  const PetscInt    *cone;
+  PetscInt          vfrom,vto,offsetfrom,offsetto,junctoffset,nend,i;
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
@@ -208,25 +211,17 @@ PetscErrorCode FormFunction_Wash(DM networkdm,Vec localX, Vec localF,PetscInt nv
     for (j = 0; j < numComps; j++) {
       ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[e],j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 4) {
-        //printf(" e %d: pipe\n",edges[e]);
         pipe     = (Pipe)(arr + offsetd);
         pipex    = (PipeField*)(xarr + varoffset);
         pipef    = (PetscScalar*)(farr + varoffset);
 
-        if (!pipe->da) {
-          ierr = PipeSetUp(pipe);CHKERRQ(ierr);  /* creates pipe->da, must be called here! */
-          //printf(" e %d: pipeSetUp\n",edges[e]);
-        }
         aux = (pipe->length/(pipe->nnodes - 1))*((pipe->R)/(GRAV*pipe->A));
-        //printf(" e %d: pipe, aux %g\n",edges[e],aux);
 
         /* Get boundary values from connected vertices */
-        const PetscInt *cone;
-        PetscInt vfrom,vto,offsetfrom,offsetto,junctoffset,nend,i;
         ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr); 
         vfrom = cone[0]; /* local ordering */
         vto   = cone[1];
-        //printf(" e %d: pipe, aux %g; vfrom/to: %d %d\n",edges[e],aux,vfrom,vto);
+        /* printf(" e %d: pipe, aux %g; vfrom/to: %d %d\n",edges[e],aux,vfrom,vto); */
         ierr = DMNetworkGetVariableOffset(networkdm,vfrom,&offsetfrom);CHKERRQ(ierr);
         ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);
 
@@ -293,20 +288,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
   /* Form Function for first subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormFunction_Subnet(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
-  //printf("Power subnetwork, ne %d, nv %d\n",ne,nv);
+  ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
 
   /* Form Function for second subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = FormFunction_Wash(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
-  //printf("Wash subnetwork, ne %d, nv %d\n",ne,nv);
 
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
-  //ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /* ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -449,7 +442,7 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, Pet
 	      values[1] =  2.0*Gtt*Vmt + Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmt */
 	      values[2] =  Vmt*Vmf*(Gtf*PetscSinScalar(thetatf) + Btf*-PetscCosScalar(thetatf)); /* df_dthetaf */
 	      values[3] =  Vmt*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmf */
-	      
+
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	    if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
@@ -460,7 +453,7 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, Pet
 	      values[1] =  -2.0*Btt*Vmt + Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
 	      values[2] =  Vmt*Vmf*(-Btf*PetscSinScalar(thetatf) + Gtf*-PetscCosScalar(thetatf));
 	      values[3] =  Vmt*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
-	      
+
 	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  }
@@ -509,7 +502,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialValues_Subnet(DM networkdm,Vec localX,PetscInt nv,PetscInt ne, const PetscInt *vtx, const PetscInt *edges,void* appctx)
+PetscErrorCode SetInitialValues_Power(DM networkdm,Vec localX,PetscInt nv,PetscInt ne, const PetscInt *vtx, const PetscInt *edges,void* appctx)
 {
   PetscErrorCode ierr;
   VERTEXDATA     bus;
@@ -519,9 +512,8 @@ PetscErrorCode SetInitialValues_Subnet(DM networkdm,Vec localX,PetscInt nv,Petsc
   PetscScalar    *xarr;
   PetscInt       key,numComps,j,offset,offsetd;
   DMNetworkComponentGenericDataType *arr;
-  
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
   ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
   for (i = 0; i < nv; i++) {
@@ -554,6 +546,7 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
   PetscBool      ghostvtex;
   PetscScalar    *xarr;
   PetscInt       i,key,numComps,j,offset,offsetd,k,nvar;
+  Pipe           pipe;
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
@@ -566,6 +559,9 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
     for (j=0; j < numComps; j++) {
       ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[i],j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 4) { /* pipe */
+        pipe = (Pipe)(arr + offsetd);
+        ierr = PipeSetUp(pipe);CHKERRQ(ierr);  /* creates pipe->da, must be called after DMNetworkDistribute() */
+
         ierr = DMNetworkGetNumVariables(networkdm,edges[i],&nvar);CHKERRQ(ierr);
         /* printf("SetInitialValues_Wash edge %d, nvar %d\n",edges[i],nvar); */
         for (k=0; k<nvar; k++) xarr[offset + k] = 1.0;
@@ -608,7 +604,7 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 
   /* Set initial guess for first subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialValues_Subnet(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  ierr = SetInitialValues_Power(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
 
   /* Set initial guess for second subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
@@ -624,8 +620,6 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  PFDATA           *pfdata1;
   PetscInt         numEdges1=0,numVertices1=0,numEdges2=0,numVertices2=0;
   int              *edgelist1 = NULL,*edgelist2 = NULL;
   DM               networkdm;
@@ -641,14 +635,19 @@ int main(int argc,char ** argv)
   const PetscInt   *vtx;
   const PetscInt   *edges;
   PetscInt         i,j;
-  PetscInt         genj,loadj;
   Vec              X,F;
   SNES             snes;
 
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  PFDATA           *pfdata1;
+  PetscInt         genj,loadj;
+
   Wash             wash;
-  PetscInt         KeyPipe,KeyJunction;
+  PetscInt         KeyPipe,KeyJunction,washCase=0;
   Pipe             pipe;
   Junction         junction;
+  PetscBool        parseflg=PETSC_FALSE;
+  char             filename[PETSC_MAX_PATH_LEN];
 
   ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -676,7 +675,7 @@ int main(int argc,char ** argv)
 
     /* READ THE DATA - Only rank 0 reads the data */
     if (!crank) {
-      /* READ DATA FOR THE FIRST SUBNETWORK */
+      /* READ DATA FOR THE FIRST SUBNETWORK - Electric Power Grid */
       ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
       ierr = PetscNew(&pfdata1);CHKERRQ(ierr);
       ierr = PFReadMatPowerData(pfdata1,pfdata_file);CHKERRQ(ierr);
@@ -688,12 +687,20 @@ int main(int argc,char ** argv)
       ierr = PetscMalloc1(2*numEdges1,&edgelist1);CHKERRQ(ierr);
       ierr = GetListofEdges(pfdata1->nbranch,pfdata1->branch,edgelist1);CHKERRQ(ierr);
 
-      /* GET DATA FOR THE SECOND SUBNETWORK - WASH SUBNETWORK */
-      ierr = WashNetworkCreate(PETSC_COMM_SELF,0,NULL,&wash);CHKERRQ(ierr);
+      /* GET DATA FOR THE SECOND SUBNETWORK - Water Pipes */
+      ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-washcase", &washCase, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(NULL,PETSC_NULL, "-washdata",filename,PETSC_MAX_PATH_LEN-1,&parseflg);CHKERRQ(ierr);
+      if (parseflg) {
+        ierr = WashNetworkCreate(PETSC_COMM_SELF,-1,filename,&wash);CHKERRQ(ierr);
+      } else {
+        washCase = 0;
+        ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-washcase", &washCase, PETSC_NULL);CHKERRQ(ierr);
+        ierr = WashNetworkCreate(PETSC_COMM_SELF,washCase,NULL,&wash);CHKERRQ(ierr);
+      }
       numEdges2    = wash->npipes;
       numVertices2 = wash->njunctions;
       edgelist2    = wash->edgelist;
-      printf("npipes %d, njunctions %d\n",numEdges2,numVertices2);
+      printf("Wash subnetwork: npipes %d, njunctions %d\n",numEdges2,numVertices2);
     }
 
     PetscLogStagePop();
@@ -719,7 +726,7 @@ int main(int argc,char ** argv)
     if (!crank) {
       genj=0; loadj=0;
 
-      /* ADD VARIABLES AND COMPONENTS FOR THE FIRST SUBNETWORK */
+      /* ADD VARIABLES AND COMPONENTS FOR THE POWER SUBNETWORK */
       ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
       for (i = 0; i < ne; i++) {
@@ -742,7 +749,7 @@ int main(int argc,char ** argv)
         ierr = DMNetworkAddNumVariables(networkdm,vtx[i],2);CHKERRQ(ierr);
       }
 
-      /* ADD VARIABLES AND COMPONENTS FOR THE SECOND SUBNETWORK -- WASH */
+      /* ADD VARIABLES AND COMPONENTS FOR THE WASH SUBNETWORK */
       ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
       pipe = wash->pipe;
@@ -750,7 +757,7 @@ int main(int argc,char ** argv)
         ierr = DMNetworkAddComponent(networkdm,edges[i],KeyPipe,&pipe[i]);CHKERRQ(ierr);
 
         /* Add number of variables to each pipe */
-        printf(" edge %d, num var %d\n",edges[i],2*pipe[i].nnodes);
+        /* printf(" edge %d, num var %d\n",edges[i],2*pipe[i].nnodes); */
         ierr = DMNetworkAddNumVariables(networkdm,edges[i],2*pipe[i].nnodes);CHKERRQ(ierr);
       }
 
@@ -775,8 +782,8 @@ int main(int argc,char ** argv)
       ierr = PetscFree(pfdata1);CHKERRQ(ierr);
 
       ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
+      ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
     }
-    ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
 
     /* Distribute networkdm to multiple processes */
     ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
@@ -805,7 +812,7 @@ int main(int argc,char ** argv)
     ierr = VecDestroy(&X);CHKERRQ(ierr);
     ierr = VecDestroy(&F);CHKERRQ(ierr);
 
-    /* Destroy objects from each pipe that are created in PipeSetUp() */
+    /* Destroy objects from each pipe that are created in PipeSetUp()-- See FormFunction_Wash() */
     {
     PetscInt e,numComps,offsetd,keypipe;
     DMNetworkComponentGenericDataType *arr;
