@@ -218,7 +218,7 @@ PetscErrorCode FormFunction_Wash(DM networkdm,Vec localX, Vec localF,PetscInt nv
         aux = (pipe->length/(pipe->nnodes - 1))*((pipe->R)/(GRAV*pipe->A));
 
         /* Get boundary values from connected vertices */
-        ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr); 
+        ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr);
         vfrom = cone[0]; /* local ordering */
         vto   = cone[1];
         /* printf(" e %d: pipe, aux %g; vfrom/to: %d %d\n",edges[e],aux,vfrom,vto); */
@@ -637,6 +637,8 @@ int main(int argc,char ** argv)
   PetscInt         i,j;
   Vec              X,F;
   SNES             snes;
+  Mat              Jac;
+  PetscBool        viewJ=PETSC_FALSE;
 
   char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
   PFDATA           *pfdata1;
@@ -805,8 +807,20 @@ int main(int argc,char ** argv)
     ierr = SNESSetFunction(snes,F,FormFunction,&User);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
+    ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
+    if (viewJ) {
+      ierr = SNESSetUp(snes);CHKERRQ(ierr);
+      ierr = SNESGetJacobian(snes,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    }
+
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+
+    if (viewJ) {
+      //ierr = SNESGetJacobian(snes,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    }
 
     ierr = SNESDestroy(&snes);CHKERRQ(ierr);
     ierr = VecDestroy(&X);CHKERRQ(ierr);
