@@ -43,7 +43,6 @@ PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt 
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
-
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
@@ -151,13 +150,135 @@ PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode FormFunction_Wash(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *xarr;
+  PetscScalar       *farr,*juncf,*pipef,aux,dx;
+  PetscInt          varoffset,offsetd,v,e,numComps,j,key;
+  Junction          junction;
+  Pipe              pipe;
+  PipeField         *pipex,*juncx;
+  PetscBool         ghostvtex;
+  DMNetworkComponentGenericDataType *arr;
 
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
+  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
+
+  /* Vertex/junction loop */
+  for (v=0; v<nv; v++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+
+    ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[v],&varoffset);CHKERRQ(ierr);
+    for (j = 0; j < numComps; j++) {
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[v],j,&key,&offsetd);CHKERRQ(ierr);
+      if (key == 5) {
+        //printf(" v %d: junction\n",vtx[v]);
+        junction = (Junction)(arr + offsetd);
+        juncx    = (PipeField*)(xarr + varoffset);
+        juncf    = (PetscScalar*)(farr + varoffset);
+
+        /* junction:
+           juncf[0] = -qJ + sum(q_downstream); juncf[1] = qJ - sum(q_upstream) */
+        if (junction->type == NONE) {
+          juncf[0] = -juncx[0].q;
+          juncf[1] =  juncx[0].q;
+        } else if (junction->type == RESERVOIR) { /* upstream reservoir */
+          juncf[0] = juncx[0].q;
+          juncf[1] = juncx[0].h - junction->reservoir.hres;
+        } else if (junction->type == DEMAND) { /* discharge valve */
+          juncf[0] = -juncx[0].q;
+          juncf[1] = juncx[0].q - junction->demand.q0;
+        } else if (junction->type == VALVE) { /* discharge valve*/
+          juncf[0] = -juncx[0].q;
+          juncf[1] = pow(junction->valve.cdag, 2)*(2*GRAV*juncx[0].h) - pow(juncx[0].q,2);
+        }
+      }
+    }
+  }
+
+  /* Edge/pipe loop */
+  for (e=0; e<ne; e++) {
+    ierr = DMNetworkGetNumComponents(networkdm,edges[e],&numComps);CHKERRQ(ierr);
+    ierr = DMNetworkGetVariableOffset(networkdm,edges[e],&varoffset);CHKERRQ(ierr);
+    for (j = 0; j < numComps; j++) {
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[e],j,&key,&offsetd);CHKERRQ(ierr);
+      if (key == 4) {
+        //printf(" e %d: pipe\n",edges[e]);
+        pipe     = (Pipe)(arr + offsetd);
+        pipex    = (PipeField*)(xarr + varoffset);
+        pipef    = (PetscScalar*)(farr + varoffset);
+
+        if (!pipe->da) {
+          ierr = PipeSetUp(pipe);CHKERRQ(ierr);  /* creates pipe->da, must be called here! */
+          //printf(" e %d: pipeSetUp\n",edges[e]);
+        }
+        aux = (pipe->length/(pipe->nnodes - 1))*((pipe->R)/(GRAV*pipe->A));
+        //printf(" e %d: pipe, aux %g\n",edges[e],aux);
+
+        /* Get boundary values from connected vertices */
+        const PetscInt *cone;
+        PetscInt vfrom,vto,offsetfrom,offsetto,junctoffset,nend,i;
+        ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr); 
+        vfrom = cone[0]; /* local ordering */
+        vto   = cone[1];
+        //printf(" e %d: pipe, aux %g; vfrom/to: %d %d\n",edges[e],aux,vfrom,vto);
+        ierr = DMNetworkGetVariableOffset(networkdm,vfrom,&offsetfrom);CHKERRQ(ierr);
+        ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);
+
+        /* Upstream boundary */
+        ierr = DMNetworkGetComponentKeyOffset(networkdm,vfrom,5,NULL,&junctoffset);CHKERRQ(ierr);
+        junction = (Junction)(arr + junctoffset);
+        juncx    = (PipeField*)(xarr + offsetfrom);
+        juncf    = (PetscScalar*)(farr + offsetfrom);
+
+        pipef[1] = pipex[0].h - juncx[0].h;
+        if (junction->type != RESERVOIR) juncf[0] -= pipex[0].q;
+
+        /* Downstream boundary */
+        ierr = DMNetworkGetComponentKeyOffset(networkdm,vto,5,NULL,&junctoffset);CHKERRQ(ierr);
+        junction = (Junction)(arr + junctoffset);
+        juncx    = (PipeField*)(xarr + offsetto);
+        juncf    = (PetscScalar*)(farr + offsetto);
+        nend     = pipe->nnodes - 1;
+
+        pipef[2*nend + 1] = pipex[nend].h - juncx[0].h;
+        if (junction->type != RESERVOIR) juncf[0] += pipex[nend].q;
+
+        /* Now, write internal node equations 
+         q                 = constant
+         dh + dx*aux*q*|q| = 0;
+         */
+        dx  = 1./(pipe->nnodes - 1);
+        aux = pipe->length * pipe->R / (GRAV*pipe->A);
+
+        /* the ending nodes */
+        pipef[0]      = pipex[0].q - pipex[nend].q;
+        pipef[2*nend] = pipex[nend].h - pipex[0].h + aux*pipex[nend].q*PetscAbsScalar(pipex[nend].q);
+
+        /* the internal nodes */
+        for (i = 1; i < pipe->nnodes - 1; i++) {
+          pipef[2*i]     = pipex[i].q - pipex[i+1].q;
+          pipef[2*i + 1] = pipex[i].h - pipex[i - 1].h + dx*aux*pipex[i].q*PetscAbsScalar(pipex[i].q);
+        }
+      }
+    }
+  }
+
+  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
   DM             networkdm;
-  Vec           localX,localF;
-  PetscInt      nv,ne;
+  Vec            localX,localF;
+  PetscInt       nv,ne;
   const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
@@ -173,17 +294,19 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   /* Form Function for first subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = FormFunction_Subnet(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  //printf("Power subnetwork, ne %d, nv %d\n",ne,nv);
 
   /* Form Function for second subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormFunction_Subnet(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  ierr = FormFunction_Wash(networkdm,localX,localF,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  //printf("Wash subnetwork, ne %d, nv %d\n",ne,nv);
 
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
-
+  //ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -354,8 +477,6 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, Pet
   PetscFunctionReturn(0);
 }
 
-  
-
 PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
@@ -504,7 +625,7 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  PFDATA           *pfdata1,*pfdata2;
+  PFDATA           *pfdata1;
   PetscInt         numEdges1=0,numVertices1=0,numEdges2=0,numVertices2=0;
   int              *edgelist1 = NULL,*edgelist2 = NULL;
   DM               networkdm;
@@ -528,7 +649,6 @@ int main(int argc,char ** argv)
   PetscInt         KeyPipe,KeyJunction;
   Pipe             pipe;
   Junction         junction;
-
 
   ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -655,8 +775,8 @@ int main(int argc,char ** argv)
       ierr = PetscFree(pfdata1);CHKERRQ(ierr);
 
       ierr = WashNetworkCleanUp(wash);CHKERRQ(ierr);
-      ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
     }
+    ierr = WashNetworkDestroy(&wash);CHKERRQ(ierr);
 
     /* Distribute networkdm to multiple processes */
     ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
@@ -670,20 +790,40 @@ int main(int argc,char ** argv)
     ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
     ierr = SetInitialValues(networkdm,X,&User);CHKERRQ(ierr);
-    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
     /* HOOK UP SOLVER */
     ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction,&User);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-#if 0
+
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-#endif
+
     ierr = SNESDestroy(&snes);CHKERRQ(ierr);
     ierr = VecDestroy(&X);CHKERRQ(ierr);
     ierr = VecDestroy(&F);CHKERRQ(ierr);
+
+    /* Destroy objects from each pipe that are created in PipeSetUp() */
+    {
+    PetscInt e,numComps,offsetd,keypipe;
+    DMNetworkComponentGenericDataType *arr;
+
+    ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
+    ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+    for (e=0; e<ne; e++) {
+      ierr = DMNetworkGetNumComponents(networkdm,edges[e],&numComps);CHKERRQ(ierr);
+      for (j = 0; j < numComps; j++) {
+        ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[e],j,&keypipe,&offsetd);CHKERRQ(ierr);
+        if (keypipe == 4) {
+          Pipe pipe = (Pipe)(arr + offsetd);
+          ierr = PipeDestroy(&pipe);CHKERRQ(ierr);
+        }
+      }
+    }
+    }
+
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
