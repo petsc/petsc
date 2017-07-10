@@ -9,7 +9,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c ex66.c ex67.c
+                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c ex66.c ex67.c ex68.c ex69.c
 EXAMPLESF        = ex1f.F90 ex2f.F ex6f.F ex11f.F ex13f90.F90 ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F90 ex61f.F90
 MANSEC           = KSP
@@ -322,6 +322,15 @@ ex66: ex66.o  chkopts
 ex67: ex67.o  chkopts
 	-${CLINKER} -o ex67 ex67.o  ${PETSC_KSP_LIB}
 	${RM} ex67.o
+
+ex68: ex68.o  chkopts
+	-${CLINKER} -o ex68 ex68.o  ${PETSC_KSP_LIB}
+	${RM} ex68.o
+
+ex69: ex69.o  chkopts
+	-${CLINKER} -o ex69 ex69.o  ${PETSC_KSP_LIB}
+	${RM} ex69.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \

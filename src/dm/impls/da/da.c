@@ -1282,3 +1282,67 @@ PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
   }
   PetscFunctionReturn(0);
 }
+
+#include <petscgll.h>
+
+PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,n = gll->n,xs,xn,q;
+  PetscScalar    *xx;
+  PetscReal      h;
+  Vec            x;
+  DM_DA          *da = (DM_DA*)dm->data;
+
+  PetscFunctionBegin;
+  if (da->bx != DM_BOUNDARY_PERIODIC) {
+    ierr = DMDAGetInfo(dm,NULL,&q,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    q    = (q-1)/(n-1);  /* number of spectral elements */
+    h    = 2.0/q;
+    ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+    xs   = xs/(n-1);
+    xn   = xn/(n-1);
+    ierr = DMDASetUniformCoordinates(dm,-1.,1.,0.,0.,0.,0.);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(dm,x,&xx);CHKERRQ(ierr);
+
+    /* loop over local spectral elements */
+    for (j=xs; j<xs+xn; j++) {
+      /*
+       Except for the first process, each process starts on the second GLL point of the first element on that process
+       */
+      for (i= (j == xs && xs > 0)? 1 : 0; i<n; i++) {
+        xx[j*(n-1) + i] = -1.0 + h*j + h*(gll->nodes[i]+1.0)/2.;
+      }
+    }
+    ierr = DMDAVecRestoreArray(dm,x,&xx);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for periodic");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+
+     DMDASetGLLCoordinates - Sets the global coordinates from -1 to 1 to the GLL points of as many GLL elements that fit the number of grid points
+
+   Collective on DM
+
+   Input Parameters:
++   da - the DMDA object
+-   gll - the GLL object
+
+   Notes: the parallel decomposition of grid points must correspond to the degree of the GLL. That is, the number of grid points
+          on each process much be divisible by the number of GLL elements needed per process. This depends on whether the DM is
+          periodic or not.
+
+.seealso:   DMDACreate(), PetscGLLCreate(), DMGetCoordinates()
+@*/
+PetscErrorCode DMDASetGLLCoordinates(DM da,PetscGLL *gll)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (da->dim == 1) {
+    ierr = DMDASetGLLCoordinates_1d(da,gll);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented for 2 or 3d");
+  PetscFunctionReturn(0);
+}

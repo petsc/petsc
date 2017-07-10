@@ -110,6 +110,7 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  while (1) {
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   if (nearnulldim) {
     MatNullSpace nullsp;
@@ -154,7 +155,7 @@ int main(int argc,char **args)
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = VecLoad(b,fd);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+
 
   /* Make A singular for testing zero-pivot of ilu factorization        */
   /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_type <shift_type> */
@@ -283,7 +284,7 @@ int main(int argc,char **args)
   /*
      Conclude profiling last stage; begin profiling next stage.
   */
-  PetscPreLoadStage("KSPSetUpSolve");
+  //  PetscPreLoadStage("KSPSetUpSolve");
 
   /*
      Create linear solver; set operators; set runtime options.
@@ -440,6 +441,8 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
+  }
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
