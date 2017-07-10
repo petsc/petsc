@@ -1,16 +1,16 @@
-  0 SNES Function norm 1.975308641975e-01 
-    0 KSP Residual norm 7.759745198206e-02 
-    1 KSP Residual norm 2.181197234568e-02 
-    2 KSP Residual norm 2.423552482853e-03 
-    3 KSP Residual norm 2.692836092059e-04 
-    4 KSP Residual norm 2.992040102288e-05 
-    5 KSP Residual norm 3.324489002537e-06 
-    6 KSP Residual norm 3.693876669541e-07 
-    7 KSP Residual norm 4.104307409042e-08 
-    8 KSP Residual norm 4.560341574797e-09 
-    9 KSP Residual norm 5.067046189238e-10 
-   10 KSP Residual norm 5.630051731300e-11 
-  1 SNES Function norm 1.602340587693e-10 
+  0 SNES Function norm 0.197531 
+    0 KSP Residual norm 0.0775975 
+    1 KSP Residual norm 0.021812 
+    2 KSP Residual norm 0.00242355 
+    3 KSP Residual norm 0.000269284 
+    4 KSP Residual norm 2.99204e-05 
+    5 KSP Residual norm 3.32449e-06 
+    6 KSP Residual norm 3.69388e-07 
+    7 KSP Residual norm 4.10431e-08 
+    8 KSP Residual norm 4.56034e-09 
+    9 KSP Residual norm 5.067e-10 
+   10 KSP Residual norm 5.630e-11 
+  1 SNES Function norm 1.602e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -73,4 +73,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=64, allocated nonzeros=64
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-N: 16 error l2 3.95863e-12 inf 4.24885e-11
+N: 16 error L2 1.58345e-11 inf 4.24885e-11
