@@ -3661,8 +3661,10 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 
    When calling this routine with a single process communicator, a matrix of
    type SEQAIJ is returned.  If a matrix of type MPIAIJ is desired for this
-   type of communicator, use the construction mechanism:
+   type of communicator, use the construction mechanism
+.vb
      MatCreate(...,&A); MatSetType(A,MATMPIAIJ); MatSetSizes(A, m,n,M,N); MatMPIAIJSetPreallocation(A,...);
+.ve
 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
@@ -3681,7 +3683,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as follows:
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
@@ -3696,7 +3698,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
            30  0  0  | 31 32 33  |  0 34
 .ve
 
-   This can be represented as a collection of submatrices as:
+   This can be represented as a collection of submatrices as
 
 .vb
       A B C
@@ -3723,7 +3725,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
    storage locations are allocated for every row of the OFF-DIAGONAL submat.
    One way to choose d_nz and o_nz is to use the max nonzerors per local
    rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
-   In this case, the values of d_nz,o_nz are:
+   In this case, the values of d_nz,o_nz are
 .vb
      proc0 : dnz = 2, o_nz = 2
      proc1 : dnz = 3, o_nz = 2
@@ -3736,7 +3738,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 
    When d_nnz, o_nnz parameters are specified, the storage is specified
    for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are:
+   In the above case the values for d_nnz,o_nnz are
 .vb
      proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
      proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
