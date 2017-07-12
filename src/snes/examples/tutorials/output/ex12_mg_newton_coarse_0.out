@@ -5,29 +5,30 @@ Mesh in 2 dimensions:
   1-cells: 800
   2-cells: 512
 Labels:
-  marker: 1 strata of sizes (128)
-  depth: 3 strata of sizes (289, 800, 512)
+  marker: 1 strata with value/size (1 (128))
+  Face Sets: 1 strata with value/size (1 (120))
+  depth: 3 strata with value/size (0 (289), 1 (800), 2 (512))
   DM_0x84000000_0 in 2 dimensions:
     0-cells:   95  
     1-cells:   246  
     2-cells:   152  
   Labels:
-    _boundary_: 1 strata of sizes (36)
-    depth: 3 strata of sizes (95, 246, 152)
+    _boundary_: 1 strata with value/size (1 (36))
+    depth: 3 strata with value/size (0 (95), 1 (246), 2 (152))
     DM_0x84000000_1 in 2 dimensions:
       0-cells:     38    
       1-cells:     91    
       2-cells:     54    
     Labels:
-      _boundary_: 1 strata of sizes (20)
-      depth: 3 strata of sizes (38, 91, 54)
+      _boundary_: 1 strata with value/size (1 (20))
+      depth: 3 strata with value/size (0 (38), 1 (91), 2 (54))
       DM_0x84000000_2 in 2 dimensions:
         0-cells:       19      
         1-cells:       40      
         2-cells:       22      
       Labels:
-        _boundary_: 1 strata of sizes (14)
-        depth: 3 strata of sizes (19, 40, 22)
+        _boundary_: 1 strata with value/size (1 (14))
+        depth: 3 strata with value/size (0 (19), 1 (40), 2 (22))
   0 SNES Function norm 8.32828 
     0 KSP unpreconditioned resid norm 8.328278903362e+00 true resid norm 8.328278903362e+00 ||r(i)||/||b|| 1.000000000000e+00
     1 KSP unpreconditioned resid norm 5.274358775533e-06 true resid norm 5.274358775533e-06 ||r(i)||/||b|| 6.333071738753e-07
