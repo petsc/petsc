@@ -456,16 +456,16 @@ int main(int argc, char **argv)
     suffix: 2d_q2q1_r1
     requires: !single
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g" -e "s~ 0\]~ 0.0\]~g"
-    args: -simplex 0 -dm_refine 1 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
+    args: -simplex 0 -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2q1_r2
     requires: !single
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
-    args: -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
+    args: -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2q1_r3
     requires: !single
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
-    args: -simplex 0 -dm_refine 3 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
+    args: -simplex 0 -dm_refine 3 -vel_petscspace_order 2 -pres_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
 
 TEST*/
