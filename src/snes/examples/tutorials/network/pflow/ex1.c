@@ -547,9 +547,12 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
   PetscScalar    *xarr;
   PetscInt       i,key,numComps,j,offset,offsetd,k,nvar;
   Pipe           pipe;
+  Junction       junction;
+  Mat            *J;
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
+  ierr = DMNetworkHasJacobian(networkdm,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
   ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
@@ -561,6 +564,8 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
       if (key == 4) { /* pipe */
         pipe = (Pipe)(arr + offsetd);
         ierr = PipeSetUp(pipe);CHKERRQ(ierr);  /* creates pipe->da, must be called after DMNetworkDistribute() */
+        ierr = PipeCreateJacobian(pipe,NULL,&J);CHKERRQ(ierr); /* set user-provide Jacobian for this edge block */
+        ierr = DMNetworkEdgeSetMatrix(networkdm,edges[i],J);CHKERRQ(ierr);
 
         ierr = DMNetworkGetNumVariables(networkdm,edges[i],&nvar);CHKERRQ(ierr);
         /* printf("SetInitialValues_Wash edge %d, nvar %d\n",edges[i],nvar); */
@@ -578,6 +583,10 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
     for (j=0; j < numComps; j++) {
       ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[i],j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 5) { /* junction */
+        junction = (Junction)(arr + offsetd);
+        ierr = JunctionCreateJacobian(networkdm,vtx[i],NULL,&junction->jacobian);CHKERRQ(ierr);
+        ierr = DMNetworkVertexSetMatrix(networkdm,vtx[i],junction->jacobian);CHKERRQ(ierr);
+
         ierr = DMNetworkGetNumVariables(networkdm,vtx[i],&nvar);CHKERRQ(ierr);
         /* printf("SetInitialValues_Wash vertex %d, nvar %d\n",vtx[i],nvar); */
         for (k=0; k<nvar; k++) xarr[offset + k] = 1.0;
@@ -828,21 +837,38 @@ int main(int argc,char ** argv)
 
     /* Destroy objects from each pipe that are created in PipeSetUp()-- See FormFunction_Wash() */
     {
-    PetscInt e,numComps,offsetd,keypipe;
-    DMNetworkComponentGenericDataType *arr;
+      PetscInt e,v,numComps,offsetd;
+      DMNetworkComponentGenericDataType *arr;
 
-    ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
-    ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-    for (e=0; e<ne; e++) {
-      ierr = DMNetworkGetNumComponents(networkdm,edges[e],&numComps);CHKERRQ(ierr);
-      for (j = 0; j < numComps; j++) {
-        ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[e],j,&keypipe,&offsetd);CHKERRQ(ierr);
-        if (keypipe == 4) {
-          Pipe pipe = (Pipe)(arr + offsetd);
-          ierr = PipeDestroy(&pipe);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
+      ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+
+      for (e=0; e<ne; e++) {
+        ierr = DMNetworkGetNumComponents(networkdm,edges[e],&numComps);CHKERRQ(ierr);
+        for (j = 0; j < numComps; j++) {
+          ierr = DMNetworkGetComponentKeyOffset(networkdm,edges[e],j,&KeyPipe,&offsetd);CHKERRQ(ierr);
+          if (KeyPipe == 4) {
+            Pipe pipe = (Pipe)(arr + offsetd);
+            ierr = PipeDestroy(&pipe);CHKERRQ(ierr);
+          }
         }
       }
-    }
+
+      for (v=0; v<nv; v++) {
+        PetscBool ghostvtex;
+        ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
+        if (ghostvtex) continue;
+
+        ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
+        for (j = 0; j < numComps; j++) {
+          ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[v],j,&KeyJunction,&offsetd);CHKERRQ(ierr);
+          if (KeyJunction == 5) {
+            Junction junction = (Junction)(arr + offsetd);
+            ierr = JunctionDestroyJacobian(networkdm,vtx[v],junction);CHKERRQ(ierr);
+          }
+        }
+
+      }
     }
 
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
