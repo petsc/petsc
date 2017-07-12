@@ -36,8 +36,8 @@
 
 !  Create initial vector and duplicate it
 
-       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr);CHKERRQ(ierr)
-       call VecDuplicate(x,y,ierr);CHKERRQ(ierr)
+       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr);CHKERRA(ierr)
+       call VecDuplicate(x,y,ierr);CHKERRA(ierr)
 
 !  Fill work arrays with vector entries and locations.  Note that
 !  the vector indices are 0-based in PETSc (for both Fortran and
@@ -53,17 +53,17 @@
 !  natural size for a particular problem (not one that is as long
 !  as the full vector).
 
-       call VecSetValues(x,n,loc,xwork,INSERT_VALUES,ierr);CHKERRQ(ierr)
+       call VecSetValues(x,n,loc,xwork,INSERT_VALUES,ierr);CHKERRA(ierr)
 
 !  Assemble vector
 
-       call VecAssemblyBegin(x,ierr);CHKERRQ(ierr)
-       call VecAssemblyEnd(x,ierr);CHKERRQ(ierr)
+       call VecAssemblyBegin(x,ierr);CHKERRA(ierr)
+       call VecAssemblyEnd(x,ierr);CHKERRA(ierr)
 
 !  View vector
-       call PetscObjectSetName(x, 'initial vector:',ierr);CHKERRQ(ierr)
-       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
-       call VecCopy(x,y,ierr);CHKERRQ(ierr)
+       call PetscObjectSetName(x, 'initial vector:',ierr);CHKERRA(ierr)
+       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
+       call VecCopy(x,y,ierr);CHKERRA(ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArrayF90() returns a pointer to
@@ -71,8 +71,8 @@
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-       call VecGetArrayF90(x,xx_v,ierr);CHKERRQ(ierr)
-       call VecGetArrayF90(y,yy_v,ierr);CHKERRQ(ierr)
+       call VecGetArrayF90(x,xx_v,ierr);CHKERRA(ierr)
+       call VecGetArrayF90(y,yy_v,ierr);CHKERRA(ierr)
 
 !  Modify vector data
 
@@ -83,21 +83,21 @@
 
 !  Restore vectors
 
-       call VecRestoreArrayF90(x,xx_v,ierr);CHKERRQ(ierr)
-       call VecRestoreArrayF90(y,yy_v,ierr);CHKERRQ(ierr)
+       call VecRestoreArrayF90(x,xx_v,ierr);CHKERRA(ierr)
+       call VecRestoreArrayF90(y,yy_v,ierr);CHKERRA(ierr)
 
 !  View vectors
-       call PetscObjectSetName(x, 'new vector 1:',ierr);CHKERRQ(ierr)
-       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
+       call PetscObjectSetName(x, 'new vector 1:',ierr);CHKERRA(ierr)
+       call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
 
-       call PetscObjectSetName(y, 'new vector 2:',ierr);CHKERRQ(ierr)
-       call VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
+       call PetscObjectSetName(y, 'new vector 2:',ierr);CHKERRA(ierr)
+       call VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-       call VecDestroy(x,ierr);CHKERRQ(ierr)
-       call VecDestroy(y,ierr);CHKERRQ(ierr)
+       call VecDestroy(x,ierr);CHKERRA(ierr)
+       call VecDestroy(y,ierr);CHKERRA(ierr)
        call PetscFinalize(ierr)
        end
 

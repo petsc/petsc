@@ -121,6 +121,8 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
+PETSC_INTERN PetscErrorCode MatRARt_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+
 PETSC_INTERN PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
@@ -180,7 +182,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
         apa[_k] += _valtmp*_pa[_nextp++];                                \
       } \
     }                                           \
-    PetscLogFlops(2.0*_pnz);                    \
+    (void)PetscLogFlops(2.0*_pnz);              \
   }                                             \
   /* off-diagonal portion of A */               \
   _ai  = ao->i;\
@@ -201,7 +203,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
         apa[_k] += _valtmp*_pa[_nextp++];                       \
       }                                                     \
     }                                            \
-    PetscLogFlops(2.0*_pnz);                     \
+    (void)PetscLogFlops(2.0*_pnz);               \
   } \
 }
 
@@ -225,7 +227,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
     for (_k=0; _k<_pnz; _k++) {                    \
       apa[_pj[_k]] += _valtmp*_pa[_k];               \
     }                                           \
-    PetscLogFlops(2.0*_pnz);                    \
+    (void)PetscLogFlops(2.0*_pnz);              \
   }                                             \
   /* off-diagonal portion of A */               \
   _ai  = ao->i;\
@@ -243,7 +245,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
     for (_k=0; _k<_pnz; _k++) {                     \
       apa[_pj[_k]] += _valtmp*_pa[_k];                \
     }                                            \
-    PetscLogFlops(2.0*_pnz);                     \
+    (void)PetscLogFlops(2.0*_pnz);               \
   } \
 }
 

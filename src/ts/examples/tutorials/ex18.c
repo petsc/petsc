@@ -8,10 +8,6 @@ a forcing function $f$:
 \end{align}
 F*/
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscds.h>
 #include <petscts.h>
@@ -658,7 +654,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
   }
-  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, maxCell, L, user->bd);CHKERRQ(ierr);}
+  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, PETSC_TRUE, maxCell, L, user->bd);CHKERRQ(ierr);}
 #if 0
   /* Need FV adjacency */
   ierr = DMPlexSetAdjacencyUseCone(*dm, PETSC_TRUE);CHKERRQ(ierr);
@@ -1154,6 +1150,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # 2D harmonic velocity, no porosity
   test:

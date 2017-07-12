@@ -24,22 +24,11 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsOb
 
 static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
-  PC_Cholesky    *chol = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    if (chol->hdr.inplace) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);
-    }
-
-    if (chol->hdr.reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (chol->hdr.reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
-  }
   ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

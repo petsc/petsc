@@ -145,11 +145,11 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",(double)eis->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  omega = %g\n",(double)eis->omega);CHKERRQ(ierr);
     if (eis->usediag) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Using diagonal scaling (default)\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Not using diagonal scaling\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

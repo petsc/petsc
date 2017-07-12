@@ -1,9 +1,5 @@
 static char help[] = "Check that a DM can accurately represent and interpolate functions of a given polynomial order\n\n";
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -995,6 +991,9 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
+
   test:
     suffix: 1
     requires: triangle

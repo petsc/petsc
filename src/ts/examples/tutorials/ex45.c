@@ -25,10 +25,6 @@ Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
     3 - (2 + 2 + 2) + 3 = 0
 */
 
-/*T
-  requires: !mpiuni
-T*/
-
 typedef struct {
   PetscInt          dim;
   PetscBool         simplex;
@@ -190,7 +186,7 @@ int main(int argc, char **argv)
   PetscReal      L2error = 0.0;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
@@ -228,6 +224,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  build:
+    requires: !mpiuni
 
   # Full solves
   test:

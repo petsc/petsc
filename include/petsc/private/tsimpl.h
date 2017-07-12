@@ -147,14 +147,14 @@ struct _p_TS {
    * The present use case is that TSComputeRHSFunctionLinear() evaluates the Jacobian once and we don't want it to be immeditely re-evaluated.
    */
   struct {
-    PetscReal time;             /* The time at which the matrices were last evaluated */
-    Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
-    PetscObjectState Xstate;    /* State of the solution vector */
-    MatStructure mstructure;    /* The structure returned */
+    PetscReal        time;          /* The time at which the matrices were last evaluated */
+    PetscObjectId    Xid;           /* Unique ID of solution vector at which the Jacobian was last evaluated */
+    PetscObjectState Xstate;        /* State of the solution vector */
+    MatStructure     mstructure;    /* The structure returned */
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
-    PetscBool reuse;
-    PetscReal scale,shift;
+    PetscBool        reuse;
+    PetscReal        scale,shift;
   } rhsjacobian;
 
   struct {
@@ -163,6 +163,8 @@ struct _p_TS {
 
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES     snes;
+  PetscBool usessnes;   /* Flag set by each TSType to indicate if the type actually uses a SNES;
+                           this works around the design flaw that a SNES is ALWAYS created with TS even when it is not needed.*/
   PetscInt ksp_its;                /* total number of linear solver iterations */
   PetscInt snes_its;               /* total number of nonlinear solver iterations */
   PetscInt num_snes_failures;
@@ -233,6 +235,7 @@ struct _p_TSAdapt {
   PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   NormType    wnormtype;
   PetscViewer monitor;
+  PetscInt    timestepjustincreased;
 };
 
 typedef struct _p_DMTS *DMTS;

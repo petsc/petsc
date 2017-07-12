@@ -142,11 +142,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
     ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
     if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
   }
-  if (dm->maxCell) {
-    const PetscReal *maxCell, *L;
+  {
+    PetscBool             isper;
+    const PetscReal      *maxCell, *L;
     const DMBoundaryType *bd;
-    ierr = DMGetPeriodicity(dm,     &maxCell, &L, &bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*newdm,  maxCell,  L,  bd);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*newdm, isper, maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -903,12 +904,12 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
     if (section) {
       const PetscInt *cdofs;
       PetscInt       *ltog;
-      PetscInt        pStart, pEnd, size, p, l;
+      PetscInt        pStart, pEnd, n, p, k, l;
 
       ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-      ierr = PetscMalloc1(size, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
+      ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n, &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
       for (p = pStart, l = 0; p < pEnd; ++p) {
         PetscInt bdof, cdof, dof, off, c, cind = 0;
 
@@ -937,8 +938,11 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       else                {bs = bsMax;}
       bs   = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
-      if (bs > 1) for (l = 0; l < size; ++l) ltog[l] /= bs;
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      if (bs > 1) {
+        for (l = 0, k = 0; l < n; l += bs, ++k) ltog[k] = ltog[l]/bs;
+        n /= bs;
+      }
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, n, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
@@ -3029,11 +3033,12 @@ foundconv:
     ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(dm,newtype,M);CHKERRQ(ierr);
     /* Things that are independent of DM type: We should consult DMClone() here */
-    if (dm->maxCell) {
-      const PetscReal *maxCell, *L;
+    {
+      PetscBool             isper;
+      const PetscReal      *maxCell, *L;
       const DMBoundaryType *bd;
-      ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
-      ierr = DMSetPeriodicity(*M,  maxCell,  L,  bd);CHKERRQ(ierr);
+      ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(*M, isper, maxCell,  L,  bd);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
   }
@@ -4291,10 +4296,13 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 }
 
 /*@C
-  DMSetPeriodicity - Set the description of mesh periodicity
+  DMGetPeriodicity - Get the description of mesh periodicity
 
   Input Parameters:
-+ dm      - The DM object
+. dm      - The DM object
+
+  Output Parameters:
++ per     - Whether the DM is periodic or not
 . maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
@@ -4303,10 +4311,11 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 .seealso: DMGetPeriodicity()
 @*/
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
+PetscErrorCode DMGetPeriodicity(DM dm, PetscBool *per, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (per)     *per     = dm->periodic;
   if (L)       *L       = dm->L;
   if (maxCell) *maxCell = dm->maxCell;
   if (bd)      *bd      = dm->bdtype;
@@ -4318,6 +4327,7 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 
   Input Parameters:
 + dm      - The DM object
+. per     - Whether the DM is periodic or not. If maxCell is not provided, coordinates need to be localized
 . maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
 . L       - If we assume the mesh is a torus, this is the length of each coordinate
 - bd      - This describes the type of periodicity in each topological dimension
@@ -4326,18 +4336,28 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 
 .seealso: DMGetPeriodicity()
 @*/
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
+PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
   PetscInt       dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(L,3);PetscValidPointer(maxCell,2);PetscValidPointer(bd,4);
+  PetscValidLogicalCollectiveBool(dm,per,2);
+  if (maxCell) {
+    PetscValidPointer(maxCell,3);
+    PetscValidPointer(L,4);
+    PetscValidPointer(bd,5);
+  }
   ierr = PetscFree3(dm->L,dm->maxCell,dm->bdtype);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
+  if (maxCell) {
+    ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
+    dm->periodic = PETSC_TRUE;
+  } else {
+    dm->periodic = per;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4499,7 +4519,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->maxCell) {
+  if (!dm->periodic) {
     *areLocalized = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -4557,7 +4577,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->maxCell) PetscFunctionReturn(0);
+  if (!dm->periodic) PetscFunctionReturn(0);
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   {
@@ -5788,7 +5808,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 }
 
 /*@C
-  DMGetBoundary - Add a boundary condition to the model
+  DMGetBoundary - Get a model boundary condition
 
   Input Parameters:
 + dm          - The mesh object
@@ -5943,7 +5963,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
 
@@ -5951,7 +5971,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5973,7 +5993,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], Vec localU,
+PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Nc, const PetscInt comps[], Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -5987,7 +6007,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
   PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
   if (!dm->ops->projectfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

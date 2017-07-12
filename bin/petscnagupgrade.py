@@ -17,10 +17,7 @@ def parse_version_h(pv):
   major    = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
   minor    = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
   subminor = int(re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1))
-  patch    = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
-  if patch != 0:                # Patch number was used prior to 3.4
-    return Version('%d.%d.%dp%d' % (major, minor, subminor, patch))
-  elif subminor != 0:           # Maintenance releases are numbered x.y.z
+  if subminor != 0:           # Maintenance releases are numbered x.y.z
     return Version('%d.%d.%d' % (major, minor, subminor))
   else:                         # Feature releases are x.y
     return Version('%d.%d' % (major, minor))

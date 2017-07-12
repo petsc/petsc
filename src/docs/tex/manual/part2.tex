@@ -2296,7 +2296,8 @@ be used. \sindex{Bi-conjugate gradient}
 Note: PETSc implements the FETI-DP (Finite Element Tearing and Interconnecting
 Dual-Primal) method as a KSP since it recasts the original problem into a contstrained
 minimization one with Lagrange multipliers. The only matrix type supported is
-\lstinline{MATIS}.
+\lstinline{MATIS}. Support for saddle point problems is provided.
+Consult the online documentation for further details.
 
 \subsection{Convergence Tests}
 \label{section_convergencetests}
@@ -5179,7 +5180,7 @@ Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme
 method (\lstinline{TSRK5F}), the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
 (\lstinline{TSRK5DP}), and the \sindex{Bogacki-Shampine} $5$th-order Bogacki-Shampine RK scheme with a $4$th-order embedded method
 (\lstinline{TSRK5BS}). Variable timesteps cannot be used with RK schemes that do not have an embedded
-method (\lstinline{TSRK1} - $1$st-order, $1$-stage forward Euler, \lstinline{TSRK2A} - $2$nd-order, $2$-stage RK scheme,
+method (\lstinline{TSRK1FE} - $1$st-order, $1$-stage forward Euler, \lstinline{TSRK2A} - $2$nd-order, $2$-stage RK scheme,
 \lstinline{TSRK3} - $3$rd-order, $3$-stage RK scheme, \lstinline{TSRK4} - $4$-th order, $4$-stage RK scheme).
 
 \section{Special Cases}
@@ -5462,7 +5463,7 @@ are the timestep context, current time, $y$, and the (optional) user-provided co
 
 If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
 \begin{lstlisting}
-TSSetCostIntegrand(TS ts,PetscInt numcost,
+TSSetCostIntegrand(TS ts,PetscInt numcost,Vec costintegral,
                    PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                    PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                    PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
@@ -6045,7 +6046,7 @@ DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
 In network applications, one frequently needs to find the supporting edges for a node or
 the connecting nodes covering an edge. These can be obtained by the following two routines.
 \begin{lstlisting}
-DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
+DMNetworkGetConnectedVertices(DM dm,PetscInt edge,const PetscInt *vertices[]);
 \end{lstlisting}
 \begin{lstlisting}
 DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
@@ -6058,7 +6059,7 @@ DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **compone
 \end{lstlisting}
   Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
 \begin{lstlisting}
-DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
 \end{lstlisting}
 \lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
 
@@ -6071,7 +6072,7 @@ DMNetworkGetVertexRange(dm, &Start, &End);
 for(v=Start; v  < End; v++) { 
   DMNetworkGetNumComponents(dm,v, &numcomps); 
   for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponentTypeOffset(dm,v,compnum, &key, &offset); 
+    DMNetworkGetComponentKeyOffset(dm,v,compnum, &key, &offset); 
     compdata = (UserCompDataType)(arr+offset); 
   }
 }

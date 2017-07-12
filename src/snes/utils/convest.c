@@ -343,7 +343,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal *alpha)
       for (f = 0; f < ce->Nf; ++f) {
         if (f > 0) {ierr = PetscPrintf(comm, ", ");CHKERRQ(ierr);}
         if (errors[f] < 1.0e-11) {ierr = PetscPrintf(comm, "< 1e-11");CHKERRQ(ierr);}
-        else                     {ierr = PetscPrintf(comm, "%g", errors[f]);CHKERRQ(ierr);}
+        else                     {ierr = PetscPrintf(comm, "%g", (double)errors[f]);CHKERRQ(ierr);}
       }
       ierr = PetscPrintf(comm, "]\n");CHKERRQ(ierr);
     }
@@ -398,7 +398,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, PetscReal alpha, PetscViewe
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isAscii);CHKERRQ(ierr);
   if (isAscii) {
     ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: %0.2g\n", (double) alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "L_2 convergence rate: %g\n", (double) alpha);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) ce)->tablevel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

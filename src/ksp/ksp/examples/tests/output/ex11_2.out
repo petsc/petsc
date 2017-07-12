@@ -52,8 +52,8 @@
   2 KSP Residual norm 7.36184e-07 
 KSP Object: (fc_) 4 MPI processes
   type: fgmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
   maximum iterations=4000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   right preconditioning
@@ -75,7 +75,7 @@ PC Object: (fc_) 4 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
         type: bjacobi
-          block Jacobi: number of blocks = 4
+          number of blocks = 4
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: preonly
@@ -85,7 +85,6 @@ PC Object: (fc_) 4 MPI processes
           using NONE norm type for convergence test
         PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
           type: cholesky
-            Cholesky: out-of-place factorization
             out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
@@ -115,8 +114,8 @@ PC Object: (fc_) 4 MPI processes
     KSP solver for S = A11 - A10 inv(A00) A01 
       KSP Object: (fc_fieldsplit_pressure_) 4 MPI processes
         type: fgmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+          restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          happy breakdown tolerance 1e-30
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         right preconditioning
@@ -131,7 +130,7 @@ PC Object: (fc_) 4 MPI processes
             using PRECONDITIONED norm type for convergence test
           PC Object: (fc_fieldsplit_pressure_lsc_) 4 MPI processes
             type: bjacobi
-              block Jacobi: number of blocks = 4
+              number of blocks = 4
               Local solve is same for all blocks, in the following KSP and PC objects:
             KSP Object: (fc_fieldsplit_pressure_lsc_sub_) 1 MPI processes
               type: preonly
@@ -199,7 +198,7 @@ PC Object: (fc_) 4 MPI processes
                 using PRECONDITIONED norm type for convergence test
               PC Object: (fc_fieldsplit_velocity_) 4 MPI processes
                 type: bjacobi
-                  block Jacobi: number of blocks = 4
+                  number of blocks = 4
                   Local solve is same for all blocks, in the following KSP and PC objects:
                 KSP Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: preonly
@@ -209,7 +208,6 @@ PC Object: (fc_) 4 MPI processes
                   using NONE norm type for convergence test
                 PC Object: (fc_fieldsplit_velocity_sub_) 1 MPI processes
                   type: cholesky
-                    Cholesky: out-of-place factorization
                     out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd

@@ -48,9 +48,9 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     if (!red->psubcomm) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: Not yet setup\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Not yet setup\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
       ierr = PetscViewerGetSubViewer(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
       if (!red->psubcomm->color) { /* only view first redundant pc */
         ierr = PetscViewerASCIIPushTab(subviewer);CHKERRQ(ierr);

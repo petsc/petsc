@@ -319,6 +319,7 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
     Level: beginner
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+   Any additions/changes here must also be made in src/mat/interface/dlregismat.c in MatOptions[]
 
    Developer Notes: Entries that are negative need not be called collectively by all processes.
 
@@ -351,7 +352,7 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_STRUCTURE_ONLY = 22,
               MAT_OPTION_MAX = 23} MatOption;
 
-PETSC_EXTERN const char *MatOptions[];
+PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
 PETSC_EXTERN PetscErrorCode MatGetOption(Mat,MatOption,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,MatType*);
@@ -370,6 +371,8 @@ PETSC_EXTERN PetscErrorCode MatSeqSBAIJGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqSBAIJRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDensePlaceArray(Mat,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatDenseResetArray(Mat);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
@@ -1229,7 +1232,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,P
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
-PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
 

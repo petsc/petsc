@@ -7,7 +7,6 @@ static char help[] = "This example is based on ex1 using MATNEST. \n";
 */
 
 #include <petscdmnetwork.h>
-#include <petscdmplex.h>
 #include <petscksp.h>
 
 /* The topology looks like:
@@ -183,10 +182,10 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
 
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
     ierr = DMNetworkGetEdgeOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
-    ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+    ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
     branch = (Branch*)(arr + compoffset);
@@ -203,7 +202,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 
     /* These are edge-vertex and go to c12 */
     /* from node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -213,7 +212,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentTypeOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
     node = (Node*)(arr + compoffset);
 
     if (!node->gr) {
@@ -230,7 +229,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
       ierr = DMNetworkGetVertexOffset(networkdm,v,&lofst);CHKERRQ(ierr);
       node = (Node*)(arr + compoffset);
 
@@ -263,7 +262,7 @@ int main(int argc,char ** argv)
   PetscInt          i, nnode = 0, nbranch = 0;
   PetscInt          eStart, eEnd, vStart, vEnd;
   PetscMPIInt       size, rank;
-  DM                networkdm, plex;
+  DM                networkdm;
   Vec               x, b;
   Mat               A;
   KSP               ksp;
@@ -271,7 +270,6 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
-  PetscPartitioner  part;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -313,9 +311,6 @@ int main(int argc,char ** argv)
 
   /* Network partitioning and distribution of data */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-  ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
   ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);

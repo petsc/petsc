@@ -116,30 +116,30 @@
       endif
       n     = 30
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
-      call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRQ(ierr)
-      call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRQ(ierr)
-      call VecSetFromOptions(x,ierr);CHKERRQ(ierr)
-      call VecDuplicate(x,y,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRA(ierr)
+      call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
+      call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRA(ierr)
+      call VecSetFromOptions(x,ierr);CHKERRA(ierr)
+      call VecDuplicate(x,y,ierr);CHKERRA(ierr)
 
-      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
+      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
       do i=1,10
       xarray(i)%a = i
       xarray(i)%b = 100*i
       xarray(i)%c = 10000*i
       enddo
 
-      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
-      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
-      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
+      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRA(ierr)
+      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
       do i = 1 , 10
         write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
-      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRA(ierr)
 
 
-      call VecDestroy(x,ierr);CHKERRQ(ierr)
-      call VecDestroy(y,ierr);CHKERRQ(ierr)
+      call VecDestroy(x,ierr);CHKERRA(ierr)
+      call VecDestroy(y,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
 
       end

@@ -15,7 +15,7 @@
   Output Parameter:
 . dm  - The DM object representing the mesh
 
-  Note: http://www.code-aster.org/outils/med/html/index.html
+  Note: http://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
 
   Level: beginner
 

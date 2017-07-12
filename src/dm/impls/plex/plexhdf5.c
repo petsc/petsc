@@ -512,7 +512,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
     ierr = ISRestoreIndices(vertices, &verts);CHKERRQ(ierr);
     ierr = ISDestroy(&vertices);CHKERRQ(ierr);
   }
-  ierr = DMGetPeriodicity(dm, NULL, &L, &bd);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(cSection, vStart, &dof);CHKERRQ(ierr);

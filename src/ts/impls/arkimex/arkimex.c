@@ -62,69 +62,90 @@ typedef struct {
 
      This method has one explicit stage and one implicit stage.
 
+     Options Database:
+.      -ts_arkimex_type ars122
+
      References:
 .   1. -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
 
      This method has an explicit stage and one implicit stage, and has an A-stable implicit scheme. This method was provided by Emil Constantinescu.
 
+     Options Database:
+.      -ts_arkimex_type a2
+
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has two implicit stages, and L-stable implicit scheme.
 
+     Options Database:
+.      -ts_arkimex_type l2
+
     References:
 .   1. -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX1BEE - First order Backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
 
      This method is aimed at starting the integration of implicit DAEs when explicit first-stage ARK methods are used.
 
+     Options Database:
+.      -ts_arkimex_type 1bee
+
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The implicit part is the same as in TSARKIMEX2D and TSARKIMEX2E, but the explicit part has a larger stability region on the negative real axis. This method was provided by Emil Constantinescu.
 
+     Options Database:
+.      -ts_arkimex_type 2c
+
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
 
+     Options Database:
+.      -ts_arkimex_type 2d
+
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
 
-     Level: advanced
+     Options Database:
+.      -ts_arkimex_type 2e
+ 
+    Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
@@ -136,26 +157,35 @@ M*/
 
      This method is referred to as SSP2-(3,3,2) in http://arxiv.org/abs/1110.4375
 
+     Options Database:
+.      -ts_arkimex_type prssp2
+
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and three implicit stages.
 
+     Options Database:
+.      -ts_arkimex_type 3
+
      References:
 .   1. -  Kennedy and Carpenter 2003.
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEXARS443 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
+
+     Options Database:
+.      -ts_arkimex_type ars443
 
      References:
 +   1. -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
@@ -163,43 +193,52 @@ M*/
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEXBPR3 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
 
+     Options Database:
+.      -ts_arkimex_type bpr3
+
      References:
  .    This method is referred to as ARK3 in http://arxiv.org/abs/1110.4375
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and four implicit stages.
 
+     Options Database:
+.      -ts_arkimex_type 4
+
      References:
 .     Kennedy and Carpenter 2003.
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 /*MC
      TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and five implicit stages.
 
+     Options Database:
+.      -ts_arkimex_type 5
+
      References:
 .     Kennedy and Carpenter 2003.
 
      Level: advanced
 
-.seealso: TSARKIMEX
+.seealso: TSARKIMEX, TSARKIMEXType, TSARKIMEXSetType()
 M*/
 
 /*@C
@@ -1199,8 +1238,6 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"FSAL property: %s\n",tab->FSAL_implicit ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Nonstiff abscissa     c = %s\n",buf);CHKERRQ(ierr);
   }
-  if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
-  if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1230,9 +1267,13 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 +  ts - timestepping context
 -  arktype - type of ARK-IMEX scheme
 
+  Options Database:
+.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5>
+
   Level: intermediate
 
-.seealso: TSARKIMEXGetType(), TSARKIMEX, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEXPRSSP2, TSARKIMEX3, TSARKIMEXBPR3, TSARKIMEXARS443, TSARKIMEX4, TSARKIMEX5
+.seealso: TSARKIMEXGetType(), TSARKIMEX, TSARKIMEXType, TSARKIMEX1BEE, TSARKIMEXA2, TSARKIMEXL2, TSARKIMEXARS122, TSARKIMEX2C, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEXPRSSP2,
+          TSARKIMEX3, TSARKIMEXBPR3, TSARKIMEXARS443, TSARKIMEX4, TSARKIMEX5
 @*/
 PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 {
@@ -1380,6 +1421,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_ARKIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

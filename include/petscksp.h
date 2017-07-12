@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
         Notes: When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
        KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy()
+.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy(), KSPCG, KSPGMRES
 S*/
 typedef struct _p_KSP*     KSP;
 
@@ -217,7 +217,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
-PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperators(KSP,Mat,Mat);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperator(KSP,Mat);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 

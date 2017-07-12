@@ -720,6 +720,7 @@ static PetscErrorCode MatCopy_Nest(Mat A,Mat B,MatStructure str)
       } else if (bA->m[i][j] || bB->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
     }
   }
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

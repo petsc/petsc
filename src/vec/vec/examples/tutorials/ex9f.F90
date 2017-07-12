@@ -39,7 +39,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
       if (size .ne. 2) then
-       SETERRQ(PETSC_COMM_SELF,1,'Must run with two processors')
+       SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors')
       endif
 
 !

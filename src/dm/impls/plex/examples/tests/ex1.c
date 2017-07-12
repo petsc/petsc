@@ -1,9 +1,5 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
-/*T
-  requires: !mpiuni
-T*/
-
 #include <petscdmplex.h>
 
 typedef enum {BOX, CYLINDER} DomainShape;
@@ -362,6 +358,9 @@ int main(int argc, char **argv)
 
 /*TEST
 
+  build:
+    requires: !mpiuni
+
   # CTetGen 0-1
   test:
     suffix: 0
@@ -494,7 +493,7 @@ int main(int argc, char **argv)
     suffix: med_1
     requires: med
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type simple -dm_view
   test:
     suffix: med_2
     requires: med
@@ -503,7 +502,7 @@ int main(int argc, char **argv)
     suffix: med_3
     requires: med
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type simple -dm_view
 
   # Test shape quality
   test:

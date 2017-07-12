@@ -370,12 +370,13 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   ierr = DMSetApplicationContext(*pforest,ctx);CHKERRQ(ierr);
   ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
   ierr = DMSetDS(*pforest,ds);CHKERRQ(ierr);
-  if (dm->maxCell) {
+  {
+    PetscBool            isper;
     const PetscReal      *maxCell, *L;
     const DMBoundaryType *bd;
 
-    ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*pforest,maxCell,L,bd);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*pforest,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3905,23 +3906,26 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
 
     ierr  = DMSetDimension(newPlex,P4EST_DIM);CHKERRQ(ierr);
     ierr  = DMSetCoordinateDim(newPlex,coordDim);CHKERRQ(ierr);
-    if (dm->maxCell) {
+    {
+      PetscBool            isper;
       const PetscReal      *maxCell, *L;
       const DMBoundaryType *bd;
       PetscScalar          *coordArray = (PetscScalar *) coords->array;
       PetscInt             numCoords   = (PetscInt) coords->elem_count, i, j;
 
-      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
-      for (i = 0; i < numCoords; i++) {
-        for (j = 0; j < coordDim; j++) {
-          if (bd[j] == DM_BOUNDARY_PERIODIC || bd[j] == DM_BOUNDARY_TWIST) {
-            PetscReal val    = PetscRealPart(coordArray[coordDim * i + j]);
-            PetscReal length = PetscAbsReal(L[j]);
+      ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+      if (L) {
+        for (i = 0; i < numCoords; i++) {
+          for (j = 0; j < coordDim; j++) {
+            if (bd[j] == DM_BOUNDARY_PERIODIC || bd[j] == DM_BOUNDARY_TWIST) {
+              PetscReal val    = PetscRealPart(coordArray[coordDim * i + j]);
+              PetscReal length = PetscAbsReal(L[j]);
 
-            while (val < 0.)      {val += length;}
-            while (val >= length) {val -= length;}
+              while (val < 0.)      {val += length;}
+              while (val >= length) {val -= length;}
 
-            coordArray[coordDim * i + j] = val;
+              coordArray[coordDim * i + j] = val;
+            }
           }
         }
       }
@@ -3964,12 +3968,13 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
     sc_array_destroy (leaves);
     sc_array_destroy (remotes);
 
-    if (dm->maxCell) {
+    {
+      PetscBool             isper;
       const PetscReal      *maxCell, *L;
       const DMBoundaryType *bd;
 
-      ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
-      ierr = DMSetPeriodicity(newPlex,maxCell,L,bd);CHKERRQ(ierr);
+      ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+      ierr = DMSetPeriodicity(newPlex,isper,maxCell,L,bd);CHKERRQ(ierr);
       ierr = DMLocalizeCoordinates(newPlex);CHKERRQ(ierr);
     }
     ierr = DMPforestMapCoordinates(dm,newPlex);CHKERRQ(ierr);
@@ -4356,7 +4361,7 @@ static PetscErrorCode DMProjectFunctionLocal_pforest(DM dm, PetscReal time, Pets
 }
 
 #define DMProjectFunctionLabelLocal_pforest _append_pforest(DMProjectFunctionLabelLocal)
-static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs) (PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void*), void **ctxs, InsertMode mode, Vec localX)
+static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt Ncc, const PetscInt comps[], PetscErrorCode (**funcs) (PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void*), void **ctxs, InsertMode mode, Vec localX)
 {
   DM             plex;
   PetscErrorCode ierr;
@@ -4364,7 +4369,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,Ncc,comps,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

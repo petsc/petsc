@@ -76,101 +76,101 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create distributed array (DMDA) to manage parallel grid and vectors
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,PETSC_NULL_INTEGER,da,ierr);CHKERRQ(ierr)
-  call DMSetFromOptions(da,ierr);CHKERRQ(ierr)
-  call DMSetUp(da,ierr);CHKERRQ(ierr)
+  call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,PETSC_NULL_INTEGER,da,ierr);CHKERRA(ierr)
+  call DMSetFromOptions(da,ierr);CHKERRA(ierr)
+  call DMSetUp(da,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Extract global vectors from DMDA;
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMCreateGlobalVector(da,X,ierr);CHKERRQ(ierr)
+  call DMCreateGlobalVector(da,X,ierr);CHKERRA(ierr)
 
   ! Initialize user application context
   ! Use zero-based indexing for command line parameters to match ex22.c
   user(user_a+1) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr);CHKERRA(ierr)
   user(user_a+2) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr);CHKERRA(ierr)
   user(user_k+1) = 1000000.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr);CHKERRA(ierr)
   user(user_k+2) = 2*user(user_k+1)
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr);CHKERRA(ierr)
   user(user_s+1) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr);CHKERRA(ierr)
   user(user_s+2) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr);CHKERRA(ierr)
 
   OptionSaveToDisk=.FALSE.
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr);CHKERRA(ierr)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSCreate(PETSC_COMM_WORLD,ts,ierr);CHKERRQ(ierr)
+  call TSCreate(PETSC_COMM_WORLD,ts,ierr);CHKERRA(ierr)
   tscontext=ts
-  call TSSetDM(ts,da,ierr);CHKERRQ(ierr)
-  call TSSetType(ts,TSARKIMEX,ierr);CHKERRQ(ierr)
-  call TSSetRHSFunction(ts,PETSC_NULL_VEC,FormRHSFunction,user,ierr);CHKERRQ(ierr)
+  call TSSetDM(ts,da,ierr);CHKERRA(ierr)
+  call TSSetType(ts,TSARKIMEX,ierr);CHKERRA(ierr)
+  call TSSetRHSFunction(ts,PETSC_NULL_VEC,FormRHSFunction,user,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - -- - - - -
   !   Matrix free setup
-  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+  call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRA(ierr)
   dof=i2*(xe-xs+1)
   gdof=i2*(gxe-gxs+1)
-  call MatCreateShell(PETSC_COMM_WORLD,dof,dof,gdof,gdof,shell_shift,A,ierr);CHKERRQ(ierr)
+  call MatCreateShell(PETSC_COMM_WORLD,dof,dof,gdof,gdof,shell_shift,A,ierr);CHKERRA(ierr)
 
-  call MatShellSetOperation(A,MATOP_MULT,MyMult,ierr);CHKERRQ(ierr)
+  call MatShellSetOperation(A,MATOP_MULT,MyMult,ierr);CHKERRA(ierr)
   ! - - - - - - - - - - - -
 
-  call TSSetIFunction(ts,PETSC_NULL_VEC,FormIFunction,user,ierr);CHKERRQ(ierr)
-  call DMSetMatType(da,MATAIJ,ierr);CHKERRQ(ierr)
-  call DMCreateMatrix(da,J,ierr);CHKERRQ(ierr)
+  call TSSetIFunction(ts,PETSC_NULL_VEC,FormIFunction,user,ierr);CHKERRA(ierr)
+  call DMSetMatType(da,MATAIJ,ierr);CHKERRA(ierr)
+  call DMCreateMatrix(da,J,ierr);CHKERRA(ierr)
 
   Jmat=J
 
-  call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr);CHKERRQ(ierr)
-  call TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr);CHKERRQ(ierr)
+  call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr);CHKERRA(ierr)
+  call TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr);CHKERRA(ierr)
 
 
   ftime = 1.0
   maxsteps = 10000
-  call TSSetDuration(ts,maxsteps,ftime,ierr);CHKERRQ(ierr)
-  call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRQ(ierr)
+  call TSSetDuration(ts,maxsteps,ftime,ierr);CHKERRA(ierr)
+  call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Set initial conditions
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call FormInitialSolution(ts,X,user,ierr);CHKERRQ(ierr)
-  call TSSetSolution(ts,X,ierr);CHKERRQ(ierr)
-  call VecGetSize(X,mx,ierr);CHKERRQ(ierr)
+  call FormInitialSolution(ts,X,user,ierr);CHKERRA(ierr)
+  call TSSetSolution(ts,X,ierr);CHKERRA(ierr)
+  call VecGetSize(X,mx,ierr);CHKERRA(ierr)
   !  Advective CFL, I don't know why it needs so much safety factor.
   dt = pone * max(user(user_a+1),user(user_a+2)) / mx;
-  call TSSetInitialTimeStep(ts,zero,dt,ierr);CHKERRQ(ierr)
+  call TSSetInitialTimeStep(ts,zero,dt,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !   Set runtime options
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSetFromOptions(ts,ierr);CHKERRQ(ierr)
+  call TSSetFromOptions(ts,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSolve(ts,X,ierr);CHKERRQ(ierr)
+  call TSSolve(ts,X,ierr);CHKERRA(ierr)
 
   if (OptionSaveToDisk) then
-     call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
+     call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRA(ierr)
      dof=i2*(xe-xs+1)
      gdof=i2*(gxe-gxs+1)
-     call SaveSolutionToDisk(da,X,gdof,xs,xe);CHKERRQ(ierr)
+     call SaveSolutionToDisk(da,X,gdof,xs,xe);CHKERRA(ierr)
   end if
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Free work space.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call MatDestroy(A,ierr);CHKERRQ(ierr)
-  call MatDestroy(J,ierr);CHKERRQ(ierr)
-  call VecDestroy(X,ierr);CHKERRQ(ierr)
-  call TSDestroy(ts,ierr);CHKERRQ(ierr)
-  call DMDestroy(da,ierr);CHKERRQ(ierr)
+  call MatDestroy(A,ierr);CHKERRA(ierr)
+  call MatDestroy(J,ierr);CHKERRA(ierr)
+  call VecDestroy(X,ierr);CHKERRA(ierr)
+  call TSDestroy(ts,ierr);CHKERRA(ierr)
+  call DMDestroy(da,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr)
 end program main
 

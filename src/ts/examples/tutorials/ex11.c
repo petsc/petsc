@@ -408,12 +408,13 @@ static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
 #endif
   SWNodeUnion  fL,fR;
   PetscInt     i;
+  PetscReal    zero=0.;
 
 #if defined(PETSC_USE_COMPLEX)
   for (i = 0; i < 1+dim; i++) uLreal.vals[i] = PetscRealPart(xL[i]);
   for (i = 0; i < 1+dim; i++) uRreal.vals[i] = PetscRealPart(xR[i]);
 #endif
-  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+dim; i++) flux[i] = 0./0.; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
+  if (uL->h < 0 || uR->h < 0) {for (i=0; i<1+dim; i++) flux[i] = zero/zero; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2Real(nn);
@@ -2588,11 +2589,11 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   # Advection in a box
   test:
     suffix: adv_2d_quad_0
-    requires:
+    requires:  !mpiuni
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
   test:
     suffix: adv_2d_quad_1
-    requires:
+    requires:  !mpiuni
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_2d_quad_p4est_0
@@ -2608,11 +2609,11 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_final_time 0.01
   test:
     suffix: adv_2d_tri_0
-    requires: triangle
+    requires: triangle  !mpiuni
     args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
   test:
     suffix: adv_2d_tri_1
-    requires: triangle
+    requires: triangle  !mpiuni
     args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_0

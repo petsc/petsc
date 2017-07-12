@@ -318,20 +318,17 @@ class Configure(config.base.Configure):
     majorRE    = re.compile(r'^#define PETSC_VERSION_MAJOR([\s]+)(?P<versionNum>\d+)[\s]*$');
     minorRE    = re.compile(r'^#define PETSC_VERSION_MINOR([\s]+)(?P<versionNum>\d+)[\s]*$');
     subminorRE = re.compile(r'^#define PETSC_VERSION_SUBMINOR([\s]+)(?P<versionNum>\d+)[\s]*$');
-    patchRE    = re.compile(r'^#define PETSC_VERSION_PATCH([\s]+)(?P<patchNum>\d+)[\s]*$');
     dateRE     = re.compile(r'^#define PETSC_VERSION_DATE([\s]+)"(?P<date>(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d\d?, \d\d\d\d)"[\s]*$');
     input   = file(os.path.join(self.dir, 'include', 'petscversion.h'))
     lines   = []
     majorNum = 'Unknown'
     minorNum = 'Unknown'
     subminorNum = 'Unknown'
-    patchNum = 'Unknown'
     self.date = 'Unknown'
     for line in input.readlines():
       m1 = majorRE.match(line)
       m2 = minorRE.match(line)
       m3 = subminorRE.match(line)
-      m4 = patchRE.match(line)
       m5 = dateRE.match(line)
       if m1:
         majorNum = int(m1.group('versionNum'))
@@ -340,16 +337,13 @@ class Configure(config.base.Configure):
       elif m3:
         subminorNum = int(m3.group('versionNum'))
 
-      if m4:
-        patchNum = int(m4.group('patchNum'))+1
-        lines.append('#define PETSC_VERSION_PATCH'+m4.group(1)+str(patchNum)+'\n')
-      elif m5:
+      if m5:
         self.date = time.strftime('%b %d, %Y', time.localtime(time.time()))
         lines.append('#define PETSC_VERSION_DATE'+m5.group(1)+'"'+self.date+'"\n')
       else:
         lines.append(line)
     input.close()
-    self.logPrint('Found PETSc version (%s,%s,%s) patch %s on %s' % (majorNum, minorNum, subminorNum, patchNum, self.date))
+    self.logPrint('Found PETSc version (%s,%s,%s) on %s' % (majorNum, minorNum, subminorNum, self.date))
     return '%d.%d.%d' % (majorNum, minorNum, subminorNum)
 
   def includeGuesses(self, path = None):

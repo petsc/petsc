@@ -308,7 +308,7 @@ int main(int argc,char **args)
   {
     PetscInt    dimEmbed, i;
     PetscInt    nCoords;
-    PetscScalar *coords,bounds[] = {0,0,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    PetscScalar *coords,bounds[] = {0,1,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
     Vec         coordinates;
     bounds[1] = Lx;
     if (run_type==1) {
@@ -409,9 +409,9 @@ int main(int argc,char **args)
       /* bcs */
       if (run_type==1) {
         PetscInt id = 1;
-        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);CHKERRQ(ierr);
+        ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) zero, 1, &id, NULL);CHKERRQ(ierr);
       } else {
-        ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)()) zero, Nfid, fid, NULL);CHKERRQ(ierr);
+        ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, Ncomp, components, (void (*)(void)) zero, Nfid, fid, NULL);CHKERRQ(ierr);
         ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
       }
       while (cdm) {
@@ -507,7 +507,7 @@ int main(int argc,char **args)
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",rank,iter,local_sizes[iter],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],err[iter],PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.));CHKERRQ(ierr);
   }
 

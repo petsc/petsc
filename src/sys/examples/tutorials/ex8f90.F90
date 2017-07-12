@@ -1,8 +1,5 @@
 
 
-!/*T
-!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
-!T*/
 
 #include "petsc/finclude/petsc.h"
       use petsc
@@ -27,7 +24,7 @@
 
       write(*,20) list1(1)
 20    format(A99)
-      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRA(ierr)
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 
@@ -40,6 +37,9 @@
 
 !
 !/*TEST
+!
+!   build:
+!      requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
 !
 !   test:
 !      args: -joe_jeff b456

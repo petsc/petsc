@@ -144,13 +144,33 @@ PetscErrorCode MatGetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
+static PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
 {
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatDenseGetArray(a->A,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDensePlaceArray_MPIDense(Mat A,const PetscScalar array[])
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDensePlaceArray(a->A,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseResetArray_MPIDense(Mat A)
+{
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDenseResetArray(a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -531,6 +551,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
@@ -807,24 +830,25 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool flg)
 
 PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
 {
-  Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
-  Mat_SeqDense   *mat = (Mat_SeqDense*)mdn->A->data;
-  PetscScalar    *l,*r,x,*v;
-  PetscErrorCode ierr;
-  PetscInt       i,j,s2a,s3a,s2,s3,m=mdn->A->rmap->n,n=mdn->A->cmap->n;
+  Mat_MPIDense      *mdn = (Mat_MPIDense*)A->data;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)mdn->A->data;
+  const PetscScalar *l,*r;
+  PetscScalar       x,*v;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,s2a,s3a,s2,s3,m=mdn->A->rmap->n,n=mdn->A->cmap->n;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
   if (ll) {
     ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
     if (s2a != s2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size, %d != %d.", s2a, s2);
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       x = l[i];
       v = mat->v + i;
       for (j=0; j<n; j++) { (*v) *= x; v+= m;}
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   if (rr) {
@@ -832,13 +856,13 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
     if (s3a != s3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size, %d != %d.", s3a, s3);
     ierr = VecScatterBegin(mdn->Mvctx,rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mdn->Mvctx,rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mdn->lvec,&r);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       x = r[i];
       v = mat->v + i*m;
       for (j=0; j<m; j++) (*v++) *= x;
     }
-    ierr = VecRestoreArray(mdn->lvec,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mdn->lvec,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1276,6 +1300,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   a->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",MatDenseGetArray_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDensePlaceArray_C",MatDensePlaceArray_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseResetArray_C",MatDenseResetArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",MatDenseRestoreArray_MPIDense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
@@ -1337,6 +1363,60 @@ PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 
   PetscFunctionBegin;
   ierr = PetscTryMethod(B,"MatMPIDenseSetPreallocation_C",(Mat,PetscScalar*),(B,data));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatDensePlaceArray - Allows one to replace the array in a dense array with an
+   array provided by the user. This is useful to avoid copying an array
+   into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  array - the array in column major order
+
+   Notes:
+   You can return to the original array with a call to MatDenseResetArray(). The user is responsible for freeing this array; it will not be
+   freed when the matrix is destroyed.
+
+   Level: developer
+
+.seealso: MatDenseGetArray(), MatDenseResetArray(), VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
+
+@*/
+PetscErrorCode  MatDensePlaceArray(Mat mat,const PetscScalar array[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(mat,"MatDensePlaceArray_C",(Mat,const PetscScalar*),(mat,array));CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatDenseResetArray - Resets the matrix array to that it previously had before the call to MatDensePlaceArray()
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Notes:
+   You can only call this after a call to MatDensePlaceArray()
+
+   Level: developer
+
+.seealso: MatDenseGetArray(), MatDensePlaceArray(), VecPlaceArray(), VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
+
+@*/
+PetscErrorCode  MatDenseResetArray(Mat mat)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(mat,"MatDenseResetArray_C",(Mat),(mat));CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

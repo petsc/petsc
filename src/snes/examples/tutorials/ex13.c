@@ -129,7 +129,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscDSSetResidual(prob, 0, f0_trig_u, f1_u);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) trig_u, 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)(void)) trig_u, 1, &id, user);CHKERRQ(ierr);
   ierr = PetscDSSetExactSolution(prob, 0, trig_u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -188,51 +188,51 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d_p1_0
-    requires: triangle
+    requires: triangle  !mpiuni
     args: -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_p2_0
-    requires: triangle
+    requires: triangle !mpiuni
     args: -petscspace_order 2 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_p3_0
-    requires: triangle
+    requires: triangle  !mpiuni
     args: -petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q1_0
-    requires:
+    requires: !mpiuni
     args: -simplex 0 -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q2_0
-    requires:
+    requires:  !mpiuni
     args: -simplex 0 -petscspace_order 2 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 2d_q3_0
-    requires:
+    requires: !mpiuni
     args: -simplex 0 -petscspace_order 3 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p1_0
-    requires: ctetgen
+    requires: ctetgen  !mpiuni
     args: -dim 3 -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
-    requires: ctetgen
+    requires: ctetgen  !mpiuni
     args: -dim 3 -petscspace_order 2 -dm_refine 1 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
-    requires: ctetgen
+    requires: ctetgen  !mpiuni
     args: -dim 3 -petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
   test:
     suffix: 3d_q1_0
-    requires:
+    requires: !mpiuni
     args: -dim 3 -simplex 0 -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_q2_0
-    requires:
+    requires:  !mpiuni
     args: -dim 3 -simplex 0 -petscspace_order 2 -dm_refine 1 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_q3_0
-    requires:
+    requires: !mpiuni
     args: -dim 3 -simplex 0 -petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
 
 TEST*/

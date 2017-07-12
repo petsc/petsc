@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex9.c \
                 ex56.c ex58.c ex59.c \
                 ex62.c ex70.c ex77.c ex78.c \
                 ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F90 ex5f90t.F90 ex5fs.F ex40f90.F90 ex73f90t.F90
+EXAMPLESF	 = ex1f.F90 ex5f.F90 ex5f90.F90 ex5f90t.F90 ex5fs.F ex40f90.F90 ex73f90t.F90
 EXAMPLESCH	 =
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
@@ -1213,7 +1213,7 @@ runex48_2:
 	   ${DIFF} output/ex48_2.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_3:
-	-@${MPIEXEC} -n 3 ./ex48 -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex48 -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_asm_type restrict -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_3.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_4:

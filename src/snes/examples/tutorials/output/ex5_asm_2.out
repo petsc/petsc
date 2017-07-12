@@ -1,43 +1,43 @@
-0 SNES Function norm 1.371870931195e-01 
-    0 KSP Residual norm 9.577481644305e-02 
-    1 KSP Residual norm 2.643338373526e-02 
-    2 KSP Residual norm 2.034380224928e-02 
-    3 KSP Residual norm 8.827221776922e-03 
-    4 KSP Residual norm 6.794575005579e-03 
-    5 KSP Residual norm 2.992522703878e-03 
-    6 KSP Residual norm 2.283714925885e-03 
-    7 KSP Residual norm 1.015765905373e-03 
-    8 KSP Residual norm 7.700343662406e-04 
-    9 KSP Residual norm 3.448407074916e-04 
-   10 KSP Residual norm 2.601513625040e-04 
-   11 KSP Residual norm 1.170518591245e-04 
-   12 KSP Residual norm 8.799846342954e-05 
-   13 KSP Residual norm 3.972280721346e-05 
-   14 KSP Residual norm 2.978972498560e-05 
-   15 KSP Residual norm 1.347746421930e-05 
-   16 KSP Residual norm 1.008978734329e-05 
-   17 KSP Residual norm 4.571930500827e-06 
-   18 KSP Residual norm 3.418585482202e-06 
-   19 KSP Residual norm 1.550715037559e-06 
-   20 KSP Residual norm 1.158539871913e-06 
-   21 KSP Residual norm 5.259211726305e-07 
-   22 KSP Residual norm 3.926841954979e-07 
-   23 KSP Residual norm 1.783518685704e-07 
-   24 KSP Residual norm 1.331135320185e-07 
-   25 KSP Residual norm 6.048004250078e-08 
-   26 KSP Residual norm 4.512661697098e-08 
-   27 KSP Residual norm 2.050834161698e-08 
-   28 KSP Residual norm 1.529907655597e-08 
-   29 KSP Residual norm 6.954049508533e-09 
-   30 KSP Residual norm 5.186958135036e-09 
-   31 KSP Residual norm 2.357963942464e-09 
-   32 KSP Residual norm 1.758614660048e-09 
-   33 KSP Residual norm 7.995231930763e-10 
-   34 KSP Residual norm 5.962602275104e-10 
-   35 KSP Residual norm 2.710947813001e-10 
-   36 KSP Residual norm 2.021649990347e-10 
-   37 KSP Residual norm 9.191969936495e-11 
-  1 SNES Function norm 3.678004325572e-10 
+  0 SNES Function norm 0.137187 
+    0 KSP Residual norm 0.0957748 
+    1 KSP Residual norm 0.0264334 
+    2 KSP Residual norm 0.0203438 
+    3 KSP Residual norm 0.00882722 
+    4 KSP Residual norm 0.00679458 
+    5 KSP Residual norm 0.00299252 
+    6 KSP Residual norm 0.00228371 
+    7 KSP Residual norm 0.00101577 
+    8 KSP Residual norm 0.000770034 
+    9 KSP Residual norm 0.000344841 
+   10 KSP Residual norm 0.000260151 
+   11 KSP Residual norm 0.000117052 
+   12 KSP Residual norm 8.79985e-05 
+   13 KSP Residual norm 3.97228e-05 
+   14 KSP Residual norm 2.97897e-05 
+   15 KSP Residual norm 1.34775e-05 
+   16 KSP Residual norm 1.00898e-05 
+   17 KSP Residual norm 4.57193e-06 
+   18 KSP Residual norm 3.41859e-06 
+   19 KSP Residual norm 1.55072e-06 
+   20 KSP Residual norm 1.15854e-06 
+   21 KSP Residual norm 5.25921e-07 
+   22 KSP Residual norm 3.92684e-07 
+   23 KSP Residual norm 1.78352e-07 
+   24 KSP Residual norm 1.33114e-07 
+   25 KSP Residual norm 6.048e-08 
+   26 KSP Residual norm 4.51266e-08 
+   27 KSP Residual norm 2.05083e-08 
+   28 KSP Residual norm 1.52991e-08 
+   29 KSP Residual norm 6.95405e-09 
+   30 KSP Residual norm 5.18696e-09 
+   31 KSP Residual norm 2.35796e-09 
+   32 KSP Residual norm 1.75861e-09 
+   33 KSP Residual norm 7.995e-10 
+   34 KSP Residual norm 5.963e-10 
+   35 KSP Residual norm 2.711e-10 
+   36 KSP Residual norm 2.022e-10 
+   37 KSP Residual norm 9.192e-11 
+  1 SNES Function norm 3.678e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -55,15 +55,15 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: richardson
-      Richardson: damping factor=1.
+      damping factor=1.
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: asm
-      Additive Schwarz: total subdomain blocks = 3, amount of overlap = 0
-      Additive Schwarz: restriction/interpolation type - RESTRICT
+      total subdomain blocks = 3, amount of overlap = 0
+      restriction/interpolation type - RESTRICT
       Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (sub_) 1 MPI processes
         type: preonly
@@ -99,4 +99,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=136, allocated nonzeros=136
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-N: 32 error l2 6.94666e-12 inf 1.2788e-10
+N: 32 error L2 3.92963e-11 inf 1.2788e-10

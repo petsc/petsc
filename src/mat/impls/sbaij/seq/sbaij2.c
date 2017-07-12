@@ -1339,7 +1339,8 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   const PetscScalar *l,*li,*ri;
   MatScalar         *aa,*v;
   PetscErrorCode    ierr;
-  PetscInt          i,j,k,lm,M,m,*ai,*aj,mbs,tmp,bs,bs2;
+  PetscInt          i,j,k,lm,M,m,mbs,tmp,bs,bs2;
+  const PetscInt    *ai,*aj;
   PetscBool         flg;
 
   PetscFunctionBegin;

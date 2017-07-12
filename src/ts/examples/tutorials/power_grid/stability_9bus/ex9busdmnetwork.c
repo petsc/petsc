@@ -390,7 +390,7 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     for (j=0; j < numComps; j++) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 1) {
         bus = (Bus*)(arr+offsetd);
 
@@ -531,7 +531,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
 
     for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 1) {
         PetscInt       nconnedges;
         const PetscInt *connedges;
@@ -567,13 +567,13 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           const PetscInt *cone;
 
           e = connedges[i];
-          ierr = DMNetworkGetComponentTypeOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
+          ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
           branch = (Branch*)(arr+offsetd);
 
           Yfti = branch->yft[0];
           Yftr = branch->yft[1];
 
-          ierr = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+          ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
 
           vfrom = cone[0];
           vto   = cone[1];
@@ -775,7 +775,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
 
     for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetComponentTypeOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
       if (key == 1) {
         PetscInt       nconnedges;
         const PetscInt *connedges;
@@ -806,13 +806,13 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           const PetscInt *cone;
 
           e = connedges[i];
-          ierr   = DMNetworkGetComponentTypeOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
+          ierr   = DMNetworkGetComponentKeyOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
           branch = (Branch*)(arr+offsetd);
 
           Yfti = branch->yft[0];
           Yftr = branch->yft[1];
 
-          ierr  = DMNetworkGetConnectedNodes(networkdm,e,&cone);CHKERRQ(ierr);
+          ierr  = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
           vfrom = cone[0];
           vto   = cone[1];
 

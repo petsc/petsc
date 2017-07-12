@@ -136,6 +136,7 @@
       </ul>
       <h4>PC:</h4>
       <ul>
+        <li>The is_local argument to PCASMSetLocalSubdomains() is now ignored UNLESS the PCASMType is set to restrict</li>
         <li>Added PCMGSetNumberSmooth()</li>
         <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool</li>
         <li>Added PCBDDCSetDivergenceMat to help BDDC to compute the flux across the subdomain interfaces.</li>
@@ -143,6 +144,7 @@
         <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.</li>
         <li>Added additional string parameter to PCBDDCCreateFETIDPOperators for the specification of the prefix (can be NULL).</li>
         <li>FIELDSPLIT now extracts off-diag fieldsplit blocks from the preconditioner instead of the jacobian by default. Use -pc_fieldsplit_off_diag_use_amat to use the jacobian matrix.</li>
+        <li>Added PCFieldSplitSetSchurScale to control the scaling factor of the Schur complement with the DIAG factorization. The corresponding command line option is -pc_fieldsplit_schur_scale.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
@@ -179,6 +181,7 @@
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <ul>
+        <li>-help now has the option -help intro that only prints the programs help string and then exits the program</li>
         <li>Petsc64bitInt -> PetscInt64, PetscIntMult64bit() -> PetscInt64Mult(), PetscBagRegister64bitInt() -> PetscBagRegisterInt64()</li>
       </ul>
       <h4>AO:</h4>
@@ -186,7 +189,10 @@
       <h4>Fortran:</h4>
       <ul>
         <li>Simplified Fortran usage. Now you only include petsc/finclude/petscXXX and use petscXXX</li>
-        <li>SETERRQ() from Fortran has one fewer argument, there is no ierr as the final argument</li>
+        <li>New shorter calling sequence for PetscError() from Fortran</li>
+        <li>SETERRQ(), and CHKERRQ from Fortran now have the same behavior as in C and automatically return on errors, they do not abort.
+            Correspondingly SERERRA() and CHKERRA() should be used in 'program main' - as return is not possible from it.
+            These macros should be used from .F90 files because they require long lines</li>
     </div>
 
     <PRE>

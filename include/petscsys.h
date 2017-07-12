@@ -154,13 +154,13 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #elif defined(PETSC_HAVE_MPICH_NUMVERSION)
 #  if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
 #    error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
-#  elif MPICH_NUMVERSION != PETSC_HAVE_MPICH_NUMVERSION
+#  elif (MPICH_NUMVERSION/100000 != PETSC_HAVE_MPICH_NUMVERSION/100000) || (MPICH_NUMVERSION%100000/1000 < PETSC_HAVE_MPICH_NUMVERSION%100000/1000)
 #    error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
 #  endif
 #elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
 #  if !defined(OMPI_MAJOR_VERSION)
 #    error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
-#  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION != PETSC_HAVE_OMPI_RELEASE_VERSION)
+#  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION < PETSC_HAVE_OMPI_RELEASE_VERSION)
 #    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
 #elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION)
@@ -738,7 +738,7 @@ M*/
 #else
 #define PetscMalloc2(m1,r1,m2,r2) ((((m1)+(m2)) ? (*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) : 0) \
                                    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),0) \
-                                   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0))
+                                   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0))
 #endif
 
 /*MC
@@ -797,7 +797,7 @@ M*/
 #else
 #define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((((m1)+(m2)+(m3)) ? (*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) : 0) \
                                          || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),0) \
-                                         || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0))
+                                         || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0))
 #endif
 
 /*MC
@@ -863,7 +863,7 @@ M*/
 #define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
   ((((m1)+(m2)+(m3)+(m4)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+3*(PETSC_MEMALIGN-1),r1)) : 0) \
    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),0) \
-   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0))
+   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0))
 #endif
 
 /*MC
@@ -935,7 +935,7 @@ M*/
 #define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
   ((((m1)+(m2)+(m3)+(m4)+(m5)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+4*(PETSC_MEMALIGN-1),r1)) : 0) \
    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),0) \
-   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0))
+   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0))
 #endif
 
 /*MC
@@ -1011,7 +1011,7 @@ M*/
 #define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
   ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+5*(PETSC_MEMALIGN-1),r1)) : 0) \
    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),0) \
-   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0) || (!(m6) ? (*(r6) = 0,0) : 0))
+   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0) || (0==(m6) ? (*(r6) = 0,0) : 0))
 #endif
 
 /*MC
@@ -1090,7 +1090,7 @@ M*/
 #define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
   ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)+(m7)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+(m7)*sizeof(**(r7))+6*(PETSC_MEMALIGN-1),r1)) : 0) \
    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),*(void**)(r7) = PetscAddrAlign(*(r6)+(m6)),0) \
-   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0) || (!(m6) ? (*(r6) = 0,0) : 0) || (!(m7) ? (*(r7) = 0,0) : 0))
+   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0) || (0==(m6) ? (*(r6) = 0,0) : 0) || (0==(m7) ? (*(r7) = 0,0) : 0))
 #endif
 
 /*MC
@@ -2510,6 +2510,39 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 #else
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
+
+/*MC
+
+    PETSC_VERSION - This manual page provides information about how PETSc documents and uses its version information. This information is available to both C/C++
+                    and Fortran compilers when petscsys.h is included.
+
+
+    The current PETSc version and the API for accessing it are defined in petscversion.h
+
+    The complete version number is given as the triple  PETSC_VERSION_MAJOR.PETSC_VERSION_MINOR.PETSC_VERSION_SUBMINOR (in short hand x.y.z)
+
+    A change in the minor version number (y) indicates possible/likely changes in the PETSc API. Note this is different than with the semantic versioning convention
+    where only a change in the major version number (x) indicates a change in the API.
+
+    A subminor greater than zero indicates a patch release. Version x.y.z maintains source and binary compatibility with version x.y.w for all z and w
+
+    Use the macros PETSC_VERSION_EQ(x,y,z), PETSC_VERSION_LT(x,y,z), PETSC_VERSION_LE(x,y,z), PETSC_VERSION_GT(x,y,z),
+    PETSC_VERSION_GE(x,y,z) to determine if the current version is equal to, less than, less than or equal to, greater than or greater than or equal to a given
+    version number (x.y.z).
+
+    PETSC_RELEASE_DATE is the date the x.y version was released (i.e. the version before any patch releases)
+
+    PETSC_VERSION_DATE is the date the x.y.z version was released
+
+    PETSC_VERSION_GIT is the last git commit to the repository given in the form vx.y.z-wwwww
+
+    PETSC_VERSION_DATE_GIT is the date of the last git commit to the repository
+
+    Level: intermediate
+
+    PETSC_VERSION_() and PETSC_VERSION_PATCH are deprecated and will eventually be removed. For several releases PETSC_VERSION_PATCH is always 0
+
+M*/
 
 /*MC
 

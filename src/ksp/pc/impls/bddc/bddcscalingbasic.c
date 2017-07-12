@@ -495,6 +495,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   } else if (deluxe_ctx->seq_n != sub_schurs->n_subs) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of deluxe subproblems %d is different from the sub_schurs %d",deluxe_ctx->seq_n,sub_schurs->n_subs);
   }
+  /* the change of basis is just a reference to sub_schurs->change (if any) */
+  deluxe_ctx->change         = sub_schurs->change;
   deluxe_ctx->change_with_qr = sub_schurs->change_with_qr;
 
   /* Create objects for deluxe */
@@ -559,7 +561,17 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
       ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&X);CHKERRQ(ierr);
-      ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
+      if (deluxe_ctx->change) {
+        Mat C,CY;
+
+        if (!deluxe_ctx->change_with_qr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only QR based change of basis");
+        ierr = KSPGetOperators(deluxe_ctx->change[i],&C,NULL);CHKERRQ(ierr);
+        ierr = MatMatMult(C,Y,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CY);CHKERRQ(ierr);
+        ierr = MatMatTransposeMult(CY,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y);CHKERRQ(ierr);
+        ierr = MatDestroy(&CY);CHKERRQ(ierr);
+      } else {
+        ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
+      }
       deluxe_ctx->seq_mat[i] = Y;
     }
     cum += subset_size;
@@ -568,9 +580,11 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   ierr = ISRestoreIndices(sub_schurs->is_Ej_all,&idxs);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(sub_schurs->S_Ej_all,&matdata);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&matdata2);CHKERRQ(ierr);
+  if (pcbddc->deluxe_singlemat) {
+    deluxe_ctx->change         = NULL;
+    deluxe_ctx->change_with_qr = PETSC_FALSE;
+  }
 
-  /* the change of basis is just a reference to sub_schurs->change (if any) */
-  deluxe_ctx->change = sub_schurs->change;
   if (deluxe_ctx->change && !deluxe_ctx->change_with_qr) {
     for (i=0;i<deluxe_ctx->seq_n;i++) {
       if (newsetup) {

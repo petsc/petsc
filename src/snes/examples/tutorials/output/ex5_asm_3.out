@@ -1,25 +1,25 @@
-0 SNES Function norm 1.371870931195e-01 
-    0 KSP Residual norm 1.025271186644e-01 
-    1 KSP Residual norm 3.326833304360e-02 
-    2 KSP Residual norm 1.080620522555e-02 
-    3 KSP Residual norm 3.510372594064e-03 
-    4 KSP Residual norm 1.140345531348e-03 
-    5 KSP Residual norm 3.704418077356e-04 
-    6 KSP Residual norm 1.203382104790e-04 
-    7 KSP Residual norm 3.909192933602e-05 
-    8 KSP Residual norm 1.269903328103e-05 
-    9 KSP Residual norm 4.125287470241e-06 
-   10 KSP Residual norm 1.340101749167e-06 
-   11 KSP Residual norm 4.353327401037e-07 
-   12 KSP Residual norm 1.414180637361e-07 
-   13 KSP Residual norm 4.593973049177e-08 
-   14 KSP Residual norm 1.492354498486e-08 
-   15 KSP Residual norm 4.847921269065e-09 
-   16 KSP Residual norm 1.574849717488e-09 
-   17 KSP Residual norm 5.115907005404e-10 
-   18 KSP Residual norm 1.661905507456e-10 
-   19 KSP Residual norm 5.398704813533e-11 
-  1 SNES Function norm 7.122443317328e-11 
+  0 SNES Function norm 0.137187 
+    0 KSP Residual norm 0.102527 
+    1 KSP Residual norm 0.0332683 
+    2 KSP Residual norm 0.0108062 
+    3 KSP Residual norm 0.00351037 
+    4 KSP Residual norm 0.00114035 
+    5 KSP Residual norm 0.000370442 
+    6 KSP Residual norm 0.000120338 
+    7 KSP Residual norm 3.90919e-05 
+    8 KSP Residual norm 1.2699e-05 
+    9 KSP Residual norm 4.12529e-06 
+   10 KSP Residual norm 1.3401e-06 
+   11 KSP Residual norm 4.35333e-07 
+   12 KSP Residual norm 1.41418e-07 
+   13 KSP Residual norm 4.59397e-08 
+   14 KSP Residual norm 1.49235e-08 
+   15 KSP Residual norm 4.84792e-09 
+   16 KSP Residual norm 1.57485e-09 
+   17 KSP Residual norm 5.116e-10 
+   18 KSP Residual norm 1.662e-10 
+   19 KSP Residual norm 5.399e-11 
+  1 SNES Function norm 7.122e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -37,15 +37,15 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: richardson
-      Richardson: damping factor=1.
+      damping factor=1.
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: asm
-      Additive Schwarz: total subdomain blocks = 4, amount of overlap = 0
-      Additive Schwarz: restriction/interpolation type - RESTRICT
+      total subdomain blocks = 4, amount of overlap = 0
+      restriction/interpolation type - RESTRICT
       Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (sub_) 1 MPI processes
         type: preonly
@@ -81,4 +81,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=136, allocated nonzeros=136
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-N: 32 error l2 2.49885e-12 inf 2.94655e-11
+N: 32 error L2 1.41356e-11 inf 2.94655e-11

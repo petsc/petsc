@@ -30,14 +30,14 @@ Mat Object:
  25 KSP Residual norm 6.43512e-09 
 KSP Object:
   type: gmres
-    GMRES: restart=30, using Modified Gram-Schmidt Orthogonalization
-    GMRES: happy breakdown tolerance 1e-30
+    restart=30, using Modified Gram-Schmidt Orthogonalization
+    happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
   left preconditioning
 PC Object:
   type: bjacobi
-    Block Jacobi: number of blocks = 4
+    number of blocks = 4
     Local solve is same for all blocks, in the following KSP and PC objects:
 KSP Object:
   type: preonly

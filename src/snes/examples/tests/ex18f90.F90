@@ -100,26 +100,26 @@ end interface
     print*,'Unable to initialize PETSc'
     stop
   endif
-  call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRQ(ierr)
-  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRQ(ierr)
+  call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRA(ierr)
+  call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRA(ierr)
 
-  call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRQ(ierr)
+  call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRA(ierr)
 
   ! use the base class as the context
   print *
   print *, 'the base class will succeed by printing out Base printout below'
-  call SNESCreate(PETSC_COMM_WORLD,snes_base,ierr);CHKERRQ(ierr)
-  call SNESSetFunction(snes_base,x,TestFunction,base,ierr);CHKERRQ(ierr)
-  call SNESComputeFunction(snes_base,x,x,ierr);CHKERRQ(ierr)
-  call SNESDestroy(snes_base,ierr);CHKERRQ(ierr)
+  call SNESCreate(PETSC_COMM_WORLD,snes_base,ierr);CHKERRA(ierr)
+  call SNESSetFunction(snes_base,x,TestFunction,base,ierr);CHKERRA(ierr)
+  call SNESComputeFunction(snes_base,x,x,ierr);CHKERRA(ierr)
+  call SNESDestroy(snes_base,ierr);CHKERRA(ierr)
 
   ! use the extended class as the context
   print *, 'the extended class will succeed by printing out Extended printout below'
-  call SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr);CHKERRQ(ierr)
-  call SNESSetFunction(snes_extended,x,TestFunction,extended,ierr);CHKERRQ(ierr)
-  call SNESComputeFunction(snes_extended,x,x,ierr);CHKERRQ(ierr)
-  call VecDestroy(x,ierr);CHKERRQ(ierr)
-  call SNESDestroy(snes_extended,ierr);CHKERRQ(ierr)
+  call SNESCreate(PETSC_COMM_WORLD,snes_extended,ierr);CHKERRA(ierr)
+  call SNESSetFunction(snes_extended,x,TestFunction,extended,ierr);CHKERRA(ierr)
+  call SNESComputeFunction(snes_extended,x,x,ierr);CHKERRA(ierr)
+  call VecDestroy(x,ierr);CHKERRA(ierr)
+  call SNESDestroy(snes_extended,ierr);CHKERRA(ierr)
   if (associated(base)) deallocate(base)
   if (associated(extended)) deallocate(extended)
   call PetscFinalize(ierr)

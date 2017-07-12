@@ -476,6 +476,42 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpaceGetHeightSubspace - Get the subset of the primal space basis that is supported on a mesh point of a given height.
+
+  If the space is not defined on mesh points of the given height (e.g. if the space is discontinuous and
+  pointwise values are not defined on the element boundaries), or if the implementation of PetscSpace does not
+  support extracting subspaces, then NULL is returned.
+
+  This does not increment the reference count on the returned space, and the user should not destroy it.
+
+  Not collective
+
+  Input Parameters:
++ sp - the PetscSpace object
+- height - the height of the mesh point for which the subspace is desired
+
+  Output Parameter:
+. subsp - the subspace
+
+  Level: advanced
+
+.seealso: PetscDualSpaceGetHeightSubspace(), PetscSpace
+@*/
+PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(subsp, 3);
+  *subsp = NULL;
+  if (sp->ops->getheightsubspace) {
+    ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -541,6 +577,14 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", NULL);CHKERRQ(ierr);
   ierr = PetscFree(poly->degrees);CHKERRQ(ierr);
+  if (poly->subspaces) {
+    PetscInt d;
+
+    for (d = 0; d < poly->numVariables; ++d) {
+      ierr = PetscSpaceDestroy(&poly->subspaces[d]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(poly->subspaces);CHKERRQ(ierr);
   ierr = PetscFree(poly);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -917,17 +961,52 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, Pe
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSpaceGetHeightSubspace_Polynomial(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+  PetscInt         Nc, dim, order;
+  PetscBool        tensor;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetNumVariables(sp, &dim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetTensor(sp, &tensor);CHKERRQ(ierr);
+  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (!poly->subspaces) {ierr = PetscCalloc1(dim, &poly->subspaces);CHKERRQ(ierr);}
+  if (height <= dim) {
+    if (!poly->subspaces[height-1]) {
+      PetscSpace sub;
+
+      ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) sp), &sub);CHKERRQ(ierr);
+      ierr = PetscSpaceSetNumComponents(sub, Nc);CHKERRQ(ierr);
+      ierr = PetscSpaceSetOrder(sub, order);CHKERRQ(ierr);
+      ierr = PetscSpaceSetType(sub, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+      ierr = PetscSpacePolynomialSetNumVariables(sub, dim-height);CHKERRQ(ierr);
+      ierr = PetscSpacePolynomialSetTensor(sub, tensor);CHKERRQ(ierr);
+      ierr = PetscSpaceSetUp(sub);CHKERRQ(ierr);
+      poly->subspaces[height-1] = sub;
+    }
+    *subsp = poly->subspaces[height-1];
+  } else {
+    *subsp = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  sp->ops->setfromoptions = PetscSpaceSetFromOptions_Polynomial;
-  sp->ops->setup          = PetscSpaceSetUp_Polynomial;
-  sp->ops->view           = PetscSpaceView_Polynomial;
-  sp->ops->destroy        = PetscSpaceDestroy_Polynomial;
-  sp->ops->getdimension   = PetscSpaceGetDimension_Polynomial;
-  sp->ops->evaluate       = PetscSpaceEvaluate_Polynomial;
+  sp->ops->setfromoptions    = PetscSpaceSetFromOptions_Polynomial;
+  sp->ops->setup             = PetscSpaceSetUp_Polynomial;
+  sp->ops->view              = PetscSpaceView_Polynomial;
+  sp->ops->destroy           = PetscSpaceDestroy_Polynomial;
+  sp->ops->getdimension      = PetscSpaceGetDimension_Polynomial;
+  sp->ops->evaluate          = PetscSpaceEvaluate_Polynomial;
+  sp->ops->getheightsubspace = PetscSpaceGetHeightSubspace_Polynomial;
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialGetTensor_C", PetscSpacePolynomialGetTensor_Polynomial);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscSpacePolynomialSetTensor_C", PetscSpacePolynomialSetTensor_Polynomial);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -956,6 +1035,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   poly->symmetric    = PETSC_FALSE;
   poly->tensor       = PETSC_FALSE;
   poly->degrees      = NULL;
+  poly->subspaces    = NULL;
 
   ierr = PetscSpaceInitialize_Polynomial(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1990,23 +2070,23 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 + sp - the PetscDualSpace object
 - height - the height of the mesh point for which the subspace is desired
 
-  Output Parameters:
-  bdsp - the subspace
+  Output Parameter:
+. subsp - the subspace
 
   Level: advanced
 
-.seealso: PetscDualSpace
+.seealso: PetscSpaceGetHeightSubspace(), PetscDualSpace
 @*/
-PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
+PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *subsp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(bdsp,2);
-  *bdsp = NULL;
+  PetscValidPointer(subsp, 3);
+  *subsp = NULL;
   if (sp->ops->getheightsubspace) {
-    ierr = (*sp->ops->getheightsubspace)(sp,height,bdsp);CHKERRQ(ierr);
+    ierr = (*sp->ops->getheightsubspace)(sp, height, subsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3218,6 +3298,13 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
 
+  if ((*fem)->subspaces) {
+    PetscInt dim, d;
+
+    ierr = PetscDualSpaceGetDimension((*fem)->dualSpace, &dim);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {ierr = PetscFEDestroy(&(*fem)->subspaces[d]);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree((*fem)->subspaces);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->Bf, &(*fem)->Df, NULL /*&(*fem)->Hf*/);CHKERRQ(ierr);
@@ -3263,6 +3350,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->basisSpace    = NULL;
   f->dualSpace     = NULL;
   f->numComponents = 1;
+  f->subspaces     = NULL;
   f->invV          = NULL;
   f->B             = NULL;
   f->D             = NULL;
@@ -6488,6 +6576,53 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (fem->ops->integratebdjacobian) {ierr = (*fem->ops->integratebdjacobian)(fem, prob, fieldI, fieldJ, Ne, fgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *subfe)
+{
+  PetscSpace      P, subP;
+  PetscDualSpace  Q, subQ;
+  PetscQuadrature subq;
+  PetscFEType     fetype;
+  PetscInt        dim, Nc;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
+  PetscValidPointer(subfe, 3);
+  if (height == 0) {
+    *subfe = fe;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
+  if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
+  if (height != 1) SETERRQ1(PetscObjectComm((PetscObject) fe), PETSC_ERR_SUP, "Height %D not currently supported", height);
+  if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
+  if (height <= dim) {
+    if (!fe->subspaces[height-1]) {
+      PetscFE sub;
+
+      ierr = PetscSpaceGetHeightSubspace(P, height, &subP);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetHeightSubspace(Q, height, &subQ);CHKERRQ(ierr);
+      ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), &sub);CHKERRQ(ierr);
+      ierr = PetscFEGetType(fe, &fetype);CHKERRQ(ierr);
+      ierr = PetscFESetType(sub, fetype);CHKERRQ(ierr);
+      ierr = PetscFESetBasisSpace(sub, subP);CHKERRQ(ierr);
+      ierr = PetscFESetDualSpace(sub, subQ);CHKERRQ(ierr);
+      ierr = PetscFESetNumComponents(sub, Nc);CHKERRQ(ierr);
+      ierr = PetscFESetUp(sub);CHKERRQ(ierr);
+      ierr = PetscFESetQuadrature(sub, subq);CHKERRQ(ierr);
+      fe->subspaces[height-1] = sub;
+    }
+    *subfe = fe->subspaces[height-1];
+  } else {
+    *subfe = NULL;
+  }
   PetscFunctionReturn(0);
 }
 

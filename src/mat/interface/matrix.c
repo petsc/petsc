@@ -3875,7 +3875,6 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5514,6 +5513,9 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
     break;
   case MAT_SYMMETRY_ETERNAL:
     *flg = mat->symmetric_eternal;
+    break;
+  case MAT_SPD:
+    *flg = mat->spd;
     break;
   default:
     break;
@@ -9339,7 +9341,9 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
    C will be created and must be destroyed by the user with MatDestroy().
 
    This routine is currently only implemented for pairs of AIJ matrices and classes
-   which inherit from AIJ.
+   which inherit from AIJ. Due to PETSc sparse matrix block row distribution among processes,
+   parallel MatRARt is implemented via explicit transpose of R, which could be very expensive.
+   We recommend using MatPtAP().
 
    Level: intermediate
 
@@ -9368,9 +9372,10 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(A,1);
 
   if (!A->ops->rart) {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix of type <%s> does not support RARt",mattype);
+    Mat Rt;
+    ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+    ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Rt);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_RARt,A,R,0,0);CHKERRQ(ierr);
   ierr = (*A->ops->rart)(A,R,scall,fill,C);CHKERRQ(ierr);
@@ -9708,7 +9713,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of SeqAIJ matrices and for the SeqDense class.
 
    Level: intermediate
 

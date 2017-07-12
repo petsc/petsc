@@ -38,7 +38,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
-  if (snes->pcside == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");}
+  if (snes->npcside== PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");}
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
@@ -122,9 +122,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   snes->norm = 0.;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
-  if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+  if (snes->npc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
@@ -138,9 +138,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     SNESCheckFunctionNorm(snes,fnorm);
   }
-  if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+  if (snes->npc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -201,7 +201,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
-    if (snes->pc) {
+    if (snes->npc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
         ierr = SNESApplyNPC(snes,X,NULL,Y);CHKERRQ(ierr);
         ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       } else {
         ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
       }
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->npc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
@@ -263,9 +263,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->ops->reset          = SNESReset_NRichardson;
 
   snes->usesksp = PETSC_FALSE;
-  snes->usespc  = PETSC_TRUE;
+  snes->usesnpc = PETSC_TRUE;
 
-  snes->pcside = PC_LEFT;
+  snes->npcside= PC_LEFT;
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 

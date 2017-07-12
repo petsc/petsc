@@ -109,7 +109,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = PetscViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");CHKERRQ(ierr);}
+    if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = PetscViewerASCIIPrintf(viewer,"  zero initial guess\n");CHKERRQ(ierr);}
     if (sym == SOR_APPLY_UPPER)                                              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)                                         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)                                            sortype = "Eisenstat";
@@ -120,7 +120,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)                                  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP)                                 sortype = "local_backward";
     else                                                                     sortype = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -443,6 +443,9 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 
           For SeqBAIJ the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected 
           the computation is stopped with an error
+
+          If used with KSPRICHARDSON and no monitors the convergence test is skipped to improve speed, thus it always iterates 
+          the maximum number of iterations you've selected for KSP. It is usually used in this mode as a smoother for multigrid.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT

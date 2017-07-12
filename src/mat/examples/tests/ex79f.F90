@@ -31,7 +31,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATMPIAIJ,ierr)
       call MatLoad(A,v,ierr)
-      CHKERRQ(ierr)
+      CHKERRA(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call MatMPIAIJGetSeqAIJ(A,Ad,Ao,icol,iicol,ierr)

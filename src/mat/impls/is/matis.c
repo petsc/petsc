@@ -901,6 +901,7 @@ static PetscErrorCode MatCopy_IS(Mat A,Mat B,MatStructure str)
   if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Need to be implemented");
   b = (Mat_IS*)B->data;
   ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1244,7 +1245,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = ISInvertPermutation(cols,mat->cmap->n,&icols);CHKERRQ(ierr);
     ierr = ISDestroy(&cols);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
-    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = ISDestroy(&icols);CHKERRQ(ierr);
@@ -1615,6 +1616,8 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->cmap);CHKERRQ(ierr);
 
   if (!is->islocalref) { /* setup scatters and local vectors for MatMult */
     /* Create the local work vectors */

@@ -956,7 +956,6 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
   GLEETableau    tab  = glee->tableau;
   PetscBool      iascii;
   PetscErrorCode ierr;
-  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -964,13 +963,11 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
     TSGLEEType gleetype;
     char   buf[512];
     ierr = TSGLEEGetType(ts,&gleetype);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GLEE %s\n",gleetype);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GLEE type %s\n",gleetype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf);CHKERRQ(ierr);
     /* Note: print out r as well */
   }
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1206,6 +1203,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
   ts->ops->settimeerror           = TSSetTimeError_GLEE;
   ts->ops->startingmethod         = TSStartingMethod_GLEE;
   ts->default_adapt_type          = TSADAPTGLEE;
+
+  ts->usessnes = PETSC_TRUE;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

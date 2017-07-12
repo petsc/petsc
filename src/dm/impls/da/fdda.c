@@ -613,17 +613,16 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 
     ierr = DMGetDefaultGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
-    ierr = MatCreate(PetscObjectComm((PetscObject)da), J);CHKERRQ(ierr);
-    ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
+    ierr = MatSetSizes(A,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATSHELL,&isShell);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATBAIJ,&isBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isMPIBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATSBAIJ,&isSymBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATSEQSBAIJ,&isSymSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATMPISBAIJ,&isSymMPIBlock);CHKERRQ(ierr);
     /* Check for symmetric storage */
     isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
     if (isSymmetric) {
@@ -693,7 +692,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   if (da->structure_only) {
     ierr = MatSetOption(A,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);
   /*
      We do not provide a getmatrix function in the DMDA operations because
@@ -768,6 +766,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     ierr = MatShellSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA);CHKERRQ(ierr);
   }
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   *J = A;
   PetscFunctionReturn(0);
 }

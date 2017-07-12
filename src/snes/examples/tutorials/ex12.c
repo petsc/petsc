@@ -1056,7 +1056,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-
+  build:
+    requires: hdf5 triangle
   # 2D serial P1 test 0-4
   test:
     suffix: 0

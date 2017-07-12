@@ -332,7 +332,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   PetscErrorCode   ierr;
   PetscInt         cnt = 0;
   const char       *prefix;
-  char             newprefix[8];
+  char             newprefix[20];
 
   PetscFunctionBegin;
   ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);

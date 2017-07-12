@@ -17,7 +17,7 @@ int main(int argc,char **argv)
     double       d = 2;
     PetscInt     j = 2;
     PetscReal    r = 2;
-    PetscComplex z;
+    PetscScalar  z;
 
 #define TestOps(BOP,IOP) do {                                             \
     z = i; z = z BOP i; z = i BOP z; z IOP i; (void)(z==i); (void)(z!=i); \
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
 
 /*TEST
 
-   test:
+   build:
       requires: complex
 
 TEST*/

@@ -304,6 +304,50 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
   PetscFunctionReturn(0);
 }
 
+/*@C
+   SNESMonitorScaling - Monitors the largest value in each row of the Jacobian.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  its - iteration number
+.  fgnorm - 2-norm of residual
+-  vf - viewer and format structure
+
+   Notes:
+   This routine prints the largest value in each row of the Jacobian 
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, default, monitor, norm
+
+.seealso: SNESMonitorSet(), SNESMonitorSolution()
+@*/
+PetscErrorCode  SNESMonitorScaling(SNES snes,PetscInt its,PetscReal fgnorm,PetscViewerAndFormat *vf)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer = vf->viewer;
+  KSP            ksp;
+  Mat            J;
+  Vec            v;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&J,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(J,&v,NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(J,v,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Jacobian maximum row entries \n");CHKERRQ(ierr);
+  ierr = VecView(v,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr) ;
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,PetscViewerAndFormat *vf)
 {
 #if defined(PETSC_MISSING_LAPACK_GEEV)

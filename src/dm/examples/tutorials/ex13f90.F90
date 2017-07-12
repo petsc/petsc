@@ -20,10 +20,6 @@ program main
 !
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
-!/*T
-!   requires: !complex
-!   depends:  ex13f90aux.F90
-!T*/
 
 
   use ex13f90aux
@@ -48,8 +44,8 @@ program main
     stop
   endif
   comm = PETSC_COMM_WORLD
-  call MPI_Comm_rank(comm,rank,ierr);CHKERRQ(ierr)
-  call MPI_Comm_size(comm,size,ierr);CHKERRQ(ierr)
+  call MPI_Comm_rank(comm,rank,ierr);CHKERRA(ierr)
+  call MPI_Comm_size(comm,size,ierr);CHKERRA(ierr)
   if (rank == 0) then
     write(*,*) 'Hi! We are solving van der Pol using ',size,' processes.'
     write(*,*) ' '
@@ -71,15 +67,15 @@ program main
   ndim = 3 ! 3D code
 
   ! Get the BCs and create the DMDA
-  call get_boundary_cond(b_x,b_y,b_z);CHKERRQ(ierr)
+  call get_boundary_cond(b_x,b_y,b_z);CHKERRA(ierr)
   call DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,  &
-                    PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr);CHKERRQ(ierr)
-  call DMSetFromOptions(SolScal,ierr);CHKERRQ(ierr)
-  call DMSetUp(SolScal,ierr);CHKERRQ(ierr)
+                    PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr);CHKERRA(ierr)
+  call DMSetFromOptions(SolScal,ierr);CHKERRA(ierr)
+  call DMSetUp(SolScal,ierr);CHKERRA(ierr)
 
   ! Set global coordinates, get a global and a local work vector
-  call DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,ierr);CHKERRQ(ierr)
-  call DMCreateLocalVector(SolScal,Lvec,ierr);CHKERRQ(ierr)
+  call DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,ierr);CHKERRA(ierr)
+  call DMCreateLocalVector(SolScal,Lvec,ierr);CHKERRA(ierr)
   
   ! Get ib1,imax,ibn etc. of the local grid. 
   ! Our convention is:
@@ -89,7 +85,7 @@ program main
   ! the last  local ghost cell is ibn.
   !
   ! i,j,k must be in this call, but are not used
-  call DMDAGetCorners(SolScal,i,j,k,imax,jmax,kmax,ierr);CHKERRQ(ierr)
+  call DMDAGetCorners(SolScal,i,j,k,imax,jmax,kmax,ierr);CHKERRA(ierr)
   ib1=1-stw
   jb1=1-stw
   kb1=1-stw
@@ -101,19 +97,19 @@ program main
 
   ! Get xmin,xmax etc. for the local grid
   ! The "coords" local vector here is borrowed, so we shall not destroy it.
-  call DMGetCoordinatesLocal(SolScal,coords,ierr);CHKERRQ(ierr)
+  call DMGetCoordinatesLocal(SolScal,coords,ierr);CHKERRA(ierr)
   ! We need a new DM for coordinate stuff since PETSc supports unstructured grid
-  call DMGetCoordinateDM(SolScal,CoordDM,ierr);CHKERRQ(ierr)
+  call DMGetCoordinateDM(SolScal,CoordDM,ierr);CHKERRA(ierr)
   ! petsc_to_local and local_to_petsc are convenience functions, see 
   ! ex13f90aux.F90.
-  call petsc_to_local(CoordDM,coords,array,grid,ndim,stw);CHKERRQ(ierr)
+  call petsc_to_local(CoordDM,coords,array,grid,ndim,stw);CHKERRA(ierr)
   xmin=grid(1,1,1,1)
   ymin=grid(2,1,1,1)
   zmin=grid(3,1,1,1)
   xmax=grid(1,imax,jmax,kmax)
   ymax=grid(2,imax,jmax,kmax)
   zmax=grid(3,imax,jmax,kmax)
-  call local_to_petsc(CoordDM,coords,array,grid,ndim,stw);CHKERRQ(ierr)
+  call local_to_petsc(CoordDM,coords,array,grid,ndim,stw);CHKERRA(ierr)
   
   ! Note that we never use xmin,xmax in this example, but the preceding way of
   ! getting the local xmin,xmax etc. from PETSc for a structured uniform grid
@@ -128,10 +124,10 @@ program main
   nscreen = int(1.0/dt)+1
 
   ! Set initial condition
-  call DMDAVecGetArrayF90(SolScal,Lvec,array,ierr);CHKERRQ(ierr)
+  call DMDAVecGetArrayF90(SolScal,Lvec,array,ierr);CHKERRA(ierr)
   array(0,:,:,:) = 0.5
   array(1,:,:,:) = 0.5
-  call DMDAVecRestoreArrayF90(SolScal,Lvec,array,ierr);CHKERRQ(ierr)
+  call DMDAVecRestoreArrayF90(SolScal,Lvec,array,ierr);CHKERRA(ierr)
  
   ! Initial set-up finished.
   ! Time loop
@@ -139,11 +135,11 @@ program main
   do itime=1,maxstep 
 
     ! Communicate such that everyone has the correct values in ghost cells
-    call DMLocalToLocalBegin(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRQ(ierr)
-    call DMLocalToLocalEnd(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRQ(ierr)
+    call DMLocalToLocalBegin(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRA(ierr)
+    call DMLocalToLocalEnd(SolScal,Lvec,INSERT_VALUES,Lvec,ierr);CHKERRA(ierr)
     
     ! Get the old solution from the PETSc data structures 
-    call petsc_to_local(SolScal,Lvec,array,f,dof,stw);CHKERRQ(ierr)
+    call petsc_to_local(SolScal,Lvec,array,f,dof,stw);CHKERRA(ierr)
     
     ! Do the time step
     call forw_euler(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,dof,f,dfdt_vdp)
@@ -159,8 +155,8 @@ program main
   end do
   
   ! Deallocate and finalize
-  call DMRestoreLocalVector(SolScal,Lvec,ierr);CHKERRQ(ierr)
-  call DMDestroy(SolScal,ierr);CHKERRQ(ierr)
+  call DMRestoreLocalVector(SolScal,Lvec,ierr);CHKERRA(ierr)
+  call DMDestroy(SolScal,ierr);CHKERRA(ierr)
   deallocate(f)
   deallocate(grid)
   call PetscFinalize(ierr)
@@ -169,3 +165,12 @@ program main
 101 format(F5.1,2F11.6)
 
 end program main
+
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!      depends:  ex13f90aux.F90
+!
+!TEST*/
+

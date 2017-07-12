@@ -13,15 +13,15 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call PetscSectionCreate(PETSC_COMM_WORLD, section, ierr);CHKERRQ(ierr)
+      call PetscSectionCreate(PETSC_COMM_WORLD, section, ierr);CHKERRA(ierr)
       pStart = 0
       pEnd   = 5
-      call PetscSectionSetChart(section, pStart, pEnd, ierr);CHKERRQ(ierr)
+      call PetscSectionSetChart(section, pStart, pEnd, ierr);CHKERRA(ierr)
       do p=pStart,pEnd-1
-         call PetscSectionSetDof(section, p, three, ierr);CHKERRQ(ierr)
+         call PetscSectionSetDof(section, p, three, ierr);CHKERRA(ierr)
       end do
-      call PetscSectionSetUp(section, ierr);CHKERRQ(ierr)
-      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRQ(ierr)
-      call PetscSectionDestroy(section, ierr);CHKERRQ(ierr)
+      call PetscSectionSetUp(section, ierr);CHKERRA(ierr)
+      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRA(ierr)
+      call PetscSectionDestroy(section, ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end

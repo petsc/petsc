@@ -100,5 +100,5 @@ Labels:
   Face Sets: 4 strata with value/size (1 (49), 2 (49), 3 (49), 6 (49))
   marker: 1 strata with value/size (1 (273))
   depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
-[0]main 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
-[0]main 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7
+[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
+[0] 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7

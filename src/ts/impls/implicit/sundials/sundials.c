@@ -892,6 +892,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
 
   ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
 
+  ts->usessnes = PETSC_TRUE;
+
   ts->data           = (void*)cvode;
   cvode->cvode_type  = SUNDIALS_BDF;
   cvode->gtype       = SUNDIALS_CLASSICAL_GS;

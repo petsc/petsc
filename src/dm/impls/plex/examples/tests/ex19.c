@@ -37,7 +37,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 {
@@ -73,7 +73,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   Vec                coordinates;
   const PetscScalar *coords;
   PetscScalar       *met;
-  PetscReal          h, lambda[3], lbd, lmax;
+  PetscReal          h, lambda[3] = {0.0, 0.0, 0.0}, lbd, lmax;
   PetscInt           pStart, pEnd, p, d;
   const PetscInt     dim = user->dim, Nd = dim*dim;
   PetscErrorCode     ierr;
@@ -101,7 +101,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    const PetscScalar *pcoords;
+    PetscScalar       *pcoords;
     PetscScalar       *pmet;
 
     ierr = DMPlexPointLocalRead(cdm, p, coords, &pcoords);CHKERRQ(ierr);
@@ -139,40 +139,6 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateRankField(DM dm, Vec *ranks)
-{
-  DM             rdm;
-  PetscDS        prob;
-  PetscFE        fe;
-  PetscScalar   *r;
-  PetscMPIInt    rank;
-  PetscInt       dim, cStart, cEnd, c;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = DMClone(dm, &rdm);CHKERRQ(ierr);
-  ierr = DMGetDimension(rdm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(rdm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, "rank");CHKERRQ(ierr);
-  ierr = DMGetDS(rdm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(rdm, ranks);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *ranks, "partition");CHKERRQ(ierr);
-  ierr = VecGetArray(*ranks, &r);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *lr;
-
-    ierr = DMPlexPointGlobalRef(rdm, c, r, &lr);CHKERRQ(ierr);
-    *lr = rank;
-  }
-  ierr = VecRestoreArray(*ranks, &r);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 int main (int argc, char * argv[]) {
   AppCtx         user;                 /* user-defined work context */
   DMLabel        bdLabel = NULL;
@@ -202,13 +168,8 @@ int main (int argc, char * argv[]) {
   }
   ierr = DMAdaptMetric(user.dm, metric, bdLabel, &dma);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dma, NULL, "-adapt_dm_view");CHKERRQ(ierr);
-  {
-    Vec ranks;
-    ierr = CreateRankField(dma, &ranks);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(ranks, NULL, "-adapt_rank_view");CHKERRQ(ierr);
-    ierr = VecDestroy(&ranks);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dma, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(&dma);CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
