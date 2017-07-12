@@ -326,6 +326,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   s->order = 0;
   s->Nc    = 1;
   ierr = DMShellCreate(comm, &s->dm);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(s, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
 
   *sp = s;
   PetscFunctionReturn(0);
@@ -6584,6 +6585,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt Nc, PetscBool 
   /* Create space */
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
