@@ -1,35 +1,33 @@
-      0 SNES Function norm 0.207564 
+      0 SNES Function norm 0.995735 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 0.0148968 
+      1 SNES Function norm 0.276938 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 0.000113967 
+      2 SNES Function norm 0.00668678 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      3 SNES Function norm 6.92417e-09 
+      3 SNES Function norm 4.61503e-06 
       Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    0 SNES Function norm 0.937398 
+    0 SNES Function norm 0.0763997 
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    1 SNES Function norm 0.00645541 
+    1 SNES Function norm 2.6801e-05 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    2 SNES Function norm 1.84316e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 3
-    3 SNES Function norm 1.61232e-09 
+    2 SNES Function norm 1.69587e-09 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    3 SNES Function norm < 1.e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-  0 SNES Function norm 0.517003 
+  0 SNES Function norm 0.0408394 
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  1 SNES Function norm 0.000279743 
+  1 SNES Function norm 9.17242e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 1.1547e-07 
-  Linear solve converged due to CONVERGED_RTOL iterations 4
-  3 SNES Function norm < 1.e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+  2 SNES Function norm 1.955e-10 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=-1., solution=1e-08
-  total number of linear solver iterations=29
-  total number of function evaluations=13
+  total number of linear solver iterations=26
+  total number of function evaluations=12
   norm schedule ALWAYS
   total number of grid sequence refinements=2
   SNESLineSearch Object: 2 MPI processes
@@ -99,8 +97,8 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 2 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.129683, max = 1.42652
-          eigenvalues estimate via gmres min 0.152538, max 1.29683
+          eigenvalue estimates used:  min = 0.128728, max = 1.41601
+          eigenvalues estimate via gmres min 0.220252, max 1.28728
           eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 2 MPI processes
             type: gmres
@@ -128,8 +126,8 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 2 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.126645, max = 1.3931
-          eigenvalues estimate via gmres min 0.0474425, max 1.26645
+          eigenvalue estimates used:  min = 0.12637, max = 1.39007
+          eigenvalues estimate via gmres min 0.0725255, max 1.2637
           eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 2 MPI processes
             type: gmres

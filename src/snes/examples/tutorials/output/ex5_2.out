@@ -1,37 +1,33 @@
-        0 SNES Function norm 0.207564 
+        0 SNES Function norm 0.995735 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        1 SNES Function norm 0.0148968 
+        1 SNES Function norm 0.276938 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        2 SNES Function norm 0.000113968 
+        2 SNES Function norm 0.00668678 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        3 SNES Function norm 7.14858e-09 
+        3 SNES Function norm 4.6152e-06 
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        4 SNES Function norm < 1.e-11
-      0 SNES Function norm 0.937398 
+        4 SNES Function norm 2.560e-11 
+      0 SNES Function norm 0.0763997 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 0.00645563 
+      1 SNES Function norm 2.68141e-05 
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 1.8399e-05 
-      Linear solve converged due to CONVERGED_RTOL iterations 2
-      3 SNES Function norm 2.419e-10 
-    0 SNES Function norm 0.517003 
+      2 SNES Function norm 6.486e-11 
+    0 SNES Function norm 0.0408394 
     Linear solve converged due to CONVERGED_RTOL iterations 2
-    1 SNES Function norm 0.000279936 
+    1 SNES Function norm 9.19747e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 2
-    2 SNES Function norm 6.26407e-08 
-    Linear solve converged due to CONVERGED_RTOL iterations 2
-    3 SNES Function norm < 1.e-11
-  0 SNES Function norm 0.269931 
+    2 SNES Function norm < 1.e-11
+  0 SNES Function norm 0.021012 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 9.54371e-06 
+  1 SNES Function norm 2.66111e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  2 SNES Function norm 1.442e-10 
+  2 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=24
-  total number of function evaluations=16
+  total number of linear solver iterations=20
+  total number of function evaluations=14
   norm schedule ALWAYS
   total number of grid sequence refinements=3
   SNESLineSearch Object: 1 MPI processes
@@ -85,8 +81,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.499903, max = 1.09979
-          eigenvalues estimate via gmres min 0.27295, max 0.999806
+          eigenvalue estimates used:  min = 0.49992, max = 1.09982
+          eigenvalues estimate via gmres min 0.38164, max 0.999839
           eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
@@ -115,8 +111,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.498174, max = 1.09598
-          eigenvalues estimate via gmres min 0.0750615, max 0.996348
+          eigenvalue estimates used:  min = 0.498238, max = 1.09612
+          eigenvalues estimate via gmres min 0.11325, max 0.996475
           eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
@@ -145,8 +141,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.498857, max = 1.09748
-          eigenvalues estimate via gmres min 0.0185696, max 0.997713
+          eigenvalue estimates used:  min = 0.498868, max = 1.09751
+          eigenvalues estimate via gmres min 0.0267868, max 0.997736
           eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_3_esteig_) 1 MPI processes
             type: gmres
