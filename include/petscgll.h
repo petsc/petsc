@@ -22,9 +22,9 @@
 .seealso: PetscGLLCreate(), PetscGLLDestroy(), PetscGLLView()
 S*/
 typedef struct {
-  PetscInt    n;
-  PetscReal   *nodes;
-  PetscScalar *weights;
+  PetscInt  n;
+  PetscReal *nodes;
+  PetscReal *weights;
 } PetscGLL;
 
 /*E

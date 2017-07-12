@@ -133,6 +133,9 @@ int main(int argc,char **args)
 
 /*TEST
 
+  build:
+      requires: !complex
+
    test:
 
 TEST*/

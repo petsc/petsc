@@ -507,6 +507,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
 /*TEST
 
+  build:
+      requires: !complex
+
    test:
      requires: !single
      args: -tao_monitor  -ts_adapt_dt_max 3.e-3 

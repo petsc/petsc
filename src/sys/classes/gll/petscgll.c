@@ -76,7 +76,7 @@ PetscErrorCode PetscGLLCreate(PetscInt n,PetscGLLCreateType type,PetscGLL *gll)
   if (type == PETSCGLL_VIA_LINEARALGEBRA) {
     PetscReal      *M,si;
     PetscBLASInt   bn,lierr;
-    PetscScalar    x,z0,z1,z2;
+    PetscReal      x,z0,z1,z2;
     PetscInt       i,p = n - 1,nn;
 
     gll->nodes[0]   =-1.0;
@@ -91,7 +91,7 @@ PetscErrorCode PetscGLLCreate(PetscInt n,PetscGLLCreateType type,PetscGLL *gll)
       ierr = PetscMemzero(&gll->nodes[1],bn*sizeof(gll->nodes[1]));CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       x=0;
-      PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&bn,&gll->nodes[1],M,&x,&bn,M,&lierr));
+      PetscStackCallBLAS("LAPACKsteqr",LAPACKREALsteqr_("N",&bn,&gll->nodes[1],M,&x,&bn,M,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = PetscFree(M);CHKERRQ(ierr);

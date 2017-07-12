@@ -72,6 +72,7 @@ PETSC_EXTERN void BLASsymm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,
 PETSC_EXTERN void BLAStrsm_(const char*,const char*,const char*,const char*,const PetscBLASInt*,const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void LAPACKormqr_(const char *,const char *t,PetscBLASInt * ,PetscBLASInt *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscBLASInt *);
 PETSC_EXTERN void LAPACKsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+PETSC_EXTERN void LAPACKREALsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKhgeqz_(const char *,const char *,const char *,PetscBLASInt *,PetscBLASInt *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscScalar *,PetscScalar *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscBLASInt *);
 PETSC_EXTERN void LAPACKtrtrs_(const char *,const char *, const char *,PetscBLASInt *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscBLASInt *);
 PETSC_EXTERN void LAPACKgels_(const char*,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
