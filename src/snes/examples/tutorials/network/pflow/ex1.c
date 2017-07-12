@@ -552,8 +552,6 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
   DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
-  ierr = DMNetworkHasJacobian(networkdm,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
-
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
   ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
   for (i = 0; i < ne; i++) {
@@ -597,7 +595,7 @@ PetscErrorCode SetInitialValues_Wash(DM networkdm,Vec localX,PetscInt nv,PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx) 
+PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 {
   PetscErrorCode ierr;
   PetscInt       nv,ne;
@@ -799,6 +797,9 @@ int main(int argc,char ** argv)
     /* Distribute networkdm to multiple processes */
     ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
+    /* User will provide some edge and vertex Jacobian structures (see SetInitialValues_Wash() */
+    ierr = DMNetworkHasJacobian(networkdm,PETSC_TRUE,PETSC_TRUE);CHKERRQ(ierr);
+
     PetscLogStagePop();
 
     /* Broadcast Sbase to all processors */
@@ -818,6 +819,7 @@ int main(int argc,char ** argv)
 
     ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
     if (viewJ) {
+      /* View Jac structure */
       ierr = SNESSetUp(snes);CHKERRQ(ierr);
       ierr = SNESGetJacobian(snes,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
       ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -827,7 +829,7 @@ int main(int argc,char ** argv)
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
     if (viewJ) {
-      //ierr = SNESGetJacobian(snes,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
+      /* View assembled Jac */
       ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
