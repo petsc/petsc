@@ -16,6 +16,5 @@ ex1: ex1.o  chkopts
 	${RM} -f ex1.o
 
 #------------------------------------------------------------------
-TESTEXAMPLES_C = ex1.PETSc runex1 ex1.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
