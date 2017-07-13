@@ -50,8 +50,7 @@ int main(int argc,char **argv)
 
     ierr = ISDestroy(&irow);CHKERRQ(ierr);
     ierr = ISDestroy(&icol);CHKERRQ(ierr);
-    ierr   = MatDestroy(&submat);CHKERRQ(ierr);
-    ierr   = PetscFree(submatrices);CHKERRQ(ierr);
+    ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
   }
 
   /* Form submatrix with rows 2-4 and columns 4-8 */

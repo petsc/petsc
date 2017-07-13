@@ -1079,7 +1079,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A,MatCreateSubMatrixOption flag
     ierr  = MatSetBlockSizesFromMats(B,A,A);CHKERRQ(ierr);
     ierr  = MatSetType(B,((PetscObject)a->A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqAIJSetPreallocation(B,0,lens);CHKERRQ(ierr);
-    ierr  = PetscMalloc1(1,Bin);CHKERRQ(ierr);
+    ierr  = PetscCalloc1(2,Bin);CHKERRQ(ierr);
     **Bin = B;
     b     = (Mat_SeqAIJ*)B->data;
 
