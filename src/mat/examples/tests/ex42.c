@@ -115,11 +115,10 @@ int main(int argc,char **args)
   for (i=0; i<nd; ++i) {
     ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&submatB[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(submatA);CHKERRQ(ierr);
-  ierr = PetscFree(submatB);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(nd,&submatB);CHKERRQ(ierr);
+
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = PetscFree(is1);CHKERRQ(ierr);
   ierr = PetscFree(is2);CHKERRQ(ierr);
