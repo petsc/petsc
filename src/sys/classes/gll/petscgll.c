@@ -267,7 +267,7 @@ PetscErrorCode PetscGLLElementLaplacianCreate(PetscGLL *gll,PetscReal ***AA)
   PetscErrorCode  ierr;
   const PetscReal  *nodes = gll->nodes;
   const PetscInt   n = gll->n, p = gll->n-1;
-  PetscReal        z0,z1,z2,x,Lpj,Lpr;
+  PetscReal        z0,z1,z2 = 0,x,Lpj,Lpr;
   PetscInt         i,j,nn,r;
 
   PetscFunctionBegin;
