@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zgcommf.c zgtype.c zoptionsf.c zpgnamef.c zpnamef.c zprefixf.c zdestroyf.c zstart.c zstartf.c zversionf.c zinheritf.c
+SOURCEC  = zgcommf.c zgtype.c zoptionsf.c zpgnamef.c zpnamef.c zprefixf.c zdestroyf.c zstart.c zstartf.c zversionf.c zinheritf.c zptypef.c
 SOURCEF  =
 SOURCEH  =
 MANSEC   = Sys
