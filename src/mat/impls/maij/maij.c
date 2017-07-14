@@ -63,7 +63,7 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJRedimension"
-/*@C
+/*@
    MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
 
    Logically Collective
@@ -3398,7 +3398,7 @@ PetscErrorCode  MatGetSubMatrix_MAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat 
 /* ---------------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMAIJ"
-/*@C
+/*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
   way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
