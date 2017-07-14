@@ -24,6 +24,7 @@
 #define petscoptionsclear_                 PETSCOPTIONSCLEAR
 #define petscoptionsinsertstring_          PETSCOPTIONSINSERTSTRING
 #define petscoptionsview_                  PETSCOPTIONSVIEW
+#define petscoptionsleft_                  PETSCOPTIONSLEFT
 #define petscobjectviewfromoptions_        PETSCOBJECTVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoptionsgetenumprivate_        petscoptionsgetenumprivate
@@ -42,6 +43,7 @@
 #define petscoptionsclear_                 petscoptionsclear
 #define petscoptionsinsertstring_          petscoptionsinsertstring
 #define petscoptionsview_                  petscoptionsview
+#define petscoptionsleft_                  petscoptionsleft
 #define petscobjectviewfromoptions_        petscobjectviewfromoptions
 #endif
 
@@ -253,6 +255,13 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsview_(PetscOptions *options,PetscVie
   CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsView(*options,v);
 }
+
+PETSC_EXTERN void PETSC_STDCALL petscoptionsleft_(PetscOptions *options,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsLeft(*options);
+}
+
 
 PETSC_EXTERN void PETSC_STDCALL petscobjectviewfromoptions_(PetscObject *obj,PetscObject *bobj,char* option PETSC_MIXED_LEN(loption),PetscErrorCode *ierr  PETSC_END_LEN(loption))
 {
