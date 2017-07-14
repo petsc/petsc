@@ -58,7 +58,7 @@ PetscErrorCode  MatMAIJGetAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    MatMAIJRedimension - Get an MAIJ matrix with the same action, but for a different block size
 
    Logically Collective
@@ -3249,7 +3249,7 @@ PetscErrorCode MatCreateSubMatrix_MAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,Ma
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*@C
+/*@
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation
   operations for multicomponent problems.  It interpolates each component the same
   way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,

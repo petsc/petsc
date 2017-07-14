@@ -4118,7 +4118,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
    When calling this routine with a single process communicator, a matrix of
-   type SEQAIJ is returned.  If a matrix of type MATMPIAIJ is desired for this
+   type SEQAIJ is returned.  If a matrix of type MPIAIJ is desired for this
    type of communicator, use the construction mechanism
 .vb
      MatCreate(...,&A); MatSetType(A,MATMPIAIJ); MatSetSizes(A, m,n,M,N); MatMPIAIJSetPreallocation(A,...);
@@ -4141,7 +4141,7 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
    Consider the following 8x8 matrix with 34 non-zero values, that is
    assembled across 3 processors. Lets assume that proc0 owns 3 rows,
    proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown
-   as
+   as follows
 
 .vb
             1  2  0  |  0  3  0  |  0  4
