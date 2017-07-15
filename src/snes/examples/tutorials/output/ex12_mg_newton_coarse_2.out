@@ -5,43 +5,44 @@ Mesh in 2 dimensions:
   1-cells: 12416
   2-cells: 8192
 Labels:
-  marker: 4 strata of sizes (129, 127, 129, 127)
-  depth: 3 strata of sizes (4225, 12416, 8192)
+  marker: 4 strata with value/size (4 (129), 1 (127), 2 (129), 3 (127))
+  Face Sets: 4 strata with value/size (1 (126), 4 (126), 2 (126), 3 (126))
+  depth: 3 strata with value/size (0 (4225), 1 (12416), 2 (8192))
   DM_0x84000000_0 in 2 dimensions:
     0-cells:   1224  
     1-cells:   3543  
     2-cells:   2320  
   Labels:
-    _boundary_: 1 strata of sizes (126)
-    depth: 3 strata of sizes (1224, 3543, 2320)
+    _boundary_: 1 strata with value/size (1 (126))
+    depth: 3 strata with value/size (0 (1224), 1 (3543), 2 (2320))
     DM_0x84000000_1 in 2 dimensions:
       0-cells:     408    
       1-cells:     1154    
       2-cells:     747    
     Labels:
-      _boundary_: 1 strata of sizes (67)
-      depth: 3 strata of sizes (408, 1154, 747)
+      _boundary_: 1 strata with value/size (1 (67))
+      depth: 3 strata with value/size (0 (408), 1 (1154), 2 (747))
       DM_0x84000000_2 in 2 dimensions:
         0-cells:       136      
         1-cells:       369      
         2-cells:       234      
       Labels:
-        _boundary_: 1 strata of sizes (36)
-        depth: 3 strata of sizes (136, 369, 234)
+        _boundary_: 1 strata with value/size (1 (36))
+        depth: 3 strata with value/size (0 (136), 1 (369), 2 (234))
         DM_0x84000000_3 in 2 dimensions:
           0-cells:         55        
           1-cells:         137        
           2-cells:         83        
         Labels:
-          _boundary_: 1 strata of sizes (25)
-          depth: 3 strata of sizes (55, 137, 83)
+          _boundary_: 1 strata with value/size (1 (25))
+          depth: 3 strata with value/size (0 (55), 1 (137), 2 (83))
           DM_0x84000000_4 in 2 dimensions:
             0-cells:           26          
             1-cells:           55          
             2-cells:           30          
           Labels:
-            _boundary_: 1 strata of sizes (20)
-            depth: 3 strata of sizes (26, 55, 30)
+            _boundary_: 1 strata with value/size (1 (20))
+            depth: 3 strata with value/size (0 (26), 1 (55), 2 (30))
   0 SNES Function norm 3.538058091867e+00 
       Residual norms for mg_levels_2_ solve.
       0 KSP none resid norm 6.684008878137e-01 true resid norm 2.369800283865e+00 ||r(i)||/||b|| 6.698025364005e-01

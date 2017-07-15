@@ -1106,55 +1106,55 @@ int main(int argc, char **argv)
   test:
     suffix: q1_2d_da_0
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -convergence
+    args: -simplex 0 -petscspace_order 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1
+    args: -simplex 0 -petscspace_order 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
     requires: mpi_type_get_envelope broken
-    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2
+    args: -simplex 0 -petscspace_order 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex
   test:
     suffix: q1_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2
   test:
     suffix: q1_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 1 -shear_coords
   test:
     suffix: q1_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 1 -porder 2 -shear_coords
   test:
     suffix: q1_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 0 -non_affine_coords
   test:
     suffix: q1_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 1 -non_affine_coords
   test:
     suffix: q1_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 1 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -qorder 1 -porder 2 -non_affine_coords
 
   # 2D Q_2 on a quadrilaterial
   test:
     suffix: q2_2d_plex_0
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2
 
 
   # 2D P_3 on a triangle
@@ -1233,19 +1233,19 @@ int main(int argc, char **argv)
   test:
     suffix: q1_quad_2
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 2 -porder 1
   test:
     suffix: q1_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -qorder 5 -porder 1
   test:
     suffix: q2_quad_3
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 3 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 3 -porder 1
   test:
     suffix: q2_quad_5
     requires: mpi_type_get_envelope
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 5 -porder 1
 
 
   # Nonconforming tests
@@ -1315,28 +1315,28 @@ TEST*/
    # 2D Q_2 on a quadrilaterial Plex
   test:
     suffix: q2_2d_plex_0
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2
   test:
     suffix: q2_2d_plex_3
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 1 -shear_coords
   test:
     suffix: q2_2d_plex_4
-    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -shear_coords
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 0 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 0 -non_affine_coords
   test:
     suffix: q2_2d_plex_6
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 1 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 1 -non_affine_coords
   test:
     suffix: q2_2d_plex_7
-    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -qorder 2 -porder 2 -non_affine_coords
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -qorder 2 -porder 2 -non_affine_coords
 
   test:
     suffix: p1d_2d_6
