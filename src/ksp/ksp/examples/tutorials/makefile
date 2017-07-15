@@ -1317,19 +1317,19 @@ runex52_superlu_dist:
 	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu_dist, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_ilu:
-	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_ilu > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_ilu  2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack:
-	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_lu > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_lu  2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_ilu_2:
-	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_ilu > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_ilu 2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp ;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_2:
-	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_lu > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_lu 2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp ;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 

@@ -331,6 +331,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinSize_C",MatSTRUMPACKSetHSSMinSize_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetColPerm_C",MatSTRUMPACKSetColPerm_STRUMPACK);CHKERRQ(ierr);
   B->factortype = ftype;
+  B->assembled  = PETSC_TRUE;           /* required by -ksp_view */
   ierr     = PetscNewLog(B,&S);CHKERRQ(ierr);
   B->spptr = S;
 
