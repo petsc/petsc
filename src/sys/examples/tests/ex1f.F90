@@ -52,6 +52,9 @@
       end
 
 !
+!     These test fails on some systems randomly due to the Fortran and C output becoming mixxed up,
+!     using a Fortran flush after the Fortran print* does not resolve the issue
+!
 !/*TEST
 !
 !   test:
