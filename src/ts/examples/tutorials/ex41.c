@@ -243,3 +243,56 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      suffix: a
+      nsize: 2
+      args: -snes_stol 1e-4
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: b
+      nsize: 2
+      args: -ts_type arkimex -snes_stol 1e-4
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: c
+      nsize: 2
+      args: -ts_type theta -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: d
+      nsize: 2
+      args: -ts_type alpha -ts_adapt_type basic -ts_atol 1e-1 -snes_stol 1e-4
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: e
+      nsize: 2
+      args: -ts_type bdf -ts_adapt_dt_max 0.015 -ts_max_steps 3000
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: f
+      nsize: 2
+      args: -rhs-form -ts_type rk -ts_rk_type 3bs
+      filter: sort -b
+      filter_output: sort -b
+
+   test:
+      suffix: g
+      nsize: 2
+      args: -rhs-form -ts_type rk -ts_rk_type 5bs
+      filter: sort -b
+      filter_output: sort -b
+
+TEST*/
