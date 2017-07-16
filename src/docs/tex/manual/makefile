@@ -112,9 +112,9 @@ listing_drawex5ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cl
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1f.F
+listing_snesex1ftmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/snes/examples/tutorials/ex1f.F90
 	-@echo '\\begin{lstlisting}' > listing_tmp.tex
-	-@cat ../../../../src/snes/examples/tutorials/ex1f.F >> listing_tmp.tex
+	-@cat ../../../../src/snes/examples/tutorials/ex1f.F90 >> listing_tmp.tex
 	-@echo '\\end{lstlisting}' >> listing_tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat listing_tmp.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
