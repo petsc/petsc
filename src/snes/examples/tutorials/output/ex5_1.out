@@ -202,88 +202,12 @@
       2 KSP Residual norm 0.000723384 
     2 KSP Residual norm 4.375e-11 
   3 SNES Function norm 1.85698e-07 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 7.68026e-08 
-        1 KSP Residual norm 1.29249e-08 
-        2 KSP Residual norm 7.76918e-09 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 2.31606e-09 
-        1 KSP Residual norm 3.770e-10 
-        2 KSP Residual norm 2.345e-10 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 4.61822e-08 
-      1 KSP Residual norm 3.83466e-09 
-      2 KSP Residual norm 3.35336e-09 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 2.88746e-09 
-        1 KSP Residual norm 1.90625e-09 
-        2 KSP Residual norm 1.29545e-09 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 2.829e-10 
-        1 KSP Residual norm 4.525e-11 
-        2 KSP Residual norm 2.844e-11 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 1.1383e-09 
-      1 KSP Residual norm 1.087e-10 
-      2 KSP Residual norm 9.028e-11 
-    0 KSP Residual norm 3.34312e-06 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.0229657 
-        1 KSP Residual norm 0.00386479 
-        2 KSP Residual norm 0.00232315 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.000692555 
-        1 KSP Residual norm 0.000112721 
-        2 KSP Residual norm 7.01096e-05 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 0.0138052 
-      1 KSP Residual norm 0.00114616 
-      2 KSP Residual norm 0.00100238 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.000863176 
-        1 KSP Residual norm 0.000569854 
-        2 KSP Residual norm 0.000387263 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 8.45627e-05 
-        1 KSP Residual norm 1.3527e-05 
-        2 KSP Residual norm 8.50246e-06 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 0.000340265 
-      1 KSP Residual norm 3.24933e-05 
-      2 KSP Residual norm 2.69862e-05 
-    1 KSP Residual norm 5.425e-11 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.080726 
-        1 KSP Residual norm 0.0140431 
-        2 KSP Residual norm 0.00499072 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.00077092 
-        1 KSP Residual norm 0.000128577 
-        2 KSP Residual norm 4.98284e-05 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 0.287782 
-      1 KSP Residual norm 0.0336252 
-      2 KSP Residual norm 0.0239804 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.0151414 
-        1 KSP Residual norm 0.0100246 
-        2 KSP Residual norm 0.00673932 
-        Residual norms for mg_levels_1_ solve.
-        0 KSP Residual norm 0.0014685 
-        1 KSP Residual norm 0.000235418 
-        2 KSP Residual norm 0.000147762 
-      Residual norms for mg_levels_2_ solve.
-      0 KSP Residual norm 0.00760058 
-      1 KSP Residual norm 0.00101406 
-      2 KSP Residual norm 0.000694116 
-    2 KSP Residual norm < 1.e-11
-  4 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=7
-  total number of function evaluations=5
+  tolerances: relative=1e-05, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=5
+  total number of function evaluations=4
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -337,7 +261,7 @@ SNES Object: 1 MPI processes
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
           eigenvalue estimates used:  min = 0.499526, max = 1.09896
-          eigenvalues estimate via gmres min 0.229753, max 0.999052
+          eigenvalues estimate via gmres min 0.229855, max 0.999052
           eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
@@ -367,7 +291,7 @@ SNES Object: 1 MPI processes
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
           eigenvalue estimates used:  min = 0.499175, max = 1.09819
-          eigenvalues estimate via gmres min 0.0505481, max 0.99835
+          eigenvalues estimate via gmres min 0.050574, max 0.998351
           eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
