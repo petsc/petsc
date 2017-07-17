@@ -49,8 +49,8 @@ class Configure(config.package.GNUPackage):
 
   def configure(self):
     if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
-      if hasattr(self.compilers, 'FC') and self.petscclone.isClone:
-        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran and git repository for PETSc')
+      if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings'] and self.petscclone.isClone:
+        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran (bindings) and git repository for PETSc')
       self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
@@ -58,7 +58,7 @@ class Configure(config.package.GNUPackage):
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 
@@ -96,7 +96,7 @@ class Configure(config.package.GNUPackage):
 
       self.buildFortranStubs()
     else:
-      self.logPrint("Not a clone of PETSc or no Fortran, don't need Sowing\n")
+      self.logPrint("Not a clone of PETSc or no Fortran compiler or fortran-bindings disabled, don't need Sowing\n")
     return
 
   def buildFortranStubs(self):
