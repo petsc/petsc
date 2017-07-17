@@ -371,7 +371,7 @@ alldoc3: chk_loc
 allman:
 	@cd ${LOC}/docs/manualpages; rm -rf all ; mkdir all ; find *  -type d -wholename all -prune -o -name index.html -prune  -o -type f -name \*.html -exec ln -s  -f ../{} all \;
 
-DOCSETDATE_PRUNE_LIST="-o -type f -wholename share/petsc/saws/linearsolveroptions.html -prune -o -type f -wholename tutorials/HandsOnExercise.html -prune -o -type f -wholename tutorials/TAOHandsOnExercise.html -prune"
+DOCSETDATE_PRUNE_LIST=-o -type f -wholename share/petsc/saws/linearsolveroptions.html -prune -o -type f -wholename tutorials/HandsOnExercise.html -prune -o -type f -wholename tutorials/TAOHandsOnExercise.html -prune
 
 # modify all generated html files and add in version number, date, canonical URL info.
 docsetdate: chk_petscdir
