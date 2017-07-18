@@ -9,6 +9,7 @@
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
 PETSC_LIB_DIR	     = ${PETSC_DIR}/${PETSC_ARCH}/lib
+PETSCCONF_H          = ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 
 PETSC_CCPPFLAGS	    = ${PETSC_CC_INCLUDES} ${PETSCFLAGS} ${CPP_FLAGS} ${CPPFLAGS}
 PETSC_FCPPFLAGS	    = ${PETSC_FC_INCLUDES} ${PETSCFLAGS} ${FPP_FLAGS} ${FPPFLAGS}

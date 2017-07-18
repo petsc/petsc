@@ -86,7 +86,7 @@ info: chk_makej
 	-@echo "-----------------------------------------"
 	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
 	-@echo "Using configuration flags:"
-	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
+	-@grep "\#define " ${PETSCCONF_H}
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
 	-@if [ "${PETSC_LANGUAGE}" = "CONLY" -a "${MPICC_SHOW}" != "" ]; then \
@@ -177,7 +177,7 @@ test_build:
 	@if [ "${PETSC4PY}" = "yes" ]; then \
           cd tutorials/python >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff testexamples_C_Python; \
          fi;
-	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | tee .ftn.log > /dev/null; \
+	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; \
          fi; ${RM} .ftn.log;
