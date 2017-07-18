@@ -1204,6 +1204,7 @@ int main(int argc, char **argv)
     suffix: p1d_2d_3
     requires: triangle
     args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -qorder 1 -convergence
+    filter: sed  -e "s/convergence rate at refinement 0: 2/convergence rate at refinement 0: 1.9/g"
   test:
     suffix: p1d_2d_4
     requires: triangle
