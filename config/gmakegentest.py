@@ -676,7 +676,7 @@ class generateExamples(Petsc):
     for exfile in files:
       #TST: Until we replace files, still leaving the orginals as is
       #if not exfile.startswith("new_"+"ex"): continue
-      if not exfile.startswith("ex"): continue
+      #if not exfile.startswith("ex"): continue
 
       # Convenience
       fullex=os.path.join(root,exfile)

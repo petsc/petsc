@@ -4124,6 +4124,11 @@ PetscErrorCode MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pet
      MatCreate(...,&A); MatSetType(A,MATMPIAIJ); MatSetSizes(A, m,n,M,N); MatMPIAIJSetPreallocation(A,...);
 .ve
 
+$     MatCreate(...,&A);
+$     MatSetType(A,MATMPIAIJ);
+$     MatSetSizes(A, m,n,M,N);
+$     MatMPIAIJSetPreallocation(A,...);
+
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.

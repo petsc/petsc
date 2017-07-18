@@ -1,8 +1,14 @@
 
 ALL: lib
+
+CFLAGS    =
+FFLAGS    =
+SOURCEC   = petscgll.c
+SOURCEF   =
 SOURCEH   =
-DIRS      = viewer draw matlabengine random bag gll
-LOCDIR    = src/sys/classes/
+LIBBASE   = libpetscsys
+DIRS      = examples
+LOCDIR    = src/sys/classes/gll/
 MANSEC    = Sys
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
