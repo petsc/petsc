@@ -2082,6 +2082,7 @@ PetscErrorCode VecCUSPPlaceArray(Vec vin,CUSPARRAY *a)
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUSP*)vin->spptr)->GPUarray; /* save previous CUDAARRAY so reset can bring it back */
   ((Vec_CUSP*)vin->spptr)->GPUarray = a;
   vin->valid_GPU_array = PETSC_CUSP_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
