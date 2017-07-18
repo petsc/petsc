@@ -21,30 +21,29 @@
  * routines. */
 
 typedef struct {
-  PetscInt ngroup;
-  PetscInt *xgroup;
+  PetscObjectState nonzerostate; /* used to determine if the nonzero structure has changed and hence the permutations need updating */
+
+  PetscInt         ngroup;
+  PetscInt         *xgroup;
   /* Denotes where groups of rows with same number of nonzeros
    * begin and end, i.e., xgroup[i] gives us the position in iperm[]
    * where the ith group begins. */
-  PetscInt *nzgroup; /*  how many nonzeros each row that is a member of group i has. */
-  PetscInt *iperm;  /* The permutation vector. */
 
-  /* Flag that indicates whether we need to clean up permutation
-   * information during the MatDestroy. */
-  PetscBool CleanUpAIJPERM;
+  PetscInt         *nzgroup; /*  how many nonzeros each row that is a member of group i has. */
+  PetscInt         *iperm;  /* The permutation vector. */
 
   /* Some of this stuff is for Ed's recursive triangular solve.
    * I'm not sure what I need yet. */
-  PetscInt blocksize;
-  PetscInt nstep;
-  PetscInt *jstart_list;
-  PetscInt *jend_list;
-  PetscInt *action_list;
-  PetscInt *ngroup_list;
-  PetscInt **ipointer_list;
-  PetscInt **xgroup_list;
-  PetscInt **nzgroup_list;
-  PetscInt **iperm_list;
+  PetscInt         blocksize;
+  PetscInt         nstep;
+  PetscInt         *jstart_list;
+  PetscInt         *jend_list;
+  PetscInt         *action_list;
+  PetscInt         *ngroup_list;
+  PetscInt         **ipointer_list;
+  PetscInt         **xgroup_list;
+  PetscInt         **nzgroup_list;
+  PetscInt         **iperm_list;
 } Mat_SeqAIJPERM;
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
@@ -58,21 +57,26 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatR
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    aijperm=(Mat_SeqAIJPERM*)B->spptr;
   }
 
   /* Reset the original function pointers. */
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJ;
   B->ops->destroy     = MatDestroy_SeqAIJ;
   B->ops->duplicate   = MatDuplicate_SeqAIJ;
+  B->ops->mult        = MatMult_SeqAIJ;
+  B->ops->multadd     = MatMultAdd_SeqAIJ;
 
-  /* Free everything in the Mat_SeqAIJPERM data structure.
-   * We don't free the Mat_SeqAIJPERM struct itself, as this will
-   * cause problems later when MatDestroy() tries to free it. */
-  if (aijperm->CleanUpAIJPERM) {
-    ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
-    ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
-    ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",NULL);CHKERRQ(ierr);
+
+  /* Free everything in the Mat_SeqAIJPERM data structure.*/
+  ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
+  ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
+  ierr = PetscFree(B->spptr);CHKERRQ(ierr);
 
   /* Change the type of B to MATSEQAIJ. */
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
@@ -87,16 +91,13 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
 
   PetscFunctionBegin;
-  /* Free everything in the Mat_SeqAIJPERM data structure.
-   * Note that we don't need to free the Mat_SeqAIJPERM struct
-   * itself, as MatDestroy() will do so. */
-  if (aijperm && aijperm->CleanUpAIJPERM) {
+  if (aijperm) {
+    /* If MatHeaderMerge() was used then this SeqAIJPERM matrix will not have a spprt. */
     ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
+    ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
   ierr = PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
@@ -111,11 +112,27 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJPERM *aijperm      = (Mat_SeqAIJPERM*) A->spptr;
-  Mat_SeqAIJPERM *aijperm_dest = (Mat_SeqAIJPERM*) (*M)->spptr;
+  Mat_SeqAIJPERM *aijperm_dest;
+  PetscBool      perm;
 
   PetscFunctionBegin;
-  ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,aijperm,sizeof(Mat_SeqAIJPERM));CHKERRQ(ierr);
+  ierr        = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
+  ierr        = PetscObjectTypeCompare((PetscObject)*M,MATSEQAIJPERM,&perm);CHKERRQ(ierr);
+  if (perm) {
+    aijperm_dest = (Mat_SeqAIJPERM *) (*M)->spptr;
+    ierr = PetscFree(aijperm_dest->xgroup);CHKERRQ(ierr);
+    ierr = PetscFree(aijperm_dest->nzgroup);CHKERRQ(ierr);
+    ierr = PetscFree(aijperm_dest->iperm);CHKERRQ(ierr);
+  } else {
+    ierr        = PetscNewLog(*M,&aijperm_dest);CHKERRQ(ierr);
+    (*M)->spptr = (void*) aijperm_dest;
+    ierr        = PetscObjectChangeTypeName((PetscObject)*M,MATSEQAIJPERM);CHKERRQ(ierr);
+    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
+    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMult_seqdense_seqaijperm_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
+    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
+    ierr        = PetscObjectComposeFunction((PetscObject)*M,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  }
+  ierr        = PetscMemcpy(aijperm_dest,aijperm,sizeof(Mat_SeqAIJPERM));CHKERRQ(ierr);
   /* Allocate space for, and copy the grouping and permutation info.
    * I note that when the groups are initially determined in
    * MatSeqAIJPERM_create_perm, xgroup and nzgroup may be sized larger than
@@ -133,28 +150,31 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
 
 PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
-  PetscInt   m;       /* Number of rows in the matrix. */
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)(A)->data;
-  PetscInt   *ia;       /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt   maxnz;      /* Maximum number of nonzeros in any row. */
-  PetscInt   *rows_in_bucket;
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)(A)->data;
+  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
+  PetscInt       m;       /* Number of rows in the matrix. */
+  PetscInt       *ia;       /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt       maxnz;      /* Maximum number of nonzeros in any row. */
+  PetscInt       *rows_in_bucket;
   /* To construct the permutation, we sort each row into one of maxnz
    * buckets based on how many nonzeros are in the row. */
-  PetscInt nz;
-  PetscInt *nz_in_row;         /* the number of nonzero elements in row k. */
-  PetscInt *ipnz;
+  PetscInt       nz;
+  PetscInt       *nz_in_row;         /* the number of nonzero elements in row k. */
+  PetscInt       *ipnz;
   /* When constructing the iperm permutation vector,
    * ipnz[nz] is used to point to the next place in the permutation vector
    * that a row with nz nonzero elements should be placed.*/
-  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
-  /* Points to the MATSEQAIJPERM-specific data in the matrix B. */
-  PetscErrorCode ierr;
   PetscInt       i, ngroup, istart, ipos;
 
-  /* I really ought to put something in here to check if B is of
-   * type MATSEQAIJPERM and return an error code if it is not.
-   * Come back and do this! */
   PetscFunctionBegin;
+  if (aijperm->nonzerostate == A->nonzerostate) PetscFunctionReturn(0); /* permutation exists and matches current nonzero structure */
+  aijperm->nonzerostate = A->nonzerostate;
+ /* Free anything previously put in the Mat_SeqAIJPERM data structure. */
+  ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
+  ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
+
   m  = A->rmap->n;
   ia = a->i;
 
@@ -163,8 +183,6 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 
   /* Allocate some temporary work arrays that will be used in
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc1(m+1, &rows_in_bucket);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m+1, &ipnz);CHKERRQ(ierr);
   ierr = PetscMalloc1(m, &nz_in_row);CHKERRQ(ierr);
 
   /* Now actually figure out the permutation and grouping. */
@@ -177,6 +195,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
     nz_in_row[i] = ia[i+1]-ia[i];
     if (nz_in_row[i] > maxnz) maxnz = nz_in_row[i];
   }
+  ierr = PetscMalloc1(PetscMax(maxnz,m)+1, &rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(maxnz,m)+1, &ipnz);CHKERRQ(ierr);
 
   for (i=0; i<=maxnz; i++) {
     rows_in_bucket[i] = 0;
@@ -230,10 +250,6 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   ierr = PetscFree(rows_in_bucket);CHKERRQ(ierr);
   ierr = PetscFree(ipnz);CHKERRQ(ierr);
   ierr = PetscFree(nz_in_row);CHKERRQ(ierr);
-
-  /* Since we've allocated some memory to hold permutation info,
-   * flip the CleanUpAIJPERM flag to true. */
-  aijperm->CleanUpAIJPERM = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -271,27 +287,27 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   const PetscInt    *aj,*ai;
 #if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJPERM) && defined(notworking))
-  PetscInt i,j;
+  PetscInt          i,j;
 #endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
-  Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM*) A->spptr;
-  PetscInt       *iperm;  /* Points to the permutation vector. */
-  PetscInt       *xgroup;
+  Mat_SeqAIJPERM    *aijperm = (Mat_SeqAIJPERM*) A->spptr;
+  PetscInt          *iperm;  /* Points to the permutation vector. */
+  PetscInt          *xgroup;
   /* Denotes where groups of rows with same number of nonzeros
    * begin and end in iperm. */
-  PetscInt *nzgroup;
-  PetscInt ngroup;
-  PetscInt igroup;
-  PetscInt jstart,jend;
+  PetscInt          *nzgroup;
+  PetscInt          ngroup;
+  PetscInt          igroup;
+  PetscInt          jstart,jend;
   /* jstart is used in loops to denote the position in iperm where a
    * group starts; jend denotes the position where it ends.
    * (jend + 1 is where the next group starts.) */
-  PetscInt    iold,nz;
-  PetscInt    istart,iend,isize;
-  PetscInt    ipos;
-  PetscScalar yp[NDIM];
-  PetscInt    ip[NDIM];    /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
+  PetscInt          iold,nz;
+  PetscInt          istart,iend,isize;
+  PetscInt          ipos;
+  PetscScalar       yp[NDIM];
+  PetscInt          ip[NDIM];    /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -395,7 +411,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
     } /* End handling matvec for chunk with nz > 1. */
   } /* End loop over igroup. */
 #endif
-  ierr = PetscLogFlops(2.0*a->nz - A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(PetscMax(2.0*a->nz - A->rmap->n,0));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -568,11 +584,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqAIJPERM *aijperm;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  ierr = PetscObjectTypeCompare((PetscObject)A,type,&sametype);CHKERRQ(ierr);
+  if (sametype) PetscFunctionReturn(0);
 
   ierr     = PetscNewLog(B,&aijperm);CHKERRQ(ierr);
   B->spptr = (void*) aijperm;
@@ -584,12 +603,16 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
   B->ops->mult        = MatMult_SeqAIJPERM;
   B->ops->multadd     = MatMultAdd_SeqAIJPERM;
 
+  aijperm->nonzerostate = -1;  /* this will trigger the generation of the permutation information the first time through MatAssembly()*/
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
     ierr = MatSeqAIJPERM_create_perm(B);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijperm_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijperm_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijperm_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;

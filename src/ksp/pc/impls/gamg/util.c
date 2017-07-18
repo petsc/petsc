@@ -92,8 +92,8 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
        Determine the preallocation needed for the scalar matrix derived from the vector matrix.
     */
 
-    ierr = PetscObjectTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
 
     ierr = PetscMalloc2(nloc, &d_nnz,isseqaij ? 0 : nloc, &o_nnz);CHKERRQ(ierr);
 
@@ -228,8 +228,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     MatInfo     info;
     PetscScalar *avals;
     PetscBool isaij,ismpiaij;
-    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
     if (!isaij && !ismpiaij) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
     if (isaij) {
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -354,7 +354,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
-  ierr      = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
+  ierr      = PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
   ierr      = MatGetOwnershipRange(Gmat, &my0, &Iend);CHKERRQ(ierr);
   nloc      = Iend - my0;
   ierr      = VecGetLocalSize(mpimat->lvec, &num_ghosts);CHKERRQ(ierr);

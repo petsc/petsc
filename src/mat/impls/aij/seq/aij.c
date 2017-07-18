@@ -10,6 +10,22 @@
 #include <petscbt.h>
 #include <petsc/private/kernels/blocktranspose.h>
 
+PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
+  char                 type[256];
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject)A);
+  ierr = PetscOptionsFList("-mat_seqaij_type","Matrix SeqAIJ type","MatSeqAIJSetType",MatSeqAIJList,"seqaij",type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSeqAIJSetType(A,type);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
@@ -1831,7 +1847,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     }
     A->nonzerostate++;
   }
-  ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1887,7 +1903,7 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
-  ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = (*A->ops->assemblyend)(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3979,6 +3995,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetTypeFromOptions(B);CHKERRQ(ierr);  /* this allows changing the matrix subtype to say MATSEQAIJPERM */
   PetscFunctionReturn(0);
 }
 
@@ -4405,7 +4422,7 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C,IS rowemb,IS colemb,MatStructure patter
   PetscFunctionBegin;
   if (!B) PetscFunctionReturn(0);
   /* Check to make sure the target matrix (and embeddings) are compatible with C and each other. */
-  ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
   if (!seqaij) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Input matrix is of wrong type");
   if (rowemb) {
     ierr = ISGetLocalSize(rowemb,&m);CHKERRQ(ierr);
@@ -4462,6 +4479,114 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C,IS rowemb,IS colemb,MatStructure patter
   PetscFunctionReturn(0);
 }
 
+PetscFunctionList MatSeqAIJList = NULL;
+
+/*@C
+   MatSeqAIJSetType - Converts a MATSEQAIJ matrix to a subtype
+
+   Collective on Mat
+
+   Input Parameters:
++  mat      - the matrix object
+-  matype   - matrix type
+
+   Options Database Key:
+.  -mat_seqai_type  <method> - for example seqaijcrl
+
+
+  Level: intermediate
+
+.keywords: Mat, MatType, set, method
+
+.seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
+@*/
+PetscErrorCode  MatSeqAIJSetType(Mat mat, MatType matype)
+{
+  PetscErrorCode ierr,(*r)(Mat,const MatType,MatReuse,Mat*);
+  PetscBool      sametype;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
+  if (sametype) PetscFunctionReturn(0);
+
+  ierr =  PetscFunctionListFind(MatSeqAIJList,matype,&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  ierr = (*r)(mat,matype,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+  
+/*@C
+  MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential AIJ matrices
+
+   Not Collective
+
+   Input Parameters:
++  name - name of a new user-defined matrix type, for example MATSEQAIJCRL
+-  function - routine to convert to subtype
+
+   Notes:
+   MatSeqAIJRegister() may be called multiple times to add several user-defined solvers.
+
+
+   Then, your matrix can be chosen with the procedural interface at runtime via the option
+$     -mat_seqaij_type my_mat
+
+   Level: advanced
+
+.keywords: Mat, register
+
+.seealso: MatSeqAIJRegisterAll()
+
+
+  Level: advanced
+@*/
+PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(Mat,const MatType,MatReuse,Mat *))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListAdd(&MatSeqAIJList,sname,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
+
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,const MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
+#if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat,const MatType,MatReuse,Mat*);
+#endif
+
+/*@C
+  MatSeqAIJRegisterAll - Registers all of the matrix subtypes of SeqAIJ
+
+  Not Collective
+
+  Level: advanced
+
+  Developers Note: CUSP and CUSPARSE do not yet support the  MatConvert_SeqAIJ..() paradigm and thus cannot be registered here
+
+.keywords: KSP, register, all
+
+.seealso:  MatRegisterAll(), MatSeqAIJRegister()
+@*/
+PetscErrorCode  MatSeqAIJRegisterAll(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (MatSeqAIJRegisterAllCalled) PetscFunctionReturn(0);
+  MatSeqAIJRegisterAllCalled = PETSC_TRUE;
+
+  ierr = MatSeqAIJRegister(MATSEQAIJCRL,      MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
+  ierr = MatSeqAIJRegister(MATSEQAIJPERM,     MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
+  ierr = MatSeqAIJRegister(MATMPIAIJVIENNACL, MatConvert_SeqAIJ_SeqAIJViennaCL);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
 
 /*
     Special version for direct calls from Fortran

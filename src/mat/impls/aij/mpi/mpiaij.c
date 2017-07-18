@@ -2412,6 +2412,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat
 {
   PetscErrorCode       ierr;
   PetscBool            sc = PETSC_FALSE,flg;
+  Mat_MPIAIJ           *maij = (Mat_MPIAIJ*)A->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJ options");CHKERRQ(ierr);
@@ -2421,6 +2422,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJ(PetscOptionItems *PetscOptionsObject,Mat
     if (flg) {
       ierr = MatMPIAIJSetUseScalableIncreaseOverlap(A,sc);CHKERRQ(ierr);
     }
+    if (maij->A) {ierr = MatSetFromOptions(maij->A);CHKERRQ(ierr);}
+    if (maij->A) {ierr = MatSetFromOptions(maij->B);CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

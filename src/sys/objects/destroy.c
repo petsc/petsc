@@ -118,7 +118,7 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType(), PetscObjectBaseTypeCompare()
 
    Concepts: comparing^object types
    Concepts: types^comparing
@@ -138,6 +138,41 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
     PetscValidCharPointer(type_name,2);
     PetscValidPointer(same,3);
     ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscObjectBaseTypeCompare - Determines whether a PetscObject is of a given base type. For example the base type of MATSEQAIJPERM is MATSEQAIJ
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  type_name - string containing a type name
+
+   Output Parameter:
+.  same - PETSC_TRUE if it is of the same base type
+
+   Level: intermediate
+
+.seealso: PetscObjectTypeCompare()
+
+
+@*/
+PetscErrorCode  PetscObjectBaseTypeCompare(PetscObject obj,const char type_name[],PetscBool  *same)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!obj) *same = PETSC_FALSE;
+  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
+  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  else {
+    PetscValidHeader(obj,1);
+    PetscValidCharPointer(type_name,2);
+    PetscValidPointer(same,3);
+    ierr = PetscStrbeginswith((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

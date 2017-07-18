@@ -4220,7 +4220,7 @@ PetscErrorCode MatSolverPackageGet(const MatSolverPackage package,const MatType 
         if (foundpackage) *foundpackage = PETSC_TRUE;
         inext = next->handlers;
         while (inext) {
-          ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+          ierr = PetscStrbeginswith(mtype,inext->mtype,&flg);CHKERRQ(ierr);
           if (flg) {
             if (foundmtype) *foundmtype = PETSC_TRUE;
             if (getfactor)  *getfactor  = inext->getfactor[(int)ftype-1];
@@ -4235,7 +4235,7 @@ PetscErrorCode MatSolverPackageGet(const MatSolverPackage package,const MatType 
     while (next) {
       inext = next->handlers;
       while (inext) {
-        ierr = PetscStrcasecmp(mtype,inext->mtype,&flg);CHKERRQ(ierr);
+        ierr = PetscStrbeginswith(mtype,inext->mtype,&flg);CHKERRQ(ierr);
         if (flg && inext->getfactor[(int)ftype-1]) {
           if (foundpackage) *foundpackage = PETSC_TRUE;
           if (foundmtype)   *foundmtype   = PETSC_TRUE;

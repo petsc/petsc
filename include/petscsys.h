@@ -1719,6 +1719,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
 PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject,PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectName(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject,const char[],PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscObjectBaseTypeCompare(PetscObject,const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
