@@ -125,6 +125,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (!aijmkl->no_SpMV2) {
     /* Now perform the SpMV2 setup and matrix optimization. */
     aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
@@ -142,6 +143,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
   }
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -178,6 +180,7 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
@@ -209,6 +212,7 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   }
   PetscFunctionReturn(0);
 }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqAIJMKL"
@@ -242,6 +246,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
@@ -273,6 +278,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   }
   PetscFunctionReturn(0);
 }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqAIJMKL"
@@ -322,6 +328,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
@@ -373,6 +380,7 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   }
   PetscFunctionReturn(0);
 }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL"
@@ -422,6 +430,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
@@ -473,6 +482,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   }
   PetscFunctionReturn(0);
 }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
@@ -504,16 +514,28 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
 
   /* Parse command line options. */
-  aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines. */
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines if our MKL supports them. */
+#elif
+  aijmkl->no_SpMV2 = PETSC_TRUE;
+#endif
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJMKL Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+#ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  if(!aijmkl->no_SpMV2) {
+    ierr = PetscInfo(B,"User requested use of MKL SpMV2 routines, but MKL version does not support mkl_sparse_optimize();  defaulting to non-SpMV2 routines.\n");
+    aijmkl->no_SpMV2 = PETSC_TRUE;
+  }
+#endif
 
   if(!aijmkl->no_SpMV2) {
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
     B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
     /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2; */
     B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
     /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2; */
+#endif
   } else {
     B->ops->mult             = MatMult_SeqAIJMKL;
     /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL; */
