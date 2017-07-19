@@ -106,7 +106,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aijmkl_dest,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +121,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   MatScalar       *aa;
   PetscInt        n;
   PetscInt        *aj,*ai;
-  PetscBool       set;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -176,7 +175,6 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
   const PetscInt    *aj,*ai;
-  PetscInt          i;
 
   /* Variables not in MatMult_SeqAIJ. */
   char transa = 'n';  /* Used to indicate to MKL that we are not computing the transpose product. */
@@ -206,7 +204,6 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
   const PetscScalar *x;
   PetscScalar       *y;
-  const MatScalar   *aa;
   PetscErrorCode    ierr;
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
@@ -242,7 +239,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
   const PetscInt    *aj,*ai;
-  PetscInt          i;
 
   /* Variables not in MatMultTranspose_SeqAIJ. */
   char transa = 't';  /* Used to indicate to MKL that we are computing the transpose product. */
@@ -272,7 +268,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
   const PetscScalar *x;
   PetscScalar       *y;
-  const MatScalar   *aa;
   PetscErrorCode    ierr;
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
@@ -354,10 +349,8 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
   const PetscScalar *x;
   PetscScalar       *y,*z;
-  const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
-  const PetscInt    *aj,*ai;
   PetscInt          i;
 
   /* Variables not in MatMultAdd_SeqAIJ. */
@@ -371,9 +364,6 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
-  aa   = a->a;  /* Nonzero elements stored row-by-row. */
-  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
@@ -456,10 +446,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
   const PetscScalar *x;
   PetscScalar       *y,*z;
-  const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
-  const PetscInt    *aj,*ai;
   PetscInt          i;
 
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
@@ -473,9 +461,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
-  aa   = a->a;  /* Nonzero elements stored row-by-row. */
-  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
