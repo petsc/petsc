@@ -29,6 +29,8 @@ class Configure(config.base.Configure):
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
+    if self.clanguage == 'Cxx':
+      self.logPrintBox('WARNING -with-clanguage=C++ is a developer feature and is *not* required for regular usage of PETSc from C++')
     self.logPrint('C language is '+str(self.clanguage))
     self.addDefine('CLANGUAGE_'+self.clanguage.upper(),'1')
     self.framework.require('config.setCompilers', None).mainLanguage = self.clanguage
