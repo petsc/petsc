@@ -308,7 +308,6 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  ierr = TaoSetTolerances(tao,1e-14,1e-14,1e-14);CHKERRQ(ierr);
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
