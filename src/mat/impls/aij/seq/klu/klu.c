@@ -11,16 +11,16 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define klu_K_defaults                klu_l_defaults
-#define klu_K_analyze                 klu_l_analyze
-#define klu_K_analyze_given           klu_l_analyze_given
-#define klu_K_free_symbolic           klu_l_free_symbolic
-#define klu_K_free_numeric            klu_l_free_numeric
-#define klu_K_common                  klu_l_common
-#define klu_K_symbolic                klu_l_symbolic
-#define klu_K_numeric                 klu_l_numeric
+#define klu_K_defaults                   klu_l_defaults
+#define klu_K_analyze(a,b,c,d)           klu_l_analyze((SuiteSparse_long)a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,d)
+#define klu_K_analyze_given(a,b,c,d,e,f) klu_l_analyze_given((SuiteSparse_long)a,(SuiteSparse_long*)b,(SuiteSparse_long*)c,(SuiteSparse_long*)d,(SuiteSparse_long*)e,f)
+#define klu_K_free_symbolic              klu_l_free_symbolic
+#define klu_K_free_numeric               klu_l_free_numeric
+#define klu_K_common                     klu_l_common
+#define klu_K_symbolic                   klu_l_symbolic
+#define klu_K_numeric                    klu_l_numeric
 #if defined(PETSC_USE_COMPLEX)
-#define klu_K_factor                  klu_zl_factor
+#define klu_K_factor(a,b,c,d,e)       klu_zl_factor((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e);
 #define klu_K_solve                   klu_zl_solve
 #define klu_K_tsolve                  klu_zl_tsolve
 #define klu_K_refactor                klu_zl_refactor
@@ -31,7 +31,7 @@
 #define klu_K_rcond                   klu_zl_rcond
 #define klu_K_scale                   klu_zl_scale
 #else
-#define klu_K_factor                  klu_l_factor
+#define klu_K_factor(a,b,c,d,e)       klu_l_factor((SuiteSparse_long*)a,(SuiteSparse_long*)b,c,d,e);
 #define klu_K_solve                   klu_l_solve
 #define klu_K_tsolve                  klu_l_tsolve
 #define klu_K_refactor                klu_l_refactor
@@ -331,7 +331,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Ma
   /* Partial pivoting tolerance */
   ierr = PetscOptionsReal("-mat_klu_pivot_tol","Partial pivoting tolerance","None",lu->Common.tol,&lu->Common.tol,NULL);CHKERRQ(ierr);
   /* BTF pre-ordering */
-  ierr = PetscOptionsInt("-mat_klu_use_btf","Enable BTF preordering","None",lu->Common.btf,&lu->Common.btf,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_klu_use_btf","Enable BTF preordering","None",(PetscInt)lu->Common.btf,(PetscInt*)&lu->Common.btf,NULL);CHKERRQ(ierr);
   /* Matrix reordering */
   ierr = PetscOptionsEList("-mat_klu_ordering","Internal ordering method","None",KluOrderingTypes,sizeof(KluOrderingTypes)/sizeof(KluOrderingTypes[0]),KluOrderingTypes[0],&idx,&flg);CHKERRQ(ierr);
   if (flg) {
