@@ -2113,10 +2113,13 @@ PetscErrorCode VecCUSPPlaceArray(Vec vin,CUSPARRAY *a)
 @*/
 PetscErrorCode VecCUSPReplaceArray(Vec vin,CUSPARRAY *a)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   delete ((Vec_CUSP*)vin->spptr)->GPUarray;
   ((Vec_CUSP*)vin->spptr)->GPUarray = a;
   vin->valid_GPU_array = PETSC_CUSP_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2143,5 +2146,6 @@ PetscErrorCode VecCUSPResetArray(Vec vin)
   ((Vec_CUSP*)vin->spptr)->GPUarray = (CUSPARRAY *) ((Vec_Seq*)vin->data)->unplacedarray;
   ((Vec_Seq*)vin->data)->unplacedarray = 0;
   vin->valid_GPU_array = PETSC_CUSP_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)vin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
