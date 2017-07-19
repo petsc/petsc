@@ -706,6 +706,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
 .  -snes_atol <abstol> - absolute tolerance of residual norm
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
 .  -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence
+.  -snes_force_iteration <force> - force SNESSolve() to take at least one iteration
 .  -snes_max_it <max_it> - maximum number of iterations
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
 .  -snes_max_fail <max_fail> - maximum number of line search failures allowed before stopping, default is none
@@ -781,6 +782,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsInt("-snes_max_fail","Maximum nonlinear step failures","SNESSetMaxNonlinearStepFailures",snes->maxFailures,&snes->maxFailures,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_max_linear_solve_fail","Maximum failures in linear solves allowed","SNESSetMaxLinearSolveFailures",snes->maxLinearSolveFailures,&snes->maxLinearSolveFailures,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_error_if_not_converged","Generate error if solver does not converge","SNESSetErrorIfNotConverged",snes->errorifnotconverged,&snes->errorifnotconverged,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_force_iteration","Force SNESSolve() to take at least one iteration","SNESForceIteration",snes->forceiteration,&snes->forceiteration,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -3162,6 +3164,36 @@ PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
 }
 
 /*@
+   SNESSetForceIteration - force SNESSolve() to take at least one iteration regardless of the initial residual norm
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  force - PETSC_TRUE require at least one iteration
+
+   Options Database Keys:
+.    -snes_force_iteration <force> - Sets forcing an iteration
+
+   Notes:
+   This is used sometimes with TS to prevent TS from detecting a false steady state solution
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
+@*/
+PetscErrorCode  SNESSetForceIteration(SNES snes,PetscBool force)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->forceiteration = force;
+  PetscFunctionReturn(0);
+}
+
+
+/*@
    SNESSetTolerances - Sets various parameters used in convergence tests.
 
    Logically Collective on SNES
@@ -3189,7 +3221,7 @@ PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
-.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
+.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance(), SNESSetForceIteration()
 @*/
 PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
 {
