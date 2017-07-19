@@ -15,8 +15,10 @@
 typedef struct {
   PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
   PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
+#endif
 } Mat_SeqAIJMKL;
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
