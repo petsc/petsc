@@ -46,6 +46,7 @@ class Configure(config.base.Configure):
     help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,'Enable check for Windows Graphics'))
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
+    help.addArgument('PETSc','-with-fortran-bindings=<bool>',     nargs.ArgBool(None, 1,'Build PETSc fortran bindings in the library and corresponding module files'))
     help.addArgument('PETSc', '-with-ios=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone/iPad version of PETSc library'))
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
@@ -280,9 +281,10 @@ prepend-path PATH %s
     self.addMakeMacro('CC_LINKER_SUFFIX','')
 
     if hasattr(self.compilers, 'FC'):
+      if self.framework.argDB['with-fortran-bindings']:
+        self.addDefine('HAVE_FORTRAN','1')
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
-      self.addDefine('HAVE_FORTRAN','1')
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
 
       # compiler values

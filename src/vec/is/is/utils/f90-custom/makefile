@@ -1,5 +1,5 @@
-
-#requiresdefine 'PETSC_USING_F90'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =

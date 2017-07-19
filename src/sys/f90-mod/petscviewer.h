@@ -38,11 +38,9 @@
       PetscViewer, parameter :: PETSC_VIEWER_MATLAB_SELF  =                &
      &           tPetscViewer(15)
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
       PetscViewer PETSC_VIEWER_STDOUT_
       external PETSC_VIEWER_STDOUT_
       external PetscViewerAndFormatDestroy
-#endif
 !
 !  Flags for binary I/O
 !
