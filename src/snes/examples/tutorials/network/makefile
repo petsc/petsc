@@ -1,6 +1,6 @@
 
 LOCDIR		 = src/snes/examples/tutorials/network/
-DIRS		 = pflow
+DIRS		 = pflow waternet
 MANSEC           = SNES
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
