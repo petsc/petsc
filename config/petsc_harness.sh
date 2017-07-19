@@ -110,7 +110,7 @@ function petsc_testrun() {
       cmd="$1 2>&1 | cat > $2 2> $3"
     fi
   fi
-  echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
+  echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
   if $job_control; then
     # The action:
@@ -134,7 +134,7 @@ function petsc_testrun() {
     fi
   else
     # The action -- assume no timeout needed
-    eval $cmd
+    eval "$cmd"
     # We are testing error codes so just make it pass
     cmd_res=0
   fi
@@ -142,7 +142,7 @@ function petsc_testrun() {
   # Handle filters separately and assume no timeout check needed
   if test -n "$filter"; then
     cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
-    echo $cmd >> ${tlabel}.sh
+    echo "$cmd" >> ${tlabel}.sh
     eval "$cmd"
     let cmd_res+=$?
   fi
