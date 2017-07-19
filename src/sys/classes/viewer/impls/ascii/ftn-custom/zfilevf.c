@@ -5,6 +5,8 @@
 #define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
 #define petscviewerfilegetname_                PETSCVIEWERFILEGETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
+#define petscviewerasciipushtab_               PETSCVIEWERASCIIPUSHTAB
+#define petscviewerasciipoptab_                PETSCVIEWERASCIIPOPTAB
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
 #define petscviewerasciipushsynchronized_      PETSCVIEWERASCIIPUSHSYNCHRONIZED
 #define petscviewerasciipopsynchronized_       PETSCVIEWERASCIIPOPSYNCHRONIZED
@@ -12,6 +14,8 @@
 #define petscviewerfilesetname_                petscviewerfilesetname
 #define petscviewerfilegetname_                petscviewerfilegetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
+#define petscviewerasciipushtab_               petscviewerasciipushtab
+#define petscviewerasciipoptab_                petscviewerasciipoptab
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
 #define petscviewerasciipushsynchronized_      petscviewerasciipushsynchronized
 #define petscviewerasciipopsynchronized_       petscviewerasciipopsynchronized
@@ -62,6 +66,20 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,char
   FREECHAR(str,c1);
   *ierr = PetscViewerASCIIPrintf(v,tmp);if (*ierr) return;
   *ierr = PetscFree(tmp);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciipushtab_(PetscViewer *viewer,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = PetscViewerASCIIPushTab(v);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciipoptab_(PetscViewer *viewer,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = PetscViewerASCIIPopTab(v);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,char* str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
