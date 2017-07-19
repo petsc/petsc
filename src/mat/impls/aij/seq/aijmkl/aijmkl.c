@@ -14,6 +14,7 @@
 
 typedef struct {
   PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
+  PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
   sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
 } Mat_SeqAIJMKL;
@@ -44,13 +45,20 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
 
-  /* Free everything in the Mat_SeqAIJMKL data structure.
+  /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this 
+   * simply involves destroying the MKL sparse matrix handle.
    * We don't free the Mat_SeqAIJMKL struct itself, as this will
    * cause problems later when MatDestroy() tries to free it. */
-  /* Actually there is nothing to do here right now.
-   * When I've added use of the MKL SpMV2 inspector-executor routines, I should 
-   * see if there is some way to clean up the "handle" used by SpMV2. */
-  
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  if (aijmkl->sparse_optimized) {
+    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+    stat = mkl_sparse_destroy(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+  }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
   /* Change the type of B to MATSEQAIJ. */
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
 
@@ -67,7 +75,15 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 
   PetscFunctionBegin;
   /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
-  mkl_sparse_destroy(aijmkl->csrA);
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  if (aijmkl->sparse_optimized) {
+    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+    stat = mkl_sparse_destroy(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+  }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
@@ -105,7 +121,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   MatScalar       *aa;
   PetscInt        n;
   PetscInt        *aj,*ai;
-  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
   PetscBool       set;
 
   PetscFunctionBegin;
@@ -127,6 +142,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (!aijmkl->no_SpMV2) {
+    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
     /* Now perform the SpMV2 setup and matrix optimization. */
     aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
     aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
@@ -142,6 +158,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
     if (stat != SPARSE_STATUS_SUCCESS) {
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
+    aijmkl->sparse_optimized = PETSC_TRUE;
   }
 #endif
 
@@ -513,12 +530,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJMKL;
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
 
-  /* Parse command line options. */
+  aijmkl->sparse_optimized = PETSC_FALSE;
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines if our MKL supports them. */
 #elif
   aijmkl->no_SpMV2 = PETSC_TRUE;
 #endif
+
+  /* Parse command line options. */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJMKL Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
