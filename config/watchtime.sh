@@ -4,5 +4,7 @@
 pid=$1 
 TIMEOUT=$2
 sleep $TIMEOUT
-kill -s PIPE $pid  2>&1 >/dev/null 
-kill -s PIPE $$    2>&1 >/dev/null # Script suicide
+if ps -p $pid > /dev/null; then
+  kill -13 $pid && wait $pid 2>/dev/null  # Wait used here to capture the kill messagpe
+fi
+exit

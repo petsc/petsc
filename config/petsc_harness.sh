@@ -112,7 +112,6 @@ function petsc_testrun() {
   fi
   echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
 
-  kill_job=false
   if $job_control; then
     # The action:
     eval "($cmd) &"
@@ -126,7 +125,7 @@ function petsc_testrun() {
     cmd_res=$?
     if ps -p $watcher > /dev/null; then
       # Keep processes tidy by killing watcher
-      kill -s PIPE $watcher 
+      pkill -13 -P $watcher
       wait $watcher 2>/dev/null  # Wait used here to capture the kill message
     else
       # Timeout
