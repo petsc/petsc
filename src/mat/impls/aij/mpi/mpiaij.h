@@ -80,6 +80,8 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
+
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPIAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat*);
