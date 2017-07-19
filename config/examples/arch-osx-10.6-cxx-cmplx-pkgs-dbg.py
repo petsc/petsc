@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-cc=gcc',
+  '--with-cc=clang',
+  '--with-cxx=clang++',
   '--with-fc=gfortran', # http://brew.sh/
-  '--with-cxx=g++',
 
+  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 

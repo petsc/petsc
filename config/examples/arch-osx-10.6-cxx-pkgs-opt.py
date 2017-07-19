@@ -4,10 +4,11 @@
 # moab appears to break with -with-visibility=1 - so disable it
 
 configure_options = [
-  '--with-cc=gcc',
+  '--with-cc=clang',
+  '--with-cxx=clang++',
   '--with-fc=gfortran', # http://brew.sh/
-  '--with-cxx=g++',
 
+  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-visibility=0',
