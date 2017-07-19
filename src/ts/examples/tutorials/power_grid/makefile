@@ -125,17 +125,12 @@ runex3adj:
 	   ${RM} -f ex3adj_1.tmp
 
 runex3opt:
-	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_monitor > ex3opt_1.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_converged_reason > ex3opt_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3opt_1.out ex3opt_1.tmp || printf "${PWD}\nPossible problem with ex3opt_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_1.tmp
 
-runex3opt_fd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fd -tao_max_it 9 -ts_type cn -pc_type lu -tao_monitor  > ex3opt_fd_1.tmp 2>&1;  \
-	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3opt_fd_1.tmp
-
 runex3opt_fwd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fwd -ts_type cn -pc_type lu -tao_monitor  > ex3opt_fwd_1.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex3opt_fwd -ts_type cn -pc_type lu -tao_converged_reason > ex3opt_fwd_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3opt_fwd_1.out ex3opt_fwd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fwd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fwd_1.tmp
 
@@ -219,7 +214,7 @@ TESTEXAMPLES_C_NOCOMPLEX          = ex2.PETSc runex2 ex2.rm  \
                                     ex9opt.PETSc runex9opt ex9opt.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm \
                                     ex3.PETSc runex3 ex3.rm ex3fwd.PETSc runex3fwd ex3fwd.rm ex3adj.PETSc runex3adj ex3adj.rm \
-                                    ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm ex3opt.PETSc runex3opt ex3opt.rm ex3opt_fwd.PETSc runex3opt_fwd ex3opt_fwd.rm
+                                    ex3opt.PETSc runex3opt ex3opt.rm ex3opt_fwd.PETSc runex3opt_fwd ex3opt_fwd.rm
 TESTEXAMPLES_C_X =
 TESTEXAMPLES_FORTRAN =
 TESTEXAMPLES_C_X_MPIUNI =
