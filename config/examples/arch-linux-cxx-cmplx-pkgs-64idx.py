@@ -6,6 +6,7 @@ configure_options = [
   '--with-cxx=clang++',
 
   '--with-clanguage=cxx',
+  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
 

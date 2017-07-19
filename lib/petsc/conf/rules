@@ -488,7 +488,6 @@ getautoconfargs:
           grep -v "IPO Error: unresolved" | \
 	  grep -v "is being replaced by a real definition" | \
           grep -v "may result in errors or" | \
-          grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
           grep -v "is deprecated" | \
           grep -v "Werror=format-security" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
@@ -536,7 +535,6 @@ getautoconfargs:
 	  grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
-          grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
           grep -v "Werror=format-security" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \

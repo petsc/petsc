@@ -241,7 +241,6 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       exclude_warnings_re = ["unrecognized .pragma",
                           "warning: .SSL",
                           "warning: .BIO_",
-                          "warning: treating 'c' input as 'c..' when in C.. mode",
                           "warning[s]* generated"]
       exclude_warnings = ["warning: statement not reached",
                           "warning: loop not entered at top",
