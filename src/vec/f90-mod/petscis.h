@@ -22,6 +22,10 @@
 
       IS, parameter :: PETSC_NULL_IS = tIS(-1)
       PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(-1)
+      PetscSection, parameter :: PETSC_NULL_SECTION =                   &
+     & tPetscSection(-1)
+      PetscSectionSym, parameter :: PETSC_NULL_SECTIONSYM =             &
+     & tPetscSectionSym(-1)
 
       PetscEnum IS_COLORING_GLOBAL
       PetscEnum IS_COLORING_LOCAL
