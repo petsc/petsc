@@ -2741,15 +2741,16 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
-  const char    *extGmsh   = ".msh";
-  const char    *extCGNS   = ".cgns";
-  const char    *extExodus = ".exo";
-  const char    *extFluent = ".cas";
-  const char    *extHDF5   = ".h5";
-  const char    *extMed    = ".med";
-  const char    *extPLY    = ".ply";
+  const char    *extGmsh    = ".msh";
+  const char    *extCGNS    = ".cgns";
+  const char    *extExodus  = ".exo";
+  const char    *extGenesis = ".gen";
+  const char    *extFluent  = ".cas";
+  const char    *extHDF5    = ".h5";
+  const char    *extMed     = ".med";
+  const char    *extPLY     = ".ply";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5, isMed, isPLY;
+  PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -2759,18 +2760,19 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,   4, &isGmsh);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,   3, &isHDF5);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,    4, &isMed);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,    4, &isPLY);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,    4, &isGmsh);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,    5, &isCGNS);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus,  4, &isExodus);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGenesis, 4, &isGenesis);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent,  4, &isFluent);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,    3, &isHDF5);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,     4, &isMed);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,     4, &isPLY);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
     ierr = DMPlexCreateCGNSFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
-  } else if (isExodus) {
+  } else if (isExodus || isGenesis) {
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
