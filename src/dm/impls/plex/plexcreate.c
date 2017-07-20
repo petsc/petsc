@@ -1311,13 +1311,13 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
       if ((PetscAbsReal(phi) > PETSC_PI/4.0) && (PetscAbsReal(phi) < 3.0*PETSC_PI/4.0)) {
         dc = PetscAbsReal(ds2/sinp);
         df = PetscAbsReal(dis/sinp);
-        xc = ds2*x/PetscAbsScalar(y);
+        xc = ds2*x/PetscAbsReal(y);
         yc = ds2*PetscSignReal(y);
       } else {
         dc = PetscAbsReal(ds2/cosp);
         df = PetscAbsReal(dis/cosp);
         xc = ds2*PetscSignReal(x);
-        yc = ds2*y/PetscAbsScalar(x);
+        yc = ds2*y/PetscAbsReal(x);
       }
       coords[off+0] = xc + (coords[off+0] - xc)*(1.0 - dc)/(df - dc);
       coords[off+1] = yc + (coords[off+1] - yc)*(1.0 - dc)/(df - dc);
