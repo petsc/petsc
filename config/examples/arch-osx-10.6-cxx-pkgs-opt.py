@@ -8,10 +8,10 @@ configure_options = [
   '--with-cxx=clang++',
   '--with-fc=gfortran', # http://brew.sh/
 
-  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
+  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated',
   '--with-clanguage=cxx',
   '--with-debugging=0',
-  '--with-visibility=0',
+  '--with-visibility=0', # CXXFLAGS disables this option
 
   '--prefix=petsc-install',
 
