@@ -53,7 +53,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
    * cause problems later when MatDestroy() tries to free it. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (aijmkl->sparse_optimized) {
-    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+    sparse_status_t stat;
     stat = mkl_sparse_destroy(aijmkl->csrA);
     if (stat != SPARSE_STATUS_SUCCESS) {
       PetscFunctionReturn(PETSC_ERR_LIB);
@@ -103,12 +103,27 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJMKL *aijmkl      = (Mat_SeqAIJMKL*) A->spptr;
-  Mat_SeqAIJMKL *aijmkl_dest = (Mat_SeqAIJMKL*) (*M)->spptr;
+  Mat_SeqAIJMKL *aijmkl;
+  Mat_SeqAIJMKL *aijmkl_dest;
 
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqAIJ(A,op,M);CHKERRQ(ierr);
+  aijmkl      = (Mat_SeqAIJMKL*) A->spptr;
+  aijmkl_dest = (Mat_SeqAIJMKL*) (*M)->spptr;
   ierr = PetscMemcpy(aijmkl_dest,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
+  aijmkl_dest->sparse_optimized = PETSC_FALSE;
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  aijmkl_dest->csrA = NULL;
+  if (!aijmkl->no_SpMV2) {
+    sparse_status_t stat;
+    stat = mkl_sparse_copy(aijmkl->csrA,aijmkl->descr,&aijmkl_dest->csrA);
+    stat = mkl_sparse_optimize(aijmkl_dest->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+    aijmkl_dest->sparse_optimized = PETSC_TRUE;
+  }
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
   PetscFunctionReturn(0);
 }
 
@@ -143,7 +158,16 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (!aijmkl->no_SpMV2) {
-    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+    sparse_status_t stat;
+    if (aijmkl->sparse_optimized) {
+      /* Matrix has been previously assembled and optimized. Must destroy old
+       * matrix handle before running the optimization step again. */
+      sparse_status_t stat;
+      stat = mkl_sparse_destroy(aijmkl->csrA);
+      if (stat != SPARSE_STATUS_SUCCESS) {
+        PetscFunctionReturn(PETSC_ERR_LIB);
+      }
+    }
     /* Now perform the SpMV2 setup and matrix optimization. */
     aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
     aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
@@ -271,7 +295,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   const PetscScalar *x;
   PetscScalar       *y;
   PetscErrorCode    ierr;
-  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+  sparse_status_t   stat;
 
   PetscFunctionBegin;
 
