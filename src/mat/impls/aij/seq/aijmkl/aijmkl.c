@@ -235,9 +235,6 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-#ifdef DEBUG
-  printf("DEBUG: In MatMult_SeqAIJMKL_SpMV2\n");
-#endif
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -299,9 +296,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-#ifdef DEBUG
-  printf("DEBUG: In MatMultTranspose_SeqAIJMKL_SpMV2\n");
-#endif
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -384,9 +378,6 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
-#ifdef DEBUG
-  printf("DEBUG: In MatMultAdd_SeqAIJMKL_SpMV2\n");
-#endif
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
@@ -480,10 +471,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin;
-
-#ifdef DEBUG
-  printf("DEBUG: In MatMultTransposeAdd_SeqAIJMKL_SpMV2\n");
-#endif
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
