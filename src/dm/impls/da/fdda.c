@@ -753,8 +753,9 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else {
     ISLocalToGlobalMapping ltog;
-    ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(A,dof);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
   }
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
