@@ -206,7 +206,6 @@ PETSC_EXTERN PetscErrorCode DMGetDMSNES(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMSNESView(DMSNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMSNESLoad(DMSNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
-PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
 
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
