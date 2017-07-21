@@ -773,12 +773,12 @@ runex19_fdcoloring_ds_baij:
 	   else  printf "${PWD}\nPossible problem with ex19_fdcoloring_ds_baij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_3.tmp
 runex19_4: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_4.tmp
@@ -818,12 +818,12 @@ runex19_10:
 	   else  printf "${PWD}\nPossible problem with ex19_10, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_10.tmp
 runex19_11: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres > ex19_11.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19  -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres > ex19_11.tmp 2>&1; \
 	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_11, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_11.tmp
 runex19_12: #test pc_redundant
-	-@${MPIEXEC} -n 12 ./ex19  -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
+	-@${MPIEXEC} -n 12 ./ex19  -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5  -da_refine 4 -ksp_type fgmres  > ex19_12.tmp 2>&1; \
 	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_12, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_12.tmp
