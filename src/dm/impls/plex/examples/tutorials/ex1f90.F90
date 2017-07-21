@@ -1,5 +1,6 @@
       program DMPlexTestField
 #include "petsc/finclude/petscdmplex.h"
+#include "petsc/finclude/petscdmlabel.h"
       use petscdmplex
       implicit none
 
