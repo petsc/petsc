@@ -219,7 +219,7 @@ TESTEXAMPLES_C_NOCOMPLEX          = ex2.PETSc runex2 ex2.rm  \
                                     ex9opt.PETSc runex9opt ex9opt.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm \
                                     ex3.PETSc runex3 ex3.rm ex3fwd.PETSc runex3fwd ex3fwd.rm ex3adj.PETSc runex3adj ex3adj.rm \
-                                    ex3opt_fd.PETSc runex3opt_fd.PETSc ex3opt_fd.rm ex3opt.PETSc runex3opt ex3opt.rm ex3opt_fwd.PETSc runex3opt_fwd ex3opt_fwd.rm
+                                    ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm ex3opt.PETSc runex3opt ex3opt.rm ex3opt_fwd.PETSc runex3opt_fwd ex3opt_fwd.rm
 TESTEXAMPLES_C_X =
 TESTEXAMPLES_FORTRAN =
 TESTEXAMPLES_C_X_MPIUNI =
