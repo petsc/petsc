@@ -57,6 +57,7 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,F,PumpHeadCurveResidual,(void*)pump);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   PetscScalar *x;
@@ -220,6 +221,7 @@ PetscErrorCode WaterNetReadData(WATERNETDATA *waternet,char *filename)
     /*    printf("%s\n",line); */
     junction = &vert[nv].junc;
     ndata = sscanf(line,"%d %lf %lf %d",&vert[nv].id,&junction->elev,&junction->demand,&junction->dempattern);
+    junction->demand *= GPM_CFS;
     junction->id = vert[nv].id;
     nv++;
   }
