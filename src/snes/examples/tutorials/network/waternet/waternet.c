@@ -160,6 +160,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   DMNetworkComponentGenericDataType *arr;
   PetscInt       key,i,offset,offsetd;
   VERTEXDATA     vertex;
+  PetscBool      ghostvtex;
 
   PetscFunctionBegin;
 
@@ -175,6 +176,8 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
   ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
   for(i=0; i < nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if(ghostvtex) continue;
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[i],0,&key,&offsetd);CHKERRQ(ierr);
     vertex = (VERTEXDATA)(arr+offsetd);
@@ -249,6 +252,7 @@ int main(int argc,char ** argv)
   Vec              X,F;
   SNES             snes;
   PetscInt         ngvtx=PETSC_DETERMINE,ngedge=PETSC_DETERMINE;
+  SNESConvergedReason reason;
 
   ierr = PetscInitialize(&argc,&argv,"waternetoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&crank);CHKERRQ(ierr);
@@ -261,12 +265,12 @@ int main(int argc,char ** argv)
   
   ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
   PetscLogStagePush(stage1);
+  ierr = PetscNew(&waternetdata);CHKERRQ(ierr);
   /* READ THE DATA */
   if (!crank) {
     /*    READ DATA */
     /* Only rank 0 reads the data */
     ierr = PetscOptionsGetString(NULL,NULL,"-waternetdata",waternetdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
-    ierr = PetscNew(&waternetdata);CHKERRQ(ierr);
     ierr = WaterNetReadData(waternetdata,waternetdata_file);CHKERRQ(ierr);
     
     ierr = PetscCalloc1(2*waternetdata->nedge,&edgelist);CHKERRQ(ierr);
@@ -327,6 +331,11 @@ int main(int argc,char ** argv)
   ierr = SetInitialGuess(networkdm,X);CHKERRQ(ierr);
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+  if(reason < 0) {
+    SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
+  }
+
 
   ierr = VecView(X,0);CHKERRQ(ierr);
 
