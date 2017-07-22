@@ -42,7 +42,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   const PetscScalar *xarr;
   PetscScalar   *farr;
   PetscInt      offsetfrom,offsetto,offset;
-  DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
@@ -60,10 +59,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
 
   for (v=vStart; v < vEnd; v++) {
-    PetscInt    i,j,offsetd,key;
+    PetscInt    i,j,key;
     PetscScalar Vm;
     PetscScalar Sbase=User->Sbase;
     VERTEXDATA  bus=NULL;
@@ -71,17 +69,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
     LOAD        load;
     PetscBool   ghostvtex;
     PetscInt    numComps;
+    void*       component;
 
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,v,j,&key,&component);CHKERRQ(ierr);
       if (key == 1) {
         PetscInt       nconnedges;
 	const PetscInt *connedges;
 
-	bus = (VERTEXDATA)(arr+offsetd);
+	bus = (VERTEXDATA)(component);
 	/* Handle reference bus constrained dofs */
 	if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
 	  farr[offset] = xarr[offset] - bus->va*PETSC_PI/180.0;
@@ -106,8 +105,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
           PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
 	  e = connedges[i];
-	  ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&keye,&offsetd);CHKERRQ(ierr);
-	  branch = (EDGEDATA)(arr+offsetd);
+	  ierr = DMNetworkGetComponent(networkdm,e,0,&keye,(void**)&branch);CHKERRQ(ierr);
 	  if (!branch->status) continue;
 	  Gff = branch->yff[0];
 	  Bff = branch->yff[1];
@@ -142,14 +140,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 	}
       } else if (key == 2) {
 	if (!ghostvtex) {
-	  gen = (GEN)(arr+offsetd);
+	  gen = (GEN)(component);
 	  if (!gen->status) continue;
 	  farr[offset] += -gen->pg/Sbase;
 	  farr[offset+1] += -gen->qg/Sbase;
 	}
       } else if (key == 3) {
 	if (!ghostvtex) {
-	  load = (LOAD)(arr+offsetd);
+	  load = (LOAD)(component);
 	  farr[offset] += load->pl/Sbase;
 	  farr[offset+1] += load->ql/Sbase;
 	}
@@ -179,7 +177,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
   PetscInt      v,vStart,vEnd,vfrom,vto;
   const PetscScalar *xarr;
   PetscInt      offsetfrom,offsetto,goffsetfrom,goffsetto;
-  DMNetworkComponentGenericDataType *arr;
   PetscInt      row[2],col[8];
   PetscScalar   values[8];
 
@@ -195,28 +192,28 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
 
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
 
   for (v=vStart; v < vEnd; v++) {
-    PetscInt    i,j,offsetd,key;
+    PetscInt    i,j,key;
     PetscInt    offset,goffset;
     PetscScalar Vm;
     PetscScalar Sbase=User->Sbase;
     VERTEXDATA  bus;
     PetscBool   ghostvtex;
     PetscInt    numComps;
+    void*       component;
 
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     for (j = 0; j < numComps; j++) {
       ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
       ierr = DMNetworkGetVariableGlobalOffset(networkdm,v,&goffset);CHKERRQ(ierr);
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,v,j,&key,&component);CHKERRQ(ierr);
       if (key == 1) {
         PetscInt       nconnedges;
 	const PetscInt *connedges;
 
-	bus = (VERTEXDATA)(arr+offsetd);
+	bus = (VERTEXDATA)(component);
 	if (!ghostvtex) {
 	  /* Handle reference bus constrained dofs */
 	  if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
@@ -244,14 +241,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	for (i=0; i < nconnedges; i++) {
 	  EDGEDATA       branch;
 	  VERTEXDATA     busf,bust;
-	  PetscInt       offsetfd,offsettd,keyf,keyt;
+	  PetscInt       keyf,keyt;
           PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
           const PetscInt *cone;
           PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
 
 	  e = connedges[i];
-	  ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&key,&offsetd);CHKERRQ(ierr);
-	  branch = (EDGEDATA)(arr+offsetd);
+	  ierr = DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch);CHKERRQ(ierr);
 	  if (!branch->status) continue;
 	  
 	  Gff = branch->yff[0];
@@ -281,10 +277,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	  thetaft = thetaf - thetat;
 	  thetatf = thetat - thetaf;
 
-	  ierr = DMNetworkGetComponentKeyOffset(networkdm,vfrom,0,&keyf,&offsetfd);CHKERRQ(ierr);
-	  ierr = DMNetworkGetComponentKeyOffset(networkdm,vto,0,&keyt,&offsettd);CHKERRQ(ierr);
-	  busf = (VERTEXDATA)(arr+offsetfd);
-	  bust = (VERTEXDATA)(arr+offsettd);
+	  ierr = DMNetworkGetComponent(networkdm,vfrom,0,&keyf,(void**)&busf);CHKERRQ(ierr);
+	  ierr = DMNetworkGetComponent(networkdm,vto,0,&keyt,(void**)&bust);CHKERRQ(ierr);
 
 	  if (vfrom == v) {
 	    if (busf->ide != REF_BUS) {
@@ -360,8 +354,8 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   PetscBool      ghostvtex;
   Vec            localX;
   PetscScalar    *xarr;
-  PetscInt       key,numComps,j,offsetd;
-  DMNetworkComponentGenericDataType *arr;
+  PetscInt       key,numComps,j;
+  void*          component;
   
   PetscFunctionBegin;
   ierr = DMNetworkGetVertexRange(networkdm,&vStart, &vEnd);CHKERRQ(ierr);
@@ -373,7 +367,6 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
     if (ghostvtex) continue;
@@ -381,13 +374,13 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
     ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
     for (j=0; j < numComps; j++) {
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,j,&key,&offsetd);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,v,j,&key,&component);CHKERRQ(ierr);
       if (key == 1) {
-	bus = (VERTEXDATA)(arr+offsetd);
+	bus = (VERTEXDATA)(component);
 	xarr[offset] = bus->va*PETSC_PI/180.0;
 	xarr[offset+1] = bus->vm;
       } else if(key == 2) {
-	gen = (GEN)(arr+offsetd);
+	gen = (GEN)(component);
 	if (!gen->status) continue;
 	xarr[offset+1] = gen->vs;
 	break;
@@ -518,33 +511,29 @@ int main(int argc,char ** argv)
 #if 0
     PetscInt numComponents;
     EDGEDATA edge;
-    PetscInt offset,key,kk;
-    DMNetworkComponentGenericDataType *arr;
+    PetscInt key,kk;
     VERTEXDATA     bus;
     GEN            gen;
     LOAD           load;
 
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,i,0,&key,&offset);CHKERRQ(ierr);
-      edge = (EDGEDATA)(arr+offset);
+      ierr = DMNetworkGetComponent(networkdm,i,0,&key,(void**)&edge);CHKERRQ(ierr);
       ierr = DMNetworkGetNumComponents(networkdm,i,&numComponents);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",crank,numComponents,edge->internal_i,edge->internal_j);CHKERRQ(ierr);
     }
 
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
       ierr = DMNetworkGetNumComponents(networkdm,i,&numComponents);CHKERRQ(ierr);
       for (kk=0; kk < numComponents; kk++) {
-        ierr = DMNetworkGetComponentKeyOffset(networkdm,i,kk,&key,&offset);CHKERRQ(ierr);
+        ierr = DMNetworkGetComponent(networkdm,i,kk,&key,&component);CHKERRQ(ierr);
         if (key == 1) {
-          bus = (VERTEXDATA)(arr+offset);
+          bus = (VERTEXDATA)(component);
           ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",crank,numComponents,bus->internal_i);CHKERRQ(ierr);
         } else if (key == 2) {
-          gen = (GEN)(arr+offset);
+          gen = (GEN)(component);
           ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,gen->pg,gen->qg);CHKERRQ(ierr);
         } else if (key == 3) {
-          load = (LOAD)(arr+offset);
+          load = (LOAD)(component);
           ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,load->pl,load->ql);CHKERRQ(ierr);
         }
       }

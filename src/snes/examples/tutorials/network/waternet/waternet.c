@@ -38,13 +38,11 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   const PetscInt *v,*e;
   const PetscScalar *xarr;
   PetscScalar    *farr;
-  DMNetworkComponentGenericDataType *arr;
-  PetscInt       key,i,offset,offsetd;
+  PetscInt       key,i,offset;
   EDGEDATA       edge;
   VERTEXDATA     vertex,vertexnode1,vertexnode2;
   PetscInt       vnode1,vnode2;
   const PetscInt *cone;
-  PetscInt       offsetdnode1,offsetdnode2;
   PetscInt       offsetnode1,offsetnode2;
   Pipe           *pipe;
   Pump           *pump;
@@ -77,13 +75,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
-  /* Get the component data array. The component data array holds the data for the components that were added during DMNetworkAddComponent() */
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
-
   for(i=0; i < ne; i++) {
     /* Get the offset and the key for the component for edge number e[i] */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,e[i],0,&key,&offsetd);CHKERRQ(ierr);
-    edge = (EDGEDATA)(arr+offsetd);
+    ierr = DMNetworkGetComponent(networkdm,e[i],0,&key,(void**)&edge);CHKERRQ(ierr);
 
     /* Get the numbers for the vertices covering this edge */
     ierr = DMNetworkGetConnectedVertices(networkdm,e[i],&cone);CHKERRQ(ierr);
@@ -91,10 +85,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
     vnode2 = cone[1];
 
     /* Get the components at the two vertices */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,vnode1,0,&key,&offsetdnode1);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,vnode2,0,&key,&offsetdnode2);CHKERRQ(ierr);
-    vertexnode1 = (VERTEXDATA)(arr+offsetdnode1);
-    vertexnode2 = (VERTEXDATA)(arr+offsetdnode2);
+    ierr = DMNetworkGetComponent(networkdm,vnode1,0,&key,(void**)&vertexnode1);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vnode2,0,&key,(void**)&vertexnode2);CHKERRQ(ierr);
 
     /* Get the variable offset (the starting location for the variables in the farr array) for node1 and node2 */
     ierr = DMNetworkGetVariableOffset(networkdm,vnode1,&offsetnode1);CHKERRQ(ierr);
@@ -122,8 +114,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
     if(ghostvtex) continue;
 
     ierr = DMNetworkGetVariableOffset(networkdm,v[i],&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,v[i],0,&key,&offsetd);CHKERRQ(ierr);
-    vertex = (VERTEXDATA)(arr+offsetd);
+    ierr = DMNetworkGetComponent(networkdm,v[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
 
     if(vertex->type == VERTEX_TYPE_JUNCTION) {
       farr[offset] -= vertex->junc.demand;
@@ -157,8 +148,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   const PetscInt *vtx,*edges;
   Vec            localX;
   PetscScalar    *xarr;
-  DMNetworkComponentGenericDataType *arr;
-  PetscInt       key,i,offset,offsetd;
+  PetscInt       key,i,offset;
   VERTEXDATA     vertex;
   PetscBool      ghostvtex;
 
@@ -174,13 +164,12 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
+
   for(i=0; i < nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
     if(ghostvtex) continue;
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,vtx[i],0,&key,&offsetd);CHKERRQ(ierr);
-    vertex = (VERTEXDATA)(arr+offsetd);
+    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
 
     if(vertex->type == VERTEX_TYPE_JUNCTION) {
       xarr[i] = 100;

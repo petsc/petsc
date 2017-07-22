@@ -415,6 +415,92 @@ PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm,PetscInt p,PetscInt *index)
   PetscFunctionReturn(0);
 }
 
+/*
+  DMNetworkGetComponentKeyOffset - Gets the type along with the offset for indexing the
+                                    component value from the component data array
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The DMNetwork object
+. p       - vertex/edge point
+- compnum - component number
+
+  Output Parameters:
++ compkey - the key obtained when registering the component
+- offset  - offset into the component data array associated with the vertex/edge point
+
+  Notes:
+  Typical usage:
+
+  DMNetworkGetComponentDataArray(dm, &arr);
+  DMNetworkGetVertex/EdgeRange(dm,&Start,&End);
+  Loop over vertices or edges
+    DMNetworkGetNumComponents(dm,v,&numcomps);
+    Loop over numcomps
+      DMNetworkGetComponentKeyOffset(dm,v,compnum,&key,&offset);
+      compdata = (UserCompDataType)(arr+offset);
+
+  Level: intermediate
+
+.seealso: DMNetworkGetNumComponents, DMNetworkGetComponentDataArray,
+*/
+PetscErrorCode DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
+{
+  PetscErrorCode           ierr;
+  PetscInt                 offsetp;
+  DMNetworkComponentHeader header;
+  DM_Network               *network = (DM_Network*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
+  header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
+  if (compkey) *compkey = header->key[compnum];
+  if (offset) *offset  = offsetp+network->dataheadersize+header->offset[compnum];
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkGetComponent - Returns the network component and its key
+
+  Not Collective
+
+  Input Parameters
++ dm - DMNetwork object
+. p  - edge or vertex point
+- compnum - component number
+
+  Output Parameters:
++ compkey - the key set for this computing during registration
+- component - the component data
+
+  Notes:
+  Typical usage:
+
+  DMNetworkGetVertex/EdgeRange(dm,&Start,&End);
+  Loop over vertices or edges
+    DMNetworkGetNumComponents(dm,v,&numcomps);
+    Loop over numcomps
+      DMNetworkGetComponent(dm,v,compnum,&key,&component);
+
+  Level: intermediate
+
+.seealso: DMNetworkGetNumComponents, DMNetworkGetVariableOffset
+@*/
+PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *key, void **component)
+{
+  PetscErrorCode ierr;
+  DM_Network     *network = (DM_Network*)dm->data;
+  PetscInt       offsetd;
+
+  PetscFunctionBegin;
+
+  ierr = DMNetworkGetComponentKeyOffset(dm,p,compnum,key,&offsetd);CHKERRQ(ierr);
+  *component = network->componentdataarray+offsetd;
+
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMNetworkAddComponent - Adds a network component at the given point (vertex/edge)
 
@@ -476,51 +562,6 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(network->DataSection,p,&offset);CHKERRQ(ierr);
   *numcomponents = ((DMNetworkComponentHeader)(network->componentdataarray+offset))->ndata;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMNetworkGetComponentKeyOffset - Gets the type along with the offset for indexing the
-                                    component value from the component data array
-
-  Not Collective
-
-  Input Parameters:
-+ dm      - The DMNetwork object
-. p       - vertex/edge point
-- compnum - component number
-
-  Output Parameters:
-+ compkey - the key obtained when registering the component
-- offset  - offset into the component data array associated with the vertex/edge point
-
-  Notes:
-  Typical usage:
-
-  DMNetworkGetComponentDataArray(dm, &arr);
-  DMNetworkGetVertex/EdgeRange(dm,&Start,&End);
-  Loop over vertices or edges
-    DMNetworkGetNumComponents(dm,v,&numcomps);
-    Loop over numcomps
-      DMNetworkGetComponentKeyOffset(dm,v,compnum,&key,&offset);
-      compdata = (UserCompDataType)(arr+offset);
-
-  Level: intermediate
-
-.seealso: DMNetworkGetNumComponents, DMNetworkGetComponentDataArray,
-@*/
-PetscErrorCode DMNetworkGetComponentKeyOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
-{
-  PetscErrorCode           ierr;
-  PetscInt                 offsetp;
-  DMNetworkComponentHeader header;
-  DM_Network               *network = (DM_Network*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
-  header = (DMNetworkComponentHeader)(network->componentdataarray+offsetp);
-  if (compkey) *compkey = header->key[compnum];
-  if (offset) *offset  = offsetp+network->dataheadersize+header->offset[compnum];
   PetscFunctionReturn(0);
 }
 

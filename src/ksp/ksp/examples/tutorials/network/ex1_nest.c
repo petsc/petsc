@@ -154,12 +154,11 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   const PetscInt    *cone;
   PetscScalar       *barr;
   PetscInt          lofst, lofst_to, lofst_fr;
-  PetscInt          compoffset, key;
+  PetscInt          key;
   PetscInt          row[2],col[6];
   PetscScalar       val[6];
   Mat               e11, c12, c21, v22;
   Mat               **mats;
-  DMNetworkComponentGenericDataType *arr;
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(networkdm,&localb);CHKERRQ(ierr);
@@ -175,20 +174,17 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   c21 = mats[1][0];  /* couplings */
   v22 = mats[1][1];  /* vertices */
 
-  ierr = DMNetworkGetComponentDataArray(networkdm,&arr);CHKERRQ(ierr);
-
   /* Get vertices and edge range */
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
 
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,e,0,&key,&compoffset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch);CHKERRQ(ierr);
     ierr = DMNetworkGetEdgeOffset(networkdm,e,&lofst);CHKERRQ(ierr);
 
     ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
     ierr = DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
-    branch = (Branch*)(arr + compoffset);
 
     /* These are edge-edge and go to e11 */
     row[0] = lofst;
@@ -202,8 +198,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 
     /* These are edge-vertex and go to c12 */
     /* from node */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[0],0,&key,&compoffset);CHKERRQ(ierr);
-    node = (Node*)(arr + compoffset);
+    ierr = DMNetworkGetComponent(networkdm,cone[0],0,&key,(void**)&node);CHKERRQ(ierr);
 
     if (!node->gr) {
       row[0] = lofst_fr;
@@ -212,8 +207,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
     }
 
     /* to node */
-    ierr = DMNetworkGetComponentKeyOffset(networkdm,cone[1],0,&key,&compoffset);CHKERRQ(ierr);
-    node = (Node*)(arr + compoffset);
+    ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,(void**)&node);CHKERRQ(ierr);
 
     if (!node->gr) {
       row[0] = lofst_to;
@@ -229,9 +223,8 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
     if (!ghost) {
-      ierr = DMNetworkGetComponentKeyOffset(networkdm,v,0,&key,&compoffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,v,0,&key,(void**)&node);CHKERRQ(ierr);
       ierr = DMNetworkGetVertexOffset(networkdm,v,&lofst);CHKERRQ(ierr);
-      node = (Node*)(arr + compoffset);
 
       if (node->gr) {
         row[0] = lofst;

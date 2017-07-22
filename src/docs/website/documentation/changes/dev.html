@@ -133,6 +133,10 @@
       <ul>
         <li>PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.</li>
       </ul>
+      <h4> DMNetwork:</h4>
+      <ul>
+	<li> DMNetworkGetComponentDataArray and DMNetworkGetComponentTypeOffset are no longer available. Use DMNetworkGetComponent instead.
+      </ul>
       <h4>SYS:</h4>
       <ul>
         <li>PetscPClose() no longer returns error code from pclose() because some systems cannot reliably deliver it</li>
