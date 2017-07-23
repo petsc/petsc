@@ -130,7 +130,7 @@ runex3opt:
 	   ${RM} -f ex3opt_1.tmp
 
 runex3opt_fd:
-	-@${MPIEXEC} -n 1 ./ex3opt_fd -ts_type cn -pc_type lu -tao_monitor -tao_gatol 1e-7 > ex3opt_fd_1.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex3opt_fd -ts_type cn -pc_type lu -tao_monitor -tao_gatol 1e-3 > ex3opt_fd_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3opt_fd_1.out ex3opt_fd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fd_1.tmp
 
