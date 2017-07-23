@@ -1,6 +1,7 @@
 program  ex1f90
 #include <petsc/finclude/petscdmlabel.h>
   use petscdm
+  use petscdmlabel
   implicit NONE
 
   type(tDM)           :: dm, dmDist
@@ -11,18 +12,18 @@ program  ex1f90
   PetscErrorCode      :: ierr
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRQ(ierr)
-  call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRA(ierr)
+  call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRA(ierr)
 
-  call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRQ(ierr);
-  call DMPlexDistribute(dm,0,PETSC_NULL_SF,dmDist,ierr);CHKERRQ(ierr)
+  call DMPlexCreateFromFile(PETSC_COMM_WORLD,filename,interpolate,dm,ierr);CHKERRA(ierr);
+  call DMPlexDistribute(dm,0,PETSC_NULL_SF,dmDist,ierr);CHKERRA(ierr)
   if (dmDist%v /= -1) then
-    call DMDestroy(dm,ierr)
+    call DMDestroy(dm,ierr);CHKERRA(ierr)
     dm%v = dmDist%v
   end if
 
-  call ViewLabels(dm,PETSC_VIEWER_STDOUT_WORLD,ierr)
-  call DMDestroy(dm,ierr)
+  call ViewLabels(dm,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
+  call DMDestroy(dm,ierr);CHKERRA(ierr)
   call PetscFinalize(ierr)
 
 contains

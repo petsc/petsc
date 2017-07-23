@@ -17,6 +17,7 @@
       PetscInt, pointer :: pNumDof(:)
       PetscInt, target, dimension(1) ::  bcField
       PetscInt, pointer :: pBcField(:)
+      PetscInt :: zero,eight
       IS, target, dimension(1) ::   bcCompIS
       IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
@@ -59,11 +60,13 @@
       numBC = 1
 !     Test label retrieval
       call DMGetLabel(dm, 'marker', label, ierr);CHKERRA(ierr)
-      call DMLabelGetValue(label, 0, val, ierr);CHKERRA(ierr)
+      zero = 0
+      call DMLabelGetValue(label, zero, val, ierr);CHKERRA(ierr)
       if (val .ne. -1) then
         CHKERRA(1)
       endif
-      call DMLabelGetValue(label, 8, val, ierr);CHKERRA(ierr)
+      eight = 8
+      call DMLabelGetValue(label, eight, val, ierr);CHKERRA(ierr)
       if (val .ne. 1) then
         CHKERRA(1)
       endif
