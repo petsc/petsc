@@ -122,7 +122,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     ierr = TSInterpolate(ts,user->next_output,interpolatedX);CHKERRQ(ierr);
     ierr = VecGetArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
-                       user->next_output,step,t,dt,(double)PetscRealPart(x[0]),
+                       user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
                        (double)PetscRealPart(x[1]));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = VecDestroy(&interpolatedX);CHKERRQ(ierr);
@@ -154,14 +154,14 @@ int main(int argc,char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOCG);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.next_output = 0.0;
   user.mu          = 1.0;
-  user.ftime       = 0.5;
+  user.ftime       = 1.0;
   ierr             = PetscOptionsGetBool(NULL,NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
   ierr             = PetscOptionsGetReal(NULL,NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
 
@@ -198,16 +198,13 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,0.03125);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
 
   ierr         = VecGetArrayRead(user.x,&y_ptr);CHKERRQ(ierr);
@@ -239,8 +236,6 @@ int main(int argc,char **argv)
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
-
-  ierr = TaoSetTolerances(tao,1e-7,1e-7,1e-7);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
@@ -302,7 +297,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
      Set time
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,0.5);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,user_ptr->ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -325,7 +320,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSolve(ts,user_ptr->x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user_ptr->x,&y_ptr);CHKERRQ(ierr);
   *f   = rescale*(y_ptr[0]-user_ptr->x_ob[0])*(y_ptr[0]-user_ptr->x_ob[0])+rescale*(y_ptr[1]-user_ptr->x_ob[1])*(y_ptr[1]-user_ptr->x_ob[1]);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n",(double)user_ptr->x_ob[0],(double)user_ptr->x_ob[1],(double)y_ptr[0],(double)y_ptr[1],(double)(*f));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%g; %g], ODE solution y=[%g;%g], Cost function f=%g\n",(double)user_ptr->x_ob[0],(double)user_ptr->x_ob[1],(double)y_ptr[0],(double)y_ptr[1],(double)(*f));CHKERRQ(ierr);
   /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(user_ptr->lambda[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = rescale*2.*(y_ptr[0]-user_ptr->x_ob[0]);

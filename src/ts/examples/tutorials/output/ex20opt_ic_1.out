@@ -1,32 +1,31 @@
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.742698;-0.855568], Cost function f=0.051854
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.568319;-1.074454], Cost function f=0.002752
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[2.002652;-0.665935], Cost function f=0.297560
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.798190;-0.805205], Cost function f=0.091274
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.687877;-0.912908], Cost function f=0.022100
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.597949;-1.028642], Cost function f=0.000004
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.579981;-1.055885], Cost function f=0.000932
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.589002;-1.042007], Cost function f=0.000196
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.593484;-1.035263], Cost function f=0.000035
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.596775;-1.030373], Cost function f=0.000000
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.596701;-1.030483], Cost function f=0.000000
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.596738;-1.030428], Cost function f=0.000000
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.596757;-1.030400], Cost function f=0.000000
-Observed value y_ob=[1.596770; -1.030380], ODE solution y=[1.596770;-1.030380], Cost function f=0.000000
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.49734;-0.834225], Cost function f=0.1144
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.19278;-1.04229], Cost function f=0.00102718
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.22433;-1.01808], Cost function f=0.00012752
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21763;-1.02315], Cost function f=5.32282e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21745;-1.02327], Cost function f=5.3001e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21707;-1.02348], Cost function f=5.21879e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21638;-1.0237], Cost function f=4.99256e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.2151;-1.02376], Cost function f=4.38077e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21318;-1.02301], Cost function f=3.06762e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21135;-1.02027], Cost function f=1.07169e-05
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21446;-1.01605], Cost function f=3.98717e-06
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21307;-1.01749], Cost function f=8.16769e-10
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=1.23568e-11
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=7.67925e-18
+Observed value y_ob=[1.21305; -1.01747], ODE solution y=[1.21305;-1.01747], Cost function f=3.48501e-21
 Tao Object: 1 MPI processes
-  type: cg
-      CG Type: prp
+  type: blmvm
       Gradient steps: 0
-      Reset steps: 0
   TaoLineSearch Object: 1 MPI processes
     type: more-thuente
-  convergence tolerances: fatol=1e-10,   frtol=1e-10
-  convergence tolerances: gatol=1e-10,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=8.45239e-10
-  Objective value=3.54616e-17
-  total number of iterations=4,                          (max: 2000)
-  total number of function/gradient evaluations=14,      (max: 4000)
-  Solution converged:   estimated f(x)-f(X*) <= fatol
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=2.31699e-10
+  Objective value=3.48501e-21
+  total number of iterations=14,                          (max: 2000)
+  total number of function/gradient evaluations=15,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes
   type: seq
-2
--0.666711
+2.
+-0.666667

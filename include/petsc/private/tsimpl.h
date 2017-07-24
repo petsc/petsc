@@ -49,6 +49,8 @@ struct _TSOps {
   PetscErrorCode (*adjointstep)(TS);
   PetscErrorCode (*adjointsetup)(TS);
   PetscErrorCode (*adjointintegral)(TS);
+  PetscErrorCode (*forwardsetup)(TS);
+  PetscErrorCode (*forwardstep)(TS);
   PetscErrorCode (*forwardintegral)(TS);
   PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
   PetscErrorCode (*getauxsolution)(TS,Vec*);
@@ -136,6 +138,18 @@ struct _p_TS {
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
   PetscErrorCode (*drdyfunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
+
+  /* specific to forward sensitivity analysis */
+  Vec       *vecs_fwdsensipacked;    /* packed vector array for forward sensitivitis */
+  Vec       *vecs_integral_sensi;    /* one vector for each integral */
+  Vec       *vecs_integral_sensip;   /* one vector for each integral */
+  PetscInt  num_parameters;
+  PetscInt  num_initialvalues;
+  Vec       *vecs_jacp;
+  void      *vecsrhsjacobianpctx;
+  PetscInt  forwardsetupcalled;
+  PetscBool forward_solve;
+  PetscErrorCode (*vecsrhsjacobianp)(TS,PetscReal,Vec,Vec*,void*);
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
@@ -337,7 +351,7 @@ PETSC_EXTERN PetscErrorCode TSEventDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSEventHandler(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointEventHandler(TS);
 
-PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+PETSC_EXTERN PetscLogEvent TS_AdjointStep, TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval, TS_ForwardStep;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */

@@ -11,9 +11,13 @@ static char help[] = "Finds optimal parameter P_m for the generator system while
 F*/
 
 /*
-  This code demonstrates how to solve a ODE-constrained optimization problem with TAO, TSEvent, TSAdjoint and TS.
-  The problem features discontinuities and a cost function in integral form.
-  The gradient is computed with the discrete adjoint of an implicit theta method, see ex3adj.c for details.
+   Include "petscts.h" so that we can use TS solvers.  Note that this
+   file automatically includes:
+     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscksp.h   - linear solvers
 */
 #include <petsctao.h>
 #include <petscts.h>
@@ -50,7 +54,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
     if (forwardsolve) user->Pmax = 0.0; /* Apply disturbance - this is done by setting Pmax = 0 */
     else user->Pmax = user->Pmax_ini; /* Going backward, reversal of event */
   } else if(event_list[0] == 1) {
-    if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
+  if (forwardsolve) user->Pmax = user->Pmax_ini; /* Remove the fault  - this is done by setting Pmax = Pmax_ini */
     else user->Pmax = 0.0; /* Going backward, reversal of event */
   }
   PetscFunctionReturn(0);
@@ -80,6 +84,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "IJacobian"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -110,18 +116,17 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
+static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Vec *V,void *ctx0)
 {
   PetscErrorCode ierr;
-  PetscInt       row[] = {0,1},col[]={0};
-  PetscScalar    J[2][1];
+  PetscScalar    *v;
 
   PetscFunctionBeginUser;
-  J[0][0] = 0;
-  J[1][0] = 1.;
-  ierr  = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecZeroEntries(V[0]);CHKERRQ(ierr);
+  ierr = VecZeroEntries(V[1]);CHKERRQ(ierr);
+  ierr = VecGetArray(V[2],&v);CHKERRQ(ierr);
+  v[0] = 0; v[1] = 1;
+  ierr = VecRestoreArray(V[2],&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,13 +162,18 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx
 
 static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *rp;
+  PetscErrorCode    ierr;
+  PetscScalar       *rp;
+  const PetscScalar *u;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-  rp[0] = 0.;
-  ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
+  rp[0] = 0;
+  rp[1] = 0;
+  rp[2] = 0;
+  ierr = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,13 +200,20 @@ PetscErrorCode monitor(Tao tao,AppCtx *ctx)
   PetscInt           iterate;
   PetscReal          f,gnorm,cnorm,xdiff;
   TaoConvergedReason reason;
+  Vec                X,G;
+  const PetscScalar  *x,*g;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = TaoGetSolutionStatus(tao,&iterate,&f,&gnorm,&cnorm,&xdiff,&reason);CHKERRQ(ierr);
-
-  fp = fopen("ex3opt_conv.out","a");
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"%D %g\n",iterate,(double)gnorm);CHKERRQ(ierr);
+  ierr = TaoGetSolutionVector(tao,&X);CHKERRQ(ierr);
+  ierr = TaoGetGradientVector(tao,&G);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(G,&g);CHKERRQ(ierr);
+  fp = fopen("ex3opt_fwd_conv.data","a");
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"%d %g %.12lf %.12lf\n",iterate,gnorm,x[0],g[0]);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(G,&g);CHKERRQ(ierr);
   fclose(fp);
   PetscFunctionReturn(0);
 }
@@ -209,6 +226,7 @@ int main(int argc,char **argv)
   PetscMPIInt        size;
   AppCtx             ctx;
   Tao                tao;
+  TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
   Vec                lowerb,upperb;
@@ -218,7 +236,6 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -239,7 +256,7 @@ int main(int argc,char **argv)
     ctx.E       = 1.1378;
     ctx.V       = 1.0;
     ctx.X       = 0.545;
-    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;
     ctx.Pmax_ini = ctx.Pmax;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
     ctx.Pm      = 1.06;
@@ -281,7 +298,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.1;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);CHKERRQ(ierr);
+  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -293,6 +310,12 @@ int main(int argc,char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
+
+  /* Get information on termination */
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
+  if (reason <= 0){
+    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
+  }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&p);CHKERRQ(ierr);
@@ -322,14 +345,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   TS             ts;
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  Mat            Jacp;          /* Jacobian matrix */
+  Vec            Jacp[3];          /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscInt       n = 2;
   PetscReal      ftime;
   PetscInt       steps;
   PetscScalar    *u;
-  PetscScalar    *x_ptr,*y_ptr;
-  Vec            lambda[1],q,mu[1];
+  PetscScalar    *x_ptr,*s_ptr;
+  Vec            s[3],q,qgrad[1];
   PetscInt       direction[2];
   PetscBool      terminate[2];
 
@@ -348,10 +371,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&Jacp);CHKERRQ(ierr);
-  ierr = MatSetSizes(Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Jacp);CHKERRQ(ierr);
-  ierr = MatSetUp(Jacp);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Jacp[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Jacp[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Jacp[2],NULL);CHKERRQ(ierr);
+
+  ierr = VecCreate(PETSC_COMM_WORLD,&qgrad[0]);CHKERRQ(ierr);
+  ierr = VecSetSizes(qgrad[0],PETSC_DECIDE,3);
+  ierr = VecSetFromOptions(qgrad[0]);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -361,10 +387,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,ctx);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
-  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_TRUE,ctx);CHKERRQ(ierr);
+  /*   Set RHS JacobianP */
+  ierr = TSForwardSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -375,16 +401,32 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Save trajectory of solution so that TSAdjointSolve() may be used
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&s[0],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(s[0],&s_ptr);CHKERRQ(ierr);
+  s_ptr[0] = 1.0; s_ptr[1] = 0.0;
+  ierr = VecRestoreArray(s[0],&s_ptr);CHKERRQ(ierr);
+
+  ierr = MatCreateVecs(A,&s[1],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(s[1],&s_ptr);CHKERRQ(ierr);
+  s_ptr[0] = 0.0; s_ptr[1] = 1.0;
+  ierr = VecRestoreArray(s[1],&s_ptr);CHKERRQ(ierr);
+
+  ierr = MatCreateVecs(A,&s[2],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(s[2],&s_ptr);CHKERRQ(ierr);
+  s_ptr[0] = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax;
+  s_ptr[1] = 0.0;
+  ierr = VecRestoreArray(s[2],&s_ptr);CHKERRQ(ierr);
+  ierr = TSForwardSetSensitivities(ts,3,s,0,NULL);CHKERRQ(ierr);
+  ierr = TSForwardSetIntegralGradients(ts,1,qgrad,NULL);CHKERRQ(ierr);
+  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_TRUE,ctx);CHKERRQ(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.03125);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -402,51 +444,30 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   /* ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Adjoint model starts here
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
-  /*   Set initial conditions for the adjoint integration */
-  ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 0.0; y_ptr[1] = 0.0;
-  ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-
-  ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = -1.0;
-  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
-
-  /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     One can set up the integral to be evaluated during the forward run
-     instead by calling this function before TSSolve and specifying
-     PETSC_TRUE for the second last argument
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetCostIntegrand(ts,1,NULL,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,PETSC_FALSE,ctx);CHKERRQ(ierr);
-
-  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
-  ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
-  ierr = VecCopy(mu[0],G);CHKERRQ(ierr);
+  ierr = VecGetArray(qgrad[0],&s_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(G,&x_ptr);CHKERRQ(ierr);
+  x_ptr[0] = s_ptr[2]-1.;
+  ierr = VecRestoreArray(qgrad[0],&s_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(G,&x_ptr);CHKERRQ(ierr);
 
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = -ctx->Pm + x_ptr[0];
+  x_ptr[0] = 0;
   ierr = VecRestoreArray(q,&x_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
+  ierr = VecDestroy(&Jacp[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&Jacp[1]);CHKERRQ(ierr);
+  ierr = VecDestroy(&Jacp[2]);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&qgrad[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&s[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&s[1]);CHKERRQ(ierr);
+  ierr = VecDestroy(&s[2]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   return 0;
