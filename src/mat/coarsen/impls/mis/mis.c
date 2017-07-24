@@ -41,7 +41,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
 
   /* get submatrices */
-  ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
   if (isMPI) {
     mpimat = (Mat_MPIAIJ*)Gmat->data;
     matA   = (Mat_SeqAIJ*)mpimat->A->data;
@@ -49,7 +49,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     /* force compressed storage of B */
     ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
     if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA = (Mat_SeqAIJ*)Gmat->data;
   }

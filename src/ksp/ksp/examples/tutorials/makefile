@@ -1223,11 +1223,11 @@ runex45f:
 	   ${RM} -f ex45f_1.tmp
 
 runex46_aijcusp:
-	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusp -dm_vec_type cusp -random_exact_sol > ex46_aijcusp.tmp 2>& 1; \
+	-@${MPIEXEC} -n 1 ./ex46 -dm_mat_type aijcusp -dm_vec_type cusp -random_exact_sol > ex46_aijcusp.tmp 2>& 1; \
 		${DIFF} output/ex46_aijcusp.out ex46_aijcusp.tmp || printf "${PWD}\nPossible problem with ex46_aijcusp, diffs above\n=========================================\n"; \
 		${RM} ex46_aijcusp.tmp
 runex46_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_package cusparse > ex46_aijcusparse.tmp 2>& 1; \
+	-@${MPIEXEC} -n 1 ./ex46 -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_package cusparse > ex46_aijcusparse.tmp 2>& 1; \
 		${DIFF} output/ex46_aijcusparse.out ex46_aijcusparse.tmp || printf "${PWD}\nPossible problem with ex46_aijcusparse, diffs above\n=========================================\n"; \
 		${RM} ex46_aijcusparse.tmp
 

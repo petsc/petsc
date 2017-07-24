@@ -1257,7 +1257,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   ierr = MatGetLocalSize(mat,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQBAIJ,&isseqbaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
   if (!isseqdense && !isseqaij && !isseqbaij && !isseqsbaij) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)(matis->A))->type_name);

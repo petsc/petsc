@@ -155,7 +155,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lpe
   ierr = PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
-  ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
   if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
@@ -298,7 +298,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
   maskradix = sizeof(PetscInt)*8;
   maskrounds = 1 + maxcolor / (maskradix);
   maskbase = 0;
-  ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
+  ierr = PetscObjectBaseTypeCompare((PetscObject)G,MATSEQAIJ,&isSeq);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
   if (!isSeq && !isMPI) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 

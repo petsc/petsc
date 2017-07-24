@@ -2888,7 +2888,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
   PetscFunctionBegin;
   /* Check to make sure the component matrices (and embeddings) are compatible with C. */
   if (A) {
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
     if (!seqaij) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diagonal matrix is of wrong type");
     if (rowemb) {
       ierr = ISGetLocalSize(rowemb,&m);CHKERRQ(ierr);
@@ -2906,7 +2906,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
     }
   }
   if (B) {
-    ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    ierr = PetscObjectBaseTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
     if (!seqaij) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diagonal matrix is of wrong type");
     if (rowemb) {
       ierr = ISGetLocalSize(rowemb,&m);CHKERRQ(ierr);

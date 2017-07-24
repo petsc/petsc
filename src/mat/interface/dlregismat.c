@@ -73,6 +73,9 @@ PetscErrorCode  MatFinalizePackage(void)
   MatColoringRegisterAllCalled     = PETSC_FALSE;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
   MatCoarsenRegisterAllCalled      = PETSC_FALSE;
+  /* this is not ideal because it exposes SeqAIJ implementation details directly into the base Mat code */
+  ierr = PetscFunctionListDestroy(&MatSeqAIJList);CHKERRQ(ierr);
+  MatSeqAIJRegisterAllCalled       = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -167,6 +170,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatColoringRegisterAll();CHKERRQ(ierr);
   ierr = MatPartitioningRegisterAll();CHKERRQ(ierr);
   ierr = MatCoarsenRegisterAll();CHKERRQ(ierr);
+  ierr = MatSeqAIJRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_CLASSID,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_CLASSID,&MAT_Mults);CHKERRQ(ierr);

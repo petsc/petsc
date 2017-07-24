@@ -158,11 +158,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_AIJCRL     *aijcrl;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  ierr = PetscObjectTypeCompare((PetscObject)A,type,&sametype);CHKERRQ(ierr);
+  if (sametype) PetscFunctionReturn(0);
 
   ierr     = PetscNewLog(B,&aijcrl);CHKERRQ(ierr);
   B->spptr = (void*) aijcrl;

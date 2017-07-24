@@ -766,7 +766,7 @@ PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
 
    Input Parameters:
 +  a - pointer to string
--  b - string to beginwith
+-  b - string to begin with
 
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE

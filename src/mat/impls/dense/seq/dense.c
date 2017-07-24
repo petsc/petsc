@@ -2573,9 +2573,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaij_seqdense_C",MatMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_seqdense_C",MatPtAP_SeqDense_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijperm_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaijperm_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqaijperm_seqdense_C",MatMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaijperm_seqdense_C",MatPtAP_SeqDense_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaij_seqdense_C",MatTransposeMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultSymbolic_seqaij_seqdense_C",MatTransposeMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultNumeric_seqaij_seqdense_C",MatTransposeMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijperm_seqdense_C",MatTransposeMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultSymbolic_seqaijperm_seqdense_C",MatTransposeMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMultNumeric_seqaijperm_seqdense_C",MatTransposeMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
