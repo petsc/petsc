@@ -22,6 +22,28 @@ typedef enum {
   DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
 
+/*J
+   DMSwarmPICLayoutType - Defines the method used to define particle coordinates within each cell. The layouts are constructured using the reference cell geometry
+ 
+   DMSWARMPIC_LAYOUT_REGULAR defines points on a regular ijk mesh.
+   When using DMSWARMPIC_LAYOUT_REGULAR, the fill_param defines the number of points in each spatial direction.
+ 
+   DMSWARMPIC_LAYOUT_GAUSS defines points using an npoint Gauss-Legendre tensor product quadrature rule.
+   When using DMSWARMPIC_LAYOUT_GAUSS, the fill_param defines the number of quadrature points in each spatial direction.
+ 
+   DMSWARMPIC_LAYOUT_SUBDIVISION defines points on the centroid of a sub-divided reference cell.
+   When using DMSWARMPIC_LAYOUT_SUBDIVISION, the fill_param defines the number times the reference cell is sub-divided.
+ 
+   Level: beginner
+ 
+.seealso DMSwarmInsertPointsUsingCellDM()
+J*/
+typedef enum {
+  DMSWARMPIC_LAYOUT_REGULAR=0,
+  DMSWARMPIC_LAYOUT_GAUSS,
+  DMSWARMPIC_LAYOUT_SUBDIVISION,
+} DMSwarmPICLayoutType;
+
 PETSC_EXTERN const char* DMSwarmTypeNames[];
 PETSC_EXTERN const char* DMSwarmMigrateTypeNames[];
 PETSC_EXTERN const char* DMSwarmCollectTypeNames[];
@@ -29,6 +51,7 @@ PETSC_EXTERN const char* DMSwarmCollectTypeNames[];
 PETSC_EXTERN const char DMSwarmField_pid[];
 PETSC_EXTERN const char DMSwarmField_rank[];
 PETSC_EXTERN const char DMSwarmPICField_coor[];
+PETSC_EXTERN const char DMSwarmPICField_cellid[];
 
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM,const char[],Vec*);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM,const char[],Vec*);
@@ -50,6 +73,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt,PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM,PetscInt*);
@@ -61,6 +85,21 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM,DM*);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM,DMSwarmType);
+
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM,PetscReal*,PetscReal*,PetscInt*,InsertMode);
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM,PetscInt,PetscReal*,PetscBool,InsertMode);
+PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutType,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
+PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM,const char*);
+
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM,PetscInt,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM,PetscInt*,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM,PetscInt,const char**,Vec**,PetscBool);
 
 #endif
 

@@ -38,10 +38,12 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
                                2,3,1};
 
   PetscFunctionBegin;
+  if (da->elementtype == DMDA_ELEMENT_P1) {nn=3;}
+  if (da->elementtype == DMDA_ELEMENT_Q1) {nn=4;}
   if (!da->e) {
     if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
-    if (da->elementtype == DMDA_ELEMENT_P1) {ns=2; nn=3;}
-    if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1; nn=4;}
+    if (da->elementtype == DMDA_ELEMENT_P1) {ns=2;}
+    if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
     ierr   = DMDAGetGhostCorners(dm,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -85,10 +87,12 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
                                1,5,6,7};
 
   PetscFunctionBegin;
+  if (da->elementtype == DMDA_ELEMENT_P1) {nn=4;}
+  if (da->elementtype == DMDA_ELEMENT_Q1) {nn=8;}
   if (!da->e) {
     if (!da->s) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot get elements for DMDA with zero stencil width");
-    if (da->elementtype == DMDA_ELEMENT_P1) {ns=6; nn=4;}
-    if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1; nn=8;}
+    if (da->elementtype == DMDA_ELEMENT_P1) {ns=6;}
+    if (da->elementtype == DMDA_ELEMENT_Q1) {ns=1;}
     ierr   = DMDAGetCorners(dm,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
     ierr   = DMDAGetGhostCorners(dm,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
     xe    += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -132,7 +136,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 .     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or DMDA_ELEMENT_Q1
 
    Level: intermediate
 
@@ -165,7 +169,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 .     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or DMDA_ELEMENT_Q1
 
    Level: intermediate
 

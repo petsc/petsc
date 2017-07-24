@@ -7,8 +7,17 @@
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
 #include <petsc/private/dmimpl.h>
 
+PETSC_EXTERN PetscLogEvent DMSWARM_Migrate,
+                           DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints,
+                           DMSWARM_Sort,
+                           DMSWARM_DataExchangerTopologySetup,
+                           DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd,
+                           DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
+
+
 typedef struct _p_DataField* DataField;
 typedef struct _p_DataBucket* DataBucket;
+typedef struct _p_DMSwarmSort* DMSwarmSort;
 
 typedef struct {
   DataBucket db;
@@ -35,8 +44,21 @@ typedef struct {
 
   PetscBool collect_view_active;
   PetscInt  collect_view_reset_nlocal;
-
+  DMSwarmSort sort_context;
 } DM_Swarm;
+
+typedef struct {
+  PetscInt point_index;
+  PetscInt cell_index;
+} SwarmPoint;
+
+struct _p_DMSwarmSort {
+  PetscBool isvalid;
+  PetscInt ncells,npoints;
+  PetscInt *pcell_offsets;
+  SwarmPoint *list;
+};
+
 
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM,PetscBool);

@@ -331,6 +331,10 @@ ex69: ex69.o  chkopts
 	-${CLINKER} -o ex69 ex69.o  ${PETSC_KSP_LIB}
 	${RM} ex69.o
 
+ex70: ex70.o  chkopts
+	-${CLINKER} -o ex70 ex70.o  ${PETSC_KSP_LIB}
+	${RM} ex70.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
