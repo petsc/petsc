@@ -420,7 +420,7 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PetscViewerASCIIPushTab - Adds one more tab to the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
 
@@ -454,7 +454,7 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PetscViewerASCIIPopTab - Removes one tab from the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
 

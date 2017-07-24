@@ -274,6 +274,16 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelDestroy - Destroys a DMLabel
+
+  Input Parameter:
+. label - The DMLabel
+
+  Level: beginner
+
+.seealso: DMLabelCreate()
+@*/
 PetscErrorCode DMLabelDestroy(DMLabel *label)
 {
   PetscInt       v;
@@ -297,6 +307,19 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelDuplicate - Duplicates a DMLabel
+
+  Input Parameter:
+. label - The DMLabel
+
+  Output Parameter:
+. labelnew - location to put new vector
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelDestroy()
+@*/
 PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 {
   PetscInt       v;
@@ -477,7 +500,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMLabelGetDefaultValue - Get the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
 
@@ -490,7 +513,7 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
   Level: beginner
 
 .seealso: DMLabelSetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
-*/
+@*/
 PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
 {
   PetscFunctionBegin;
@@ -498,7 +521,7 @@ PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
   PetscFunctionReturn(0);
 }
 
-/*
+/*@
   DMLabelSetDefaultValue - Set the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
 
@@ -511,7 +534,7 @@ PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
   Level: beginner
 
 .seealso: DMLabelGetDefaultValue(), DMLabelGetValue(), DMLabelSetValue()
-*/
+@*/
 PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
 {
   PetscFunctionBegin;
@@ -656,6 +679,19 @@ PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelGetNumValues - Get the number of values that the DMLabel takes
+
+  Input Parameter:
+. label - the DMLabel
+
+  Output Paramater:
+. numValues - the number of values
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {
   PetscFunctionBegin;
@@ -664,6 +700,19 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelGetValueIS - Get an IS of all values that the DMlabel takes
+
+  Input Parameter:
+. label - the DMLabel
+
+  Output Paramater:
+. is    - the value IS
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 {
   PetscErrorCode ierr;
@@ -674,6 +723,20 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelHasStratum - Determine whether points exist with the given value
+
+  Input Parameters:
++ label - the DMLabel
+- value - the stratum value
+
+  Output Paramater:
+. exists - Flag saying whether points exist
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
   PetscInt v;
@@ -690,6 +753,20 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelGetStratumSize - Get the size of a stratum
+
+  Input Parameters:
++ label - the DMLabel
+- value - the stratum value
+
+  Output Paramater:
+. size - The number of points in the stratum
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {
   PetscInt       v;
@@ -708,6 +785,21 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelGetStratumBounds - Get the largest and smallest point of a stratum
+
+  Input Parameters:
++ label - the DMLabel
+- value - the stratum value
+
+  Output Paramaters:
++ start - the smallest point in the stratum
+- end - the largest point in the stratum
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *start, PetscInt *end)
 {
   PetscInt       v;
@@ -730,6 +822,20 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelGetStratumIS - Get an IS with the stratum points
+
+  Input Parameters:
++ label - the DMLabel
+- value - the stratum value
+
+  Output Paramater:
+. points - The stratum points
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 {
   PetscInt       v;
@@ -751,6 +857,18 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelSetStratumIS - Set the stratum points using an IS
+
+  Input Parameters:
++ label - the DMLabel
+. value - the stratum value
+- points - The stratum points
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 {
   PetscInt       v, numStrata;
@@ -785,7 +903,17 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelClearStratum - Remove a stratum
 
+  Input Parameters:
++ label - the DMLabel
+- value - the stratum value
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
   PetscInt       v;
@@ -820,6 +948,18 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelFilter - Remove all points outside of [start, end)
+
+  Input Parameters:
++ label - the DMLabel
+. start - the first point
+- end - the last point
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 {
   PetscInt       v;
@@ -863,6 +1003,20 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelPermute - Create a new label with permuted points
+
+  Input Parameters:
++ label - the DMLabel
+- permutation - the point permutation
+
+  Output Parameter:
+. labelnew - the new label containing the permuted points
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 {
   const PetscInt *perm;
@@ -967,6 +1121,20 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelDistribute - Create a new label pushed forward over the PetscSF
+
+  Input Parameters:
++ label - the DMLabel
+- sf    - the map from old to new distribution
+
+  Output Parameter:
+. labelnew - the new redistributed label
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
   MPI_Comm       comm;
@@ -1062,10 +1230,10 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 
   Input Parameters:
 + label - the DMLabel
-. point - the Star Forest point communication map
+- sf - the Star Forest point communication map
 
-  Input Parameters:
-+ label - the new DMLabel with localised leaf values
+  Output Parameters:
+. labelNew - the new DMLabel with localised leaf values
 
   Level: developer
 
@@ -1137,6 +1305,20 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMLabelConvertToSection - Make a PetscSection/IS pair that encodes the label
+
+  Input Parameter:
+. label - the DMLabel
+
+  Output Parameters:
++ section - the section giving offsets for each stratum
+- is - An IS containing all the label points
+
+  Level: developer
+
+.seealso: DMLabelDistribute()
+@*/
 PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
 {
   IS              vIS;
@@ -1184,7 +1366,7 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscSectionCreateGlobalSectionLabel - Create a section describing the global field layout using
   the local section and an SF describing the section point overlap.
 
