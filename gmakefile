@@ -8,6 +8,7 @@ OBJDIR := $(PETSC_ARCH)/obj
 TESTDIR := $(PETSC_ARCH)/tests
 MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
+TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -101,6 +102,11 @@ ifdef EXTRA_OPTIONS
 endif
 ifdef NP
   TESTFLAGS += -n $(NP)  # set number of processes
+endif
+# Override the default timeout that may be found at the top of config/petsc_harness.sh
+# This must be an integer.  It is given in seconds.
+ifdef TIMEOUT
+  TESTFLAGS += -t $(TIMEOUT)  # Override the default timeout
 endif
 
 
@@ -261,7 +267,9 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 .PHONY: alltest test pre-clean
 test: pre-clean report_tests
 pre-clean:
-	@$(RM) -r $(TESTDIR)/counts
+	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
+	@touch $(TESTLOGFILE)
+
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
 # Targets to run tests in test-$pkg.$lang and delete the executables, language by language
@@ -377,7 +385,7 @@ print-test:
 	-@echo $(TESTTARGETS)
 
 report_tests: $(TESTTARGETS)
-	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts
+	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts | tee -a $(TESTLOGFILE)
 
 help: help-make help-targets help-test
 	-@echo "Above is from: help-make help-targets help-test"

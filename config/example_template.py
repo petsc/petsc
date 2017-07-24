@@ -12,8 +12,12 @@ label='@LABEL@'
 runfiles='@LOCALRUNFILES@'
 wPETSC_DIR='@WPETSC_DIR@'
 petsc_dir='@PETSC_DIR@'
+petsc_arch='@PETSC_ARCH@'
+# Must be consistent with gmakefile
+testlogfile=${petsc_dir}/${petsc_arch}/tests/examples-${petsc_arch}.log
 @DATAFILESPATH_LINE@
 args='@ARGS@'
+timeoutfactor=@TIMEOUTFACTOR@
 
 mpiexec=${PETSCMPIEXEC:-"@MPIEXEC@"}
 diffexec=${PETSCDIFF:-"${petsc_dir}/bin/petscdiff"}

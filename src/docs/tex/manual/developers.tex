@@ -1372,6 +1372,10 @@ With this background, these keywords are are:
                  diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
       \end{lstlisting}
 
+      \item If the filter begins with \lstinline{Error:}, then the test is
+            assumed to be testing the error output, and the error code and
+            output is set up to be tested.
+
       \end{itemize}
 
     \item[]  \textbf{filter\_output}: (\emph{Optional}; \emph{Default:} \lstinline{""})
@@ -1419,6 +1423,20 @@ With this background, these keywords are are:
 
         \item Any defined variable in petscconf.h can be specified with the
         \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
+
+        \item Any define of the form \lstinline{PETSC_HAVE_FOO} can just use
+        \lstinline{requires: foo} similar to how third-party packages are handled.
+
+      \end{itemize}
+
+    \item[]  \textbf{timeoutfactor}: (\emph{Optional}; \emph{Default:} \lstinline{"1"})
+      \begin{itemize}
+
+        \item Tests are limited to a set time that is found at the top of \lstinline{"config/petsc_harness.sh"}.
+              and can be overwritten by passing in the \lstinline{TIMEOUT} argument to \lstinline{gmakefile} (see
+              \lstinline{make -f gmakefile help}.  
+
+        \item This parameters allows one to extend the default timeout for an individual test such that the new timeout time is \lstinline{timeout=(default timeout) x (timeoutfactor)}.
 
       \end{itemize}
 

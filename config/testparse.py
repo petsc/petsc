@@ -51,7 +51,7 @@ sys.tracebacklimit = 0
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
-acceptedkeys="test nsize requires command suffix args filter filter_output localrunfiles comments TODO SKIP output_file".split()
+acceptedkeys="test nsize requires command suffix args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor".split()
 appendlist="args requires comments".split()
 
 import re
