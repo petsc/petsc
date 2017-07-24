@@ -701,8 +701,8 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp,DM dm_mpoint)
   nel = _nel;
   ierr = DMDARestoreElements(dm_vp,&_nel,&_npe,&element);CHKERRQ(ierr);
 
-  ierr = PetscDTGaussTensorQuadrature(2,4,-1.0,1.0,&quadrature);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadrature,NULL,&npoints_q,&xi,NULL);CHKERRQ(ierr);
+  ierr = PetscDTGaussTensorQuadrature(2,1,4,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&xi,NULL);CHKERRQ(ierr);
   ierr = DMSwarmGetCellDM(dm_mpoint,&dmc);CHKERRQ(ierr);
 
   ierr = DMSwarmSortGetAccess(dm_mpoint);CHKERRQ(ierr);
@@ -1285,7 +1285,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
 
 /*
  <sequential run>
- ./ex68 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type lu  -mx 80 -my 80  -stokes_ksp_converged_reason  -dump_freq 25  -stokes_ksp_rtol 1.0e-8 -build_twosided allreduce  -ppcell 2 -nt 4000 -delta_eta 1.0 -randomize_coords
+ ./ex70 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type lu  -mx 80 -my 80  -stokes_ksp_converged_reason  -dump_freq 25  -stokes_ksp_rtol 1.0e-8 -build_twosided allreduce  -ppcell 2 -nt 4000 -delta_eta 1.0 -randomize_coords
 */
 int main(int argc,char **args)
 {

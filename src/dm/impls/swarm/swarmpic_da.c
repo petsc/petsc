@@ -82,8 +82,8 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,Pet
   PetscInt d,q,npoints_q;
   
   PetscFunctionBegin;
-  ierr = PetscDTGaussTensorQuadrature(dim,np_1d,-1.0,1.0,&quadrature);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadrature,NULL,&npoints_q,&quadrature_xi,NULL);CHKERRQ(ierr);
+  ierr = PetscDTGaussTensorQuadrature(dim,1,np_1d,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&quadrature_xi,NULL);CHKERRQ(ierr);
   ierr = PetscMalloc1(dim*npoints_q,&xi);CHKERRQ(ierr);
   for (q=0; q<npoints_q; q++) {
     for (d=0; d<dim; d++) {
