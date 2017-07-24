@@ -734,17 +734,18 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(pos,&_coor);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    const PetscScalar *coor_p;
-    PetscInt          mi[2];
+    PetscReal coor_p[2];
+    PetscInt  mi[2];
     
-    coor_p = &_coor[2*p];
+    coor_p[0] = PetscRealPart(_coor[2*p]);
+    coor_p[1] = PetscRealPart(_coor[2*p+1]);
     
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     
-    if (PetscRealPart(coor_p[0]) < gmin_l[0]) { continue; }
-    if (PetscRealPart(coor_p[0]) > gmax_l[0]) { continue; }
-    if (PetscRealPart(coor_p[1]) < gmin_l[1]) { continue; }
-    if (PetscRealPart(coor_p[1]) > gmax_l[1]) { continue; }
+    if (coor_p[0] < gmin_l[0]) { continue; }
+    if (coor_p[0] > gmax_l[0]) { continue; }
+    if (coor_p[1] < gmin_l[1]) { continue; }
+    if (coor_p[1] > gmax_l[1]) { continue; }
     
     for (d=0; d<dim; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
@@ -818,19 +819,21 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(pos,&_coor);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    const PetscScalar *coor_p;
-    PetscInt          mi[3];
+    PetscReal coor_p[3];
+    PetscInt  mi[3];
     
-    coor_p = &_coor[3*p];
+    coor_p[0] = PetscRealPart(_coor[3*p]);
+    coor_p[1] = PetscRealPart(_coor[3*p+1]);
+    coor_p[2] = PetscRealPart(_coor[3*p+2]);
     
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     
-    if (PetscRealPart(coor_p[0]) < gmin_l[0]) { continue; }
-    if (PetscRealPart(coor_p[0]) > gmax_l[0]) { continue; }
-    if (PetscRealPart(coor_p[1]) < gmin_l[1]) { continue; }
-    if (PetscRealPart(coor_p[1]) > gmax_l[1]) { continue; }
-    if (PetscRealPart(coor_p[2]) < gmin_l[2]) { continue; }
-    if (PetscRealPart(coor_p[2]) > gmax_l[2]) { continue; }
+    if (coor_p[0] < gmin_l[0]) { continue; }
+    if (coor_p[0] > gmax_l[0]) { continue; }
+    if (coor_p[1] < gmin_l[1]) { continue; }
+    if (coor_p[1] > gmax_l[1]) { continue; }
+    if (coor_p[2] < gmin_l[2]) { continue; }
+    if (coor_p[2] > gmax_l[2]) { continue; }
     
     for (d=0; d<dim; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );

@@ -190,7 +190,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
     
     for (k=0; k<npe; k++) {
       for (d=0; d<dim; d++) {
-        elcoor[dim*k+d] = _coor[ dim*element[k] + d ];
+        elcoor[dim*k+d] = PetscRealPart(_coor[ dim*element[k] + d ]);
       }
     }
     

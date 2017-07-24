@@ -97,7 +97,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
       for (d=0; d<dim; d++) {
         swarm_coor[dim*pcnt+d] = 0.0;
         for (k=0; k<npe; k++) {
-          swarm_coor[dim*pcnt+d] += basis[q][k] * elcoor[dim*k+d];
+          swarm_coor[dim*pcnt+d] += basis[q][k] * PetscRealPart(elcoor[dim*k+d]);
         }
       }
       swarm_cellid[pcnt] = e;
@@ -180,7 +180,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
       for (d=0; d<dim; d++) {
         swarm_coor[dim*pcnt+d] = 0.0;
         for (k=0; k<npe; k++) {
-          swarm_coor[dim*pcnt+d] += basis[q][k] * elcoor[dim*k+d];
+          swarm_coor[dim*pcnt+d] += basis[q][k] * PetscRealPart(elcoor[dim*k+d]);
         }
       }
       swarm_cellid[pcnt] = e;

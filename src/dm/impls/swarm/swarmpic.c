@@ -174,7 +174,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   for (p=0; p<n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (b=0; b<bs; b++) {
-        swarm_coor[bs*(n_curr + n_found) + b] = _coor[bs*p+b];
+        swarm_coor[bs*(n_curr + n_found) + b] = PetscRealPart(_coor[bs*p+b]);
       }
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
@@ -333,7 +333,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
   for (p=0; p<n_estimate; p++) {
     if (LA_sfcell[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
       for (b=0; b<bs; b++) {
-        swarm_coor[bs*(n_curr + n_found) + b] = _coor[bs*p+b];
+        swarm_coor[bs*(n_curr + n_found) + b] = PetscRealPart(_coor[bs*p+b]);
       }
       swarm_cellid[n_curr + n_found] = LA_sfcell[p].index;
       n_found++;
