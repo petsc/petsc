@@ -100,9 +100,11 @@ endif
 echo $PETSC_ARCH | grep valgrind > /dev/null
 if ( $? ) then
   set VALGRIND='DUMMYARGUMENT=foobar'
+  set TIMEOUT=600
 else
   set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
   setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
+  set TIMEOUT=1200
 endif
 #
 #check gcov
@@ -161,7 +163,7 @@ git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE TIMEOUT=$TIMEOUT "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& examples.log
 

@@ -2,7 +2,7 @@
 
 scriptname=`basename $0`
 rundir=${scriptname%.sh}
-TIMEOUT=300
+TIMEOUT=60
 
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
