@@ -100,7 +100,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscInt dim)
     PetscInt cells_per_dim[2],nx[2];
     PetscInt n_tricells;
     PetscInt n_trivert;
-    PetscInt *tricells;
+    int *tricells;
     double *trivert,dx,dy;
     PetscInt ii,jj,cnt;
     
