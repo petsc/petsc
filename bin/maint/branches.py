@@ -45,13 +45,13 @@ def printtable(outfile, branches, anchor):
     commithash = commithash.replace("\r", "").replace("\n", "")
     process = subprocess.Popen(["git", "log", "--pretty=format:%at", commithash, "-n", "1"], stdout=subprocess.PIPE)
     unixtime, err = process.communicate()
-    num_days = (time.time() - int(unixtime)) / (60*60*24)
+    num_days = (int(time.time()) - int(unixtime)) / (60*60*24)
     tablerow += "<td>" + str(int(num_days)) + "</td>";
 
     # Last Update:
     process = subprocess.Popen(["git", "log", "--pretty=format:%at", "remotes/" + branch, "-n", "1"], stdout=subprocess.PIPE)
     unixtime, err = process.communicate()
-    num_days = (time.time() - int(unixtime)) / (60*60*24)
+    num_days = (int(time.time()) - int(unixtime)) / (60*60*24)
     tablerow += "<td>" + str(int(num_days)) + "</td>";
 
     # Merged next:
@@ -239,7 +239,7 @@ for line in allbranches.splitlines():
   if (is_other_branch == 1):
     otherbranches.append(line.strip())
 
-printtable(outfile, otherbranches, branchprefix)
+printtable(outfile, otherbranches, "other")
 
 
 # write footer:
