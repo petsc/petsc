@@ -542,7 +542,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
   const PetscInt    *element_list;
   Vec               coor;
   const PetscScalar *_coor;
-  PetscScalar       **basis,*elcoor,*xp;
+  PetscReal         **basis,*elcoor,*xp;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
   
@@ -589,7 +589,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
     
     for (k=0; k<npe; k++) {
       for (d=0; d<dim; d++) {
-        elcoor[dim*k+d] = _coor[ dim*element[k] + d ];
+        elcoor[dim*k+d] = PetscRealPart(_coor[ dim*element[k] + d ]);
       }
     }
     for (q=0; q<npoints; q++) {
@@ -624,8 +624,8 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm,DM dmc,PetscInt e,PetscInt n
       PetscInt  qn,nearest_neighour = -1;
       PetscReal sep,min_sep = PETSC_MAX_REAL;
       
-      coor_q[0] = PetscRealPart(xp[dim*q]);
-      coor_q[1] = PetscRealPart(xp[dim*q]);
+      coor_q[0] = xp[dim*q];
+      coor_q[1] = xp[dim*q];
       for (qn=0; qn<npoints_e; qn++) {
         coor_qn = &swarm_coor[dim*plist_e[qn]];
         sep = 0.0;
@@ -847,8 +847,8 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
 
   ierr = DMDAGetElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
   for (e=0; e<nel; e++) {
-    PetscReal      eta_field_e[NODES_PER_EL];
-    PetscReal      rho_field_e[NODES_PER_EL];
+    PetscScalar    eta_field_e[NODES_PER_EL];
+    PetscScalar    rho_field_e[NODES_PER_EL];
     const PetscInt *element = &element_list[4*e];
 
     for (k=0; k<NODES_PER_EL; k++) {
@@ -857,7 +857,7 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
     }
     
     for (q=0; q<nqp; q++) {
-      PetscReal eta_q,rho_q;
+      PetscScalar eta_q,rho_q;
       
       eta_q = rho_q = 0.0;
       for (k=0; k<NODES_PER_EL; k++) {
@@ -865,8 +865,8 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm,Vec eta_v,Vec rho_v,DM dm_quadrat
         rho_q += Ni[q][k] * rho_field_e[k];
       }
       
-      q_eta[nqp*e+q] = eta_q;
-      q_rhs[nqp*e+q] = rho_q;
+      q_eta[nqp*e+q] = PetscRealPart(eta_q);
+      q_rhs[nqp*e+q] = PetscRealPart(rho_q);
     }
   }
   ierr = DMDARestoreElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
