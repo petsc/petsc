@@ -1,25 +1,20 @@
-#!/usr/bin/env python
-import config.base
 import config.package
-import os
 
-class Configure(config.package.Package):
+class Configure(config.package.CMakePackage):
   def __init__(self, framework):
-    config.package.Package.__init__(self, framework)
-    self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
-    self.downloaddirnames = ['exodus']
-    self.functions       = ['ex_close']
-    self.includes        = ['exodusII.h']
-    self.includedir      = ['include']
-    self.altlibdir       = '.'
+    config.package.CMakePackage.__init__(self, framework)
+    self.gitcommit         = '208a03eae9b1f384e199e78c765a5300aa2d4873'
+    self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames  = ['seacas']
+    self.functions         = ['ex_close']
+    self.includes          = ['exodusII.h']
+    self.liblist           = [['libexodus.a'], ]
+    self.hastests          = 0
     return
 
   def setupDependencies(self, framework):
-    config.package.Package.setupDependencies(self, framework)
+    config.package.CMakePackage.setupDependencies(self, framework)
     self.netcdf = framework.require('config.packages.netcdf', self)
-    # ExodusII does not call HDF5 directly, but it does call nc_def_var_deflate(), which is only
-    # part of libnetcdf when built using --enable-netcdf-4.  Currently --download-netcdf (netcdf.py)
-    # sets --enable-netcdf-4 only when HDF5 is enabled.
     self.hdf5   = framework.require('config.packages.hdf5', self)
     self.deps   = [self.netcdf, self.hdf5]
     return
@@ -27,71 +22,46 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
     if hasattr(self.compilers, 'FC'):
-      self.liblist = [['libexoIIv2for.a'] + libs for libs in self.liblist] + self.liblist
-      # We would like to only test for the Fortran function 'exclos_' when actually linking the
-      # Fortran interface, but that seems to require custom logic, so give up on testing until we
-      # have a better system.
-      #
-      # self.functions.append(self.compilers.mangleFortranFunction('exclos'))
+      self.liblist.append(['libexoIIv2for.a'])
     config.package.Package.configureLibrary(self)
 
-  def Install(self):
+  def formCMakeConfigureArgs(self):
     import os
-    import shutil
-    configOpts     = []
-    configOpts.append('RANLIB="'+self.setCompilers.RANLIB+'"')
-    configOpts.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
-    
-    configOpts.append('NETCDF_LIB="'+self.libraries.toString(self.netcdf.lib)+'"')
-    configOpts.append('NETCDF_INC="'+self.headers.toStringNoDupes(self.netcdf.include)+'"')
+    if not self.cmake.found:
+      raise RuntimeError('CMake > 2.5 is needed to build exodusII\nSuggest adding --download-cmake to ./configure arguments')
 
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+
+    args.append('-DACCESSDIR:PATH='+self.installDir)
+    args.append('-DCMAKE_INSTALL_PREFIX:PATH='+self.installDir)
+    args.append('-DCMAKE_INSTALL_RPATH:PATH='+os.path.join(self.installDir,'lib'))
     self.setCompilers.pushLanguage('C')
-    configOpts.append('CC="'+self.setCompilers.getCompiler()+'"')
-    configOpts.append('CCOPTIONS="'+self.removeWarningFlags(self.setCompilers.getCompilerFlags())+' -DADDC_ "')
+    args.append('-DCMAKE_C_COMPILER:FILEPATH="'+self.setCompilers.getCompiler()+'"')
     self.setCompilers.popLanguage()
-
+    # building the fortran library is technically not required to add exodus support
+    # we build it anyway so that fortran users can still use exodus functions directly 
+    # from their code
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      configOpts.append('FC="'+self.setCompilers.getCompiler()+'"')
-      configOpts.append('F77OPTIONS="'+self.setCompilers.getCompilerFlags()+'"')
+      args.append('-DCMAKE_Fortran_COMPILER:FILEPATH="'+self.setCompilers.getCompiler()+'"')
+      args.append('-DSEACASProj_ENABLE_SEACASExodus_for=ON')
       self.setCompilers.popLanguage()
-
-    self.log.write(repr(dir(self.setCompilers)))
-
-    args = ' '.join(configOpts)
-    cfgfile = 'exodusii'
-    fd = file(os.path.join(self.packageDir,cfgfile), 'w')
-    fd.write(args)
-    fd.close()
-
-    if self.installNeeded(cfgfile):
-      cincludes  = ['exodusII.h','exodusII_cfg.h','exodusII_int.h','exodusII_par.h']
-      fincludes  = ['exodusII.inc','exodusII_int.inc']
-      try:
-        self.logPrintBox('Compiling ExodusII; this may take several minutes')
-        builddir = os.path.join(self.packageDir, 'exodus')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean libexodus.a '+args, timeout=2500, log = self.log)
-        if self.installSudo:
-          self.installDirProvider.printSudoPasswordMessage()
-          output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'libexodus.a')+' '+os.path.join(self.installDir,'lib'), timeout=6000, log = self.log)
-          output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include')+' && '+self.installSudo+'cp -rf '+os.path.join(builddir,'cbind','include','*.h')+' '+os.path.join(self.installDir,'include'), timeout=6000, log = self.log)
-        else:
-          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=6, log = self.log)
-          output,err,ret  = config.base.Configure.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=6, log = self.log)
-          shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
-          for i in cincludes:
-            shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
-        if hasattr(self.setCompilers, 'FC'):
-          output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexoIIv2for.a '+args, timeout=2500, log = self.log)
-          if self.installSudo:
-            output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'cp -rf '+os.path.join(builddir,'libexoIIv2for.a')+' '+os.path.join(self.installDir,'lib'), timeout=6000, log = self.log)
-            output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'cp -rf '+os.path.join(builddir,'forbind','include','*.inc')+' '+os.path.join(self.installDir,'include'), timeout=6000, log = self.log)
-          else:
-            shutil.copy(os.path.join(builddir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
-            for i in fincludes:
-              shutil.copy(os.path.join(builddir,'forbind','include',i),os.path.join(self.installDir,'include'))
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean', timeout=250, log = self.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on ExodusII: '+str(e))
-      self.postInstall(output+err, cfgfile)
-    return self.installDir
+    else:
+      args.append('-DSEACASProj_ENABLE_SEACASExodus_for=OFF')
+    args.append('-DSEACASProj_ENABLE_SEACASExodus=ON')
+    args.append('-DSEACASProj_ENABLE_SEACASExoIIv2for32=OFF')
+    args.append('-DSEACASProj_ENABLE_TESTS=ON')
+    args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
+    args.append('-DTPL_ENABLE_Matio:BOOL=OFF')
+    args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
+    args.append('-DTPL_ENABLE_MPI=OFF')
+    args.append('-DTPL_ENABLE_Pamgen=OFF')
+    args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
+    args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
+    if self.checkSharedLibrariesEnabled():
+      args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=Debug')
+    else:
+      args.append('-DCMAKE_BUILD_TYPE=Release')
+    return args
