@@ -7164,9 +7164,232 @@ preloading at run time for PETSc programs that use these macros. \findex{-preloa
 \chapter{Hints for Performance Tuning}
 \label{ch_performance} \sindex{performance tuning}\hypertarget{ch_performance}{}
 
-This chapter presents some tips on achieving good performance within
-PETSc codes.  We urge users to read these hints before
-evaluating the performance of PETSc application codes.
+This chapter provides hints on how to get to achieve best performance with PETSc, particularly distributed memory machines with multiple CPU sockets per node.
+We focus on machine-related performance optimization here; algorithmic aspects like preconditioner selection are not covered here.
+
+\section{Maximizing Memory Bandwidth}
+
+Most operations in PETSc deal with large datasets (typically vectors and sparse matrices) and perform relatively few arithmetic operations for each byte processed.
+Therefore, the \emph{arithmetic intensity} expressed as the ratio of floating point operations to the number of bytes loaded and stored is usually well below unity for typical PETSc operations.
+Since modern CPUs are able to execute on the order of 10 floating point operations for each byte loaded or stored, PETSc operations are thus mostly limited by the rate at which data can be loaded or stored (\emph{memory bandwidth limited} rather than by the rate of floating point operations.
+
+This section discusses ways to maximize the memory bandwidth achieved by applications based on PETSc.
+Where appropriate, we include benchmark results in order to provide quantitative results on typically performance gains one can achieve through parallelization, both on a single compute node and across nodes.
+In particular, we start with the answer to the common question of why performance generally does not increase 20-fold with a 20-core CPU.
+
+\subsection{Memory Bandwidth vs. Processes} \label{subsec:bandwidth-vs-processes}
+Consider the addition of two large vectors, with the result written to a third vector.
+Because there are no dependencies across the different entries of each vector, the operation is embarrasingly parallel.
+
+\begin{figure}[tb]
+\centerline{ \includegraphics[width=0.8\textwidth]{stream-results-intel}}
+%\centerline{\psfig{file=ghost.eps,angle=0}}
+\caption{Memory bandwidth obtained on Intel hardware (dual socket except KNL) over the number of processes used.
+         One can get close to peak memory bandwidth with only a few processes.}
+\label{fig_stream_intel}
+\end{figure}
+
+As Fig.~\ref{fig_stream_intel} shows, the performance gains due to parallelization on different multi- and many-core CPUs quickly saturates.
+The reason is that only a fraction of the total number of CPU cores is required to saturate the memory channels.
+For example, a dual-socket system equipped with Haswell 12-core Xeon CPUs achieves more than 80 percent of achievable peak memory bandwidth with only four processes per socket (8 total), cf.~Fig.~\ref{fig_stream_intel}.
+Consequently, running with more than 8 MPI ranks on such a system will not increase performance substantially.
+For the same reason, PETSc-based applications usually do not benefit from hyper-threading.
+
+%- make streams
+PETSc provides a simple way to measure memory bandwidth for different numbers of processes via the target \lstinline|make streams| executed from \lstinline|$PETSC_DIR|.
+The output provides an overview of the possible speedup one can obtain on the given machine (not necessarily a shared memory system).
+For example, the following is the most relevant output obtained on a dual-socket system equipped with two six-core-CPUs with hyperthreading:
+\begin{lstlisting}
+np  speedup
+1 1.0
+2 1.58
+3 2.19
+4 2.42
+5 2.63
+6 2.69
+...
+21 3.82
+22 3.49
+23 3.79
+24 3.71
+Estimation of possible speedup of MPI programs based on Streams benchmark.
+It appears you have 1 node(s)
+\end{lstlisting}
+On this machine, one should expect a speed-up of typical memory bandwidth-bound PETSc applications of at most 4x when running multiple MPI ranks on the node.
+Most of the gains are already obtained when running with only 4-6 ranks.
+Because a smaller number of MPI ranks usually implies better preconditioners and better performance for smaller problems, the best performance for PETSc applications is often obtained with less ranks than there are physical CPU cores available.
+
+Following the results from the above run of \lstinline|make streams|, we recommend to use additional nodes instead of placing additional MPI ranks on the nodes.
+In particular, weak scaling (i.e.~constant load per process, increasing the number of processes) and strong scaling (i.e.~constant total work, increasing the number of processes) studies should keep the number of processes per node constant.
+
+\subsection{Non-Uniform Memory Access (NUMA) and Process Placement}
+\sindex{non-uniform memory access}
+CPUs in nodes with more than one CPU socket are internally connected via a high-speed fabric, cf.~Fig.~\ref{fig_numa}, to enable data exchange as well as cache coherency.
+Because main memory on modern systems is connected via the integrated memory controllers on each CPU, memory is accessed in a non-uniform way:
+A process running on one socket has direct access to the memory channels of the respective CPU, whereas requests for memory attached to a different CPU socket need to go through the high-speed fabric.
+Consequently, best aggregate memory bandwidth on the node is obtained when the memory controllers on each CPU are fully saturated.
+However, full saturation of memory channels is only possible if the data is distributed across the different memory channels.
+
+\begin{figure}[tb]
+\centerline{ \includegraphics[width=0.9\textwidth]{numa}}
+%\centerline{\psfig{file=ghost.eps,angle=0}}
+\caption{Schematic of a two-socket NUMA system. Processes should be spread across both CPUs to obtain full bandwidth.}
+\label{fig_numa}
+\end{figure}
+
+Data in memory on modern machines is allocated by the operating system based on a first-touch policy.
+That is, memory is not allocated at the point of issuing \lstinline|malloc()|, but at the point when the respective memory segment is actually touched (read or write).
+Upon first-touch, memory is allocated on the memory channel associated with the respective CPU the process is running on.
+Only if all memory on the respective CPU is already in use (either allocated or as IO cache), memory available through other sockets is considered.
+
+Maximum memory bandwidth can be achieved by ensuring that processes are spread over all sockets in the respective node.
+For example, the recommended placement of a 8-way parallel run on a four-socket machine is to assign two processes to each CPU socket.
+To do so, one needs to know the enumeration of cores and pass the requested information to \lstinline|mpirun|.
+Consider the hardware topology information returned by \lstinline|lstopo| (part of the hwloc package) for the following two-socket machine, in which each CPU consists of six cores and supports hyperthreading:
+\begin{lstlisting}
+Machine (126GB total)
+  NUMANode L#0 (P#0 63GB)
+    Package L#0 + L3 L#0 (15MB)
+      L2 L#0 (256KB) + L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0
+        PU L#0 (P#0)
+        PU L#1 (P#12)
+      L2 L#1 (256KB) + L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1
+        PU L#2 (P#1)
+        PU L#3 (P#13)
+      L2 L#2 (256KB) + L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2
+        PU L#4 (P#2)
+        PU L#5 (P#14)
+      L2 L#3 (256KB) + L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3
+        PU L#6 (P#3)
+        PU L#7 (P#15)
+      L2 L#4 (256KB) + L1d L#4 (32KB) + L1i L#4 (32KB) + Core L#4
+        PU L#8 (P#4)
+        PU L#9 (P#16)
+      L2 L#5 (256KB) + L1d L#5 (32KB) + L1i L#5 (32KB) + Core L#5
+        PU L#10 (P#5)
+        PU L#11 (P#17)
+  NUMANode L#1 (P#1 63GB)
+    Package L#1 + L3 L#1 (15MB)
+      L2 L#6 (256KB) + L1d L#6 (32KB) + L1i L#6 (32KB) + Core L#6
+        PU L#12 (P#6)
+        PU L#13 (P#18)
+      L2 L#7 (256KB) + L1d L#7 (32KB) + L1i L#7 (32KB) + Core L#7
+        PU L#14 (P#7)
+        PU L#15 (P#19)
+      L2 L#8 (256KB) + L1d L#8 (32KB) + L1i L#8 (32KB) + Core L#8
+        PU L#16 (P#8)
+        PU L#17 (P#20)
+      L2 L#9 (256KB) + L1d L#9 (32KB) + L1i L#9 (32KB) + Core L#9
+        PU L#18 (P#9)
+        PU L#19 (P#21)
+      L2 L#10 (256KB) + L1d L#10 (32KB) + L1i L#10 (32KB) + Core L#10
+        PU L#20 (P#10)
+        PU L#21 (P#22)
+      L2 L#11 (256KB) + L1d L#11 (32KB) + L1i L#11 (32KB) + Core L#11
+        PU L#22 (P#11)
+        PU L#23 (P#23)
+\end{lstlisting}
+The relevant physical processor IDs are shown in parentheses prefixed by \lstinline|P#|.
+Here, IDs 0 and 12 share the same physical core and have a common L2 cache.
+IDs 0, 12, 1, 13, 2, 14, 3, 15, 4, 16, 5, 17 share the same socket and have a common L3 cache.
+
+A good placement for a run with six processes is to locate three processes on the first socket and three processes on the second socket.
+Since the mechanisms for doing so vary across MPI implementations, consult the manual of your MPI implementation.
+The following discussion is based on how processor placement is done with MPICH and OpenMPI, where one needs to pass \lstinline|--bind-to core --map-by socket| to \lstinline|mpirun|:
+\begin{lstlisting}[escapechar=\#]
+$> mpirun -n 6 --bind-to core --map-by socket ./stream
+process 0 binding: 100000000000100000000000
+process 1 binding: 000000100000000000100000
+process 2 binding: 010000000000010000000000
+process 3 binding: 000000010000000000010000
+process 4 binding: 001000000000001000000000
+process 5 binding: 000000001000000000001000
+Triad:        45403.1949   Rate (MB/s)
+\end{lstlisting}
+In this configuration, process 0 is bound to the first physical core on the first socket (with IDs 0 and 12), process 1 is bound to the first core on the second socket (IDs 6 and 18), an similarly for the remaining processes.
+The achieved bandwidth of 45 GB/sec is close to the practical peak of about 50 GB/sec available on the machine.
+If, however, all MPI processes are located on the same socket, memory bandwidth drops significantly:
+\begin{lstlisting}[escapechar=\#]
+\$> mpirun -n 6 --bind-to core --map-by core ./stream
+process 0 binding: 100000000000100000000000
+process 1 binding: 010000000000010000000000
+process 2 binding: 001000000000001000000000
+process 3 binding: 000100000000000100000000
+process 4 binding: 000010000000000010000000
+process 5 binding: 000001000000000001000000
+Triad:        25510.7507   Rate (MB/s)
+\end{lstlisting}
+All processes are now mapped to cores on the same socket. As a result, only the first memory channel is fully saturated at 25.5 GB/sec.
+
+One must not assume that \lstinline|mpirun| uses good defaults.
+To demonstrate, compare the full output of \lstinline|make streams| from Section~\ref{subsec:bandwidth-vs-processes} on the left with the results on the right obtained by passing \lstinline|--bind-to core --map-by socket|:\\[.2em]
+
+\begin{minipage}{0.2\textwidth}
+\begin{lstlisting}[escapechar=\#]
+$> make streams
+np  speedup
+1 1.0
+2 1.58
+3 2.19
+4 2.42
+5 2.63
+6 2.69
+7 2.31
+8 2.42
+9 2.37
+10 2.65
+11 2.3
+12 2.53
+13 2.43
+14 2.63
+15 2.74
+16 2.7
+17 3.28
+18 3.66
+19 3.95
+20 3.07
+21 3.82
+22 3.49
+23 3.79
+24 3.71
+\end{lstlisting}
+\end{minipage} \hfill
+\begin{minipage}{0.75\textwidth}
+\begin{lstlisting}[escapechar=\#]
+$> make streams MPI_BINDING="--bind-to core --map-by socket"
+np  speedup
+1 1.0
+2 1.59
+3 2.66
+4 3.5
+5 3.56
+6 4.23
+7 3.95
+8 4.39
+9 4.09
+10 4.46
+11 4.15
+12 4.42
+13 3.71
+14 3.83
+15 4.08
+16 4.22
+17 4.18
+18 4.31
+19 4.22
+20 4.28
+21 4.25
+22 4.23
+23 4.28
+24 4.22
+\end{lstlisting}
+\end{minipage} \\
+For the non-optimized version on the left, the speedup obtained when using any number of processes between 3 and 13 is essentially constant up to fluctuations, indicating that all processes were by default executed on the same socket.
+Only with 14 or more processes, the speedup number increases again.
+In contrast, the results of \lstinline|make streams| with proper processor placement shown on the right resulted in slightly higher overall parallel speedup (identical baselines), in smaller performance fluctuations, and more than 90 percent of peak bandwidth with only six processes.
+
+Machines with job submission systems such as SLURM usually provide similar mechanisms for processor placements through options specified in job submission scripts.
+Please consult the respective manuals.
 
 \section{Compiler Options}
 \sindex{compiler options}
