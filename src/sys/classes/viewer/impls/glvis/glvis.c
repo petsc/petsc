@@ -538,7 +538,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVis
   ierr = PetscViewerSetType(*viewer,PETSCVIEWERGLVIS);CHKERRQ(ierr);
 
   socket       = (PetscViewerGLVis)((*viewer)->data);
-  ierr         = PetscFree(socket->name);
+  ierr         = PetscFree(socket->name);CHKERRQ(ierr);
   ierr         = PetscStrallocpy(name,&socket->name);CHKERRQ(ierr);
   socket->type = type;
   socket->port = port;
@@ -581,7 +581,7 @@ PETSC_EXTERN PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
   PetscInt             port = 19916; /* default for GLVis */
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_GLVIS_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
+  ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_GLVIS_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) {
     type = PETSC_VIEWER_GLVIS_SOCKET;
     ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_GLVIS_HOSTNAME",fname,PETSC_MAX_PATH_LEN,&flg);
@@ -590,7 +590,7 @@ PETSC_EXTERN PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
       ierr = PetscStrcpy(fname,"localhost");
       if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_GLVIS_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     }
-    ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_GLVIS_PORT",sport,16,&flg);
+    ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_GLVIS_PORT",sport,16,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscOptionsStringToInt(sport,&port);
       if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_GLVIS_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}

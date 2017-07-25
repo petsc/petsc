@@ -14,7 +14,7 @@ static PetscErrorCode DMDADestroyGLVisViewerCtx_Private(void *vctx)
 
   PetscFunctionBegin;
   ierr = VecDestroy(&ctx->xlocal);CHKERRQ(ierr);
-  ierr = PetscFree(vctx);
+  ierr = PetscFree(vctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

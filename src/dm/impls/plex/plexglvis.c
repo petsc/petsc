@@ -22,7 +22,7 @@ static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx)
     ierr = VecScatterDestroy(&ctx->scctx[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(ctx->scctx);CHKERRQ(ierr);
-  ierr = PetscFree(vctx);
+  ierr = PetscFree(vctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
