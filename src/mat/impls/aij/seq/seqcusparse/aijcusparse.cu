@@ -1364,6 +1364,7 @@ static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
+  ierr = VecSet(yy,0);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
     CsrMatrix *mat = (CsrMatrix*)matstruct->mat;
@@ -1408,6 +1409,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
     matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
   }
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
+  ierr = VecSet(yy,0);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
 
   if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
