@@ -248,7 +248,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get side set ids */
     ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
-    ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
+    ierr = ex_get_ids(exoid, EX_SIDE_SET, fs_id);CHKERRQ(ierr);
     for (fs = 0; fs < num_fs; ++fs) {
       ierr = ex_get_set_param(exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_side_in_set,&fs_vertex_count_list,num_side_in_set*4,&fs_vertex_list);CHKERRQ(ierr);
