@@ -15,7 +15,6 @@ PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[3
   if (depth == max) {
     PetscReal cx[2];
     
-    //printf("centroid \n");
     cx[0] = (v1[0] + v2[0] + v3[0])/3.0;
     cx[1] = (v1[1] + v2[1] + v3[1])/3.0;
     

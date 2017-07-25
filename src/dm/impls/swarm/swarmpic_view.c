@@ -135,7 +135,6 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   ierr = PetscViewerFileSetMode(fviewer,FILE_MODE_WRITE);CHKERRQ(ierr);
   
   ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
-  //ierr = PetscSNPrintf(datafile,PETSC_MAX_PATH_LEN-1,"%s_swarm_fields.pbin",viewername);CHKERRQ(ierr);
   ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(fviewer,datafile);CHKERRQ(ierr);
   
@@ -219,7 +218,6 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
   
   ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
-  //ierr = PetscSNPrintf(datafile,PETSC_MAX_PATH_LEN-1,"%s_swarm_fields.pbin",viewername);CHKERRQ(ierr);
   ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
   
   /* re-open a sub-viewer for all data fields */

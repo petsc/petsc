@@ -312,7 +312,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   }
 #endif
 
-  { // this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points
+  { /* this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points */
     PetscScalar *LA_coor;
     PetscInt npoints_from_neighbours,bs;
     DataField PField;
