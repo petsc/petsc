@@ -88,8 +88,6 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
-
 PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;

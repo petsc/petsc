@@ -187,8 +187,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
-
 PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode ierr;
