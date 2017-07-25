@@ -275,7 +275,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
   
 #if 0
-  { // safe alternative - however this performs two point locations on: (i) the intial points set and; (ii) the (intial + recieved) point set
+  { /* safe alternative - however this performs two point locations on: (i) the intial points set and; (ii) the (intial + recieved) point set */
     PetscScalar *LA_coor;
     PetscInt bs;
     DataField PField;

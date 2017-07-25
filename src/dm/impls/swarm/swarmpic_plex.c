@@ -377,7 +377,6 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
     if (!point_located) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)\n",point.x,point.y,e);
     else {
       ierr = _ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ);CHKERRQ(ierr);
-      // rescale to [0,1] //
       xi_p[0] = 0.5*(xi_p[0] + 1.0);
       xi_p[1] = 0.5*(xi_p[1] + 1.0);
       
