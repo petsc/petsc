@@ -45,7 +45,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
       Vec XX;
       ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
       ierr = VecView(XX,viewer);CHKERRQ(ierr);
-      ierr = VecDestroy(&XX);
+      ierr = VecDestroy(&XX);CHKERRQ(ierr);
     }
     ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
     Vec XX;
     ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
     ierr = VecView(XX,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&XX);
+    ierr = VecDestroy(&XX);CHKERRQ(ierr);
   }
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
 

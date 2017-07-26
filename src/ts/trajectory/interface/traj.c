@@ -300,7 +300,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
-  if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);}
+  if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);CHKERRQ(ierr);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);

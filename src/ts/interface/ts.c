@@ -631,7 +631,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
   }
   ts->rhsjacobian.time       = t;
-  ierr                       = PetscObjectGetId((PetscObject)U,&ts->rhsjacobian.Xid);
+  ierr                       = PetscObjectGetId((PetscObject)U,&ts->rhsjacobian.Xid);CHKERRQ(ierr);
   ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

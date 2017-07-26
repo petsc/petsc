@@ -934,12 +934,12 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
       else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
       if (funcs[field]) {
         for (q = 0; q < Nq; ++q) {
-          if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", detJ[q], c, q);
+          if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)detJ[q], c, q);
           ierr = (*funcs[field])(dim, time, &coords[q*coordDim], Nc, funcVal, ctx);
           if (ierr) {
             PetscErrorCode ierr2;
             ierr2 = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr2);
-            ierr2 = PetscFree5(funcVal,interpolant,coords,detJ,J);CHKERRQ(ierr);
+            ierr2 = PetscFree5(funcVal,interpolant,coords,detJ,J);CHKERRQ(ierr2);
             ierr2 = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr2);
             CHKERRQ(ierr);
           }

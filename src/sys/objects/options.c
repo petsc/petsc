@@ -2540,7 +2540,6 @@ PetscErrorCode  PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
   if(N) *N = 0;
   if (names)  { ierr = PetscFree(*names);CHKERRQ(ierr); }
   if (values) { ierr = PetscFree(*values);CHKERRQ(ierr); }

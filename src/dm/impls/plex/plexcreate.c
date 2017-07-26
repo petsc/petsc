@@ -1487,10 +1487,8 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
       PetscInt       *graph, p, i, j, k;
 
       numCells    = !rank ? 20 : 0;
-      numEdges    = !rank ? 30 : 0;
       numVerts    = !rank ? 12 : 0;
       firstVertex = numCells;
-      firstEdge   = numCells + numVerts;
       /* Use icosahedron, which for a unit sphere has coordinates which are all cyclic permutations of
 
            (0, \pm 1/\phi+1, \pm \phi/\phi+1)

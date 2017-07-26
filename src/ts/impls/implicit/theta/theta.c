@@ -508,8 +508,8 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
     ierr = TSComputeIJacobian(ts,th->ptime,th->X0,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
 
     for (ntlm=0; ntlm<th->num_tlm; ntlm++) {
-      ierr = MatMult(J,ts->vecs_fwdsensipacked[ntlm],VecsDeltaFwdSensi[ntlm]);
-      ierr = VecScale(VecsDeltaFwdSensi[ntlm],(th->Theta-1.)/th->Theta);
+      ierr = MatMult(J,ts->vecs_fwdsensipacked[ntlm],VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
+      ierr = VecScale(VecsDeltaFwdSensi[ntlm],(th->Theta-1.)/th->Theta);CHKERRQ(ierr);
     }
     /* Add the f_p forcing terms */
     ierr = TSForwardComputeRHSJacobianP(ts,th->ptime,th->X0,ts->vecs_jacp);CHKERRQ(ierr);
@@ -524,8 +524,8 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
     shift = 0.0;
     ierr = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     for (ntlm=0; ntlm<ts->num_parameters; ntlm++) {
-      ierr = MatMult(J,ts->vecs_fwdsensipacked[ntlm],VecsDeltaFwdSensi[ntlm]);
-      ierr = VecScale(VecsDeltaFwdSensi[ntlm],-1);
+      ierr = MatMult(J,ts->vecs_fwdsensipacked[ntlm],VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
+      ierr = VecScale(VecsDeltaFwdSensi[ntlm],-1);CHKERRQ(ierr);
     }
     /* Add the f_p forcing terms */
     ierr = TSForwardComputeRHSJacobianP(ts,th->stage_time,th->X,ts->vecs_jacp);CHKERRQ(ierr);
@@ -556,13 +556,13 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
     if (ts->vecs_integral_sensip) {
       ierr = TSAdjointComputeDRDPFunction(ts,th->ptime,th->X0,ts->vecs_drdp);CHKERRQ(ierr);
       for (ncost=0; ncost<ts->numcost; ncost++) {
-        ierr = TSThetaIntegrandDerivative(ts,ts->num_parameters,ts->vecs_drdy[ncost],&ts->vecs_fwdsensipacked[ts->num_initialvalues],ts->vecs_drdp[ncost],th->VecIntegralSensipTemp);
+        ierr = TSThetaIntegrandDerivative(ts,ts->num_parameters,ts->vecs_drdy[ncost],&ts->vecs_fwdsensipacked[ts->num_initialvalues],ts->vecs_drdp[ncost],th->VecIntegralSensipTemp);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_integral_sensip[ncost],th->time_step*(1.-th->Theta),th->VecIntegralSensipTemp);CHKERRQ(ierr);
       }
     }
     if (ts->vecs_integral_sensi) {
       for (ncost=0; ncost<ts->numcost; ncost++) {
-        ierr = TSThetaIntegrandDerivative(ts,ts->num_initialvalues,ts->vecs_drdy[ncost],ts->vecs_fwdsensipacked,NULL,th->VecIntegralSensiTemp);
+        ierr = TSThetaIntegrandDerivative(ts,ts->num_initialvalues,ts->vecs_drdy[ncost],ts->vecs_fwdsensipacked,NULL,th->VecIntegralSensiTemp);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_integral_sensi[ncost],th->time_step*(1.-th->Theta),th->VecIntegralSensiTemp);CHKERRQ(ierr);
       }
     }
@@ -571,10 +571,10 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   /* Solve the tangent linear equation for forward sensitivities to parameters */
   for (ntlm=0; ntlm<th->num_tlm; ntlm++) {
     if (th->endpoint) {
-      ierr = KSPSolve(ksp,VecsDeltaFwdSensi[ntlm],ts->vecs_fwdsensipacked[ntlm]);
+      ierr = KSPSolve(ksp,VecsDeltaFwdSensi[ntlm],ts->vecs_fwdsensipacked[ntlm]);CHKERRQ(ierr);
     } else {
-      ierr = KSPSolve(ksp,VecsDeltaFwdSensi[ntlm],VecsDeltaFwdSensi[ntlm]);
-      ierr = VecAXPY(ts->vecs_fwdsensipacked[ntlm],1.,VecsDeltaFwdSensi[ntlm]);
+      ierr = KSPSolve(ksp,VecsDeltaFwdSensi[ntlm],VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
+      ierr = VecAXPY(ts->vecs_fwdsensipacked[ntlm],1.,VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
     }
   }
   /*Evaluate the second stage of integral gradients with the 2-stage method:
@@ -586,7 +586,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   if (ts->vecs_integral_sensip) {
     ierr = TSAdjointComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
     for (ncost=0; ncost<ts->numcost; ncost++) {
-      ierr = TSThetaIntegrandDerivative(ts,ts->num_parameters,ts->vecs_drdy[ncost],&ts->vecs_fwdsensipacked[ts->num_initialvalues],ts->vecs_drdp[ncost],th->VecIntegralSensipTemp);
+      ierr = TSThetaIntegrandDerivative(ts,ts->num_parameters,ts->vecs_drdy[ncost],&ts->vecs_fwdsensipacked[ts->num_initialvalues],ts->vecs_drdp[ncost],th->VecIntegralSensipTemp);CHKERRQ(ierr);
       if (th->endpoint) {
         ierr = VecAXPY(ts->vecs_integral_sensip[ncost],th->time_step*th->Theta,th->VecIntegralSensipTemp);CHKERRQ(ierr);
       } else {
@@ -596,7 +596,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   }
   if (ts->vecs_integral_sensi) {
     for (ncost=0; ncost<ts->numcost; ncost++) {
-      ierr = TSThetaIntegrandDerivative(ts,ts->num_initialvalues,ts->vecs_drdy[ncost],ts->vecs_fwdsensipacked,NULL,th->VecIntegralSensiTemp);
+      ierr = TSThetaIntegrandDerivative(ts,ts->num_initialvalues,ts->vecs_drdy[ncost],ts->vecs_fwdsensipacked,NULL,th->VecIntegralSensiTemp);CHKERRQ(ierr);
       if (th->endpoint) {
         ierr = VecAXPY(ts->vecs_integral_sensi[ncost],th->time_step*th->Theta,th->VecIntegralSensiTemp);CHKERRQ(ierr);
       } else {
@@ -607,7 +607,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
 
   if (!th->endpoint) { /* VecsDeltaFwdSensip are the increment for the stage values for the 1-stage method */
     for (ntlm=0; ntlm<th->num_tlm; ntlm++) {
-      ierr = VecAXPY(ts->vecs_fwdsensipacked[ntlm],(1.-th->Theta)/th->Theta,VecsDeltaFwdSensi[ntlm]);
+      ierr = VecAXPY(ts->vecs_fwdsensipacked[ntlm],(1.-th->Theta)/th->Theta,VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

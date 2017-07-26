@@ -2858,9 +2858,9 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           if (subc >= 0) {
             const PetscInt ccell = subpoints[d+1][subc];
 
-            ierr = DMPlexGetCone(dm, ccell, &cone);
-            ierr = DMPlexGetConeSize(dm, ccell, &coneSize);
-            ierr = DMPlexGetConeOrientation(dm, ccell, &ornt);
+            ierr = DMPlexGetCone(dm, ccell, &cone);CHKERRQ(ierr);
+            ierr = DMPlexGetConeSize(dm, ccell, &coneSize);CHKERRQ(ierr);
+            ierr = DMPlexGetConeOrientation(dm, ccell, &ornt);CHKERRQ(ierr);
             for (c = 0; c < coneSize; ++c) {
               if (cone[c] == point) {
                 fornt = ornt[c];
