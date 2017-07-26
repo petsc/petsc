@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     self.includes         = ['umfpack.h','cholmod.h','klu.h']
     self.hastests         = 1
     self.hastestsdatafiles= 1
-    self.precisions       = ['single','double']
+    self.precisions       = ['double']
     return
 
   def setupHelp(self, help):

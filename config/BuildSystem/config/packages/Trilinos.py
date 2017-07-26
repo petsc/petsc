@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows= 0
     self.hastests         = 1
     self.requiresrpath    = 1
+    self.precisions       = ['double']
     return
 
   def setupDependencies(self, framework):
