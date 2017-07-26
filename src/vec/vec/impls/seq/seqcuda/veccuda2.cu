@@ -1071,17 +1071,13 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 
 PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUDA);
+  PetscCheckTypeName(w,VECSEQCUDA);
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
@@ -1115,17 +1111,13 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
 PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUDA);
+  PetscCheckTypeName(w,VECSEQCUDA);
 
   if (v->petscnative) {
     v->data = w->data;

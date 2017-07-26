@@ -1085,16 +1085,10 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJCUSPARSETriFactorStruct     *upTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtr;
   THRUSTARRAY                           *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
   PetscErrorCode                        ierr;
-  VecType                               t;
-  PetscBool                             flg;
 
   PetscFunctionBegin;
-  ierr = VecGetType(bb,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed into MatSolve_SeqAIJCUSPARSE (Arg #2). Can only deal with %s\n.",t,VECSEQCUDA);
-  ierr = VecGetType(xx,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed into MatSolve_SeqAIJCUSPARSE (Arg #3). Can only deal with %s\n.",t,VECSEQCUDA);
+  PetscCheckTypeName(bb,VECSEQCUDA);
+  PetscCheckTypeName(xx,VECSEQCUDA);
 
   /* Get the GPU pointers */
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
