@@ -302,6 +302,8 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(xx,VECSEQCUSP,VECMPICUSP);
+  PetscCheckTypeNames(yy,VECSEQCUSP,VECMPICUSP);
   /*
     DM 1/28/2014: As of version 0.4.0 cusp does not handle the case of
     zero matrices well.  It produces segfaults on some platforms.
@@ -366,6 +368,9 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   CUSPARRAY      *xarray     = NULL,*yarray=NULL,*zarray=NULL;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(xx,VECSEQCUSP,VECMPICUSP);
+  PetscCheckTypeNames(yy,VECSEQCUSP,VECMPICUSP);
+  PetscCheckTypeNames(zz,VECSEQCUSP,VECMPICUSP);
   /*
     DM 1/28/2014: As of version 0.4.0 cusp does not handle the case of
     zero matrices well.  It produces segfaults on some platforms.
