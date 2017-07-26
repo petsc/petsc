@@ -43,9 +43,9 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
   mapping->globalend   = end;
   if (!((PetscObject)mapping)->type_name) {
     if ((end - start) > PetscMax(4*n,1000000)) {
-      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGHASH);
+      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGHASH);CHKERRQ(ierr);
     } else {
-      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGBASIC);
+      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGBASIC);CHKERRQ(ierr);
     }
   }
   ierr = (*mapping->ops->globaltolocalmappingsetup)(mapping);CHKERRQ(ierr);

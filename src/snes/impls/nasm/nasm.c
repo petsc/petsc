@@ -664,7 +664,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     oscat   = nasm->oscatter[i];
     oscat_copy = nasm->oscatter_copy[i];
     gscat   = nasm->gscatter[i];
-    iscat   = nasm->iscatter[i];
     ierr = VecScatterBegin(oscat,X,Xl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterBegin(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (B) {

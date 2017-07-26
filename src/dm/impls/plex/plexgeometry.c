@@ -73,7 +73,6 @@ static PetscErrorCode DMPlexClosestPoint_Simplex_2D_Internal(DM dm, const PetscS
 
   xi  = PetscMax(xi,  0.0);
   eta = PetscMax(eta, 0.0);
-  r   = (xi + eta)/2.0;
   if (xi + eta > 2.0) {
     r    = (xi + eta)/2.0;
     xi  /= r;

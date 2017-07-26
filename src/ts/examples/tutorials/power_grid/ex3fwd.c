@@ -244,7 +244,7 @@ int main(int argc,char **argv)
   ierr = MatCreateVecs(A,&Jacp[2],NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&qgrad[0]);CHKERRQ(ierr);
-  ierr = VecSetSizes(qgrad[0],PETSC_DECIDE,3);
+  ierr = VecSetSizes(qgrad[0],PETSC_DECIDE,3);CHKERRQ(ierr);
   ierr = VecSetFromOptions(qgrad[0]);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
