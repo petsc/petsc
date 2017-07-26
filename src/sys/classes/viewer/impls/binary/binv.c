@@ -1386,7 +1386,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
     The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors

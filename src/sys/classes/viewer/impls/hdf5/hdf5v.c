@@ -760,7 +760,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
   PETSC_VIEWER_HDF5_ - Creates an HDF5 PetscViewer shared by all processors in a communicator.
