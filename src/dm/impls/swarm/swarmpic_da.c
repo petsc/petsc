@@ -10,7 +10,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,P
 {
   PetscErrorCode ierr;
   PetscReal *xi;
-  PetscInt d,npoints,cnt;
+  PetscInt d,npoints=0,cnt;
   PetscReal ds[] = {0.0,0.0,0.0};
   PetscInt ii,jj,kk;
 
