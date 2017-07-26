@@ -82,9 +82,11 @@ DataExEnd()
 
 const char *status_names[] = {"initialized", "finalized", "unknown"};
 
-PetscLogEvent PTATIN_DataExchangerTopologySetup;
-PetscLogEvent PTATIN_DataExchangerBegin;
-PetscLogEvent PTATIN_DataExchangerEnd;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerTopologySetup;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerBegin;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerEnd;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerSendCount;
+PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 
 PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
 {
@@ -359,7 +361,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   PetscFunctionBegin;
   if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
 
-  ierr = PetscLogEventBegin(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
   /* given infomation about all my neighbours, make map symmetric */
   ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
   /* update my arrays */
@@ -386,7 +388,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
     d->recv_tags[n] = (int)rt;
   }
   d->topology_status = DEOBJECT_FINALIZED;
-  ierr = PetscLogEventEnd(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -409,10 +411,12 @@ PetscErrorCode _DataExConvertProcIdToLocalIndex(DataEx de,PetscMPIInt proc_id,Pe
 
 PetscErrorCode DataExInitializeSendCount(DataEx de)
 {
-  PetscMPIInt i;
+  PetscMPIInt    i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (de->topology_status != DEOBJECT_FINALIZED) SETERRQ(de->comm, PETSC_ERR_ORDER, "Topology not finalized");
+  ierr = PetscLogEventBegin(DMSWARM_DataExchangerSendCount,0,0,0,0);CHKERRQ(ierr);
   de->message_lengths_status = DEOBJECT_INITIALIZED;
   for (i = 0; i < de->n_neighbour_procs; ++i) {
     de->messages_to_be_sent[i] = 0;
@@ -441,10 +445,13 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
 
 PetscErrorCode DataExFinalizeSendCount(DataEx de)
 {
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
   
   de->message_lengths_status = DEOBJECT_FINALIZED;
+  ierr = PetscLogEventEnd(DMSWARM_DataExchangerSendCount,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -492,6 +499,7 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
   PetscFunctionBegin;
   if (de->topology_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Topology not finalized" );
   if (de->message_lengths_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths not finalized" );
+  ierr = PetscLogEventBegin(DMSWARM_DataExchangerPack,0,0,0,0);CHKERRQ(ierr);
   de->packer_status = DEOBJECT_INITIALIZED;
   ierr = _DataExInitializeTmpStorage(de);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
@@ -593,6 +601,7 @@ PetscErrorCode DataExPackFinalize(DataEx de)
   de->recv_message_length = total;
   de->packer_status = DEOBJECT_FINALIZED;
   de->communication_status = DEOBJECT_INITIALIZED;
+  ierr = PetscLogEventEnd(DMSWARM_DataExchangerPack,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +619,7 @@ PetscErrorCode DataExBegin(DataEx de)
   if (de->packer_status != DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packer not finalized" );
   if (de->communication_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has already been finalized. Must call DataExInitialize() first." );
   if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
-  ierr = PetscLogEventBegin(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
@@ -618,7 +627,7 @@ PetscErrorCode DataExBegin(DataEx de)
     dest = ((char*)de->send_message) + de->unit_message_size * de->message_offsets[i];
     ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -635,7 +644,7 @@ PetscErrorCode DataExEnd(DataEx de)
   PetscFunctionBegin;
   if (de->communication_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DataExInitialize() first." );
   if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
-  ierr = PetscLogEventBegin(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
   ierr = PetscMalloc1(np+1, &message_recv_offsets);CHKERRQ(ierr);
   message_recv_offsets[0] = 0;
@@ -653,7 +662,7 @@ PetscErrorCode DataExEnd(DataEx de)
   ierr = MPI_Waitall( 2*np, de->_requests, de->_stats );CHKERRQ(ierr);
   ierr = PetscFree(message_recv_offsets);CHKERRQ(ierr);
   de->communication_status = DEOBJECT_FINALIZED;
-  ierr = PetscLogEventEnd(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

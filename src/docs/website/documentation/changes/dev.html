@@ -173,6 +173,7 @@
         <li>Changed prototypes for DMCompositeGather() and DMCompositeGatherArray()</li>
         <li>Replace calls to DMDACreateXd() with DMDACreateXd(), [DMSetFromOptions()] DMSetUp()</li>
         <li>DMDACreateXd() no longer can take negative values for dimensons, instead pass positive values and call DMSetFromOptions() immediately after</li>
+        <li>Added DMSwarm which supports data management and data movement of arbitrary fields defined on a point set. Such functionality is useful for partcle based methods. High level support for particle-in-cell methods is provided when using either a DMDA or DMPLEX mesh.</li>
       </ul>
       <h4>DMPlex:</h4>
       <ul>

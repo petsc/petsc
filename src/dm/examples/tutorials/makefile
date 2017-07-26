@@ -88,6 +88,14 @@ ex19: ex19.o   chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_DM_LIB}
 	${RM} -f ex19.o
 
+ex20: ex20.o   chkopts
+	-${CLINKER} -o ex20 ex20.o  ${PETSC_DM_LIB}
+	${RM} -f ex20.o
+
+ex21: ex21.o   chkopts
+	-${CLINKER} -o ex21 ex21.o  ${PETSC_DM_LIB}
+	${RM} -f ex21.o
+
 ex51: ex51.o  chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
 	${RM} ex51.o

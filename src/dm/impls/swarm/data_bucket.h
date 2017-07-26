@@ -6,7 +6,7 @@
 #include <petsc.h>
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 
-
+#define DATA_BUCKET_BUFFER_DEFAULT -1
 #define DATAFIELD_POINT_ACCESS_GUARD
 
 /* Logging flag */
