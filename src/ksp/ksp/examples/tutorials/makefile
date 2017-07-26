@@ -359,19 +359,20 @@ runex1_3:
 	   else printf "${PWD}\nPossible problem with ex1_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_3.tmp
 runex1_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse > ex1_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse \
+	   -vec_type cuda > ex1_1.tmp 2>&1;\
 	   if (${DIFF} output/ex1_1_aijcusparse.out ex1_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_1 for aijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2_aijcusparse:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
-	  -mat_type aijcusparse > ex1_2.tmp 2>&1;   \
+	   -mat_type aijcusparse -vec_type cuda > ex1_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_2_aijcusparse.out ex1_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_2 for aijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_2.tmp
 runex1_3_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex1 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse >\
-	   ex1_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse \
+	   -vec_type cuda > ex1_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_3_aijcusparse.out ex1_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_3 for aijcusparse, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_3.tmp

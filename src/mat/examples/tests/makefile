@@ -995,34 +995,34 @@ runex5_3:
 	${RM} -f ex5_3.tmp;
 
 runex5_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -rectA > ex5_1_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -vec_type cuda -rectA > ex5_1_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_11_A.out ex5_1_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_11_A for seqaijcusparse, diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_1_aijcusparse.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -rectB > ex5_1_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -vec_type cuda -rectB > ex5_1_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_11_B.out ex5_1_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_11_B for seqaijcusparse, diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_1_aijcusparse.tmp;
 
 runex5_2_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaijcusparse > ex5_1_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaijcusparse -vec_type cuda > ex5_1_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_21.out ex5_1_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_21 for mpiaijcusparse,np = 1,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_1_aijcusparse.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaijcusparse > ex5_1_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaijcusparse -vec_type cuda > ex5_1_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_23.out ex5_1_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_23 for mpiaijcusparse,np = 3,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_1_aijcusparse.tmp;
 
 runex5_3_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaijcusparse -test_diagonalscale > ex5_3_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale > ex5_3_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_31.out ex5_3_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_31 for mpiaijcusparse,np = 1,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_3_aijcusparse.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaijcusparse -test_diagonalscale > ex5_3_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale > ex5_3_aijcusparse.tmp 2>&1; \
 	if (${DIFF} output/ex5_33.out ex5_3_aijcusparse.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex5_33 for mpiaijcusparse,np = 3,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_3_aijcusparse.tmp;
