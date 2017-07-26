@@ -115,21 +115,21 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get cell sets IDs */
     ierr = PetscMalloc1(num_cs, &cs_id);CHKERRQ(ierr);
-    ierr = ex_get_elem_blk_ids(exoid, cs_id);CHKERRQ(ierr);
+    ierr = ex_get_ids (exoid, EX_ELEM_BLOCK, cs_id);CHKERRQ(ierr);
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
     /* First set sizes */
     for (cs = 0, c = 0; cs < num_cs; cs++) {
-      ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
+      ierr = ex_get_block(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set,&num_vertex_per_cell, 0, 0, &num_attr);CHKERRQ(ierr);
       for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMPlexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
       }
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
     for (cs = 0, c = 0; cs < num_cs; cs++) {
-      ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
+      ierr = ex_get_block(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, 0, 0, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,&cs_connect,num_vertex_per_cell,&cone);CHKERRQ(ierr);
-      ierr = ex_get_elem_conn(exoid, cs_id[cs], cs_connect);CHKERRQ(ierr);
+      ierr = ex_get_conn (exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL);CHKERRQ(ierr);
       /* EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
@@ -179,17 +179,17 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Read from ex_get_node_set_ids() */
     int *vs_id;
     /* Read from ex_get_node_set_param() */
-    int num_vertex_in_set, num_attr;
+    int num_vertex_in_set;
     /* Read from ex_get_node_set() */
     int *vs_vertex_list;
 
     /* Get vertex set ids */
     ierr = PetscMalloc1(num_vs, &vs_id);CHKERRQ(ierr);
-    ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
+    ierr = ex_get_ids(exoid, EX_NODE_SET, vs_id);CHKERRQ(ierr);
     for (vs = 0; vs < num_vs; ++vs) {
-      ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
+      ierr = ex_get_set_param(exoid, EX_NODE_SET, vs_id[vs], &num_vertex_in_set, NULL);
       ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
-      ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
+      ierr = ex_get_set(exoid, EX_NODE_SET, vs_id[vs], vs_vertex_list, NULL);CHKERRQ(ierr);
       for (v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
@@ -240,7 +240,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     /* Read from ex_get_side_set_ids() */
     int *fs_id;
     /* Read from ex_get_side_set_param() */
-    int num_side_in_set, num_dist_fact_in_set;
+    int num_side_in_set;
     /* Read from ex_get_side_set_node_list() */
     int *fs_vertex_count_list, *fs_vertex_list;
     /* Read side set labels */
@@ -248,9 +248,9 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
 
     /* Get side set ids */
     ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
-    ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
+    ierr = ex_get_ids(exoid, EX_SIDE_SET, fs_id);CHKERRQ(ierr);
     for (fs = 0; fs < num_fs; ++fs) {
-      ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);
+      ierr = ex_get_set_param(exoid, EX_SIDE_SET, fs_id[fs], &num_side_in_set, NULL);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_side_in_set,&fs_vertex_count_list,num_side_in_set*4,&fs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
       /* Get the specific name associated with this side set ID. */
