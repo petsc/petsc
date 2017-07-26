@@ -88,8 +88,6 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
   PetscInt       nt;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(xx,VECSEQCUSP,VECMPICUSP);
-  PetscCheckTypeNames(yy,VECSEQCUSP,VECMPICUSP);
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%D) and xx (%D)",A->cmap->n,nt);
   ierr = VecScatterInitializeForGPU(a->Mvctx,xx,SCATTER_FORWARD);CHKERRQ(ierr);

@@ -971,8 +971,6 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(bb,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
   /* Analyze the matrix and create the transpose ... on the fly */
   if (!loTriFactorT && !upTriFactorT) {
     ierr = MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(A);CHKERRQ(ierr);
@@ -1038,8 +1036,6 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec
   PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(bb,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
   /* Analyze the matrix and create the transpose ... on the fly */
   if (!loTriFactorT && !upTriFactorT) {
     ierr = MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(A);CHKERRQ(ierr);
@@ -1091,8 +1087,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
-  PetscCheckTypeName(bb,VECSEQCUDA);
-  PetscCheckTypeName(xx,VECSEQCUDA);
 
   /* Get the GPU pointers */
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
@@ -1150,8 +1144,6 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec x
   PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(bb,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
   /* Get the GPU pointers */
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(bb,&barray);CHKERRQ(ierr);
@@ -1363,8 +1355,6 @@ static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   cusparseStatus_t             stat;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(yy,VECSEQCUDA,VECMPICUDA);
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   ierr = VecCUDAGetArrayRead(xx,&xarray);CHKERRQ(ierr);
@@ -1406,8 +1396,6 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   cusparseStatus_t             stat;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(yy,VECSEQCUDA,VECMPICUDA);
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   if (!matstructT) {
@@ -1457,9 +1445,6 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
   cusparseStatus_t                stat;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(yy,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(zz,VECSEQCUDA,VECMPICUDA);
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   try {
@@ -1519,9 +1504,6 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
   cusparseStatus_t                stat;
 
   PetscFunctionBegin;
-  PetscCheckTypeNames(xx,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(yy,VECSEQCUDA,VECMPICUDA);
-  PetscCheckTypeNames(zz,VECSEQCUDA,VECMPICUDA);
   /* The line below is necessary due to the operations that modify the matrix on the CPU (axpy, scale, etc) */
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   if (!matstructT) {

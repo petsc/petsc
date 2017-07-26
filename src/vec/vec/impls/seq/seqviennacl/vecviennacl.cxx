@@ -24,6 +24,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   *a   = 0;
   ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
@@ -36,6 +37,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVect
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   v->valid_GPU_array = PETSC_VIENNACL_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -47,6 +49,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   *a   = 0;
   ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
@@ -57,6 +60,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector 
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   PetscFunctionReturn(0);
 }
 
@@ -65,6 +69,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   *a   = 0;
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
@@ -77,6 +82,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   v->valid_GPU_array = PETSC_VIENNACL_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -234,6 +240,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (v->map->n > 0) {
     if (v->valid_GPU_array == PETSC_VIENNACL_CPU) {
@@ -262,6 +269,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_VIENNACL_GPU) {
     ierr = PetscLogEventBegin(VEC_ViennaCLCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
@@ -927,6 +935,7 @@ PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecResetArray_SeqViennaCL_Private(vin);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_VIENNACL_CPU;
@@ -938,6 +947,7 @@ PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_VIENNACL_CPU;
@@ -950,6 +960,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin,const PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQVIENNACL,VECMPIVIENNACL);
   ierr = VecViennaCLCopyFromGPU(vin);CHKERRQ(ierr);
   ierr = VecReplaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_VIENNACL_CPU;
