@@ -62,7 +62,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   if (!flg) PetscFunctionReturn(0);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL || format == PETSC_VIEWER_ASCII_VTK_COORDS || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX) PetscFunctionReturn(0);
+  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL || format == PETSC_VIEWER_ASCII_VTK_COORDS || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX || format == PETSC_VIEWER_ASCII_GLVIS) PetscFunctionReturn(0);
 
   if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);

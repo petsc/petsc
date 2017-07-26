@@ -31,7 +31,7 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
+    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",rank,dd->M,dd->N,dd->P,dd->m,dd->n,dd->p,dd->w,dd->s);CHKERRQ(ierr);
@@ -50,6 +50,8 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+    } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
+      ierr = DMView_DA_GLVis(da,viewer);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }

@@ -352,6 +352,7 @@ extern PetscErrorCode DMProjectFunctionLocal_DA(DM, PetscReal, PetscErrorCode (*
 extern PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);
 extern PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 extern PetscErrorCode DMLocatePoints_DA_Regular(DM,Vec,DMPointLocationType,PetscSF);
+PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 {
@@ -447,6 +448,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->computel2gradientdiff       = DMComputeL2GradientDiff_DA;
   da->ops->getneighbors                = DMGetNeighbors_DA;
   da->ops->locatepoints                = DMLocatePoints_DA_Regular;
+  ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

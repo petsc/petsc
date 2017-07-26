@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer);
 
 PetscBool PetscViewerRegisterAllCalled;
 
@@ -53,6 +54,7 @@ PetscErrorCode  PetscViewerRegisterAll(void)
   ierr = PetscViewerRegister(PETSCVIEWERSAWS,        PetscViewerCreate_SAWs);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerRegister(PETSCVIEWERVTK,        PetscViewerCreate_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerRegister(PETSCVIEWERGLVIS,      PetscViewerCreate_GLVis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

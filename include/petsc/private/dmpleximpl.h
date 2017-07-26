@@ -182,6 +182,8 @@ PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Native(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexGetFieldType_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt *, PetscViewerVTKFieldType *);
+PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM,PetscViewer);
+PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject,PetscViewer);
 #if defined(PETSC_HAVE_HDF5)
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local_HDF5(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5(Vec, PetscViewer);

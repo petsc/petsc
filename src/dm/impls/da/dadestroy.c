@@ -99,6 +99,8 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->ofillcols);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)da,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
+
   /* ierr = PetscSectionDestroy(&dd->defaultGlobalSection);CHKERRQ(ierr); */
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(dd);CHKERRQ(ierr);
