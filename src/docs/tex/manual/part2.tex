@@ -5344,12 +5344,16 @@ The event monitoring functionality is only available with PETSc's implicit time-
 \section{Using TChem from PETSc}
 \label{sec_tchem}
 
-\url{https://bitbucket.org/jedbrown/tchem} is a package originally developed at Sandia National Laboratory that can read in
-\url{https://en.wikipedia.org/wiki/CHEMKIN} data files and compute the right hand side function and its Jacobian for the ODE reaction system.
-To utilize the PETSc ODE solvers for these systems first install PETSc with the additional {\tt ./configure} 
- option {\tt --download-tchem}. We currently provide two examples of its use; one for single cell reaction and one for an ``artificial''
-one dimensional problem with periodic boundary conditions and diffusion of all species. The examples self explanatory and are {\tt \$PETSC\_DIR/src/ts/examples/tutorials/extchem.c and exchemfield.c.
-
+TChem\footnote{\href{https://bitbucket.org/jedbrown/tchem}{bitbucket.org/jedbrown/tchem}} 
+is a package originally developed at Sandia National Laboratory that can read in 
+CHEMKIN\footnote{\href{https://en.wikipedia.org/wiki/CHEMKIN}{en.wikipedia.org/wiki/CHEMKIN}} 
+data files and compute the right hand side function and its Jacobian for a reaction ODE system.
+To utilize PETSc's ODE solvers for these systems, first install PETSc with the additional 
+\trl{./configure} option \trl{--download-tchem}. We currently provide two examples of its use;
+one for single cell reaction and one for an ``artificial'' one dimensional problem with 
+periodic boundary conditions and diffusion of all species. The self-explanatory examples 
+are \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}} 
+and \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/exchemfield.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/exchemfield.c}}.
 
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
