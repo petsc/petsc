@@ -287,13 +287,16 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,PetscInt size,P
   PetscInt              i;
 
   PetscFunctionBegin;
-
+  
   for (i=0; i < network->ncomponent; i++) {
     ierr = PetscStrcmp(component->name,name,&flg);CHKERRQ(ierr);
     if (flg) {
       *key = i;
       PetscFunctionReturn(0);
     }
+  }
+  if(network->ncomponent == MAX_COMPONENTS) {
+    SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Number of components registered exceeds the max %D",MAX_COMPONENTS);
   }
 
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);

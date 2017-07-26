@@ -7,6 +7,8 @@
 
 #define MAX_DATA_AT_POINT 36
 
+#define MAX_COMPONENTS 16
+
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
@@ -73,7 +75,7 @@ typedef struct {
   DMNetworkEdgeInfo                 edge;
 
   PetscInt                          ncomponent; /* Number of components */
-  DMNetworkComponent                component[10]; /* List of components */
+  DMNetworkComponent                component[MAX_COMPONENTS]; /* List of components */
   DMNetworkComponentHeader          header;
   DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
