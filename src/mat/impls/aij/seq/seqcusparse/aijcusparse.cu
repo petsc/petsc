@@ -55,10 +55,12 @@ PetscErrorCode MatCUSPARSESetHandle(Mat A,const cusparseHandle_t handle)
   Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
-  if (cusparsestruct->handle) {
-    stat = cusparseDestroy(cusparsestruct->handle);CHKERRCUDA(stat);
+  if (cusparsestruct->handle != handle) {
+    if (cusparsestruct->handle) {
+      stat = cusparseDestroy(cusparsestruct->handle);CHKERRCUDA(stat);
+    }
+    cusparsestruct->handle = handle;
   }
-  cusparsestruct->handle = handle;
   stat = cusparseSetPointerMode(cusparsestruct->handle, CUSPARSE_POINTER_MODE_DEVICE);CHKERRCUDA(stat);
   PetscFunctionReturn(0);
 }
