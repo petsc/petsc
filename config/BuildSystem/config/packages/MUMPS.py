@@ -132,7 +132,7 @@ class Configure(config.package.Package):
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('OPTL    = -O -I.\n')
     g.write('INCS = $(INCPAR)\n')
-    g.write('LIB = $(LIBPAR)\n')
+    g.write('LIBS = $(LIBPAR)\n')
     if self.argDB['with-mumps-serial']:
       g.write('LIBSEQNEEDED = libseqneeded\n')
       g.write('LIBS = $(LIBSEQ)\n')
