@@ -31,11 +31,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B       = *newmat;
-  Mat_SeqAIJMKL *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+  Mat_SeqAIJMKL  *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    aijmkl = (Mat_SeqAIJMKL*)B->spptr;
   }
 
   /* Reset the original function pointers. */
@@ -47,10 +48,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
+
   /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this 
-   * simply involves destroying the MKL sparse matrix handle.
-   * We don't free the Mat_SeqAIJMKL struct itself, as this will
-   * cause problems later when MatDestroy() tries to free it. */
+   * simply involves destroying the MKL sparse matrix handle and then freeing 
+   * the spptr pointer. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (aijmkl->sparse_optimized) {
     sparse_status_t stat;
@@ -60,6 +65,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
     }
   }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+  ierr = PetscFree(B->spptr);CHKERRQ(ierr);
 
   /* Change the type of B to MATSEQAIJ. */
   ierr = PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
@@ -76,17 +82,22 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL*) A->spptr;
 
   PetscFunctionBegin;
-  /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
+
+  /* If MatHeaderMerge() was used, then this SeqAIJMKL matrix will not have an 
+   * spptr pointer. */
+  if (aijmkl) {
+    /* Clean up everything in the Mat_SeqAIJMKL data structure, then free A->spptr. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-  if (aijmkl->sparse_optimized) {
-    sparse_status_t stat = SPARSE_STATUS_SUCCESS;
-    stat = mkl_sparse_destroy(aijmkl->csrA);
-    if (stat != SPARSE_STATUS_SUCCESS) {
-      PetscFunctionReturn(PETSC_ERR_LIB);
+    if (aijmkl->sparse_optimized) {
+      sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+      stat = mkl_sparse_destroy(aijmkl->csrA);
+      if (stat != SPARSE_STATUS_SUCCESS) {
+        PetscFunctionReturn(PETSC_ERR_LIB);
+      }
     }
-  }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+    ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+  }
 
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
@@ -510,19 +521,24 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
-  Mat_SeqAIJMKL *aijmkl;
-  PetscBool       set;
+  Mat_SeqAIJMKL  *aijmkl;
+  PetscBool      set;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
+  ierr = PetscObjectTypeCompare((PetscObject)A,type,&sametype);CHKERRQ(ierr);
+  if (sametype) PetscFunctionReturn(0);
+
   ierr     = PetscNewLog(B,&aijmkl);CHKERRQ(ierr);
   B->spptr = (void*) aijmkl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. 
-   * Currently the transposed operations are not being set because I encounter memory corruption 
+   * We also parse some command line options below, since those determine some of the methods we point to.
+   * Note: Currently the transposed operations are not being set because I encounter memory corruption 
    * when these are enabled.  Need to look at this with Valgrind or similar. --RTM */
   B->ops->duplicate        = MatDuplicate_SeqAIJMKL;
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJMKL;
@@ -561,6 +577,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   }
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJMKL);CHKERRQ(ierr);
   *newmat = B;
