@@ -128,8 +128,13 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   if (!aijmkl->no_SpMV2) {
     sparse_status_t stat;
     stat = mkl_sparse_copy(aijmkl->csrA,aijmkl->descr,&aijmkl_dest->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_copy");
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
     stat = mkl_sparse_optimize(aijmkl_dest->csrA);
     if (stat != SPARSE_STATUS_SUCCESS) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_optimize");
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
     aijmkl_dest->sparse_optimized = PETSC_TRUE;
@@ -192,6 +197,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
     stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
     stat = mkl_sparse_optimize(aijmkl->csrA);
     if (stat != SPARSE_STATUS_SUCCESS) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to create matrix handle/complete mkl_sparse_optimize");
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
     aijmkl->sparse_optimized = PETSC_TRUE;
