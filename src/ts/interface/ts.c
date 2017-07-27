@@ -2868,6 +2868,119 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 /* ----------- Routines to set solver parameters ---------- */
 
 /*@
+   TSSetMaxSteps - Sets the maximum number of steps to use.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  maxsteps - maximum number of steps to use
+
+   Options Database Keys:
+.  -ts_max_steps <maxsteps> - Sets maxsteps
+
+   Notes:
+   The default maximum number of steps is 5000
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, maximum, steps
+
+.seealso: TSGetMaxSteps(), TSSetMaxTime(), TSSetExactFinalTime()
+@*/
+PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,maxsteps,2);
+  if (maxsteps < 0 ) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
+  ts->max_steps = maxsteps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetMaxSteps - Gets the maximum number of steps to use.
+
+   Not Collective
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  maxsteps - maximum number of steps to use
+
+   Level: advanced
+
+.keywords: TS, timestep, get, maximum, steps
+
+.seealso: TSSetMaxSteps(), TSGetMaxTime(), TSSetMaxTime()
+@*/
+PetscErrorCode TSGetMaxSteps(TS ts,PetscInt *maxsteps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(maxsteps,2);
+  *maxsteps = ts->max_steps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetMaxTime - Sets the maximum (or final) time for timestepping.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  maxtime - final time to step to
+
+   Options Database Keys:
+.  -ts_final_time <maxtime> - Sets maxtime
+
+   Notes:
+   The default maximum time is 5.0
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, maximum, time
+
+.seealso: TSGetMaxTime(), TSSetMaxSteps(), TSSetExactFinalTime()
+@*/
+PetscErrorCode TSSetMaxTime(TS ts,PetscReal maxtime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,maxtime,2);
+  ts->max_time = maxtime;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetMaxTime - Gets the maximum (or final) time for timestepping.
+
+   Not Collective
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  maxtime - final time to step to
+
+   Level: advanced
+
+.keywords: TS, timestep, get, maximum, time
+
+.seealso: TSSetMaxTime(), TSGetMaxSteps(), TSSetMaxSteps()
+@*/
+PetscErrorCode TSGetMaxTime(TS ts,PetscReal *maxtime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidRealPointer(maxtime,2);
+  *maxtime = ts->max_time;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSGetDuration - Gets the maximum number of timesteps to use and
    maximum time for iteration.
 

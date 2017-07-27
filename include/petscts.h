@@ -321,6 +321,10 @@ PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
 PETSC_EXTERN PetscErrorCode TSForwardStep(TS);
 
+PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
