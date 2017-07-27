@@ -813,7 +813,7 @@ class Package(config.base.Configure):
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
       if not self.defaultPrecision.lower() in self.precisions:
-        raise RuntimeError('Cannot use '+self.name+' with '+self.defaultPrecision.lower()+', it is not coded for this capability')
+        raise RuntimeError('Cannot use '+self.name+' with '+self.defaultPrecision.lower()+', it is either not coded for this capability or petsc interface does not work in this mode')
       if not self.complex and self.defaultScalarType.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.defaultIndexSize == 64 and self.requires32bitint:
