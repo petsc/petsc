@@ -5344,12 +5344,16 @@ The event monitoring functionality is only available with PETSc's implicit time-
 \section{Using TChem from PETSc}
 \label{sec_tchem}
 
-\url{https://bitbucket.org/jedbrown/tchem} is a package originally developed at Sandia National Laboratory that can read in
-\url{https://en.wikipedia.org/wiki/CHEMKIN} data files and compute the right hand side function and its Jacobian for the ODE reaction system.
-To utilize the PETSc ODE solvers for these systems first install PETSc with the additional {\tt ./configure} 
- option {\tt --download-tchem}. We currently provide two examples of its use; one for single cell reaction and one for an ``artificial''
-one dimensional problem with periodic boundary conditions and diffusion of all species. The examples self explanatory and are {\tt \$PETSC\_DIR/src/ts/examples/tutorials/extchem.c and exchemfield.c.
-
+TChem\footnote{\href{https://bitbucket.org/jedbrown/tchem}{bitbucket.org/jedbrown/tchem}} 
+is a package originally developed at Sandia National Laboratory that can read in 
+CHEMKIN\footnote{\href{https://en.wikipedia.org/wiki/CHEMKIN}{en.wikipedia.org/wiki/CHEMKIN}} 
+data files and compute the right hand side function and its Jacobian for a reaction ODE system.
+To utilize PETSc's ODE solvers for these systems, first install PETSc with the additional 
+\trl{./configure} option \trl{--download-tchem}. We currently provide two examples of its use;
+one for single cell reaction and one for an ``artificial'' one dimensional problem with 
+periodic boundary conditions and diffusion of all species. The self-explanatory examples 
+are \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/extchem.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/extchem.c}} 
+and \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/exchemfield.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/exchemfield.c}}.
 
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
@@ -5550,7 +5554,7 @@ methods for stiff DAEs
 \item a DAE-constrained optimization using the discrete adjoint
 models of \lstinline{TSCN} (Crank-Nicolson) methods for cost function with an
     integral term \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/power_grid/stability/stability_9bus/ex9busopt.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/stability_9bus/ex9busopt.c}},
-\item a discrete adjoint sensitivity using TSCN methods for a
+  \item a discrete adjoint sensitivity using \lstinline{TSCN} methods for a
   PDE problem \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c.html}{\trl{${PETSC_DIR}/src/ts/examples/tutorials/advection-diffusion-reaction/ex5adj.c}}.
 \end{itemize}
 
@@ -7841,10 +7845,11 @@ the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \lstinline{PetscScalar}, is defined as \lstinline{complex} (or \lstinline{complex<double>}
  for machines using templated complex class
 libraries).  To work with complex numbers,
-the user should run ./configure with the additional option \trl{--with-scalar-type=complex}.
+the user should run \trl{./configure} with the additional option \trl{--with-scalar-type=complex}.
 The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}}
-provides detailed instructions for installing PETSc. 
-You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type. 
+provides detailed instructions for installing PETSc.
+You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} 
+to use the C++ complex type\footnote{Note that this option is not required to use PETSc with C++}.
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
@@ -8316,10 +8321,8 @@ architecture, \trl{arch}, is one of \trl{solaris, rs6000, IRIX,
 hpux, arch-darwin-double-debug}, etc., as determined during the PETSc configuration process.
 Note that when using command line options with \trl{make} (as illustrated above),
 one must {\em not} place spaces on either side of the ``\trl{=}'' signs.
-The variable \trl{PETSC_ARCH} can also be set as environment
-variable.  Although PETSc is written in C, it can be compiled with a
-C++ compiler.  For many C++ users this may be the preferred route. To compile
-with the C++ compiler, one should use the ./configure option \trl{--with-clanguage=c++}. \sindex{C++}
+The variable \trl{PETSC_ARCH} can also be set as an environment
+variable.
 
 \subsection{Makefile Commands} \label{sec_common}
 
