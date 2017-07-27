@@ -89,30 +89,51 @@ static void * my_dlopen(const char *name, int mode) {
 #define dlopen my_dlopen
 */
 
-static void OPENMPI_dlopen_libmpi(void)
+static void PyMPI_OPENMPI_dlopen_libmpi(void)
 {
   void *handle = 0;
   int mode = RTLD_NOW | RTLD_GLOBAL;
+#if defined(__CYGWIN__)
+  if (!handle) handle = dlopen("cygmpi.dll", mode);
+  if (!handle) handle = dlopen("mpi.dll", mode);
+#elif defined(__APPLE__)
+  /* Mac OS X */
   #ifdef RTLD_NOLOAD
   mode |= RTLD_NOLOAD;
   #endif
-#if defined(__CYGWIN__)
-  if (!handle) handle = dlopen("cygmpi.dll", mode);
-  if (!handle) handle = dlopen("mpi.dll",    mode);
-#elif defined(__APPLE__)
-  /* Mac OS X */
+  #if defined(OMPI_MAJOR_VERSION)
+  #if OMPI_MAJOR_VERSION == 2
   if (!handle) handle = dlopen("libmpi.20.dylib", mode);
+  #elif OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION >= 10
   if (!handle) handle = dlopen("libmpi.12.dylib", mode);
-  if (!handle) handle = dlopen("libmpi.1.dylib",  mode);
-  if (!handle) handle = dlopen("libmpi.0.dylib",  mode);
-  if (!handle) handle = dlopen("libmpi.dylib",    mode);
+  #elif OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION >= 6
+  if (!handle) handle = dlopen("libmpi.1.dylib", mode);
+  #elif OMPI_MAJOR_VERSION == 1
+  if (!handle) handle = dlopen("libmpi.0.dylib", mode);
+  #endif
+  #endif
+  if (!handle) handle = dlopen("libmpi.dylib", mode);
 #else
   /* GNU/Linux and others */
+  #ifdef RTLD_NOLOAD
+  mode |= RTLD_NOLOAD;
+  #endif
+  #if defined(OMPI_MAJOR_VERSION)
+  #if OMPI_MAJOR_VERSION >= 10 /* IBM Spectrum MPI */
+  if (!handle) handle = dlopen("libmpi_ibm.so.2", mode);
+  if (!handle) handle = dlopen("libmpi_ibm.so.1", mode);
+  if (!handle) handle = dlopen("libmpi_ibm.so", mode);
+  #elif OMPI_MAJOR_VERSION == 2
   if (!handle) handle = dlopen("libmpi.so.20", mode);
+  #elif OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION >= 10
   if (!handle) handle = dlopen("libmpi.so.12", mode);
-  if (!handle) handle = dlopen("libmpi.so.1",  mode);
-  if (!handle) handle = dlopen("libmpi.so.0",  mode);
-  if (!handle) handle = dlopen("libmpi.so",    mode);
+  #elif OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION >= 6
+  if (!handle) handle = dlopen("libmpi.so.1", mode);
+  #elif OMPI_MAJOR_VERSION == 1
+  if (!handle) handle = dlopen("libmpi.so.0", mode);
+  #endif
+  #endif
+  if (!handle) handle = dlopen("libmpi.so", mode);
 #endif
 }
 
