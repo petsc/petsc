@@ -266,8 +266,6 @@ PetscErrorCode  VecInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscMPIInt Petsc_Reduction_keyval;
-
 /*@C
   VecFinalizePackage - This function finalizes everything in the Vec package. It is called
   from PetscFinalize().

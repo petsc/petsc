@@ -33,6 +33,17 @@ struct _p_PetscViewer {
   PetscBool         setupcalled;
 };
 
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_Stdout_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_Stderr_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_Binary_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_Draw_keyval;
+#if defined(PETSC_HAVE_HDF5)
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_HDF5_keyval;
+#endif
+#if defined(PETSC_USE_SOCKETVIEWER)
+PETSC_EXTERN PetscMPIInt Petsc_Viewer_Socket_keyval;
+#endif
 
 
 #endif
