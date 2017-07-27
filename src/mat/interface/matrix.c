@@ -9963,7 +9963,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    size;
-  PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N,bs=mat->rmap->bs;
+  PetscInt       mloc_sub,nloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N,bs=mat->rmap->bs;
   Mat_Redundant  *redund=NULL;
   PetscSubcomm   psubcomm=NULL;
   MPI_Comm       subcomm_in=subcomm;
@@ -10012,10 +10012,13 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   /* get isrow, iscol and a local sequential matrix matseq[0] */
   if (reuse == MAT_INITIAL_MATRIX) {
     mloc_sub = PETSC_DECIDE;
+    nloc_sub = PETSC_DECIDE;
     if (bs < 1) {
       ierr = PetscSplitOwnership(subcomm,&mloc_sub,&M);CHKERRQ(ierr);
+      ierr = PetscSplitOwnership(subcomm,&nloc_sub,&N);CHKERRQ(ierr);
     } else {
       ierr = PetscSplitOwnershipBlock(subcomm,bs,&mloc_sub,&M);CHKERRQ(ierr);
+      ierr = PetscSplitOwnershipBlock(subcomm,bs,&nloc_sub,&N);CHKERRQ(ierr);
     }
     ierr = MPI_Scan(&mloc_sub,&rend,1,MPIU_INT,MPI_SUM,subcomm);CHKERRQ(ierr);
     rstart = rend - mloc_sub;
@@ -10034,7 +10037,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
 
   /* get matredundant over subcomm */
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],mloc_sub,reuse,matredundant);CHKERRQ(ierr);
+    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],nloc_sub,reuse,matredundant);CHKERRQ(ierr);
 
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
