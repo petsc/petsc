@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-debugging=0',
   '--with-serialize-functions=1',
   '--download-mpich=1',
+  '--download-mpich-configure-arguments=--enable-error-messages=all --enable-g', # note --enable-g=memit - used by --with-debugging=1 does not help
   '--download-openblas=1',
   '--download-openblas-make-options=TARGET=CORE2 DYNAMIC_ARCH=0',
   '--download-hypre=1',
@@ -17,7 +19,7 @@ configure_options = [
   #'--download-scalapack=1',
   '--download-elemental=1',
   '--with-cxx-dialect=C++11',
-  '--download-spai=1',
+  #'--download-spai=1',
   '--download-parms=1',
   '--download-chaco=1'
   ]

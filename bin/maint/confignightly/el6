@@ -3,4 +3,4 @@
 set MACH=el6
 set USR=petsc
 set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-pkgs-threadcomm
+set CONF=arch-linux-opt-misc
