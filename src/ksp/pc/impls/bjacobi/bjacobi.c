@@ -1262,7 +1262,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = VecSetType(mpjac->xsub,VECMPICUDA);CHKERRQ(ierr);
       ierr = VecSetType(mpjac->ysub,VECMPICUDA);CHKERRQ(ierr);
     }
-#elif defined(PETSC_HAVE_VECVIENNACL)
+#elif defined(PETSC_HAVE_VIENNACL)
     ierr = PetscObjectTypeCompareAny((PetscObject)mpjac->submats,&is_gpumatrix,MATAIJVIENNACL,MATMPIAIJVIENNACL,"");CHKERRQ(ierr);
     if (is_gpumatrix) {
       ierr = VecSetType(mpjac->xsub,VECMPIVIENNACL);CHKERRQ(ierr);
