@@ -23,8 +23,6 @@ typedef struct {
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJMKL_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert a MATAIJMKL to its base PETSc type, */
@@ -74,8 +72,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJMKL"
 PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 {
   PetscErrorCode ierr;
@@ -109,8 +105,6 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqAIJMKL"
 PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
@@ -143,8 +137,6 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJMKL"
 PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
@@ -210,8 +202,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJMKL"
 PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -242,8 +232,6 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 }
 
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -274,8 +262,6 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqAIJMKL"
 PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -306,8 +292,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 }
 
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -338,8 +322,6 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJMKL"
 PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -387,8 +369,6 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -434,8 +414,6 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL"
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -483,8 +461,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL_SpMV2"
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -535,8 +511,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLAIJ()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJMKL one. */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJMKL"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -606,8 +580,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJMKL"
 /*@C
    MatCreateSeqAIJMKL - Creates a sparse matrix of type SEQAIJMKL.
    This type inherits from AIJ and is largely identical, but uses sparse BLAS 
@@ -646,8 +618,6 @@ PetscErrorCode  MatCreateSeqAIJMKL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJMKL"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat A)
 {
   PetscErrorCode ierr;
