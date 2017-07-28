@@ -564,7 +564,6 @@ int main(int argc, char **argv)
   DM             dm;                   /* problem definition */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
-  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
   PetscErrorCode ierr;
@@ -625,7 +624,6 @@ int main(int argc, char **argv)
     /* Check Jacobian */
     {
       Vec          b;
-      PetscBool    isNull;
 
       ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
