@@ -1184,6 +1184,8 @@ class Configure(config.base.Configure):
       self.fortranIsF2003 = 0
       self.logPrint('Fortran compiler does not support F2003')
     self.popLanguage()
+    for f in [os.path.abspath('base_module.mod'), os.path.abspath('BASE_MODULE.mod'), os.path.join(os.path.dirname(self.compilerObj),'base_module.mod'), os.path.join(os.path.dirname(self.compilerObj),'BASE_MODULE.mod')]:
+      if os.path.isfile(f): os.remove(f)
     return
 
   def checkFortran90Array(self):
