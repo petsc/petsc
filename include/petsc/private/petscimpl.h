@@ -269,6 +269,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #if !defined(PETSC_USE_DEBUG)
 
 #define PetscCheckSameType(a,arga,b,argb) do {} while (0)
+#define PetscCheckTypeName(a,type) do {} while (0)
+#define PetscCheckTypeNames(a,type1,type2) do {} while (0)
 #define PetscValidType(a,arg) do {} while (0)
 #define PetscCheckSameComm(a,arga,b,argb) do {} while (0)
 #define PetscCheckSameTypeAndComm(a,arga,b,argb) do {} while (0)
@@ -287,6 +289,24 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 */
 #define PetscCheckSameType(a,arga,b,argb) \
   if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
+/*
+    Check type_name
+*/
+#define PetscCheckTypeName(a,type)                                      \
+  do {                                                                  \
+    PetscBool      __match;                                             \
+    PetscErrorCode _7_ierr;                                             \
+    _7_ierr = PetscObjectTypeCompare(((PetscObject)a),(type),&__match);CHKERRQ(_7_ierr); \
+    if (!__match) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s",(char*)(((PetscObject)a)->type_name),type); \
+  } while (0)
+
+#define PetscCheckTypeNames(a,type1,type2)                              \
+  do {                                                                  \
+    PetscBool       __match;                                            \
+    PetscErrorCode _7_ierr;                                             \
+    _7_ierr = PetscObjectTypeCompareAny(((PetscObject)a),&__match,(type1),(type2),"");CHKERRQ(_7_ierr); \
+    if (!__match) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Object (%s) is not %s or %s",(char*)(((PetscObject)a)->type_name),type1,type2); \
+  } while (0)
 /*
    Use this macro to check if the type is set
 */

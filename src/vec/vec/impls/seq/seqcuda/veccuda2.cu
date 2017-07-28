@@ -56,6 +56,7 @@ PetscErrorCode VecCUDACopyToGPU(Vec v)
   PetscScalar    *varray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_CPU) {
     ierr = PetscLogEventBegin(VEC_CUDACopyToGPU,v,0,0,0);CHKERRQ(ierr);
@@ -78,6 +79,7 @@ PetscErrorCode VecCUDACopyToGPUSome(Vec v, PetscCUDAIndices ci)
   VecScatterCUDAIndices_PtoP ptop_scatter = (VecScatterCUDAIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_CPU) {
     s = (Vec_Seq*)v->data;
@@ -110,6 +112,7 @@ PetscErrorCode VecCUDACopyFromGPU(Vec v)
   PetscScalar    *varray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_GPU) {
     ierr = PetscLogEventBegin(VEC_CUDACopyFromGPU,v,0,0,0);CHKERRQ(ierr);
@@ -137,6 +140,7 @@ PetscErrorCode VecCUDACopyFromGPUSome(Vec v, PetscCUDAIndices ci)
   VecScatterCUDAIndices_PtoP ptop_scatter = (VecScatterCUDAIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUDA_GPU) {
     ierr   = PetscLogEventBegin(VEC_CUDACopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
@@ -1071,17 +1075,13 @@ PetscErrorCode VecConjugate_SeqCUDA(Vec xin)
 
 PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUDA);
+  PetscCheckTypeName(w,VECSEQCUDA);
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) {
@@ -1115,17 +1115,13 @@ PetscErrorCode VecGetLocalVector_SeqCUDA(Vec v,Vec w)
 
 PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUDA,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUDA);
+  PetscCheckTypeName(w,VECSEQCUDA);
 
   if (v->petscnative) {
     v->data = w->data;
@@ -1185,6 +1181,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayReadWrite(Vec v, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   *a   = 0;
   ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
@@ -1215,6 +1212,7 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayReadWrite(Vec v, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   v->valid_GPU_array = PETSC_CUDA_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -1257,6 +1255,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   *a   = 0;
   ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
@@ -1286,6 +1285,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
 PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   PetscFunctionReturn(0);
 }
 
@@ -1323,6 +1323,7 @@ PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   *a   = 0;
   ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
@@ -1353,6 +1354,7 @@ PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUDA,VECMPICUDA);
   v->valid_GPU_array = PETSC_CUDA_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -1385,6 +1387,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin,PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
   if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUDA*)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
@@ -1425,6 +1428,7 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin,PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
   err = cudaFree(((Vec_CUDA*)vin->spptr)->GPUarray);CHKERRCUDA(err);
   ((Vec_CUDA*)vin->spptr)->GPUarray = a;
   vin->valid_GPU_array = PETSC_CUDA_GPU;
@@ -1451,6 +1455,7 @@ PetscErrorCode VecCUDAResetArray(Vec vin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUDA,VECMPICUDA);
   ierr = VecCUDACopyToGPU(vin);CHKERRQ(ierr);
   ((Vec_CUDA*)vin->spptr)->GPUarray = (PetscScalar *) ((Vec_Seq*)vin->data)->unplacedarray;
   ((Vec_Seq*)vin->data)->unplacedarray = 0;

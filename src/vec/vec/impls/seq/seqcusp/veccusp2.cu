@@ -58,6 +58,7 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
   CUSPARRAY      *varray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyToGPU,v,0,0,0);CHKERRQ(ierr);
@@ -84,6 +85,7 @@ PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
   VecScatterCUSPIndices_PtoP ptop_scatter = (VecScatterCUSPIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     s = (Vec_Seq*)v->data;
@@ -116,6 +118,7 @@ PetscErrorCode VecCUSPCopyFromGPU(Vec v)
   CUSPARRAY      *varray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
@@ -147,6 +150,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
   VecScatterCUSPIndices_PtoP ptop_scatter = (VecScatterCUSPIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr   = PetscLogEventBegin(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
@@ -1547,17 +1551,13 @@ PetscErrorCode VecConjugate_SeqCUSP(Vec xin)
 
 PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
+  PetscCheckTypeName(w,VECSEQCUSP);
 
   if (w->data) {
     if (((Vec_Seq*)w->data)->array_allocated) PetscFree(((Vec_Seq*)w->data)->array_allocated);
@@ -1588,17 +1588,13 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec w)
 
 PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec w)
 {
-  VecType        t;
   PetscErrorCode ierr;
   cudaError_t    err;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetType(w,&t);CHKERRQ(ierr);
-  ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
+  PetscCheckTypeName(w,VECSEQCUSP);
 
   if (v->petscnative) {
     v->data = w->data;
@@ -1659,6 +1655,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   *a   = 0;
   ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
@@ -1689,6 +1686,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   v->valid_GPU_array = PETSC_CUSP_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -1731,6 +1729,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   *a   = 0;
   ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
@@ -1760,6 +1759,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY **a)
 {
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   PetscFunctionReturn(0);
 }
 
@@ -1797,6 +1797,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   *a   = 0;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
@@ -1827,6 +1828,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   v->valid_GPU_array = PETSC_CUSP_GPU;
 
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
@@ -1871,6 +1873,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayReadWrite(Vec v, PetscScalar **a)
   CUSPARRAY      *cusparray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   PetscValidPointer(a,1);
   ierr = VecCUSPGetArrayReadWrite(v, &cusparray);CHKERRQ(ierr);
   *a   = thrust::raw_pointer_cast(cusparray->data());
@@ -1901,6 +1904,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayReadWrite(Vec v, PetscScalar 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   v->valid_GPU_array = PETSC_CUSP_GPU;
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1943,6 +1947,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayRead(Vec v, PetscScalar **a)
   CUSPARRAY      *cusparray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   PetscValidPointer(a,1);
   ierr = VecCUSPGetArrayRead(v, &cusparray);CHKERRQ(ierr);
   *a   = thrust::raw_pointer_cast(cusparray->data());
@@ -1975,6 +1980,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayRead(Vec v, PetscScalar **a)
 PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayRead(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   v->valid_GPU_array = PETSC_CUSP_BOTH;
   PetscFunctionReturn(0);
 }
@@ -2014,6 +2020,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArrayWrite(Vec v, PetscScalar **a)
   CUSPARRAY      *cusparray;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   PetscValidPointer(a,1);
   ierr = VecCUSPGetArrayWrite(v, &cusparray);CHKERRQ(ierr);
   *a   = thrust::raw_pointer_cast(cusparray->data());
@@ -2045,6 +2052,7 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayWrite(Vec v, PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(v,VECSEQCUSP,VECMPICUSP);
   v->valid_GPU_array = PETSC_CUSP_GPU;
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2077,6 +2085,7 @@ PetscErrorCode VecCUSPPlaceArray(Vec vin,CUSPARRAY *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPCopyToGPU(vin);CHKERRQ(ierr);
   if (((Vec_Seq*)vin->data)->unplacedarray) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecCUSPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUSPResetArray()/VecResetArray()");
   ((Vec_Seq*)vin->data)->unplacedarray  = (PetscScalar *) ((Vec_CUSP*)vin->spptr)->GPUarray; /* save previous CUDAARRAY so reset can bring it back */
@@ -2116,6 +2125,7 @@ PetscErrorCode VecCUSPReplaceArray(Vec vin,CUSPARRAY *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUSP,VECMPICUSP);
   delete ((Vec_CUSP*)vin->spptr)->GPUarray;
   ((Vec_CUSP*)vin->spptr)->GPUarray = a;
   vin->valid_GPU_array = PETSC_CUSP_GPU;
@@ -2142,6 +2152,7 @@ PetscErrorCode VecCUSPResetArray(Vec vin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscCheckTypeNames(vin,VECSEQCUSP,VECMPICUSP);
   ierr = VecCUSPCopyToGPU(vin);CHKERRQ(ierr);
   ((Vec_CUSP*)vin->spptr)->GPUarray = (CUSPARRAY *) ((Vec_Seq*)vin->data)->unplacedarray;
   ((Vec_Seq*)vin->data)->unplacedarray = 0;
