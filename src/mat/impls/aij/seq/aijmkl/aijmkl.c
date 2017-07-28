@@ -152,7 +152,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   Mat_SeqAIJMKL   *aijmkl;
 
   MatScalar       *aa;
-  PetscInt        n;
+  PetscInt        m,n;
   PetscInt        *aj,*ai;
 
   PetscFunctionBegin;
@@ -188,11 +188,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
     aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
     aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
     aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
-    n = A->rmap->n;
+    m = A->rmap->n;
+    n = A->cmap->n;
     aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
     aa   = a->a;  /* Nonzero elements stored row-by-row. */
     ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
-    stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,n,n,ai,ai+1,aj,aa);
+    stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
     stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
     stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
     stat = mkl_sparse_optimize(aijmkl->csrA);
