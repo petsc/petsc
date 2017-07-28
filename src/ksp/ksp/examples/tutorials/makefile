@@ -991,7 +991,7 @@ runex13f90:
 	-@${MPIEXEC} -n 1 ./ex13f90 -m 19 -n 20 -ksp_gmres_cgs_refinement_type refine_always > ex13f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex13f90_1.out ex13f90_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex13f90_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex13f90_1.tmp
+	   ${RM} -f ex13f90_1.tmp usermodule.mod
 runex14f:
 	-@${MPIEXEC} -n 1 ./ex14f -no_output -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
@@ -1084,7 +1084,7 @@ runex28:
 	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex28_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28_1.tmp
+	   ${RM} -f ex28_1.tmp binaryoutput
 
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 > ex29_1.tmp 2>&1;	  \
@@ -1258,7 +1258,7 @@ runex49_4:
 runex49_5:
 	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi > ex49_5.tmp 2>&1; \
 	   ${DIFF} output/ex49_5.out ex49_5.tmp || printf "${PWD}\nPossible problem with ex49_5, diffs above\n=========================================\n"; \
-	   ${RM} -f ex49_5.tmp
+	   ${RM} -f ex49_5.tmp mesh-p0*.dat properties-p0*.dat X-p*.dat
 
 # hyper has some valgrind serious bus in it for vec_interp_variant hence this crashes on some systems, waiting for hypre team to fix
 runex49_hypre_nullspace:

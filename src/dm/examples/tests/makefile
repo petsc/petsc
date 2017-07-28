@@ -299,10 +299,11 @@ runex23:
               done; \
             done; \
           done;
+	@${RM} ex23_2.tmp temp
 runex23_2:
 	-@${MPIEXEC} -n 2 ./ex23 -two -native > ex23_2.tmp 2>&1; \
          ${DIFF} output/ex23_2.out ex23_2.tmp || printf "${PWD}\nPossible problem with ex23_2, diffs above\n=========================================\n"; \
-         ${RM} ex23_2.tmp
+         ${RM} ex23_2.tmp temp
 
 runex24:
 	-@${MPIEXEC} -n 1 ./ex24  | grep -v -i Process > ex24_1.tmp 2>&1;	  \

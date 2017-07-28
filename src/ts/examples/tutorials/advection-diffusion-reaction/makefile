@@ -9,6 +9,7 @@ EXAMPLESF       = shashi.F90
 EXAMPLESFH      =
 MANSEC          = TS
 DIRS            =
+CLEANFILES      =  SA-data/*
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -108,7 +109,7 @@ runex5adj:
 	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 16 -da_grid_y 16 > ex5adj_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_1.out ex5adj_1.tmp) then true; \
 	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
-	   ${RM} -f ex5adj_1.tmp
+	   ${RM} -f ex5adj_1.tmp SA-data/*
 
 runex5adj_2:
 	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi -draw_pause -2

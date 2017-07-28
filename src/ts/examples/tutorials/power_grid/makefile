@@ -10,6 +10,7 @@ EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
 DIRS            = stability_9bus
+CLEANFILES      = SA-data/*
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -122,12 +123,12 @@ runex3fwd:
 runex3adj:
 	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_type cn -pc_type lu > ex3adj_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3adj_1.out ex3adj_1.tmp || printf "${PWD}\nPossible problem with ex3adj_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3adj_1.tmp
+	   ${RM} -f ex3adj_1.tmp SA-data/*
 
 runex3opt:
 	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_monitor > ex3opt_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3opt_1.out ex3opt_1.tmp || printf "${PWD}\nPossible problem with ex3opt_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3opt_1.tmp
+	   ${RM} -f ex3opt_1.tmp SA-data/*
 
 runex3opt_fd:
 	-@${MPIEXEC} -n 1 ./ex3opt_fd -ts_type cn -pc_type lu -tao_monitor -tao_gatol 1e-3 > ex3opt_fd_1.tmp 2>&1;  \
@@ -197,20 +198,17 @@ runex9:
 runex9adj:
 	-@${MPIEXEC} -n 1 ./ex9adj -viewer_binary_skip_info -ts_adapt_type none  > ex9adj_1.tmp 2>&1; \
 	   ${DIFF} output/ex9adj_1.out ex9adj_1.tmp || printf "${PWD}\nPossible problem with ex9adj_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex9adj_1.tmp
+	   ${RM} -f ex9adj_1.tmp SA-data/*
 
 runex9opt:
 	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -ts_adapt_type none -tao_monitor -tao_gatol 0.0 -tao_grtol 1.e-3 -tao_converged_reason > ex9opt_1.tmp 2>&1; \
 	 ${DIFF} output/ex9opt_1.out ex9opt_1.tmp || printf "${PWD}\nPossible problem with ex9opt_1, diffs above\n=========================================\n"; \
-	 ${RM} -f ex9opt_1.tmp
+	 ${RM} -f ex9opt_1.tmp SA-data/*
 
 runex9opt_2:
 	-@${MPIEXEC} -n 1 ./ex9opt -viewer_binary_skip_info -Pm 1.1 -ts_adapt_type none -tao_type test -tao_test_gradient -tao_test_display -tao_monitor > ex9opt_2.tmp 2>&1;\
 	 ${DIFF} output/ex9opt_2.out ex9opt_2.tmp || printf "${PWD}\nPossible problem with ex9opt_2, diffs above\n=========================================\n"; \
-	 ${RM} -f ex9opt_2.tmp
-
-clean_files:
-	-@${RM} -rf SA-data
+	 ${RM} -f ex9opt_2.tmp SA-data/*
 
 TESTEXAMPLES_C_NOCOMPLEX          = ex2.PETSc runex2 ex2.rm  \
                                     ex5.PETSc ex5.rm \

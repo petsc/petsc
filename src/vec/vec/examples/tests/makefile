@@ -349,7 +349,7 @@ runex20f:
 	-@${MPIEXEC} -n 1 ./ex20f > ex20_1.tmp 2>&1;\
 	   if (${DIFF} output/ex20f_1.out ex20_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex20f_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex20_1.tmp vector.dat
+	   ${RM} -f ex20_1.tmp vector.dat testfile
 runex21:
 	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1;\
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
@@ -404,7 +404,7 @@ runex29_bts_2:
 runex29_bts_2_subset:
 	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 -subset > ex29_bts_2_subset.tmp 2>&1;\
 	   ${DIFF} output/ex29_1.out ex29_bts_2_subset.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset, diffs above \n=========================================\n";\
-	   ${RM} ex29_bts_2_subset@.tmp
+	   ${RM} ex29_bts_2_subset.tmp
 runex29_bts_2_subset_proper:
 	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 5 -subset > ex29_bts_2_subset_proper.tmp 2>&1;\
 	   ${DIFF} output/ex29_1.out ex29_bts_2_subset_proper.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset_proper, diffs above \n=========================================\n";\
@@ -506,25 +506,25 @@ runex46:
 	-@${MPIEXEC} -n 1 ./ex46 > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1_p1.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex46, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
+	   ${RM} -f ex46.tmp xH.pbvec xH.pbvec.info
 
 runex46_2:
 	-@${MPIEXEC} -n 6 ./ex46 > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1_p6.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex46_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
+	   ${RM} -f ex46.tmp xH.pbvec xH.pbvec.info
 
 runex46_3:
 	-@${MPIEXEC} -n 12 ./ex46 > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1_p12.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex46_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
+	   ${RM} -f ex46.tmp xH.pbvec xH.pbvec.info
 
 runex46_mpiio:
 	-@${MPIEXEC} -n 6 ./ex46 -usempiio > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_2_p6.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex46_mpiio, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex46.tmp
+	   ${RM} -f ex46.tmp xH.pbvec xH.pbvec.info xHmpi.pbvec xHmpi.pbvec.info
 
 runex47:
 	-@${MPIEXEC} -n 4 ./ex47

@@ -267,17 +267,17 @@ runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -binary > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex10_1.tmp
+	   ${RM} -f ex10_1.tmp vector.dat vector.dat.info
 runex10_2:
 	-@${MPIEXEC} -n 3 ./ex10 -binary > ex10_2.tmp 2>&1;\
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_2, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex10_2.tmp
+	   ${RM} -f ex10_2.tmp vector.dat vector.dat.info
 runex10_3:
 	-@${MPIEXEC} -n 5 ./ex10 -binary > ex10_3.tmp 2>&1;\
 	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_3, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex10_3.tmp
+	   ${RM} -f ex10_3.tmp vector.dat vector.dat.info
 
 runex11:
 	-@${MPIEXEC}  -n 2 ./ex11 > ex11_1.tmp 2>&1;\
@@ -308,7 +308,7 @@ runex21f90:
 	-@${MPIEXEC} -n 1 ./ex21f90 > ex21f90_1.tmp 2>&1;\
 	   if (${DIFF} output/ex21f90_1.out ex21f90_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex21f90_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex21f90_1.tmp
+	   ${RM} -f ex21f90_1.tmp mymodule.mod
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm  \
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \

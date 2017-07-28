@@ -30,9 +30,11 @@ runex1:
 
 runex2:
 	-@${MPIEXEC} -n 1 ./ex2
+	@${RM} testfile
 
 runex2_2:
 	-@${MPIEXEC} -n 2 ./ex2
+	@${RM} testfile
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 ex2.rm
 TESTEXAMPLES_C_X	  =

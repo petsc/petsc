@@ -158,7 +158,7 @@ runex7:
 	-@${MPIEXEC} -n 1 ./ex7  > ex7.tmp 2>&1;   \
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex7.tmp
+	   ${RM} -f ex7.tmp output_file output_file.info
 runex9:
 	-@${MPIEXEC} -n 4 ./ex9
 	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
@@ -181,17 +181,17 @@ runex15:
 	-@${MPIEXEC} -n 1 ./ex15 > ex15.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_1.out ex15.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15.tmp
+	   ${RM} -f ex15.tmp dmda.pbvec dmda.pbvec.info
 runex15_2:
 	-@${MPIEXEC} -n 12 ./ex15 > ex15.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_2.out ex15.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15.tmp
+	   ${RM} -f ex15.tmp dmda.pbvec dmda.pbvec.info
 runex15_3:
 	-@${MPIEXEC} -n 12 ./ex15 -usempiio > ex15.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_3.out ex15.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15.tmp
+	   ${RM} -f ex15.tmp dmda.pbvec dmda.pbvec.info dmda-mpiio.pbvec dmda-mpiio.pbvec.info
 
 
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm \
