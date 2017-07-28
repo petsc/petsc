@@ -472,7 +472,7 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here

@@ -76,7 +76,7 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %g\n",steps,nits,lits,(double)ftime);CHKERRQ(ierr);

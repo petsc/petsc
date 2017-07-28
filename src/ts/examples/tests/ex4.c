@@ -262,7 +262,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscReal         maxtime;
 
   PetscFunctionBeginUser;
-  ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
   ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
   if (nsteps % 10 != 0) PetscFunctionReturn(0);

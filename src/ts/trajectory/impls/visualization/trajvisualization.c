@@ -23,7 +23,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   if (stepnum == 0) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

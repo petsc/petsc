@@ -142,7 +142,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = VecMin(X,NULL,&xmin);CHKERRQ(ierr);
   ierr = VecMax(X,NULL,&xmax);CHKERRQ(ierr);

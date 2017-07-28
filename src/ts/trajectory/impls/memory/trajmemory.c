@@ -443,7 +443,7 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Load a single point from file\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(tj->monitor,((PetscObject)tj)->tablevel);CHKERRQ(ierr);
   }
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   if (id == 1) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1509,7 +1509,7 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt step
 
   PetscFunctionBegin;
   if (!tjsch->recompute) { /* use global stepnum in the forward sweep */
-    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+    ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   }
   /* for consistency */
   if (!tjsch->recompute && stepnum == 0) ts->ptime_prev = ts->ptime-ts->time_step;
@@ -1549,7 +1549,7 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   if (stepnum == 0) PetscFunctionReturn(0);
   switch (tjsch->stype) {
     case NONE:

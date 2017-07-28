@@ -300,7 +300,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   for (i=0; i < event->nevents; i++) event->fvalue_prev[i] = event->fvalue[i];
 
   /* Record the event in the event recorder */
-  ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
   if (ctr == event->recsize) {
     ierr = TSEventRecorderResize(event);CHKERRQ(ierr);

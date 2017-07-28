@@ -1618,7 +1618,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 
   Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -2116,7 +2116,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 }
 
 /*@
-   TSGetTimeStepNumber - Gets the number of time steps completed.
+   TSGetStepNumber - Gets the number of steps completed.
 
    Not Collective
 
@@ -2124,19 +2124,53 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  iter - number of steps completed so far
+.  steps - number of steps completed so far
 
    Level: intermediate
 
 .keywords: TS, timestep, get, iteration, number
 .seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSSetPostStep()
 @*/
-PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt *iter)
+PetscErrorCode TSGetStepNumber(TS ts,PetscInt *steps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidIntPointer(iter,2);
-  *iter = ts->steps;
+  PetscValidIntPointer(steps,2);
+  *steps = ts->steps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetStepNumber - Sets the number of steps completed.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  steps - number of steps completed so far
+
+   Notes:
+   For most uses of the TS solvers the user need not explicitly call
+   TSSetStepNumber(), as the step counter is appropriately updated in
+   TSSolve()/TSStep()/TSRollBack(). Power users may call this routine to
+   reinitialize timestepping by setting the step counter to zero (and time
+   to the initial time) to solve a similar problem with different initial
+   conditions or parameters. Other possible use case is to continue
+   timestepping from a previously interrupted run in such a way that TS
+   monitors will be called with a initial nonzero step counter.
+
+   Level: advanced
+
+.keywords: TS, timestep, set, iteration, number
+.seealso: TSGetStepNumber(), TSSetTime(), TSSetTimeStep(), TSSetSolution()
+@*/
+PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,steps,2);
+  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Step number must be non-negative");
+  ts->steps = steps;
   PetscFunctionReturn(0);
 }
 
@@ -3476,7 +3510,7 @@ PetscErrorCode  TSPreStep(TS ts)
 
   Note:
   There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
-  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
 .keywords: TS, timestep
@@ -3507,7 +3541,7 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
 
   Note:
   There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
-  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
 .keywords: TS, timestep
@@ -3667,7 +3701,7 @@ $ func (TS ts);
   Level: intermediate
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetTimeStepNumber(), TSGetTime()
+.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetStepNumber(), TSGetTime()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -4809,7 +4843,7 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -4848,7 +4882,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 
    Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -5566,35 +5600,6 @@ PetscErrorCode  TSGetSolveTime(TS ts,PetscReal *ftime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ftime,2);
   *ftime = ts->solvetime;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSGetTotalSteps - Gets the total number of steps done since the last call to TSSetUp() or TSCreate()
-
-   Not Collective
-
-   Input Parameter:
-.  ts - the TS context
-
-   Output Parameter:
-.  steps - the number of steps
-
-   Level: beginner
-
-   Notes:
-   Includes the number of steps for all calls to TSSolve() since TSSetUp() was called
-
-.keywords: TS, nonlinear, set, convergence, test
-
-.seealso: TSSetConvergenceTest(), TSConvergedReason
-@*/
-PetscErrorCode  TSGetTotalSteps(TS ts,PetscInt *steps)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(steps,2);
-  *steps = ts->total_steps;
   PetscFunctionReturn(0);
 }
 

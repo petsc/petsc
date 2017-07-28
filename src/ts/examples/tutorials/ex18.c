@@ -1135,7 +1135,7 @@ int main(int argc, char **argv)
     TSConvergedReason reason;
 
     ierr = TSGetSolveTime(ts, &ftime);CHKERRQ(ierr);
-    ierr = TSGetTimeStepNumber(ts, &nsteps);CHKERRQ(ierr);
+    ierr = TSGetStepNumber(ts, &nsteps);CHKERRQ(ierr);
     ierr = TSGetConvergedReason(ts, &reason);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %D steps\n", TSConvergedReasons[reason], (double) ftime, nsteps);CHKERRQ(ierr);
   }

@@ -415,7 +415,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESFailures(ts,&snesfails);CHKERRQ(ierr);
   ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);

@@ -164,7 +164,7 @@ int main(int argc,char **argv)
   /*
       Get the number of steps
   */
-  ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&its);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime);CHKERRQ(ierr);
 
