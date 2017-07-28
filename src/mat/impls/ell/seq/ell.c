@@ -1318,6 +1318,22 @@ PetscErrorCode MatImaginaryPart_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatScale_SeqELL(Mat inA,PetscScalar alpha)
+{
+  Mat_SeqELL     *a     = (Mat_SeqELL*)inA->data;
+  MatScalar      *aval=a->val;
+  PetscScalar    oalpha = alpha;
+  PetscErrorCode ierr;
+  PetscBLASInt   one = 1,bnz;
+
+  PetscFunctionBegin;
+  ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,aval,&one));
+  ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  ierr = MatSeqELLInvalidateDiagonal(inA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatShift_SeqELL(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
@@ -1480,7 +1496,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        MatGetValues_SeqELL,
                                        MatCopy_SeqELL,
                                /* 44*/ 0,
-                                       0,
+                                       MatScale_SeqELL,
                                        MatShift_SeqELL,
                                        0,
                                        0,
