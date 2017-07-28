@@ -125,7 +125,7 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   aijmkl_dest->sparse_optimized = PETSC_FALSE;
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   aijmkl_dest->csrA = NULL;
-  if (!aijmkl->no_SpMV2) {
+  if (!aijmkl->no_SpMV2 && A->cmap->n > 0) {
     sparse_status_t stat;
     stat = mkl_sparse_copy(aijmkl->csrA,aijmkl->descr,&aijmkl_dest->csrA);
     if (stat != SPARSE_STATUS_SUCCESS) {
@@ -193,15 +193,17 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
     aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
     aa   = a->a;  /* Nonzero elements stored row-by-row. */
     ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
-    stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
-    stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
-    stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
-    stat = mkl_sparse_optimize(aijmkl->csrA);
-    if (stat != SPARSE_STATUS_SUCCESS) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to create matrix handle/complete mkl_sparse_optimize");
-      PetscFunctionReturn(PETSC_ERR_LIB);
+    if (n>0) {
+      stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
+      stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+      stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+      stat = mkl_sparse_optimize(aijmkl->csrA);
+      if (stat != SPARSE_STATUS_SUCCESS) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to create matrix handle/complete mkl_sparse_optimize");
+        PetscFunctionReturn(PETSC_ERR_LIB);
+      }
+      aijmkl->sparse_optimized = PETSC_TRUE;
     }
-    aijmkl->sparse_optimized = PETSC_TRUE;
   }
 #endif
 
@@ -252,6 +254,9 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin;
+
+  /* If there are no rows, this is a no-op: return immediately. */
+  if(A->cmap->n < 1) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -313,6 +318,9 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   sparse_status_t   stat;
 
   PetscFunctionBegin;
+
+  /* If there are no rows, this is a no-op: return immediately. */
+  if(A->cmap->n < 1) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -396,6 +404,8 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
+  /* If there are no rows, this is a no-op: return immediately. */
+  if(A->cmap->n < 1) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
@@ -489,6 +499,9 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin;
+
+  /* If there are no rows, this is a no-op: return immediately. */
+  if(A->cmap->n < 1) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
