@@ -2930,6 +2930,16 @@ runex208_2:
 	   if (${DIFF} output/ex208_2.out ex208_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex208_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex208_1.tmp
+runex208_baij:
+	-@${MPIEXEC} -n 1 ./ex208 -mat_type baij > ex208_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex208_baij.out ex208_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex208_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex208_1.tmp
+runex208_baij_2:
+	-@${MPIEXEC} -n 3 ./ex208 -mat_type baij > ex208_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex208_baij_2.out ex208_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex208_baij_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex208_1.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm \
                                  ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm \
@@ -2981,7 +2991,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
                                  ex96.PETSc runex96 ex96.rm ex95.PETSc runex95 runex95_2 ex95.rm ex200.PETSc runex200 ex200.rm \
                                  ex202.PETSc runex202 ex202.rm ex203.PETSc runex203 ex203.rm ex205.PETSc runex205 ex205.rm \
-                                 ex207.PETSc runex207 runex207_2 ex207.rm ex208.PETSc runex208 runex208_2 ex208.rm
+                                 ex207.PETSc runex207 runex207_2 ex207.rm ex208.PETSc runex208 runex208_2 \
+                                 runex208_baij runex208_baij_2 ex208.rm
 
 TESTEXAMPLES_C_INFO            = ex182.PETSc runex182 runex182_2 runex182_3 runex182_4 runex182_5 runex182_6 ex182.rm
 TESTEXAMPLES_C_X	       =

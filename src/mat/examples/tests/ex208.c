@@ -1,5 +1,5 @@
-static char help[] = "Test MatCreateRedundantMatrix for rectangular matrices\n\
-                      Contributed by Jose E. Roman, July, 2017\n\n";
+static char help[] = "Test MatCreateRedundantMatrix for rectangular matrix.\n\
+                      Contributed by Jose E. Roman, July 2017\n\n";
 
 #include <petscmat.h>
 int main(int argc,char **args)
@@ -19,6 +19,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD, &A); CHKERRQ(ierr);
   ierr = MatSetSizes(A, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   if (!rank) {
@@ -32,7 +33,7 @@ int main(int argc,char **args)
 
   ierr = MatCreateRedundantMatrix(A, nsubcomm, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
   if (nsubcomm==size) { /* B is a sequential matrix */
-    if (!rank) { 
+    if (!rank) {
       ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
   } else {
