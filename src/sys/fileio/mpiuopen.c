@@ -50,8 +50,13 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
     if (isstdout || !name) fd = PETSC_STDOUT;
     else if (isstderr) fd = PETSC_STDERR;
     else {
+      PetscBool devnull;
       ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
+      ierr = PetscStrbeginswith(fname,"/dev/null",&devnull);CHKERRQ(ierr);
+      if (devnull) {
+        ierr = PetscStrcpy(fname,"/dev/null");CHKERRQ(ierr);
+      }
       ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
       if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
