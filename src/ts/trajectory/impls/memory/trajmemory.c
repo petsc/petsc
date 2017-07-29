@@ -1547,7 +1547,6 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   if (stepnum == 0) PetscFunctionReturn(0);
   switch (tjsch->stype) {
     case NONE:
