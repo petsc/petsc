@@ -469,15 +469,15 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
        2) compute the quadrature points transformed to the physical space */
     ierr = DMMoabFEMComputeBasis(2, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
 
-    /* compute the inhomogeneous (piece-wise constant) diffusion coefficient at the quadrature point
-       -- for large spatial variations (within an element), embed this property evaluation inside the quadrature loop 
-    */
-    rho = ComputeDiffusionCoefficient(&phypts[q * 3], user);
-
     ierr = PetscMemzero(array, nconn * nconn * sizeof(PetscScalar));
 
     /* Compute function over the locally owned part of the grid */
     for (q = 0; q < npoints; ++q) {
+      /* compute the inhomogeneous (piece-wise constant) diffusion coefficient at the quadrature point
+        -- for large spatial variations (within an element), embed this property evaluation inside the quadrature loop 
+      */
+      rho = ComputeDiffusionCoefficient(&phypts[q * 3], user);
+
       for (i = 0; i < nconn; ++i) {
         for (j = 0; j < nconn; ++j) {
           array[i * nconn + j] += jxw[q] * rho * ( dphi[0][q * nconn + i] * dphi[0][q * nconn + j] +
