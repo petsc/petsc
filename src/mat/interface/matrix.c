@@ -4638,7 +4638,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 /*@
    MatGetRowSum - Gets the sum of each row of the matrix
 
-   Logically Collective on Mat and Vec
+   Logically or Neighborhood Collective on Mat and Vec
 
    Input Parameters:
 .  mat - the matrix
@@ -4656,8 +4656,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
-  PetscInt       start = 0, end = 0, row;
-  PetscScalar    *array;
+  Vec            ones;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4666,23 +4665,10 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   MatCheckPreallocated(mat,1);
-  ierr = MatGetOwnershipRange(mat, &start, &end);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &array);CHKERRQ(ierr);
-  for (row = start; row < end; ++row) {
-    PetscInt          ncols, col;
-    const PetscInt    *cols;
-    const PetscScalar *vals;
-
-    array[row - start] = 0.0;
-
-    ierr = MatGetRow(mat, row, &ncols, &cols, &vals);CHKERRQ(ierr);
-    for (col = 0; col < ncols; col++) {
-      array[row - start] += vals[col];
-    }
-    ierr = MatRestoreRow(mat, row, &ncols, &cols, &vals);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject) v);CHKERRQ(ierr);
+  ierr = MatCreateVecs(mat,NULL,&ones);CHKERRQ(ierr);
+  ierr = VecSet(ones,1.);CHKERRQ(ierr);
+  ierr = MatMult(mat,ones,v);CHKERRQ(ierr);
+  ierr = VecDestroy(&ones);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
