@@ -207,6 +207,8 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Reduce_local(0, 0, 0, MPI_INT, MPI_SUM));'):
       self.haveReduceLocal = 1
       self.addDefine('HAVE_MPI_REDUCE_LOCAL',1)
+    if self.checkLink('#include <mpi.h>\n', 'char version[MPI_MAX_LIBRARY_VERSION_STRING];int verlen;if (MPI_Get_library_version(version,&verlen));\n'):
+      self.addDefine('HAVE_MPI_GET_LIBRARY_VERSION', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())

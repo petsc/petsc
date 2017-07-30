@@ -715,7 +715,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
-  PetscBool      flg;
+  PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
 #if defined(PETSC_HAVE_CUDA)
   cublasStatus_t cberr;
@@ -723,6 +723,47 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
+#if defined(PETSC_HAVE_MPI_GET_LIBRARY_VERSION)
+  {
+    char        mpilibraryversion[MPI_MAX_LIBRARY_VERSION_STRING];
+    PetscMPIInt mpilibraryversionlength;
+    ierr = MPI_Get_library_version(mpilibraryversion,&mpilibraryversionlength);if (ierr) return ierr;
+#if defined(MPICH_VERSION)
+    {
+      char *ver,*lf;
+      flg = PETSC_FALSE;
+      ierr = PetscStrstr(mpilibraryversion,"MPICH Version:",&ver);if (ierr) return ierr;
+      if (ver) {
+        ierr = PetscStrchr(ver,'\n',&lf);if (ierr) return ierr;
+        if (lf) {
+          *lf = 0;
+          ierr = PetscStrendswith(ver,MPICH_VERSION,&flg);if (ierr) return ierr;
+        }
+      }
+      if (!flg) {
+        fprintf(stderr,"PETSc Error --- MPICH library version \n%s does not match what PETSc was compiled with %s, aborting\n",mpilibraryversion,MPICH_VERSION);
+        abort();
+      }
+    }
+#elif defined(OMPI_MAJOR_VERSION)
+    {
+      char *ver,bs[32],*bsf;
+      flg = PETSC_FALSE;
+      ierr = PetscStrstr(mpilibraryversion,"Open MPI",&ver);if (ierr) return ierr;
+      if (ver) {
+        sprintf(bs,"v%d.%d",OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+        ierr = PetscStrstr(ver,bs,&bsf);if (ierr) return ierr;
+        if (bsf) flg = PETSC_TRUE;
+      }
+      if (!flg) {
+        fprintf(stderr,"PETSc Error --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d, aborting\n",mpilibraryversion,OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+        abort();
+      }
+    }
+#endif
+  }
+#endif
+
 
   /* these must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
