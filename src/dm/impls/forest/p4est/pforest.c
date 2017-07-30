@@ -1400,10 +1400,23 @@ static PetscErrorCode DMView_HDF5_pforest(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#define DMView_GLVis_pforest _append_pforest(DMView_GLVis)
+static PetscErrorCode DMView_GLVis_pforest(DM dm, PetscViewer viewer)
+{
+  DM             plex;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = DMPforestGetPlex(dm, &plex);CHKERRQ(ierr);
+  ierr = DMView(plex, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define DMView_pforest _append_pforest(DMView)
 static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
 {
-  PetscBool      isascii, isvtk, ishdf5;
+  PetscBool      isascii, isvtk, ishdf5, isglvis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1412,14 +1425,17 @@ static PetscErrorCode DMView_pforest(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis);CHKERRQ(ierr);
   if (isascii) {
     ierr = DMView_ASCII_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
   } else if (isvtk) {
     ierr = DMView_VTK_pforest((PetscObject) dm,viewer);CHKERRQ(ierr);
   } else if (ishdf5) {
     ierr = DMView_HDF5_pforest(dm, viewer);CHKERRQ(ierr);
+  } else if (isglvis) {
+    ierr = DMView_GLVis_pforest(dm, viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Viewer not supported (not VTK or HDF5)");
+    SETERRQ(PetscObjectComm((PetscObject) dm),PETSC_ERR_SUP,"Viewer not supported (not VTK, HDF5, or GLVis)");
   }
   PetscFunctionReturn(0);
 }
