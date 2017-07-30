@@ -483,7 +483,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;
       Mat                 T;
       PetscScalar         *W,lwork,*Bwork;
-      const PetscInt      *idxs;
+      const PetscInt      *idxs = NULL;
       PetscInt            cum,mss,*nnz;
       PetscBLASInt        *pivots,B_lwork,B_N,B_ierr;
 
@@ -537,6 +537,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
         PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
         if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        /* silent static analyzer */
+        if (!idxs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"IDXS not present");
         ierr = MatSetValues(T,subset_size,idxs+cum,subset_size,idxs+cum,W,INSERT_VALUES);CHKERRQ(ierr);
         cum += subset_size;
       }

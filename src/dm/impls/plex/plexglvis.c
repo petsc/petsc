@@ -635,16 +635,15 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               vp--;
               break;
             case 4: /* face */
-              ierr = PetscMemzero(skip,maxsupp*sizeof(PetscBool));CHKERRQ(ierr);
               ierr = DMPlexGetTreeChildren(dm,parent,&numChildren,&children);CHKERRQ(ierr);
               for (n=0;n<numChildren;n++) {
                 ierr = DMLabelGetValue(dlabel,children[n],&depth);CHKERRQ(ierr);
                 if (!depth) {
                   const PetscInt *hvsupp,*hesupp,*cone;
                   PetscInt       hvsuppSize,hesuppSize,coneSize;
-                  PetscInt       hv = children[n],he,f;
-                  PetscBool      found = PETSC_FALSE;
+                  PetscInt       hv = children[n],he = -1,f;
 
+                  ierr = PetscMemzero(skip,maxsupp*sizeof(PetscBool));CHKERRQ(ierr);
                   ierr = DMPlexGetSupportSize(dm,hv,&hvsuppSize);CHKERRQ(ierr);
                   ierr = DMPlexGetSupport(dm,hv,&hvsupp);CHKERRQ(ierr);
                   for (i=0;i<hvsuppSize;i++) {
@@ -652,14 +651,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                     ierr = DMPlexGetTreeParent(dm,hvsupp[i],&ep,NULL);CHKERRQ(ierr);
                     if (ep != hvsupp[i]) {
                       he = hvsupp[i];
-                      found = PETSC_TRUE;
                     } else {
                       skip[i] = PETSC_TRUE;
                     }
                   }
-                  if (!found) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
-                  he      = hvsupp[i];
-                  skip[i] = PETSC_TRUE;
+                  if (he == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
                   ierr    = DMPlexGetCone(dm,he,&cone);CHKERRQ(ierr);
                   vids[0] = (int)((cone[0] == hv) ? cone[1] : cone[0]);
                   ierr    = DMPlexGetSupportSize(dm,he,&hesuppSize);CHKERRQ(ierr);

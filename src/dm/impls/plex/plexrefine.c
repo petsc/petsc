@@ -6544,6 +6544,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (p = cMax; p < cEnd; ++p) {
         for (r = 0; r < 4; ++r) {
           newp = (cMax - cStart)*8 + (p - cMax)*4 + r;
+          pi[newp] = p;
         }
       }
       break;
