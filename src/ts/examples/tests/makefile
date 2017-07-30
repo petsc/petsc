@@ -71,6 +71,60 @@ ex25: ex25.o  chkopts
 #----------------------------------------------------------------------------------
 NPROCS    = 1  3
 
+runex1_euler:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_ssp:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type ssp > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_rk:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type rk > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_beuler:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type beuler > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_cn:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type cn > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_theta:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type theta > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_bdf:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type bdf > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_alpha:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type alpha > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_rosw:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type rosw > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_arkimex:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type arkimex > ex1.tmp 2>&1;   \
+          ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
+          ${RM} -f ex1.tmp
+
+runex1_explicit: runex1_euler runex1_ssp runex1_rk
+runex1_implicit: runex1_beuler runex1_cn runex1_theta runex1_bdf runex1_alpha runex1_rosw runex1_arkimex
+runex1: runex1_explicit runex1_implicit
+
 runex2_euler:
 	-@${MPIEXEC} -n 1 ./ex2 -ts_type euler > ex2_euler.tmp 2>&1;   \
            ${DIFF} output/ex2_euler.out ex2_euler.tmp || printf "${PWD}\nPossible problem with ex2_euler, diffs above\n=========================================\n"; \
@@ -146,14 +200,15 @@ runex25_2:
 	   ${DIFF} output/ex25_2.out ex25_2.tmp || printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex25_2.tmp
 
-TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            ex4.rm ex25.PETSc runex25 runex25_2 ex25.rm
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm \
+                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 ex4.rm \
+                            ex25.PETSc runex25 runex25_2 ex25.rm
 TESTEXAMPLES_C_NOTSINGLE  = ex4.PETSc runex4_7 ex4.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
-TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
