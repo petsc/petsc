@@ -3134,7 +3134,7 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,steps,2);
   if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back a negative number of steps");
-  if (steps > ts->total_steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
+  if (steps > ts->steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
   ts->adjoint_max_steps = steps;
   PetscFunctionReturn(0);
 }
@@ -4071,14 +4071,14 @@ PetscErrorCode  TSStep(TS ts)
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (!ts->steps) ts->ptime_prev = ts->ptime;
-  ts->reason = TS_CONVERGED_ITERATING;
   ptime = ts->ptime; ts->ptime_prev_rollback = ts->ptime_prev;
+  ts->reason = TS_CONVERGED_ITERATING;
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ts->ptime_prev = ptime;
-  ts->steps++; ts->total_steps++;
+  ts->steps++;
   ts->steprollback = PETSC_FALSE;
   ts->steprestart  = PETSC_FALSE;
 
@@ -4088,7 +4088,7 @@ PetscErrorCode  TSStep(TS ts)
       else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
   PetscFunctionReturn(0);
@@ -4126,7 +4126,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-  ts->steps++; ts->total_steps--;
+  ts->adjoint_steps++; ts->steps--;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -4135,7 +4135,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
       else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
+    if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
   PetscFunctionReturn(0);
 }
@@ -4296,12 +4296,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      TSTrajectory to incorrectly save the output files
   */
   /* reset time step and iteration counters */
-  ts->steps             = 0;
-  ts->ksp_its           = 0;
-  ts->snes_its          = 0;
-  ts->num_snes_failures = 0;
-  ts->reject            = 0;
-  ts->reason            = TS_CONVERGED_ITERATING;
+
+  if (!ts->steps) {
+    ts->ksp_its           = 0;
+    ts->snes_its          = 0;
+    ts->num_snes_failures = 0;
+    ts->reject            = 0;
+    ts->steprestart       = PETSC_TRUE;
+    ts->steprollback      = PETSC_FALSE;
+  }
+  ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
@@ -4311,17 +4315,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->solvetime = ts->ptime;
     solution = ts->vec_sol;
   } else { /* Step the requested number of timesteps. */
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
 
-    ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
-    ts->steprollback = PETSC_FALSE;
-    ts->steprestart  = PETSC_TRUE;
+    if (!ts->steps) {
+      ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    }
 
     while (!ts->reason) {
-      ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       if (!ts->steprollback) {
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
@@ -4330,16 +4333,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
       if (!ts->steprollback && ts->forward_solve) { /* compute forward sensitivities before event handling because postevent() may change RHS and jump conditions may have to be applied */
-          ierr = TSForwardStep(ts);CHKERRQ(ierr);
+        ierr = TSForwardStep(ts);CHKERRQ(ierr);
       }
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
@@ -4417,27 +4420,27 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
   /* reset time step and iteration counters */
-  ts->steps             = 0;
+  ts->adjoint_steps     = 0;
   ts->ksp_its           = 0;
   ts->snes_its          = 0;
   ts->num_snes_failures = 0;
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->total_steps;
+  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->steps;
+  if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
 
-  if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
+    ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
     ierr = TSAdjointEventHandler(ts);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->vec_costintegral && !ts->costintegralfwd) {
       ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);
     }
   }
-  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
-  ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
+  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
+  ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
   ts->solvetime = ts->ptime;
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
@@ -7738,7 +7741,7 @@ PetscErrorCode  TSRollBack(TS ts)
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
-  ts->steps--; ts->total_steps--;
+  ts->steps--;
   ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
   ts->steprollback = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -7960,7 +7963,7 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
 
   t->adapt = tsin->adapt;
   ierr = PetscObjectReference((PetscObject)t->adapt);CHKERRQ(ierr);
-  
+
   t->trajectory = tsin->trajectory;
   ierr = PetscObjectReference((PetscObject)t->trajectory);CHKERRQ(ierr);
 
@@ -7973,7 +7976,6 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->time_step         = tsin->time_step;
   t->max_time          = tsin->max_time;
   t->steps             = tsin->steps;
-  t->total_steps       = tsin->total_steps;
   t->max_steps         = tsin->max_steps;
   t->equation_type     = tsin->equation_type;
   t->atol              = tsin->atol;
