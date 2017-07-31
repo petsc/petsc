@@ -194,12 +194,8 @@ int main(int argc,char **args)
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
 
-    for (i=0; i<nd; ++i) {
-      ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&submatsA[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(submatA);CHKERRQ(ierr);
-    ierr = PetscFree(submatsA);CHKERRQ(ierr);
+    ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
+    ierr = MatDestroySubMatrices(nd,&submatsA);CHKERRQ(ierr);
   }
 
   /* Free allocated memory */
