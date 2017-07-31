@@ -1121,8 +1121,7 @@ PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
     if (redund->matseq) { /* via MatCreateSubMatrices()  */
       ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
       ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
-      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
-      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrices(1,&redund->matseq);CHKERRQ(ierr);
     } else {
       ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
       ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
@@ -6880,29 +6879,19 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 {
   PetscErrorCode ierr;
+  Mat            mat0;
 
   PetscFunctionBegin;
-  if (!*mat) PetscFunctionReturn(0);
+  if (!*mat || n==0 ) PetscFunctionReturn(0);
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
 
-  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
-  if ((*mat)[n]) {
-    PetscBool      isdummy;
-    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
-    if (isdummy) {
-      Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
-
-      if (smat && !smat->singleis) {
-        PetscInt i,nstages=smat->nstages;
-        for (i=0; i<nstages; i++) {
-          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
-        }
-      }
-    }
+  mat0 = (*mat)[0];
+  if (mat0->ops->destroysubmatrices) {
+    ierr = (mat0->ops->destroysubmatrices)(n,mat);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
   }
-
-  ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

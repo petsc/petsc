@@ -2521,8 +2521,50 @@ PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
   Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
+  printf("MatDestroy_SeqAIJ_Submatrices...\n");
   ierr = submatj->destroy(C);CHKERRQ(ierr);
   ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
+  if ((*mat)[n]) {
+    PetscBool      isdummy;
+    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
+    if (isdummy) {
+      Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+      printf("isdummy ...\n");
+      if (smat && !smat->singleis) {
+        PetscInt i,nstages=smat->nstages;
+        for (i=0; i<nstages; i++) {
+          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+
+  for (i=0; i<n; i++) {
+    Mat C=(*mat)[i];
+    Mat_SeqAIJ  *c = (Mat_SeqAIJ*)C->data;
+    Mat_SubSppt *submatj = c->submatis1;
+
+    if (submatj) {
+      ierr = submatj->destroy(C);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&C->rmap);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&C->cmap);CHKERRQ(ierr);
+      ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
+    } else {
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3240,7 +3282,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         0,
                                         MatFDColoringSetUp_SeqXAIJ,
                                         MatFindOffBlockDiagonalEntries_SeqAIJ,
-                                 /*144*/MatCreateMPIMatConcatenateSeqMat_SeqAIJ
+                                 /*144*/MatCreateMPIMatConcatenateSeqMat_SeqAIJ,
+                                        MatDestroySubMatrices_SeqAIJ
 };
 
 PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
