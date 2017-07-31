@@ -15,6 +15,7 @@ TESTDIR := $(TESTDIR)
 endif
 MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
+TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -147,7 +148,9 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 .PHONY: alltest test pre-clean
 test: pre-clean report_tests
 pre-clean:
-	@$(RM) -r $(TESTDIR)/counts
+	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
+	@touch $(TESTLOGFILE)
+
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
 # Targets to run tests in test-$pkg.$lang and delete the executables, language by language
