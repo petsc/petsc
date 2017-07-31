@@ -1,4 +1,6 @@
 #cython: cdivision=True
+#cython: binding=False
+#cython: auto_pickle=False
 #cython: autotestdict=False
 #cython: warn.multiple_declarators=False
 cimport cython
