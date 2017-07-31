@@ -39,20 +39,20 @@ runex2:
 	   ${RM} -f ex2_1.tmp
 
 runex3_1_1:
-	-@${MPIEXEC} -n 1 ./ex3 -debug -n 2 -dim 2 -levels 2 -simplex > ex3_1_1.tmp 2>&1;\
-	   if (${DIFF} -I "$2 dimensions:" output/ex3_1_1.out ex3_1_1.tmp) then true ;  \
+	-@${MPIEXEC} -n 1 ./ex3 -debug -n 2 -dim 2 -levels 2 -simplex | grep -v "DM_0x*" > ex3_1_1.tmp 2>&1;\
+	   if (${DIFF} output/ex3_1_1.out ex3_1_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex3, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3_1_1.tmp
 
 runex3_1_2:
-	-@${MPIEXEC} -n 1 ./ex3 -debug -n 2 -dim 3 -levels 2 > ex3_1_2.tmp 2>&1;\
-	   if (${DIFF} -I "$3 dimensions:" output/ex3_1_2.out ex3_1_2.tmp) then true ;  \
+	-@${MPIEXEC} -n 1 ./ex3 -debug -n 2 -dim 3 -levels 2 | grep -v "DM_0x*" > ex3_1_2.tmp 2>&1;\
+	   if (${DIFF} output/ex3_1_2.out ex3_1_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex3, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3_1_2.tmp
 
 runex3_2_1:
-	-@${MPIEXEC} -n 2 ./ex3 -debug -n 2 -dim 3 -ghost 1 -levels 2 > ex3_2_1.tmp 2>&1;\
-	   if (${DIFF} -I "$3 dimensions:" output/ex3_2_1.out ex3_2_1.tmp) then true ;  \
+	-@${MPIEXEC} -n 2 ./ex3 -debug -n 2 -dim 3 -ghost 1 -levels 2 | grep -v "DM_0x*" > ex3_2_1.tmp 2>&1;\
+	   if (${DIFF} output/ex3_2_1.out ex3_2_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex3, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3_2_1.tmp
 
