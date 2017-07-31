@@ -774,6 +774,7 @@ PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void),void *,
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
 
 /*
   PETSc communicators have this attribute, see

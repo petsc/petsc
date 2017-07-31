@@ -20,31 +20,9 @@ PetscErrorCode  PetscSysFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_keyval);CHKERRQ(ierr);
+  if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_free(&Petsc_Seq_keyval);CHKERRQ(ierr);
   }
-  if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
-  }
-  if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
-  }
-  if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Binary_keyval);CHKERRQ(ierr);
-  }
-  if (Petsc_Viewer_Draw_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
-  }
-#if defined(PETSC_HAVE_HDF5)
-  if (Petsc_Viewer_HDF5_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_HDF5_keyval);CHKERRQ(ierr);
-  }
-#endif
-#if defined(PETSC_USE_SOCKETVIEWER)
-  if (Petsc_Viewer_Socket_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
-  }
-#endif
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
