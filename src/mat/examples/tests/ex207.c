@@ -9,7 +9,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
@@ -31,10 +31,9 @@ int main(int argc,char **args)
     ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(&A); CHKERRQ(ierr);
-  ierr = MatDestroy(&B); CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
   return ierr;
 }
