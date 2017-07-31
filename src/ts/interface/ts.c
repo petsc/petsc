@@ -2250,14 +2250,38 @@ $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
 
    Level: beginner
 
-.seealso: TSExactFinalTimeOption
+.seealso: TSExactFinalTimeOption, TSGetExactFinalTime()
 @*/
-PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
+PetscErrorCode TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ts,eftopt,2);
   ts->exact_final_time = eftopt;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetExactFinalTime - Gets the exact final time option.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  eftopt - exact final time option
+
+   Level: beginner
+
+.seealso: TSExactFinalTimeOption, TSSetExactFinalTime()
+@*/
+PetscErrorCode TSGetExactFinalTime(TS ts,TSExactFinalTimeOption *eftopt)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(eftopt,2);
+  *eftopt = ts->exact_final_time;
   PetscFunctionReturn(0);
 }
 
