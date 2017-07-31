@@ -88,7 +88,7 @@ cdef class TS(Object):
         if viewer is not None: cviewer = viewer.vwr
         CHKERR( TSView(self.ts, cviewer) )
 
-    def load(self, Viewer viewer not None):
+    def load(self, Viewer viewer):
         CHKERR( TSLoad(self.ts, viewer.vwr) )
 
     def destroy(self):
@@ -182,21 +182,21 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
-    def computeRHSFunction(self, t, Vec x not None, Vec f not None):
+    def computeRHSFunction(self, t, Vec x, Vec f):
         cdef PetscReal time = asReal(t)
         CHKERR( TSComputeRHSFunction(self.ts, time, x.vec, f.vec) )
 
-    def computeRHSFunctionLinear(self, t, Vec x not None, Vec f not None):
+    def computeRHSFunctionLinear(self, t, Vec x, Vec f):
         cdef PetscReal time = asReal(t)
         CHKERR( TSComputeRHSFunctionLinear(self.ts, time, x.vec, f.vec, NULL) )
 
-    def computeRHSJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
+    def computeRHSJacobian(self, t, Vec x, Mat J, Mat P=None):
         cdef PetscReal time = asReal(t)
         cdef PetscMat jmat = J.mat, pmat = J.mat
         if P is not None: pmat = P.mat
         CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec, jmat, pmat) )
 
-    def computeRHSJacobianConstant(self, t, Vec x not None, Mat J not None, Mat P=None):
+    def computeRHSJacobianConstant(self, t, Vec x, Mat J, Mat P=None):
         cdef PetscReal time = asReal(t)
         cdef PetscMat jmat = J.mat, pmat = J.mat
         if P is not None: pmat = P.mat
@@ -245,16 +245,16 @@ cdef class TS(Object):
             CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
     def computeIFunction(self,
-                         t, Vec x not None, Vec xdot not None,
-                         Vec f not None, imex=False):
+                         t, Vec x, Vec xdot,
+                         Vec f, imex=False):
         cdef PetscReal rval = asReal(t)
         cdef PetscBool bval = imex
         CHKERR( TSComputeIFunction(self.ts, rval, x.vec, xdot.vec,
                                    f.vec, bval) )
 
     def computeIJacobian(self,
-                         t, Vec x not None, Vec xdot not None, a,
-                         Mat J not None, Mat P=None, imex=False):
+                         t, Vec x, Vec xdot, a,
+                         Mat J, Mat P=None, imex=False):
         cdef PetscReal rval1 = asReal(t)
         cdef PetscReal rval2 = asReal(a)
         cdef PetscBool bval  = imex
@@ -303,16 +303,12 @@ cdef class TS(Object):
         else:
             CHKERR( TSSetI2Jacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
-    def computeI2Function(self,
-                         t, Vec x not None, Vec xdot not None, Vec xdotdot not None,
-                         Vec f not None):
+    def computeI2Function(self, t, Vec x, Vec xdot, Vec xdotdot, Vec f):
         cdef PetscReal rval = asReal(t)
         CHKERR( TSComputeI2Function(self.ts, rval, x.vec, xdot.vec, xdotdot.vec,
                                    f.vec) )
 
-    def computeI2Jacobian(self,
-                         t, Vec x not None, Vec xdot not None, Vec xdotdot not None, v, a,
-                         Mat J not None, Mat P=None):
+    def computeI2Jacobian(self, t, Vec x, Vec xdot, Vec xdotdot, v, a, Mat J, Mat P=None):
         cdef PetscReal rval1 = asReal(t)
         cdef PetscReal rval2 = asReal(v)
         cdef PetscReal rval3 = asReal(a)
@@ -337,7 +333,7 @@ cdef class TS(Object):
 
     # --- solution vector ---
 
-    def setSolution(self, Vec u not None):
+    def setSolution(self, Vec u):
         CHKERR( TSSetSolution(self.ts, u.vec) )
 
     def getSolution(self):
@@ -346,7 +342,7 @@ cdef class TS(Object):
         PetscINCREF(u.obj)
         return u
         
-    def setSolution2(self, Vec u not None, Vec v not None):
+    def setSolution2(self, Vec u, Vec v):
         CHKERR( TS2SetSolution(self.ts, u.vec, v.vec) )
 
     def getSolution2(self):
@@ -381,7 +377,7 @@ cdef class TS(Object):
         PetscINCREF(dm.obj)
         return dm
 
-    def setDM(self, DM dm not None):
+    def setDM(self, DM dm):
         CHKERR( TSSetDM(self.ts, dm.dm) )
 
     # --- customization ---
@@ -633,10 +629,10 @@ cdef class TS(Object):
     def rollBack(self):
         CHKERR( TSRollBack(self.ts) )
 
-    def solve(self, Vec u not None):
+    def solve(self, Vec u):
         CHKERR( TSSolve(self.ts, u.vec) )
 
-    def interpolate(self, t, Vec u not None):
+    def interpolate(self, t, Vec u):
         cdef PetscReal rval = asReal(t)
         CHKERR( TSInterpolate(self.ts, rval, u.vec) )
 

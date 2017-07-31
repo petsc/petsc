@@ -438,7 +438,7 @@ cdef class Vec(Object):
         cdef PetscReal rval = asReal(tol)
         CHKERR( VecChop(self.vec, rval) )
 
-    def load(self, Viewer viewer not None):
+    def load(self, Viewer viewer):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
         if self.vec == NULL:
@@ -447,35 +447,35 @@ cdef class Vec(Object):
         CHKERR( VecLoad(self.vec, viewer.vwr) )
         return self
 
-    def equal(self, Vec vec not None):
+    def equal(self, Vec vec):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
         return toBool(flag)
 
-    def dot(self, Vec vec not None):
+    def dot(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecDot(self.vec, vec.vec, &sval) )
         return toScalar(sval)
 
-    def dotBegin(self, Vec vec not None):
+    def dotBegin(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecDotBegin(self.vec, vec.vec, &sval) )
 
-    def dotEnd(self, Vec vec not None):
+    def dotEnd(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecDotEnd(self.vec, vec.vec, &sval) )
         return toScalar(sval)
 
-    def tDot(self, Vec vec not None):
+    def tDot(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecTDot(self.vec, vec.vec, &sval) )
         return toScalar(sval)
 
-    def tDotBegin(self, Vec vec not None):
+    def tDotBegin(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecTDotBegin(self.vec, vec.vec, &sval) )
 
-    def tDotEnd(self, Vec vec not None):
+    def tDotEnd(self, Vec vec):
         cdef PetscScalar sval = 0
         CHKERR( VecTDotEnd(self.vec, vec.vec, &sval) )
         return toScalar(sval)
@@ -573,7 +573,7 @@ cdef class Vec(Object):
         if random is not None: rnd = random.rnd
         CHKERR( VecSetRandom(self.vec, rnd) )
 
-    def permute(self, IS order not None, invert=False):
+    def permute(self, IS order, invert=False):
         cdef PetscBool cinvert = PETSC_FALSE
         if invert: cinvert = PETSC_TRUE
         CHKERR( VecPermute(self.vec, order.iset, cinvert) )
@@ -585,7 +585,7 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecSet(self.vec, sval) )
 
-    def isset(self, IS idx not None, alpha):
+    def isset(self, IS idx, alpha):
         cdef PetscScalar aval = asScalar(alpha)
         CHKERR( VecISSet(self.vec, idx.iset, aval) )
 
@@ -601,27 +601,27 @@ cdef class Vec(Object):
         cdef PetscReal rval = asReal(tol)
         CHKERR( VecChop(self.vec, rval) )
 
-    def swap(self, Vec vec not None):
+    def swap(self, Vec vec):
         CHKERR( VecSwap(self.vec, vec.vec) )
 
-    def axpy(self, alpha, Vec x not None):
+    def axpy(self, alpha, Vec x):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecAXPY(self.vec, sval, x.vec) )
 
-    def isaxpy(self, IS idx not None, alpha, Vec x not None):
+    def isaxpy(self, IS idx, alpha, Vec x):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecISAXPY(self.vec, idx.iset, sval, x.vec) )
 
-    def aypx(self, alpha, Vec x not None):
+    def aypx(self, alpha, Vec x):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecAYPX(self.vec, sval, x.vec) )
 
-    def axpby(self, alpha, beta, Vec y not None):
+    def axpby(self, alpha, beta, Vec y):
         cdef PetscScalar sval1 = asScalar(alpha)
         cdef PetscScalar sval2 = asScalar(beta)
         CHKERR( VecAXPBY(self.vec, sval1, sval2, y.vec) )
 
-    def waxpy(self, alpha, Vec x not None, Vec y not None):
+    def waxpy(self, alpha, Vec x, Vec y):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecWAXPY(self.vec, sval, x.vec, y.vec) )
 
@@ -637,22 +637,22 @@ cdef class Vec(Object):
             v[i] = (<Vec?>(vecs[i])).vec
         CHKERR( VecMAXPY(self.vec, n, a, v) )
 
-    def pointwiseMult(self, Vec x not None, Vec y not None):
+    def pointwiseMult(self, Vec x, Vec y):
         CHKERR( VecPointwiseMult(self.vec, x.vec, y.vec) )
 
-    def pointwiseDivide(self, Vec x not None, Vec y not None):
+    def pointwiseDivide(self, Vec x, Vec y):
         CHKERR( VecPointwiseDivide(self.vec, x.vec, y.vec) )
 
-    def pointwiseMin(self, Vec x not None, Vec y not None):
+    def pointwiseMin(self, Vec x, Vec y):
         CHKERR( VecPointwiseMin(self.vec, x.vec, y.vec) )
 
-    def pointwiseMax(self, Vec x not None, Vec y not None):
+    def pointwiseMax(self, Vec x, Vec y):
         CHKERR( VecPointwiseMax(self.vec, x.vec, y.vec) )
 
-    def pointwiseMaxAbs(self, Vec x not None, Vec y not None):
+    def pointwiseMaxAbs(self, Vec x, Vec y):
         CHKERR( VecPointwiseMaxAbs(self.vec, x.vec, y.vec) )
 
-    def maxPointwiseDivide(self, Vec vec not None):
+    def maxPointwiseDivide(self, Vec vec):
         cdef PetscReal rval = 0
         CHKERR( VecMaxPointwiseDivide(self.vec, vec.vec, &rval) )
         return toReal(rval)
@@ -678,7 +678,7 @@ cdef class Vec(Object):
     def setValuesBlocked(self, indices, values, addv=None):
         vecsetvalues(self.vec, indices, values, addv, 1, 0)
 
-    def setLGMap(self, LGMap lgmap not None):
+    def setLGMap(self, LGMap lgmap):
         CHKERR( VecSetLocalToGlobalMapping(self.vec, lgmap.lgm) )
 
     def getLGMap(self):
@@ -746,12 +746,12 @@ cdef class Vec(Object):
         if ntype != norm_1_2: return toReal(rval[0])
         else: return (toReal(rval[0]), toReal(rval[1]))
 
-    def strideScatter(self, field, Vec vec not None, addv=None):
+    def strideScatter(self, field, Vec vec, addv=None):
         cdef PetscInt ival = asInt(field)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( VecStrideScatter(self.vec, ival, vec.vec, caddv) )
 
-    def strideGather(self, field, Vec vec not None, addv=None):
+    def strideGather(self, field, Vec vec, addv=None):
         cdef PetscInt ival = asInt(field)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( VecStrideGather(self.vec, ival, vec.vec, caddv) )
@@ -791,13 +791,13 @@ cdef class Vec(Object):
 
     #
 
-    def getSubVector(self, IS iset not None, Vec subvec=None):
+    def getSubVector(self, IS iset, Vec subvec=None):
         if subvec is None: subvec = Vec()
         else: CHKERR( VecDestroy(&subvec.vec) )
         CHKERR( VecGetSubVector(self.vec, iset.iset, &subvec.vec) )
         return subvec
 
-    def restoreSubVector(self, IS iset not None, Vec subvec not None):
+    def restoreSubVector(self, IS iset, Vec subvec):
         CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
 
     def getNestSubVecs(self):

@@ -202,7 +202,7 @@ cdef class _DMDA_Vec_array(object):
     cdef readonly tuple shape, strides
     cdef readonly ndarray array
 
-    def __cinit__(self, DMDA da not None, Vec vec not None, bint DOF=False):
+    def __cinit__(self, DMDA da, Vec vec, bint DOF=False):
         #
         cdef PetscInt dim=0, dof=0
         CHKERR( DMDAGetInfo(da.dm,

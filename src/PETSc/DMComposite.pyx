@@ -9,7 +9,7 @@ cdef class DMComposite(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def addDM(self, DM dm not None, *args):
+    def addDM(self, DM dm, *args):
         """Add DM to composite"""
         CHKERR( DMCompositeAddDM(self.dm, dm.dm) )
         cdef object item
@@ -40,7 +40,7 @@ cdef class DMComposite(DM):
             entries.append(entry)
         return tuple(entries)
 
-    def scatter(self, Vec gvec not None, lvecs):
+    def scatter(self, Vec gvec, lvecs):
         """Scatter coupled global vector into split local vectors"""
         cdef PetscInt i, n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
@@ -50,7 +50,7 @@ cdef class DMComposite(DM):
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR( DMCompositeScatterArray(self.dm, gvec.vec, clvecs) )
 
-    def gather(self, Vec gvec not None, imode, lvecs):
+    def gather(self, Vec gvec, imode, lvecs):
         """Gather split local vectors into coupled global vector"""
         cdef PetscInsertMode cimode = insertmode(imode)
         cdef PetscInt i, n = 0
@@ -94,7 +94,7 @@ cdef class DMComposite(DM):
         CHKERR( PetscFree(clgm) )
         return lgms
 
-    def getAccess(self, Vec gvec not None, locs=None):
+    def getAccess(self, Vec gvec, locs=None):
         """Get access to specified parts of global vector.
 
         Use via 'with' context manager (PEP 343).

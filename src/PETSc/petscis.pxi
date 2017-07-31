@@ -123,7 +123,7 @@ cdef class _IS_buffer:
     cdef const_PetscInt *data
     cdef bint hasarray
 
-    def __cinit__(self, IS iset not None):
+    def __cinit__(self, IS iset):
         cdef PetscIS i = iset.iset
         CHKERR( PetscINCREF(<PetscObject*>&i) )
         self.iset = i

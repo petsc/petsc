@@ -161,7 +161,7 @@ cdef class KSP(Object):
         PetscINCREF(dm.obj)
         return dm
 
-    def setDM(self, DM dm not None):
+    def setDM(self, DM dm):
         CHKERR( KSPSetDM(self.ksp, dm.dm) )
 
     def setDMActive(self, bint flag):
@@ -199,7 +199,7 @@ cdef class KSP(Object):
         PetscINCREF(P.obj)
         return (A, P)
 
-    def setPC(self, PC pc not None):
+    def setPC(self, PC pc):
         CHKERR( KSPSetPC(self.ksp, pc.pc) )
 
     def getPC(self):
@@ -381,10 +381,10 @@ cdef class KSP(Object):
     def setUpOnBlocks(self):
         CHKERR( KSPSetUpOnBlocks(self.ksp) )
 
-    def solve(self, Vec b not None, Vec x not None):
+    def solve(self, Vec b, Vec x):
         CHKERR( KSPSolve(self.ksp, b.vec, x.vec) )
 
-    def solveTranspose(self, Vec b not None, Vec x not None):
+    def solveTranspose(self, Vec b, Vec x):
         CHKERR( KSPSolveTranspose(self.ksp, b.vec, x.vec) )
 
     def setIterationNumber(self, its):
@@ -428,7 +428,7 @@ cdef class KSP(Object):
 
     def getWorkVecs(self, right=None, left=None):
         cdef bint R = right is not None
-        cdef bint L = left is not None
+        cdef bint L = left  is not None
         cdef PetscInt i=0, nr=0, nl=0
         cdef PetscVec *vr=NULL, *vl=NULL
         if R: nr = asInt(right)

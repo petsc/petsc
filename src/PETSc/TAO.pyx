@@ -137,7 +137,7 @@ cdef class TAO(Object):
     def getAppCtx(self):
         return self.get_attr("__appctx__")
 
-    def setInitial(self, Vec x not None):
+    def setInitial(self, Vec x):
         """
         """
         CHKERR( TaoSetInitialVector(self.tao, x.vec) )
@@ -235,7 +235,7 @@ cdef class TAO(Object):
 
     #
 
-    def setStateDesignIS(self, IS state, IS design):
+    def setStateDesignIS(self, IS state=None, IS design=None):
         """
         """
         cdef PetscIS s_is = NULL, d_is = NULL
@@ -273,36 +273,36 @@ cdef class TAO(Object):
 
     # --------------
 
-    def computeObjective(self, Vec x not None):
+    def computeObjective(self, Vec x):
         """
         """
         cdef PetscReal f = 0
         CHKERR( TaoComputeObjective(self.tao, x.vec, &f) )
         return toReal(f)
 
-    def computeSeparableObjective(self, Vec x not None, Vec f not None):
+    def computeSeparableObjective(self, Vec x, Vec f):
         """
         """
         CHKERR( TaoComputeSeparableObjective(self.tao, x.vec, f.vec) )
 
-    def computeGradient(self, Vec x not None, Vec g not None):
+    def computeGradient(self, Vec x, Vec g):
         """
         """
         CHKERR( TaoComputeGradient(self.tao, x.vec, g.vec) )
 
-    def computeObjectiveGradient(self, Vec x not None, Vec g not None):
+    def computeObjectiveGradient(self, Vec x, Vec g):
         """
         """
         cdef PetscReal f = 0
         CHKERR( TaoComputeObjectiveAndGradient(self.tao, x.vec, &f, g.vec) )
         return toReal(f)
 
-    def computeDualVariables(self, Vec xl not None, Vec xu not None):
+    def computeDualVariables(self, Vec xl, Vec xu):
         """
         """
         CHKERR( TaoComputeDualVariables(self.tao, xl.vec, xu.vec) )
 
-    def computeVariableBounds(self, Vec xl not None, Vec xu not None):
+    def computeVariableBounds(self, Vec xl, Vec xu):
         """
         """
         CHKERR( TaoComputeVariableBounds(self.tao) )
@@ -319,19 +319,19 @@ cdef class TAO(Object):
             else:
                 CHKERR( VecSet(xu.vec, <PetscScalar>PETSC_INFINITY) )
 
-    def computeConstraints(self, Vec x not None, Vec c not None):
+    def computeConstraints(self, Vec x, Vec c):
         """
         """
         CHKERR( TaoComputeConstraints(self.tao, x.vec, c.vec) )
 
-    def computeHessian(self, Vec x not None, Mat H not None, Mat P=None):
+    def computeHessian(self, Vec x, Mat H, Mat P=None):
         """
         """
         cdef PetscMat hmat = H.mat, pmat = H.mat
         if P is not None: pmat = P.mat
         CHKERR( TaoComputeHessian(self.tao, x.vec, hmat, pmat) )
 
-    def computeJacobian(self, Vec x not None, Mat J not None, Mat P=None):
+    def computeJacobian(self, Vec x, Mat J, Mat P=None):
         """
         """
         cdef PetscMat jmat = J.mat, pmat = J.mat

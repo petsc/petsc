@@ -7,13 +7,13 @@ cdef class DMShell(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def setMatrix(self, Mat mat not None):
+    def setMatrix(self, Mat mat):
         CHKERR( DMShellSetMatrix(self.dm, mat.mat) )
 
-    def setGlobalVector(self, Vec gv not None):
+    def setGlobalVector(self, Vec gv):
         CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )
 
-    def setLocalVector(self, Vec lv not None):
+    def setLocalVector(self, Vec lv):
         CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
 
     def setCreateGlobalVector(self, create_gvec, args=None, kargs=None):
@@ -53,7 +53,7 @@ cdef class DMShell(DM):
             cend = &DMSHELL_GlobalToLocalEnd
         CHKERR( DMShellSetGlobalToLocal(self.dm, cbegin, cend) )
 
-    def setGlobalToLocalVecScatter(self, Scatter gtol not None):
+    def setGlobalToLocalVecScatter(self, Scatter gtol):
         CHKERR( DMShellSetGlobalToLocalVecScatter(self.dm, gtol.sct) )
 
     def setLocalToGlobal(self, begin, end, begin_args=None, begin_kargs=None,
@@ -73,7 +73,7 @@ cdef class DMShell(DM):
             cend = &DMSHELL_LocalToGlobalEnd
         CHKERR( DMShellSetLocalToGlobal(self.dm, cbegin, cend) )
 
-    def setLocalToGlobalVecScatter(self, Scatter ltog not None):
+    def setLocalToGlobalVecScatter(self, Scatter ltog):
         CHKERR( DMShellSetLocalToGlobalVecScatter(self.dm, ltog.sct) )
 
     def setLocalToLocal(self, begin, end, begin_args=None, begin_kargs=None,
@@ -95,7 +95,7 @@ cdef class DMShell(DM):
             cend = &DMSHELL_LocalToLocalEnd
         CHKERR( DMShellSetLocalToLocal(self.dm, cbegin, cend) )
 
-    def setLocalToLocalVecScatter(self, Scatter ltol not None):
+    def setLocalToLocalVecScatter(self, Scatter ltol):
         CHKERR( DMShellSetLocalToLocalVecScatter(self.dm, ltol.sct) )
 
     def setCreateMatrix(self, create_matrix, args=None, kargs=None):

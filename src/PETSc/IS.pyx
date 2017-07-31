@@ -112,7 +112,7 @@ cdef class IS(Object):
         CHKERR( ISCopy(self.iset, result.iset) )
         return result
 
-    def load(self, Viewer viewer not None):
+    def load(self, Viewer viewer):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
         if self.iset == NULL:
@@ -189,22 +189,22 @@ cdef class IS(Object):
         CHKERR( ISIdentity(self.iset, &flag) )
         return toBool(flag)
 
-    def equal(self, IS iset not None):
+    def equal(self, IS iset):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISEqual(self.iset, iset.iset, &flag) )
         return toBool(flag)
 
-    def sum(self, IS iset not None):
+    def sum(self, IS iset):
         cdef IS out = IS()
         CHKERR( ISSum(self.iset, iset.iset, &out.iset) )
         return out
 
-    def expand(self, IS iset not None):
+    def expand(self, IS iset):
         cdef IS out = IS()
         CHKERR( ISExpand(self.iset, iset.iset, &out.iset) )
         return out
 
-    def union(self, IS iset not None): # XXX review this
+    def union(self, IS iset): # XXX review this
         cdef PetscBool flag1=PETSC_FALSE, flag2=PETSC_FALSE
         CHKERR( ISSorted(self.iset, &flag1) )
         CHKERR( ISSorted(iset.iset, &flag2) )
@@ -215,7 +215,7 @@ cdef class IS(Object):
             CHKERR( ISExpand(self.iset, iset.iset, &out.iset) )
         return out
 
-    def difference(self, IS iset not None):
+    def difference(self, IS iset):
         cdef IS out = IS()
         CHKERR( ISDifference(self.iset, iset.iset, &out.iset) )
         return out
@@ -227,7 +227,7 @@ cdef class IS(Object):
         CHKERR( ISComplement(self.iset, cnmin, cnmax, &out.iset) )
         return out
 
-    def embed(self, IS iset not None, drop):
+    def embed(self, IS iset, drop):
         cdef PetscBool bval = drop
         cdef IS out = IS()
         CHKERR( ISEmbed(self.iset, iset.iset, bval, &out.iset) )
@@ -398,14 +398,14 @@ cdef class LGMap(Object):
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
-    def createIS(self, IS iset not None):
+    def createIS(self, IS iset):
         cdef PetscLGMap newlgm = NULL
         CHKERR( ISLocalToGlobalMappingCreateIS(
             iset.iset, &newlgm) )
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
-    def createSF(self, SF sf not None, start):
+    def createSF(self, SF sf, start):
         cdef PetscLGMap newlgm = NULL
         cdef PetscInt cstart = asInt(start)
         CHKERR( ISLocalToGlobalMappingCreateSF(sf.sf, cstart, &newlgm) )
@@ -506,7 +506,7 @@ cdef class LGMap(Object):
             self.lgm, niidx, iidx, oidx) )
         return result
 
-    def applyIS(self, IS iset not None):
+    def applyIS(self, IS iset):
         cdef IS result = IS()
         CHKERR( ISLocalToGlobalMappingApplyIS(
             self.lgm, iset.iset, &result.iset) )

@@ -121,7 +121,7 @@ cdef class DM(Object):
         PetscINCREF(vg.obj)
         return vg
 
-    def restoreGlobalVec(self, Vec vg not None):
+    def restoreGlobalVec(self, Vec vg):
         CHKERR( PetscObjectDereference(<PetscObject>vg.vec) ) 
         CHKERR( DMRestoreGlobalVector(self.dm, &vg.vec) )
 
@@ -131,21 +131,21 @@ cdef class DM(Object):
         PetscINCREF(vl.obj)
         return vl
 
-    def restoreLocalVec(self, Vec vl not None):
+    def restoreLocalVec(self, Vec vl):
         CHKERR( PetscObjectDereference(<PetscObject>vl.vec) ) 
         CHKERR( DMRestoreLocalVector(self.dm, &vl.vec) )
 
-    def globalToLocal(self, Vec vg not None, Vec vl not None, addv=None):
+    def globalToLocal(self, Vec vg, Vec vl, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMGlobalToLocalBegin(self.dm, vg.vec, im, vl.vec) )
         CHKERR( DMGlobalToLocalEnd  (self.dm, vg.vec, im, vl.vec) )
 
-    def localToGlobal(self, Vec vl not None, Vec vg not None, addv=None):
+    def localToGlobal(self, Vec vl, Vec vg, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMLocalToGlobalBegin(self.dm, vl.vec, im, vg.vec) )
         CHKERR( DMLocalToGlobalEnd(self.dm, vl.vec, im, vg.vec) )
 
-    def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
+    def localToLocal(self, Vec vl, Vec vlg, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMLocalToLocalBegin(self.dm, vl.vec, im, vlg.vec) )
         CHKERR( DMLocalToLocalEnd  (self.dm, vl.vec, im, vlg.vec) )
@@ -170,7 +170,7 @@ cdef class DM(Object):
         PetscINCREF(sec.obj)
         return sec
 
-    def setCoordinates(self, Vec c not None):
+    def setCoordinates(self, Vec c):
         CHKERR( DMSetCoordinates(self.dm, c.vec) )
 
     def getCoordinates(self):
@@ -179,7 +179,7 @@ cdef class DM(Object):
         PetscINCREF(c.obj)
         return c
 
-    def setCoordinatesLocal(self, Vec c not None):
+    def setCoordinatesLocal(self, Vec c):
         CHKERR( DMSetCoordinatesLocal(self.dm, c.vec) )
 
     def getCoordinatesLocal(self):
@@ -201,19 +201,19 @@ cdef class DM(Object):
         CHKERR( DMCreateMatrix(self.dm, &mat.mat) )
         return mat
 
-    def createInterpolation(self, DM dm not None):
+    def createInterpolation(self, DM dm):
         cdef Mat A = Mat()
         cdef Vec scale = Vec()
         CHKERR( DMCreateInterpolation(self.dm, dm.dm,
                                    &A.mat, &scale.vec))
         return(A, scale)
 
-    def createInjection(self, DM dm not None):
+    def createInjection(self, DM dm):
         cdef Mat inject = Mat()
         CHKERR( DMCreateInjection(self.dm, dm.dm, &inject.mat) )
         return inject
 
-    def createAggregates(self, DM dm not None):
+    def createAggregates(self, DM dm):
         cdef Mat mat = Mat()
         CHKERR( DMCreateAggregates(self.dm, dm.dm, &mat.mat) )
         return mat
@@ -298,7 +298,7 @@ cdef class DM(Object):
         CHKERR( DMAdaptLabel(self.dm, clbl, &newdm.dm) )
         return newdm
 
-    def adaptMetric(self, Vec metric not None, label=None):
+    def adaptMetric(self, Vec metric, label=None):
         cdef const_char *cval = NULL
         cdef PetscDMLabel clbl = NULL
         label = str2bytes(label, &cval)
@@ -310,7 +310,7 @@ cdef class DM(Object):
 
     #
 
-    def setDefaultSection(self, Section sec not None):
+    def setDefaultSection(self, Section sec):
         CHKERR( DMSetDefaultSection(self.dm, sec.sec) )
 
     def getDefaultSection(self):
@@ -319,7 +319,7 @@ cdef class DM(Object):
         PetscINCREF(sec.obj)
         return sec
 
-    def setDefaultGlobalSection(self, Section sec not None):
+    def setDefaultGlobalSection(self, Section sec):
         CHKERR( DMSetDefaultGlobalSection(self.dm, sec.sec) )
 
     def getDefaultGlobalSection(self):
@@ -328,7 +328,7 @@ cdef class DM(Object):
         PetscINCREF(sec.obj)
         return sec
 
-    def createDefaultSF(self, Section localsec not None, Section globalsec not None):
+    def createDefaultSF(self, Section localsec, Section globalsec):
         CHKERR( DMCreateDefaultSF(self.dm, localsec.sec, globalsec.sec) )
 
     def getDefaultSF(self):
@@ -343,7 +343,7 @@ cdef class DM(Object):
         PetscINCREF(sf.obj)
         return sf
 
-    def setPointSF(self, SF sf not None):
+    def setPointSF(self, SF sf):
         CHKERR( DMSetPointSF(self.dm, sf.sf) )
 
     def getNumLabels(self):

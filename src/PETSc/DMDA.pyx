@@ -336,7 +336,7 @@ cdef class DMDA(DM):
 
     #
 
-    def getVecArray(self, Vec vec not None):
+    def getVecArray(self, Vec vec):
         return _DMDA_Vec_array(self, vec)
 
     #
@@ -388,12 +388,12 @@ cdef class DMDA(DM):
         CHKERR( DMDACreateNaturalVector(self.dm, &vn.vec) )
         return vn
 
-    def globalToNatural(self, Vec vg not None, Vec vn not None, addv=None):
+    def globalToNatural(self, Vec vg, Vec vn, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMDAGlobalToNaturalBegin(self.dm, vg.vec, im, vn.vec) )
         CHKERR( DMDAGlobalToNaturalEnd  (self.dm, vg.vec, im, vn.vec) )
 
-    def naturalToGlobal(self, Vec vn not None, Vec vg not None, addv=None):
+    def naturalToGlobal(self, Vec vn, Vec vg, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMDANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec) )
         CHKERR( DMDANaturalToGlobalEnd  (self.dm, vn.vec, im, vg.vec) )

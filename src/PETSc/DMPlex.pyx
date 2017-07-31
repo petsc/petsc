@@ -355,7 +355,7 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexVecRestoreClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
         return closure
 
-    def getVecClosure(self, Section sec, Vec vec not None, point):
+    def getVecClosure(self, Section sec or None, Vec vec, point):
         cdef PetscSection csec = sec.sec if sec is not None else NULL
         cdef PetscInt cp = asInt(point), csize = 0
         cdef PetscScalar *cvals = NULL
@@ -366,7 +366,7 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexVecRestoreClosure(self.dm, csec, vec.vec, cp, &csize, &cvals) )
         return closure
 
-    def setVecClosure(self, Section sec, Vec vec not None, point, values, addv=None):
+    def setVecClosure(self, Section sec or None, Vec vec, point, values, addv=None):
         cdef PetscSection csec = sec.sec if sec is not None else NULL
         cdef PetscInt cp = asInt(point)
         cdef PetscInt csize = 0
@@ -375,7 +375,8 @@ cdef class DMPlex(DM):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DMPlexVecSetClosure(self.dm, csec, vec.vec, cp, cvals, im) )
 
-    def setMatClosure(self, Section sec, Section gsec, Mat mat not None, point, values, addv=None):
+    def setMatClosure(self, Section sec or None, Section gsec or None,
+                      Mat mat, point, values, addv=None):
         cdef PetscSection csec  =  sec.sec if  sec is not None else NULL
         cdef PetscSection cgsec = gsec.sec if gsec is not None else NULL
         cdef PetscInt cp = asInt(point)
@@ -471,7 +472,7 @@ cdef class DMPlex(DM):
             CHKERR( PetscFree(iadj) )
         return adjacency
 
-    def setPartitioner(self, Partitioner part not None):
+    def setPartitioner(self, Partitioner part):
         CHKERR( DMPlexSetPartitioner(self.dm, part.part) )
 
     def getPartitioner(self):
@@ -508,8 +509,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexUninterpolate(self.dm, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
 
-    def distributeField(self, SF sf not None,
-                        Section sec not None, Vec vec not None,
+    def distributeField(self, SF sf, Section sec, Vec vec,
                         Section newsec=None, Vec newvec=None):
         cdef MPI_Comm ccomm = MPI_COMM_NULL
         if newsec is None: newsec = Section()
@@ -630,7 +630,7 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetOrdering(self.dm, cval, label, &perm.iset) )
         return perm
 
-    def permute(self, IS perm not None):
+    def permute(self, IS perm):
         cdef DMPlex dm = <DMPlex>type(self)()
         CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm

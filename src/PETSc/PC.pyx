@@ -202,16 +202,16 @@ cdef class PC(Object):
     def setUpOnBlocks(self):
         CHKERR( PCSetUpOnBlocks(self.pc) )
 
-    def apply(self, Vec x not None, Vec y not None):
+    def apply(self, Vec x, Vec y):
         CHKERR( PCApply(self.pc, x.vec, y.vec) )
 
-    def applyTranspose(self, Vec x not None, Vec y not None):
+    def applyTranspose(self, Vec x, Vec y):
         CHKERR( PCApplyTranspose(self.pc, x.vec, y.vec) )
 
-    def applySymmetricLeft(self, Vec x not None, Vec y not None):
+    def applySymmetricLeft(self, Vec x, Vec y):
         CHKERR( PCApplySymmetricLeft(self.pc, x.vec, y.vec) )
 
-    def applySymmetricRight(self, Vec x not None, Vec y not None):
+    def applySymmetricRight(self, Vec x, Vec y):
         CHKERR( PCApplySymmetricRight(self.pc, x.vec, y.vec) )
 
     # --- discretization space ---
@@ -224,7 +224,7 @@ cdef class PC(Object):
         PetscINCREF(dm.obj)
         return dm
 
-    def setDM(self, DM dm not None):
+    def setDM(self, DM dm):
         CHKERR( PCSetDM(self.pc, dm.dm) )
 
     def setCoordinates(self, coordinates):
@@ -324,13 +324,13 @@ cdef class PC(Object):
         hypretype = str2bytes(hypretype, &cval)
         CHKERR( PCHYPRESetType(self.pc, cval) )
 
-    def setHYPREDiscreteCurl(self, Mat mat not None):
+    def setHYPREDiscreteCurl(self, Mat mat):
         CHKERR( PCHYPRESetDiscreteCurl(self.pc, mat.mat) )
 
-    def setHYPREDiscreteGradient(self, Mat mat not None):
+    def setHYPREDiscreteGradient(self, Mat mat):
         CHKERR( PCHYPRESetDiscreteGradient(self.pc, mat.mat) )
 
-    def setHYPRESetAlphaPoissonMatrix(self, Mat mat not None):
+    def setHYPRESetAlphaPoissonMatrix(self, Mat mat):
         CHKERR( PCHYPRESetAlphaPoissonMatrix(self.pc, mat.mat) )
 
     def setHYPRESetBetaPoissonMatrix(self, Mat mat=None):
@@ -338,8 +338,7 @@ cdef class PC(Object):
         if mat is not None: pmat = mat.mat
         CHKERR( PCHYPRESetBetaPoissonMatrix(self.pc, pmat) )
 
-    def setHYPRESetEdgeConstantVectors(self, Vec ozz not None,
-                                       Vec zoz not None, Vec zzo=None):
+    def setHYPRESetEdgeConstantVectors(self, Vec ozz, Vec zoz, Vec zzo=None):
         cdef PetscVec zzo_vec = NULL
         if zzo is not None: zzo_vec = zzo.vec
         CHKERR( PCHYPRESetEdgeConstantVectors(self.pc, ozz.vec, zoz.vec,
@@ -503,7 +502,7 @@ cdef class PC(Object):
         PetscINCREF(ksp.obj)
         return ksp
 
-    def setMGInterpolation(self, level, Mat mat not None):
+    def setMGInterpolation(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetInterpolation(self.pc, clevel, mat.mat) )
 
@@ -514,7 +513,7 @@ cdef class PC(Object):
         PetscINCREF(interpolation.obj)
         return interpolation
 
-    def setMGRestriction(self, level, Mat mat not None):
+    def setMGRestriction(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetRestriction(self.pc, clevel, mat.mat) )
 
@@ -525,7 +524,7 @@ cdef class PC(Object):
         PetscINCREF(restriction.obj)
         return restriction
 
-    def setMGRScale(self, level, Vec rscale not None):
+    def setMGRScale(self, level, Vec rscale):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetRScale(self.pc, clevel, rscale.vec) )
 
@@ -566,15 +565,15 @@ cdef class PC(Object):
         cdef PetscPCMGCycleType ctype = cycle_type
         CHKERR( PCMGSetCycleTypeOnLevel(self.pc, clevel, ctype) )
 
-    def setMGRhs(self, level, Vec rhs not None):
+    def setMGRhs(self, level, Vec rhs):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetRhs(self.pc, clevel, rhs.vec) )
 
-    def setMGX(self, level, Vec x not None):
+    def setMGX(self, level, Vec x):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetX(self.pc, clevel, x.vec) )
 
-    def setMGR(self, level, Vec r not None):
+    def setMGR(self, level, Vec r):
         cdef PetscInt clevel = asInt(level)
         CHKERR( PCMGSetR(self.pc, clevel, r.vec) )
 

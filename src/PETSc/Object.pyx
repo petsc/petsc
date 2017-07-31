@@ -31,7 +31,7 @@ cdef class Object:
         obj.obj[0] = o
         return obj
 
-    def __deepcopy__(self, dict memo not None):
+    def __deepcopy__(self, dict memo):
         cdef object obj_copy = None
         try:
             obj_copy = self.copy
@@ -124,7 +124,7 @@ cdef class Object:
 
     # --- general support ---
 
-    def compose(self, name, Object obj):
+    def compose(self, name, Object obj or None):
         cdef const_char *cval = NULL
         cdef PetscObject cobj = NULL
         name = str2bytes(name, &cval)

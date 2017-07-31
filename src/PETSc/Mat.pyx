@@ -399,7 +399,7 @@ cdef class Mat(Object):
 
     #
 
-    def createScatter(self, Scatter scatter not None, comm=None):
+    def createScatter(self, Scatter scatter, comm=None):
         if comm is None: comm = scatter.getComm()
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
@@ -407,19 +407,19 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createNormal(self, Mat mat not None):
+    def createNormal(self, Mat mat):
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateNormal(mat.mat, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createTranspose(self, Mat mat not None):
+    def createTranspose(self, Mat mat):
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateTranspose(mat.mat, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createLRC(self, Mat A, Mat U not None, Vec c, Mat V):
+    def createLRC(self, Mat A or None, Mat U, Vec c or None, Mat V or None):
         cdef PetscMat Amat = NULL
         cdef PetscMat Umat = U.mat
         cdef PetscVec cvec = NULL
@@ -432,8 +432,7 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createSubMatrixVirtual(self, Mat A not None,
-                        IS isrow not None, IS iscol=None):
+    def createSubMatrixVirtual(self, Mat A, IS isrow, IS iscol=None):
         if iscol is None: iscol = isrow
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateSubMatrixVirtual(A.mat, isrow.iset, iscol.iset, &newmat) )
@@ -478,7 +477,7 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    ##def createIS(self, size, LGMap lgmap not None, comm=None):
+    ##def createIS(self, size, LGMap lgmap, comm=None):
     ##    # communicator and sizes
     ##    if comm is None: comm = lgmap.getComm()
     ##    cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -635,7 +634,7 @@ cdef class Mat(Object):
             CHKERR( MatCopy(self.mat, result.mat, mstr) )
         return result
 
-    def load(self, Viewer viewer not None):
+    def load(self, Viewer viewer):
         cdef MPI_Comm comm = MPI_COMM_NULL
         cdef PetscObject obj = <PetscObject>(viewer.vwr)
         if self.mat == NULL:
@@ -685,12 +684,12 @@ cdef class Mat(Object):
         CHKERR( MatConjugate(out.mat) )
         return out
 
-    def permute(self, IS row not None, IS col not None):
+    def permute(self, IS row, IS col):
         cdef Mat mat = Mat()
         CHKERR( MatPermute(self.mat, row.iset, col.iset, &mat.mat) )
         return mat
 
-    def equal(self, Mat mat not None):
+    def equal(self, Mat mat):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatEqual(self.mat, mat.mat, &flag) )
         return toBool(flag)
@@ -844,7 +843,7 @@ cdef class Mat(Object):
     def setValuesBlockedCSR(self, I, J, V, addv=None):
         matsetvalues_csr(self.mat, I, J, V, addv, 1, 0)
 
-    def setLGMap(self, LGMap rmap not None, LGMap cmap=None):
+    def setLGMap(self, LGMap rmap, LGMap cmap=None):
         if cmap is None: cmap = rmap
         CHKERR( MatSetLocalToGlobalMapping(self.mat, rmap.lgm, cmap.lgm) )
 
@@ -1044,7 +1043,7 @@ cdef class Mat(Object):
         CHKERR( MatGetRowSum(self.mat, result.vec) )
         return result
 
-    def setDiagonal(self, Vec diag not None, addv=None):
+    def setDiagonal(self, Vec diag, addv=None):
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( MatDiagonalSet(self.mat, diag.vec, caddv) )
 
@@ -1066,7 +1065,7 @@ cdef class Mat(Object):
 
     # null space
 
-    def setNullSpace(self, NullSpace nsp not None):
+    def setNullSpace(self, NullSpace nsp):
         CHKERR( MatSetNullSpace(self.mat, nsp.nsp) )
 
     def getNullSpace(self):
@@ -1075,7 +1074,7 @@ cdef class Mat(Object):
         PetscINCREF(nsp.obj)
         return nsp
 
-    def setTransposeNullSpace(self, NullSpace nsp not None):
+    def setTransposeNullSpace(self, NullSpace nsp):
         CHKERR( MatSetTransposeNullSpace(self.mat, nsp.nsp) )
 
     def getTransposeNullSpace(self):
@@ -1084,7 +1083,7 @@ cdef class Mat(Object):
         PetscINCREF(nsp.obj)
         return nsp
 
-    def setNearNullSpace(self, NullSpace nsp not None):
+    def setNearNullSpace(self, NullSpace nsp):
         CHKERR( MatSetNearNullSpace(self.mat, nsp.nsp) )
 
     def getNearNullSpace(self):
@@ -1095,27 +1094,27 @@ cdef class Mat(Object):
 
     # matrix-vector product
 
-    def mult(self, Vec x not None, Vec y not None):
+    def mult(self, Vec x, Vec y):
         CHKERR( MatMult(self.mat, x.vec, y.vec) )
 
-    def multAdd(self, Vec x not None, Vec v not None, Vec y not None):
+    def multAdd(self, Vec x, Vec v, Vec y):
         CHKERR( MatMultAdd(self.mat, x.vec, v.vec, y.vec) )
 
-    def multTranspose(self, Vec x not None, Vec y not None):
+    def multTranspose(self, Vec x, Vec y):
         CHKERR( MatMultTranspose(self.mat, x.vec, y.vec) )
 
-    def multTransposeAdd(self, Vec x not None, Vec v not None, Vec y not None):
+    def multTransposeAdd(self, Vec x, Vec v, Vec y):
         CHKERR( MatMultTransposeAdd(self.mat, x.vec, v.vec, y.vec) )
 
-    def multHermitian(self, Vec x not None, Vec y not None):
+    def multHermitian(self, Vec x, Vec y):
         CHKERR( MatMultHermitian(self.mat, x.vec, y.vec) )
 
-    def multHermitianAdd(self, Vec x not None, Vec v not None, Vec y not None):
+    def multHermitianAdd(self, Vec x, Vec v, Vec y):
         CHKERR( MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec) )
 
     # SOR
 
-    def SOR(self, Vec b not None, Vec x not None, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
+    def SOR(self, Vec b, Vec x, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
         cdef PetscReal comega = asReal(omega)
         cdef PetscMatSORType csortype = SOR_LOCAL_SYMMETRIC_SWEEP
         if sortype is not None:
@@ -1133,11 +1132,11 @@ cdef class Mat(Object):
         PetscINCREF(submat.obj)
         return submat
 
-    def increaseOverlap(self, IS iset not None, overlap=1):
+    def increaseOverlap(self, IS iset, overlap=1):
         cdef PetscInt ival = asInt(overlap)
         CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
 
-    def createSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
+    def createSubMatrix(self, IS isrow, IS iscol=None, Mat submat=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscIS ciscol = NULL
         if iscol is not None: ciscol = iscol.iset
@@ -1147,7 +1146,7 @@ cdef class Mat(Object):
                                 reuse, &submat.mat) )
         return submat
 
-    def createSubMatrices(self, isrows not None, iscols=None, submats=None):
+    def createSubMatrices(self, isrows, iscols=None, submats=None):
         if iscols is None: iscols = isrows
         isrows = [isrows] if isinstance(isrows, IS) else list(isrows)
         iscols = [iscols] if isinstance(iscols, IS) else list(iscols)
@@ -1181,13 +1180,13 @@ cdef class Mat(Object):
 
     #
 
-    def getLocalSubMatrix(self, IS isrow not None, IS iscol not None, Mat submat=None):
+    def getLocalSubMatrix(self, IS isrow, IS iscol, Mat submat=None):
         if submat is None: submat = Mat()
         else: CHKERR( MatDestroy(&submat.mat) )
         CHKERR( MatGetLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
         return submat
 
-    def restoreLocalSubMatrix(self, IS isrow not None, IS iscol not None, Mat submat not None):
+    def restoreLocalSubMatrix(self, IS isrow, IS iscol, Mat submat):
         CHKERR( MatRestoreLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
 
     #
@@ -1213,26 +1212,26 @@ cdef class Mat(Object):
         cdef PetscReal rval = asReal(tol)
         CHKERR( MatChop(self.mat, rval) )
 
-    def axpy(self, alpha, Mat X not None, structure=None):
+    def axpy(self, alpha, Mat X, structure=None):
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
         CHKERR( MatAXPY(self.mat, sval, X.mat, flag) )
 
-    def aypx(self, alpha, Mat X not None, structure=None):
+    def aypx(self, alpha, Mat X, structure=None):
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
         CHKERR( MatAYPX(self.mat, sval, X.mat, flag) )
 
     # matrix-matrix product
 
-    def matMultSymbolic(self, Mat mat not None, fill=None):
+    def matMultSymbolic(self, Mat mat, fill=None):
         cdef Mat result = Mat()
         cdef PetscReal rval = 2
         if fill is not None: rval = asReal(fill)
         CHKERR( MatMatMultSymbolic(self.mat, mat.mat, rval, &result.mat) )
         return result
 
-    def matMultNumeric(self, Mat mat not None, Mat result=None):
+    def matMultNumeric(self, Mat mat, Mat result=None):
         if result is None:
             result = Mat()
         if result.mat == NULL:
@@ -1240,7 +1239,7 @@ cdef class Mat(Object):
         CHKERR( MatMatMultNumeric(self.mat, mat.mat, result.mat) )
         return result
 
-    def matMult(self, Mat mat not None, Mat result=None, fill=None):
+    def matMult(self, Mat mat, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal rval = 2
         if result is None:
@@ -1251,7 +1250,7 @@ cdef class Mat(Object):
         CHKERR( MatMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
-    def matTransposeMult(self, Mat mat not None, Mat result=None, fill=None):
+    def matTransposeMult(self, Mat mat, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal rval = 2
         if result is None:
@@ -1262,7 +1261,7 @@ cdef class Mat(Object):
         CHKERR( MatMatTransposeMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
-    def transposeMatMult(self, Mat mat not None, Mat result=None, fill=None):
+    def transposeMatMult(self, Mat mat, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal rval = 2
         if result is None:
@@ -1273,7 +1272,7 @@ cdef class Mat(Object):
         CHKERR( MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
-    def PtAP(self, Mat P not None, Mat result=None, fill=None):
+    def PtAP(self, Mat P, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscReal cfill = PETSC_DEFAULT
         if result is None:
@@ -1293,44 +1292,44 @@ cdef class Mat(Object):
         CHKERR( MatGetOrdering(self.mat, cval, &rp.iset, &cp.iset) )
         return (rp, cp)
 
-    def reorderForNonzeroDiagonal(self, IS isrow not None, IS iscol not None, atol=0):
+    def reorderForNonzeroDiagonal(self, IS isrow, IS iscol, atol=0):
         cdef PetscReal rval = asReal(atol)
         cdef PetscIS rp = isrow.iset, cp = iscol.iset
         CHKERR( MatReorderForNonzeroDiagonal(self.mat, rval, rp, cp) )
 
-    def factorLU(self, IS isrow not None, IS iscol not None, options=None):
+    def factorLU(self, IS isrow, IS iscol, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_FALSE, PETSC_FALSE, options, &info)
         CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
-    def factorSymbolicLU(self, Mat mat not None, IS isrow not None, IS iscol not None, options=None):
+    def factorSymbolicLU(self, Mat mat, IS isrow, IS iscol, options=None):
         <void>self; <void>mat; <void>isrow; <void>iscol; <void>options; # unused
         raise NotImplementedError
-    def factorNumericLU(self, Mat mat not None, options=None):
+    def factorNumericLU(self, Mat mat, options=None):
         <void>self; <void>mat; <void>options; # unused
         raise NotImplementedError
-    def factorILU(self, IS isrow not None, IS iscol not None, options=None):
+    def factorILU(self, IS isrow, IS iscol, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_FALSE, options, &info)
         CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
-    def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
+    def factorSymbolicILU(self, IS isrow, IS iscol, options=None):
         <void>self; <void>isrow; <void>iscol; <void>options; # unused
         raise NotImplementedError
 
-    def factorCholesky(self, IS isperm not None, options=None):
+    def factorCholesky(self, IS isperm, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_FALSE, PETSC_TRUE, options, &info)
         CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
-    def factorSymbolicCholesky(self, IS isperm not None, options=None):
+    def factorSymbolicCholesky(self, IS isperm, options=None):
         <void>self; <void>isperm; <void>options; # unused
         raise NotImplementedError
-    def factorNumericCholesky(self, Mat mat not None, options=None):
+    def factorNumericCholesky(self, Mat mat, options=None):
         <void>self; <void>mat; <void>options; # unused
         raise NotImplementedError
-    def factorICC(self, IS isperm not None, options=None):
+    def factorICC(self, IS isperm, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, PETSC_TRUE, options, &info)
         CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
-    def factorSymbolicICC(self, IS isperm not None, options=None):
+    def factorSymbolicICC(self, IS isperm, options=None):
         <void>self; <void>isperm; <void>options; # unused
         raise NotImplementedError
 
@@ -1406,25 +1405,25 @@ cdef class Mat(Object):
 
     # solve
 
-    def solveForward(self, Vec b not None, Vec x not None):
+    def solveForward(self, Vec b, Vec x):
         CHKERR( MatForwardSolve(self.mat, b.vec, x.vec) )
 
-    def solveBackward(self, Vec b not None, Vec x not None):
+    def solveBackward(self, Vec b, Vec x):
         CHKERR( MatBackwardSolve(self.mat, b.vec, x.vec) )
 
-    def solve(self, Vec b not None, Vec x not None):
+    def solve(self, Vec b, Vec x):
         CHKERR( MatSolve(self.mat, b.vec, x.vec) )
 
-    def solveTranspose(self, Vec b not None, Vec x not None):
+    def solveTranspose(self, Vec b, Vec x):
         CHKERR( MatSolveTranspose(self.mat, b.vec, x.vec) )
 
-    def solveAdd(self, Vec b not None, Vec y, Vec x not None):
+    def solveAdd(self, Vec b, Vec y, Vec x):
         CHKERR( MatSolveAdd(self.mat, b.vec, y.vec, x.vec) )
 
-    def solveTransposeAdd(self, Vec b not None, Vec y, Vec x not None):
+    def solveTransposeAdd(self, Vec b, Vec y, Vec x):
         CHKERR( MatSolveTransposeAdd(self.mat, b.vec, y.vec, x.vec) )
 
-    def matSolve(self, Mat B not None, Mat X not None):
+    def matSolve(self, Mat B, Mat X):
         CHKERR( MatMatSolve(self.mat, B.mat, X.mat) )
 
     # dense matrices
@@ -1538,7 +1537,7 @@ cdef class NullSpace(Object):
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self
 
-    def createRigidBody(self, Vec coords not None):
+    def createRigidBody(self, Vec coords):
         cdef PetscNullSpace newnsp = NULL
         CHKERR( MatNullSpaceCreateRigidBody(coords.vec, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp
@@ -1579,10 +1578,10 @@ cdef class NullSpace(Object):
 
     #
 
-    def remove(self, Vec vec not None):
+    def remove(self, Vec vec):
         CHKERR( MatNullSpaceRemove(self.nsp, vec.vec) )
 
-    def test(self, Mat mat not None):
+    def test(self, Mat mat):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatNullSpaceTest(self.nsp, mat.mat, &flag) )
         return toBool(flag)

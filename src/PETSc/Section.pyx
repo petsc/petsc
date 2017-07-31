@@ -208,7 +208,7 @@ cdef class Section(Object):
         CHKERR( PetscSectionGetOffsetRange(self.sec,&oStart,&oEnd) )
         return toInt(oStart),toInt(oEnd)
 
-    def createGlobalSection(self, SF sf not None):
+    def createGlobalSection(self, SF sf):
         cdef Section gsec = Section()
         CHKERR( PetscSectionCreateGlobalSection(self.sec,sf.sf,PETSC_FALSE,PETSC_FALSE,&gsec.sec) )
         return gsec

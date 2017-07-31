@@ -24,7 +24,7 @@ cdef class _DMComposite_access:
     cdef object vecs_mem
     cdef object access
 
-    def __cinit__(self, DM dm, Vec gvec not None, locs=None):
+    def __cinit__(self, DM dm, Vec gvec, locs=None):
         self.dm = dm.dm
         CHKERR( PetscINCREF(<PetscObject*>&self.dm) )
         self.gvec = gvec.vec

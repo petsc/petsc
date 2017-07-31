@@ -24,8 +24,8 @@ cdef class Scatter(Object):
         CHKERR( VecScatterDestroy(&self.sct) )
         return self
 
-    def create(self, Vec vec_from not None, IS is_from,
-               Vec vec_to not None, IS is_to):
+    def create(self, Vec vec_from, IS is_from or None,
+               Vec vec_to, IS is_to or None):
         cdef PetscIS cisfrom = NULL, cisto = NULL
         if is_from is not None: cisfrom = is_from.iset
         if is_to   is not None: cisto   = is_to.iset
@@ -41,7 +41,7 @@ cdef class Scatter(Object):
         return scatter
 
     @classmethod
-    def toAll(cls, Vec vec not None):
+    def toAll(cls, Vec vec):
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
         CHKERR( VecScatterCreateToAll(
@@ -49,7 +49,7 @@ cdef class Scatter(Object):
         return (scatter, ovec)
 
     @classmethod
-    def toZero(cls, Vec vec not None):
+    def toZero(cls, Vec vec):
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
         CHKERR( VecScatterCreateToZero(
@@ -57,15 +57,13 @@ cdef class Scatter(Object):
         return (scatter, ovec)
     #
 
-    def begin(self, Vec vec_from not None, Vec vec_to not None,
-              addv=None, mode=None):
+    def begin(self, Vec vec_from, Vec vec_to, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
                                 caddv, csctm) )
 
-    def end(self, Vec vec_from not None, Vec vec_to not None,
-            addv=None, mode=None):
+    def end(self, Vec vec_from, Vec vec_to, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
@@ -73,22 +71,19 @@ cdef class Scatter(Object):
 
     #
 
-    def scatterBegin(self, Vec vec_from not None, Vec vec_to not None,
-                     addv=None, mode=None):
+    def scatterBegin(self, Vec vec_from, Vec vec_to, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,
                                 caddv, csctm) )
 
-    def scatterEnd(self, Vec vec_from not None, Vec vec_to not None,
-                   addv=None, mode=None):
+    def scatterEnd(self, Vec vec_from, Vec vec_to, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
                               caddv, csctm) )
 
-    def scatter(self, Vec vec_from not None, Vec vec_to not None,
-                addv=None, mode=None):
+    def scatter(self, Vec vec_from, Vec vec_to, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
         cdef PetscScatterMode csctm = scattermode(mode)
         CHKERR( VecScatterBegin(self.sct, vec_from.vec, vec_to.vec,

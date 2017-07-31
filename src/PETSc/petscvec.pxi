@@ -419,7 +419,7 @@ cdef class _Vec_buffer:
     cdef bint readonly
     cdef bint hasarray
 
-    def __cinit__(self, Vec vec not None, bint readonly=0):
+    def __cinit__(self, Vec vec, bint readonly=0):
         cdef PetscVec v = vec.vec
         CHKERR( PetscINCREF(<PetscObject*>&v) )
         self.vec = v
@@ -538,7 +538,7 @@ cdef class _Vec_LocalForm:
     cdef Vec gvec
     cdef Vec lvec
 
-    def __init__(self, Vec gvec not None):
+    def __init__(self, Vec gvec):
         self.gvec = gvec
         self.lvec = Vec()
 

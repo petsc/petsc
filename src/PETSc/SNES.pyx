@@ -129,11 +129,11 @@ cdef class SNES(Object):
         PetscINCREF(dm.obj)
         return dm
 
-    def setDM(self, DM dm not None):
+    def setDM(self, DM dm):
         CHKERR( SNESSetDM(self.snes, dm.dm) )
 
     # --- FAS ---
-    def setFASInterpolation(self, level, Mat mat not None):
+    def setFASInterpolation(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetInterpolation(self.snes, clevel, mat.mat) )
 
@@ -144,7 +144,7 @@ cdef class SNES(Object):
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASRestriction(self, level, Mat mat not None):
+    def setFASRestriction(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetRestriction(self.snes, clevel, mat.mat) )
 
@@ -155,7 +155,7 @@ cdef class SNES(Object):
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASInjection(self, level, Mat mat not None):
+    def setFASInjection(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetInjection(self.snes, clevel, mat.mat) )
 
@@ -166,7 +166,7 @@ cdef class SNES(Object):
         PetscINCREF(mat.obj)
         return mat
 
-    def setFASRScale(self, level, Vec vec not None):
+    def setFASRScale(self, level, Vec vec):
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetRScale(self.snes, clevel, vec.vec) )
 
@@ -238,7 +238,7 @@ cdef class SNES(Object):
         CHKERR( SNESHasNPC(self.snes, &flag) )
         return toBool(flag)
 
-    def setNPC(self, SNES snes not None):
+    def setNPC(self, SNES snes):
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
 
     # --- user Function/Jacobian routines ---
@@ -290,7 +290,7 @@ cdef class SNES(Object):
     def getUpdate(self):
         return self.get_attr('__update__')
 
-    def setJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
+    def setJacobian(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat=Jmat
@@ -328,15 +328,15 @@ cdef class SNES(Object):
         cdef object objective = self.get_attr('__objective__')
         return objective
 
-    def computeFunction(self, Vec x not None, Vec f not None):
+    def computeFunction(self, Vec x, Vec f):
         CHKERR( SNESComputeFunction(self.snes, x.vec, f.vec) )
 
-    def computeJacobian(self, Vec x not None, Mat J not None, Mat P=None):
+    def computeJacobian(self, Vec x, Mat J, Mat P=None):
         cdef PetscMat jmat = J.mat, pmat = J.mat
         if P is not None: pmat = P.mat
         CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat) )
 
-    def computeObjective(self, Vec x not None):
+    def computeObjective(self, Vec x):
         cdef PetscReal o = 0
         CHKERR( SNESComputeObjective(self.snes, x.vec, &o) )
         return toReal(o)
@@ -353,7 +353,7 @@ cdef class SNES(Object):
         cdef object ngs = self.get_attr('__ngs__')
         return ngs
 
-    def computeNGS(self, Vec x not None, Vec b=None):
+    def computeNGS(self, Vec x, Vec b=None):
         cdef PetscVec bvec = NULL
         if b is not None: bvec = b.vec
         CHKERR( SNESComputeNGS(self.snes, bvec, x.vec) )
@@ -531,7 +531,7 @@ cdef class SNES(Object):
     def reset(self):
         CHKERR( SNESReset(self.snes) )
 
-    def solve(self, Vec b, Vec x not None):
+    def solve(self, Vec b or None, Vec x):
         cdef PetscVec rhs = NULL
         if b is not None: rhs = b.vec
         CHKERR( SNESSolve(self.snes, rhs, x.vec) )
@@ -571,7 +571,7 @@ cdef class SNES(Object):
         PetscINCREF(vec.obj)
         return vec
 
-    def setSolution(self, Vec vec not None):
+    def setSolution(self, Vec vec):
         CHKERR( SNESSetSolution(self.snes, vec.vec) )
 
     def getSolutionUpdate(self):
@@ -582,7 +582,7 @@ cdef class SNES(Object):
 
     # --- linear solver ---
 
-    def setKSP(self, KSP ksp not None):
+    def setKSP(self, KSP ksp):
         CHKERR( SNESSetKSP(self.snes, ksp.ksp) )
 
     def getKSP(self):
@@ -661,7 +661,7 @@ cdef class SNES(Object):
 
     # --- VI ---
 
-    def setVariableBounds(self, Vec xl not None, Vec xu not None):
+    def setVariableBounds(self, Vec xl, Vec xu):
         CHKERR( SNESVISetVariableBounds(self.snes, xl.vec, xu.vec) )
 
     def getVIInactiveSet(self):
