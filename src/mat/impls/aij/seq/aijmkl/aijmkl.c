@@ -145,7 +145,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   aa   = a->a;  /* Nonzero elements stored row-by-row. */
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
   if (n>0) {
-    stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
+    stat = mkl_sparse_x_create_csr(&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
     stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
     stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
     stat = mkl_sparse_optimize(aijmkl->csrA);
