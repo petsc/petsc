@@ -3071,6 +3071,10 @@ PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 }
 
 /*@
+   TSGetTimeStepNumber - Deprecated, use TSGetStepNumber().
+@*/
+PetscErrorCode TSGetTimeStepNumber(TS ts,PetscInt *steps) { return TSGetStepNumber(ts,steps); };
+
 /*@
    TSSetSolution - Sets the initial solution vector
    for use by the TS routines.
