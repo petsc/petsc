@@ -288,6 +288,8 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   char transa = 't';  /* Used to indicate to MKL that we are computing the transpose product. */
 
   PetscFunctionBegin;
+  matdescra[0] = 'g';  /* Indicates to MKL that we using a general CSR matrix. */
+  matdescra[3] = 'c';  /* Indicates to MKL that we use C-style (0-based) indexing. */
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
@@ -461,13 +463,13 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use MKL's mkl_xcsrmv(), which calculates y = alpha*A*x + beta*y. */
     beta = 1.0;
-    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
+    mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
   } else {
     /* zz and yy are different vectors, so call MKL's mkl_xcsrmv() with beta=0, then add the result to z. 
      * MKL sparse BLAS does not have a MatMultAdd equivalent. */
     beta = 0.0;
     mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
-    for (i=0; i<m; i++) {
+    for (i=0; i<n; i++) {
       z[i] += y[i];
     }
   }
@@ -486,7 +488,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   const PetscScalar *x;
   PetscScalar       *y,*z;
   PetscErrorCode    ierr;
-  PetscInt          m=A->rmap->n;
+  PetscInt          n=A->cmap->n;
   PetscInt          i;
 
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
@@ -509,7 +511,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
     stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
-    for (i=0; i<m; i++) {
+    for (i=0; i<n; i++) {
       z[i] += y[i];
     }
   }
@@ -557,9 +559,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->spptr = (void*) aijmkl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. 
-   * We also parse some command line options below, since those determine some of the methods we point to.
-   * Note: Currently the transposed operations are not being set because I encounter memory corruption 
-   * when these are enabled.  Need to look at this with Valgrind or similar. --RTM */
+   * We also parse some command line options below, since those determine some of the methods we point to. */
   B->ops->duplicate        = MatDuplicate_SeqAIJMKL;
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJMKL;
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
@@ -585,15 +585,15 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   if(!aijmkl->no_SpMV2) {
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
     B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
-    /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2; */
+    B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2;
     B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
-    /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2; */
+    B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
 #endif
   } else {
     B->ops->mult             = MatMult_SeqAIJMKL;
-    /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL; */
+    B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
     B->ops->multadd          = MatMultAdd_SeqAIJMKL;
-    /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL; */
+    B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
   }
 
   B->ops->scale = MatScale_SeqAIJMKL;
