@@ -152,8 +152,10 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE
 .  -ts_save_trajectory - checkpoint the solution at each time-step
-.  -ts_max_steps <maxsteps> - maximum number of time-steps to take
-.  -ts_final_time <time> - maximum time to compute to
+.  -ts_max_time <time> - maximum time to compute to
+.  -ts_max_steps <steps> - maximum number of time-steps to take
+.  -ts_init_time <time> - initial time to start computation
+.  -ts_final_time <time> - final time to compute to
 .  -ts_dt <dt> - initial time step
 .  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
@@ -218,9 +220,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle generic TS options */
+  ierr = PetscOptionsReal("-ts_max_time","Maximum time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetMaxSteps",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_final_time","Final time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
@@ -1963,8 +1966,12 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    if (ts->max_steps < PETSC_MAX_INT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
+    }
+    if (ts->max_time < PETSC_MAX_REAL) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    }
     if (ts->usessnes) {
       PetscBool lin;
       if (ts->problem_type == TS_NONLINEAR) {
@@ -2992,7 +2999,7 @@ PetscErrorCode TSGetMaxSteps(TS ts,PetscInt *maxsteps)
 -  maxtime - final time to step to
 
    Options Database Keys:
-.  -ts_final_time <maxtime> - Sets maxtime
+.  -ts_max_time <maxtime> - Sets maxtime
 
    Notes:
    The default maximum time is 5.0
@@ -4063,6 +4070,7 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
+  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
@@ -4280,6 +4288,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
+  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
