@@ -199,7 +199,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
   ts->ptime = t;
 
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-  if (!cvode->monitorstep) ts->steps = nsteps - 1; /* TSStep() increments the step counter by one */
+  if (!cvode->monitorstep) ts->steps += nsteps - 1; /* TSStep() increments the step counter by one */
   PetscFunctionReturn(0);
 }
 

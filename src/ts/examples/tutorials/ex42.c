@@ -336,7 +336,7 @@ int main(int argc, char **argv)
    */
   ierr = TSSolve(ts, x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts, &ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of time steps = %D, final time: %4.2e\nResult:\n\n", its, (double)ftime);CHKERRQ(ierr);
   ierr = PrintSolution(x, &user);CHKERRQ(ierr);
 

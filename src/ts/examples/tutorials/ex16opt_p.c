@@ -196,7 +196,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&(user.ftime));CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
 
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user->ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&user->steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&user->steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
 
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);

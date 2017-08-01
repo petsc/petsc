@@ -189,7 +189,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *u
   PetscInt          stepnum;
 
   PetscFunctionBegin;
-  ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   /*  The next three lines allow us to access the entries of the vectors directly */
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);

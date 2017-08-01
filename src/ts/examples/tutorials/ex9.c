@@ -1473,7 +1473,7 @@ int main(int argc,char *argv[])
 
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
-    ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+    ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {

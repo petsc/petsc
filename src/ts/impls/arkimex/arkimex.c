@@ -757,7 +757,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = TSClone(ts,&ts_start);CHKERRQ(ierr);
     ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
-    ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
+    ierr = TSSetDuration(ts_start,ts->steps+1,ts->ptime+ts->time_step);CHKERRQ(ierr);
     ierr = TSSetExactFinalTime(ts_start,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts_start,ts->time_step);CHKERRQ(ierr);
     ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
@@ -774,7 +774,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = VecCopy(ark_start->YdotI[ark_start->tableau->s-1],Ydot0);CHKERRQ(ierr);
     }
     ts->steps++;
-    ts->total_steps++;
 
     /* Set the correct TS in SNES */
     /* We'll try to bypass this by changing the method on the fly */

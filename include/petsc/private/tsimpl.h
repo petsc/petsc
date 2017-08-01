@@ -124,6 +124,7 @@ struct _p_TS {
   PetscInt  numcost;                /* number of cost functions */
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
+  PetscInt  adjoint_steps;
   PetscInt  adjoint_max_steps;
   PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   PetscBool costintegralfwd;        /* cost integral is evaluated in the forward run if true */
@@ -197,8 +198,7 @@ struct _p_TS {
 
   PetscBool steprollback;           /* flag to indicate that the step was rolled back */
   PetscBool steprestart;            /* flag to indicate that the timestepper has to discard any history and restart */
-  PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
-  PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
+  PetscInt  steps;                  /* steps taken so far in all successive calls to TSSolve() */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal time_step;              /* current time increment */
   PetscReal ptime_prev;             /* time at the start of the previous step */

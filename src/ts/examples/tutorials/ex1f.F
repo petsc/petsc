@@ -180,7 +180,7 @@
 !
       call TSSolve(ts,x,ierr)
       call TSGetSolveTime(ts,ftime,ierr)
-      call TSGetTimeStepNumber(ts,its,ierr)
+      call TSGetStepNumber(ts,its,ierr)
       call TSGetConvergedReason(ts,reason,ierr)
 
       write(6,100) its,ftime,reason

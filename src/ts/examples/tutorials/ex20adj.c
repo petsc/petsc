@@ -231,7 +231,7 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user.ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here

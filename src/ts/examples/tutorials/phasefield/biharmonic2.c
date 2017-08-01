@@ -160,7 +160,7 @@ int main(int argc,char **argv)
   if (wait) {
     ierr = PetscSleep(-1);CHKERRQ(ierr);
   }
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -11,14 +11,13 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscErrorCode ierr;
   Vec            X,Y,E;
   PetscReal      enorm,enorma,enormr,hfac_lte,hfac_ltea,hfac_lter,h_lte,safety;
-  PetscInt       order,stepno;
+  PetscInt       order;
   PetscBool      bGTEMethod=PETSC_FALSE;
 
   PetscFunctionBegin;
 
   *next_sc = 0; /* Reuse the same order scheme */
   safety = adapt->safety;
-  ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if (!strcmp(time_scheme,TSGLEE)) bGTEMethod=PETSC_TRUE;
   order = adapt->candidates.order[0];

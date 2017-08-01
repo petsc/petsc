@@ -1450,7 +1450,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
   if ((stepnum == -1) ^ (stepnum % user->vtkInterval == 0)) {
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
-      ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
+      ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
     }
     ierr = PetscSNPrintf(filename,sizeof filename,"%s-%03D.vtu",user->outputBasename,stepnum);CHKERRQ(ierr);
     ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
@@ -1926,7 +1926,7 @@ int main(int argc, char **argv)
   if (!useAMR) {
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+    ierr = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
   } else {
     PetscReal finalTime;
     PetscInt  adaptIter;
@@ -1938,7 +1938,7 @@ int main(int argc, char **argv)
     ierr   = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
     ierr   = TSSolve(ts,X);CHKERRQ(ierr);
     ierr   = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr   = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+    ierr   = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
     for (adaptIter = 0;ftime < finalTime;adaptIter++) {
       PetscLogDouble bytes;
 
@@ -1969,7 +1969,7 @@ int main(int argc, char **argv)
       ierr    = TSSetDuration(ts,adaptInterval,finalTime);CHKERRQ(ierr);
       ierr    = TSSolve(ts,X);CHKERRQ(ierr);
       ierr    = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-      ierr    = TSGetTimeStepNumber(ts,&incSteps);CHKERRQ(ierr);
+      ierr    = TSGetStepNumber(ts,&incSteps);CHKERRQ(ierr);
       nsteps += incSteps;
     }
   }

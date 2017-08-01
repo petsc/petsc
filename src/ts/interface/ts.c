@@ -1618,7 +1618,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts,Mat J,Mat P,TSI2Jacobian jac,void *ctx)
 
   Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -2116,7 +2116,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 }
 
 /*@
-   TSGetTimeStepNumber - Gets the number of time steps completed.
+   TSGetStepNumber - Gets the number of steps completed.
 
    Not Collective
 
@@ -2124,19 +2124,53 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  iter - number of steps completed so far
+.  steps - number of steps completed so far
 
    Level: intermediate
 
 .keywords: TS, timestep, get, iteration, number
 .seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSSetPostStep()
 @*/
-PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt *iter)
+PetscErrorCode TSGetStepNumber(TS ts,PetscInt *steps)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidIntPointer(iter,2);
-  *iter = ts->steps;
+  PetscValidIntPointer(steps,2);
+  *steps = ts->steps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetStepNumber - Sets the number of steps completed.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  steps - number of steps completed so far
+
+   Notes:
+   For most uses of the TS solvers the user need not explicitly call
+   TSSetStepNumber(), as the step counter is appropriately updated in
+   TSSolve()/TSStep()/TSRollBack(). Power users may call this routine to
+   reinitialize timestepping by setting the step counter to zero (and time
+   to the initial time) to solve a similar problem with different initial
+   conditions or parameters. Other possible use case is to continue
+   timestepping from a previously interrupted run in such a way that TS
+   monitors will be called with a initial nonzero step counter.
+
+   Level: advanced
+
+.keywords: TS, timestep, set, iteration, number
+.seealso: TSGetStepNumber(), TSSetTime(), TSSetTimeStep(), TSSetSolution()
+@*/
+PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,steps,2);
+  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Step number must be non-negative");
+  ts->steps = steps;
   PetscFunctionReturn(0);
 }
 
@@ -2868,6 +2902,119 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 /* ----------- Routines to set solver parameters ---------- */
 
 /*@
+   TSSetMaxSteps - Sets the maximum number of steps to use.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  maxsteps - maximum number of steps to use
+
+   Options Database Keys:
+.  -ts_max_steps <maxsteps> - Sets maxsteps
+
+   Notes:
+   The default maximum number of steps is 5000
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, maximum, steps
+
+.seealso: TSGetMaxSteps(), TSSetMaxTime(), TSSetExactFinalTime()
+@*/
+PetscErrorCode TSSetMaxSteps(TS ts,PetscInt maxsteps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,maxsteps,2);
+  if (maxsteps < 0 ) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of steps must be non-negative");
+  ts->max_steps = maxsteps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetMaxSteps - Gets the maximum number of steps to use.
+
+   Not Collective
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  maxsteps - maximum number of steps to use
+
+   Level: advanced
+
+.keywords: TS, timestep, get, maximum, steps
+
+.seealso: TSSetMaxSteps(), TSGetMaxTime(), TSSetMaxTime()
+@*/
+PetscErrorCode TSGetMaxSteps(TS ts,PetscInt *maxsteps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(maxsteps,2);
+  *maxsteps = ts->max_steps;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetMaxTime - Sets the maximum (or final) time for timestepping.
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  maxtime - final time to step to
+
+   Options Database Keys:
+.  -ts_final_time <maxtime> - Sets maxtime
+
+   Notes:
+   The default maximum time is 5.0
+
+   Level: intermediate
+
+.keywords: TS, timestep, set, maximum, time
+
+.seealso: TSGetMaxTime(), TSSetMaxSteps(), TSSetExactFinalTime()
+@*/
+PetscErrorCode TSSetMaxTime(TS ts,PetscReal maxtime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,maxtime,2);
+  ts->max_time = maxtime;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetMaxTime - Gets the maximum (or final) time for timestepping.
+
+   Not Collective
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  maxtime - final time to step to
+
+   Level: advanced
+
+.keywords: TS, timestep, get, maximum, time
+
+.seealso: TSSetMaxTime(), TSGetMaxSteps(), TSSetMaxSteps()
+@*/
+PetscErrorCode TSGetMaxTime(TS ts,PetscReal *maxtime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidRealPointer(maxtime,2);
+  *maxtime = ts->max_time;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSGetDuration - Gets the maximum number of timesteps to use and
    maximum time for iteration.
 
@@ -2987,7 +3134,7 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,steps,2);
   if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back a negative number of steps");
-  if (steps > ts->total_steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
+  if (steps > ts->steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
   ts->adjoint_max_steps = steps;
   PetscFunctionReturn(0);
 }
@@ -3363,7 +3510,7 @@ PetscErrorCode  TSPreStep(TS ts)
 
   Note:
   There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
-  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
 .keywords: TS, timestep
@@ -3394,7 +3541,7 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
 
   Note:
   There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
-  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  The time step number being computed can be queried using TSGetStepNumber() and the total size of the step being
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
 .keywords: TS, timestep
@@ -3554,7 +3701,7 @@ $ func (TS ts);
   Level: intermediate
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetTimeStepNumber(), TSGetTime()
+.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetStepNumber(), TSGetTime()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -3924,14 +4071,14 @@ PetscErrorCode  TSStep(TS ts)
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
   if (!ts->steps) ts->ptime_prev = ts->ptime;
-  ts->reason = TS_CONVERGED_ITERATING;
   ptime = ts->ptime; ts->ptime_prev_rollback = ts->ptime_prev;
+  ts->reason = TS_CONVERGED_ITERATING;
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ts->ptime_prev = ptime;
-  ts->steps++; ts->total_steps++;
+  ts->steps++;
   ts->steprollback = PETSC_FALSE;
   ts->steprestart  = PETSC_FALSE;
 
@@ -3941,7 +4088,7 @@ PetscErrorCode  TSStep(TS ts)
       else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
   PetscFunctionReturn(0);
@@ -3979,7 +4126,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
   ierr = PetscLogEventBegin(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_AdjointStep,ts,0,0,0);CHKERRQ(ierr);
-  ts->steps++; ts->total_steps--;
+  ts->adjoint_steps++; ts->steps--;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -3988,7 +4135,7 @@ PetscErrorCode  TSAdjointStep(TS ts)
       else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
+    if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
   PetscFunctionReturn(0);
 }
@@ -4149,12 +4296,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      TSTrajectory to incorrectly save the output files
   */
   /* reset time step and iteration counters */
-  ts->steps             = 0;
-  ts->ksp_its           = 0;
-  ts->snes_its          = 0;
-  ts->num_snes_failures = 0;
-  ts->reject            = 0;
-  ts->reason            = TS_CONVERGED_ITERATING;
+
+  if (!ts->steps) {
+    ts->ksp_its           = 0;
+    ts->snes_its          = 0;
+    ts->num_snes_failures = 0;
+    ts->reject            = 0;
+    ts->steprestart       = PETSC_TRUE;
+    ts->steprollback      = PETSC_FALSE;
+  }
+  ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
@@ -4164,17 +4315,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->solvetime = ts->ptime;
     solution = ts->vec_sol;
   } else { /* Step the requested number of timesteps. */
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    if (ts->steps >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
 
-    ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
-    ts->steprollback = PETSC_FALSE;
-    ts->steprestart  = PETSC_TRUE;
+    if (!ts->steps) {
+      ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    }
 
     while (!ts->reason) {
-      ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       if (!ts->steprollback) {
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
@@ -4183,16 +4333,16 @@ PetscErrorCode TSSolve(TS ts,Vec u)
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
       if (!ts->steprollback && ts->forward_solve) { /* compute forward sensitivities before event handling because postevent() may change RHS and jump conditions may have to be applied */
-          ierr = TSForwardStep(ts);CHKERRQ(ierr);
+        ierr = TSForwardStep(ts);CHKERRQ(ierr);
       }
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
@@ -4270,27 +4420,27 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
 
   /* reset time step and iteration counters */
-  ts->steps             = 0;
+  ts->adjoint_steps     = 0;
   ts->ksp_its           = 0;
   ts->snes_its          = 0;
   ts->num_snes_failures = 0;
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->total_steps;
+  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->steps;
+  if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
 
-  if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
-    ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
+    ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
     ierr = TSAdjointEventHandler(ts);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->vec_costintegral && !ts->costintegralfwd) {
       ierr = TSAdjointCostIntegral(ts);CHKERRQ(ierr);
     }
   }
-  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->total_steps,&ts->ptime);CHKERRQ(ierr);
-  ierr = TSAdjointMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
+  ierr = TSTrajectoryGet(ts->trajectory,ts,ts->steps,&ts->ptime);CHKERRQ(ierr);
+  ierr = TSAdjointMonitor(ts,ts->steps,ts->ptime,ts->vec_sol,ts->numcost,ts->vecs_sensi,ts->vecs_sensip);CHKERRQ(ierr);
   ts->solvetime = ts->ptime;
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
@@ -4696,7 +4846,7 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -4735,7 +4885,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 
    Level: advanced
 
-.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetRHSJacobian(), TSGetMatrices(), TSGetTime(), TSGetStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -5453,35 +5603,6 @@ PetscErrorCode  TSGetSolveTime(TS ts,PetscReal *ftime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ftime,2);
   *ftime = ts->solvetime;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   TSGetTotalSteps - Gets the total number of steps done since the last call to TSSetUp() or TSCreate()
-
-   Not Collective
-
-   Input Parameter:
-.  ts - the TS context
-
-   Output Parameter:
-.  steps - the number of steps
-
-   Level: beginner
-
-   Notes:
-   Includes the number of steps for all calls to TSSolve() since TSSetUp() was called
-
-.keywords: TS, nonlinear, set, convergence, test
-
-.seealso: TSSetConvergenceTest(), TSConvergedReason
-@*/
-PetscErrorCode  TSGetTotalSteps(TS ts,PetscInt *steps)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(steps,2);
-  *steps = ts->total_steps;
   PetscFunctionReturn(0);
 }
 
@@ -7620,7 +7741,7 @@ PetscErrorCode  TSRollBack(TS ts)
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
-  ts->steps--; ts->total_steps--;
+  ts->steps--;
   ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
   ts->steprollback = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -7842,7 +7963,7 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
 
   t->adapt = tsin->adapt;
   ierr = PetscObjectReference((PetscObject)t->adapt);CHKERRQ(ierr);
-  
+
   t->trajectory = tsin->trajectory;
   ierr = PetscObjectReference((PetscObject)t->trajectory);CHKERRQ(ierr);
 
@@ -7855,7 +7976,6 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   t->time_step         = tsin->time_step;
   t->max_time          = tsin->max_time;
   t->steps             = tsin->steps;
-  t->total_steps       = tsin->total_steps;
   t->max_steps         = tsin->max_steps;
   t->equation_type     = tsin->equation_type;
   t->atol              = tsin->atol;

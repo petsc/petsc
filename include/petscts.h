@@ -321,6 +321,10 @@ PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
 PETSC_EXTERN PetscErrorCode TSForwardStep(TS);
 
+PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
@@ -358,17 +362,17 @@ PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
-PETSC_EXTERN PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
-PETSC_EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetPrevTime(TS,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSGetStepNumber(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS,PetscInt);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);

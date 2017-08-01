@@ -1157,6 +1157,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PetscScalar    val;
   Vec            Xdot;
 
+  PetscFunctionBegin;
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
   PG[1] = x_ptr[1];
@@ -1222,7 +1223,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps1);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps1);CHKERRQ(ierr);
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -1259,7 +1260,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_FALSE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps2);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps2);CHKERRQ(ierr);
+  steps2 -= steps1;
 
   /* Remove the fault */
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1;
@@ -1289,7 +1291,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_TRUE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps3);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts,&steps3);CHKERRQ(ierr);
+  steps3 -= steps2;
+  steps3 -= steps1;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -1365,5 +1369,5 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   for (i=0;i<3;i++) {
     ierr = VecDestroy(&DICDP[i]);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }

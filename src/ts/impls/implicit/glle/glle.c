@@ -997,7 +997,6 @@ accepted:
     ierr = VecCopy(gl->X[0],ts->vec_sol);CHKERRQ(ierr);
     ts->ptime += h;
     ts->steps++;
-    ts->total_steps++;
 
     ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
     ierr = TSPostStep(ts);CHKERRQ(ierr);
