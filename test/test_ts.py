@@ -104,7 +104,8 @@ class BaseTestTSNonlinearRHS(BaseTestTSNonlinear):
         T = T0 + nT*dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
-        ts.setDuration(T, nT)
+        ts.setMaxTime(T)
+        ts.setMaxSteps(nT)
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
         ts.solve(u)
@@ -143,7 +144,8 @@ class BaseTestTSNonlinearRHS(BaseTestTSNonlinear):
         T = T0 + nT*dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
-        ts.setDuration(T, nT)
+        ts.setMaxTime(T)
+        ts.setMaxSteps(nT)
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
 
@@ -186,7 +188,8 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinear):
         T = T0 + nT*dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
-        ts.setDuration(T, nT)
+        ts.setMaxTime(T)
+        ts.setMaxSteps(nT)
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
         ts.solve(u)
@@ -226,7 +229,8 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinear):
         T = T0 + nT*dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
-        ts.setDuration(T, nT)
+        ts.setMaxTime(T)
+        ts.setMaxSteps(nT)
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
 

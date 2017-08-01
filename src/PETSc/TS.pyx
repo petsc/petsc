@@ -401,11 +401,6 @@ cdef class TS(Object):
         CHKERR( TSGetSolveTime(self.ts, &rval) )
         return toReal(rval)
 
-    def setInitialTimeStep(self, initial_time, initial_time_step):
-        cdef PetscReal rval1 = asReal(initial_time)
-        cdef PetscReal rval2 = asReal(initial_time_step)
-        CHKERR( TSSetInitialTimeStep(self.ts, rval1, rval2) )
-
     def setTimeStep(self, time_step):
         cdef PetscReal rval = asReal(time_step)
         CHKERR( TSSetTimeStep(self.ts, rval) )
@@ -417,52 +412,29 @@ cdef class TS(Object):
 
     def setStepNumber(self, step_number):
         cdef PetscInt ival = asInt(step_number)
-        CHKERR( TSSetTimeStepNumber(self.ts, ival) )
+        CHKERR( TSSetStepNumber(self.ts, ival) )
 
     def getStepNumber(self):
         cdef PetscInt ival = 0
-        CHKERR( TSGetTimeStepNumber(self.ts, &ival) )
+        CHKERR( TSGetStepNumber(self.ts, &ival) )
         return toInt(ival)
 
     def setMaxTime(self, max_time):
-        cdef PetscInt  ival = 0
         cdef PetscReal rval = asReal(max_time)
-        CHKERR( TSGetDuration(self.ts, &ival, NULL) )
-        CHKERR( TSSetDuration(self.ts, ival, rval) )
+        CHKERR( TSSetMaxTime(self.ts, rval) )
 
     def getMaxTime(self):
         cdef PetscReal rval = 0
-        CHKERR( TSGetDuration(self.ts, NULL, &rval) )
+        CHKERR( TSGetMaxTime(self.ts, &rval) )
         return toReal(rval)
 
     def setMaxSteps(self, max_steps):
         cdef PetscInt  ival = asInt(max_steps)
-        cdef PetscReal rval = 0
-        CHKERR( TSGetDuration(self.ts, NULL, &rval) )
-        CHKERR( TSSetDuration(self.ts, ival, rval) )
+        CHKERR( TSSetMaxSteps(self.ts, ival) )
 
     def getMaxSteps(self):
         cdef PetscInt ival = 0
-        CHKERR( TSGetDuration(self.ts, &ival, NULL) )
-        return toInt(ival)
-
-    def setDuration(self, max_time, max_steps=None):
-        cdef PetscInt  ival = 0
-        cdef PetscReal rval = 0
-        CHKERR( TSGetDuration(self.ts, &ival, &rval) )
-        if max_steps is not None: ival = asInt(max_steps)
-        if max_time  is not None: rval = asReal(max_time)
-        CHKERR( TSSetDuration(self.ts, ival, rval) )
-
-    def getDuration(self):
-        cdef PetscInt  ival = 0
-        cdef PetscReal rval = 0
-        CHKERR( TSGetDuration(self.ts, &ival, &rval) )
-        return (toReal(rval), toInt(ival))
-
-    def getTotalSteps(self):
-        cdef PetscInt ival = 0
-        CHKERR( TSGetTotalSteps(self.ts, &ival) )
+        CHKERR( TSGetMaxSteps(self.ts, &ival) )
         return toInt(ival)
 
     def getSNESIterations(self):

@@ -78,7 +78,8 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,10,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);

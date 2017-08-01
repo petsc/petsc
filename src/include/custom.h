@@ -544,19 +544,6 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetTimeStepNumber"
-static PetscErrorCode
-TSSetTimeStepNumber(TS ts, PetscInt step)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->steps = step;
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------- */
-
-#undef __FUNCT__
 #define __FUNCT__ "DMDACreateND"
 static PetscErrorCode
 DMDACreateND(MPI_Comm comm,

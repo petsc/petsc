@@ -137,10 +137,10 @@ class BaseTestPlex(object):
         for met in metric_array:
             met[:,:] = np.diag([9]*dim)
         metric = PETSc.Vec().createWithArray(metric_array)
-        try:
-            newplex = self.plex.adaptMetric(metric,"")
-        except PETSc.Error as exc:
-            if exc.ierr != ERR_SUP: raise
+        #try:
+        newplex = self.plex.adaptMetric(metric,"")
+        #except PETSc.Error as exc:
+        #    if exc.ierr != ERR_SUP: raise
 
 
 # --------------------------------------------------------------------
