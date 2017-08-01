@@ -1,5 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
+#include <petsc/private/petscimpl.h>
 /*
     Note that tag of 0 is ok because comm is a private communicator
   generated below just for these routines.
