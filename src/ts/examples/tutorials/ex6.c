@@ -11,7 +11,7 @@ Input parameters include:\n\
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
    Routines: TSCreate(); TSSetSolution(); TSSetRHSJacobian(), TSSetIJacobian();
-   Routines: TSSetInitialTimeStep(); TSSetMaxTime(); TSMonitorSet();
+   Routines: TSSetTimeStep(); TSSetMaxTime(); TSMonitorSet();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy();
    Routines: TSSetTimeStep(); TSGetTimeStep();
    Processors: 1
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt   = appctx.h*appctx.h/2.0;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

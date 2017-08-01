@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   ierr = FormInitialSolution(ts,u,&user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   dt   = .01;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.

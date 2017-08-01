@@ -1214,14 +1214,16 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
-  ierr = TSSetMaxTime(ts,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
 
-  ctx->alg_flg = PETSC_FALSE;
+
   /* Prefault period */
+  ctx->alg_flg = PETSC_FALSE;
+  ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tfaulton);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps1);CHKERRQ(ierr);
 
@@ -1253,12 +1255,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->stepnum++;
 
   /* Disturbance period */
-  ierr = TSSetMaxTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,ctx->tfaulton,.01);CHKERRQ(ierr);
-
   ctx->alg_flg = PETSC_FALSE;
-
+  ierr = TSSetTime(ts,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps2);CHKERRQ(ierr);
   steps2 -= steps1;
@@ -1284,12 +1283,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->stepnum++;
 
   /* Post-disturbance period */
-  ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,ctx->tfaultoff,.01);CHKERRQ(ierr);
-
   ctx->alg_flg = PETSC_TRUE;
-
+  ierr = TSSetTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps3);CHKERRQ(ierr);
   steps3 -= steps2;

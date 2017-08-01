@@ -454,7 +454,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
    Set time
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(appctx->ts,0.0,appctx->initial_dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
   ierr = TSSetDuration(appctx->ts,appctx->param.steps,appctx->param.Tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(appctx->ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
@@ -463,7 +463,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
   ierr = TSGetTimeStep(appctx->ts,&appctx->initial_dt);CHKERRQ(ierr);
 
-  ierr = TSSetInitialTimeStep(appctx->ts,0.0,appctx->initial_dt);CHKERRQ(ierr);
+  ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx->ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(appctx->ts,appctx->SEMop.stiff,appctx->SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   ierr = VecCopy(IC,appctx->dat.curr_sol);CHKERRQ(ierr);

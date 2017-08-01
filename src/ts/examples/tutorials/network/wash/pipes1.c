@@ -702,7 +702,7 @@ int main(int argc,char ** argv)
 
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {
     ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, NULL);CHKERRQ(ierr);

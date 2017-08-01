@@ -256,7 +256,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -6.666665432100101e-01;
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

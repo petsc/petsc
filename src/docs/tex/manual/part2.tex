@@ -4880,9 +4880,9 @@ error&explicit and implicit&$1-3$\\
 \label{tab_TSPET}
 \end{table}
 
-\noindent Set the initial time and timestep with the command
+\noindent Set the initial time with the command
 \begin{lstlisting}
-TSSetInitialTimeStep(TS ts,PetscReal time,PetscReal dt);
+TSSetTime(TS ts,PetscReal time);
 \end{lstlisting}
 One can change the timestep with the command
 \begin{lstlisting}

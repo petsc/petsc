@@ -252,7 +252,7 @@ int main(int argc, char **argv)
   ierr = VecGetSize(X, &mx);CHKERRQ(ierr);
   hx   = 20.0/(PetscReal)(mx-1);
   dt   = 0.4 * PetscSqr(hx) / PetscSqr(user.c); /* Diffusive stability limit */
-  ierr = TSSetInitialTimeStep(ts, 0.0, dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSolve(ts, X);CHKERRQ(ierr);

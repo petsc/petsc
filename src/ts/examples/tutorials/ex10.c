@@ -1062,7 +1062,7 @@ int main(int argc, char *argv[])
     break;
   }
   ierr = TSSetMaxTime(ts,rd->final_time);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1e-3);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

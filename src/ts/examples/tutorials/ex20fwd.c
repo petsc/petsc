@@ -207,7 +207,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,1.0/1024.0);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1.0/1024.0);CHKERRQ(ierr);
 
   if (combined) {
     ierr = MatCreateVecs(user.A,&user.s_combined[0],NULL);CHKERRQ(ierr);

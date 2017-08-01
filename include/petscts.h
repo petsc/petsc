@@ -328,6 +328,7 @@ PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
 PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS,TSExactFinalTimeOption*);
 
+PETSC_EXTERN PETSC_DEPRECATED("Use TSSetTime[Step]")      PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSSetMax{Steps|Time}") PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetMax{Steps|Time}") PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
@@ -368,7 +369,6 @@ PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 
-PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetPrevTime(TS,PetscReal*);

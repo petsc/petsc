@@ -87,7 +87,7 @@ int main(int argc, char **argv)
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   /*  ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,&user);CHKERRQ(ierr);  */
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);

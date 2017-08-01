@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = VecGetSize(X,&mx);CHKERRQ(ierr);
   hx = 1.0/(PetscReal)(mx/2-1);
   dt = 0.4 * PetscSqr(hx) / user.alpha; /* Diffusive stability limit */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

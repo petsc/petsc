@@ -1631,7 +1631,7 @@ int main(int argc,char *argv[])
   ierr = TSSetMaxTime(ts,10.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);

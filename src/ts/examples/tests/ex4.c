@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   dt             = 0.1;
   ftime_original = data.tfinal = 1.0;
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetMaxSteps(ts,time_steps);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,ftime_original);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
@@ -171,7 +171,8 @@ int main(int argc,char **argv)
     ierr = TSSetMaxTime(ts,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+    ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   }
   /* Interpolate solution at tfinal */
   ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);

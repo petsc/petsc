@@ -2182,34 +2182,6 @@ PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
 }
 
 /*@
-   TSSetInitialTimeStep - Sets the initial timestep to be used,
-   as well as the initial time.
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  initial_time - the initial time
--  time_step - the size of the timestep
-
-   Level: intermediate
-
-.seealso: TSSetTimeStep(), TSGetTimeStep()
-
-.keywords: TS, set, initial, timestep
-@*/
-PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,initial_time);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
 
@@ -2221,7 +2193,7 @@ PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time
 
    Level: intermediate
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSGetTimeStep(), TSSetTime()
 
 .keywords: TS, set, timestep
 @*/
@@ -2305,7 +2277,7 @@ PetscErrorCode TSGetExactFinalTime(TS ts,TSExactFinalTimeOption *eftopt)
 
    Level: intermediate
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSSetTimeStep(), TSGetTime()
 
 .keywords: TS, get, timestep
 @*/
@@ -3042,6 +3014,19 @@ PetscErrorCode TSGetMaxTime(TS ts,PetscReal *maxtime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidRealPointer(maxtime,2);
   *maxtime = ts->max_time;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSSetInitialTimeStep - Deprecated, use TSSetTime() and TSSetTimeStep().
+@*/
+PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSSetTime(ts,initial_time);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4668,7 +4653,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
    When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
    TSSetPreStage(), TSSetPostStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep(), TSGetSolveTime()
+.seealso:  TSGetSolveTime(), TSSetTime(), TSGetTimeStep()
 
 .keywords: TS, get, time
 @*/
@@ -4694,7 +4679,7 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
 
    Level: beginner
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSGetTime(), TSGetSolveTime(), TSGetTimeStep()
 
 .keywords: TS, get, time
 @*/

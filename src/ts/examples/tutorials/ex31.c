@@ -1208,7 +1208,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetMaxSteps(ts,maxiter);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,tfinal);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   /* Read command line options for time integration                       */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

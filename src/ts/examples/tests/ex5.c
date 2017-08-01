@@ -296,7 +296,7 @@ int main(int argc,char **argv)
   ftime = TIMESTEP*time;
   if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetMaxSteps(ts,time);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);

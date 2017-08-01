@@ -148,7 +148,8 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = Solution(ts,0,U,&ctx);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,4.0*3600,1.0);CHKERRQ(ierr);
+  ierr = TSSetTime(ts,4.0*3600);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

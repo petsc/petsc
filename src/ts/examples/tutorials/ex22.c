@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = VecGetSize(X,&mx);CHKERRQ(ierr);
   dt   = .1 * PetscMax(user.a[0],user.a[1]) / mx; /* Advective CFL, I don't know why it needs so much safety factor. */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

@@ -158,7 +158,7 @@ int main(int argc,char **argv)
   ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,10000.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.05);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.05);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

@@ -402,7 +402,7 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = (*problem->solution)(0,x,problem->data);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

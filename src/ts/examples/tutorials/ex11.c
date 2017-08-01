@@ -1921,7 +1921,7 @@ int main(int argc, char **argv)
   ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   if (!useAMR) {
     ierr = TSSolve(ts,X);CHKERRQ(ierr);
@@ -1960,7 +1960,9 @@ int main(int argc, char **argv)
         ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
         if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
-        ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+        ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
+        ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
+        ierr = TSSetTimeStep(ts,ftime,dt);CHKERRQ(ierr);
       } else {
         ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
       }

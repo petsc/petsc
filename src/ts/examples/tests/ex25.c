@@ -128,7 +128,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   hx = 1.0/(PetscReal)(mx/2-1);
   dt = 0.4 * PetscSqr(hx) / user.alpha; /* Diffusive stability limit */
   dt *= PetscPowRealInt(0.2,cycle);     /* Shrink the time step in convergence study. */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetTolerances(ts,1e-3*PetscPowRealInt(0.5,cycle),NULL,1e-3*PetscPowRealInt(0.5,cycle),NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
