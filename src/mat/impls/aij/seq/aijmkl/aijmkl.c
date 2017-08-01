@@ -134,6 +134,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
   }
+  aijmkl->sparse_optimized = PETSC_FALSE;
 
   /* Now perform the SpMV2 setup and matrix optimization. */
   aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
@@ -144,7 +145,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
   aa   = a->a;  /* Nonzero elements stored row-by-row. */
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
-  if (n>0) {
+  if (a->nz) {
+    /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
+     * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
     stat = mkl_sparse_x_create_csr(&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,m,n,ai,ai+1,aj,aa);
     stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
     stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
@@ -251,8 +254,8 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-  /* If there are no rows, this is a no-op: return immediately. */
-  if(A->cmap->n < 1) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, this is a no-op: return immediately. */
+  if(!a->nz) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -317,8 +320,8 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-  /* If there are no rows, this is a no-op: return immediately. */
-  if(A->cmap->n < 1) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, this is a no-op: return immediately. */
+  if(!a->nz) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -401,8 +404,8 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
-  /* If there are no rows, this is a no-op: return immediately. */
-  if(A->cmap->n < 1) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, this is a no-op: return immediately. */
+  if(!a->nz) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
@@ -496,8 +499,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
-  /* If there are no rows, this is a no-op: return immediately. */
-  if(A->cmap->n < 1) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, this is a no-op: return immediately. */
+  if(!a->nz) PetscFunctionReturn(0);
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
