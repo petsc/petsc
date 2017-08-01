@@ -236,7 +236,7 @@ static const char *PetscErrorStrings[] = {
           "Overflow in integer operation: http://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
   /*85 */ "Null argument, when expecting valid pointer",
   /*86 */ "Unknown type. Check for miss-spelling or missing package: http://www.mcs.anl.gov/petsc/documentation/installation.html#external",
-  /*87 */ "Not used",
+  /*87 */ "MPI library at runtime is not compatible with MPI used at compile time",
   /*88 */ "Error in system call",
   /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
   /*90 */ "  ",

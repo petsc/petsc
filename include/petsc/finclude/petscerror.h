@@ -20,6 +20,7 @@
 #define PETSC_ERR_USER             83
 #define PETSC_ERR_SYS              88
 #define PETSC_ERR_POINTER          70
+#define PETSC_ERR_MPI_LIB_INCOMP   87
 
 #define PETSC_ERR_ARG_SIZ          60
 #define PETSC_ERR_ARG_IDN          61
