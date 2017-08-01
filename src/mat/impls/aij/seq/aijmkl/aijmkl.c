@@ -211,12 +211,19 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
+  PetscInt          n=A->cmap->n;
+  PetscScalar       alpha = 1.0;
+  PetscScalar       beta = 0.0;
   const PetscInt    *aj,*ai;
+  char              matdescra[6];
+
 
   /* Variables not in MatMult_SeqAIJ. */
   char transa = 'n';  /* Used to indicate to MKL that we are not computing the transpose product. */
 
   PetscFunctionBegin;
+  matdescra[0] = 'g';  /* Indicates to MKL that we using a general CSR matrix. */
+  matdescra[3] = 'c';  /* Indicates to MKL that we use C-style (0-based) indexing. */
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
@@ -224,7 +231,7 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
-  mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,y);
+  mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
 
   ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
@@ -271,7 +278,11 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
+  PetscInt          n=A->cmap->n;
+  PetscScalar       alpha = 1.0;
+  PetscScalar       beta = 0.0;
   const PetscInt    *aj,*ai;
+  char              matdescra[6];
 
   /* Variables not in MatMultTranspose_SeqAIJ. */
   char transa = 't';  /* Used to indicate to MKL that we are computing the transpose product. */
@@ -284,7 +295,7 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
-  mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,y);
+  mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
 
   ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
@@ -331,13 +342,14 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
+  PetscInt          n=A->cmap->n;
   const PetscInt    *aj,*ai;
   PetscInt          i;
 
   /* Variables not in MatMultAdd_SeqAIJ. */
   char transa = 'n';  /* Used to indicate to MKL that we are not computing the transpose product. */
   PetscScalar       alpha = 1.0;
-  PetscScalar       beta = 1.0;
+  PetscScalar       beta;
   char              matdescra[6];
 
   PetscFunctionBegin;
@@ -353,11 +365,13 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use MKL's mkl_xcsrmv(), which calculates y = alpha*A*x + beta*y. */
-    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
+    beta = 1.0;
+    mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
   } else {
-    /* zz and yy are different vectors, so we call mkl_cspblas_xcsrgemv(), which calculates y = A*x, and then 
-     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
+    /* zz and yy are different vectors, so call MKL's mkl_xcsrmv() with beta=0, then add the result to z. 
+     * MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    beta = 0.0;
+    mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
     for (i=0; i<m; i++) {
       z[i] += y[i];
     }
@@ -395,11 +409,11 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y, 
      * with alpha and beta both set to 1.0. */
-    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,y);
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
     for (i=0; i<m; i++) {
       z[i] += y[i];
     }
@@ -423,13 +437,14 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   const MatScalar   *aa;
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
+  PetscInt          n=A->cmap->n;
   const PetscInt    *aj,*ai;
   PetscInt          i;
 
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
   char transa = 't';  /* Used to indicate to MKL that we are computing the transpose product. */
   PetscScalar       alpha = 1.0;
-  PetscScalar       beta = 1.0;
+  PetscScalar       beta;
   char              matdescra[6];
 
   PetscFunctionBegin;
@@ -445,11 +460,13 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   /* Call MKL sparse BLAS routine to do the MatMult. */
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use MKL's mkl_xcsrmv(), which calculates y = alpha*A*x + beta*y. */
-    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
+    beta = 1.0;
+    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
   } else {
-    /* zz and yy are different vectors, so we call mkl_cspblas_xcsrgemv(), which calculates y = A*x, and then 
-     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
+    /* zz and yy are different vectors, so call MKL's mkl_xcsrmv() with beta=0, then add the result to z. 
+     * MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    beta = 0.0;
+    mkl_xcsrmv(&transa,&m,&n,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,z);
     for (i=0; i<m; i++) {
       z[i] += y[i];
     }
@@ -487,11 +504,11 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   if (zz == yy) {
     /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y, 
      * with alpha and beta both set to 1.0. */
-    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,y);
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,z);
   } else {
     /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
      * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,z);
     for (i=0; i<m; i++) {
       z[i] += y[i];
     }
@@ -507,6 +524,14 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+PETSC_INTERN PetscErrorCode MatScale_SeqAIJMKL(Mat inA,PetscScalar alpha)
+{
+  PetscErrorCode ierr;
+
+  ierr = MatScale_SeqAIJ(inA,alpha);CHKERRQ(ierr);
+  ierr = MatSeqAIJMKL_create_mkl_handle(inA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLAIJ()
@@ -571,6 +596,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
     /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL; */
   }
 
+  B->ops->scale = MatScale_SeqAIJMKL;
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatScale_SeqAIJMKL_C",MatScale_SeqAIJMKL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
