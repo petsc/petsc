@@ -618,7 +618,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   if (ts->rhsjacobian.reuse) {
     ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
     ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-    if (A != B) {
+    if (B && A != B) {
       ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
       ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
     }
