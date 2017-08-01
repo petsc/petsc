@@ -47,7 +47,7 @@ program main
   TS             ts
   Vec            X
   Mat            J
-  PetscInt       maxsteps,mx
+  PetscInt       mx
   PetscBool      OptionSaveToDisk
   PetscErrorCode ierr
   DM             da
@@ -132,8 +132,7 @@ program main
 
 
   ftime = 1.0
-  maxsteps = 10000
-  call TSSetDuration(ts,maxsteps,ftime,ierr);CHKERRA(ierr)
+  call TSSetMaxTime(ts,ftime,ierr);CHKERRA(ierr)
   call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

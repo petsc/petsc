@@ -138,7 +138,8 @@ int main(int argc,char **argv)
       Set a large number of timesteps and final duration time
      to insure convergence to steady state.
   */
-  ierr = TSSetDuration(ts,1000,1.e12);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1e12);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*

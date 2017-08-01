@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   TS             ts;                 /* nonlinear solver */
   Vec            x,r;                  /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
-  PetscInt       steps,Mx,maxsteps = 10000000;
+  PetscInt       steps,Mx;
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

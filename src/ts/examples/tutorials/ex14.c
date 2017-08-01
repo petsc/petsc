@@ -1628,7 +1628,7 @@ int main(int argc,char *argv[])
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,THIFunction,thi);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,10.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,10.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);

@@ -38,7 +38,7 @@
       SNESLineSearch linesearch
       Vec            X
       Mat            J
-      PetscInt       maxsteps,mx
+      PetscInt       mx
       PetscErrorCode ierr
       DM             da
       PetscReal      ftime,dt
@@ -110,8 +110,7 @@
       call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0
-      maxsteps = 10000
-      call TSSetDuration(ts,maxsteps,ftime,ierr)
+      call TSSetMaxTime(ts,ftime,ierr)
       call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
       
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

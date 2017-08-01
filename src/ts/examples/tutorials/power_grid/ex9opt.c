@@ -360,7 +360,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = TSSetInitialTimeStep(ts,0.0,.01q);CHKERRQ(ierr);
 #else
@@ -458,7 +458,7 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = TSSetInitialTimeStep(ts,0.0,.01q);CHKERRQ(ierr);
 #else

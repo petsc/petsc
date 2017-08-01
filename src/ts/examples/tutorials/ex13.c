@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   TS             ts;                   /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vector */
   Mat            J;                    /* Jacobian matrix */
-  PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
+  PetscInt       steps;                /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,NULL);CHKERRQ(ierr);
 
   ftime = 1.0;
-  ierr  = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

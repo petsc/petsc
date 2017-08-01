@@ -1061,7 +1061,7 @@ int main(int argc, char *argv[])
     if (rd->jacobian == JACOBIAN_ANALYTIC) ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
     break;
   }
-  ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,rd->final_time);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

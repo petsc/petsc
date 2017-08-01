@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   TS                ts;
   Vec               x; /*solution vector*/
   Mat               A; /*Jacobian*/
-  PetscInt          steps,maxsteps,mx;
+  PetscInt          steps,mx;
   PetscErrorCode    ierr;
   PetscReal         ftime;
   AppCtx            user;       /* user-defined work context */
@@ -70,8 +70,7 @@ int main(int argc, char **argv)
   ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,FormIJacobian,&user);CHKERRQ(ierr);
   ftime = 142;
-  maxsteps = 100000;
-  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

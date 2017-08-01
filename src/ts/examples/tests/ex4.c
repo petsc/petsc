@@ -92,7 +92,8 @@ int main(int argc,char **argv)
   ftime_original = data.tfinal = 1.0;
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,time_steps,ftime_original);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,time_steps);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ftime_original);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
@@ -166,7 +167,8 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-NOUT",&NOUT,NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++) {
-    ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);
+    ierr = TSSetMaxSteps(ts,time_steps);CHKERRQ(ierr);
+    ierr = TSSetMaxTime(ts,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global);CHKERRQ(ierr);
     ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
     ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
@@ -259,12 +261,11 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   Vec               tmp_vec;
   PetscErrorCode    ierr;
   const PetscScalar *tmp;
-  PetscReal         maxtime;
 
   PetscFunctionBeginUser;
   ierr = TSGetStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
-  ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);
+  ierr = TSGetMaxSteps(ts, &maxsteps);CHKERRQ(ierr);
   if (nsteps % 10 != 0) PetscFunctionReturn(0);
 
   /* Get the size of the vector */

@@ -4896,9 +4896,10 @@ Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
 
 \noindent One sets the total number of timesteps to run or the total time to run
-(whatever is first) with the command
+(whatever is first) with the commands
 \begin{lstlisting}
-TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime);
+TSSetMaxSteps(TS ts,PetscInt maxsteps);
+TSSetMaxTime(TS ts,PetscReal maxtime);
 \end{lstlisting}
 and determines the behavior near the final time with
 \begin{lstlisting}

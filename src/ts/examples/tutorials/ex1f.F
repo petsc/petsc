@@ -162,7 +162,8 @@
 !
       i1000 = 1000
       tmax  = 1.e12
-      call TSSetDuration(ts,i1000,tmax,ierr)
+      call TSSetMaxSteps(ts,i1000,ierr)
+      call TSSetMaxTime(ts,tmax,ierr)
       call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
 
 !

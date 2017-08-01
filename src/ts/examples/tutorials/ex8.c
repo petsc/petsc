@@ -326,7 +326,7 @@ int main(int argc,char **argv)
   Mat               A;             /* Jacobian matrix */
   Problem           problem;
   PetscBool         use_monitor;
-  PetscInt          steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
+  PetscInt          steps,nonlinits,linits,snesfails,rejects;
   PetscReal         ftime;
   MonitorCtx        mon;
   PetscErrorCode    ierr;
@@ -390,7 +390,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr); /* Rosenbrock-W */
   ierr = TSSetIFunction(ts,NULL,problem->function,problem->data);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,problem->final_time);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetMaxStepRejections(ts,10);CHKERRQ(ierr);
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr); /* unlimited */

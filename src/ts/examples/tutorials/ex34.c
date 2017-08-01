@@ -208,7 +208,7 @@ int main(int argc, char **argv)
   TS                ts;
   Vec               X;
   Mat               J;
-  PetscInt          steps, maxsteps, mx;
+  PetscInt          steps, mx;
   PetscReal         ftime, hx, dt;
   TSConvergedReason reason;
   struct _User      user;
@@ -244,9 +244,8 @@ int main(int argc, char **argv)
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts, J, J, FormIJacobian, &user);CHKERRQ(ierr);
 
-  ftime    = 800.0;
-  maxsteps = 10000;
-  ierr = TSSetDuration(ts, maxsteps, ftime);CHKERRQ(ierr);
+  ftime = 800.0;
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = FormInitialSolution(ts, X, &user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts, X);CHKERRQ(ierr);

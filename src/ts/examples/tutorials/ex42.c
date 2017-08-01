@@ -298,7 +298,8 @@ int main(int argc, char **argv)
    * Set a large number of timesteps and final duration time to insure
    * convergenge to steady state
    */
-  ierr = TSSetDuration(ts, 5000, 1e12);
+  ierr = TSSetMaxSteps(ts, 1e12);
+  ierr = TSSetMaxTime(ts, 1e12);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*

@@ -1075,7 +1075,7 @@ int main(int argc,char ** argv)
   ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
 
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) FormIFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tfaulton);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1114,7 +1114,7 @@ int main(int argc,char ** argv)
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Disturbance period */
-  ierr = TSSetDuration(ts,1000,user.tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tfaultoff);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaulton,.01);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) FormIFunction,&user);CHKERRQ(ierr);
@@ -1137,7 +1137,7 @@ int main(int argc,char ** argv)
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
 
   /* Post-disturbance period */
-  ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tmax);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaultoff,.01);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) FormIFunction,&user);CHKERRQ(ierr);

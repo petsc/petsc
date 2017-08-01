@@ -148,7 +148,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSALPHA2);CHKERRQ(ierr);
 
-  ierr = TSSetDuration(ts,PETSC_MAX_INT,PETSC_MAX_REAL);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,PETSC_INFINITY);CHKERRQ(ierr);
   ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);

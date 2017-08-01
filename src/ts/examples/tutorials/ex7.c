@@ -29,7 +29,6 @@ int main(int argc,char **argv)
   TS                   ts;                         /* time integrator */
   SNES                 snes;
   Vec                  x,r;                        /* solution, residual vectors */
-  PetscInt             maxsteps = 100;             /* iterations for convergence */
   PetscErrorCode       ierr;
   DM                   da;
   PetscViewerAndFormat *vf;
@@ -72,7 +71,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,PETSC_VIEWER_STDOUT_WORLD,NULL);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);

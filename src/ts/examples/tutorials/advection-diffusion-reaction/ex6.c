@@ -80,7 +80,8 @@ int main(int argc,char **argv)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt = 1.0/(PetscAbsReal(appctx.a)*M);
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,100.0);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,100);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,100.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

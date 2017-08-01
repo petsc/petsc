@@ -121,7 +121,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxTime(), TSGetMaxTime(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -129,7 +129,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxSteps(), TSGetMaxSteps()
 M*/
 
 /*MC
@@ -137,7 +137,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
 M*/
 
 /*MC
@@ -156,7 +156,7 @@ M*/
    Options Database:
 .   -ts_pseudo_frtol <rtol>
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FATOL
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FATOL
 M*/
 
 /*MC
@@ -167,7 +167,7 @@ M*/
    Options Database:
 .   -ts_pseudo_fatol <atol>
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FRTOL
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FRTOL
 M*/
 
 /*MC
@@ -325,10 +325,11 @@ PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
-PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
 PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS,TSExactFinalTimeOption*);
+
+PETSC_EXTERN PETSC_DEPRECATED("Use TSSetMax{Steps|Time}") PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetMax{Steps|Time}") PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 

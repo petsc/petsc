@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   TSAdapt           adapt;
   Vec               X,lambda;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
-  PetscInt          steps,maxsteps;
+  PetscInt          steps;
   PetscErrorCode    ierr;
   PetscReal         ftime,dt;
   char              chemfile[PETSC_MAX_PATH_LEN],thermofile[PETSC_MAX_PATH_LEN],lchemfile[PETSC_MAX_PATH_LEN],lthermofile[PETSC_MAX_PATH_LEN],lperiodic[PETSC_MAX_PATH_LEN];
@@ -143,10 +143,9 @@ int main(int argc,char **argv)
     ierr = TSMonitorSet(ts,MonitorTempature,&user,NULL);CHKERRQ(ierr);
   }
 
-  ftime    = 1.0;
-  maxsteps = 10000;
-  ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
-  ierr     = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ftime = 1.0;
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

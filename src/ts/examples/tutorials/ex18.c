@@ -1113,7 +1113,8 @@ int main(int argc, char **argv)
     ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &user);CHKERRQ(ierr);
   }
   if (user.useFV) {ierr = TSMonitorSet(ts, MonitorFunctionals, &user, NULL);CHKERRQ(ierr);}
-  ierr = TSSetDuration(ts, 1, 2.0);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts, 1);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts, 2.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts, 0.0, 0.01);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
