@@ -368,6 +368,39 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatDuplicate_SeqAIJViennaCL(Mat A,MatDuplicateOption cpvalues,Mat *B)
+{
+  PetscErrorCode ierr;
+  Mat C;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
+  C = *B;
+
+  C->ops->mult        = MatMult_SeqAIJViennaCL;
+  C->ops->multadd     = MatMultAdd_SeqAIJViennaCL;
+  C->ops->assemblyend = MatAssemblyEnd_SeqAIJViennaCL;
+  C->ops->destroy     = MatDestroy_SeqAIJViennaCL;
+  C->ops->getvecs     = MatCreateVecs_SeqAIJViennaCL;
+  C->ops->duplicate   = MatDuplicate_SeqAIJViennaCL;
+
+  C->spptr        = new Mat_SeqAIJViennaCL();
+  ((Mat_SeqAIJViennaCL*)C->spptr)->tempvec        = NULL;
+  ((Mat_SeqAIJViennaCL*)C->spptr)->mat            = NULL;
+  ((Mat_SeqAIJViennaCL*)C->spptr)->compressed_mat = NULL;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)C,MATSEQAIJVIENNACL);CHKERRQ(ierr);
+
+  C->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
+
+  /* If the source matrix is already assembled, copy the destination matrix to the GPU */
+  if (C->assembled) {
+    ierr = MatViennaCLCopyToGPU(C);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -398,6 +431,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatCreateVecs_SeqAIJViennaCL;
+  B->ops->duplicate      = MatDuplicate_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
