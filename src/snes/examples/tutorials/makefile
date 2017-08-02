@@ -1274,7 +1274,21 @@ runex73f90t:
 	-@${MPIEXEC} -n 4 ./ex73f90t -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor_short -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_gamg_est_ksp_type cg > ex73f90t.tmp 2>&1; \
 	   ${DIFF} output/ex73f90t_1.out ex73f90t.tmp || printf "${PWD}\nPossible problem with ex73f90t, diffs above\n=========================================\n"; \
 	   ${RM} -f ex73f90t.tmp petsc_kkt_solver.mod petsc_kkt_solver_interfaces.mod
-
+runex77:
+	-@${MPIEXEC} -n 1 ./ex77 -run_type full -dim 3 -dm_refine 3 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0 > ex77_1.tmp 2>&1; \
+           if (${DIFF} output/ex77_0.out ex77_1.tmp) then true; \
+           else  printf "${PWD}\nPossible problem with ex77_1, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex77_1.tmp
+runex77_2:
+	-@${MPIEXEC} -n 2 ./ex77 -run_type full -dim 3 -dm_refine 0 -interpolate 1 -test_partition -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0 > ex77_2.tmp 2>&1; \
+           if (${DIFF} output/ex77_1.out ex77_2.tmp) then true; \
+           else  printf "${PWD}\nPossible problem with ex77_2, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex77_2.tmp
+runex77_3:
+	-@${MPIEXEC} -n 1 ./ex77 -run_type full -dim 3 -dm_refine 2 -interpolate 1 -bc_fixed 3,4,5,6 -bc_pressure 2 -wall_pressure 1.0 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0 > ex77_3.tmp 2>&1; \
+           if (${DIFF} output/ex77_2.out ex77_3.tmp) then true; \
+           else  printf "${PWD}\nPossible problem with ex77_3, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex77_3.tmp
 runex78:
 	-@${MPIEXEC} -n 1 ./ex78  -snes_monitor_short -ksp_monitor_short -pc_type sor -snes_converged_reason  -da_refine 3 > ex78_1.tmp 2>&1; \
 	   if (${DIFF} output/ex78_1.out ex78_1.tmp) then true; \
