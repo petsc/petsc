@@ -1962,7 +1962,7 @@ int main(int argc, char **argv)
         dt   = cfl * minRadius / mod->maxspeed;
         ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
         ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-        ierr = TSSetTimeStep(ts,ftime,dt);CHKERRQ(ierr);
+        ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
       } else {
         ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
       }
