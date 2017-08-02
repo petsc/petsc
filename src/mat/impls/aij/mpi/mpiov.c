@@ -1657,7 +1657,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 #endif
 
     smatis1->destroy     = submat->ops->destroy;
-    submat->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
+    submat->ops->destroy = MatDestroySubMatrix_SeqAIJ;
     submat->factortype   = C->factortype;
 
     /* compute rmax */
@@ -2564,7 +2564,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       subc->submatis1 = smat_i;
 
       smat_i->destroy          = submats[i]->ops->destroy;
-      submats[i]->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
+      submats[i]->ops->destroy = MatDestroySubMatrix_SeqAIJ;
       submats[i]->factortype   = C->factortype;
 
       smat_i->id          = i;
