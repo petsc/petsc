@@ -104,7 +104,7 @@ if ( $? ) then
 else
   set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
   setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
-  set TIMEOUT=1200
+  set TIMEOUT=720
 endif
 #
 #check gcov
