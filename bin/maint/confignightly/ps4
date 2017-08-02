@@ -3,4 +3,4 @@
 set MACH=ps4
 set USR=petsc
 set LOC=/home/petsc/${RNAME}
-set CONF=arch-mswin-uni
+set CONF=arch-mswin-intel-cxx-cmplx
