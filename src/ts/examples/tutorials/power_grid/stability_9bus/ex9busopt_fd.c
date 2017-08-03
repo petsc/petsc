@@ -991,7 +991,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ctx->stepnum++;
 
   ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,ctx->t.max);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
