@@ -38,17 +38,16 @@
       SNESLineSearch linesearch
       Vec            X
       Mat            J
-      PetscInt       maxsteps,mx
+      PetscInt       mx
       PetscErrorCode ierr
       DM             da
       PetscReal      ftime,dt
-      PetscReal      zero,one,pone
+      PetscReal      one,pone
       PetscInt       im11,i2
       PetscBool      flg
 
       im11 = 11
       i2   = 2
-      zero = 0.0
       one = 1.0
       pone = one / 10
 
@@ -110,8 +109,7 @@
       call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0
-      maxsteps = 10000
-      call TSSetDuration(ts,maxsteps,ftime,ierr)
+      call TSSetMaxTime(ts,ftime,ierr)
       call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr)
       
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,7 +120,7 @@
       call VecGetSize(X,mx,ierr)
 !  Advective CFL, I don't know why it needs so much safety factor.
       dt = pone * max(user(user_a+1),user(user_a+2)) / mx;
-      call TSSetInitialTimeStep(ts,zero,dt,ierr)
+      call TSSetTimeStep(ts,dt,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !   Set runtime options

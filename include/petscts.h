@@ -121,7 +121,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxTime(), TSGetMaxTime(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -129,7 +129,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxSteps(), TSGetMaxSteps()
 M*/
 
 /*MC
@@ -137,7 +137,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason()
 M*/
 
 /*MC
@@ -156,7 +156,7 @@ M*/
    Options Database:
 .   -ts_pseudo_frtol <rtol>
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FATOL
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FATOL
 M*/
 
 /*MC
@@ -167,7 +167,7 @@ M*/
    Options Database:
 .   -ts_pseudo_fatol <atol>
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration(), TS_CONVERGED_PSEUDO_FRTOL
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FRTOL
 M*/
 
 /*MC
@@ -201,7 +201,7 @@ $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
 $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
 
-.seealso: TSGetConvergedReason(), TSSetExactFinalTime()
+.seealso: TSGetConvergedReason(), TSSetExactFinalTime(), TSGetExactFinalTime()
 
 E*/
 typedef enum {TS_EXACTFINALTIME_UNSPECIFIED=0,TS_EXACTFINALTIME_STEPOVER=1,TS_EXACTFINALTIME_INTERPOLATE=2,TS_EXACTFINALTIME_MATCHSTEP=3} TSExactFinalTimeOption;
@@ -325,9 +325,14 @@ PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
-PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
+PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS,TSExactFinalTimeOption*);
+
+PETSC_EXTERN PETSC_DEPRECATED("Use TSSetTime[Step]")      PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSSetMax{Steps|Time}") PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetMax{Steps|Time}") PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 
@@ -365,7 +370,6 @@ PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 
-PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetPrevTime(TS,PetscReal*);

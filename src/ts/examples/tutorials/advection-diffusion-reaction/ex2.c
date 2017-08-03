@@ -148,13 +148,14 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = Solution(ts,0,U,&ctx);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,4.0*3600,1.0);CHKERRQ(ierr);
+  ierr = TSSetTime(ts,4.0*3600);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,1000000,518400.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,518400.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetMaxStepRejections(ts,100);CHKERRQ(ierr);
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr); /* unlimited */

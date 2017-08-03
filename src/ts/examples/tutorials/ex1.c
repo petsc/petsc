@@ -132,13 +132,14 @@ int main(int argc,char **argv)
        Set the initial time to start at (this is arbitrary for
      steady state problems); and the initial timestep given above
   */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 
   /*
       Set a large number of timesteps and final duration time
      to insure convergence to steady state.
   */
-  ierr = TSSetDuration(ts,1000,1.e12);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,10000);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1e12);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*

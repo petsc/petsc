@@ -84,9 +84,10 @@ int main(int argc, char **argv)
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,user.tmax);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tmax);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,user.t0,.005);CHKERRQ(ierr);
+  ierr = TSSetTime(ts,user.t0);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);

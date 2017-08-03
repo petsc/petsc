@@ -235,11 +235,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,1000,30.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  
+
   PetscInt lsize;
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
   PetscInt *direction;

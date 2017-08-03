@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   TS             ts;                   /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            J,Jmf = NULL;   /* Jacobian matrices */
-  PetscInt       maxsteps = 1000;      /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
@@ -96,7 +95,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,7 +104,7 @@ int main(int argc,char **argv)
   ierr = FormInitialSolution(u,&user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   dt   = .01;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine

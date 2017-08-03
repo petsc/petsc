@@ -215,9 +215,9 @@ int main(int argc,char **argv)
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,30.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
   /* The adapative time step controller could take very large timesteps resulting in
      the same event occuring multiple times in the same interval. A maximum step size
      limit is enforced here to avoid this issue. */

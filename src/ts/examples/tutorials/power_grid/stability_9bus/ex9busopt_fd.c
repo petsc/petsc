@@ -990,14 +990,16 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   ctx->stepnum++;
 
-  ierr = TSSetDuration(ts,1000,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
 
-  ctx->alg_flg = PETSC_FALSE;
   /* Prefault period */
+  ctx->alg_flg = PETSC_FALSE;
+  ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tfaulton);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   /* Create the nonlinear solver for solving the algebraic system */
@@ -1028,12 +1030,9 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ctx->stepnum++;
 
   /* Disturbance period */
-  ierr = TSSetDuration(ts,1000,ctx->tfaultoff);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,ctx->tfaulton,.01);CHKERRQ(ierr);
-
   ctx->alg_flg = PETSC_FALSE;
-
+  ierr = TSSetTime(ts,ctx->tfaulton);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   /* Remove the fault */
@@ -1057,13 +1056,11 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ctx->stepnum++;
 
   /* Post-disturbance period */
-  ierr = TSSetDuration(ts,1000,ctx->tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,ctx->tfaultoff,.01);CHKERRQ(ierr);
-
   ctx->alg_flg = PETSC_TRUE;
-
+  ierr = TSSetTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
+
   ierr = VecGetArray(ctx->vec_q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
   ierr = VecRestoreArray(ctx->vec_q,&x_ptr);CHKERRQ(ierr);

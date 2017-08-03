@@ -48,9 +48,9 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,FormIFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&ctx);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,1e14);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,1e-3);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1e-3);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorObjective,&ctx,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

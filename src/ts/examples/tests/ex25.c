@@ -62,7 +62,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   TS                ts;         /* nonlinear solver */
   Vec               X;          /* solution, residual vectors */
   Mat               J;          /* Jacobian matrix */
-  PetscInt          steps,maxsteps,mx;
+  PetscInt          steps,mx;
   PetscErrorCode    ierr;
   DM                da;
   PetscReal         ftime,hx,dt,xmax,xmin;
@@ -115,10 +115,9 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
-  ftime    = 1.0;
-  maxsteps = 10000;
-  ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
-  ierr     = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ftime = 1.0;
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -129,7 +128,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   hx = 1.0/(PetscReal)(mx/2-1);
   dt = 0.4 * PetscSqr(hx) / user.alpha; /* Diffusive stability limit */
   dt *= PetscPowRealInt(0.2,cycle);     /* Shrink the time step in convergence study. */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetTolerances(ts,1e-3*PetscPowRealInt(0.5,cycle),NULL,1e-3*PetscPowRealInt(0.5,cycle),NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

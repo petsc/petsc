@@ -152,8 +152,10 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSALPHA, TSGLLE, TSSSP, TSGLEE
 .  -ts_save_trajectory - checkpoint the solution at each time-step
-.  -ts_max_steps <maxsteps> - maximum number of time-steps to take
-.  -ts_final_time <time> - maximum time to compute to
+.  -ts_max_time <time> - maximum time to compute to
+.  -ts_max_steps <steps> - maximum number of time-steps to take
+.  -ts_init_time <time> - initial time to start computation
+.  -ts_final_time <time> - final time to compute to
 .  -ts_dt <dt> - initial time step
 .  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
@@ -218,9 +220,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   }
 
   /* Handle generic TS options */
-  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_max_time","Maximum time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetMaxSteps",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_final_time","Final time to run to","TSSetMaxTime",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
   if (flg) {ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
@@ -1963,8 +1966,12 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    if (ts->max_steps < PETSC_MAX_INT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
+    }
+    if (ts->max_time < PETSC_MAX_REAL) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
+    }
     if (ts->usessnes) {
       PetscBool lin;
       if (ts->problem_type == TS_NONLINEAR) {
@@ -2175,34 +2182,6 @@ PetscErrorCode TSSetStepNumber(TS ts,PetscInt steps)
 }
 
 /*@
-   TSSetInitialTimeStep - Sets the initial timestep to be used,
-   as well as the initial time.
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  initial_time - the initial time
--  time_step - the size of the timestep
-
-   Level: intermediate
-
-.seealso: TSSetTimeStep(), TSGetTimeStep()
-
-.keywords: TS, set, initial, timestep
-@*/
-PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,initial_time);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
 
@@ -2214,7 +2193,7 @@ PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time
 
    Level: intermediate
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSGetTimeStep(), TSSetTime()
 
 .keywords: TS, set, timestep
 @*/
@@ -2250,14 +2229,38 @@ $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
 
    Level: beginner
 
-.seealso: TSExactFinalTimeOption
+.seealso: TSExactFinalTimeOption, TSGetExactFinalTime()
 @*/
-PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
+PetscErrorCode TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ts,eftopt,2);
   ts->exact_final_time = eftopt;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetExactFinalTime - Gets the exact final time option.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  eftopt - exact final time option
+
+   Level: beginner
+
+.seealso: TSExactFinalTimeOption, TSSetExactFinalTime()
+@*/
+PetscErrorCode TSGetExactFinalTime(TS ts,TSExactFinalTimeOption *eftopt)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(eftopt,2);
+  *eftopt = ts->exact_final_time;
   PetscFunctionReturn(0);
 }
 
@@ -2274,7 +2277,7 @@ PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 
    Level: intermediate
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSSetTimeStep(), TSGetTime()
 
 .keywords: TS, get, timestep
 @*/
@@ -2968,7 +2971,7 @@ PetscErrorCode TSGetMaxSteps(TS ts,PetscInt *maxsteps)
 -  maxtime - final time to step to
 
    Options Database Keys:
-.  -ts_final_time <maxtime> - Sets maxtime
+.  -ts_max_time <maxtime> - Sets maxtime
 
    Notes:
    The default maximum time is 5.0
@@ -3015,21 +3018,22 @@ PetscErrorCode TSGetMaxTime(TS ts,PetscReal *maxtime)
 }
 
 /*@
-   TSGetDuration - Gets the maximum number of timesteps to use and
-   maximum time for iteration.
-
-   Not Collective
-
-   Input Parameters:
-+  ts       - the TS context obtained from TSCreate()
-.  maxsteps - maximum number of iterations to use, or NULL
--  maxtime  - final time to iterate to, or NULL
-
-   Level: intermediate
-
-.keywords: TS, timestep, get, maximum, iterations, time
+   TSSetInitialTimeStep - Deprecated, use TSSetTime() and TSSetTimeStep().
 @*/
-PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
+PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSSetTime(ts,initial_time);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSGetDuration - Deprecated, use TSGetMaxSteps() and TSGetMaxTime().
+@*/
+PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -3045,30 +3049,9 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 }
 
 /*@
-   TSSetDuration - Sets the maximum number of timesteps to use and
-   maximum time for iteration.
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
-.  maxsteps - maximum number of iterations to use
--  maxtime - final time to iterate to
-
-   Options Database Keys:
-.  -ts_max_steps <maxsteps> - Sets maxsteps
-.  -ts_final_time <maxtime> - Sets maxtime
-
-   Notes:
-   The default maximum number of iterations is 5000. Default time is 5.0
-
-   Level: intermediate
-
-.keywords: TS, timestep, set, maximum, iterations
-
-.seealso: TSSetExactFinalTime()
+   TSSetDuration - Deprecated, use TSSetMaxSteps() and TSSetMaxTime().
 @*/
-PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
+PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -3078,6 +3061,16 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   if (maxtime != PETSC_DEFAULT) ts->max_time = maxtime;
   PetscFunctionReturn(0);
 }
+
+/*@
+   TSGetTimeStepNumber - Deprecated, use TSGetStepNumber().
+@*/
+PetscErrorCode TSGetTimeStepNumber(TS ts,PetscInt *steps) { return TSGetStepNumber(ts,steps); }
+
+/*@
+   TSGetTotalSteps - Deprecated, use TSGetStepNumber().
+@*/
+PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(ts,steps); }
 
 /*@
    TSSetSolution - Sets the initial solution vector
@@ -4041,8 +4034,8 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
    The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
    be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
 
-   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
-   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
+   This may over-step the final time provided in TSSetMaxTime() depending on the time-step used. TSSolve() interpolates to exactly the
+   time provided in TSSetMaxTime(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
 
 .keywords: TS, timestep, solve
 
@@ -4067,6 +4060,7 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
+  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
@@ -4284,6 +4278,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSTrajectorySetUp(ts->trajectory,ts);CHKERRQ(ierr);
 
+  if (ts->max_time >= PETSC_MAX_REAL && ts->max_steps == PETSC_MAX_INT) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
@@ -4655,7 +4650,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  t  - the current time. This time may not corresponds to the final time set with TSSetDuration(), use TSGetSolveTime().
+.  t  - the current time. This time may not corresponds to the final time set with TSSetMaxTime(), use TSGetSolveTime().
 
    Level: beginner
 
@@ -4663,7 +4658,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
    When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
    TSSetPreStage(), TSSetPostStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep(), TSGetSolveTime()
+.seealso:  TSGetSolveTime(), TSSetTime(), TSGetTimeStep()
 
 .keywords: TS, get, time
 @*/
@@ -4689,7 +4684,7 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
 
    Level: beginner
 
-.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+.seealso: TSGetTime(), TSGetSolveTime(), TSGetTimeStep()
 
 .keywords: TS, get, time
 @*/
@@ -4713,7 +4708,7 @@ PetscErrorCode  TSGetPrevTime(TS ts,PetscReal *t)
 
    Level: intermediate
 
-.seealso: TSGetTime(), TSSetDuration()
+.seealso: TSGetTime(), TSSetMaxSteps()
 
 .keywords: TS, set, time
 @*/
@@ -5586,7 +5581,7 @@ PetscErrorCode  TSSetConvergedReason(TS ts,TSConvergedReason reason)
 .  ts - the TS context
 
    Output Parameter:
-.  ftime - the final time. This time corresponds to the final time set with TSSetDuration()
+.  ftime - the final time. This time corresponds to the final time set with TSSetMaxTime()
 
    Level: beginner
 

@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   TS             ts;                           /* time integrator */
   Vec            x,r;                          /* solution, residual vectors */
   Mat            J;                            /* Jacobian matrix */
-  PetscInt       steps,Mx, maxsteps = 1000000;
+  PetscInt       steps,Mx;
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
@@ -97,8 +97,8 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = FormInitialSolution(da,x);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 

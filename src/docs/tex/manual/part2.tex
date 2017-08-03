@@ -4880,9 +4880,9 @@ error&explicit and implicit&$1-3$\\
 \label{tab_TSPET}
 \end{table}
 
-\noindent Set the initial time and timestep with the command
+\noindent Set the initial time with the command
 \begin{lstlisting}
-TSSetInitialTimeStep(TS ts,PetscReal time,PetscReal dt);
+TSSetTime(TS ts,PetscReal time);
 \end{lstlisting}
 One can change the timestep with the command
 \begin{lstlisting}
@@ -4896,9 +4896,10 @@ Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
 
 \noindent One sets the total number of timesteps to run or the total time to run
-(whatever is first) with the command
+(whatever is first) with the commands
 \begin{lstlisting}
-TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime);
+TSSetMaxSteps(TS ts,PetscInt maxsteps);
+TSSetMaxTime(TS ts,PetscReal maxtime);
 \end{lstlisting}
 and determines the behavior near the final time with
 \begin{lstlisting}

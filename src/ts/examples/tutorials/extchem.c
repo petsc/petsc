@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   TSAdapt           adapt;
   Vec               X,lambda;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
-  PetscInt          steps,maxsteps;
+  PetscInt          steps;
   PetscErrorCode    ierr;
   PetscReal         ftime,dt;
   char              chemfile[PETSC_MAX_PATH_LEN],thermofile[PETSC_MAX_PATH_LEN],lchemfile[PETSC_MAX_PATH_LEN],lthermofile[PETSC_MAX_PATH_LEN],lperiodic[PETSC_MAX_PATH_LEN];
@@ -143,10 +143,9 @@ int main(int argc,char **argv)
     ierr = TSMonitorSet(ts,MonitorTempature,&user,NULL);CHKERRQ(ierr);
   }
 
-  ftime    = 1.0;
-  maxsteps = 10000;
-  ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
-  ierr     = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ftime = 1.0;
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -154,7 +153,7 @@ int main(int argc,char **argv)
   ierr = FormInitialSolution(ts,X,&user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   dt   = 1e-10;                 /* Initial time step */
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,1e-12,1e-4);CHKERRQ(ierr); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
   ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr);            /* Retry step an unlimited number of times */

@@ -1682,7 +1682,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
   PetscFunctionBegin;
   PetscStrcmp(((PetscObject)ts->adapt)->type_name,TSADAPTNONE,&flg);
-  if (flg) tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(PetscCeilReal(ts->max_time/ts->time_step))); /* fixed time step */
+  if (flg) tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(PetscCeilReal((ts->max_time-ts->ptime)/ts->time_step))); /* fixed time step */
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */
@@ -1754,8 +1754,9 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
     if (tjsch->stype == NONE) {
       if (flg) stack->stacksize = stack->solution_only ? tjsch->total_steps : tjsch->total_steps-1; /* fix time step */
       else { /* adaptive time step */
-        if(tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps; /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
-        tjsch->total_steps = stack->solution_only ? stack->stacksize:stack->stacksize+1; /* will be updated as time integration advances */
+        /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
+        if(tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps < PETSC_MAX_INT ? ts->max_steps : 10000;
+        tjsch->total_steps = stack->solution_only ? stack->stacksize : stack->stacksize+1; /* will be updated as time integration advances */
       }
     }
   }

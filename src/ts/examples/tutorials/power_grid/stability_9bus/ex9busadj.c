@@ -828,9 +828,9 @@ int main(int argc,char **argv)
   */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
-  ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tmax);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   user.alg_flg = PETSC_FALSE;
@@ -870,12 +870,9 @@ int main(int argc,char **argv)
 
 
   /* Disturbance period */
-  ierr = TSSetDuration(ts,1000,user.tfaultoff);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,user.tfaulton,.01);CHKERRQ(ierr);
-
   user.alg_flg = PETSC_FALSE;
-
+  ierr = TSSetTime(ts,user.tfaulton);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tfaultoff);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   /* Remove the fault */
@@ -897,12 +894,9 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Post-disturbance period */
-  ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,user.tfaultoff,.01);CHKERRQ(ierr);
-
   user.alg_flg = PETSC_TRUE;
-
+  ierr = TSSetTime(ts,user.tfaultoff);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,user.tmax);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -302,9 +302,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,PETSC_DECIDE,tend);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,1./256.);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,1./256.);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyMonitor,&app,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

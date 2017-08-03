@@ -47,12 +47,12 @@ program main
   TS             ts
   Vec            X
   Mat            J
-  PetscInt       maxsteps,mx
+  PetscInt       mx
   PetscBool      OptionSaveToDisk
   PetscErrorCode ierr
   DM             da
   PetscReal      ftime,dt
-  PetscReal      zero,one,pone
+  PetscReal      one,pone
   PetscInt       im11,i2
   PetscBool      flg
 
@@ -63,7 +63,6 @@ program main
 
   im11 = 11
   i2   = 2
-  zero = 0.0
   one = 1.0
   pone = one / 10
 
@@ -132,8 +131,7 @@ program main
 
 
   ftime = 1.0
-  maxsteps = 10000
-  call TSSetDuration(ts,maxsteps,ftime,ierr);CHKERRA(ierr)
+  call TSSetMaxTime(ts,ftime,ierr);CHKERRA(ierr)
   call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,7 +142,7 @@ program main
   call VecGetSize(X,mx,ierr);CHKERRA(ierr)
   !  Advective CFL, I don't know why it needs so much safety factor.
   dt = pone * max(user(user_a+1),user(user_a+2)) / mx;
-  call TSSetInitialTimeStep(ts,zero,dt,ierr);CHKERRA(ierr)
+  call TSSetTimeStep(ts,dt,ierr);CHKERRA(ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !   Set runtime options

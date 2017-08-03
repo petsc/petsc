@@ -145,7 +145,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetDuration(ts,NULL,&tfinal);CHKERRQ(ierr);
+  ierr = TSGetMaxTime(ts,&tfinal);CHKERRQ(ierr);
 
   while (user->next_output <= t && user->next_output <= tfinal) {
     ierr = VecDuplicate(X,&interpolatedX);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -2;   x_ptr[1] = -2.355301397608119909925287735864250951918;
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

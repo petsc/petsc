@@ -238,5 +238,8 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 #define PetscObjectUseFortranCallback(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_CLASS)
 #define PetscObjectUseFortranCallbackSubType(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_SUBTYPE)
 
+/* Disable deprecation warnings while building Fortran wrappers */
+#undef  PETSC_DEPRECATED
+#define PETSC_DEPRECATED(arg)
 
 #endif

@@ -50,50 +50,31 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 
   /* General TS description */
   t->problem_type      = TS_NONLINEAR;
-  t->vec_sol           = NULL;
-  t->numbermonitors    = 0;
-  t->snes              = NULL;
-  t->setupcalled       = 0;
-  t->data              = NULL;
-  t->user              = NULL;
+  t->equation_type     = TS_EQ_UNSPECIFIED;
+
   t->ptime             = 0.0;
   t->time_step         = 0.1;
-  t->max_time          = 5.0;
-  t->steprollback      = PETSC_FALSE;
-  t->steprestart       = PETSC_FALSE;
+  t->max_time          = PETSC_MAX_REAL;
+  t->exact_final_time  = TS_EXACTFINALTIME_UNSPECIFIED;
   t->steps             = 0;
-  t->max_steps         = 5000;
-  t->ksp_its           = 0;
-  t->snes_its          = 0;
-  t->work              = NULL;
-  t->nwork             = 0;
+  t->max_steps         = PETSC_MAX_INT;
+  t->steprestart       = PETSC_TRUE;
+
   t->max_snes_failures = 1;
   t->max_reject        = 10;
   t->errorifstepfailed = PETSC_TRUE;
-  t->rhsjacobian.time  = -1e20;
-  t->rhsjacobian.scale = 1.;
-  t->ijacobian.shift   = 1.;
-  t->equation_type     = TS_EQ_UNSPECIFIED;
 
-  t->atol             = 1e-4;
-  t->rtol             = 1e-4;
-  t->cfltime          = PETSC_MAX_REAL;
-  t->cfltime_local    = PETSC_MAX_REAL;
-  t->exact_final_time = TS_EXACTFINALTIME_UNSPECIFIED;
-  t->vec_costintegral = NULL;
-  t->trajectory       = NULL;
+  t->rhsjacobian.time  = PETSC_MIN_REAL;
+  t->rhsjacobian.scale = 1.0;
+  t->ijacobian.shift   = 1.0;
 
   /* All methods that do adaptivity should specify
    * its preferred adapt type in their constructor */
   t->default_adapt_type = TSADAPTNONE;
-
-  t->numcost          = 0;
-  t->num_parameters   = 0;
-  t->num_initialvalues= 0;
-
-  t->Jacp             = NULL;
-  t->vec_costintegral = NULL;
-  t->vec_costintegrand= NULL;
+  t->atol               = 1e-4;
+  t->rtol               = 1e-4;
+  t->cfltime            = PETSC_MAX_REAL;
+  t->cfltime_local      = PETSC_MAX_REAL;
 
   *ts = t;
   PetscFunctionReturn(0);

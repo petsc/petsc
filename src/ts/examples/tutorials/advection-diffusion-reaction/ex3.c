@@ -102,13 +102,14 @@ int main(int argc,char **argv)
      Then set runtime options, which can override these defaults.
      For example,
           -ts_max_steps <maxsteps> -ts_final_time <maxtime>
-     to override the defaults set by TSSetDuration().
+     to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt   = .48/(M*M);
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,100.0);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(ts,1000);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(ts,100.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
