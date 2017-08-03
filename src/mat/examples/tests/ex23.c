@@ -248,13 +248,17 @@ int main(int argc,char **args)
   ierr = CheckMat(A2,B2,PETSC_FALSE,"first MatCreateSubMatrix");CHKERRQ(ierr);
 
   ierr = MatCreateSubMatrix(A,is,is,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(B,is,is,MAT_REUSE_MATRIX,&B2);CHKERRQ(ierr);
   ierr = CheckMat(A2,B2,PETSC_FALSE,"reuse MatCreateSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
 
   ierr = MatCreateSubMatrix(A,is,is2,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix(B,is,is2,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is2,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(B,is,is2,MAT_REUSE_MATRIX,&B2);CHKERRQ(ierr);
   ierr = CheckMat(A2,B2,PETSC_FALSE,"second MatCreateSubMatrix");CHKERRQ(ierr);
+
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
