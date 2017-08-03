@@ -891,7 +891,7 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
-    const PetscFVCellGeom *cg;
+    PetscFVCellGeom       *cg;
     PetscScalar           *xc;
 
     ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
@@ -910,7 +910,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   DM                 dm;
   PetscSection       s;
   Vec                cellgeom;
-  const PetscScalar *x, *a;
+  const PetscScalar *x;
+  PetscScalar       *a;
   PetscReal         *xnorms;
   PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
   PetscErrorCode     ierr;
@@ -977,8 +978,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
-      const PetscFVCellGeom *cg;
-      const PetscScalar     *cx;
+      PetscFVCellGeom *cg;
+      PetscScalar     *cx;
 
       ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalFieldRead(dm, c, 1, x, &cx);CHKERRQ(ierr);
