@@ -6882,15 +6882,18 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
   Mat            mat0;
 
   PetscFunctionBegin;
-  if (!*mat || n==0 ) PetscFunctionReturn(0);
+  if (!*mat) PetscFunctionReturn(0);
+  /* mat[] is an array of length n+1, see MatCreateSubMatrices_xxx() */
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
 
   mat0 = (*mat)[0];
-  if (mat0->ops->destroysubmatrices) {
-    ierr = (mat0->ops->destroysubmatrices)(n,mat);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
+  if (mat0) {
+    if (mat0->ops->destroysubmatrices) {
+      ierr = (mat0->ops->destroysubmatrices)(n,mat);CHKERRQ(ierr);
+    } else {
+      ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

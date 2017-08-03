@@ -1832,7 +1832,7 @@ PetscErrorCode MatCreateSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],co
   ierr = MatCreateSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr); /* B[] are sbaij matrices */
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
-    if (!flg) { 
+    if (!flg) {
       ierr = MatSeqSBAIJZeroOps_Private(*B[i]);CHKERRQ(ierr);
     }
   }

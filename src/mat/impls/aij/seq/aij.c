@@ -2521,7 +2521,6 @@ PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat C)
   Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
-  printf("MatDestroySubMatrix_SeqAIJ...\n");
   ierr = submatj->destroy(C);CHKERRQ(ierr);
   ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2536,22 +2535,6 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
   Mat_SubSppt    *submatj;
 
   PetscFunctionBegin;
-  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
-  if ((*mat)[n]) {
-    PetscBool      isdummy;
-    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
-    if (isdummy) {
-      Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
-      printf("isdummy ...\n");
-      if (smat && !smat->singleis) {
-        PetscInt nstages=smat->nstages;
-        for (i=0; i<nstages; i++) {
-          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-
   for (i=0; i<n; i++) {
     C       = (*mat)[i];
     c       = (Mat_SeqAIJ*)C->data;
@@ -2566,6 +2549,7 @@ PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n,Mat *mat[])
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
   }
+
   ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
