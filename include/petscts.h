@@ -332,6 +332,7 @@ PETSC_EXTERN PETSC_DEPRECATED("Use TSSetTime[Step]")      PetscErrorCode TSSetIn
 PETSC_EXTERN PETSC_DEPRECATED("Use TSSetMax{Steps|Time}") PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetMax{Steps|Time}") PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
+PETSC_EXTERN PETSC_DEPRECATED("Use TSGetStepNumber")      PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat*);
 
