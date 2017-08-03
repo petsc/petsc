@@ -1143,7 +1143,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
       ierr = MatSetSizes(submats[i],nrow[i]*bs_tmp,ncol[i]*bs_tmp,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
 
       ierr = MatSetType(submats[i],((PetscObject)A)->type_name);CHKERRQ(ierr);
-      ierr = MatSeqBAIJSetPreallocation(submats[i],bs_tmp,0,lens[i]);CHKERRQ(ierr); 
+      ierr = MatSeqBAIJSetPreallocation(submats[i],bs_tmp,0,lens[i]);CHKERRQ(ierr);
       ierr = MatSeqSBAIJSetPreallocation(submats[i],bs_tmp,0,lens[i]);CHKERRQ(ierr); /* this subroutine is used by SBAIJ routines */
 
       /* create struct Mat_SubSppt and attached it to submat */
@@ -1152,7 +1152,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
       subc->submatis1 = smat_i;
 
       smat_i->destroy          = submats[i]->ops->destroy;
-      submats[i]->ops->destroy = MatDestroy_SeqBAIJ_Submatrices;
+      submats[i]->ops->destroy = MatDestroySubMatrix_SeqBAIJ;
       submats[i]->factortype   = C->factortype;
 
       smat_i->id          = i;
@@ -1191,7 +1191,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
       submats[0]->data = (void*)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;
-      submats[0]->ops->destroy = MatDestroy_Dummy_Submatrices;
+      submats[0]->ops->destroy = MatDestroySubMatrix_Dummy;
       submats[0]->factortype   = C->factortype;
 
       smat_i->id          = 0;

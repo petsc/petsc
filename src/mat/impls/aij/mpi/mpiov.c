@@ -2602,7 +2602,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       submats[0]->data = (void*)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;
-      submats[0]->ops->destroy = MatDestroy_Dummy_Submatrices;
+      submats[0]->ops->destroy = MatDestroySubMatrix_Dummy;
       submats[0]->factortype   = C->factortype;
 
       smat_i->id          = 0;

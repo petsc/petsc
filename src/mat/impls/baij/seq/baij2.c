@@ -211,7 +211,7 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
+PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data;
@@ -219,7 +219,7 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
