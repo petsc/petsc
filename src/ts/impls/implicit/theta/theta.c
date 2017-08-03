@@ -577,7 +577,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
       ierr = VecAXPY(ts->vecs_fwdsensipacked[ntlm],1.,VecsDeltaFwdSensi[ntlm]);CHKERRQ(ierr);
     }
   }
-  /*Evaluate the second stage of integral gradients with the 2-stage method:
+  /* Evaluate the second stage of integral gradients with the 2-stage method:
     drdy|t_{n+1}*S(t_{n+1}) + drdp|t_{n+1}
   */
   if (ts->vecs_integral_sensi || ts->vecs_integral_sensip) {
