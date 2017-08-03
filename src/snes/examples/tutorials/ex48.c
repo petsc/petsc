@@ -64,7 +64,7 @@ There are two compile-time options:
 #endif
 #include <ctype.h>              /* toupper() */
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) || defined (PETSC_HAVE_WINDOWS_COMPILERS)
 /*  c++ cannot handle  [_restrict_] notation like C does */
 #undef PETSC_RESTRICT
 #define PETSC_RESTRICT
