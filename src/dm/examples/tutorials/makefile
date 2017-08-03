@@ -187,17 +187,12 @@ runex15_2:
 	   if (${DIFF} output/ex15_2.out ex15.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15.tmp dmda.pbvec dmda.pbvec.info
-runex15_3:
-	-@${MPIEXEC} -n 12 ./ex15 -usempiio > ex15.tmp 2>&1;   \
-	   if (${DIFF} output/ex15_3.out ex15.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex15_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15.tmp dmda.pbvec dmda.pbvec.info dmda-mpiio.pbvec dmda-mpiio.pbvec.info
 
 
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm \
                             ex6.PETSc runex6 runex6_2 runex6_4 runex6_9 ex6.rm \
                             ex7.PETSc runex7 ex7.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
-                            ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
+                            ex15.PETSc runex15 runex15_2 ex15.rm
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_F90_NOCOMPLEX= ex11f90.PETSc runex11f90 ex11f90.rm ex13f90.PETSc runex13f90 ex13f90.rm

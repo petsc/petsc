@@ -247,3 +247,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+   test:
+      suffix: 3
+      nsize: 12
+      requires: define(PETSC_HAVE_MPIIO) !define(PETSC_HAVE_LIBMSMPI)
+      args: -usempiio
+
+TEST*/
