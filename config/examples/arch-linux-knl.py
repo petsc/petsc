@@ -9,6 +9,7 @@ if __name__ == '__main__':
     '--with-cc=mpiicc',
     '--with-cxx=mpiicpc',
     '--with-fc=mpiifort',
+    '--with-memalign=64',
     '--with-mpiexec=mpiexec.hydra',
     'COPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
     'CXXOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
