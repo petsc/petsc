@@ -6888,12 +6888,10 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
   PetscValidPointer(mat,2);
 
   mat0 = (*mat)[0];
-  if (mat0) {
-    if (mat0->ops->destroysubmatrices) {
-      ierr = (mat0->ops->destroysubmatrices)(n,mat);CHKERRQ(ierr);
-    } else {
-      ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
-    }
+  if (mat0 && mat0->ops->destroysubmatrices) {
+    ierr = (mat0->ops->destroysubmatrices)(n,mat);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
