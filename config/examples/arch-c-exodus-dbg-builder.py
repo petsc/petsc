@@ -21,7 +21,6 @@ if __name__ == '__main__':
     '--download-parmetis',
     '--download-triangle',
     '--with-cuda',
-    '--with-cuda-only',
     '--with-shared-libraries',
   ]
   configure.petsc_configure(configure_options)
