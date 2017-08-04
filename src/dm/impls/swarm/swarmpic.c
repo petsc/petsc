@@ -1,4 +1,3 @@
-
 #define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include <petscsf.h>

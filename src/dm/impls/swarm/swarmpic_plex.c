@@ -1,5 +1,3 @@
-
-#include <petsc.h>
 #include <petscdm.h>
 #include <petscdmplex.h>
 #include <petscdmswarm.h>

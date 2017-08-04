@@ -73,8 +73,6 @@ DataExEnd()
 
 
 */
-
-#include <petsc.h>
 #include <petscvec.h>
 #include <petscmat.h>
 

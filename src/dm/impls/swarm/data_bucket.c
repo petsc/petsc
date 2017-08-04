@@ -1,4 +1,3 @@
-
 #include "data_bucket.h"
 
 /* string helpers */
