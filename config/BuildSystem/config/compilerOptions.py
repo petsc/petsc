@@ -26,10 +26,7 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'g':
         if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        if hasattr(self.compilers, 'CUDAC'):
-          flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
-        else:
-          flags.append('-g3')
+        flags.append('-g3')
       elif bopt == 'O':
         flags.append('-g')
         if config.setCompilers.Configure.isClang(compiler, self.log):
