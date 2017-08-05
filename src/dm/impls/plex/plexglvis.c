@@ -619,7 +619,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         ierr = DMPlexGetDepthLabel(dm,&dlabel);CHKERRQ(ierr);
         ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
         if (parent != p) {
-          int            vids[8];
+          int            vids[8] = { -1, -1, -1, -1, -1, -1, -1, -1 }; /* silent overzealous clang static analyzer */
           PetscInt       i,nv,size,n,numChildren,depth = -1;
           const PetscInt *children;
           ierr = DMPlexGetConeSize(dm,parent,&size);CHKERRQ(ierr);
