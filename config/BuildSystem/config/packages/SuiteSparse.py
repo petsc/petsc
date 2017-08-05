@@ -62,7 +62,7 @@ class Configure(config.package.Package):
     if self.argDB['download-suitesparse-gpu']:
       if self.defaultIndexSize == 32:
         raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
-      if not hasattr(self.compilers, 'CUDAC'):
+      if not self.framework.clArgDB.has_key('with-cuda') or not self.argDB['with-cuda']:
         raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
       # code taken from cuda.py
       self.pushLanguage('CUDA')
