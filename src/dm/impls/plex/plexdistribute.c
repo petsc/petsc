@@ -1,6 +1,59 @@
 #include <petsc/private/dmpleximpl.h>    /*I      "petscdmplex.h"   I*/
 #include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"  I*/
 
+/*@C
+  DMPlexSetAdjacencyUser - Define adjacency in the mesh using a user-provided callback
+
+  Input Parameters:
++ dm      - The DM object
+. user    - The user callback, may be NULL (to clear the callback)
+- ctx     - context for callback evaluation, may be NULL
+
+  Level: advanced
+
+  Notes:
+     The caller of DMPlexGetAdjacency may need to arrange that a large enough array is available for the adjacency.
+
+     Any setting here overrides other configuration of DMPlex adjacency determination.
+
+.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexGetAdjacencyUser()
+@*/
+PetscErrorCode DMPlexSetAdjacencyUser(DM dm,PetscErrorCode (*user)(DM,PetscInt,PetscInt*,PetscInt[],void*),void *ctx)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->useradjacency = user;
+  mesh->useradjacencyctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetAdjacencyUser - get the user-defined adjacency callback
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameters:
+- user    - The user callback
+- ctx     - context for callback evaluation
+
+  Level: advanced
+
+.seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexGetAdjacency(), DMPlexSetAdjacencyUser()
+@*/
+PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM,PetscInt,PetscInt*,PetscInt[],void*), void **ctx)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (user) *user = mesh->useradjacency;
+  if (ctx) *ctx = mesh->useradjacencyctx;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexSetAdjacencyUseCone - Define adjacency in the mesh using either the cone or the support first
 
@@ -245,6 +298,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   PetscSection aSec = NULL;
   IS aIS = NULL;
   const PetscInt *anchors;
+  DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
@@ -272,7 +326,9 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   }
   if (*adjSize < 0) *adjSize = asiz;
   maxAdjSize = *adjSize;
-  if (useTransitiveClosure) {
+  if (mesh->useradjacency) {
+    ierr = mesh->useradjacency(dm, p, adjSize, *adj, mesh->useradjacencyctx);CHKERRQ(ierr);
+  } else if (useTransitiveClosure) {
     ierr = DMPlexGetAdjacency_Transitive_Internal(dm, p, useCone, adjSize, *adj);CHKERRQ(ierr);
   } else if (useCone) {
     ierr = DMPlexGetAdjacency_Cone_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
