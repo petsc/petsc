@@ -14,7 +14,7 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
     'CXXOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
     'FOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
-    '--with-blas-lapack-dir='+os.environ['MKLROOT'],
+    '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--download-metis=1',
     '--download-parmetis=1',
     '--download-superlu_dist=1',

@@ -6,7 +6,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--with-debugging=0',
-    '--with-blas-lapack-lib=-L/cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64 mkl_intel_lp64_dll.lib mkl_sequential_dll.lib mkl_core_dll.lib',
+    '--with-blaslapack-lib=-L/cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64 mkl_intel_lp64_dll.lib mkl_sequential_dll.lib mkl_core_dll.lib',
     '--with-cc=win32fe cl',
     '--with-cxx=win32fe cl',
     '--with-fc=win32fe ifort',
