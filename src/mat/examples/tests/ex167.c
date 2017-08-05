@@ -113,7 +113,7 @@ int main(int argc,char **args)
       ierr = ISSort(colis[l]);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMalloc1(nsub, &S);CHKERRQ(ierr);
+  
   ierr = MatCreateSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
 
   show_inversions = PETSC_FALSE;
@@ -154,12 +154,12 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "*Total inversions: %D\n", total_inversions);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+
   for (l = 0; l < nsub; ++l) {
-    ierr = MatDestroy(&(S[l]));CHKERRQ(ierr);
     ierr = ISDestroy(&(rowis[l]));CHKERRQ(ierr);
     ierr = ISDestroy(&(colis[l]));CHKERRQ(ierr);
   }
-  ierr = PetscFree(S);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(nsub,&S);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

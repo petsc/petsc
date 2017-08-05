@@ -1252,7 +1252,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   PetscScalar    **rbuf4,**sbuf_aa,*vals,*sbuf_aa_i,*rbuf4_i;
   PetscMPIInt    *onodes1,*olengths1,idex,end;
   Mat_SubSppt    *smatis1;
-  PetscBool      isrowsorted;
+  PetscBool      isrowsorted,iscolsorted;
 
   PetscFunctionBegin;
   if (ismax != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This routine only works when all processes have ismax=1");
@@ -1261,6 +1261,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   size = c->size;
   rank = c->rank;
 
+  ierr = ISSorted(iscol[0],&iscolsorted);CHKERRQ(ierr);
   ierr = ISSorted(isrow[0],&isrowsorted);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow[0],&irow);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow[0],&nrow);CHKERRQ(ierr);
@@ -1657,7 +1658,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
 #endif
 
     smatis1->destroy     = submat->ops->destroy;
-    submat->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
+    submat->ops->destroy = MatDestroySubMatrix_SeqAIJ;
     submat->factortype   = C->factortype;
 
     /* compute rmax */
@@ -1859,7 +1860,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
       row = sbuf1_i[ct1]; /* row index of submat */
       if (!allcolumns) {
         idex = 0;
-        if (scall == MAT_INITIAL_MATRIX) {
+        if (scall == MAT_INITIAL_MATRIX || !iscolsorted) {
           nnz  = rbuf2_i[ct1]; /* num of C entries in this row */
           for (l=0; l<nnz; l++,ct2++) { /* for each recved column */
 #if defined(PETSC_USE_CTABLE)
@@ -1872,7 +1873,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
             tcol = cmap[rbuf3_i[ct2]];
 #endif
             if (tcol) {
-              subcols[idex]   = --tcol;
+              subcols[idex]   = --tcol; /* may not be sorted */
               subvals[idex++] = rbuf4_i[ct2];
 
               /* We receive an entire column of C, but a subset of it needs to be inserted into submat.
@@ -1881,7 +1882,6 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
             }
           }
           ierr = MatSetValues_SeqAIJ(submat,1,&row,idex,subcols,subvals,INSERT_VALUES);CHKERRQ(ierr);
-
         } else { /* scall == MAT_REUSE_MATRIX */
           submat = submats[0];
           subc   = (Mat_SeqAIJ*)submat->data;
@@ -1892,7 +1892,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
             subvals[idex++] = rbuf4_i[ct2];
           }
 
-          bj = subc->j + subc->i[row];
+          bj = subc->j + subc->i[row]; /* sorted column indices */
           ierr = MatSetValues_SeqAIJ(submat,1,&row,nnz,bj,subvals,INSERT_VALUES);CHKERRQ(ierr);
         }
       } else { /* allcolumns */
@@ -2564,7 +2564,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       subc->submatis1 = smat_i;
 
       smat_i->destroy          = submats[i]->ops->destroy;
-      submats[i]->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
+      submats[i]->ops->destroy = MatDestroySubMatrix_SeqAIJ;
       submats[i]->factortype   = C->factortype;
 
       smat_i->id          = i;
@@ -2602,7 +2602,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
       submats[0]->data = (void*)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;
-      submats[0]->ops->destroy = MatDestroy_Dummy_Submatrices;
+      submats[0]->ops->destroy = MatDestroySubMatrix_Dummy;
       submats[0]->factortype   = C->factortype;
 
       smat_i->id          = 0;

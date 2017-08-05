@@ -1512,7 +1512,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_AYPX=140,
                MATOP_RESIDUAL=141,
                MATOP_FDCOLORING_SETUP=142,
-               MATOP_MPICONCATENATESEQ=144
+               MATOP_MPICONCATENATESEQ=144,
+               MATOP_DESTROYSUBMATRICES=145
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

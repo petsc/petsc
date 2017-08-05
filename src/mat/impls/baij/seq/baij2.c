@@ -211,7 +211,7 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
+PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data;
@@ -219,7 +219,34 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n,Mat *mat[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  Mat            C;
+  Mat_SeqBAIJ    *c;
+  Mat_SubSppt    *submatj;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    C       = (*mat)[i];
+    c       = (Mat_SeqBAIJ*)C->data;
+    submatj = c->submatis1;
+    if (submatj) {
+      ierr = submatj->destroy(C);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrix_Private(submatj);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&C->rmap);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&C->cmap);CHKERRQ(ierr);
+      ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
+    } else {
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -238,7 +265,6 @@ PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],con
   }
   PetscFunctionReturn(0);
 }
-
 
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */

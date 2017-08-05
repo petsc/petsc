@@ -205,7 +205,7 @@ struct _MatOps {
   PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
   /*144*/
   PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-
+  PetscErrorCode (*destroysubmatrices)(PetscInt,Mat*[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

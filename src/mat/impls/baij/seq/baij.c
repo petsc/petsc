@@ -2755,7 +2755,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        0,
                                        MatFDColoringSetUp_SeqXAIJ,
                                        0,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqBAIJ
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqBAIJ,
+                                       MatDestroySubMatrices_SeqBAIJ
 };
 
 PetscErrorCode  MatStoreValues_SeqBAIJ(Mat mat)

@@ -36,11 +36,13 @@ int main(int argc,char **args)
   issize = N/2;
   ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&iscol);CHKERRQ(ierr);
   icol[0] = icol[1] = iscol;
-  ierr   = MatCreateSubMatrices(BAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(BAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(BAIJ,n,irow,icol,MAT_REUSE_MATRIX,&subBAIJ);CHKERRQ(ierr);
 
   /* irow and icol must be same for SBAIJ matrices! */
   icol[0] = icol[1] = isrow;
-  ierr   = MatCreateSubMatrices(SBAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(SBAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(SBAIJ,n,irow,icol,MAT_REUSE_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -51,8 +53,8 @@ int main(int argc,char **args)
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(n,&subBAIJ);CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(n,&subSBAIJ);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(n,&subBAIJ);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(n,&subSBAIJ);CHKERRQ(ierr);
   ierr = MatDestroy(&BAIJ);CHKERRQ(ierr);
   ierr = MatDestroy(&SBAIJ);CHKERRQ(ierr);
 
