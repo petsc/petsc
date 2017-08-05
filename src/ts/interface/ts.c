@@ -169,6 +169,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
+.  -ts_monitor_lg_timestep_log - Monitor log timestep size graphically
 .  -ts_monitor_lg_snes_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_lg_ksp_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_sp_eig - Monitor eigenvalues of linearized operator graphically
@@ -283,6 +284,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsName("-ts_monitor_lg_timestep_log","Monitor log timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorLGCtx ctx;
+    PetscInt       howoften = 1;
+
+    ierr = PetscOptionsInt("-ts_monitor_lg_timestep_log","Monitor log timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    ctx->semilogy = PETSC_TRUE;
+  }
+
   ierr = PetscOptionsName("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",&opt);CHKERRQ(ierr);
   if (opt) {
     TSMonitorLGCtx ctx;
@@ -4541,6 +4553,7 @@ PetscErrorCode TSAdjointMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscI
 
    Options Database Key:
 +  -ts_monitor_lg_timestep - automatically sets line graph monitor
++  -ts_monitor_lg_timestep_log - automatically sets line graph monitor
 .  -ts_monitor_lg_solution - monitor the solution (or certain values of the solution by calling TSMonitorLGSetDisplayVariables() or TSMonitorLGCtxSetDisplayVariables())
 .  -ts_monitor_lg_error -  monitor the error
 .  -ts_monitor_lg_ksp_iterations - monitor the number of KSP iterations needed for each timestep
@@ -4595,12 +4608,13 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates an interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
+    const char *ylabel = ctx->semilogy ? "Log Time Step" : "Time Step";
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time Step");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time",ylabel);CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
-  y =  PetscLog10Real(y);
+  if (ctx->semilogy) y = PetscLog10Real(y);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
@@ -7427,7 +7441,7 @@ PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*t
 }
 
 /*@C
-   TSMonitorLGError - Monitors progress of the TS solvers by plotting each component of the solution vector
+   TSMonitorLGError - Monitors progress of the TS solvers by plotting each component of the error
        in a time based line graph
 
    Collective on TS
@@ -7464,7 +7478,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     PetscDrawAxis axis;
     PetscInt      dim;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Error in solution as function of time","Time","Solution");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Error in solution as function of time","Time","Error");CHKERRQ(ierr);
     ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
     ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);

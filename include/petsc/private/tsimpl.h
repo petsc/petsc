@@ -360,6 +360,7 @@ typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of s
 
 struct _n_TSMonitorLGCtx {
   PetscDrawLG    lg;
+  PetscBool      semilogy;
   PetscInt       howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscInt       ksp_its,snes_its;
   char           **names;
