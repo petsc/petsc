@@ -1,10 +1,9 @@
-
 #include <petscsf.h>
 #include <petscdmswarm.h>
+#include <petscdmda.h>
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
 #include "data_ex.h"
-
 
 /*
  User loads desired location (MPI rank) into field DMSwarm_rank

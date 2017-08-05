@@ -1,9 +1,6 @@
-
 #ifndef __DATA_EXCHANGER_H__
 #define __DATA_EXCHANGER_H__
 
-
-#include <petsc.h>
 #include <petscvec.h>
 #include <petscmat.h>
 

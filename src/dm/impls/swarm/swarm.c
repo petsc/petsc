@@ -1,6 +1,7 @@
-
 #define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
+#include <petscviewer.h>
+#include <petscdraw.h>
 #include "data_bucket.h"
 
 PetscLogEvent DMSWARM_Migrate, DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints, DMSWARM_Sort;
