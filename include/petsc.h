@@ -9,6 +9,7 @@
 #include <petscmatlab.h>
 #include <petscdraw.h>
 
+#include <petscsf.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <petscdmpatch.h>
