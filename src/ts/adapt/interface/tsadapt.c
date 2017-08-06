@@ -813,12 +813,13 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   if (next_sc) *next_sc = scheme;
 
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
-    /* Reduce time step if it overshoots max time */
-    if (ts->ptime + ts->time_step + *next_h >= ts->max_time) {
-      PetscReal next_dt = ts->max_time - (ts->ptime + ts->time_step);
-      if (next_dt > PETSC_SMALL) *next_h = next_dt;
-      else ts->reason = TS_CONVERGED_TIME;
-    }
+    /* Increase/reduce step size if end time of next step is close to or overshoots max time */
+    PetscReal t = ts->ptime + ts->time_step, h = *next_h;
+    PetscReal tend = t + h, tmax = ts->max_time, hmax = tmax - t;
+    PetscReal a = (PetscReal)1.01; /* allow 1% step size increase */
+    if (t < tmax && tend > tmax) *next_h = hmax;
+    if (t < tmax && tend < tmax && h > hmax/2) *next_h = hmax/2;
+    if (t < tmax && tend < tmax && h*a > hmax) *next_h = hmax;
   }
 
   if (adapt->monitor) {
