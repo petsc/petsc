@@ -8772,7 +8772,7 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 }
 
 /*@
-   MatFactorSetSchurIS - Set indices corresponding to the Schur complement
+   MatFactorSetSchurIS - Set indices corresponding to the Schur complement you wish to have computed
 
    Collective on Mat
 
@@ -8780,13 +8780,16 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
 +  mat - the factored matrix
 -  is - the index set defining the Schur indices (0-based)
 
-   Notes:
+   Notes:  Call MatFactorSolveSchurComplement() or MatFactorSolveSchurComplementTranspose() after this call to solve a Schur complement system.
+
+   You can call MatFactorGetSchurComplement() or MatFactorCreateSchurComplement() after this call.
 
    Level: developer
 
    Concepts:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+.seealso: MatGetFactor(), MatFactorGetSchurComplement(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement(), MatFactorSolveSchurComplement(),
+          MatFactorSolveSchurComplementTranspose(), MatFactorSolveSchurComplement()
 
 @*/
 PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
@@ -8822,9 +8825,18 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 -  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
+   You must call MatFactorSetSchurIS() before calling this routine.
+
    The routine provides a copy of the Schur matrix stored within the solver data structures.
    The caller must destroy the object when it is no longer needed.
-   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse.
+   If MatFactorInvertSchurComplement() has been called, the routine gets back the inverse.
+
+   Use MatFactorGetSchurComplement() to get access to the Schur complement matrix inside the factored matrix instead of making a copy of it (which this function does)
+
+   Developer Notes: The reason this routine exists is because the representation of the Schur complement within the factor matrix may be different than a standard PETSc
+   matrix representation and we normally do not want to use the time or memory to make a copy as a regular PETSc matrix. 
+
+   See MatCreateSchurComplement() or MatGetSchurComplement() for ways to create virtual or approximate Schur complements.
 
    Level: advanced
 
@@ -8855,7 +8867,7 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus*
 }
 
 /*@
-  MatFactorGetSchurComplement - Get a Schur complement matrix object using the current Schur data
+  MatFactorGetSchurComplement - Gets access to a Schur complement matrix using the current Schur data within a factored matrix
 
    Logically Collective on Mat
 
@@ -8865,10 +8877,16 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus*
 -  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
+   You must call MatFactorSetSchurIS() before calling this routine.
+
    Schur complement mode is currently implemented for sequential matrices.
    The routine returns a the Schur Complement stored within the data strutures of the solver.
-   If MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
-   The returned matrix should not be destroyed; the caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
+   If MatFactorInvertSchurComplement() has previously been called, the returned matrix is actually the inverse of the Schur complement.
+   The returned matrix should not be destroyed; the caller should call MatFactorRestoreSchurComplement() when the object is no longer needed.
+
+   Use MatFactorCreateSchurComplement() to create a copy of the Schur complement matrix that is within a factored matrix
+
+   See MatCreateSchurComplement() or MatGetSchurComplement() for ways to create virtual or approximate Schur complements.
 
    Level: advanced
 
@@ -8933,11 +8951,13 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S,MatFactorSchurStatus
    Notes:
    The sizes of the vectors should match the size of the Schur complement
 
+   Must be called after MatFactorSetSchurIS()
+
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorSolveSchurComplement()
 @*/
 PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
 {
@@ -8980,11 +9000,13 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
    Notes:
    The sizes of the vectors should match the size of the Schur complement
 
+   Must be called after MatFactorSetSchurIS()
+
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorSolveSchurComplementTranspose()
 @*/
 PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
 {
@@ -9022,13 +9044,15 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 
-   Notes:
+   Notes: Must be called after MatFactorSetSchurIS().
+
+   Call MatFactorGetSchurComplement() or  MatFactorCreateSchurComplement() AFTER this call to actually compute the inverse and get access to it.
 
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement(), MatFactorCreateSchurComplement()
 @*/
 PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 {
@@ -9052,13 +9076,13 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 
-   Notes:
+   Notes: Must be called after MatFactorSetSchurIS().
 
    Level: advanced
 
    References:
 
-.seealso: MatGetFactor(), MatMumpsSetSchurIS()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorInvertSchurComplement()
 @*/
 PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 {
