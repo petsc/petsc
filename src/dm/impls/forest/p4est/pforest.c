@@ -4385,7 +4385,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,Ncc,comps,ids,funcs,ctxs,mode,localX);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLabelLocal(plex,time,label,numIds,ids,Ncc,comps,funcs,ctxs,mode,localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
