@@ -13,7 +13,7 @@ runfiles='@LOCALRUNFILES@'
 wPETSC_DIR='@WPETSC_DIR@'
 petsc_dir='@PETSC_DIR@'
 petsc_arch='@PETSC_ARCH@'
-# Must be consistent with gmakefile.examples
+# Must be consistent with gmakefile.test
 testlogfile=${petsc_dir}/${petsc_arch}/tests/examples-${petsc_arch}.log
 config_dir='@CONFIG_DIR@'
 @DATAFILESPATH_LINE@

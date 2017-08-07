@@ -186,7 +186,7 @@ class Installer(script.Script):
     if not os.path.isdir(dst):
       raise shutil.Error, 'Destination is not a directory'
 
-    self.copyfile('gmakefile.examples',dst)
+    self.copyfile('gmakefile.test',dst)
     newConfigDir=os.path.join(dst,'config')  # Am not renaming at present
     if not os.path.isdir(newConfigDir): os.mkdir(newConfigDir)
     testConfFiles="gmakegentest.py gmakegen.py testparse.py example_template.py".split()
@@ -361,7 +361,7 @@ for dir in dirs:
     os.mkdir(os.path.join(self.destShareDir,'petsc','examples'))
     self.copyExamples(self.rootDir,os.path.join(self.destShareDir,'petsc','examples'))
     self.copyConfig(self.rootDir,os.path.join(self.destShareDir,'petsc','examples'))
-    self.fixExamplesMakefile(os.path.join(self.destShareDir,'petsc','examples','gmakefile.examples'))
+    self.fixExamplesMakefile(os.path.join(self.destShareDir,'petsc','examples','gmakefile.test'))
     return
 
   def copyLib(self, src, dst):

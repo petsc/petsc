@@ -5,9 +5,7 @@ include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
-MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
-TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -51,51 +49,20 @@ endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
-petscconf      := $(PETSC_ARCH)/include/petscconf.h
-petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
-
-
-#workarround old cygwin versions
-ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
-ifeq ($(shell basename $(AR)),ar)
-  V ?=1
-endif
-endif
-V ?= $(if $(findstring s,$(MAKEFLAGS)),0)
-ifeq ($(V),)  # Default
-  quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
-  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-else ifeq ($(V),0)		# Suppress entire command
-  quiet = @$($1)
-else				# Show the full command line
-  quiet = $($1)
-endif
 
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
 
-ifeq ($(PETSC_LANGUAGE),CXXONLY)
-  cc_name := CXX
-else
-  cc_name := CC
-endif
-
 # implies shared libraries with MS compilers
 ifeq ($(SL_LINKER_FUNCTION),-LD)
 $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 endif
-
-PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
-PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 langs := F cu cxx c
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
@@ -219,23 +186,10 @@ $(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
 
-%/.DIR :
-	@mkdir -p $(@D)
-	@touch $@
-
-.PRECIOUS: %/.DIR
-
-.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
-
-.PHONY: clean all print
+.PHONY: clean all 
 
 clean: 
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
-
-# make print VAR=the-variable
-print:
-	@echo $($(VAR))
 
 allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include
@@ -245,20 +199,6 @@ $(allobj.d) : ;
 
 -include $(allobj.d)
 
-help: help-make help-targets
-	-@echo "Above is from: help-make help-targets"
+# Handle test framework (also defines compilation lines for both lib and test)
+include ./gmakefile.test        # This must be below the all target
 
-help-make:
-	-@echo "Basic build usage:"
-	-@echo "   make -f gmakefile <options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  V=0           Very quiet builds"
-	-@echo "  V=1           Verbose builds"
-	-@echo
-
-help-targets:
-	-@echo "All makefile targets and their dependencies:"
-	-@grep ^[a-z] gmakefile | grep : | grep -v =
-	-@echo
-	-@echo
