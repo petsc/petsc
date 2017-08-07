@@ -30,42 +30,42 @@ PetscBool PetscIsNormalReal(PetscReal a)
 #endif
 
 /*@C
-      PetscIsInfOrNanReal - Returns whether the input is an infinity or Not-a-Number (NaN) value.
+      PetscIsInfReal - Returns whether the input is an infinity value.
 
     Input Parameter:
 .     a - the floating point number
 
-     Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
-      Otherwises uses ((a - a) != 0.0), note that some optimizing compiles compile
+     Notes: uses the C99 standard isinf() on systems where it exists.
+      Otherwises uses (a && a/2 == a), note that some optimizing compiles compile
       out this form, thus removing the check.
 
      Level: beginner
 @*/
 #if defined(PETSC_USE_REAL___FLOAT128)
-PetscBool PetscIsInfOrNanReal(PetscReal a)
+PetscBool PetscIsInfReal(PetscReal a)
 {
-  return isinfq(a) || isnanq(a) ? PETSC_TRUE : PETSC_FALSE;
+  return isinfq(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-PetscBool PetscIsInfOrNanReal(PetscReal a)
+#elif defined(PETSC_HAVE_ISINF)
+PetscBool PetscIsInfReal(PetscReal a)
 {
-  return isinf(a) || isnan(a) ? PETSC_TRUE : PETSC_FALSE;
+  return isinf(a) ? PETSC_TRUE : PETSC_FALSE;
 }
-#elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
+#elif defined(PETSC_HAVE__FINITE)
 #if defined(PETSC_HAVE_FLOAT_H)
 #include <float.h>  /* Microsoft Windows defines _finite() in float.h */
 #endif
 #if defined(PETSC_HAVE_IEEEFP_H)
 #include <ieeefp.h>  /* Solaris prototypes these here */
 #endif
-PetscBool PetscIsInfOrNanReal(PetscReal a)
+PetscBool PetscIsInfReal(PetscReal a)
 {
-  return !_finite(a) || _isnan(a) ? PETSC_TRUE : PETSC_FALSE;
+  return !_finite(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #else
-PetscBool PetscIsInfOrNanReal(PetscReal a)
+PetscBool PetscIsInfReal(volatile PetscReal a)
 {
-  return ((a - a) != 0) ? PETSC_TRUE : PETSC_FALSE;
+  return (a && a/2 == a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #endif
 
