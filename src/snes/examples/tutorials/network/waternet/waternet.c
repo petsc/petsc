@@ -1,8 +1,7 @@
 static char help[] = "This example demonstrates the use of DMNetwork interface for solving a steady-state water network model.\n\
                       The water network equations follow those used for the package EPANET\n\
                       The data file format used is from the EPANET package (https://www.epa.gov/water-research/epanet).\n\
-                      Run this program: mpiexec -n <n> ./waternet\n\
-                      mpiexec -n <n> ./waternet \n";
+                      Run this program: mpiexec -n <n> ./waternet\n\\n";
 
 /* T
    Concepts: DMNetwork
@@ -16,7 +15,7 @@ PetscScalar Flow_Pipe(Pipe *pipe,PetscScalar hf,PetscScalar ht)
 {
   PetscScalar flow_pipe;
 
-  flow_pipe = PetscSign(hf-ht)*PetscPowScalar(PetscAbsScalar(hf - ht)/pipe->k,(1/pipe->n));        
+  flow_pipe = PetscSign(hf-ht)*PetscPowScalar(PetscAbsScalar(hf - ht)/pipe->k,(1/pipe->n));
   return flow_pipe;
 }
 
@@ -31,27 +30,23 @@ PetscScalar Flow_Pump(Pump *pump,PetscScalar hf, PetscScalar ht)
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
 {
-  PetscErrorCode ierr;
-  DM             networkdm;
-  Vec           localX,localF;
-  PetscInt      nv,ne;
-  const PetscInt *v,*e;
+  PetscErrorCode    ierr;
+  DM                networkdm;
+  Vec               localX,localF;
+  const PetscInt    *v,*e;
   const PetscScalar *xarr;
-  PetscScalar    *farr;
-  PetscInt       key,i,offset;
-  EDGEDATA       edge;
-  VERTEXDATA     vertex,vertexnode1,vertexnode2;
-  PetscInt       vnode1,vnode2;
-  const PetscInt *cone;
-  PetscInt       offsetnode1,offsetnode2;
-  Pipe           *pipe;
-  Pump           *pump;
-  Reservoir      *reservoir;
-  Tank           *tank;
-  PetscScalar    hf,ht;
-  PetscScalar    flow;
-  PetscBool      ghostvtex;
-  
+  PetscScalar       *farr,hf,ht,flow;
+  PetscInt          nv,ne,key,i,offset,vnode1,vnode2;
+  EDGEDATA          edge;
+  VERTEXDATA        vertex,vertexnode1,vertexnode2;
+  const PetscInt    *cone;
+  PetscInt          offsetnode1,offsetnode2;
+  Pipe              *pipe;
+  Pump              *pump;
+  Reservoir         *reservoir;
+  Tank              *tank;
+  PetscBool         ghostvtex;
+
   PetscFunctionBegin;
   /* Get the DM attached with the SNES */
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
@@ -66,7 +61,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   /* Scatter values from global to local vector */
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  
+
   /* Initialize residual */
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
   ierr = VecSet(localF,0.0);CHKERRQ(ierr);
@@ -107,7 +102,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
     if(vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow;
     if(vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow;
   }
-	
+
   /* Subtract Demand flows at the vertices */
   for(i=0; i < nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v[i],&ghostvtex);CHKERRQ(ierr);
@@ -126,7 +121,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
       farr[offset] = xarr[offset] - (tank->elev + tank->initlvl);
     }
   }
-    
+
   ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
@@ -135,7 +130,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
 
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -144,16 +138,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
 PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
 {
   PetscErrorCode ierr;
-  PetscInt       nv,ne;
+  PetscInt       nv,ne,key,i,offset;
   const PetscInt *vtx,*edges;
   Vec            localX;
   PetscScalar    *xarr;
-  PetscInt       key,i,offset;
   VERTEXDATA     vertex;
   PetscBool      ghostvtex;
 
   PetscFunctionBegin;
-
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = VecSet(X,0.0);CHKERRQ(ierr);
@@ -183,7 +175,6 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -191,10 +182,9 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
 #define __FUNCT__ "GetListofEdges"
 PetscErrorCode GetListofEdges(WATERNETDATA *waternet,int *edgelist)
 {
-  PetscInt       i,j;
-  Pipe           *pipe;
-  Pump           *pump;
-  PetscInt       node1,node2;
+  PetscInt i,j,node1,node2;
+  Pipe     *pipe;
+  Pump     *pump;
 
   PetscFunctionBegin;
   for(i=0; i < waternet->nedge; i++) {
@@ -222,7 +212,6 @@ PetscErrorCode GetListofEdges(WATERNETDATA *waternet,int *edgelist)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -248,32 +237,36 @@ int main(int argc,char ** argv)
 
   /* Create an empty network object */
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
+
   /* Register the components in the network */
   ierr = DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGEDATA),&componentkey[0]);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEXDATA),&componentkey[1]);CHKERRQ(ierr);
-  
+
   ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
   PetscLogStagePush(stage1);
   ierr = PetscNew(&waternetdata);CHKERRQ(ierr);
+
   /* READ THE DATA */
   if (!crank) {
-    /*    READ DATA */
-    /* Only rank 0 reads the data */
+    /* READ DATA. Only rank 0 reads the data */
     ierr = PetscOptionsGetString(NULL,NULL,"-waternetdata",waternetdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
     ierr = WaterNetReadData(waternetdata,waternetdata_file);CHKERRQ(ierr);
-    
+
     ierr = PetscCalloc1(2*waternetdata->nedge,&edgelist);CHKERRQ(ierr);
     ierr = GetListofEdges(waternetdata,edgelist);CHKERRQ(ierr);
   }
-
   PetscLogStagePop();
+
   ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
   PetscLogStagePush(stage2);
 
-  /* Set number of nodes/edges */
+  /* Set numbers of nodes and edges */
   ierr = DMNetworkSetSizes(networkdm,1,&waternetdata->nvertex,&waternetdata->nedge,&ngvtx,&ngedge);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] waternet nvertices %D, nedges %D\n",crank,waternetdata->nvertex,waternetdata->nedge);CHKERRQ(ierr);
+
   /* Add edge connectivity */
   ierr = DMNetworkSetEdgeList(networkdm,&edgelist);CHKERRQ(ierr);
+
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
@@ -297,19 +290,20 @@ int main(int argc,char ** argv)
   /* Set up DM for use */
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
 
-  if(!crank) {
+  if (!crank) {
     ierr = PetscFree(waternetdata->vertex);CHKERRQ(ierr);
     ierr = PetscFree(waternetdata->edge);CHKERRQ(ierr);
-    ierr = PetscFree(waternetdata);CHKERRQ(ierr);
   }
+  ierr = PetscFree(waternetdata);CHKERRQ(ierr);
+
   /* Distribute networkdm to multiple processes */
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
-  
+
   PetscLogStagePop();
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  
+
   /* HOOK UP SOLVER */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
@@ -324,8 +318,6 @@ int main(int argc,char ** argv)
   if(reason < 0) {
     SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
   }
-
-
   ierr = VecView(X,0);CHKERRQ(ierr);
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
