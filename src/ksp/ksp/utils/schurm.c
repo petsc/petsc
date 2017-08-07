@@ -180,7 +180,17 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           A00 and  A11 must be square matrices.
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement()
+          MatGetSchurComplement() takes as arguments the index sets for the submatrices and returns both the virtual Schur complement (what this returns) plus
+          a sparse approximation to the true Schur complement (useful for building a preconditioner for the Schur complement).
+
+          MatSchurComplementGetPmat() can be called on the output of this function to generate an explicit approximation to the Schur complement.
+
+    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    remove redundancy and be clearer and simplier.
+
+
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement(),
+          MatSchurComplementGetPmat()
 
 @*/
 PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,Mat *S)
@@ -580,13 +590,13 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   isrow1 - rows in which the Schur complement is formed
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in S
-.   plump  - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
+.   ainvtype - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
                        MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameters:
 +   S      - exact Schur complement, often of type MATSCHURCOMPLEMENT which is difficult to use for preconditioning
--   Sp     - approximate Schur complement suitable for preconditioning
+-   Sp     - approximate Schur complement from which a preconditioner can be built
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -598,6 +608,16 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     and column index sets.  In that case, the user should call PetscObjectComposeFunction() on the *S matrix and pass mreuse of MAT_REUSE_MATRIX to set
     "MatGetSchurComplement_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
+
+    MatCreateSchurComplement() takes as arguments the four submatrices and returns the virtual Schur complement (what this returns in S).
+
+    MatSchurComplementGetPmat() takes the virtual Schur complement and returns an explicit approximate Schur complement (what this returns in Sp).
+
+    In other words calling MatCreateSchurComplement() followed by MatSchurComplementGetPmat() produces the same output as this function but with slightly different
+    inputs. The actually submatrices of the original block matrix instead of index sets to the submatrices.
+
+    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    remove redundancy and be clearer and simplier.
 
     Level: advanced
 
@@ -829,6 +849,9 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
     for special row and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
     "MatSchurComplementGetPmat_C" to their function.  If their function needs to fall back to the default implementation,
     it should call MatSchurComplementGetPmat_Basic().
+
+    Developer Notes: The API that includes MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementGetPmat() should be refactored to
+    remove redundancy and be clearer and simplier.
 
     Level: advanced
 
