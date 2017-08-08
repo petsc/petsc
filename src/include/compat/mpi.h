@@ -89,7 +89,7 @@ static void * my_dlopen(const char *name, int mode) {
 #define dlopen my_dlopen
 */
 
-static void PyMPI_OPENMPI_dlopen_libmpi(void)
+static void OPENMPI_dlopen_libmpi(void)
 {
   void *handle = 0;
   int mode = RTLD_NOW | RTLD_GLOBAL;
