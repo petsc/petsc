@@ -136,8 +136,8 @@ PetscErrorCode WaterNetReadData(WATERNETDATA *waternet,char *filename)
 {
   FILE           *fp;
   PetscErrorCode ierr;
-  VERTEXDATA     vert;
-  EDGEDATA       edge;
+  VERTEX_Water   vert;
+  EDGE_Water     edge;
   fpos_t         junc_start_pos,res_start_pos,tank_start_pos,pipe_start_pos,pump_start_pos;
   fpos_t         curve_start_pos,title_start_pos;
   char           line[MAXLINE];

@@ -16,5 +16,5 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 
 waternet: $(OBJECTS_WATERNET) chkopts
 	-${CLINKER} -o waternet $(OBJECTS_WATERNET) ${PETSC_SNES_LIB}
-	${RM} $(OBJECTS_WATERNET)
+#	${RM} $(OBJECTS_WATERNET)
 

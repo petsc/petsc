@@ -40,7 +40,7 @@ typedef struct {
   PetscInt    volumecurve; /* Volume curve id */
 } Tank;
 
-struct _p_VERTEXDATA{
+struct _p_VERTEX_Water{
   PetscInt id; /* id */
   PetscInt type; /* vertex type (junction, reservoir) */
   Junction junc; /* junction data */
@@ -60,7 +60,7 @@ typedef struct {
   char        stat[16];  /* Status */
   PetscInt    status;    /* Pipe status (see PIPE_STATUS_XXX definition on top) */
   PetscScalar n;         /* Exponent for h = kQ^n */
-  PetscScalar k;          
+  PetscScalar k;
 } Pipe;
 
 typedef struct {
@@ -79,17 +79,17 @@ typedef struct {
   PetscScalar r;
   PetscScalar n;
 } Pump;
-  
-struct _p_EDGEDATA{
+
+struct _p_EDGE_Water{
   PetscInt id; /* id */
   PetscInt type; /* edge type (pump, pipe) */
   Pipe     pipe; /* pipe data */
   Pump     pump; /* pump data */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-typedef struct _p_EDGEDATA *EDGEDATA;
+typedef struct _p_EDGE_Water *EDGE_Water;
 
-typedef struct _p_VERTEXDATA *VERTEXDATA;
+typedef struct _p_VERTEX_Water *VERTEX_Water;
 
 /* EPANET top-level data structure */
 typedef struct{
@@ -100,8 +100,8 @@ typedef struct{
   PetscInt    ntank;
   PetscInt    npipe;
   PetscInt    npump;
-  VERTEXDATA  vertex;
-  EDGEDATA    edge;
+  VERTEX_Water vertex;
+  EDGE_Water   edge;
 }WATERNETDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode WaterNetReadData(WATERNETDATA*,char*);

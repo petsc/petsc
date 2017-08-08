@@ -37,8 +37,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   const PetscScalar *xarr;
   PetscScalar       *farr,hf,ht,flow;
   PetscInt          nv,ne,key,i,offset,vnode1,vnode2;
-  EDGEDATA          edge;
-  VERTEXDATA        vertex,vertexnode1,vertexnode2;
+  EDGE_Water        edge;
+  VERTEX_Water      vertex,vertexnode1,vertexnode2;
   const PetscInt    *cone;
   PetscInt          offsetnode1,offsetnode2;
   Pipe              *pipe;
@@ -142,7 +142,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   const PetscInt *vtx,*edges;
   Vec            localX;
   PetscScalar    *xarr;
-  VERTEXDATA     vertex;
+  VERTEX_Water   vertex;
   PetscBool      ghostvtex;
 
   PetscFunctionBegin;
@@ -241,8 +241,8 @@ int main(int argc,char ** argv)
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
 
   /* Register the components in the network */
-  ierr = DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGEDATA),&componentkey[0]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEXDATA),&componentkey[1]);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGE_Water),&componentkey[0]);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&componentkey[1]);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
   PetscLogStagePush(stage1);
