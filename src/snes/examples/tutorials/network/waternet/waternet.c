@@ -51,7 +51,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   /* Get the DM attached with the SNES */
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
 
-  /* Get vertices/edges */
+  /* Get local vertices and edges */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&v,&e);CHKERRQ(ierr);
 
   /* Get local vectors */
@@ -70,7 +70,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
-  for(i=0; i < ne; i++) {
+  for (i=0; i<ne; i++) { /* for each edge */
     /* Get the offset and the key for the component for edge number e[i] */
     ierr = DMNetworkGetComponent(networkdm,e[i],0,&key,(void**)&edge);CHKERRQ(ierr);
 
@@ -187,26 +187,28 @@ PetscErrorCode GetListofEdges(WATERNETDATA *waternet,int *edgelist)
   Pump     *pump;
 
   PetscFunctionBegin;
-  for(i=0; i < waternet->nedge; i++) {
-    if(waternet->edge[i].type == EDGE_TYPE_PIPE) {
-      pipe = &waternet->edge[i].pipe;
+  for (i=0; i < waternet->nedge; i++) {
+    if (waternet->edge[i].type == EDGE_TYPE_PIPE) {
+      pipe  = &waternet->edge[i].pipe;
       node1 = pipe->node1;
       node2 = pipe->node2;
+      printf("edge %d, pipe v%d -> v%d\n",i,node1,node2);
     } else {
-      pump = &waternet->edge[i].pump;
+      pump  = &waternet->edge[i].pump;
       node1 = pump->node1;
       node2 = pump->node2;
+      printf("edge %d, pump v%d -> v%d\n",i,node1,node2);
     }
 
-    for(j=0; j < waternet->nvertex; j++) {
-      if(waternet->vertex[j].id == node1) {
+    for (j=0; j < waternet->nvertex; j++) {
+      if (waternet->vertex[j].id == node1) {
 	edgelist[2*i] = j;
 	break;
       }
     }
 
-    for(j=0; j < waternet->nvertex; j++) {
-      if(waternet->vertex[j].id == node2) {
+    for (j=0; j < waternet->nvertex; j++) {
+      if (waternet->vertex[j].id == node2) {
 	edgelist[2*i+1] = j;
 	break;
       }

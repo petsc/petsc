@@ -4,14 +4,14 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
                       The electric power grid data file format used is from the MatPower package \n\
                       (http://www.pserc.cornell.edu//matpower/).\n\
                       This example shows the use of subnetwork feature in DMNetwork. \n\
-                      Run this program: mpiexec -n <n> ./ex1 \n\\n";
+                      Run this program: mpiexec -n <n> ./ex2 \n\\n";
 
 /* T
    Concepts: DMNetwork
    Concepts: PETSc SNES solver
 */
 
-#include "pf.h"
+#include "pflow/pf.h"
 #include "wash.h"
 
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
@@ -724,7 +724,7 @@ int main(int argc,char ** argv)
   Mat              Jac;
   PetscBool        viewJ=PETSC_FALSE;
 
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/datafiles/case9.m";
   PFDATA           *pfdata1;
   PetscInt         genj,loadj;
 
@@ -735,7 +735,7 @@ int main(int argc,char ** argv)
   PetscBool        parseflg=PETSC_FALSE;
   char             filename[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscInitialize(&argc,&argv,"pfoptions",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"pflow/pfoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */
