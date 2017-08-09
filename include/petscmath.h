@@ -644,6 +644,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return 
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
 PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
+PETSC_EXTERN PetscBool PetscEqualReal(PetscReal,PetscReal);
+PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar,PetscScalar);
+
 /*
     These macros are currently hardwired to match the regular data types, so there is no support for a different
     MatScalar from PetscScalar. We left the MatScalar in the source just in case we use it again.
