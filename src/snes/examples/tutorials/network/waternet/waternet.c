@@ -26,7 +26,7 @@ PetscScalar Flow_Pump(Pump *pump,PetscScalar hf, PetscScalar ht)
   return flow_pump;
 }
 
-PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
+PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
 {
   PetscErrorCode    ierr;
   DM                networkdm;
@@ -304,7 +304,7 @@ int main(int argc,char ** argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes,"waternet_");CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,F,FormFunction,NULL);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,F,WaterFormFunction,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = WaterSetInitialGuess(networkdm,X);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ int main(int argc,char ** argv)
   if (reason < 0) {
     SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
   }
-  ierr = VecView(X,0);CHKERRQ(ierr);
+  /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
