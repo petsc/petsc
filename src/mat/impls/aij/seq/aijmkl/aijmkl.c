@@ -45,6 +45,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multtranspose    = MatMultTranspose_SeqAIJ;
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
+  B->ops->scale            = MatScale_SeqAIJ;
+  B->ops->diagonalscale    = MatDiagonalScale_SeqAIJ;
+  B->ops->diagonalset      = MatDiagonalSet_SeqAIJ;
+  B->ops->axpy             = MatAXPY_SeqAIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
@@ -557,12 +561,46 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-PETSC_INTERN PetscErrorCode MatScale_SeqAIJMKL(Mat inA,PetscScalar alpha)
+PetscErrorCode MatScale_SeqAIJMKL(Mat inA,PetscScalar alpha)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   ierr = MatScale_SeqAIJ(inA,alpha);CHKERRQ(ierr);
   ierr = MatSeqAIJMKL_create_mkl_handle(inA);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDiagonalScale_SeqAIJMKL(Mat A,Vec ll,Vec rr)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDiagonalScale_SeqAIJ(A,ll,rr);CHKERRQ(ierr);
+  ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDiagonalSet_SeqAIJMKL(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDiagonalSet_SeqAIJ(Y,D,is);CHKERRQ(ierr);
+  ierr = MatSeqAIJMKL_create_mkl_handle(Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatAXPY_SeqAIJMKL(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatAXPY_SeqAIJ(Y,a,X,str);CHKERRQ(ierr);
+  if (str == SAME_NONZERO_PATTERN) {
+    /* MatAssemblyEnd() is not called if SAME_NONZERO_PATTERN, so we need to force update of the MKL matrix handle. */
+    ierr = MatSeqAIJMKL_create_mkl_handle(Y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -627,7 +665,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
     B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
   }
 
-  B->ops->scale = MatScale_SeqAIJMKL;
+  B->ops->scale              = MatScale_SeqAIJMKL;
+  B->ops->diagonalscale      = MatDiagonalScale_SeqAIJMKL;
+  B->ops->diagonalset        = MatDiagonalSet_SeqAIJMKL;
+  B->ops->axpy               = MatAXPY_SeqAIJMKL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatScale_SeqAIJMKL_C",MatScale_SeqAIJMKL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
