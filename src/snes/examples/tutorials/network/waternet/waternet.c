@@ -26,8 +26,6 @@ PetscScalar Flow_Pump(Pump *pump,PetscScalar hf, PetscScalar ht)
   return flow_pump;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
 {
   PetscErrorCode    ierr;
@@ -99,12 +97,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
       flow = Flow_Pump(pump,hf,ht);
     }
     /* Convention: Node 1 has outgoing flow and Node 2 has incoming flow */
-    if(vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow;
-    if(vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow;
+    if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow;
+    if (vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow;
   }
 
   /* Subtract Demand flows at the vertices */
-  for(i=0; i < nv; i++) {
+  for (i=0; i < nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,v[i],&ghostvtex);CHKERRQ(ierr);
     if(ghostvtex) continue;
 
@@ -133,9 +131,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F, void *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialGuess"
-PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
+PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
 {
   PetscErrorCode ierr;
   PetscInt       nv,ne,key,i,offset;
@@ -156,21 +152,21 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
   ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
-
-  for(i=0; i < nv; i++) {
+  for (i=0; i < nv; i++) {
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
-    if(ghostvtex) continue;
+    if (ghostvtex) continue;
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
 
-    if(vertex->type == VERTEX_TYPE_JUNCTION) {
+    if (vertex->type == VERTEX_TYPE_JUNCTION) {
       xarr[i] = 100;
-    } else if(vertex->type == VERTEX_TYPE_RESERVOIR) {
+    } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
       xarr[i] = vertex->res.head;
     } else {
       xarr[i] = vertex->tank.initlvl + vertex->tank.elev;
     }
   }
+  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
@@ -178,8 +174,6 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetListofEdges"
 PetscErrorCode GetListofEdges(WATERNETDATA *waternet,int *edgelist)
 {
   PetscInt i,j,node1,node2;
@@ -313,11 +307,12 @@ int main(int argc,char ** argv)
   ierr = SNESSetFunction(snes,F,FormFunction,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = SetInitialGuess(networkdm,X);CHKERRQ(ierr);
+  ierr = WaterSetInitialGuess(networkdm,X);CHKERRQ(ierr);
+  /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  if(reason < 0) {
+  if (reason < 0) {
     SETERRQ(PETSC_COMM_SELF,0,"No solution found for the water network");
   }
   ierr = VecView(X,0);CHKERRQ(ierr);
