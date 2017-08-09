@@ -10,14 +10,16 @@ LOCDIR           = src/snes/examples/tutorials/network/
 DIRS		 = pflow waternet
 MANSEC           = SNES
 
+OBJECTS_EX1 = pflow/PFReadData.o waternet/waternetreaddata.o
+
 WASH_LOC = /scratch/hzhang/wash
 OBJECTS_EX2 = pflow/PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-ex1: ex1.o $(OBJECTS_EX1) chkopts
-	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
+ex1: ex1.o $(OBJECTS_EX2) chkopts
+	-${CLINKER} -o ex1 ex1.o $(OBJECTS_EX1) ${PETSC_SNES_LIB}
 	${RM} ex1.o
 
 ex2: ex2.o $(OBJECTS_EX2) chkopts
