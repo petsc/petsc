@@ -12,6 +12,11 @@
 #define NGEN_AT_BUS_MAX 15
 #define NLOAD_AT_BUS_MAX 1
 
+typedef struct{
+  PetscScalar  Sbase;
+  PetscBool    jac_error; /* introduce error in the jacobian */
+} UserCtx_Power;
+
 /* 2. Bus data */
 /* 11 columns */
 struct _p_VERTEX_Power{
@@ -131,4 +136,5 @@ typedef struct{
 } PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
+extern PetscErrorCode GetListofEdges_Power(PetscInt,EDGE_Power,int[]);
 #endif

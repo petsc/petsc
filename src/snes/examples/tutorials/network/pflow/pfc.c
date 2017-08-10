@@ -12,36 +12,17 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 #include "pf.h"
 #include <petscdmnetwork.h>
 
-PetscErrorCode GetListofEdges(PetscInt nbranches, EDGE_Power branch,int edges[])
-{
-  PetscInt       i, fbus,tbus;
-
-  PetscFunctionBegin;
-  for (i=0; i < nbranches; i++) {
-    fbus = branch[i].internal_i;
-    tbus = branch[i].internal_j;
-    edges[2*i]   = fbus;
-    edges[2*i+1] = tbus;
-  }
-  PetscFunctionReturn(0);
-}
-
-typedef struct{
-  PetscScalar  Sbase;
-  PetscBool    jac_error; /* introduce error in the jacobian */
-}UserCtx;
-
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
   DM             networkdm;
-  UserCtx       *User=(UserCtx*)appctx;
-  Vec           localX,localF;
-  PetscInt      e;
-  PetscInt      v,vStart,vEnd,vfrom,vto;
+  UserCtx_Power  *User=(UserCtx_Power*)appctx;
+  Vec            localX,localF;
+  PetscInt       e;
+  PetscInt       v,vStart,vEnd,vfrom,vto;
   const PetscScalar *xarr;
-  PetscScalar   *farr;
-  PetscInt      offsetfrom,offsetto,offset;
+  PetscScalar    *farr;
+  PetscInt       offsetfrom,offsetto,offset;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
@@ -171,7 +152,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
   DM            networkdm;
-  UserCtx       *User=(UserCtx*)appctx;
+  UserCtx_Power *User=(UserCtx_Power*)appctx;
   Vec           localX;
   PetscInt      e;
   PetscInt      v,vStart,vEnd,vfrom,vto;
@@ -394,7 +375,6 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
   PetscFunctionReturn(0);
 }
 
-
 int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
@@ -405,7 +385,7 @@ int main(int argc,char ** argv)
   PetscInt         i;
   DM               networkdm;
   PetscInt         componentkey[4];
-  UserCtx          User;
+  UserCtx_Power    User;
   PetscLogStage    stage1,stage2;
   PetscMPIInt      rank;
   PetscInt         eStart, eEnd, vStart, vEnd,j;
@@ -444,7 +424,7 @@ int main(int argc,char ** argv)
       numVertices = pfdata->nbus;
 
       ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
-      ierr = GetListofEdges(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
     }
 
     /* If external option activated. Introduce error in jacobian */

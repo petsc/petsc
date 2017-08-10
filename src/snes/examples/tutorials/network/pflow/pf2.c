@@ -13,33 +13,14 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 #include "pf.h"
 #include <petscdmnetwork.h>
 
-PetscErrorCode GetListofEdges(PetscInt nbranches, EDGE_Power branch,int edges[])
-{
-  PetscInt       i, fbus,tbus;
-
-  PetscFunctionBegin;
-  for (i=0; i < nbranches; i++) {
-    fbus = branch[i].internal_i;
-    tbus = branch[i].internal_j;
-    edges[2*i]   = fbus;
-    edges[2*i+1] = tbus;
-  }
-  PetscFunctionReturn(0);
-}
-
-typedef struct{
-  PetscScalar  Sbase;
-} UserCtx;
-
 PetscErrorCode FormFunction_Subnet(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
   PetscErrorCode ierr;
-  UserCtx       *User=(UserCtx*)appctx;
-  PetscInt      e;
-  PetscInt      v,vfrom,vto;
+  UserCtx_Power  *User=(UserCtx_Power*)appctx;
+  PetscInt       e,v,vfrom,vto;
   const PetscScalar *xarr;
-  PetscScalar   *farr;
-  PetscInt      offsetfrom,offsetto,offset;
+  PetscScalar    *farr;
+  PetscInt       offsetfrom,offsetto,offset;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
@@ -187,13 +168,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 PetscErrorCode FormJacobian_Subnet(DM networkdm,Vec localX, Mat J, Mat Jpre, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
 {
   PetscErrorCode ierr;
-  UserCtx       *User=(UserCtx*)appctx;
-  PetscInt      e;
-  PetscInt      v,vfrom,vto;
+  UserCtx_Power  *User=(UserCtx_Power*)appctx;
+  PetscInt       e,v,vfrom,vto;
   const PetscScalar *xarr;
-  PetscInt      offsetfrom,offsetto,goffsetfrom,goffsetto;
-  PetscInt      row[2],col[8];
-  PetscScalar   values[8];
+  PetscInt       offsetfrom,offsetto,goffsetfrom,goffsetto;
+  PetscInt       row[2],col[8];
+  PetscScalar    values[8];
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
@@ -451,7 +431,7 @@ int main(int argc,char ** argv)
   int              *edgelist1 = NULL,*edgelist2 = NULL;
   DM               networkdm;
   PetscInt         componentkey[4];
-  UserCtx          User;
+  UserCtx_Power    User;
   PetscLogStage    stage1,stage2;
   PetscMPIInt      rank;
   PetscInt         nsubnet = 2;
@@ -501,7 +481,7 @@ int main(int argc,char ** argv)
       numVertices1 = pfdata1->nbus;
 
       ierr = PetscMalloc1(2*numEdges1,&edgelist1);CHKERRQ(ierr);
-      ierr = GetListofEdges(pfdata1->nbranch,pfdata1->branch,edgelist1);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata1->nbranch,pfdata1->branch,edgelist1);CHKERRQ(ierr);
 
       /*    READ DATA FOR THE SECOND SUBNETWORK */
       ierr = PetscNew(&pfdata2);CHKERRQ(ierr);
@@ -512,7 +492,7 @@ int main(int argc,char ** argv)
       numVertices2 = pfdata2->nbus;
 
       ierr = PetscMalloc1(2*numEdges2,&edgelist2);CHKERRQ(ierr);
-      ierr = GetListofEdges(pfdata2->nbranch,pfdata2->branch,edgelist2);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata2->nbranch,pfdata2->branch,edgelist2);CHKERRQ(ierr);
     }
 
     PetscLogStagePop();

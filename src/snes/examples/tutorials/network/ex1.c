@@ -13,25 +13,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 #include "pflow/pf.h"
 #include "waternet/waternet.h"
 
-PetscErrorCode GetListofEdges_Power(PetscInt nbranches, EDGE_Power branch,int edges[])
-{
-  PetscInt       i,fbus,tbus;
-
-  PetscFunctionBegin;
-  for (i=0; i<nbranches; i++) {
-    fbus = branch[i].internal_i;
-    tbus = branch[i].internal_j;
-    edges[2*i]   = fbus;
-    edges[2*i+1] = tbus;
-    printf("branch %d, bus[%d] -> bus[%d]\n",i,fbus,tbus);
-  }
-  PetscFunctionReturn(0);
-}
-
-typedef struct{
-  PetscScalar  Sbase;
-} UserCtx_Power;
-
 PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
   PetscErrorCode    ierr;
@@ -557,7 +538,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscFree(waterdata);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-  
+
   ierr = PetscFinalize();
   return ierr;
 }
