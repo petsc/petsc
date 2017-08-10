@@ -929,6 +929,12 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ierr = KSPReasonViewFromOptions(ksp);CHKERRQ(ierr);
+
+  ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(pmat,(PetscObject)ksp,"-ksp_view_pmat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,(PetscObject)ksp,"-ksp_view_rhs");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_sol,(PetscObject)ksp,"-ksp_view_solution");CHKERRQ(ierr);
+
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
