@@ -13,49 +13,12 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 #include "pflow/pf.h"
 #include "waternet/waternet.h"
 
-PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
-{
-  PetscInt i,j,node1,node2;
-  Pipe     *pipe;
-  Pump     *pump;
-
-  PetscFunctionBegin;
-  for (i=0; i < waternet->nedge; i++) {
-    if (waternet->edge[i].type == EDGE_TYPE_PIPE) {
-      pipe  = &waternet->edge[i].pipe;
-      node1 = pipe->node1;
-      node2 = pipe->node2;
-      printf("edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2);
-    } else {
-      pump  = &waternet->edge[i].pump;
-      node1 = pump->node1;
-      node2 = pump->node2;
-      printf("edge %d, pump v[%d] -> v[%d]\n",i,node1,node2);
-    }
-
-    for (j=0; j < waternet->nvertex; j++) {
-      if (waternet->vertex[j].id == node1) {
-	edgelist[2*i] = j;
-	break;
-      }
-    }
-
-    for (j=0; j < waternet->nvertex; j++) {
-      if (waternet->vertex[j].id == node2) {
-	edgelist[2*i+1] = j;
-	break;
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode GetListofEdges_Power(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
   PetscInt       i,fbus,tbus;
 
   PetscFunctionBegin;
-  for (i=0; i <nbranches; i++) {
+  for (i=0; i<nbranches; i++) {
     fbus = branch[i].internal_i;
     tbus = branch[i].internal_j;
     edges[2*i]   = fbus;
@@ -82,7 +45,7 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
-  for (v=0; v < nv; v++) {
+  for (v=0; v<nv; v++) {
     PetscInt    i,j,key;
     PetscScalar Vm;
     PetscScalar Sbase=User->Sbase;
@@ -182,21 +145,6 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
   ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-PetscScalar Flow_Pipe(Pipe *pipe,PetscScalar hf,PetscScalar ht)
-{
-  PetscScalar flow_pipe;
-
-  flow_pipe = PetscSign(hf-ht)*PetscPowScalar(PetscAbsScalar(hf - ht)/pipe->k,(1/pipe->n));
-  return flow_pipe;
-}
-
-PetscScalar Flow_Pump(Pump *pump,PetscScalar hf, PetscScalar ht)
-{
-  PetscScalar flow_pump;
-  flow_pump = PetscPowScalar((hf - ht + pump->h0)/pump->r,(1/pump->n));
-  return flow_pump;
 }
 
 PetscErrorCode FormFunction_Water(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)

@@ -1,14 +1,14 @@
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
 ALL:waternet
-CFLAGS	         = 
+CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 EXAMPLESC        = waternet.c
 LOCDIR           = src/snes/examples/tutorials/network/waternet/
 
-OBJECTS_WATERNET = waternetreaddata.o waternet.o
+OBJECTS_WATERNET = waternetreaddata.o waterfunctions.o waternet.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

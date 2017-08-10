@@ -10,7 +10,7 @@ LOCDIR           = src/snes/examples/tutorials/network/
 DIRS		 = pflow waternet
 MANSEC           = SNES
 
-OBJECTS_EX1 = pflow/PFReadData.o waternet/waternetreaddata.o
+OBJECTS_EX1 = pflow/PFReadData.o waternet/waternetreaddata.o waternet/waterfunctions.o
 
 WASH_LOC = /scratch/hzhang/wash
 OBJECTS_EX2 = pflow/PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
