@@ -1,7 +1,7 @@
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
 ALL: lib
-CFLAGS	         = -I/scratch/hzhang/wash/src/
+CFLAGS	         = #-I/scratch/hzhang/wash/src/
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
@@ -12,8 +12,8 @@ MANSEC           = SNES
 
 OBJECTS_EX1 = pflow/PFReadData.o waternet/waternetreaddata.o waternet/waterfunctions.o
 
-WASH_LOC = /scratch/hzhang/wash
-OBJECTS_EX2 = pflow/PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
+#WASH_LOC = /scratch/hzhang/wash
+#OBJECTS_EX2 = pflow/PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -14,7 +14,7 @@
 
 /* 2. Bus data */
 /* 11 columns */
-struct _p_VERTEXDATA{
+struct _p_VERTEX_Power{
   PetscInt      bus_i; /* Integer bus number .. used by some formats like Matpower */
   char	 	i[20]; /* Bus Number */
   char 		name[20]; /* Bus Name */
@@ -34,7 +34,7 @@ struct _p_VERTEXDATA{
   PetscInt      lidx[NLOAD_AT_BUS_MAX];
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-typedef struct _p_VERTEXDATA *VERTEXDATA;
+typedef struct _p_VERTEX_Power *VERTEX_Power;
 
 /* 3. Load data */
 /* 12 columns */
@@ -90,7 +90,7 @@ struct _p_GEN{
 typedef struct _p_GEN *GEN;
 
 /* 17+ columns */
-struct _p_EDGEDATA{
+struct _p_EDGE_Power{
   PetscInt      fbus;
   PetscInt      tbus;
   char 		i[20]; /* Bus Number or extended bus name*/
@@ -117,18 +117,18 @@ struct _p_EDGEDATA{
   PetscScalar   yff[2],yft[2],ytf[2],ytt[2]; /* [G,B] */
 } PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-typedef struct _p_EDGEDATA *EDGEDATA;
+typedef struct _p_EDGE_Power *EDGE_Power;
 
 /* PTI format data structure */
 typedef struct{
   PetscScalar sbase; /* System base MVA */
   PetscInt    nbus,ngen,nbranch,nload; /* # of buses,gens,branches, and loads (includes elements which are
                                           out of service */
-  VERTEXDATA  bus;
-  LOAD        load;
-  GEN         gen;
-  EDGEDATA    branch;
-}PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+  VERTEX_Power bus;
+  LOAD         load;
+  GEN          gen;
+  EDGE_Power   branch;
+} PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
 #endif

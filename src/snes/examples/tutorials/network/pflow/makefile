@@ -1,7 +1,7 @@
 #requiresdefine   'PETSC_HAVE_ATTRIBUTEALIGNED'
 
 ALL:pf
-CFLAGS	         = -I/scratch/hzhang/wash/src/
+CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
@@ -9,24 +9,17 @@ EXAMPLESC        = pfc.c
 LOCDIR           = src/snes/examples/tutorials/network/pflow/
 
 OBJECTS_PF2 = pf2.o PFReadData.o
-WASH_LOC = /scratch/hzhang/wash
-OBJECTS_EX1 = PFReadData.o ${WASH_LOC}/src/washnetwork.o ${WASH_LOC}/src/parse.o ${WASH_LOC}/src/pipe/pipeImpls.o ${WASH_LOC}/src/pipe/pipeInterface.o
-
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 
 pfc: pfc.o PFReadData.o chkopts
 	-${CLINKER} -o pfc pfc.o PFReadData.o ${PETSC_SNES_LIB}
-	${RM} pfc.o PFReadData.o
+#	${RM} pfc.o PFReadData.o
 
 pf2: $(OBJECTS_PF2) chkopts
 	-${CLINKER} -o pf2 $(OBJECTS_PF2) ${PETSC_SNES_LIB}
-	${RM} $(OBJECTS_PF2)
-
-ex1: ex1.o $(OBJECTS_EX1) chkopts
-	-${CLINKER} -o ex1 ex1.o $(OBJECTS_EX1) ${PETSC_SNES_LIB}
-	${RM} ex1.o
+#	${RM} $(OBJECTS_PF2)
 
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -snes_rtol 1.e-3 > ex1.tmp 2>&1;   \
