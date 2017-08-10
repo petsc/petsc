@@ -1,0 +1,22 @@
+# SNES (nonlinear solver) options
+# Newton method
+-coupled_snes_type newtonls
+-coupled_snes_monitor
+
+# Absolute and relative tolerances
+-coupled_snes_atol 1e-8
+-coupled_snes_rtol 1e-20
+
+# Line search method (bt and l2 lead to converge, basic diverges)
+-coupled_snes_linesearch_type l2
+
+# Finite differenced Jacobian
+-coupled_snes_fd
+
+# KSP (linear solver) options
+-coupled_ksp_type gmres
+
+# PC (preconditioner) options
+-coupled_pc_type bjacobi
+-coupled_sub_pc_type lu
+-coupled_sub_pc_factor_mat_ordering_type qmd
