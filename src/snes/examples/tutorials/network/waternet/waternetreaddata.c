@@ -132,7 +132,7 @@ void GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos,PetscInt 
 }
 
 
-PetscErrorCode WaterNetReadData(WATERNETDATA *waternet,char *filename)
+PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
 {
   FILE           *fp;
   PetscErrorCode ierr;
