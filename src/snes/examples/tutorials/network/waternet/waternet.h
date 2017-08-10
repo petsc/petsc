@@ -102,8 +102,8 @@ typedef struct{
   PetscInt    npump;
   VERTEX_Water vertex;
   EDGE_Water   edge;
-}WATERNETDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
+} WATERDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
-extern PetscErrorCode WaterNetReadData(WATERNETDATA*,char*);
+extern PetscErrorCode WaterNetReadData(WATERDATA*,char*);
 extern PetscErrorCode WaterSetInitialGuess(DM,Vec);
 #endif

@@ -174,7 +174,7 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode GetListofEdges(WATERNETDATA *waternet,int *edgelist)
+PetscErrorCode GetListofEdges(WATERDATA *waternet,int *edgelist)
 {
   PetscInt i,j,node1,node2;
   Pipe     *pipe;
@@ -215,7 +215,7 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
   char             waternetdata_file[PETSC_MAX_PATH_LEN]="sample1.inp";
-  WATERNETDATA     *waternetdata;
+  WATERDATA        *waternetdata;
   PetscInt         componentkey[2];
   PetscLogStage    stage1,stage2;
   PetscMPIInt      crank;
