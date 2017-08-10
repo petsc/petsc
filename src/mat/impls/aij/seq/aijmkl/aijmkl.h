@@ -5,6 +5,12 @@
   we don't have to worry about Fortran name mangling, this seems OK for now.
 */
 
+/* Have to redefine MKL_Complex16 and MKL_Complex8 as PetscScalar for the complex number cases.
+ * This works fine with a C99 compiler -- still need to verify that this works with C89.
+ * Note: These definitions need to occur BEFORE including MKL headers. */
+#define MKL_Complex16 PetscScalar
+#define MKL_Complex8 PetscScalar
+
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USE_REAL_SINGLE)
 #   define mkl_cspblas_xcsrgemv(transa,m,a,ia,ja,x,y) mkl_cspblas_scsrgemv(transa,m,a,ia,ja,x,y)
