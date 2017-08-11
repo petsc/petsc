@@ -145,7 +145,7 @@ static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void *ptr)
   PetscViewerGLVisInfo info = (PetscViewerGLVisInfo)ptr;
   PetscErrorCode       ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = PetscFree(info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -158,7 +158,7 @@ static PetscErrorCode PetscViewerGLVisAttachInfo_Private(PetscViewer viewer, Pet
   PetscContainer       container;
   PetscViewerGLVisInfo info;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = PetscNew(&info);CHKERRQ(ierr);
   info->enabled = PETSC_TRUE;
   info->init    = PETSC_FALSE;
