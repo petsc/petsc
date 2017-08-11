@@ -173,6 +173,9 @@
 
       <h4>PC:</h4>
       <ul>
+        <li>The default behavior for PCILU was changed from -pc_factor_shift_type nonzero to -pc_factor_shift_type inblock
+          (note it is -sub_pc_factor_shift_type if the ILU is used inside block Jacobi). If previously you had convergence of iterative solvers with ILU and now for the same
+          code you get zero pivot errors or PC setup errors then try the option -pc_factor_shift_type nonzero. </li>
         <li>Merged PCBJacobiSetUseTrueLocal(), <tt>-pc_bjacobi_true_local</tt>, PCKSPSetUseTrue(), <tt>-pc_ksp_true</tt>, PCCompositeSetUseTrue() <tt>-pc_composite_true</tt>, PCFieldSplitSetRealDiagonal <tt>-pc_fieldpslit_real_diagonal</tt> to PCSetUseAmat(), <tt>-pc_use_amat</tt>.</li>
         <li>Added <tt>PCISSetSubdomainDiagonalScaling()</tt> if a user wants to set a custom scaling at the interface.</li>
         <li>Added initial version of FETI-DP in PCBDDC code.</li>
