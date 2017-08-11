@@ -114,8 +114,6 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery(oda,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
-  if (xcoorl) PetscFunctionReturn(0);
   /* Create a properly ghosted DMDA to visualize the mesh and the fields associated with */
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&dof,&s,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
