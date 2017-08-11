@@ -226,18 +226,15 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-
 PetscErrorCode DMNetworkLayoutSetUpCoupled(DM dm)
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
   PetscInt       dim = 1; /* One dimensional network */
-  PetscInt       numCorners=2;
-  PetscInt       spacedim=2;
+  PetscInt       numCorners=2,spacedim=2;
   double         *vertexcoords=NULL;
-  PetscInt       i,j;
-  PetscInt       ndata;
-  PetscInt       ctr=0;
+  PetscInt       i,j,ndata,ctr=0;
+  PetscInt       *edgelist_couple=NULL,k,netid,vid;
 
   PetscFunctionBegin;
   printf("DMNetworkLayoutSetUpCoupled...\n");
@@ -255,14 +252,14 @@ PetscErrorCode DMNetworkLayoutSetUpCoupled(DM dm)
     }
   }
   i = network->nsubnet-1; /* coupling subnet */
-  PetscInt *edgelist_couple = network->subnet[i].edgelist,k,netid,vid;
+  edgelist_couple = network->subnet[i].edgelist;
   k = 0;
   for (j = 0; j < network->subnet[i].nedge; j++) {
     netid = edgelist_couple[k]; vid = edgelist_couple[k+1];
     network->edges[2*ctr] = network->subnet[netid].vStart + vid; k += 2;
 
     netid = edgelist_couple[k]; vid = edgelist_couple[k+1];
-    network->edges[2*ctr+1] = network->subnet[netid].vStart + vi; k+=2;
+    network->edges[2*ctr+1] = network->subnet[netid].vStart + vid; k+=2;
     ctr++;
   }
 

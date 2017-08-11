@@ -365,7 +365,7 @@ int main(int argc,char **argv)
   char             waterdata_file[PETSC_MAX_PATH_LEN]="waternet/sample1.inp";
   int              *edgelist_water=NULL;
 
-  PetscInt         numEdges3 = 1,numVertices3 = 2;
+  PetscInt         numEdges3=0,numVertices3=0;
   int              *edgelist_couple=NULL;
 
   ierr = PetscInitialize(&argc,&argv,"ex1options",help);CHKERRQ(ierr);
@@ -445,11 +445,11 @@ int main(int argc,char **argv)
   /* Set local or global number of vertices and edges */
   numVertices[0] = numVertices1; NumVertices[0] = PETSC_DETERMINE;
   numVertices[1] = numVertices2; NumVertices[1] = PETSC_DETERMINE;
-  numVertices[2] = numVertices3; NumVertices[1] = PETSC_DETERMINE; /* coupling vertices */
+  numVertices[2] = numVertices3; NumVertices[2] = PETSC_DETERMINE; /* coupling vertices */
 
   numEdges[0] = numEdges1; NumEdges[0] = PETSC_DETERMINE;
   numEdges[1] = numEdges2; NumEdges[1] = PETSC_DETERMINE;
-  numEdges[2] = numEdges3; NumEdges[1] = PETSC_DETERMINE; /* coupling edges */
+  numEdges[2] = numEdges3; NumEdges[2] = PETSC_DETERMINE; /* coupling edges */
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local nvertices %d %d; nedges %d %d\n",crank,numVertices[0],numVertices[1],numEdges[0],numEdges[1]);
   ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
