@@ -26,7 +26,9 @@ ex2: ex2.o $(OBJECTS_EX2) chkopts
 	-${CLINKER} -o ex2 ex2.o $(OBJECTS_EX2) ${PETSC_SNES_LIB}
 	${RM} ex2.o
 
-
+ex3: ex3.o $(OBJECTS_EX2) chkopts
+	-${CLINKER} -o ex3 ex3.o $(OBJECTS_EX1) ${PETSC_SNES_LIB}
+	${RM} ex3.o
 #--------------------------------------------------------------------------
 
 
