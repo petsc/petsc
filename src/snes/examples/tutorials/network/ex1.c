@@ -384,7 +384,7 @@ int main(int argc,char **argv)
     numVertices1 = pfdata->nbus;
 
     ierr = PetscMalloc1(2*numEdges1,&edgelist_power);CHKERRQ(ierr);
-    ierr = GetListofEdges_Power(pfdata->nbranch,pfdata->branch,edgelist_power);CHKERRQ(ierr);
+    ierr = GetListofEdges_Power(pfdata,edgelist_power);CHKERRQ(ierr);
   }
   /* Broadcast power Sbase to all processors */
   ierr = MPI_Bcast(&User.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

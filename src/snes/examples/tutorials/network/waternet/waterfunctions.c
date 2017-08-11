@@ -168,22 +168,29 @@ PetscErrorCode WaterSetInitialGuess(DM networkdm,Vec X)
 
 PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
 {
-  PetscInt i,j,node1,node2;
-  Pipe     *pipe;
-  Pump     *pump;
+  PetscErrorCode ierr;
+  PetscInt       i,j,node1,node2;
+  Pipe           *pipe;
+  Pump           *pump;
+  PetscBool      netview=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(NULL,NULL, "-waternet_view",&netview);CHKERRQ(ierr);
   for (i=0; i < waternet->nedge; i++) {
     if (waternet->edge[i].type == EDGE_TYPE_PIPE) {
       pipe  = &waternet->edge[i].pipe;
       node1 = pipe->node1;
       node2 = pipe->node2;
-      printf("edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2);
+      if (netview) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"edge %d, pipe v[%d] -> v[%d]\n",i,node1,node2);CHKERRQ(ierr);
+      }
     } else {
       pump  = &waternet->edge[i].pump;
       node1 = pump->node1;
       node2 = pump->node2;
-      printf("edge %d, pump v[%d] -> v[%d]\n",i,node1,node2);
+      if (netview) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"edge %d, pump v[%d] -> v[%d]\n",i,node1,node2);CHKERRQ(ierr);
+      }
     }
 
     for (j=0; j < waternet->nvertex; j++) {

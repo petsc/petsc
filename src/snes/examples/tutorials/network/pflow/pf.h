@@ -136,5 +136,5 @@ typedef struct{
 } PFDATA PETSC_ATTRIBUTEALIGNED(sizeof(PetscScalar));
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
-extern PetscErrorCode GetListofEdges_Power(PetscInt,EDGE_Power,int[]);
+extern PetscErrorCode GetListofEdges_Power(PFDATA*,int*);
 #endif

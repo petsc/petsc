@@ -424,7 +424,7 @@ int main(int argc,char ** argv)
       numVertices = pfdata->nbus;
 
       ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
-      ierr = GetListofEdges_Power(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata,edges);CHKERRQ(ierr);
     }
 
     /* If external option activated. Introduce error in jacobian */

@@ -481,7 +481,7 @@ int main(int argc,char ** argv)
       numVertices1 = pfdata1->nbus;
 
       ierr = PetscMalloc1(2*numEdges1,&edgelist1);CHKERRQ(ierr);
-      ierr = GetListofEdges_Power(pfdata1->nbranch,pfdata1->branch,edgelist1);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata1,edgelist1);CHKERRQ(ierr);
 
       /*    READ DATA FOR THE SECOND SUBNETWORK */
       ierr = PetscNew(&pfdata2);CHKERRQ(ierr);
@@ -492,7 +492,7 @@ int main(int argc,char ** argv)
       numVertices2 = pfdata2->nbus;
 
       ierr = PetscMalloc1(2*numEdges2,&edgelist2);CHKERRQ(ierr);
-      ierr = GetListofEdges_Power(pfdata2->nbranch,pfdata2->branch,edgelist2);CHKERRQ(ierr);
+      ierr = GetListofEdges_Power(pfdata2,edgelist2);CHKERRQ(ierr);
     }
 
     PetscLogStagePop();
