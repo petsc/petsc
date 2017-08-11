@@ -399,7 +399,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     /* Side 5 (Right) */
     for (vz = 0; vz < faces[2]; vz++) {
       for (vy = 0; vy < faces[1]; vy++) {
-        voffset = numFaces + vz*vertices[0]*vertices[1] + vy*vertices[0] + vx;
+        voffset = numFaces + vz*vertices[0]*vertices[1] + vy*vertices[0] + faces[0];
         cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
         cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
         ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
