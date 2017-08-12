@@ -77,7 +77,7 @@ static int Keyval_setup(void)
 
 int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
-  if (num_attr >= MAX_ATTR) MPIUni_Abort(MPI_COMM_WORLD,1);
+  if (num_attr >= MAX_ATTR) return MPIUni_Abort(MPI_COMM_WORLD,1);
 
   attr_keyval[num_attr].extra_state = extra_state;
   attr_keyval[num_attr].del         = delete_fn;
