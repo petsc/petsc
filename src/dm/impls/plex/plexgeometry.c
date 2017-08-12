@@ -636,7 +636,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   }
   for (p = 0, numFound = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
-    PetscInt           dbin[3] = {}, bin, cell = -1, cellOffset;
+    PetscInt           dbin[3] = {-1,-1,-1}, bin, cell = -1, cellOffset;
     PetscBool          point_outside_domain = PETSC_FALSE;
 
     /* check bounding box of domain */
@@ -705,7 +705,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     for (p = 0; p < numPoints; p++) {
       const PetscScalar *point = &a[p*bs];
       PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
-      PetscInt           dbin[3] = {}, bin, cellOffset, d;
+      PetscInt           dbin[3] = {-1,-1,-1}, bin, cellOffset, d;
 
       if (cells[p].index < 0) {
         ++numFound;
