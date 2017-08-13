@@ -1271,6 +1271,10 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     for (unsigned i=0; i < msets.size(); ++i) {
       moab::Range msetelems;
       merr = dmmoab->mbiface->get_entities_by_dimension(msets[i], dmmoab->dim, msetelems, true);MB_CHK_ERR(merr);
+#ifdef MOAB_HAVE_MPI
+      /* filter all the non-owned and shared entities out of the list */
+      merr = dmmoab->pcomm->filter_pstatus(msetelems, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
+#endif
 
       int partID;
       moab::EntityHandle mset=msets[i];
