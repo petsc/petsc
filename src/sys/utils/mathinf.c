@@ -63,7 +63,7 @@ PetscBool PetscIsInfReal(PetscReal a)
   return !_finite(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #else
-PetscBool PetscIsInfReal(volatile PetscReal a)
+PetscBool PetscIsInfReal(PetscReal a)
 {
   return (a && a/2 == a) ? PETSC_TRUE : PETSC_FALSE;
 }
@@ -103,7 +103,7 @@ PetscBool PetscIsNanReal(PetscReal a)
   return _isnan(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #else
-PetscBool PetscIsNanReal(volatile PetscReal a)
+PetscBool PetscIsNanReal(PetscReal a)
 {
   return (a != a) ? PETSC_TRUE : PETSC_FALSE;
 }

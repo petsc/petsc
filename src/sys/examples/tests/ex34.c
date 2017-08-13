@@ -12,11 +12,8 @@ static PetscBool PetscIsNanRealFallback(volatile PetscReal a)
   return (a != a) ? PETSC_TRUE : PETSC_FALSE;
 }
 
-static PetscReal PetscRealFromFloatBits(unsigned int bits) {
-  union {unsigned int ival; float fval;} u;
-  u.ival = bits;
-  return u.fval;
-}
+PETSC_EXTERN PetscReal zero;
+PetscReal zero = 0;
 
 #define CALL(call) do { \
     PetscErrorCode _ierr;                                               \
@@ -29,10 +26,9 @@ int main(int argc, char **argv) {
   PetscReal pos_zero = PetscRealConstant(+0.0);
   PetscReal neg_one  = PetscRealConstant(-1.0);
   PetscReal pos_one  = PetscRealConstant(+1.0);
-  PetscReal neg_inf  = PetscRealFromFloatBits(0xFF800000); /* negative infinity */
-  PetscReal pos_inf  = PetscRealFromFloatBits(0x7F800000); /* positive infinity */
-  PetscReal s_nan    = PetscRealFromFloatBits(0xFFBFFFFF); /* signaling NaN */
-  PetscReal q_nan    = PetscRealFromFloatBits(0xFFFFFFFF); /* quiet NaN */
+  PetscReal neg_inf  = neg_one/zero; /* -inf */
+  PetscReal pos_inf  = pos_one/zero; /* +inf */
+  PetscReal x_nan    = zero/zero;    /*  NaN */
 
   PetscErrorCode ierr;
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
@@ -43,8 +39,7 @@ int main(int argc, char **argv) {
   CALL(PetscIsInfReal(pos_one));
   CALL(PetscIsInfReal(neg_inf));
   CALL(PetscIsInfReal(pos_inf));
-  CALL(PetscIsInfReal(s_nan));
-  CALL(PetscIsInfReal(q_nan));
+  CALL(PetscIsInfReal(x_nan));
 
   CALL(PetscIsNanReal(neg_zero));
   CALL(PetscIsNanReal(pos_zero));
@@ -52,8 +47,7 @@ int main(int argc, char **argv) {
   CALL(PetscIsNanReal(pos_one));
   CALL(PetscIsNanReal(neg_inf));
   CALL(PetscIsNanReal(pos_inf));
-  CALL(PetscIsNanReal(s_nan));
-  CALL(PetscIsNanReal(q_nan));
+  CALL(PetscIsNanReal(x_nan));
 
   CALL(PetscIsInfRealFallback(neg_zero));
   CALL(PetscIsInfRealFallback(pos_zero));
@@ -61,8 +55,7 @@ int main(int argc, char **argv) {
   CALL(PetscIsInfRealFallback(pos_one));
   CALL(PetscIsInfRealFallback(neg_inf));
   CALL(PetscIsInfRealFallback(pos_inf));
-  CALL(PetscIsInfRealFallback(s_nan));
-  CALL(PetscIsInfRealFallback(q_nan));
+  CALL(PetscIsInfRealFallback(x_nan));
 
   CALL(PetscIsNanRealFallback(neg_zero));
   CALL(PetscIsNanRealFallback(pos_zero));
@@ -70,8 +63,7 @@ int main(int argc, char **argv) {
   CALL(PetscIsNanRealFallback(pos_one));
   CALL(PetscIsNanRealFallback(neg_inf));
   CALL(PetscIsNanRealFallback(pos_inf));
-  CALL(PetscIsNanRealFallback(s_nan));
-  CALL(PetscIsNanRealFallback(q_nan));
+  CALL(PetscIsNanRealFallback(x_nan));
 
   ierr = PetscFinalize();
   return ierr;
