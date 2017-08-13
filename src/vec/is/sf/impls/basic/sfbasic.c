@@ -35,8 +35,8 @@ struct _n_PetscSFBasicPack {
   size_t           unitbytes;   /* Number of bytes in a unit */
   PetscInt         bs;          /* Number of basic units in a unit */
   const void       *key;        /* Array used as key for operation */
-  char             *root;       /* Packed root data, contiguous by leaf rank */
-  char             *leaf;       /* Packed leaf data, contiguous by root rank */
+  char             **root;      /* Packed root data, indexed by leaf rank */
+  char             **leaf;      /* Packed leaf data, indexed by root rank */
   MPI_Request      *requests;   /* Array of root requests followed by leaf requests */
   PetscSFBasicPack next;
 };
@@ -741,7 +741,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode   ierr;
   PetscSFBasicPack link,*p;
-  PetscInt         nrootranks,nleafranks;
+  PetscInt         nrootranks,nleafranks,i;
   const PetscInt   *rootoffset,*leafoffset;
 
   PetscFunctionBegin;
@@ -760,7 +760,13 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
-  ierr = PetscCalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nrootranks,&link->root,nleafranks,&link->leaf);CHKERRQ(ierr);
+  for (i=0; i<nrootranks; i++) {
+    ierr = PetscMalloc((rootoffset[i+1]-rootoffset[i])*link->unitbytes,&link->root[i]);CHKERRQ(ierr);
+  }
+  for (i=0; i<nleafranks; i++) {
+    ierr = PetscMalloc((leafoffset[i+1]-leafoffset[i])*link->unitbytes,&link->leaf[i]);CHKERRQ(ierr);
+  }
   ierr = PetscCalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
@@ -830,10 +836,13 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   ierr = PetscFree2(bas->ioffset,bas->irootloc);CHKERRQ(ierr);
   if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (link=bas->avail; link; link=next) {
+    PetscInt i;
     next = link->next;
 #if defined(PETSC_HAVE_MPI_TYPE_DUP)
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
 #endif
+    for (i=0; i<bas->niranks; i++) {ierr = PetscFree(link->root[i]);CHKERRQ(ierr);}
+    for (i=0; i<sf->nranks; i++) {ierr = PetscFree(link->leaf[i]);CHKERRQ(ierr);}
     ierr = PetscFree2(link->root,link->leaf);CHKERRQ(ierr);
     ierr = PetscFree(link->requests);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
@@ -888,12 +897,12 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
   /* Eagerly post leaf receives */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->leaf[i],n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
   /* Pack and send root data */
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
-    void        *packstart = link->root+rootoffset[i]*unitbytes;
+    void        *packstart = link->root[i];
     (*link->Pack)(n,link->bs,rootloc+rootoffset[i],rootdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
   }
@@ -913,7 +922,7 @@ PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *ro
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,&leafloc);CHKERRQ(ierr);
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
-    const void  *packstart = link->leaf+leafoffset[i]*link->unitbytes;
+    const void  *packstart = link->leaf[i];
     (*link->UnpackInsert)(n,link->bs,leafloc+leafoffset[i],leafdata,packstart);
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
@@ -943,12 +952,12 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
   /* Eagerly post root receives */
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
-    ierr = MPI_Irecv(link->root+rootoffset[i]*unitbytes,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->root[i],n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
   }
   /* Pack and send leaf data */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
-    void        *packstart = link->leaf+leafoffset[i]*unitbytes;
+    void        *packstart = link->leaf[i];
     (*link->Pack)(n,link->bs,leafloc+leafoffset[i],leafdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
@@ -978,7 +987,7 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
   }
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n   = rootoffset[i+1] - rootoffset[i];
-    char *packstart = (char *) link->root+rootoffset[i]*typesize;
+    char *packstart = (char *) link->root[i];
 
     if (UnpackOp) {
       (*UnpackOp)(n,link->bs,rootloc+rootoffset[i],rootdata,(const void *)packstart);
@@ -1033,13 +1042,13 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   /* Post leaf receives */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->leaf[i],n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
   /* Process local fetch-and-op, post root sends */
   ierr = PetscSFBasicPackGetFetchAndOp(sf,link,op,&FetchAndOp);CHKERRQ(ierr);
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
-    void        *packstart = link->root+rootoffset[i]*unitbytes;
+    void        *packstart = link->root[i];
 
     (*FetchAndOp)(n,link->bs,rootloc+rootoffset[i],rootdata,packstart);
     ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
@@ -1047,7 +1056,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
-    const void  *packstart = link->leaf+leafoffset[i]*unitbytes;
+    const void  *packstart = link->leaf[i];
     (*link->UnpackInsert)(n,link->bs,leafloc+leafoffset[i],leafupdate,packstart);
   }
   ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
