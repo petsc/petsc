@@ -195,12 +195,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
    * extra information and some different methods, call the AssemblyEnd 
    * routine for a MATSEQAIJ.
    * I'm not sure if this is the best way to do this, but it avoids
-   * a lot of code duplication.
-   * I also note that currently MATSEQAIJMKL doesn't know anything about
-   * the Mat_CompressedRow data structure that SeqAIJ now uses when there
-   * are many zero rows.  If the SeqAIJ assembly end routine decides to use
-   * this, this may break things.  (Don't know... haven't looked at it. 
-   * Do I need to disable this somehow?) */
+   * a lot of code duplication. */
   a->inode.use = PETSC_FALSE;  /* Must disable: otherwise the MKL routines won't get used. */
   ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
