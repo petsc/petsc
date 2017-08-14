@@ -26,9 +26,9 @@ class PETSc(object):
       return None
     return mpiexec
 
-  def example(self, num):
+  def example(self, library, num):
     '''Return the path to the executable for a given example number'''
-    return os.path.join(self.dir(), self.arch(), 'lib', 'ex'+str(num)+'-obj', 'ex'+str(num))
+    return os.path.join(self.dir(), self.arch(), 'lib', library.lower(), 'ex'+str(num))
 
   def source(self, library, num, filenametail):
     '''Return the path to the sources for a given example number'''
@@ -72,6 +72,28 @@ class PETScExample(object):
         a.append('-'+key+' '+str(value))
     return ' '.join(a)
 
+  def build(self, log = True):
+    sdir = os.path.join(self.petsc.dir(), 'src', self.library.lower(), 'examples', 'tutorials')
+    odir = os.getcwd()
+    os.chdir(sdir)
+    cmd = 'make ex'+str(self.num)
+    out, err, ret = self.runShellCommand(cmd, cwd = sdir, log = log)
+    if err:
+      raise RuntimeError('Unable to build example:\n'+err+out)
+    os.chdir(odir)
+    bdir = os.path.dirname(self.petsc.example(self.library, self.num))
+    try:
+      os.makedirs(bdir)
+    except OSError:
+      if not os.path.isdir(bdir):
+        raise
+    cmd = 'mv '+os.path.join(sdir, 'ex'+str(self.num))+' '+self.petsc.example(self.library, self.num)
+    out, err, ret = self.runShellCommand(cmd, log = log)
+    if ret:
+      print err
+      print out
+    return
+
   def run(self, numProcs = 1, log = True, **opts):
     cmd = ''
     if self.petsc.mpiexec() is not None:
@@ -80,7 +102,7 @@ class PETScExample(object):
       cmd += ' -n ' + str(numProcs) + ' '
       if os.environ.has_key('PE_HOSTFILE'):
         cmd += ' -hostfile hostfile '
-    cmd += ' '.join([self.petsc.example(self.num), self.optionsToString(**self.opts), self.optionsToString(**opts)])
+    cmd += ' '.join([self.petsc.example(self.library, self.num), self.optionsToString(**self.opts), self.optionsToString(**opts)])
     if 'batch' in opts and opts['batch']:
       del opts['batch']
       filename = generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
