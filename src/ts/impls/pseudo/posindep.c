@@ -229,6 +229,7 @@ static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
   PetscInt          i,n;
 
   PetscFunctionBegin;
+  *Xdot = NULL;
   ierr = VecGetArrayRead(ts->vec_sol,&xn);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&xnp1);CHKERRQ(ierr);
   ierr = VecGetArray(pseudo->xdot,&xdot);CHKERRQ(ierr);

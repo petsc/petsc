@@ -25,6 +25,10 @@ static PetscErrorCode DMDAGetNumElementsGhosted(DM da, PetscInt *nex, PetscInt *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* Appease -Wmaybe-uninitialized */
+  if (nex) *nex = -1;
+  if (ney) *ney = -1;
+  if (nez) *nez = -1;
   ierr = DMDAGetInfo(da,NULL,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&ien,&jen,&ken);CHKERRQ(ierr);
   if (sx+ien == M) ien--;

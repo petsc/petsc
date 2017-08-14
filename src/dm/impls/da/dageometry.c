@@ -692,15 +692,15 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   PetscInt          n,bs,p,npoints;
   PetscInt          xs,xe,Xs,Xe,mxlocal;
   PetscInt          ys,ye,Ys,Ye,mylocal;
-  PetscInt          d,dim,c0,c1;
+  PetscInt          d,c0,c1;
   PetscReal         gmin_l[2],gmax_l[2],dx[2];
   PetscReal         gmin[2],gmax[2];
   PetscInt          *cellidx;
   Vec               coor;
   const PetscScalar *_coor;
   PetscErrorCode    ierr;
-  
-  ierr = DMGetDimension(dmregular,&dim);CHKERRQ(ierr);
+
+  PetscFunctionBegin;
   ierr = DMDAGetCorners(dmregular,&xs,&ys,0,&xe,&ye,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dmregular,&Xs,&Ys,0,&Xe,&Ye,0);CHKERRQ(ierr);
   xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -747,7 +747,7 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
     if (coor_p[1] < gmin_l[1]) { continue; }
     if (coor_p[1] > gmax_l[1]) { continue; }
     
-    for (d=0; d<dim; d++) {
+    for (d=0; d<2; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
     }
     
@@ -772,15 +772,15 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   PetscInt          xs,xe,Xs,Xe,mxlocal;
   PetscInt          ys,ye,Ys,Ye,mylocal;
   PetscInt          zs,ze,Zs,Ze,mzlocal;
-  PetscInt          d,dim,c0,c1;
+  PetscInt          d,c0,c1;
   PetscReal         gmin_l[3],gmax_l[3],dx[3];
   PetscReal         gmin[3],gmax[3];
   PetscInt          *cellidx;
   Vec               coor;
   const PetscScalar *_coor;
   PetscErrorCode    ierr;
-  
-  ierr = DMGetDimension(dmregular,&dim);CHKERRQ(ierr);
+
+  PetscFunctionBegin;
   ierr = DMDAGetCorners(dmregular,&xs,&ys,&zs,&xe,&ye,&ze);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dmregular,&Xs,&Ys,&Zs,&Xe,&Ye,&Ze);CHKERRQ(ierr);
   xe += xs; Xe += Xs; if (xs != Xs) xs -= 1;
@@ -835,7 +835,7 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
     if (coor_p[2] < gmin_l[2]) { continue; }
     if (coor_p[2] > gmax_l[2]) { continue; }
     
-    for (d=0; d<dim; d++) {
+    for (d=0; d<3; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
     }
     

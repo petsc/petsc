@@ -540,6 +540,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
           for (edge = 0; edge < dim+1; ++edge) {
             PetscReal segA[6], segB[6];
 
+            if (PetscUnlikely(dim > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected dim %d > 3",dim);
             for (d = 0; d < dim; ++d) {segA[d] = PetscRealPart(ccoords[edge*dim+d]); segA[dim+d] = PetscRealPart(ccoords[((edge+1)%(dim+1))*dim+d]);}
             for (kk = 0; kk < (dim > 2 ? 2 : 1); ++kk) {
               if (dim > 2) {segB[2]     = PetscRealPart(point[2]);
@@ -635,7 +636,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   }
   for (p = 0, numFound = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
-    PetscInt           dbin[3], bin, cell = -1, cellOffset;
+    PetscInt           dbin[3] = {-1,-1,-1}, bin, cell = -1, cellOffset;
     PetscBool          point_outside_domain = PETSC_FALSE;
 
     /* check bounding box of domain */
@@ -704,7 +705,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     for (p = 0; p < numPoints; p++) {
       const PetscScalar *point = &a[p*bs];
       PetscReal          cpoint[3], diff[3], dist, distMax = PETSC_MAX_REAL;
-      PetscInt           dbin[3], bin, cellOffset, d;
+      PetscInt           dbin[3] = {-1,-1,-1}, bin, cellOffset, d;
 
       if (cells[p].index < 0) {
         ++numFound;

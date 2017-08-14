@@ -461,6 +461,7 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *ncrefct = 0;
   /* count all the circular references of DM and its contained Vecs */
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->localin[i])  refct--;

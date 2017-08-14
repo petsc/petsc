@@ -211,7 +211,7 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
       ierr = VecGetArrayRead(fv, &array);CHKERRQ(ierr);
       for (c = cStart; c < cEnd; ++c) {
         PetscScalar *coords = NULL, *a = NULL;
-        PetscInt     numCoords, color[4];
+        PetscInt     numCoords, color[4] = {-1,-1,-1,-1};
 
         ierr = DMPlexPointLocalRead(fdm, c, array, &a);CHKERRQ(ierr);
         if (a) {

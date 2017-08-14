@@ -198,6 +198,7 @@ static PetscErrorCode StackPush(Stack *stack,StackElement e)
 static PetscErrorCode StackPop(Stack *stack,StackElement *e)
 {
   PetscFunctionBegin;
+  *e = NULL;
   if (stack->top == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Empty stack");
   *e = stack->container[stack->top--];
   PetscFunctionReturn(0);
