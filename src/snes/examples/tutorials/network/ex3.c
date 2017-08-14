@@ -317,8 +317,12 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   PetscInt       nv,ne;
   const PetscInt *vtx,*edges;
   Vec            localX;
+  PetscMPIInt    rank;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = VecSet(X,0.0);CHKERRQ(ierr);
@@ -328,10 +332,22 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   /* Set initial guess for first subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Set initial guess for second subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
+  /* Set initial guess for the coupling subnet */
+  ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  if (ne) {
+    const PetscInt *cone;
+    ierr = DMNetworkGetConnectedVertices(networkdm,edges[0],&cone);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] coupling subnetwork: nv %d, ne %d; connected vertices %d %d\n",rank,nv,ne,cone[0],cone[1]);CHKERRQ(ierr);
+  }
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
@@ -354,7 +370,7 @@ int main(int argc,char **argv)
   Vec              X,F;
   SNES             snes;
   Mat              Jac;
-  PetscBool        viewJ=PETSC_FALSE;
+  PetscBool        viewJ=PETSC_FALSE,viewX=PETSC_FALSE;
 
   char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/datafiles/case9.m";
   PFDATA           *pfdata;
@@ -417,7 +433,7 @@ int main(int argc,char **argv)
 
   /* Get data for the coupling subnetwork */
   if (!crank) {
-    numEdges3 = 1; numVertices3 = 2;
+    numEdges3 = 1; numVertices3 = 0;
     ierr = PetscMalloc1(4*numEdges3,&edgelist_couple);CHKERRQ(ierr);
     edgelist_couple[0] = 0; edgelist_couple[1] = 4; /* from node: net[0] vertex[4] */
     edgelist_couple[2] = 1; edgelist_couple[3] = 0; /* to node:   net[1] vertex[0] */
@@ -536,8 +552,13 @@ int main(int argc,char **argv)
   }
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
-  //if (!crank) printf("Solution:\n");
-  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscLogStagePop();
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
+  if (viewX) {
+    if (!crank) printf("Solution:\n");
+    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscLogStagePop();
 
   if (viewJ) {
