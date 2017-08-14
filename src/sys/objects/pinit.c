@@ -715,7 +715,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
-  PetscBool      flg;
+  PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
 #if defined(PETSC_HAVE_CUDA)
   cublasStatus_t cberr;
@@ -723,6 +723,74 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
+  /*
+      The checking over compatible runtime libraries is complicated by the MPI ABI initiative
+      https://wiki.mpich.org/mpich/index.php/ABI_Compatibility_Initiative which started with
+        MPICH v3.1 (Released Feburary 2014)
+        IBM MPI v2.1 (December 2014)
+        Intel® MPI Library v5.0 (2014)
+        Cray MPT v7.0.0 (June 2014)
+      As of July 31, 2017 the ABI number still appears to be 12, that is all of the versions
+      listed above and since that time are compatible.
+
+      Unfortunately the MPI ABI initiative has not defined a way to determine the ABI number
+      at compile time or runtime. Thus we will need to systematically track the allowed versions
+      and how they are represented in the mpi.h and MPI_Get_library_version() output in order
+      to perform the checking.
+
+      Currently we only check for pre MPI ABI versions (and packages that do not follow the MPI ABI).
+
+      Questions:
+
+        Should the checks for ABI incompatibility be only on the major version number below?
+        Presumably the output to stderr will be removed before a release.
+  */
+
+#if defined(PETSC_HAVE_MPI_GET_LIBRARY_VERSION)
+  {
+    char        mpilibraryversion[MPI_MAX_LIBRARY_VERSION_STRING];
+    PetscMPIInt mpilibraryversionlength;
+    ierr = MPI_Get_library_version(mpilibraryversion,&mpilibraryversionlength);if (ierr) return ierr;
+    /* check for MPICH versions before MPI ABI initiative */
+#if defined(MPICH_VERSION)
+#if MPICH_NUMVERSION < 30100000
+    {
+      char *ver,*lf;
+      flg = PETSC_FALSE;
+      ierr = PetscStrstr(mpilibraryversion,"MPICH Version:",&ver);if (ierr) return ierr;
+      if (ver) {
+        ierr = PetscStrchr(ver,'\n',&lf);if (ierr) return ierr;
+        if (lf) {
+          *lf = 0;
+          ierr = PetscStrendswith(ver,MPICH_VERSION,&flg);if (ierr) return ierr;
+        }
+      }
+      if (!flg) {
+        fprintf(stderr,"PETSc Error --- MPICH library version \n%s does not match what PETSc was compiled with %s, aborting\n",mpilibraryversion,MPICH_VERSION);
+        return PETSC_ERR_MPI_LIB_INCOMP;
+      }
+    }
+#endif
+    /* check for OpenMPI version, it is not part of the MPI ABI initiative (is it part of another initiative that needs to be handled?) */
+#elif defined(OMPI_MAJOR_VERSION)
+    {
+      char *ver,bs[32],*bsf;
+      flg = PETSC_FALSE;
+      ierr = PetscStrstr(mpilibraryversion,"Open MPI",&ver);if (ierr) return ierr;
+      if (ver) {
+        sprintf(bs,"v%d.%d",OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+        ierr = PetscStrstr(ver,bs,&bsf);if (ierr) return ierr;
+        if (bsf) flg = PETSC_TRUE;
+      }
+      if (!flg) {
+        fprintf(stderr,"PETSc Error --- Open MPI library version \n%s does not match what PETSc was compiled with %d.%d, aborting\n",mpilibraryversion,OMPI_MAJOR_VERSION,OMPI_MINOR_VERSION);
+        return PETSC_ERR_MPI_LIB_INCOMP;
+      }
+    }
+#endif
+  }
+#endif
+
 
   /* these must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
