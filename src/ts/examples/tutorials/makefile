@@ -178,10 +178,6 @@ ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o ${PETSC_TS_LIB}
 	${RM} ex29.o
 
-ex30: ex30.o chkopts
-	-${CLINKER} -o ex30 ex30.o ${PETSC_TS_LIB}
-	${RM} ex30.o
-
 ex31: ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_TS_LIB}
 	${RM} ex31.o
@@ -743,15 +739,16 @@ runex31_2:
 	   ${RM} -f ex31_2.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_reject_safety 1 > ex35_1.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex35 -n 20 -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none  > ex35_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 -ts_adapt_reject_safety 1 > ex35_2.tmp 2>&1;  \
+	-@${MPIEXEC} -n 2 ./ex35 -n 50 -ts_type gl -ts_adapt_type none -ts_dt 0.1 -io > ex35_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
+runex40: runex40_a runex40_b runex40_c runex40_d runex40_e
 
 runex40_a:
 	-@${MPIEXEC} -n 1 ./ex40 -snes_stol 1e-4 > ex40.tmp 2>&1; \
@@ -856,7 +853,6 @@ TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_MOAB = ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5 = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM = extchem.PETSc runextchem extchem.rm
 
 TESTEXAMPLES_REVOLVE = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 printdot runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 runex20adj_17 printdot runex20adj_18 runex20adj_19 runex20adj_20 ex20adj.rm

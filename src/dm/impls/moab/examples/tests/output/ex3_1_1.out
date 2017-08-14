@@ -1,0 +1,27 @@
+Creating a 2-dimensional structured simplex mesh of 2x2x2 in memory and creating a DM object.
+Generate the MOAB mesh hierarchy with 2 levels.
+Level 0
+DM Object: Coarse Mesh 1 MPI processes
+  type: moab
+  Coarse Mesh in 2 dimensions:
+    Sizes: cells=8, vertices=9, blocks=1
+    Boundary trace:
+      cells=8, faces=8, vertices=8
+    Fields: 1 components
+      [0] - DEFAULT
+Level 1
+DM Object: 1 MPI processes
+  type: moab
+    Sizes: cells=32, vertices=25, blocks=1
+    Boundary trace:
+      cells=14, faces=16, vertices=16
+    Fields: 1 components
+      [0] - DEFAULT
+Level 2
+DM Object: 1 MPI processes
+  type: moab
+    Sizes: cells=128, vertices=81, blocks=1
+    Boundary trace:
+      cells=30, faces=32, vertices=32
+    Fields: 1 components
+      [0] - DEFAULT

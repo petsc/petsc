@@ -1,0 +1,3 @@
+Number of mesh hierarchy levels: 2
+ComputeMatrix: Level = 2, N(elements) = 512, N(vertices) = 729 
+Linear solve converged due to CONVERGED_RTOL iterations 4
