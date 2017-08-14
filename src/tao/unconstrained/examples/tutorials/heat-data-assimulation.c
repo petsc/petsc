@@ -124,8 +124,8 @@ int main(int argc,char **argv)
   appctx.param.L    = 1.0;  /* length of the domain */
   appctx.param.mu   = 0.001; /* diffusion coefficient */
   appctx.initial_dt = 1e-4;
-
-  appctx.param.Tend = 0.01;
+  appctx.param.steps = PETSC_MAX_INT;
+  appctx.param.Tend  = 0.01;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL);CHKERRQ(ierr);
@@ -455,7 +455,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(appctx->ts,appctx->param.steps,appctx->param.Tend);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(appctx->ts,appctx->param.steps);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(appctx->ts,appctx->param.Tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(appctx->ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   ierr = TSSetTolerances(appctx->ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
