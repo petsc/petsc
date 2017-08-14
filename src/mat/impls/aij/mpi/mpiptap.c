@@ -341,10 +341,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ptap->AP_loc->info.fill_ratio_needed = apfill;
 
   if (api[am]) {
-    ierr = PetscInfo3(ptap->AP_loc,"AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
+    ierr = PetscInfo3(ptap->AP_loc,"Scalable algorithm, AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
     ierr = PetscInfo1(ptap->AP_loc,"Use MatPtAP(A,B,MatReuse,%g,&C) for best AP_loc performance.;\n",(double)apfill);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(ptap->AP_loc,"AP_loc is empty \n");CHKERRQ(ierr);
+    ierr = PetscInfo(ptap->AP_loc,"Scalable algorithm, AP_loc is empty \n");CHKERRQ(ierr);
   }
 #endif
 
@@ -599,10 +599,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     if (alg_scalable) {
       alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
-      ierr = PetscInfo2(P,"Use scalable algorithm, pN %D, fill*nz_allocated %g\n",pN,fill*nz_local);CHKERRQ(ierr);
     }
   }
-  /* ierr = PetscInfo2(P,"Use algorithm %D, pN %D\n",alg,pN);CHKERRQ(ierr); */
 
   if (alg == 0) {
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(A,P,fill,C);CHKERRQ(ierr);
@@ -736,10 +734,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ptap->AP_loc->info.fill_ratio_needed = apfill;
 
   if (api[am]) {
-    ierr = PetscInfo3(ptap->AP_loc,"AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
+    ierr = PetscInfo3(ptap->AP_loc,"Nonscalable algorithm, AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
     ierr = PetscInfo1(ptap->AP_loc,"Use MatPtAP(A,B,MatReuse,%g,&C) for best AP_loc performance.;\n",(double)apfill);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(ptap->AP_loc,"AP_loc is empty \n");CHKERRQ(ierr);
+    ierr = PetscInfo(ptap->AP_loc,"Nonscalable algorithm, AP_loc is empty \n");CHKERRQ(ierr);
   }
 #endif
 
