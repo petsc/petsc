@@ -12,7 +12,7 @@ static PetscBool PetscIsNanRealFallback(volatile PetscReal a)
   return (a != a) ? PETSC_TRUE : PETSC_FALSE;
 }
 
-PETSC_EXTERN PetscReal zero;
+PETSC_INTERN PetscReal zero;
 PetscReal zero = 0;
 
 #define CALL(call) do { \
