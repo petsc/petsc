@@ -846,7 +846,6 @@ static PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFReset_Basic(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

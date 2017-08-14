@@ -71,6 +71,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (sf->ops->Reset) {ierr = (*sf->ops->Reset)(sf);CHKERRQ(ierr);}
   sf->mine   = NULL;
   ierr       = PetscFree(sf->mine_alloc);CHKERRQ(ierr);
   sf->remote = NULL;
@@ -81,7 +82,6 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
   ierr         = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   sf->graphset = PETSC_FALSE;
-  if (sf->ops->Reset) {ierr = (*sf->ops->Reset)(sf);CHKERRQ(ierr);}
   sf->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
