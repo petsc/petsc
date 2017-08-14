@@ -2,16 +2,6 @@ static char help[] = "Tests IsInf/IsNan routines.\n";
 
 #include <petscsys.h>
 
-static PetscBool PetscIsInfRealFallback(volatile PetscReal a)
-{
-  return (a && a/2 == a) ? PETSC_TRUE : PETSC_FALSE;
-}
-
-static PetscBool PetscIsNanRealFallback(volatile PetscReal a)
-{
-  return (a != a) ? PETSC_TRUE : PETSC_FALSE;
-}
-
 PETSC_INTERN PetscReal zero;
 PetscReal zero = 0;
 
@@ -48,22 +38,6 @@ int main(int argc, char **argv) {
   CALL(PetscIsNanReal(neg_inf));
   CALL(PetscIsNanReal(pos_inf));
   CALL(PetscIsNanReal(x_nan));
-
-  CALL(PetscIsInfRealFallback(neg_zero));
-  CALL(PetscIsInfRealFallback(pos_zero));
-  CALL(PetscIsInfRealFallback(neg_one));
-  CALL(PetscIsInfRealFallback(pos_one));
-  CALL(PetscIsInfRealFallback(neg_inf));
-  CALL(PetscIsInfRealFallback(pos_inf));
-  CALL(PetscIsInfRealFallback(x_nan));
-
-  CALL(PetscIsNanRealFallback(neg_zero));
-  CALL(PetscIsNanRealFallback(pos_zero));
-  CALL(PetscIsNanRealFallback(neg_one));
-  CALL(PetscIsNanRealFallback(pos_one));
-  CALL(PetscIsNanRealFallback(neg_inf));
-  CALL(PetscIsNanRealFallback(pos_inf));
-  CALL(PetscIsNanRealFallback(x_nan));
 
   ierr = PetscFinalize();
   return ierr;

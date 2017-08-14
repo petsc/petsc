@@ -12,17 +12,3 @@ PetscIsNanReal(pos_one)          -> False
 PetscIsNanReal(neg_inf)          -> False
 PetscIsNanReal(pos_inf)          -> False
 PetscIsNanReal(x_nan)            -> True
-PetscIsInfRealFallback(neg_zero) -> False
-PetscIsInfRealFallback(pos_zero) -> False
-PetscIsInfRealFallback(neg_one)  -> False
-PetscIsInfRealFallback(pos_one)  -> False
-PetscIsInfRealFallback(neg_inf)  -> True
-PetscIsInfRealFallback(pos_inf)  -> True
-PetscIsInfRealFallback(x_nan)    -> False
-PetscIsNanRealFallback(neg_zero) -> False
-PetscIsNanRealFallback(pos_zero) -> False
-PetscIsNanRealFallback(neg_one)  -> False
-PetscIsNanRealFallback(pos_one)  -> False
-PetscIsNanRealFallback(neg_inf)  -> False
-PetscIsNanRealFallback(pos_inf)  -> False
-PetscIsNanRealFallback(x_nan)    -> True
