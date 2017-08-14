@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Vec            local,global,coors;
   PetscScalar    ***xy,***aglobal;
   PetscDraw      draw;
-  char           fname[16];
+  char           fname[32];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Create viewers */
