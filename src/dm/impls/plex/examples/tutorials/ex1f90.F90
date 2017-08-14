@@ -112,11 +112,11 @@
 !
 !  test:
 !    suffix: 0
-!    requires: triangle !mpiuni
+!    requires: triangle
 !
 !  test:
 !    suffix: 1
-!    requires: ctetgen !mpiuni
+!    requires: ctetgen
 !    args: -dim 3
 !
 !TEST*/

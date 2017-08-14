@@ -991,8 +991,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: !mpiuni
 
   test:
     suffix: 1
