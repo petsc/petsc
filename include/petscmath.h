@@ -637,12 +637,14 @@ M*/
 #define PETSC_INFINITY               (PETSC_MAX_REAL/4)
 #define PETSC_NINFINITY              (-PETSC_INFINITY)
 
-PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
-PETSC_EXTERN PetscErrorCode PetscIsNanReal(PetscReal);
+PETSC_EXTERN PetscBool PetscIsInfReal(PetscReal);
+PETSC_EXTERN PetscBool PetscIsNanReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
-PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
-PETSC_STATIC_INLINE PetscErrorCode PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
-PETSC_STATIC_INLINE PetscErrorCode PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanReal(PetscReal v) {return PetscIsInfReal(v) || PetscIsNanReal(v) ? PETSC_TRUE : PETSC_FALSE;}
+PETSC_STATIC_INLINE PetscBool PetscIsInfScalar(PetscScalar v) {return PetscIsInfReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscBool PetscIsNanScalar(PetscScalar v) {return PetscIsNanReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscBool PetscIsInfOrNanScalar(PetscScalar v) {return PetscIsInfOrNanReal(PetscAbsScalar(v));}
+PETSC_STATIC_INLINE PetscBool PetscIsNormalScalar(PetscScalar v) {return PetscIsNormalReal(PetscAbsScalar(v));}
 
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal,PetscReal);
 PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar,PetscScalar);

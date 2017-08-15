@@ -1,0 +1,14 @@
+PetscIsInfReal(neg_zero)         -> False
+PetscIsInfReal(pos_zero)         -> False
+PetscIsInfReal(neg_one)          -> False
+PetscIsInfReal(pos_one)          -> False
+PetscIsInfReal(neg_inf)          -> True
+PetscIsInfReal(pos_inf)          -> True
+PetscIsInfReal(x_nan)            -> False
+PetscIsNanReal(neg_zero)         -> False
+PetscIsNanReal(pos_zero)         -> False
+PetscIsNanReal(neg_one)          -> False
+PetscIsNanReal(pos_one)          -> False
+PetscIsNanReal(neg_inf)          -> False
+PetscIsNanReal(pos_inf)          -> False
+PetscIsNanReal(x_nan)            -> True

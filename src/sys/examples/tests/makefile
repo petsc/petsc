@@ -123,5 +123,8 @@ ex31: ex31.o chkopts
 ex32: ex32.o chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_SYS_LIB}
 	${RM} -f ex32.o
+ex34: ex34.o chkopts
+	-${CLINKER} -o ex34 ex34.o  ${PETSC_SYS_LIB}
+	${RM} -f ex34.o
 
 include ${PETSC_DIR}/lib/petsc/conf/test
