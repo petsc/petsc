@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscSFNode    *remote;
   PetscMPIInt    rank,size;
   PetscSF        sf;
-  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
+  PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert,test_sf_distribute;
   MPI_Op         mop=MPI_OP_NULL; /* initialize to prevent compiler warnings with cxx_quad build */
   char           opstring[256];
   PetscBool      strflg;
@@ -91,31 +91,46 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL);CHKERRQ(ierr);
   stride          = 1;
   ierr            = PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL);CHKERRQ(ierr);
+  test_sf_distribute = PETSC_FALSE;
+  ierr            = PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
-  nroots       = 2 + (PetscInt)(rank == 0);
-  nrootsalloc  = nroots * stride;
-  nleaves      = 2 + (PetscInt)(rank > 0);
-  nleavesalloc = nleaves * stride;
-  mine         = NULL;
-  if (stride > 1) {
-    PetscInt i;
-
-    ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
-    for (i = 0; i < nleaves; i++) {
-      mine[i] = stride * i;
+  if (test_sf_distribute) {
+    nroots = size;
+    nrootsalloc = size;
+    nleaves = size;
+    nleavesalloc = size;
+    mine = NULL;
+    ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+    for (i=0; i<size; i++) {
+      remote[i].rank = i;
+      remote[i].index = rank;
     }
-  }
-  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
-  /* Left periodic neighbor */
-  remote[0].rank  = (rank+size-1)%size;
-  remote[0].index = 1 * stride;
-  /* Right periodic neighbor */
-  remote[1].rank  = (rank+1)%size;
-  remote[1].index = 0 * stride;
-  if (rank > 0) {               /* All processes reference rank 0, index 1 */
-    remote[2].rank  = 0;
-    remote[2].index = 2 * stride;
+  } else {
+    nroots       = 2 + (PetscInt)(rank == 0);
+    nrootsalloc  = nroots * stride;
+    nleaves      = 2 + (PetscInt)(rank > 0);
+    nleavesalloc = nleaves * stride;
+    mine         = NULL;
+    if (stride > 1) {
+      PetscInt i;
+
+      ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+      for (i = 0; i < nleaves; i++) {
+        mine[i] = stride * i;
+      }
+    }
+    ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+    /* Left periodic neighbor */
+    remote[0].rank  = (rank+size-1)%size;
+    remote[0].index = 1 * stride;
+    /* Right periodic neighbor */
+    remote[1].rank  = (rank+1)%size;
+    remote[1].index = 0 * stride;
+    if (rank > 0) {               /* All processes reference rank 0, index 1 */
+      remote[2].rank  = 0;
+      remote[2].index = 2 * stride;
+    }
   }
 
   /* Create a star forest for communication. In this example, the leaf space is dense, so we pass NULL. */
@@ -264,3 +279,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 8
+    nsize: 3
+    args: -test_bcast -test_sf_distribute -sf_type window
+  test:
+    suffix: 8_basic
+    nsize: 3
+    args: -test_bcast -test_sf_distribute -sf_type basic
+TEST*/
