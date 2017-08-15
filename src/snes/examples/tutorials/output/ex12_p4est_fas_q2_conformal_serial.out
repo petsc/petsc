@@ -28,7 +28,7 @@
 Nonlinear solve did not converge due to DIVERGED_INNER iterations 0
 SNES Object: 1 MPI processes
   type: fas
-  FAS: type is MULTIPLICATIVE, levels=3, cycles=1
+      type is MULTIPLICATIVE, levels=3, cycles=1
       Not using Galerkin computed coarse grid function evaluation
   Coarse grid solver -- level 0 -------------------------------
     SNES Object: (fas_coarse_) 1 MPI processes

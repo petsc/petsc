@@ -1818,7 +1818,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 1 : 0);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 1;
-      orntNew[2] = 0;
+      orntNew[2] = -2;
       coneNew[3] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 0;
       orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
@@ -1831,13 +1831,13 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       /* C quad */
       coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 1;
-      orntNew[0] = -2;
+      orntNew[0] = 0;
       coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 0 : 1);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 1 : 0);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 2;
-      orntNew[3] = 0;
+      orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp+2, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+2, orntNew);CHKERRQ(ierr);
 #if 1
@@ -1850,7 +1850,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 3;
       orntNew[0] = 0;
       coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 2;
-      orntNew[1] = -2;
+      orntNew[1] = 0;
       coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 0 : 1);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (cone[3] - fStart)*2 + (ornt[3] < 0 ? 1 : 0);
@@ -1915,9 +1915,14 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       for (r = 0; r < 4; ++r) {
         const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
 
-        coneNew[0] = vStartNew + (vEnd - vStart) + (cone[r] - fStart);
-        coneNew[1] = vStartNew + (vEnd - vStart) + (fEnd    - fStart) + (c - cStart);
-        ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+	if (r==1 || r==2) {
+          coneNew[0] = vStartNew + (vEnd - vStart) + (fEnd    - fStart) + (c - cStart);
+          coneNew[1] = vStartNew + (vEnd - vStart) + (cone[r] - fStart);
+	} else {
+          coneNew[0] = vStartNew + (vEnd - vStart) + (cone[r] - fStart);
+          coneNew[1] = vStartNew + (vEnd - vStart) + (fEnd    - fStart) + (c - cStart);
+	}
+	ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
 #if 1
         if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
         for (p = 0; p < 2; ++p) {
