@@ -405,9 +405,17 @@ PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-$   MAT_SHARE_NONZERO_PATTERN - the i and j arrays in the new matrix will be shared with the original matrix
-$                               this also triggers the MAT_DO_NOT_COPY_VALUES option. This is used when you
-$                               have several matrices with the same nonzero pattern.
+$   MAT_DO_NOT_COPY_VALUES    - Create a matrix using the same nonzero pattern as the original matrix, 
+$                               with zeros for the numerical values.
+$   MAT_COPY_VALUES           - Create a matrix with the same nonzero pattern as the original matrix 
+$                               and with the same numerical values.
+$   MAT_SHARE_NONZERO_PATTERN - Create a matrix that shares the nonzero structure with the previous matrix
+$                               and does not copy it, using zeros for the numerical values. The parent and 
+$                               child matrices will share their index (i and j) arrays, and you cannot 
+$                               insert new nonzero entries into either matrix.
+
+Notes: Many matrix types (including SeqAIJ) do not support the MAT_SHARE_NONZERO_PATTERN optimization; in 
+this case the behavior is as if MAT_DO_NOT_COPY_VALUES has been specified.
 
 .seealso: MatDuplicate()
 E*/
