@@ -512,7 +512,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
-    PetscInt    i,j;
+    PetscInt    ii,i,j;
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -526,13 +526,20 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      PetscMPIInt *tmpranks,*perm;
+      ierr = PetscMalloc2(sf->nranks,&tmpranks,sf->nranks,&perm);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmpranks,sf->ranks,sf->nranks*sizeof(tmpranks[0]));CHKERRQ(ierr);
+      for (i=0; i<sf->nranks; i++) perm[i] = i;
+      ierr = PetscSortMPIIntWithArray(sf->nranks,tmpranks,perm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
-      for (i=0; i<sf->nranks; i++) {
+      for (ii=0; ii<sf->nranks; ii++) {
+        i = perm[ii];
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
         for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
         }
       }
+      ierr = PetscFree2(tmpranks,perm);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
