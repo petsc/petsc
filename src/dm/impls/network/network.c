@@ -160,7 +160,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     }
   }
 
-#if 1
+#if 0
   for(i=0; i < network->nEdges; i++) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",network->edges[2*i],network->edges[2*i+1]);CHKERRQ(ierr);
   }
@@ -187,7 +187,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     ierr = PetscCalloc1(network->subnet[j].nvtx,&network->subnet[j].vertices);CHKERRQ(ierr);
     /* Temporarily setting nvtx and nedge to 0 so we can use them as counters in the below for loop.
        These get updated when the vertices and edges are added. */
-    network->subnet[j].nvtx = network->subnet[j].nedge = 0;       
+    network->subnet[j].nvtx = network->subnet[j].nedge = 0;
   }
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
@@ -389,7 +389,6 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,PetscInt size,P
   PetscInt              i;
 
   PetscFunctionBegin;
-  
   for (i=0; i < network->ncomponent; i++) {
     ierr = PetscStrcmp(component->name,name,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1093,7 +1092,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm,PetscInt overlap)
     newDMnetwork->subnet[j].Nvtx = oldDMnetwork->subnet[j].Nvtx;
     newDMnetwork->subnet[j].Nedge = oldDMnetwork->subnet[j].Nedge;
   }
-  
+
   for(e = newDMnetwork->eStart; e < newDMnetwork->eEnd; e++ ) {
     ierr = PetscSectionGetOffset(newDMnetwork->DataSection,e,&offset);CHKERRQ(ierr);
     header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray+offset);CHKERRQ(ierr);
