@@ -419,11 +419,6 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;
 #else
-#if   defined(PETSC_USE_REAL_SINGLE) && defined(CMPLXF)
-  return CMPLXF(x,y);
-#elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
-  return CMPLX(x,y);
-#else
   { /* In both C99 and C11 (ISO/IEC 9899, Section 6.2.5),
 
        "For each floating type there is a corresponding real type, which is always a real floating
@@ -437,7 +432,6 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
     uz.f[1] = y;
     return uz.z;
   }
-#endif
 #endif
 }
 #endif
