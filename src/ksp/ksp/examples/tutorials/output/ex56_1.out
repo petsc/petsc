@@ -1,15 +1,15 @@
-  0 KSP Residual norm 1541.54 
-  1 KSP Residual norm 457.831 
-  2 KSP Residual norm 179.445 
-  3 KSP Residual norm 48.872 
-  4 KSP Residual norm 24.3594 
-  5 KSP Residual norm 8.62095 
-  6 KSP Residual norm 3.02678 
-  7 KSP Residual norm 1.24662 
-  8 KSP Residual norm 0.355816 
-  9 KSP Residual norm 0.0902076 
- 10 KSP Residual norm 0.0203908 
- 11 KSP Residual norm 0.00480326 
+  0 KSP Residual norm 1541.57 
+  1 KSP Residual norm 457.801 
+  2 KSP Residual norm 179.436 
+  3 KSP Residual norm 48.8667 
+  4 KSP Residual norm 24.3583 
+  5 KSP Residual norm 8.6205 
+  6 KSP Residual norm 3.02657 
+  7 KSP Residual norm 1.24645 
+  8 KSP Residual norm 0.355762 
+  9 KSP Residual norm 0.0901996 
+ 10 KSP Residual norm 0.0203897 
+ 11 KSP Residual norm 0.00480298 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -50,8 +50,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalue estimates used:  min = 0.36404, max = 1.91121
+        eigenvalues estimate via cg min 0.0514036, max 1.8202
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -102,6 +102,7 @@ PC Object: 8 MPI processes
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
@@ -170,18 +171,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154154 
-  1 KSP Residual norm 0.00457831 
-  2 KSP Residual norm 0.00179445 
-  3 KSP Residual norm 0.00048872 
-  4 KSP Residual norm 0.000243594 
-  5 KSP Residual norm 8.62095e-05 
-  6 KSP Residual norm 3.02678e-05 
-  7 KSP Residual norm 1.24662e-05 
-  8 KSP Residual norm 3.55816e-06 
-  9 KSP Residual norm 9.02076e-07 
- 10 KSP Residual norm 2.03908e-07 
- 11 KSP Residual norm 4.80326e-08 
+  0 KSP Residual norm 0.0154157 
+  1 KSP Residual norm 0.00457801 
+  2 KSP Residual norm 0.00179436 
+  3 KSP Residual norm 0.000488667 
+  4 KSP Residual norm 0.000243583 
+  5 KSP Residual norm 8.6205e-05 
+  6 KSP Residual norm 3.02657e-05 
+  7 KSP Residual norm 1.24645e-05 
+  8 KSP Residual norm 3.55762e-06 
+  9 KSP Residual norm 9.01996e-07 
+ 10 KSP Residual norm 2.03897e-07 
+ 11 KSP Residual norm 4.80298e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -218,12 +219,13 @@ PC Object: 8 MPI processes
         rows=60, cols=60, bs=6
         total: nonzeros=3600, allocated nonzeros=3600
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalue estimates used:  min = 0.36404, max = 1.91121
+        eigenvalues estimate via cg min 0.0514036, max 1.8202
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -274,6 +276,7 @@ PC Object: 8 MPI processes
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
@@ -342,18 +345,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154154 
-  1 KSP Residual norm 0.00457831 
-  2 KSP Residual norm 0.00179445 
-  3 KSP Residual norm 0.00048872 
-  4 KSP Residual norm 0.000243594 
-  5 KSP Residual norm 8.62095e-05 
-  6 KSP Residual norm 3.02678e-05 
-  7 KSP Residual norm 1.24662e-05 
-  8 KSP Residual norm 3.55816e-06 
-  9 KSP Residual norm 9.02076e-07 
- 10 KSP Residual norm 2.03908e-07 
- 11 KSP Residual norm 4.80326e-08 
+  0 KSP Residual norm 0.0154157 
+  1 KSP Residual norm 0.00457801 
+  2 KSP Residual norm 0.00179436 
+  3 KSP Residual norm 0.000488667 
+  4 KSP Residual norm 0.000243583 
+  5 KSP Residual norm 8.6205e-05 
+  6 KSP Residual norm 3.02657e-05 
+  7 KSP Residual norm 1.24645e-05 
+  8 KSP Residual norm 3.55762e-06 
+  9 KSP Residual norm 9.01996e-07 
+ 10 KSP Residual norm 2.03897e-07 
+ 11 KSP Residual norm 4.80298e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -390,12 +393,13 @@ PC Object: 8 MPI processes
         rows=60, cols=60, bs=6
         total: nonzeros=3600, allocated nonzeros=3600
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.364032, max = 1.91117
-        eigenvalues estimate via cg min 0.0516467, max 1.82016
+        eigenvalue estimates used:  min = 0.36404, max = 1.91121
+        eigenvalues estimate via cg min 0.0514036, max 1.8202
         eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -446,6 +450,7 @@ PC Object: 8 MPI processes
         rows=474, cols=474, bs=6
         total: nonzeros=64476, allocated nonzeros=64476
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 10 nodes, limit used is 5
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
@@ -514,4 +519,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=5.332293e-05, |b|=4.630910e+00, emax=9.960805e-01
+[0]main |b-Ax|/|b|=5.332230e-05, |b|=4.630910e+00, emax=9.960807e-01
