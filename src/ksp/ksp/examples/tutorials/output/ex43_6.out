@@ -77,6 +77,7 @@ PC Object: (stokes_) 8 MPI processes
         rows=108, cols=108, bs=3
         total: nonzeros=2304, allocated nonzeros=2304
         total number of mallocs used during MatSetValues calls =0
+          using nonscalable MatPtAP() implementation
           using I-node (on process 0) routines: found 6 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (stokes_mg_levels_1_) 8 MPI processes
