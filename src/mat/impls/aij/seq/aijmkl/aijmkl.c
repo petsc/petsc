@@ -253,8 +253,17 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-  /* If there are no nonzero entries, this is a no-op: return immediately. */
-  if(!a->nz) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, zero yy and return immediately. */
+  if(!a->nz) {
+    PetscInt i;
+    PetscInt m=A->rmap->n;
+    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      y[i] = 0.0;
+    }
+    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -326,8 +335,17 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
 
-  /* If there are no nonzero entries, this is a no-op: return immediately. */
-  if(!a->nz) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, zero yy and return immediately. */
+  if(!a->nz) {
+    PetscInt i;
+    PetscInt n=A->cmap->n;
+    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      y[i] = 0.0;
+    }
+    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -417,8 +435,16 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
-  /* If there are no nonzero entries, this is a no-op: return immediately. */
-  if(!a->nz) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, set zz = yy and return immediately. */
+  if(!a->nz) {
+    PetscInt i;
+    ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      z[i] = y[i];
+    }
+    ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
@@ -519,8 +545,16 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
 
-  /* If there are no nonzero entries, this is a no-op: return immediately. */
-  if(!a->nz) PetscFunctionReturn(0);
+  /* If there are no nonzero entries, set zz = yy and return immediately. */
+  if(!a->nz) {
+    PetscInt i;
+    ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      z[i] = y[i];
+    }
+    ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
