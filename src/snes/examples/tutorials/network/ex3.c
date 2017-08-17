@@ -15,7 +15,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 
 typedef struct{
   UserCtx_Power user_power;
-  PetscInt      id_subsnes;
+  PetscInt      subsnes_id;
 } UserCtx;
 
 /* Dummy equation localF(X) = localX */
@@ -257,6 +257,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   UserCtx_Power  user_power = (*user).user_power;
 
   PetscFunctionBegin;
+  //printf("subsnes_id %d\n",(*user).subsnes_id);
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -270,15 +271,20 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /* Form Function for power subnetwork */
-  //UserCtx_Power user_power = (UserCtx_Power)appctx->user_power;
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,&user_power);CHKERRQ(ierr);
-  //ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  if ((*user).subsnes_id == 1) { /* snes_water only */
+    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,&user_power);CHKERRQ(ierr);
+  }
 
   /* Form Function for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  //ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  if ((*user).subsnes_id == 0) { /* snes_power only */
+    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  }
 
   /* Form Function for the coupling subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
@@ -459,7 +465,7 @@ int main(int argc,char **argv)
   PetscInt         i,j,*edgelist[3],nv,ne;
   const PetscInt   *vtx,*edges;
   Vec              X,F;
-  SNES             snes;
+  SNES             snes,snes_power,snes_water;
   Mat              Jac;
   PetscBool        viewJ=PETSC_FALSE,viewX=PETSC_FALSE;
   UserCtx          user;
@@ -468,7 +474,7 @@ int main(int argc,char **argv)
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
   int              *edgelist_power=NULL;
-  UserCtx_Power    User_power=user.user_power;
+  PetscScalar      Sbase;
 
   WATERDATA        *waterdata;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="waternet/sample1.inp";
@@ -490,7 +496,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
     ierr = PetscNew(&pfdata);CHKERRQ(ierr);
     ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
-    User_power.Sbase = pfdata->sbase;
+    Sbase = pfdata->sbase;
 
     numEdges1    = pfdata->nbranch;
     numVertices1 = pfdata->nbus;
@@ -504,7 +510,8 @@ int main(int argc,char **argv)
     printf("\n");
   }
   /* Broadcast power Sbase to all processors */
-  ierr = MPI_Bcast(&User_power.Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  user.user_power.Sbase = Sbase;
 
   /* GET DATA FOR THE SECOND SUBNETWORK: Waternet */
   ierr = PetscNew(&waterdata);CHKERRQ(ierr);
@@ -616,6 +623,9 @@ int main(int argc,char **argv)
   /* Distribute networkdm to multiple processes */
   ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
 
+  ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+
   PetscLogStagePop();
 
   /* (3) Solve */
@@ -623,17 +633,15 @@ int main(int argc,char **argv)
   ierr = PetscLogStageRegister("SNES Solve",&stage3);CHKERRQ(ierr);
   PetscLogStagePush(stage3);
 
-  ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* HOOK UP SOLVER */
+  user.subsnes_id = nsubnet-1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes,"coupled_");CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,F,FormFunction,&User_power);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,F,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
@@ -652,7 +660,6 @@ int main(int argc,char **argv)
     if (!crank) printf("Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  PetscLogStagePop();
 
   if (viewJ) {
     /* View assembled Jac */
@@ -660,6 +667,44 @@ int main(int argc,char **argv)
   }
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+
+  /* Create and solve snes_power */
+  /*-----------------------------*/
+  user.subsnes_id = 0;
+  ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_power);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes_power,networkdm);CHKERRQ(ierr);
+  ierr = SNESSetOptionsPrefix(snes_power,"power_");CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes_power,F,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes_power);CHKERRQ(ierr);
+  ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
+
+  if (viewX) {
+    if (!crank) printf("Power Solution:\n");
+    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  /* Create and solve snes_water */
+  /*-----------------------------*/
+  user.subsnes_id = 1;
+  ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_water);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes_water,networkdm);CHKERRQ(ierr);
+  ierr = SNESSetOptionsPrefix(snes_water,"water_");CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes_water,F,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes_water);CHKERRQ(ierr);
+  ierr = SNESSolve(snes_water,NULL,X);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes_water);CHKERRQ(ierr);
+
+  if (viewX) {
+    if (!crank) printf("Water Solution:\n");
+    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  /* Free spaces */
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
 
