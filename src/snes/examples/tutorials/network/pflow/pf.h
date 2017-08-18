@@ -137,4 +137,5 @@ typedef struct{
 
 extern PetscErrorCode PFReadMatPowerData(PFDATA*,char*);
 extern PetscErrorCode GetListofEdges_Power(PFDATA*,int*);
+extern PetscErrorCode FormJacobian_Power(SNES,Vec, Mat,Mat,void*);
 #endif
