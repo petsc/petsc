@@ -5330,7 +5330,8 @@ Process 1:
   ( 111) dim  3 offset 237 -1. 1.25 -1.
   ( 112) dim  3 offset 240 -1.75 0. 1.
 PetscSF Object: 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=415, leaves=45, remote ranks=1
   [0] 32 <- (1,45)
   [0] 33 <- (1,46)

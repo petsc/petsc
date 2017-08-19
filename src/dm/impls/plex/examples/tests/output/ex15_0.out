@@ -1,5 +1,6 @@
 PetscSF Object: 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=4, leaves=4, remote ranks=2
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)

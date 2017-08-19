@@ -843,7 +843,8 @@ base <-- cap:
 [1]: 63 <---- 107 (0)
 [1]: 63 <---- 108 (0)
 PetscSF Object: 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=109, leaves=9, remote ranks=1
   [0] 65 <- (1,64)
   [0] 66 <- (1,65)
