@@ -18,6 +18,229 @@ typedef struct{
   PetscInt      subsnes_id;
 } UserCtx;
 
+PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *xarr;
+  PetscInt          i,v,row[2],col[8],e,vfrom,vto;
+  PetscInt          offsetfrom,offsetto,goffsetfrom,goffsetto;
+  PetscScalar       values[8];
+
+  PetscFunctionBegin;
+  printf("FormJacobian_Power_private...\n");
+  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+
+  for (v=0; v<nv; v++) {
+
+    PetscInt    j,key;
+    PetscInt    offset,goffset;
+    PetscScalar Vm;
+    UserCtx_Power  *user_power=(UserCtx_Power*)appctx;
+    PetscScalar Sbase=user_power->Sbase;
+    VERTEX_Power  bus;
+
+    PetscBool   ghostvtex;
+    PetscInt    numComps;
+    void*       component;
+
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+
+    ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
+    for (j = 0; j < numComps; j++) {
+      ierr = DMNetworkGetVariableOffset(networkdm,vtx[v],&offset);CHKERRQ(ierr);
+      ierr = DMNetworkGetVariableGlobalOffset(networkdm,vtx[v],&goffset);CHKERRQ(ierr);
+      ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component);CHKERRQ(ierr);
+
+      if (key == 1) {
+        PetscInt       nconnedges;
+	const PetscInt *connedges;
+
+	bus = (VERTEX_Power)(component);
+        /* Handle reference bus constrained dofs */
+        if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
+          row[0] = goffset; row[1] = goffset+1;
+          col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
+          values[0] = 1.0; values[1] = 0.0; values[2] = 0.0; values[3] = 1.0;
+          ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+          break;
+        }
+
+        Vm = xarr[offset+1];
+
+        /* Shunt injections */
+        row[0] = goffset; row[1] = goffset+1;
+        col[0] = goffset; col[1] = goffset+1;
+        values[0] = values[1] = values[2] = values[3] = 0.0;
+        if (bus->ide != PV_BUS) {
+          values[1] = 2.0*Vm*bus->gl/Sbase;
+          values[3] = -2.0*Vm*bus->bl/Sbase;
+        }
+        ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+
+	ierr = DMNetworkGetSupportingEdges(networkdm,vtx[v],&nconnedges,&connedges);CHKERRQ(ierr);
+
+	for (i=0; i < nconnedges; i++) {
+	  EDGE_Power     branch;
+	  VERTEX_Power   busf,bust;
+	  PetscInt       keyf,keyt;
+          PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
+          const PetscInt *cone;
+          PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
+
+	  e = connedges[i];
+	  ierr = DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch);CHKERRQ(ierr);
+	  if (!branch->status) continue;
+
+	  Gff = branch->yff[0];
+	  Bff = branch->yff[1];
+	  Gft = branch->yft[0];
+	  Bft = branch->yft[1];
+	  Gtf = branch->ytf[0];
+	  Btf = branch->ytf[1];
+	  Gtt = branch->ytt[0];
+	  Btt = branch->ytt[1];
+
+	  ierr = DMNetworkGetConnectedVertices(networkdm,edges[e],&cone);CHKERRQ(ierr);
+	  vfrom = cone[0];
+	  vto   = cone[1];
+
+	  ierr = DMNetworkGetVariableOffset(networkdm,vfrom,&offsetfrom);CHKERRQ(ierr);
+	  ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);
+	  ierr = DMNetworkGetVariableGlobalOffset(networkdm,vfrom,&goffsetfrom);CHKERRQ(ierr);
+	  ierr = DMNetworkGetVariableGlobalOffset(networkdm,vto,&goffsetto);CHKERRQ(ierr);
+
+	  if (goffsetto < 0) goffsetto = -goffsetto - 1;
+
+	  thetaf  = xarr[offsetfrom];
+	  Vmf     = xarr[offsetfrom+1];
+	  thetat  = xarr[offsetto];
+	  Vmt     = xarr[offsetto+1];
+	  thetaft = thetaf - thetat;
+	  thetatf = thetat - thetaf;
+
+	  ierr = DMNetworkGetComponent(networkdm,vfrom,0,&keyf,(void**)&busf);CHKERRQ(ierr);
+	  ierr = DMNetworkGetComponent(networkdm,vto,0,&keyt,(void**)&bust);CHKERRQ(ierr);
+
+	  if (vfrom == vtx[v]) {
+	    if (busf->ide != REF_BUS) {
+	      /*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft));  */
+	      row[0]  = goffsetfrom;
+              if (row[0] == 3 || row[0] == 5) {
+                printf("1. row %d, error\n",row[0]);
+              }
+	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
+	      values[0] =  Vmf*Vmt*(Gft*-PetscSinScalar(thetaft) + Bft*PetscCosScalar(thetaft)); /* df_dthetaf */
+	      values[1] =  2.0*Gff*Vmf + Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft)); /* df_dVmf */
+	      values[2] =  Vmf*Vmt*(Gft*PetscSinScalar(thetaft) + Bft*-PetscCosScalar(thetaft)); /* df_dthetat */
+	      values[3] =  Vmf*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft)); /* df_dVmt */
+
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	    if (busf->ide != PV_BUS && busf->ide != REF_BUS) {
+	      row[0] = goffsetfrom+1;
+              if (row[0] == 3 || row[0] == 5) {
+                printf("2. row %d, error\n",row[0]);
+              }
+	      col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
+	      /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft)); */
+	      values[0] =  Vmf*Vmt*(Bft*PetscSinScalar(thetaft) + Gft*PetscCosScalar(thetaft));
+	      values[1] =  -2.0*Bff*Vmf + Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
+	      values[2] =  Vmf*Vmt*(-Bft*PetscSinScalar(thetaft) + Gft*-PetscCosScalar(thetaft));
+	      values[3] =  Vmf*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
+
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	  } else {
+	    if (bust->ide != REF_BUS) {
+	      row[0] = goffsetto;
+              if (row[0] == 3 || row[0] == 5) {
+                printf("3. row %d, error\n",row[0]);
+              }
+	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
+	      /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); */
+	      values[0] =  Vmt*Vmf*(Gtf*-PetscSinScalar(thetatf) + Btf*PetscCosScalar(thetaft)); /* df_dthetat */
+	      values[1] =  2.0*Gtt*Vmt + Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmt */
+	      values[2] =  Vmt*Vmf*(Gtf*PetscSinScalar(thetatf) + Btf*-PetscCosScalar(thetatf)); /* df_dthetaf */
+	      values[3] =  Vmt*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); /* df_dVmf */
+
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	    if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
+	      row[0] = goffsetto+1;
+              if (row[0] == 3 || row[0] == 5) {
+                printf("4. row %d, error\n",row[0]);
+              }
+	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
+	      /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf)); */
+	      values[0] =  Vmt*Vmf*(Btf*PetscSinScalar(thetatf) + Gtf*PetscCosScalar(thetatf));
+	      values[1] =  -2.0*Btt*Vmt + Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
+	      values[2] =  Vmt*Vmf*(-Btf*PetscSinScalar(thetatf) + Gtf*-PetscCosScalar(thetatf));
+	      values[3] =  Vmt*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
+
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	  }
+	}
+	if (bus->ide == PV_BUS) {
+	  row[0] = goffset+1; col[0] = goffset+1;
+	  values[0]  = 1.0;
+          if (user_power->jac_error) values[0] = 50.0; 
+          ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
+	}
+      }
+    }
+  }
+
+  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FormJacobian_subPower(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
+{
+  PetscErrorCode ierr;
+  DM             networkdm;
+  Vec            localX;
+  PetscInt       nv,ne,i,j,offset,nvar,row;
+  const PetscInt *vtx,*edges;
+  PetscBool      ghostvtex;
+  PetscScalar    one = 1.0;
+
+  PetscFunctionBegin;
+  printf("FormJacobian_subPower...\n");
+  ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
+
+  ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
+
+  /* Power subnetwork: copied from pflow/FormJacobian_Power() */
+  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  ierr = FormJacobian_Power_private(networkdm,localX,J,nv,ne,vtx,edges,appctx);CHKERRQ(ierr);
+
+  /* Water subnetwork: Identity */
+  ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  for (i=0; i<nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumVariables(networkdm,vtx[i],&nvar);CHKERRQ(ierr);
+    for (j=0; j<nvar; j++) {
+      row = offset + j;
+      ierr = MatSetValues(J,1,&row,1,&row,&one,ADD_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  //ierr = MatView(J,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Dummy equation localF(X) = localX */
 PetscErrorCode FormFunction_Dummy(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
@@ -244,7 +467,7 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX, Vec localF,PetscInt n
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 {
   PetscErrorCode ierr;
   DM             networkdm;
@@ -257,7 +480,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   UserCtx_Power  user_power = (*user).user_power;
 
   PetscFunctionBegin;
-  //printf("subsnes_id %d\n",(*user).subsnes_id);
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -272,7 +494,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
   /* Form Function for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if ((*user).subsnes_id == 1) { /* snes_water only */
+  if (user->subsnes_id == 1) { /* snes_water only */
     ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   } else {
     ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,&user_power);CHKERRQ(ierr);
@@ -280,7 +502,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
   /* Form Function for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if ((*user).subsnes_id == 0) { /* snes_power only */
+  if (user->subsnes_id == 0) { /* snes_power only */
     ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   } else {
     ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
@@ -419,6 +641,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   Vec            localX;
   PetscMPIInt    rank;
   MPI_Comm       comm;
+  UserCtx        *user = (UserCtx*)appctx;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
@@ -430,22 +653,27 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
   /* Set initial guess for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-#if 1
+  if (user->subsnes_id == 0) { /* snes_power only */
+    ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  }
+  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
+  //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
   /* Set initial guess for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-#endif
+  if (user->subsnes_id == 1) { /* snes_water only */
+    ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+  }
+  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
+  //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+#if 0
   /* Set initial guess for the coupling subnet */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (ne) {
     const PetscInt *cone;
     ierr = DMNetworkGetConnectedVertices(networkdm,edges[0],&cone);CHKERRQ(ierr);
   }
+#endif
 
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
@@ -512,6 +740,9 @@ int main(int argc,char **argv)
   /* Broadcast power Sbase to all processors */
   ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   user.user_power.Sbase = Sbase;
+  user.user_power.jac_error = PETSC_FALSE;
+  /* If external option activated. Introduce error in jacobian */
+  ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &user.user_power.jac_error);CHKERRQ(ierr);
 
   /* GET DATA FOR THE SECOND SUBNETWORK: Waternet */
   ierr = PetscNew(&waterdata);CHKERRQ(ierr);
@@ -630,13 +861,18 @@ int main(int argc,char **argv)
 
   /* (3) Solve */
   /*-----------*/
+  ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
+#if 1
   ierr = PetscLogStageRegister("SNES Solve",&stage3);CHKERRQ(ierr);
   PetscLogStagePush(stage3);
 
+  user.subsnes_id = nsubnet-1;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* HOOK UP SOLVER */
+  if (!crank) printf("SNES Solve......\n");
   user.subsnes_id = nsubnet-1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
@@ -644,7 +880,6 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,F,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
   if (viewJ) {
     /* View Jac structure */
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
@@ -655,7 +890,6 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   PetscLogStagePop();
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
   if (viewX) {
     if (!crank) printf("Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -667,9 +901,10 @@ int main(int argc,char **argv)
   }
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
+#endif
   /* Create and solve snes_power */
   /*-----------------------------*/
+  if (!crank) printf("SNES_power Solve......\n");
   user.subsnes_id = 0;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
 
@@ -677,17 +912,37 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes_power,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_power,"power_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_power,F,FormFunction,&user);CHKERRQ(ierr);
+#if 0
+  ierr = DMCreateMatrix(networkdm,&Jac);CHKERRQ(ierr);
+  ierr = MatSetOption(Jac,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
+  //ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
+#endif
   ierr = SNESSetFromOptions(snes_power);CHKERRQ(ierr);
   ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
 
   if (viewX) {
     if (!crank) printf("Power Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+  //if (viewJ) {
+    if (!crank) printf("Power Jac:\n");
+    ierr = SNESGetJacobian(snes_power,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
+    //ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    //}
+
+  ierr = SNESGetJacobian(snes_power,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
+  if (!crank) printf("Power Jac2:\n");
+  ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
+  ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
 
   /* Create and solve snes_water */
   /*-----------------------------*/
+  if (!crank) printf("SNES_water Solve......\n");
   user.subsnes_id = 1;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
 
