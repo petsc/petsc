@@ -62,6 +62,11 @@ class BaseTestSNES(object):
         snes.its = 0
         self.assertEqual(snes.its, 0)
         #
+        snes.norm = 1
+        self.assertEqual(snes.norm, 1)
+        snes.norm = 0
+        self.assertEqual(snes.norm, 0)
+        #
         rh, ih = snes.history
         self.assertTrue(len(rh)==0)
         self.assertTrue(len(ih)==0)

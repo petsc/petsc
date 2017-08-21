@@ -554,6 +554,15 @@ cdef class SNES(Object):
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
         return toInt(ival)
 
+    def setFunctionNorm(self, norm):
+        cdef PetscReal rval = asReal(norm)
+        CHKERR( SNESSetFunctionNorm(self.snes, rval) )
+
+    def getFunctionNorm(self):
+        cdef PetscReal rval = 0
+        CHKERR( SNESGetFunctionNorm(self.snes, &rval) )
+        return toReal(rval)
+
     def getLinearSolveIterations(self):
         cdef PetscInt ival = 0
         CHKERR( SNESGetLinearSolveIterations(self.snes, &ival) )
@@ -817,6 +826,12 @@ cdef class SNES(Object):
             return self.getIterationNumber()
         def __set__(self, value):
             self.setIterationNumber(value)
+
+    property norm:
+        def __get__(self):
+            return self.getFunctionNorm()
+        def __set__(self, value):
+            self.setFunctionNorm(value)
 
     property history:
         def __get__(self):
