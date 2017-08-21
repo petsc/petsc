@@ -637,7 +637,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
   /* Set initial guess for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (user->subsnes_id == 0) { /* snes_power only */
+  if (user->subsnes_id != 1) { /* !snes_water */
     ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   }
   //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
@@ -645,7 +645,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
   /* Set initial guess for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (user->subsnes_id == 1) { /* snes_water only */
+  if (user->subsnes_id != 0) { /* !snes_power */
     ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   }
   //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
@@ -847,11 +847,10 @@ int main(int argc,char **argv)
   /*-----------*/
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
-#if 1
+
   ierr = PetscLogStageRegister("SNES Solve",&stage3);CHKERRQ(ierr);
   PetscLogStagePush(stage3);
 
-  user.subsnes_id = nsubnet-1;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -885,14 +884,14 @@ int main(int argc,char **argv)
   }
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-#endif
 
   /* Create and solve snes_power */
   /*-----------------------------*/
   if (!crank) printf("SNES_power Solve......\n");
-  user.subsnes_id = 0;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  user.subsnes_id = 0;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes_power);CHKERRQ(ierr);
   ierr = SNESSetDM(snes_power,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_power,"power_");CHKERRQ(ierr);
@@ -924,9 +923,9 @@ int main(int argc,char **argv)
   /* Create and solve snes_water */
   /*-----------------------------*/
   if (!crank) printf("SNES_water Solve......\n");
-  user.subsnes_id = 1;
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
 
+  user.subsnes_id = 1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes_water);CHKERRQ(ierr);
   ierr = SNESSetDM(snes_water,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_water,"water_");CHKERRQ(ierr);
