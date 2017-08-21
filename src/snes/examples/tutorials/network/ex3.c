@@ -23,26 +23,21 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscIn
   PetscErrorCode    ierr;
   const PetscScalar *xarr;
   PetscInt          i,v,row[2],col[8],e,vfrom,vto;
-  PetscInt          offsetfrom,offsetto,goffsetfrom,goffsetto;
+  PetscInt          offsetfrom,offsetto,goffsetfrom,goffsetto,numComps;
   PetscScalar       values[8];
+  PetscInt          j,key,offset,goffset;
+  PetscScalar       Vm;
+  UserCtx_Power     *user_power=(UserCtx_Power*)appctx;
+  PetscScalar       Sbase=user_power->Sbase;
+  VERTEX_Power      bus;
+  PetscBool         ghostvtex;
+  void*             component;
 
   PetscFunctionBegin;
-  printf("FormJacobian_Power_private...\n");
+  //printf("FormJacobian_Power_private...\n");
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
 
   for (v=0; v<nv; v++) {
-
-    PetscInt    j,key;
-    PetscInt    offset,goffset;
-    PetscScalar Vm;
-    UserCtx_Power  *user_power=(UserCtx_Power*)appctx;
-    PetscScalar Sbase=user_power->Sbase;
-    VERTEX_Power  bus;
-
-    PetscBool   ghostvtex;
-    PetscInt    numComps;
-    void*       component;
-
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
 
     ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
@@ -160,9 +155,6 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscIn
 	    }
 	    if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
 	      row[0] = goffsetto+1;
-              if (row[0] == 3 || row[0] == 5) {
-                printf("4. row %d, error\n",row[0]);
-              }
 	      col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
 	      /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf)); */
 	      values[0] =  Vmt*Vmf*(Btf*PetscSinScalar(thetatf) + Gtf*PetscCosScalar(thetatf));
@@ -175,9 +167,8 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscIn
 	  }
 	}
 	if (!ghostvtex && bus->ide == PV_BUS) {
-	  row[0] = goffset+1; col[0] = goffset+1;
-	  values[0]  = 1.0;
-          if (user_power->jac_error) values[0] = 50.0; 
+	  row[0] = goffset+1; col[0] = goffset+1; values[0]  = 1.0;
+          if (user_power->jac_error) values[0] = 50.0;
           ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
       }
@@ -201,7 +192,7 @@ PetscErrorCode FormJacobian_subPower(SNES snes,Vec X, Mat J,Mat Jpre,void *appct
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  printf("FormJacobian_subPower...\n");
+  //printf("FormJacobian_subPower...\n");
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
@@ -271,27 +262,24 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
   PetscInt          e,v,vfrom,vto;
   const PetscScalar *xarr;
   PetscScalar       *farr;
-  PetscInt          offsetfrom,offsetto,offset;
+  PetscInt          offsetfrom,offsetto,offset,i,j,key,numComps;
+  PetscScalar       Vm;
+  PetscScalar       Sbase=User->Sbase;
+  VERTEX_Power      bus=NULL;
+  GEN               gen;
+  LOAD              load;
+  PetscBool         ghostvtex;
+  void*             component;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
   for (v=0; v<nv; v++) {
-    PetscInt    i,j,key;
-    PetscScalar Vm;
-    PetscScalar Sbase=User->Sbase;
-    VERTEX_Power  bus=NULL;
-    GEN         gen;
-    LOAD        load;
-    PetscBool   ghostvtex;
-    PetscInt    numComps;
-    void*       component;
-
     ierr = DMNetworkIsGhostVertex(networkdm,vtx[v],&ghostvtex);CHKERRQ(ierr);
     ierr = DMNetworkGetNumComponents(networkdm,vtx[v],&numComps);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[v],&offset);CHKERRQ(ierr);
-    //printf("Power v %d, offset %d\n",v,offset);
+
     for (j = 0; j < numComps; j++) {
       ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component);CHKERRQ(ierr);
       if (key == 1) {
@@ -898,6 +886,7 @@ int main(int argc,char **argv)
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 #endif
+
   /* Create and solve snes_power */
   /*-----------------------------*/
   if (!crank) printf("SNES_power Solve......\n");
@@ -908,13 +897,13 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes_power,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_power,"power_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_power,F,FormFunction,&user);CHKERRQ(ierr);
-#if 0
+
+  /* Use user-provide Jacobian */
   ierr = DMCreateMatrix(networkdm,&Jac);CHKERRQ(ierr);
-  ierr = MatSetOption(Jac,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
-  //ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
-  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
-#endif
+  //ierr = MatSetOption(Jac,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  //ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
+
   ierr = SNESSetFromOptions(snes_power);CHKERRQ(ierr);
   ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
 
@@ -926,14 +915,10 @@ int main(int argc,char **argv)
     if (!crank) printf("Power Jac:\n");
     ierr = SNESGetJacobian(snes_power,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-    ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   }
-#if 0
-  ierr = SNESGetJacobian(snes_power,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
-  //if (!crank) printf("Power Jac2:\n");
-  //ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
+
+  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
 
   /* Create and solve snes_water */

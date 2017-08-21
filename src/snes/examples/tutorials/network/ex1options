@@ -35,7 +35,7 @@
 -power_snes_linesearch_type l2
 
 # Finite differenced Jacobian
--power_snes_fd
+#-power_snes_fd
 
 # KSP (linear solver) options
 -power_ksp_type gmres
