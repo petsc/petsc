@@ -15,7 +15,14 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",name);CHKERRQ(ierr);
   for (i=0; i<npoints; i++) {
     for (j=0; j<ndegrees; j++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4g: B=%12.4g  D=%12.4g  D2=%12.4g\n",degrees[j],(double)points[i],(double)(!B[i*ndegrees+j] ? 0 : B[i*ndegrees+j]),(double)D[i*ndegrees+j],(double)D2[i*ndegrees+j]);CHKERRQ(ierr);
+      PetscReal b,d,d2;
+      b = B[i*ndegrees+j];
+      d = D[i*ndegrees+j];
+      d2 = D2[i*ndegrees+j];
+      if (PetscAbsReal(b) < PETSC_SMALL) b   = 0;
+      if (PetscAbsReal(d) < PETSC_SMALL) d   = 0;
+      if (PetscAbsReal(d2) < PETSC_SMALL) d2 = 0;
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4g: B=%12.4g  D=%12.4g  D2=%12.4g\n",degrees[j],(double)points[i],(double)b,(double)d,(double)d2);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree3(B,D,D2);CHKERRQ(ierr);
