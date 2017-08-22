@@ -13,35 +13,21 @@ def summarize_results(directory):
   except OSError:
     print('# No tests run')
     return
-  summary={'total':0,'success':0,'failed':0,'failures':'','todo':0,'skip':0}
+  summary={'total':0,'success':0,'failed':0,'failures':[],'todo':0,'skip':0}
   for cfile in glob.glob('*.counts'):
-    sh=open(cfile,"r"); fileStr=sh.read(); sh.close()
-    for line in fileStr.split('\n'):
-      if not line: break
-      try:
-        var,val=line.split()
-        if not val.strip(): continue
-        val=int(val)
-      except:
-        var=line.split()[0]
-        lval=len(line.split())-1
-        if lval==0: continue
-        val=line.split()[1]
-        if not val.strip(): continue
-        append=" ("+str(lval)+"), " if lval>1 else ", "
-        val=val+append
+    with open(cfile, 'r') as f:
+      for line in f:
+        l = line.split()
+        summary[l[0]] += l[1:] if l[0] == 'failures' else int(l[1])
 
-      summary[var]=summary[var]+val
-
-  print "\n# -------------"
-  print "#   Summary    "
-  print "# -------------"
-  print "# FAILED "+summary['failures'].rstrip(', ')
-  total=str(summary['total'])
+  print("\n# -------------")
+  print("#   Summary    ")
+  print("# -------------")
+  print("# FAILED " + ' '.join(summary['failures']))
 
   for t in "success failed todo skip".split():
     percent=summary[t]/float(summary['total'])*100
-    print ("# "+t+" "+ str(summary[t])+"/"+total+" tests (%3.1f%%)") % (percent)
+    print("# %s %d/%d tests (%3.1f%%)" % (t, summary[t], summary['total'], percent))
   return
 
 def main():
