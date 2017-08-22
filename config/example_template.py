@@ -16,12 +16,13 @@ petsc_arch='@PETSC_ARCH@'
 # Must be consistent with gmakefile.test
 testlogfile=${petsc_dir}/${petsc_arch}/tests/examples-${petsc_arch}.log
 config_dir='@CONFIG_DIR@'
+petsc_bindir='@PETSC_BINDIR@'
 @DATAFILESPATH_LINE@
 args='@ARGS@'
 timeoutfactor=@TIMEOUTFACTOR@
 
 mpiexec=${PETSCMPIEXEC:-"@MPIEXEC@"}
-diffexec=${PETSCDIFF:-"${petsc_dir}/bin/petscdiff"}
+diffexec=${PETSCDIFF:-"${petsc_bindir}/petscdiff"}
 
 . "${config_dir}/petsc_harness.sh"
 

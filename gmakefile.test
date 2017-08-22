@@ -142,8 +142,10 @@ $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 
 # Testing convenience targets
-.PHONY: alltest test pre-clean
+.PHONY: test pre-clean
+
 test: pre-clean report_tests
+
 pre-clean:
 	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
 	@touch $(TESTLOGFILE)

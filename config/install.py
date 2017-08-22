@@ -166,13 +166,19 @@ class Installer(script.Script):
     for line in alllines.split('\n')[1:]:
       if line.startswith('#'):
         newlines+=line+'\n'
+      elif line.startswith('TESTLOGFILE'):
+        newlines+='TESTLOGFILE = $(TESTDIR)/examples-install.log\n'
       elif line.startswith('CONFIGDIR'):
-          newlines+='CONFIGDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples/config\n'
-          newlines+='EXAMPLESDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples\n'
+        newlines+='CONFIGDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples/config\n'
+        newlines+='EXAMPLESDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples\n'
+      elif line.startswith('$(generatedtest)'):
+        newlines+='all: test\n\n'+line+'\n'
       elif line.startswith('$(TESTDIR)/'):
-          newlines+=re.sub(' %.',' $(EXAMPLESDIR)/%.',line)+'\n'
+        newlines+=re.sub(' %.',' $(EXAMPLESDIR)/%.',line)+'\n'
       elif line.startswith('include ./lib/petsc/conf/variables'):
-          newlines+=re.sub('include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/variables')
+        newlines+=re.sub('include ./lib/petsc/conf/variables',
+                         'include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/variables',
+                         line)+'\n'
       else:
         newlines+=re.sub('PETSC_ARCH','PETSC_DIR)/$(PETSC_ARCH',line)+'\n'
     newFile = open(src, 'w')
@@ -190,8 +196,8 @@ class Installer(script.Script):
     newConfigDir=os.path.join(dst,'config')  # Am not renaming at present
     if not os.path.isdir(newConfigDir): os.mkdir(newConfigDir)
     testConfFiles="gmakegentest.py gmakegen.py testparse.py example_template.py".split()
-    #testConfFiles=+"petsc_harness.sh report_tests.py watchtime.sh"
-    testConfFiles+="petsc_harness.sh report_tests.py cmakegen.py".split()
+    testConfFiles+="petsc_harness.sh report_tests.py watchtime.sh".split()
+    testConfFiles+=["cmakegen.py"]
     for tf in testConfFiles:
       self.copyfile(os.path.join('config',tf),newConfigDir)
     return
@@ -356,12 +362,13 @@ for dir in dirs:
 
   def installShare(self):
     self.copies.extend(self.copytree(self.rootShareDir, self.destShareDir))
-    if os.path.exists(os.path.join(self.destShareDir,'petsc','examples')):
-      shutil.rmtree(os.path.join(self.destShareDir,'petsc','examples'))
-    os.mkdir(os.path.join(self.destShareDir,'petsc','examples'))
-    self.copyExamples(self.rootDir,os.path.join(self.destShareDir,'petsc','examples'))
-    self.copyConfig(self.rootDir,os.path.join(self.destShareDir,'petsc','examples'))
-    self.fixExamplesMakefile(os.path.join(self.destShareDir,'petsc','examples','gmakefile.test'))
+    examplesdir=os.path.join(self.destShareDir,'petsc','examples')
+    if os.path.exists(examplesdir):
+      shutil.rmtree(examplesdir)
+    os.mkdir(examplesdir)
+    self.copyExamples(self.rootDir,examplesdir)
+    self.copyConfig(self.rootDir,examplesdir)
+    self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return
 
   def copyLib(self, src, dst):
