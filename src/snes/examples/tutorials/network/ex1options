@@ -2,6 +2,7 @@
 # Newton method
 -coupled_snes_type newtonls
 -coupled_snes_monitor
+-coupled_snes_max_it 1
 
 # Absolute and relative tolerances
 -coupled_snes_atol 1e-8
@@ -26,6 +27,7 @@
 # Newton method
 -power_snes_type newtonls
 -power_snes_monitor
+-power_snes_max_it 1
 
 # Absolute and relative tolerances
 -power_snes_atol 1e-8
@@ -50,6 +52,7 @@
 # Newton method
 -water_snes_type newtonls
 -water_snes_monitor
+-water_snes_max_it 1
 
 # Absolute and relative tolerances
 -water_snes_atol 1e-8

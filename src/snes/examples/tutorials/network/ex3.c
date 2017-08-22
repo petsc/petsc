@@ -16,7 +16,21 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 typedef struct{
   UserCtx_Power user_power;
   PetscInt      subsnes_id;
+  Vec           Xold;
 } UserCtx;
+
+PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
+{
+  PetscErrorCode ierr;
+  UserCtx        *user = (UserCtx*)appctx;
+  Vec            X,Xold=user->Xold;
+
+  PetscFunctionBegin;
+  //printf(" Monitor subsnes_id %d: its %d, fnorm %g\n",user->subsnes_id,its,fnorm);
+  ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+  ierr = VecCopy(X,Xold);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
@@ -34,7 +48,6 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX, Mat J,PetscIn
   void*             component;
 
   PetscFunctionBegin;
-  //printf("FormJacobian_Power_private...\n");
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
 
   for (v=0; v<nv; v++) {
@@ -232,13 +245,18 @@ PetscErrorCode FormJacobian_subPower(SNES snes,Vec X, Mat J,Mat Jpre,void *appct
 PetscErrorCode FormFunction_Dummy(DM networkdm,Vec localX, Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
 {
   PetscErrorCode    ierr;
-  const PetscScalar *xarr;
+  const PetscScalar *xarr,*xoldarr;
   PetscScalar       *farr;
   PetscInt          i,j,offset,nvar;
   PetscBool         ghostvtex;
+  UserCtx           *user = (UserCtx*)appctx;
+  Vec               Xold=user->Xold;
 
   PetscFunctionBegin;
+  //ierr = VecView(Xold,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xold,&xoldarr);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
 
   for (i=0; i<nv; i++) {
@@ -247,10 +265,13 @@ PetscErrorCode FormFunction_Dummy(DM networkdm,Vec localX, Vec localF,PetscInt n
 
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetNumVariables(networkdm,vtx[i],&nvar);CHKERRQ(ierr);
-    for (j=0; j<nvar; j++) farr[offset+j] = xarr[offset+j];
+    for (j=0; j<nvar; j++) {
+      farr[offset+j] = xarr[offset+j] - xoldarr[offset+j];
+    }
   }
 
   ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xold,&xoldarr);CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -479,7 +500,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   /* Form Function for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (user->subsnes_id == 1) { /* snes_water only */
-    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,user);CHKERRQ(ierr);
   } else {
     ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,&user_power);CHKERRQ(ierr);
   }
@@ -487,7 +508,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   /* Form Function for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (user->subsnes_id == 0) { /* snes_power only */
-    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
+    ierr = FormFunction_Dummy(networkdm,localX,localF,nv,ne,vtx,edges,user);CHKERRQ(ierr);
   } else {
     ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
   }
@@ -625,7 +646,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   Vec            localX;
   PetscMPIInt    rank;
   MPI_Comm       comm;
-  UserCtx        *user = (UserCtx*)appctx;
+  //UserCtx        *user = (UserCtx*)appctx;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
@@ -637,17 +658,17 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
   /* Set initial guess for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (user->subsnes_id != 1) { /* !snes_water */
+  //if (user->subsnes_id != 1) { /* !snes_water */
     ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  }
+    //}
   //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
   //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Set initial guess for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (user->subsnes_id != 0) { /* !snes_power */
+  //if (user->subsnes_id != 0) { /* !snes_power */
     ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  }
+    //}
   //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
   //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 #if 0
@@ -840,27 +861,32 @@ int main(int argc,char **argv)
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&user.Xold);CHKERRQ(ierr);
 
   PetscLogStagePop();
 
-  /* (3) Solve */
-  /*-----------*/
+  /* (3) Setup Solvers */
+  /*-------------------*/
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewJ",&viewJ,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-viewX",&viewX,NULL);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("SNES Solve",&stage3);CHKERRQ(ierr);
   PetscLogStagePush(stage3);
 
+#if 1
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+  ierr = VecCopy(X,user.Xold);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* HOOK UP SOLVER */
+  /* Create coupled snes */
+  /*-------------------- */
   if (!crank) printf("SNES Solve......\n");
   user.subsnes_id = nsubnet-1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes,"coupled_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,F,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes,UserMonitor,&user,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   if (viewJ) {
@@ -871,7 +897,6 @@ int main(int argc,char **argv)
   }
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
-  PetscLogStagePop();
 
   if (viewX) {
     if (!crank) printf("Solution:\n");
@@ -882,13 +907,14 @@ int main(int argc,char **argv)
     /* View assembled Jac */
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
+#endif
 
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
-  /* Create and solve snes_power */
-  /*-----------------------------*/
+#if 1
+  /* Create snes_power */
+  /*-------------------*/
   if (!crank) printf("SNES_power Solve......\n");
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+  ierr = VecCopy(X,user.Xold);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   user.subsnes_id = 0;
@@ -896,10 +922,10 @@ int main(int argc,char **argv)
   ierr = SNESSetDM(snes_power,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_power,"power_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_power,F,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes_power,UserMonitor,&user,NULL);CHKERRQ(ierr);
 
   /* Use user-provide Jacobian */
   ierr = DMCreateMatrix(networkdm,&Jac);CHKERRQ(ierr);
-  //ierr = MatSetOption(Jac,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   //ierr = FormJacobian_subPower(snes_power,X,Jac,Jac,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
 
@@ -916,32 +942,63 @@ int main(int argc,char **argv)
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   }
+#endif
 
-  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
-
-  /* Create and solve snes_water */
-  /*-----------------------------*/
+#if 1
+  /* Create snes_water */
+  /*-------------------*/
   if (!crank) printf("SNES_water Solve......\n");
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
+  ierr = VecCopy(X,user.Xold);CHKERRQ(ierr);
 
   user.subsnes_id = 1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes_water);CHKERRQ(ierr);
   ierr = SNESSetDM(snes_water,networkdm);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snes_water,"water_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_water,F,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes_water,UserMonitor,&user,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes_water);CHKERRQ(ierr);
   ierr = SNESSolve(snes_water,NULL,X);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_water);CHKERRQ(ierr);
 
   if (viewX) {
     if (!crank) printf("Water Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+#endif
 
-  /* Free spaces */
+#if 0
+  PetscInt it = 0,it_max=10;
+  SNESConvergedReason reason=-1;
+  while (it < it_max && reason<0) {
+    user.subsnes_id = 0;
+    ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
+
+    user.subsnes_id = 1;
+    ierr = SNESSolve(snes_water,NULL,X);CHKERRQ(ierr);
+
+    user.subsnes_id = nsubnet-1;
+    ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+
+    ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+    it++;
+  }
+  if (!crank) printf("SNES converged in %d iterations\n",it);
+  if (!crank) printf("Final Solution:\n");
+  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
+  PetscLogStagePop();
+
+  /* Free objects */
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Xold);CHKERRQ(ierr);
+
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes_power);CHKERRQ(ierr);
+
+  ierr = SNESDestroy(&snes_water);CHKERRQ(ierr);
 
   if (!crank) {
     ierr = PetscFree(edgelist_power);CHKERRQ(ierr);
