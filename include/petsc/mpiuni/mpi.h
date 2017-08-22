@@ -247,6 +247,7 @@ typedef int MPI_Op;
 #define MPI_MODE_WRONLY   0
 #define MPI_MODE_CREATE   0
 
+#define MPI_OP_NULL       0
 #define MPI_SUM           1
 #define MPI_MAX           2
 #define MPI_MIN           3
