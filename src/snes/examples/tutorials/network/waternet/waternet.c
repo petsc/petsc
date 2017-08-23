@@ -58,7 +58,9 @@ int main(int argc,char ** argv)
 
   /* Set numbers of nodes and edges */
   ierr = DMNetworkSetSizes(networkdm,1,&waternetdata->nvertex,&waternetdata->nedge,&ngvtx,&ngedge);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] waternet nvertices %D, nedges %D\n",crank,waternetdata->nvertex,waternetdata->nedge);CHKERRQ(ierr);
+  if (!crank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"waternet nvertices %D, nedges %D\n",waternetdata->nvertex,waternetdata->nedge);CHKERRQ(ierr);
+  }
 
   /* Add edge connectivity */
   ierr = DMNetworkSetEdgeList(networkdm,&edgelist);CHKERRQ(ierr);
