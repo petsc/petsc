@@ -423,6 +423,16 @@ class Configure(config.package.Package):
     if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
       self.addDefine('HAVE_MKL',1)
+      '''Set include directory for mkl.h and friends'''
+      '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
+      ''' if the script hasn't been sourced, we still try to pick up the include dir)'''
+      if 'with-blaslapack-dir' in self.argDB:
+        if os.path.isdir(os.path.join(self.argDB['with-blaslapack-dir'],'include')):
+          self.include = [os.path.join(self.argDB['with-blaslapack-dir'],'include')]
+        elif os.path.isdir(os.path.join(self.argDB['with-blaslapack-dir'],'..','include')):
+          self.include = [os.path.join(self.argDB['with-blaslapack-dir'],'..','include')]
+        elif os.path.isdir(os.path.join(self.argDB['with-blaslapack-dir'],'..','..','include')):
+          self.include = [os.path.join(self.argDB['with-blaslapack-dir'],'..','..','include')]
     self.logWrite(self.libraries.restoreLog())
     return
 
