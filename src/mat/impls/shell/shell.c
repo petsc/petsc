@@ -872,11 +872,17 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     break;
   case MATOP_MULT:
     mat->ops->mult = (PetscErrorCode (*)(Mat,Vec,Vec))f;
-    if (!mat->ops->multadd) mat->ops->multadd = MatMultAdd_Shell;
+    if (!mat->ops->multadd) {
+      ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+      if (flg) mat->ops->multadd = MatMultAdd_Shell;
+    }
     break;
   case MATOP_MULT_TRANSPOSE:
     mat->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec))f;
-    if (!mat->ops->multtransposeadd) mat->ops->multtransposeadd = MatMultTransposeAdd_Shell;
+    if (!mat->ops->multtransposeadd) {
+      ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+      if (flg) mat->ops->multtransposeadd = MatMultTransposeAdd_Shell;
+    }
     break;
   default:
     (((void(**)(void))mat->ops)[op]) = f;
