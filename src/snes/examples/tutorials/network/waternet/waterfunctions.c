@@ -18,6 +18,84 @@ PetscScalar Flow_Pump(Pump *pump,PetscScalar hf, PetscScalar ht)
   return flow_pump;
 }
 
+PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv,PetscInt ne,const PetscInt* vtx,const PetscInt* edges,void* appctx)
+{
+  PetscErrorCode    ierr;
+  const PetscScalar *xarr;
+  const PetscInt    *cone;
+  PetscScalar       *farr,hf,ht,flow;
+  PetscInt          i,key,vnode1,vnode2;
+  PetscBool         ghostvtex;
+  PetscInt          offsetnode1,offsetnode2,offset;
+  VERTEX_Water      vertex,vertexnode1,vertexnode2;
+  EDGE_Water        edge;
+  Pipe              *pipe;
+  Pump              *pump;
+  Reservoir         *reservoir;
+  Tank              *tank;
+
+  PetscFunctionBegin;
+  /* Get arrays for the vectors */
+  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
+
+  for (i=0; i<ne; i++) { /* for each edge */
+    /* Get the offset and the key for the component for edge number e[i] */
+    ierr = DMNetworkGetComponent(networkdm,edges[i],0,&key,(void**)&edge);CHKERRQ(ierr);
+
+    /* Get the numbers for the vertices covering this edge */
+    ierr = DMNetworkGetConnectedVertices(networkdm,edges[i],&cone);CHKERRQ(ierr);
+    vnode1 = cone[0];
+    vnode2 = cone[1];
+
+    /* Get the components at the two vertices */
+    ierr = DMNetworkGetComponent(networkdm,vnode1,0,&key,(void**)&vertexnode1);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vnode2,0,&key,(void**)&vertexnode2);CHKERRQ(ierr);
+
+    /* Get the variable offset (the starting location for the variables in the farr array) for node1 and node2 */
+    ierr = DMNetworkGetVariableOffset(networkdm,vnode1,&offsetnode1);CHKERRQ(ierr);
+    ierr = DMNetworkGetVariableOffset(networkdm,vnode2,&offsetnode2);CHKERRQ(ierr);
+
+    /* Variables at node1 and node 2 */
+    hf = xarr[offsetnode1];
+    ht = xarr[offsetnode2];
+
+    if (edge->type == EDGE_TYPE_PIPE) {
+      pipe = &edge->pipe;
+      flow = Flow_Pipe(pipe,hf,ht);
+    } else if (edge->type == EDGE_TYPE_PUMP) {
+      pump = &edge->pump;
+      flow = Flow_Pump(pump,hf,ht);
+    }
+    /* Convention: Node 1 has outgoing flow and Node 2 has incoming flow */
+    if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow;
+    if (vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow;
+  }
+
+  /* Subtract Demand flows at the vertices */
+  for (i=0; i<nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if(ghostvtex) continue;
+
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
+
+    if (vertex->type == VERTEX_TYPE_JUNCTION) {
+      farr[offset] -= vertex->junc.demand;
+    } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
+      reservoir = &vertex->res;
+      farr[offset] = xarr[offset] - reservoir->head;
+    } else if(vertex->type == VERTEX_TYPE_TANK) {
+      tank = &vertex->tank;
+      farr[offset] = xarr[offset] - (tank->elev + tank->initlvl);
+    }
+  }
+
+  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
 {
   PetscErrorCode    ierr;
@@ -56,66 +134,9 @@ PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
   ierr = VecSet(localF,0.0);CHKERRQ(ierr);
 
-  /* Get arrays for the vectors */
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
+  ierr = FormFunction_Water(networkdm,localX,localF,nv,ne,v,e,NULL);CHKERRQ(ierr);
 
-  for (i=0; i<ne; i++) { /* for each edge */
-    /* Get the offset and the key for the component for edge number e[i] */
-    ierr = DMNetworkGetComponent(networkdm,e[i],0,&key,(void**)&edge);CHKERRQ(ierr);
-
-    /* Get the numbers for the vertices covering this edge */
-    ierr = DMNetworkGetConnectedVertices(networkdm,e[i],&cone);CHKERRQ(ierr);
-    vnode1 = cone[0];
-    vnode2 = cone[1];
-
-    /* Get the components at the two vertices */
-    ierr = DMNetworkGetComponent(networkdm,vnode1,0,&key,(void**)&vertexnode1);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponent(networkdm,vnode2,0,&key,(void**)&vertexnode2);CHKERRQ(ierr);
-
-    /* Get the variable offset (the starting location for the variables in the farr array) for node1 and node2 */
-    ierr = DMNetworkGetVariableOffset(networkdm,vnode1,&offsetnode1);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(networkdm,vnode2,&offsetnode2);CHKERRQ(ierr);
-
-    /* Variables at node1 and node 2 */
-    hf = xarr[offsetnode1];
-    ht = xarr[offsetnode2];
-
-    if (edge->type == EDGE_TYPE_PIPE) {
-      pipe = &edge->pipe;
-      flow = Flow_Pipe(pipe,hf,ht);
-    } else if (edge->type == EDGE_TYPE_PUMP) {
-      pump = &edge->pump;
-      flow = Flow_Pump(pump,hf,ht);
-    }
-    /* Convention: Node 1 has outgoing flow and Node 2 has incoming flow */
-    if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow;
-    if (vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow;
-  }
-
-  /* Subtract Demand flows at the vertices */
-  for (i=0; i < nv; i++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,v[i],&ghostvtex);CHKERRQ(ierr);
-    if(ghostvtex) continue;
-
-    ierr = DMNetworkGetVariableOffset(networkdm,v[i],&offset);CHKERRQ(ierr);
-    ierr = DMNetworkGetComponent(networkdm,v[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
-
-    if(vertex->type == VERTEX_TYPE_JUNCTION) {
-      farr[offset] -= vertex->junc.demand;
-    } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
-      reservoir = &vertex->res;
-      farr[offset] = xarr[offset] - reservoir->head;
-    } else if(vertex->type == VERTEX_TYPE_TANK) {
-      tank = &vertex->tank;
-      farr[offset] = xarr[offset] - (tank->elev + tank->initlvl);
-    }
-  }
-
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
-
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
 
