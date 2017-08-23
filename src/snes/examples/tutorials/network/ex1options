@@ -1,7 +1,7 @@
 # SNES (nonlinear solver) options
 # Newton method
 -coupled_snes_type newtonls
--coupled_snes_monitor
+#-coupled_snes_monitor
 -coupled_snes_max_it 1
 
 # Absolute and relative tolerances
@@ -26,7 +26,7 @@
 # SNES (nonlinear solver) options
 # Newton method
 -power_snes_type newtonls
--power_snes_monitor
+#-power_snes_monitor
 -power_snes_max_it 1
 
 # Absolute and relative tolerances
@@ -51,7 +51,7 @@
 # SNES (nonlinear solver) options
 # Newton method
 -water_snes_type newtonls
--water_snes_monitor
+#-water_snes_monitor
 -water_snes_max_it 1
 
 # Absolute and relative tolerances
