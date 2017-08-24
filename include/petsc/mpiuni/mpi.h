@@ -194,6 +194,7 @@ typedef int    MPI_Info;
 typedef int    MPI_Offset;
 
 /* 32-bit packing scheme: [combiner:4 | type-index:8 | count:12 | base-bytes:8] */
+/* Any changes here must also be reflected in mpif.h */
 #define MPI_Datatype           int
 #define MPI_FLOAT              (1 << 20 | 1 << 8 | (int)sizeof(float))
 #define MPI_DOUBLE             (1 << 20 | 1 << 8 | (int)sizeof(double))

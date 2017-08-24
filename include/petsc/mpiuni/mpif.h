@@ -64,19 +64,19 @@
 !
 !  These should match the values in mpi.h many below are wrong
 !
-       parameter (MPI_INTEGER=262148)
-       parameter (MPI_LOGICAL=262148)
-       parameter (MPI_REAL=65540)
-       parameter (MPI_REAL4=65540)
-       parameter (MPI_DOUBLE_PRECISION=65544)
-       parameter (MPI_REAL8=65544)
-       parameter (MPI_COMPLEX=131088)
-       parameter (MPI_CHARACTER=196609)
-       parameter (MPI_2INTEGER=5)
-       parameter (MPI_DOUBLE_COMPLEX=6)
-       parameter (MPI_INTEGER4=7)
-       parameter (MPI_INTEGER8=8)
-       parameter (MPI_2DOUBLE_PRECISION=9)
+       parameter (MPI_INTEGER=x'400104')
+       parameter (MPI_LOGICAL=x'400104')
+       parameter (MPI_REAL=x'100104')
+       parameter (MPI_REAL4=x'100104')
+       parameter (MPI_DOUBLE_PRECISION=x'100108')
+       parameter (MPI_REAL8=x'100108')
+       parameter (MPI_COMPLEX=x'200108')
+       parameter (MPI_CHARACTER=x'300101')
+       parameter (MPI_2INTEGER=x'e00108')
+       parameter (MPI_DOUBLE_COMPLEX=x'200110')
+       parameter (MPI_INTEGER4=x'400104')
+       parameter (MPI_INTEGER8=x'400108')
+       parameter (MPI_2DOUBLE_PRECISION=x'100208')
 
        integer MPI_MAXLOC,MPI_MINLOC
        parameter (MPI_MAXLOC=5)
