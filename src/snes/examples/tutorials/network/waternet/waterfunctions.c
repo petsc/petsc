@@ -24,9 +24,8 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
   const PetscScalar *xarr;
   const PetscInt    *cone;
   PetscScalar       *farr,hf,ht,flow;
-  PetscInt          i,key,vnode1,vnode2;
+  PetscInt          i,key,vnode1,vnode2,offsetnode1,offsetnode2,offset;
   PetscBool         ghostvtex;
-  PetscInt          offsetnode1,offsetnode2,offset;
   VERTEX_Water      vertex,vertexnode1,vertexnode2;
   EDGE_Water        edge;
   Pipe              *pipe;
@@ -98,22 +97,11 @@ PetscErrorCode FormFunction_Water(DM networkdm,Vec localX,Vec localF,PetscInt nv
 
 PetscErrorCode WaterFormFunction(SNES snes,Vec X, Vec F, void *user)
 {
-  PetscErrorCode    ierr;
-  DM                networkdm;
-  Vec               localX,localF;
-  const PetscInt    *v,*e;
-  const PetscScalar *xarr;
-  PetscScalar       *farr,hf,ht,flow;
-  PetscInt          nv,ne,key,i,offset,vnode1,vnode2;
-  EDGE_Water        edge;
-  VERTEX_Water      vertex,vertexnode1,vertexnode2;
-  const PetscInt    *cone;
-  PetscInt          offsetnode1,offsetnode2;
-  Pipe              *pipe;
-  Pump              *pump;
-  Reservoir         *reservoir;
-  Tank              *tank;
-  PetscBool         ghostvtex;
+  PetscErrorCode ierr;
+  DM             networkdm;
+  Vec            localX,localF;
+  const PetscInt *v,*e;
+  PetscInt       nv,ne;
 
   PetscFunctionBegin;
   /* Get the DM attached with the SNES */
