@@ -15,6 +15,10 @@
 typedef struct{
   PetscScalar  Sbase;
   PetscBool    jac_error; /* introduce error in the jacobian */
+  PetscInt     compkey_branch;
+  PetscInt     compkey_bus;
+  PetscInt     compkey_gen;
+  PetscInt     compkey_load;
 } UserCtx_Power;
 
 /* 2. Bus data */

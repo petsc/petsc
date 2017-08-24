@@ -155,7 +155,7 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
 
     for (j = 0; j < numComps; j++) {
       ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component);CHKERRQ(ierr);
-      if (key == 1) {
+      if (key == User->compkey_bus) {
         PetscInt       nconnedges;
 	const PetscInt *connedges;
 
@@ -217,14 +217,14 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
 	    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
 	  }
 	}
-      } else if (key == 2) {
+      } else if (key == User->compkey_gen) {
 	if (!ghostvtex) {
 	  gen = (GEN)(component);
 	  if (!gen->status) continue;
 	  farr[offset] += -gen->pg/Sbase;
 	  farr[offset+1] += -gen->qg/Sbase;
 	}
-      } else if (key == 3) {
+      } else if (key == User->compkey_load) {
 	if (!ghostvtex) {
 	  load = (LOAD)(component);
 	  farr[offset] += load->pl/Sbase;
@@ -306,7 +306,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
         ierr = DMNetworkGetNumComponents(networkdm,cone[i],&numComps);CHKERRQ(ierr);
         for (j=0; j<numComps; j++) {
           ierr = DMNetworkGetComponent(networkdm,cone[i],j,&key,&component);CHKERRQ(ierr);
-          if (key == 3) { /* a load vertex in power subnet */
+          if (key == user_power.compkey_load) { /* a load vertex in power subnet */
             ierr = DMNetworkGetVariableOffset(networkdm,cone[i],&offset);CHKERRQ(ierr);
             //printf("[%d] v_power load: ...Flocal[%d]= %g, %g\n",rank,offset,farr[offset],farr[offset+1]);
           } else if (key == 5) { /* a vertex in water subnet */
@@ -340,6 +340,7 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscIn
   void*          component;
   PetscMPIInt    rank;
   MPI_Comm       comm;
+  UserCtx_Power  *User=(UserCtx_Power*)appctx;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
@@ -353,11 +354,11 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscIn
     ierr = DMNetworkGetNumComponents(networkdm,vtx[i],&numComps);CHKERRQ(ierr);
     for (j=0; j < numComps; j++) {
       ierr = DMNetworkGetComponent(networkdm,vtx[i],j,&key,&component);CHKERRQ(ierr);
-      if (key == 1) {
+      if (key == User->compkey_bus) {
 	bus = (VERTEX_Power)(component);
 	xarr[offset] = bus->va*PETSC_PI/180.0;
 	xarr[offset+1] = bus->vm;
-      } else if(key == 2) {
+      } else if(key == User->compkey_gen) {
 	gen = (GEN)(component);
 	if (!gen->status) continue;
 	xarr[offset+1] = gen->vs;
@@ -388,7 +389,6 @@ PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscIn
     if (ghostvtex) continue;
     ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
-    if (key != 5) SETERRQ1(PETSC_COMM_SELF,0,"not a VERTEX_Water, key = %d",key);
 
     if (vertex->type == VERTEX_TYPE_JUNCTION) {
       xarr[offset] = 100;
@@ -409,6 +409,7 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   const PetscInt *vtx,*edges;
   UserCtx        *user = (UserCtx*)appctx;
   Vec            localX = user->localXold;
+  UserCtx_Power  user_power = (*user).user_power;
   //PetscMPIInt    rank;
   //MPI_Comm       comm;
 
@@ -421,15 +422,12 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
   /* Set initial guess for power subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Power subnetwork: nv %d, ne %d\n",rank,nv,ne);
-  //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  ierr = SetInitialGuess_Power(networkdm,localX,nv,ne,vtx,edges,&user_power);CHKERRQ(ierr);
 
   /* Set initial guess for water subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   ierr = SetInitialGuess_Water(networkdm,localX,nv,ne,vtx,edges,NULL);CHKERRQ(ierr);
-  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Water subnetwork: nv %d, ne %d\n",rank,nv,ne);CHKERRQ(ierr);
-  //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+
 #if 0
   /* Set initial guess for the coupling subnet */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
@@ -451,7 +449,7 @@ int main(int argc,char **argv)
   PetscLogStage    stage[4];
   PetscMPIInt      crank;
   PetscInt         nsubnet = 3,numVertices[3],NumVertices[3],numEdges[3],NumEdges[3];
-  PetscInt         i,j,*edgelist[3],nv,ne,componentkey[6];
+  PetscInt         i,j,*edgelist[3],nv,ne;
   const PetscInt   *vtx,*edges;
   Vec              X,F;
   SNES             snes,snes_power,snes_water;
@@ -462,6 +460,7 @@ int main(int argc,char **argv)
   SNESConvergedReason reason=-1;
 
   /* Power subnetwork */
+  UserCtx_Power    user_power = user.user_power;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="pflow/datafiles/case9.m";
   PFDATA           *pfdata;
   PetscInt         genj,loadj;
@@ -472,6 +471,7 @@ int main(int argc,char **argv)
   WATERDATA        *waterdata;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="waternet/sample1.inp";
   int              *edgelist_water=NULL;
+  PetscInt         water_compkey_edge,water_compkey_vtx;
 
   /* Coupling subnetwork */
   int              *edgelist_couple=NULL;
@@ -509,10 +509,10 @@ int main(int argc,char **argv)
   }
   /* Broadcast power Sbase to all processors */
   ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  user.user_power.Sbase = Sbase;
-  user.user_power.jac_error = PETSC_FALSE;
+  user_power.Sbase = Sbase;
+  user_power.jac_error = PETSC_FALSE;
   /* If external option activated. Introduce error in jacobian */
-  ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &user.user_power.jac_error);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &user_power.jac_error);CHKERRQ(ierr);
 
   /* GET DATA FOR THE SECOND SUBNETWORK: Waternet */
   ierr = PetscNew(&waterdata);CHKERRQ(ierr);
@@ -551,14 +551,15 @@ int main(int argc,char **argv)
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
 
   /* Register the components in the network */
-  ierr = DMNetworkRegisterComponent(networkdm,"branchstruct",sizeof(struct _p_EDGE_Power),&componentkey[0]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Power),&componentkey[1]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"genstruct",sizeof(struct _p_GEN),&componentkey[2]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"loadstruct",sizeof(struct _p_LOAD),&componentkey[3]);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"branchstruct",sizeof(struct _p_EDGE_Power),&user_power.compkey_branch);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Power),&user_power.compkey_bus);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"genstruct",sizeof(struct _p_GEN),&user_power.compkey_gen);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"loadstruct",sizeof(struct _p_LOAD),&user_power.compkey_load);CHKERRQ(ierr);
 
-  ierr = DMNetworkRegisterComponent(networkdm,"edge_water",sizeof(struct _p_EDGE_Water),&componentkey[4]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&componentkey[5]);CHKERRQ(ierr);
+  user.user_power = user_power;
 
+  ierr = DMNetworkRegisterComponent(networkdm,"edge_water",sizeof(struct _p_EDGE_Water),&water_compkey_edge);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&water_compkey_vtx);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local nvertices %d %d; nedges %d %d\n",crank,numVertices[0],numVertices[1],numEdges[0],numEdges[1]);
   ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
@@ -578,19 +579,19 @@ int main(int argc,char **argv)
   if (!crank) printf("[%d] Power network: nv %d, ne %d\n",crank,nv,ne);
   genj = 0; loadj = 0;
   for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],componentkey[0],&pfdata->branch[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,edges[i],user_power.compkey_branch,&pfdata->branch[i]);CHKERRQ(ierr);
   }
 
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[1],&pfdata->bus[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,vtx[i],user_power.compkey_bus,&pfdata->bus[i]);CHKERRQ(ierr);
     if (pfdata->bus[i].ngen) {
       for (j = 0; j < pfdata->bus[i].ngen; j++) {
-        ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[2],&pfdata->gen[genj++]);CHKERRQ(ierr);
+        ierr = DMNetworkAddComponent(networkdm,vtx[i],user_power.compkey_gen,&pfdata->gen[genj++]);CHKERRQ(ierr);
       }
     }
     if (pfdata->bus[i].nload) {
       for (j=0; j < pfdata->bus[i].nload; j++) {
-        ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[3],&pfdata->load[loadj++]);CHKERRQ(ierr);
+        ierr = DMNetworkAddComponent(networkdm,vtx[i],user_power.compkey_load,&pfdata->load[loadj++]);CHKERRQ(ierr);
       }
     }
     /* Add number of variables */
@@ -601,11 +602,11 @@ int main(int argc,char **argv)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (!crank) printf("[%d] Water network: nv %d, ne %d\n",crank,nv,ne);
   for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],componentkey[4],&waterdata->edge[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,edges[i],water_compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
   }
 
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[5],&waterdata->vertex[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,vtx[i],water_compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
     /* Add number of variables */
     ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
   }

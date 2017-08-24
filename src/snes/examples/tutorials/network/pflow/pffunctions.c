@@ -59,7 +59,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm,Vec localX,Mat J,PetscInt
       ierr = DMNetworkGetVariableGlobalOffset(networkdm,vtx[v],&goffset);CHKERRQ(ierr);
       ierr = DMNetworkGetComponent(networkdm,vtx[v],j,&key,&component);CHKERRQ(ierr);
 
-      if (key == 1) {
+      if (key == user_power->compkey_bus) {
         PetscInt       nconnedges;
 	const PetscInt *connedges;
 
