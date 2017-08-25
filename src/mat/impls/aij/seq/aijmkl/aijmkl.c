@@ -29,12 +29,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B       = *newmat;
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   Mat_SeqAIJMKL  *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+#endif
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-    aijmkl = (Mat_SeqAIJMKL*)B->spptr;
   }
 
   /* Reset the original function pointers. */
@@ -59,6 +60,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
    * simply involves destroying the MKL sparse matrix handle and then freeing 
    * the spptr pointer. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  if (reuse == MAT_INITIAL_MATRIX) aijmkl = (Mat_SeqAIJMKL*)B->spptr;
+
   if (aijmkl->sparse_optimized) {
     sparse_status_t stat;
     stat = mkl_sparse_destroy(aijmkl->csrA);
@@ -111,23 +114,20 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
 
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJMKL   *aijmkl;
-  PetscInt        m,n;
-  MatScalar       *aa;
-  PetscInt        *aj,*ai;
-
 #ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   /* If the MKL library does not have mkl_sparse_optimize(), then this routine 
    * does nothing. We make it callable anyway in this case because it cuts 
    * down on littering the code with #ifdefs. */
   PetscFunctionReturn(0);
 #else
-
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL   *aijmkl = (Mat_SeqAIJMKL*)A->spptr;
+  PetscInt        m,n;
+  MatScalar       *aa;
+  PetscInt        *aj,*ai;
   sparse_status_t stat;
 
-  aijmkl = (Mat_SeqAIJMKL*) A->spptr;
-
+  PetscFunctionBegin;
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
 
   if (aijmkl->sparse_optimized) {
@@ -665,7 +665,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   aijmkl->sparse_optimized = PETSC_FALSE;
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines if our MKL supports them. */
-#elif
+#else
   aijmkl->no_SpMV2 = PETSC_TRUE;
 #endif
 
