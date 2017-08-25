@@ -234,7 +234,7 @@
       call MatShellSetOperation(m, op, mymatdestroy, ierr)
       op = MATOP_VIEW
       call MatShellSetOperation(m, op, mymatview, ierr)
-      op = MATOP_GET_VECS
+      op = MATOP_CREATE_VECS
       call MatShellSetOperation(m, op, mymatgetvecs, ierr)
 
       call MatMult(m, x, y, ierr)

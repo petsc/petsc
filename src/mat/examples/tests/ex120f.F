@@ -39,7 +39,7 @@
       call MatCreateShell(PETSC_COMM_SELF,tw,tw,tw,tw,0,m,ierr)
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
-      call MatShellSetOperation(m,MATOP_GET_VECS,mymatgetvecs,ierr)
+      call MatShellSetOperation(m,MATOP_CREATE_VECS,mymatgetvecs,ierr)
 !      prevent valgrind warning about uninitialized values
       x = tVec(0)
       y = tVec(0)
