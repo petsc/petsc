@@ -227,6 +227,7 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
       } else if (key == User->compkey_load) {
 	if (!ghostvtex) {
 	  load = (LOAD)(component);
+          //printf("v %d, load->pl %g\n",v,load->pl);
 	  farr[offset] += load->pl/Sbase;
 	  farr[offset+1] += load->ql/Sbase;
 	}
@@ -284,39 +285,78 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
   /* Form Function for the coupling subnetwork */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,2,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (ne) {
-    const PetscInt *cone;
-    PetscInt       key,offset,i,j,numComps;
-    PetscBool      ghostvtex;
-    PetscScalar    *farr;
+  if (user->subsnes_id != 0 && ne) {
+    const PetscInt *cone,*connedges,*econe;
+    PetscInt       key,vid[2],nconnedges,k,e,keye;
     void*          component;
+    LOAD           load;
+    PetscScalar    flow_couple;
 
-    ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
     ierr = DMNetworkGetConnectedVertices(networkdm,edges[0],&cone);CHKERRQ(ierr);
-#if 0
-    PetscInt       vid[2];
+
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,cone[0],&vid[0]);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,cone[1],&vid[1]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Formfunction, coupling subnetwork: nv %d, ne %d; connected vertices %d %d\n",rank,nv,ne,vid[0],vid[1]);CHKERRQ(ierr);
-#endif
+    //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Formfunction, coupling subnetwork: nv %d, ne %d; connected vertices %d %d\n",rank,nv,ne,vid[0],vid[1]);CHKERRQ(ierr);
 
-    for (i=0; i<2; i++) {
-      ierr = DMNetworkIsGhostVertex(networkdm,cone[i],&ghostvtex);CHKERRQ(ierr);
-      if (!ghostvtex) {
-        ierr = DMNetworkGetNumComponents(networkdm,cone[i],&numComps);CHKERRQ(ierr);
-        for (j=0; j<numComps; j++) {
-          ierr = DMNetworkGetComponent(networkdm,cone[i],j,&key,&component);CHKERRQ(ierr);
-          if (key == user_power.compkey_load) { /* a load vertex in power subnet */
-            ierr = DMNetworkGetVariableOffset(networkdm,cone[i],&offset);CHKERRQ(ierr);
-            //printf("[%d] v_power load: ...Flocal[%d]= %g, %g\n",rank,offset,farr[offset],farr[offset+1]);
-          } else if (key == 5) { /* a vertex in water subnet */
-            ierr = DMNetworkGetVariableOffset(networkdm,cone[i],&offset);CHKERRQ(ierr);
-            //printf("[%d] v_water:     ...Flocal[%d]= %g\n",rank,offset,farr[offset]);
-          }
+    /* Get coupling powernet load vertex */
+    ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
+    if (key != user_power.compkey_load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
+    load = (LOAD)(component);
+    printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
+
+    /* Get coupling waternet vertex and pump edge */
+    ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
+    if (key != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+
+    /* get its supporting edges */
+    ierr = DMNetworkGetSupportingEdges(networkdm,cone[1],&nconnedges,&connedges);CHKERRQ(ierr);
+    //printf("nconnedges %d\n",nconnedges);
+
+    for (k=0; k<nconnedges; k++) {
+      e = connedges[k];
+      ierr = DMNetworkGetComponent(networkdm,e,0,&keye,&component);CHKERRQ(ierr);
+
+      if (keye == 4) { /* water_compkey_edge */
+        EDGE_Water        edge=(EDGE_Water)component;
+        if (edge->type == EDGE_TYPE_PUMP) {
+          Pump *pump;
+          pump = &edge->pump;
+
+          /* compute flow_pump */
+          ierr = DMNetworkGetConnectedVertices(networkdm,e,&econe);CHKERRQ(ierr);
+          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[0],&vid[0]);CHKERRQ(ierr);
+          ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[1],&vid[1]);CHKERRQ(ierr);
+
+          PetscInt offsetnode1,offsetnode2,key_0,key_1;
+          const PetscScalar *xarr;
+          PetscScalar       hf,ht,flow,*farr;
+          VERTEX_Water      vertexnode1,vertexnode2;
+
+          ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
+          ierr = DMNetworkGetVariableOffset(networkdm,econe[0],&offsetnode1);CHKERRQ(ierr);
+          ierr = DMNetworkGetVariableOffset(networkdm,econe[1],&offsetnode2);CHKERRQ(ierr);
+
+          ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+          hf = xarr[offsetnode1];
+          ht = xarr[offsetnode2];
+          flow = Flow_Pump(pump,hf,ht);
+          flow_couple = 8.81*load->pl/pump->h0;
+          printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
+          /* Get the components at the two vertices */
+          ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
+          if (key_0 != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+          ierr = DMNetworkGetComponent(networkdm,econe[1],0,&key_1,(void**)&vertexnode2);CHKERRQ(ierr);
+          if (key_1 != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+#if 1
+          /* add flow_couple to flow_pump ??? */
+          if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow_couple;
+          if (vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow_couple;
+#endif
+          ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
+          ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
         }
       }
     }
-    ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   }
 
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
@@ -726,12 +766,13 @@ int main(int argc,char **argv)
   PetscLogStagePush(stage[3]);
   user.it = 0;
   while (user.it < it_max && reason<0) {
+#if 1
     user.subsnes_id = 0;
     ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
 
     user.subsnes_id = 1;
     ierr = SNESSolve(snes_water,NULL,X);CHKERRQ(ierr);
-
+#endif
     user.subsnes_id = nsubnet-1;
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
