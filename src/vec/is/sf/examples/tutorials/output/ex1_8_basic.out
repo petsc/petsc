@@ -1,0 +1,44 @@
+PetscSF Object: 3 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=3, leaves=3, remote ranks=3
+  [0] 0 <- (0,0)
+  [0] 1 <- (1,0)
+  [0] 2 <- (2,0)
+  [1] Number of roots=3, leaves=3, remote ranks=3
+  [1] 0 <- (0,1)
+  [1] 1 <- (1,1)
+  [1] 2 <- (2,1)
+  [2] Number of roots=3, leaves=3, remote ranks=3
+  [2] 0 <- (0,2)
+  [2] 1 <- (1,2)
+  [2] 2 <- (2,2)
+  [0] Roots referenced by my leaves, by rank
+  [0] 0: 1 edges
+  [0]    0 <- 0
+  [0] 1: 1 edges
+  [0]    1 <- 0
+  [0] 2: 1 edges
+  [0]    2 <- 0
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 1 edges
+  [1]    0 <- 1
+  [1] 1: 1 edges
+  [1]    1 <- 1
+  [1] 2: 1 edges
+  [1]    2 <- 1
+  [2] Roots referenced by my leaves, by rank
+  [2] 0: 1 edges
+  [2]    0 <- 2
+  [2] 1: 1 edges
+  [2]    1 <- 2
+  [2] 2: 1 edges
+  [2]    2 <- 2
+## Bcast Rootdata
+0: 100 101 102
+0: 200 201 202
+0: 300 301 302
+## Bcast Leafdata
+0: 100 200 300
+0: 101 201 301
+0: 102 202 302

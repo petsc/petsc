@@ -71,17 +71,18 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (sf->ops->Reset) {ierr = (*sf->ops->Reset)(sf);CHKERRQ(ierr);}
   sf->mine   = NULL;
   ierr       = PetscFree(sf->mine_alloc);CHKERRQ(ierr);
   sf->remote = NULL;
   ierr       = PetscFree(sf->remote_alloc);CHKERRQ(ierr);
   ierr       = PetscFree4(sf->ranks,sf->roffset,sf->rmine,sf->rremote);CHKERRQ(ierr);
+  sf->nranks = -1;
   ierr       = PetscFree(sf->degree);CHKERRQ(ierr);
   if (sf->ingroup  != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->ingroup);CHKERRQ(ierr);}
   if (sf->outgroup != MPI_GROUP_NULL) {ierr = MPI_Group_free(&sf->outgroup);CHKERRQ(ierr);}
   ierr         = PetscSFDestroy(&sf->multi);CHKERRQ(ierr);
   sf->graphset = PETSC_FALSE;
-  if (sf->ops->Reset) {ierr = (*sf->ops->Reset)(sf);CHKERRQ(ierr);}
   sf->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -266,10 +267,6 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
 {
   PetscErrorCode     ierr;
-  PetscTable         table;
-  PetscTablePosition pos;
-  PetscMPIInt        size;
-  PetscInt           i,*rcount,*ranks;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
@@ -282,6 +279,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   sf->nroots  = nroots;
   sf->nleaves = nleaves;
   if (ilocal) {
+    PetscInt i;
     switch (localmode) {
     case PETSC_COPY_VALUES:
       ierr        = PetscMalloc1(nleaves,&sf->mine_alloc);CHKERRQ(ierr);
@@ -323,75 +321,6 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_OUTOFRANGE,"Unknown remotemode");
   }
-
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
-  ierr = PetscTableCreate(10,size,&table);CHKERRQ(ierr);
-  for (i=0; i<nleaves; i++) {
-    /* Log 1-based rank */
-    ierr = PetscTableAdd(table,iremote[i].rank+1,1,ADD_VALUES);CHKERRQ(ierr);
-  }
-  ierr = PetscTableGetCount(table,&sf->nranks);CHKERRQ(ierr);
-  ierr = PetscMalloc4(sf->nranks,&sf->ranks,sf->nranks+1,&sf->roffset,nleaves,&sf->rmine,nleaves,&sf->rremote);CHKERRQ(ierr);
-  ierr = PetscMalloc2(sf->nranks,&rcount,sf->nranks,&ranks);CHKERRQ(ierr);
-  ierr = PetscTableGetHeadPosition(table,&pos);CHKERRQ(ierr);
-  for (i=0; i<sf->nranks; i++) {
-    ierr = PetscTableGetNext(table,&pos,&ranks[i],&rcount[i]);CHKERRQ(ierr);
-    ranks[i]--;             /* Convert back to 0-based */
-  }
-  ierr = PetscTableDestroy(&table);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(sf->nranks,ranks,rcount);CHKERRQ(ierr);
-  sf->roffset[0] = 0;
-  for (i=0; i<sf->nranks; i++) {
-    ierr = PetscMPIIntCast(ranks[i],sf->ranks+i);CHKERRQ(ierr);
-    sf->roffset[i+1] = sf->roffset[i] + rcount[i];
-    rcount[i]        = 0;
-  }
-  for (i=0; i<nleaves; i++) {
-    PetscInt lo,hi,irank;
-    /* Search for index of iremote[i].rank in sf->ranks */
-    lo = 0; hi = sf->nranks;
-    while (hi - lo > 1) {
-      PetscInt mid = lo + (hi - lo)/2;
-      if (iremote[i].rank < sf->ranks[mid]) hi = mid;
-      else                                  lo = mid;
-    }
-    if (hi - lo == 1 && iremote[i].rank == sf->ranks[lo]) irank = lo;
-    else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",iremote[i].rank);
-    sf->rmine[sf->roffset[irank] + rcount[irank]]   = ilocal ? ilocal[i] : i;
-    sf->rremote[sf->roffset[irank] + rcount[irank]] = iremote[i].index;
-    rcount[irank]++;
-  }
-  ierr = PetscFree2(rcount,ranks);CHKERRQ(ierr);
-#if !defined(PETSC_USE_64BIT_INDICES)
-  if (nroots == PETSC_DETERMINE) {
-    /* Jed, if you have a better way to do this, put it in */
-    PetscInt *numRankLeaves, *leafOff, *leafIndices, *numRankRoots, *rootOff, *rootIndices, maxRoots = 0;
-
-    /* All to all to determine number of leaf indices from each (you can do this using Scan and asynch messages) */
-    ierr = PetscMalloc4(size,&numRankLeaves,size+1,&leafOff,size,&numRankRoots,size+1,&rootOff);CHKERRQ(ierr);
-    ierr = PetscMemzero(numRankLeaves, size * sizeof(PetscInt));CHKERRQ(ierr);
-    for (i = 0; i < nleaves; ++i) ++numRankLeaves[iremote[i].rank];
-    ierr = MPI_Alltoall(numRankLeaves, 1, MPIU_INT, numRankRoots, 1, MPIU_INT, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-    /* Could set nroots to this maximum */
-    for (i = 0; i < size; ++i) maxRoots += numRankRoots[i];
-
-    /* Gather all indices */
-    ierr = PetscMalloc2(nleaves,&leafIndices,maxRoots,&rootIndices);CHKERRQ(ierr);
-    leafOff[0] = 0;
-    for (i = 0; i < size; ++i) leafOff[i+1] = leafOff[i] + numRankLeaves[i];
-    for (i = 0; i < nleaves; ++i) leafIndices[leafOff[iremote[i].rank]++] = iremote[i].index;
-    leafOff[0] = 0;
-    for (i = 0; i < size; ++i) leafOff[i+1] = leafOff[i] + numRankLeaves[i];
-    rootOff[0] = 0;
-    for (i = 0; i < size; ++i) rootOff[i+1] = rootOff[i] + numRankRoots[i];
-    ierr = MPI_Alltoallv(leafIndices, numRankLeaves, leafOff, MPIU_INT, rootIndices, numRankRoots, rootOff, MPIU_INT, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
-    /* Sort and reduce */
-    ierr       = PetscSortRemoveDupsInt(&maxRoots, rootIndices);CHKERRQ(ierr);
-    ierr       = PetscFree2(leafIndices,rootIndices);CHKERRQ(ierr);
-    ierr       = PetscFree4(numRankLeaves,leafOff,numRankRoots,rootOff);CHKERRQ(ierr);
-    sf->nroots = maxRoots;
-  }
-#endif
 
   sf->graphset = PETSC_TRUE;
   ierr = PetscLogEventEnd(PETSCSF_SetGraph,sf,0,0,0);CHKERRQ(ierr);
@@ -579,10 +508,11 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sf),&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sf,1,viewer,2);
+  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
-    PetscInt    i,j;
+    PetscInt    ii,i,j;
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -596,13 +526,20 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      PetscMPIInt *tmpranks,*perm;
+      ierr = PetscMalloc2(sf->nranks,&tmpranks,sf->nranks,&perm);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmpranks,sf->ranks,sf->nranks*sizeof(tmpranks[0]));CHKERRQ(ierr);
+      for (i=0; i<sf->nranks; i++) perm[i] = i;
+      ierr = PetscSortMPIIntWithArray(sf->nranks,tmpranks,perm);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
-      for (i=0; i<sf->nranks; i++) {
+      for (ii=0; ii<sf->nranks; ii++) {
+        i = perm[ii];
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
         for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
         }
       }
+      ierr = PetscFree2(tmpranks,perm);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
@@ -635,11 +572,119 @@ PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **r
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (!sf->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp before obtaining ranks");
   if (nranks)  *nranks  = sf->nranks;
   if (ranks)   *ranks   = sf->ranks;
   if (roffset) *roffset = sf->roffset;
   if (rmine)   *rmine   = sf->rmine;
   if (rremote) *rremote = sf->rremote;
+  PetscFunctionReturn(0);
+}
+
+static PetscBool InList(PetscMPIInt needle,PetscMPIInt n,const PetscMPIInt *list) {
+  PetscInt i;
+  for (i=0; i<n; i++) {
+    if (needle == list[i]) return PETSC_TRUE;
+  }
+  return PETSC_FALSE;
+}
+
+/*@C
+   PetscSFSetUpRanks - Set up data structures associated with ranks; this is for internal use by PetscSF implementations.
+
+   Collective
+
+   Input Arguments:
++  sf - PetscSF to set up; PetscSFSetGraph() must have been called
+-  dgroup - MPI_Group of ranks to be distinguished (e.g., for self or shared memory exchange)
+
+   Level: developer
+
+.seealso: PetscSFGetRanks()
+@*/
+PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
+{
+  PetscErrorCode     ierr;
+  PetscTable         table;
+  PetscTablePosition pos;
+  PetscMPIInt        size,groupsize,*groupranks;
+  PetscInt           i,*rcount,*ranks;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (!sf->graphset) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"PetscSFSetGraph() has not been called yet");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size);CHKERRQ(ierr);
+  ierr = PetscTableCreate(10,size,&table);CHKERRQ(ierr);
+  for (i=0; i<sf->nleaves; i++) {
+    /* Log 1-based rank */
+    ierr = PetscTableAdd(table,sf->remote[i].rank+1,1,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscTableGetCount(table,&sf->nranks);CHKERRQ(ierr);
+  ierr = PetscMalloc4(sf->nranks,&sf->ranks,sf->nranks+1,&sf->roffset,sf->nleaves,&sf->rmine,sf->nleaves,&sf->rremote);CHKERRQ(ierr);
+  ierr = PetscMalloc2(sf->nranks,&rcount,sf->nranks,&ranks);CHKERRQ(ierr);
+  ierr = PetscTableGetHeadPosition(table,&pos);CHKERRQ(ierr);
+  for (i=0; i<sf->nranks; i++) {
+    ierr = PetscTableGetNext(table,&pos,&ranks[i],&rcount[i]);CHKERRQ(ierr);
+    ranks[i]--;             /* Convert back to 0-based */
+  }
+  ierr = PetscTableDestroy(&table);CHKERRQ(ierr);
+
+  /* We expect that dgroup is reliably "small" while nranks could be large */
+  {
+    MPI_Group group;
+    PetscMPIInt *dgroupranks;
+    ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
+    ierr = MPI_Group_size(dgroup,&groupsize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(groupsize,&dgroupranks);CHKERRQ(ierr);
+    ierr = PetscMalloc1(groupsize,&groupranks);CHKERRQ(ierr);
+    for (i=0; i<groupsize; i++) dgroupranks[i] = i;
+    ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+    ierr = PetscFree(dgroupranks);CHKERRQ(ierr);
+  }
+
+  /* Partition ranks[] into distinguished (first sf->ndranks) followed by non-distinguished */
+  for (sf->ndranks=0,i=sf->nranks; sf->ndranks<i; ) {
+    for (i--; sf->ndranks<i; i--) { /* Scan i backward looking for distinguished rank */
+      if (InList(ranks[i],groupsize,groupranks)) break;
+    }
+    for ( ; sf->ndranks<=i; sf->ndranks++) { /* Scan sf->ndranks forward looking for non-distinguished rank */
+      if (!InList(ranks[sf->ndranks],groupsize,groupranks)) break;
+    }
+    if (sf->ndranks < i) {                         /* Swap ranks[sf->ndranks] with ranks[i] */
+      PetscInt    tmprank,tmpcount;
+      tmprank = ranks[i];
+      tmpcount = rcount[i];
+      ranks[i] = ranks[sf->ndranks];
+      rcount[i] = rcount[sf->ndranks];
+      ranks[sf->ndranks] = tmprank;
+      rcount[sf->ndranks] = tmpcount;
+      sf->ndranks++;
+    }
+  }
+  ierr = PetscFree(groupranks);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(sf->ndranks,ranks,rcount);CHKERRQ(ierr);
+  ierr = PetscSortIntWithArray(sf->nranks-sf->ndranks,ranks+sf->ndranks,rcount+sf->ndranks);CHKERRQ(ierr);
+  sf->roffset[0] = 0;
+  for (i=0; i<sf->nranks; i++) {
+    ierr = PetscMPIIntCast(ranks[i],sf->ranks+i);CHKERRQ(ierr);
+    sf->roffset[i+1] = sf->roffset[i] + rcount[i];
+    rcount[i]        = 0;
+  }
+  for (i=0; i<sf->nleaves; i++) {
+    PetscInt irank;
+    /* Search for index of iremote[i].rank in sf->ranks */
+    ierr = PetscFindMPIInt(sf->remote[i].rank,sf->ndranks,sf->ranks,&irank);CHKERRQ(ierr);
+    if (irank < 0) {
+      ierr = PetscFindMPIInt(sf->remote[i].rank,sf->nranks-sf->ndranks,sf->ranks+sf->ndranks,&irank);CHKERRQ(ierr);
+      if (irank >= 0) irank += sf->ndranks;
+    }
+    if (irank < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find rank %D in array",sf->remote[i].rank);
+    sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
+    sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
+    rcount[irank]++;
+  }
+  ierr = PetscFree2(rcount,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

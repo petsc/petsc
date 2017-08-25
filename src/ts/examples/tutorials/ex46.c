@@ -431,8 +431,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: !mpiuni
 
   # Full solves
   test:

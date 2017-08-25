@@ -580,8 +580,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: !mpiuni
 
   # 2D serial P1 tests 0-3
   test:

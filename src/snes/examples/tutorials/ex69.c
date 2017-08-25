@@ -3758,8 +3758,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: !mpiuni
 
   # 2D serial P2/P1 tests 0-2
   test:

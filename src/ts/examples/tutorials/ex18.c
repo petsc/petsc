@@ -1152,8 +1152,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-  build:
-    requires: !mpiuni
 
   # 2D harmonic velocity, no porosity
   test:

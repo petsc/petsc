@@ -266,7 +266,7 @@ static void ex1_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype
 
 static PetscErrorCode TestCellShape(DM dm)
 {
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   PetscInt       dim, c, cStart, cEnd, count = 0;
   ex1_stats_t    stats, globalStats;
   PetscReal      *J, *invJ, min = 0, max = 0, mean = 0, stdev = 0;
@@ -306,7 +306,8 @@ static PetscErrorCode TestCellShape(DM dm)
     stats.count++;
   }
 
-  {
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
     PetscMPIInt    blockLengths[2] = {4,1};
     MPI_Aint       blockOffsets[2] = {offsetof(ex1_stats_t,min),offsetof(ex1_stats_t,count)};
     MPI_Datatype   blockTypes[2]   = {MPIU_REAL,MPIU_INT}, statType;
@@ -318,6 +319,8 @@ static PetscErrorCode TestCellShape(DM dm)
     ierr = MPI_Reduce(&stats,&globalStats,1,statType,statReduce,0,comm);CHKERRQ(ierr);
     ierr = MPI_Op_free(&statReduce);CHKERRQ(ierr);
     ierr = MPI_Type_free(&statType);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMemcpy(&globalStats,&stats,sizeof(stats));CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -357,9 +360,6 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-
-  build:
-    requires: !mpiuni
 
   # CTetGen 0-1
   test:

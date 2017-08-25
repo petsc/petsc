@@ -22,7 +22,8 @@ Label 'Point Partition':
 [0]: 15 (1)
 [0]: 16 (1)
 PetscSF Object: Migration SF 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=17, leaves=11, remote ranks=1
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)

@@ -193,45 +193,46 @@ typedef int    MPI_File;
 typedef int    MPI_Info;
 typedef int    MPI_Offset;
 
-/* In order to handle datatypes, we make them into "sizeof(raw-type)";
-    this allows us to do the MPIUNI_Memcpy's easily */
+/* 32-bit packing scheme: [combiner:4 | type-index:8 | count:12 | base-bytes:8] */
+/* Any changes here must also be reflected in mpif.h */
 #define MPI_Datatype           int
-#define MPI_FLOAT              (1 << 16 | (int)sizeof(float))
-#define MPI_DOUBLE             (1 << 16 | (int)sizeof(double))
-#define MPI_LONG_DOUBLE        (1 << 16 | (int)sizeof(long double))
+#define MPI_FLOAT              (1 << 20 | 1 << 8 | (int)sizeof(float))
+#define MPI_DOUBLE             (1 << 20 | 1 << 8 | (int)sizeof(double))
+#define MPI_LONG_DOUBLE        (1 << 20 | 1 << 8 | (int)sizeof(long double))
 
-#define MPI_COMPLEX            (2 << 16 | 2*(int)sizeof(float))
-#define MPI_C_COMPLEX          (2 << 16 | 2*(int)sizeof(float))
-#define MPI_C_DOUBLE_COMPLEX   (2 << 16 | 2*(int)sizeof(double))
+#define MPI_COMPLEX            (2 << 20 | 1 << 8 | 2*(int)sizeof(float))
+#define MPI_C_COMPLEX          (2 << 20 | 1 << 8 | 2*(int)sizeof(float))
+#define MPI_C_DOUBLE_COMPLEX   (2 << 20 | 1 << 8 | 2*(int)sizeof(double))
 
-#define MPI_CHAR               (3 << 16 | (int)sizeof(char))
-#define MPI_BYTE               (3 << 16 | (int)sizeof(char))
-#define MPI_UNSIGNED_CHAR      (3 << 16 | (int)sizeof(unsigned char))
+#define MPI_CHAR               (3 << 20 | 1 << 8 | (int)sizeof(char))
+#define MPI_BYTE               (3 << 20 | 1 << 8 | (int)sizeof(char))
+#define MPI_UNSIGNED_CHAR      (3 << 20 | 1 << 8 | (int)sizeof(unsigned char))
 
-#define MPI_INT                (4 << 16 | (int)sizeof(int))
-#define MPI_LONG               (4 << 16 | (int)sizeof(long))
-#define MPI_LONG_LONG_INT      (4 << 16 | (int)sizeof(MPIUNI_INT64))
-#define MPI_SHORT              (4 << 16 | (int)sizeof(short))
+#define MPI_INT                (4 << 20 | 1 << 8 | (int)sizeof(int))
+#define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
+#define MPI_LONG_LONG_INT      (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
+#define MPI_SHORT              (4 << 20 | 1 << 8 | (int)sizeof(short))
 
-#define MPI_UNSIGNED_SHORT     (5 << 16 | (int)sizeof(unsigned short))
-#define MPI_UNSIGNED           (5 << 16 | (int)sizeof(unsigned))
-#define MPI_UNSIGNED_LONG      (5 << 16 | (int)sizeof(unsigned long))
-#define MPI_UNSIGNED_LONG_LONG (5 << 16 | (int)sizeof(MPIUNI_UINT64))
+#define MPI_UNSIGNED_SHORT     (5 << 20 | 1 << 8 | (int)sizeof(unsigned short))
+#define MPI_UNSIGNED           (5 << 20 | 1 << 8 | (int)sizeof(unsigned))
+#define MPI_UNSIGNED_LONG      (5 << 20 | 1 << 8 | (int)sizeof(unsigned long))
+#define MPI_UNSIGNED_LONG_LONG (5 << 20 | 1 << 8 | (int)sizeof(MPIUNI_UINT64))
 
-#define MPI_FLOAT_INT          (10 << 16 | (int)(sizeof(float) + sizeof(int)))
-#define MPI_DOUBLE_INT         (11 << 16 | (int)(sizeof(double) + sizeof(int)))
-#define MPI_LONG_INT           (12 << 16 | (int)(sizeof(long) + sizeof(int)))
-#define MPI_SHORT_INT          (13 << 16 | (int)(sizeof(short) + sizeof(int)))
-#define MPI_2INT               (14 << 16 | (int)(2*sizeof(int)))
+#define MPI_FLOAT_INT          (10 << 20 | 1 << 8 | (int)(sizeof(float) + sizeof(int)))
+#define MPI_DOUBLE_INT         (11 << 20 | 1 << 8 | (int)(sizeof(double) + sizeof(int)))
+#define MPI_LONG_INT           (12 << 20 | 1 << 8 | (int)(sizeof(long) + sizeof(int)))
+#define MPI_SHORT_INT          (13 << 20 | 1 << 8 | (int)(sizeof(short) + sizeof(int)))
+#define MPI_2INT               (14 << 20 | 1 << 8 | (int)(2*sizeof(int)))
 
+#define MPI_sizeof_default(datatype) ((((datatype) >> 8) & 0xfff) * ((datatype) & 0xff))
 #if defined(PETSC_USE_REAL___FP16)
 extern MPI_Datatype MPIU___FP16;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2*sizeof(char)) : (datatype) & 0xff)
+#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2*sizeof(char)) : MPI_sizeof_default(datatype))
 #elif defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? (int)(2*sizeof(double)) : (datatype) & 0xff)
+#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? (int)(2*sizeof(double)) : MPI_sizeof_default(datatype))
 #else
-#define MPI_sizeof(datatype) ((datatype) & 0xff)
+#define MPI_sizeof(datatype) (MPI_sizeof_default(datatype))
 #endif
 MPIUni_PETSC_EXTERN int MPIUNI_Memcpy(void*,const void*,int);
 
@@ -247,6 +248,7 @@ typedef int MPI_Op;
 #define MPI_MODE_WRONLY   0
 #define MPI_MODE_CREATE   0
 
+#define MPI_OP_NULL       0
 #define MPI_SUM           1
 #define MPI_MAX           2
 #define MPI_MIN           3
@@ -302,6 +304,8 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Comm_size     Petsc_MPI_Comm_size
 #define MPI_Comm_rank     Petsc_MPI_Comm_rank
 #define MPI_Wtime         Petsc_MPI_Wtime
+#define MPI_Type_get_envelope Petsc_MPI_Type_get_envelope
+#define MPI_Type_get_contents Petsc_MPI_Type_get_contents
 
 /* identical C bindings */
 #define MPI_Comm_create_keyval Petsc_MPI_Keyval_create
@@ -328,6 +332,9 @@ MPIUni_PETSC_EXTERN int    MPI_Comm_rank(MPI_Comm,int*);
 MPIUni_PETSC_EXTERN double MPI_Wtime(void);
 
 #define MPI_Aint MPIUNI_INTPTR
+MPIUni_PETSC_EXTERN int    MPI_Type_get_envelope(MPI_Datatype,int*,int*,int*,int*);
+MPIUni_PETSC_EXTERN int    MPI_Type_get_contents(MPI_Datatype,int,int,int,int*,MPI_Aint*,MPI_Datatype*);
+
 /*
     Routines we have replace with macros that do nothing
     Some return error codes others return success
@@ -573,8 +580,12 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
   MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount) * MPI_sizeof(sendtype))
 #define MPI_Sendrecv_replace(buf,count, datatype,dest,sendtag,\
      source,recvtag,comm,status) MPI_SUCCESS
+#define MPI_COMBINER_NAMED      0
+#define MPI_COMBINER_DUP        1
+#define MPI_COMBINER_CONTIGUOUS 2
+  /* 32-bit packing scheme: [combiner:4 | type-index:8 | count:12 | base-bytes:8] */
 #define MPI_Type_contiguous(count, oldtype,newtype) \
-     (*(newtype) = (count)*(oldtype),MPI_SUCCESS)
+     (*(newtype) = (MPI_COMBINER_CONTIGUOUS<<28)|((oldtype)&0x0ff00000)|(((oldtype)>>8&0xfff)*(count))<<8|((oldtype)&0xff),MPI_SUCCESS)
 #define MPI_Type_vector(count,blocklength,stride,oldtype, newtype) MPI_SUCCESS
 #define MPI_Type_hvector(count,blocklength,stride,oldtype, newtype) MPI_SUCCESS
 #define MPI_Type_indexed(count,array_of_blocklengths,\
@@ -595,7 +606,7 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
 #define MPI_Address(location,address) \
      (*(address) = (MPIUNI_INTPTR)(char *)(location),MPI_SUCCESS)
 #define MPI_Type_extent(datatype,extent) *(extent) = datatype
-#define MPI_Type_size(datatype,size) (*(size) = (datatype) & 0xff, MPI_SUCCESS)
+#define MPI_Type_size(datatype,size) (*(size) = MPI_sizeof((datatype)), MPI_SUCCESS)
 #define MPI_Type_lb(datatype,displacement) \
      MPIUni_Abort(MPI_COMM_WORLD,0)
 #define MPI_Type_ub(datatype,displacement) \

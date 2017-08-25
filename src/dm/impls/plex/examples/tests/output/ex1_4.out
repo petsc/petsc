@@ -508,7 +508,8 @@ Label 'marker':
 [1]: 47 (1)
 [1]: 48 (1)
 PetscSF Object: 2 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=61, leaves=9, remote ranks=1
   [0] 16 <- (1,18)
   [0] 17 <- (1,20)

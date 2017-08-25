@@ -56,7 +56,8 @@ Label 'Point Partition':
 [0]: 31 (7)
 [0]: 32 (7)
 PetscSF Object: Migration SF 8 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=33, leaves=7, remote ranks=1
   [0] 0 <- (0,0)
   [0] 1 <- (0,8)
@@ -810,7 +811,8 @@ Label 'marker':
 [7]: 14 (1)
 [7]: 15 (1)
 PetscSF Object: 8 MPI processes
-  type not yet set
+  type: basic
+    sort=rank-order
   [0] Number of roots=19, leaves=5, remote ranks=2
   [0] 5 <- (4,4)
   [0] 6 <- (2,5)
