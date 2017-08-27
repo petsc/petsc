@@ -6,12 +6,19 @@
 #define matcreateaij_                    MATCREATEAIJ
 #define matmpiaijsetpreallocation_       MATMPIAIJSETPREALLOCATION
 #define matxaijsetpreallocation_         MATXAIJSETPREALLOCATION
+#define matcreatempiaijwithsplitarrays_ MATCREATEMPIAIJWITHSPLITARRAYS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
 #define matcreateaij_                    matcreateaij
 #define matmpiaijsetpreallocation_       matmpiaijsetpreallocation
 #define matxaijsetpreallocation_         matxaijsetpreallocation
+#define matcreatempiaijwithsplitarrays_  matcreatempiaijwithsplitarrays
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matcreatempiaijwithsplitarrays_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,PetscInt i[],PetscInt j[],PetscScalar a[],PetscInt oi[],PetscInt oj[],PetscScalar oa[],Mat *mat, int *ierr )
+{
+  *ierr = MatCreateMPIAIJWithSplitArrays(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*M,*N,i,j,a,oi,oj,oa,mat);
+}
 
 PETSC_EXTERN void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
 {

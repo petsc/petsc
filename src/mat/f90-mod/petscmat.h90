@@ -22,6 +22,26 @@
         End Subroutine
       End Interface
 
+      Interface
+      subroutine MatCreateMPIAIJWithSplitArrays(a,b,c,d,e,f,g,h,i,j,k,l,&
+     &z)
+       use petscmatdef
+       integer a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f (*) ! PetscInt
+       PetscInt g (*) ! PetscInt
+       PetscScalar h (*) ! PetscScalar
+       PetscInt i (*) ! PetscInt
+       PetscInt j (*) ! PetscInt
+       PetscScalar k (*) ! PetscScalar
+       Mat l ! Mat
+       integer z
+       end subroutine
+      End Interface
+
       interface MatNullSpaceCreate
       subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
       use petscmatdef
