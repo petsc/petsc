@@ -5478,7 +5478,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 

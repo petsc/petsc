@@ -3085,7 +3085,7 @@ PetscErrorCode MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
   if (mat->rmap->N != mat->cmap->N) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->choleskyfactor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->choleskyfactor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"In-place factorization for Mat type %s is not supported, try out-of-place factorization. See MatCholeskyFactorSymbolic/Numeric",((PetscObject)mat)->type_name);
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
