@@ -18,7 +18,7 @@
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes: Subclasses include MATAIJCUSP, MATAIJCUSPARSE, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -5328,6 +5328,9 @@ PetscErrorCode MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[], 
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
+#if defined(PETSC_HAVE_MKL)
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJMKL(Mat,MatType,MatReuse,Mat*);
+#endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
@@ -5459,6 +5462,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MKL)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijmkl_C",MatConvert_MPIAIJ_MPIAIJMKL);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)

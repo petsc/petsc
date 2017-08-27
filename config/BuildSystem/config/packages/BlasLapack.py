@@ -422,6 +422,26 @@ class Configure(config.package.Package):
     self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
+      self.addDefine('HAVE_MKL',1)
+      '''Set include directory for mkl.h and friends'''
+      '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
+      ''' if the script hasn't been sourced, we still try to pick up the include dir)'''
+      if not self.checkCompile('#include "mkl_spblas.h"',''):
+        self.logPrint('MKL include path not automatically picked up by compiler. Trying to find mkl_spblas.h...')
+        if 'with-blaslapack-dir' in self.argDB:
+          pathlist = [os.path.join(self.argDB['with-blaslapack-dir'],'include'),
+                      os.path.join(self.argDB['with-blaslapack-dir'],'..','include'),
+                      os.path.join(self.argDB['with-blaslapack-dir'],'..','..','include')]
+          found = 0
+          for path in pathlist:
+            if os.path.isdir(path) and self.checkInclude([path], ['mkl_spblas.h']):
+              self.include = [path]
+              found = 1
+              break
+
+          if not found:
+            raise RuntimeError('Unable to find MKL include directory. Please source the mklvars-script to set up the MKL environment.\n')
+        self.logPrint('MKL include path set to ' + str(self.include))
     self.logWrite(self.libraries.restoreLog())
     return
 

@@ -3843,7 +3843,7 @@ M*/
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSP, MATAIJPERM, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes: Subclasses include MATAIJCUSP, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner
@@ -4005,6 +4005,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqsbaij_C",MatConvert_SeqAIJ_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqbaij_C",MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijperm_C",MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MKL)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijmkl_C",MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijcrl_C",MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_elemental_C",MatConvert_SeqAIJ_Elemental);CHKERRQ(ierr);
@@ -4588,6 +4591,9 @@ PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,const MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
+#if defined(PETSC_HAVE_MKL)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat,const MatType,MatReuse,Mat*);
+#endif
 #if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat,const MatType,MatReuse,Mat*);
 #endif
@@ -4615,6 +4621,9 @@ PetscErrorCode  MatSeqAIJRegisterAll(void)
 
   ierr = MatSeqAIJRegister(MATSEQAIJCRL,      MatConvert_SeqAIJ_SeqAIJCRL);CHKERRQ(ierr);
   ierr = MatSeqAIJRegister(MATSEQAIJPERM,     MatConvert_SeqAIJ_SeqAIJPERM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MKL)
+  ierr = MatSeqAIJRegister(MATSEQAIJMKL,      MatConvert_SeqAIJ_SeqAIJMKL);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
   ierr = MatSeqAIJRegister(MATMPIAIJVIENNACL, MatConvert_SeqAIJ_SeqAIJViennaCL);CHKERRQ(ierr);
 #endif

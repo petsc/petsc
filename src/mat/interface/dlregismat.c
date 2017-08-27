@@ -309,6 +309,15 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_MKL)
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+#endif
+    /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use 
+     * some of the MKL-provided ones instead. */ 
+
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);

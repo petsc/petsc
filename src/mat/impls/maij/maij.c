@@ -96,6 +96,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqmaij_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaij_seqmaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaijmkl_seqmaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3377,6 +3378,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       }
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqmaij_seqaij_C",MatConvert_SeqMAIJ_SeqAIJ);CHKERRQ(ierr);
       ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_seqmaij_C",MatPtAP_SeqAIJ_SeqMAIJ);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaijmkl_seqmaij_C",MatPtAP_SeqAIJ_SeqMAIJ);CHKERRQ(ierr);
     } else {
       Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ*)A->data;
       Mat_MPIMAIJ *b;

@@ -801,6 +801,18 @@ class Package(config.base.Configure):
     if self.skippackagewithoptions: return
     if 'with-'+self.package+'-dir' in self.argDB and ('with-'+self.package+'-include' in self.argDB or 'with-'+self.package+'-lib' in self.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
+
+    # if user did not request option, then turn it off it conflicts with configuration
+    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+      if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
+         (self.fc and not hasattr(self.compilers, 'FC')) or \
+         (self.noMPIUni and self.mpi.usingMPIUni) or \
+         (self.requirescxx11 and self.compilers.cxxdialect != 'C++11') or \
+         (not self.defaultPrecision.lower() in self.precisions) or \
+         (not self.complex and self.defaultScalarType.lower() == 'complex') or \
+         (self.defaultIndexSize == 64 and self.requires32bitint):
+       self.argDB['with-'+self.package] = 0
+
     if self.argDB['with-'+self.package]:
       if self.cxx and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
