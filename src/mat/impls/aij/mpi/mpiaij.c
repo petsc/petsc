@@ -5105,7 +5105,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIAIJWithSplitArrays"
-/*@C
+/*@
      MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 
