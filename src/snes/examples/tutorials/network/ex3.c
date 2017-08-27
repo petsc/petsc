@@ -15,6 +15,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface w
 
 typedef struct{
   UserCtx_Power user_power;
+  AppCtx_Water  appctx_water;
   PetscInt      subsnes_id; /* snes solver id */
   PetscInt      it;         /* iteration number */
   Vec           localXold;  /* store previous solution, used by FormFunction_Dummy() */
@@ -253,6 +254,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   MPI_Comm       comm;
   UserCtx        *user = (UserCtx*)appctx;
   UserCtx_Power  user_power = (*user).user_power;
+  AppCtx_Water   appctx_water = (*user).appctx_water;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
@@ -306,7 +308,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
     /* Get coupling waternet vertex and pump edge */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
-    if (key != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+    if (key != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
 
     /* get its supporting edges */
     ierr = DMNetworkGetSupportingEdges(networkdm,cone[1],&nconnedges,&connedges);CHKERRQ(ierr);
@@ -316,7 +318,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       e = connedges[k];
       ierr = DMNetworkGetComponent(networkdm,e,0,&keye,&component);CHKERRQ(ierr);
 
-      if (keye == 4) { /* water_compkey_edge */
+      if (keye == appctx_water.compkey_edge) { /* water_compkey_edge */
         EDGE_Water        edge=(EDGE_Water)component;
         if (edge->type == EDGE_TYPE_PUMP) {
           Pump *pump;
@@ -344,9 +346,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
-          if (key_0 != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+          if (key_0 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
           ierr = DMNetworkGetComponent(networkdm,econe[1],0,&key_1,(void**)&vertexnode2);CHKERRQ(ierr);
-          if (key_1 != 5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+          if (key_1 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
 #if 1
           /* add flow_couple to flow_pump ??? */
           if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow_couple;
@@ -508,6 +510,7 @@ int main(int argc,char **argv)
   PetscScalar      Sbase;
 
   /* Water subnetwork */
+  AppCtx_Water     appctx_water = user.appctx_water;
   WATERDATA        *waterdata;
   char             waterdata_file[PETSC_MAX_PATH_LEN]="waternet/sample1.inp";
   int              *edgelist_water=NULL;
@@ -595,11 +598,11 @@ int main(int argc,char **argv)
   ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Power),&user_power.compkey_bus);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(networkdm,"genstruct",sizeof(struct _p_GEN),&user_power.compkey_gen);CHKERRQ(ierr);
   ierr = DMNetworkRegisterComponent(networkdm,"loadstruct",sizeof(struct _p_LOAD),&user_power.compkey_load);CHKERRQ(ierr);
-
   user.user_power = user_power;
 
-  ierr = DMNetworkRegisterComponent(networkdm,"edge_water",sizeof(struct _p_EDGE_Water),&water_compkey_edge);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&water_compkey_vtx);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"edge_water",sizeof(struct _p_EDGE_Water),&appctx_water.compkey_edge);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&appctx_water.compkey_vtx);CHKERRQ(ierr);
+  user.appctx_water = appctx_water;
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local nvertices %d %d; nedges %d %d\n",crank,numVertices[0],numVertices[1],numEdges[0],numEdges[1]);
   ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
@@ -642,11 +645,11 @@ int main(int argc,char **argv)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
   if (!crank) printf("[%d] Water network: nv %d, ne %d\n",crank,nv,ne);
   for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],water_compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_water.compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
   }
 
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],water_compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_water.compkey_vtx,&waterdata->vertex[i]);CHKERRQ(ierr);
     /* Add number of variables */
     ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
   }

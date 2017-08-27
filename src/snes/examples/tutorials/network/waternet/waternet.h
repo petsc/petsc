@@ -16,6 +16,11 @@
 
 #define GPM_CFS 0.0022280023234587 /* Scaling constant for GPM to CFS conversion */
 
+typedef struct{
+  PetscInt     compkey_edge;
+  PetscInt     compkey_vtx;
+} AppCtx_Water;
+
 typedef struct {
   PetscInt id; /* id */
   PetscScalar elev; /* elevation (ft) */

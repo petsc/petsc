@@ -16,7 +16,7 @@ int main(int argc,char ** argv)
   PetscErrorCode   ierr;
   char             waternetdata_file[PETSC_MAX_PATH_LEN]="sample1.inp";
   WATERDATA        *waternetdata;
-  PetscInt         componentkey[2];
+  AppCtx_Water     appctx;
   PetscLogStage    stage1,stage2;
   PetscMPIInt      crank;
   DM               networkdm;
@@ -35,8 +35,8 @@ int main(int argc,char ** argv)
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
 
   /* Register the components in the network */
-  ierr = DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGE_Water),&componentkey[0]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&componentkey[1]);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"edgestruct",sizeof(struct _p_EDGE_Water),&appctx.compkey_edge);CHKERRQ(ierr);
+  ierr = DMNetworkRegisterComponent(networkdm,"busstruct",sizeof(struct _p_VERTEX_Water),&appctx.compkey_vtx);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Read Data",&stage1);CHKERRQ(ierr);
   PetscLogStagePush(stage1);
@@ -76,11 +76,11 @@ int main(int argc,char ** argv)
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
 
   for (i = 0; i < ne; i++) {
-    ierr = DMNetworkAddComponent(networkdm,edges[i],componentkey[0],&waternetdata->edge[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,edges[i],appctx.compkey_edge,&waternetdata->edge[i]);CHKERRQ(ierr);
   }
 
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkAddComponent(networkdm,vtx[i],componentkey[1],&waternetdata->vertex[i]);CHKERRQ(ierr);
+    ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx.compkey_vtx,&waternetdata->vertex[i]);CHKERRQ(ierr);
     /* Add number of variables */
     ierr = DMNetworkAddNumVariables(networkdm,vtx[i],1);CHKERRQ(ierr);
   }
