@@ -1,5 +1,6 @@
 
 #include <petsc/private/snesimpl.h>    /*I  "petscsnes.h"  I*/
+#include <petscdm.h>
 
 /*@C
    SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
@@ -63,12 +64,17 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
     ierr = MatZeroEntries(B);CHKERRQ(ierr);
   }
   if (!snes->nvwork) {
-    snes->nvwork = 3;
-
-    ierr = VecDuplicateVecs(x1,snes->nvwork,&snes->vwork);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(snes,snes->nvwork,snes->vwork);CHKERRQ(ierr);
+    if (snes->dm) {
+      ierr = DMGetGlobalVector(snes->dm,&j1a);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(snes->dm,&j2a);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(snes->dm,&x2);CHKERRQ(ierr);
+    } else {
+      snes->nvwork = 3;
+      ierr = VecDuplicateVecs(x1,snes->nvwork,&snes->vwork);CHKERRQ(ierr);
+      ierr = PetscLogObjectParents(snes,snes->nvwork,snes->vwork);CHKERRQ(ierr);
+      j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
+    }
   }
-  j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
 
   ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
@@ -122,6 +128,11 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
       }
     }
     ierr = VecRestoreArray(j2a,&y);CHKERRQ(ierr);
+  }
+  if (snes->dm) {
+    ierr = DMRestoreGlobalVector(snes->dm,&j1a);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(snes->dm,&j2a);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(snes->dm,&x2);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

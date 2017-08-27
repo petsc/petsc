@@ -880,7 +880,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESComputeJacobianDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    void *functx;
+    void    *functx;
+    DM      dm;
+    DMSNES  sdm;
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+    sdm->jacobianctx = NULL;
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefault,functx);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference Jacobian matrix\n");CHKERRQ(ierr);
