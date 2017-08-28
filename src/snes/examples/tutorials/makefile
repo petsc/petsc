@@ -1193,7 +1193,7 @@ runex46_fm_rise_2:
 	   ${RM} -f ex46.tmp
 
 runex46_fm_rise_4:
-	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2  -snes_ngmres_restart_fm_rise  > ex46.tmp 2>&1; \
+	-@${FMRISE_NGMRES_NPC_BASE} -snes_ngmres_restart_it 2  -snes_ngmres_restart_fm_rise -snes_rtol 1.e-2 > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_fm_rise_4.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46_fm_rise_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp
