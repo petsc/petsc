@@ -18,128 +18,22 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   DM             networkdm;
   UserCtx_Power  *User=(UserCtx_Power*)appctx;
   Vec            localX,localF;
-  PetscInt       e;
-  PetscInt       v,vStart,vEnd,vfrom,vto;
-  const PetscScalar *xarr;
-  PetscScalar    *farr;
-  PetscInt       offsetfrom,offsetto,offset;
+  PetscInt       nv,ne;
+  const PetscInt *vtx,*edges;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localF);CHKERRQ(ierr);
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
+  ierr = VecSet(localF,0.0);CHKERRQ(ierr);
 
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(networkdm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
-  ierr = DMGlobalToLocalBegin(networkdm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(networkdm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
+  ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+  ierr = FormFunction_Power(networkdm,localX,localF,nv,ne,vtx,edges,User);CHKERRQ(ierr);
 
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
-
-  ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
-
-  for (v=vStart; v < vEnd; v++) {
-    PetscInt    i,j,key;
-    PetscScalar Vm;
-    PetscScalar Sbase=User->Sbase;
-    VERTEX_Power  bus=NULL;
-    GEN         gen;
-    LOAD        load;
-    PetscBool   ghostvtex;
-    PetscInt    numComps;
-    void*       component;
-
-    ierr = DMNetworkIsGhostVertex(networkdm,v,&ghostvtex);CHKERRQ(ierr);
-    ierr = DMNetworkGetNumComponents(networkdm,v,&numComps);CHKERRQ(ierr);
-    ierr = DMNetworkGetVariableOffset(networkdm,v,&offset);CHKERRQ(ierr);
-    for (j = 0; j < numComps; j++) {
-      ierr = DMNetworkGetComponent(networkdm,v,j,&key,&component);CHKERRQ(ierr);
-      if (key == User->compkey_bus) {
-        PetscInt       nconnedges;
-	const PetscInt *connedges;
-
-	bus = (VERTEX_Power)(component);
-	/* Handle reference bus constrained dofs */
-	if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
-	  farr[offset] = xarr[offset] - bus->va*PETSC_PI/180.0;
-	  farr[offset+1] = xarr[offset+1] - bus->vm;
-	  break;
-	}
-
-	if (!ghostvtex) {
-	  Vm = xarr[offset+1];
-
-	  /* Shunt injections */
-	  farr[offset] += Vm*Vm*bus->gl/Sbase;
-	  if(bus->ide != PV_BUS) farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
-	}
-
-	ierr = DMNetworkGetSupportingEdges(networkdm,v,&nconnedges,&connedges);CHKERRQ(ierr);
-	for (i=0; i < nconnedges; i++) {
-	  EDGE_Power       branch;
-	  PetscInt       keye;
-          PetscScalar    Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
-          const PetscInt *cone;
-          PetscScalar    Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
-
-	  e = connedges[i];
-	  ierr = DMNetworkGetComponent(networkdm,e,0,&keye,(void**)&branch);CHKERRQ(ierr);
-	  if (!branch->status) continue;
-	  Gff = branch->yff[0];
-	  Bff = branch->yff[1];
-	  Gft = branch->yft[0];
-	  Bft = branch->yft[1];
-	  Gtf = branch->ytf[0];
-	  Btf = branch->ytf[1];
-	  Gtt = branch->ytt[0];
-	  Btt = branch->ytt[1];
-
-	  ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
-	  vfrom = cone[0];
-	  vto   = cone[1];
-
-	  ierr = DMNetworkGetVariableOffset(networkdm,vfrom,&offsetfrom);CHKERRQ(ierr);
-	  ierr = DMNetworkGetVariableOffset(networkdm,vto,&offsetto);CHKERRQ(ierr);
-
-	  thetaf = xarr[offsetfrom];
-	  Vmf     = xarr[offsetfrom+1];
-	  thetat = xarr[offsetto];
-	  Vmt     = xarr[offsetto+1];
-	  thetaft = thetaf - thetat;
-	  thetatf = thetat - thetaf;
-
-	  if (vfrom == v) {
-	    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*PetscCosScalar(thetaft) + Bft*PetscSinScalar(thetaft));
-	    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft));
-	  } else {
-	    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf));
-	    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf));
-	  }
-	}
-      } else if (key == User->compkey_gen) {
-	if (!ghostvtex) {
-	  gen = (GEN)(component);
-	  if (!gen->status) continue;
-	  farr[offset] += -gen->pg/Sbase;
-	  farr[offset+1] += -gen->qg/Sbase;
-	}
-      } else if (key == User->compkey_load) {
-	if (!ghostvtex) {
-	  load = (LOAD)(component);
-	  farr[offset] += load->pl/Sbase;
-	  farr[offset+1] += load->ql/Sbase;
-	}
-      }
-    }
-    if (bus && bus->ide == PV_BUS) {
-      farr[offset+1] = xarr[offset+1] - bus->vm;
-    }
-  }
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
 
   ierr = DMLocalToGlobalBegin(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
