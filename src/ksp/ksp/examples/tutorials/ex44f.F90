@@ -40,6 +40,14 @@
       call PetscFinalize(ierr);CHKERRA(ierr)
       end
 
+! AVX512 crashes without this..
+      subroutine knl_workarround(xx)
+      PetscScalar xx,sd
+      common /cb/ sd
+      data sd /0/
+      cb = cb+xx
+      end
+
       subroutine  ComputeRHS(da,x,ierr)
       use petscdmda
       implicit none
@@ -56,12 +64,13 @@
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       call DMDAVecGetArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
       do i=xs,xs+xm-1
-       xx(i) = i*hx
+        call knl_workarround(xx(i))
+        xx(i) = i*hx
       enddo
       call DMDAVecRestoreArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
       return
       end
-      
+
       subroutine ComputeMatrix(da,J,ierr)
       use petscdm
       use petscmat
