@@ -250,8 +250,12 @@ int main(int argc,char **argv)
   }
 
   if (test_embed) {
-    const PetscInt nroots = 1 + (PetscInt) !rank,selected[] = {1*stride,2*stride};
+    const PetscInt nroots = 1 + (PetscInt) !rank;
+    PetscInt       selected[2];
     PetscSF        esf;
+
+    selected[0] = stride;
+    selected[1] = 2*stride;
     ierr = PetscSFCreateEmbeddedSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
     ierr = PetscSFSetUp(esf);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
