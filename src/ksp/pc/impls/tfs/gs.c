@@ -208,6 +208,7 @@ PCTFS_gs_id *PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level)
 
   ierr = MPI_Comm_group(MPI_COMM_WORLD,&PCTFS_gs_group);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   ierr = MPI_Comm_create(MPI_COMM_WORLD,PCTFS_gs_group,&PCTFS_gs_comm);CHKERRABORT(PETSC_COMM_WORLD,ierr);
+  ierr = MPI_Group_free(&PCTFS_gs_group);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
   gs->PCTFS_gs_comm=PCTFS_gs_comm;
 
@@ -902,9 +903,11 @@ static PetscErrorCode PCTFS_gs_gop_local_in_plus(PCTFS_gs_id *gs,  PetscScalar *
 /******************************************************************************/
 PetscErrorCode PCTFS_gs_free(PCTFS_gs_id *gs)
 {
-  PetscInt i;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_free(&gs->PCTFS_gs_comm);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   if (gs->nghs) free((void*) gs->nghs);
   if (gs->pw_nghs) free((void*) gs->pw_nghs);
 
