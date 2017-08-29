@@ -333,7 +333,7 @@ complete_request:
     toten += pod->eigs[i];
   }
   pod->nen = 0;
-  for (i=pod->n-1,parten=0;i>=0;i--) {
+  for (i=pod->n-1,parten=0;i>=0 && toten > 0;i--) {
     pod->nen++;
     parten += pod->eigs[i];
     if (parten/toten > 1.0 - pod->tol) break;
