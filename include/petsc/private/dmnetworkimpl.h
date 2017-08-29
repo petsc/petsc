@@ -81,8 +81,9 @@ typedef struct {
   PetscInt                          dataheadersize;
   DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
 
-  PetscInt                          nsubnet;  /* Number of subnetworks */
-  DMSubnetwork                      *subnet; /* Subnetworks */
+  PetscInt                          nsubnet;  /* Total number of subnetworks, including coupling subnetworks */
+  PetscInt                          ncsubnet; /* Number of coupling subnetworks */
+  DMSubnetwork                      *subnet;  /* Subnetworks */
 
   PetscBool                         userEdgeJacobian,userVertexJacobian;  /* Global flag for using user's sub Jacobians */
   Mat                               *Je;  /* Pointer array to hold local sub Jacobians for edges, 3 elements for an edge */
