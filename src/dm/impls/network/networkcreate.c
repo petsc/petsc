@@ -1,6 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
 #include <petscdmda.h>
+#include <petsc/private/vecimpl.h>
 
 PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)
 {
@@ -203,8 +204,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
-extern PetscErrorCode VecView_MPI(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
 
 PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
 {
