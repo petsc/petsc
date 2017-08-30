@@ -64,7 +64,7 @@ def decorate_with_conf(f):
     def decorated_f(self, *args, **kwargs):
         """
         Additional kwargs:
-          precision: 'single', 'double', 'longlong' for scalars
+          precision: 'single', 'double', '__float128' for scalars
           indices: '32bit', '64bit' integer size
           complexscalars: True/False
 
@@ -203,6 +203,8 @@ class PetscBinaryIO(object):
                     complexscalars = defaultcomplexscalars
 
         self.precision = precision
+        if self.precision == '__float128' :
+            raise RuntimeError('__float128 (quadruple) precision is not properly supported. One may use double precision by using -binary_write_double in PETSc and precision=\'double\' here')
         self.indices = indices
         self.complexscalars = complexscalars
         self._update_dtypes()
@@ -213,7 +215,7 @@ class PetscBinaryIO(object):
         else:
             self._inttype = np.dtype('>i4')
 
-        if self.precision == 'longlong':
+        if self.precision == '__float128':
             nbyte = 16
         elif self.precision == 'single':
             nbyte = 4
