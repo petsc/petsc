@@ -7307,7 +7307,7 @@ process 4 binding: 001000000000001000000000
 process 5 binding: 000000001000000000001000
 Triad:        45403.1949   Rate (MB/s)
 \end{lstlisting}
-In this configuration, process 0 is bound to the first physical core on the first socket (with IDs 0 and 12), process 1 is bound to the first core on the second socket (IDs 6 and 18), an similarly for the remaining processes.
+In this configuration, process 0 is bound to the first physical core on the first socket (with IDs 0 and 12), process 1 is bound to the first core on the second socket (IDs 6 and 18), and similarly for the remaining processes.
 The achieved bandwidth of 45 GB/sec is close to the practical peak of about 50 GB/sec available on the machine.
 If, however, all MPI processes are located on the same socket, memory bandwidth drops significantly:
 \begin{lstlisting}[escapechar=\#]
