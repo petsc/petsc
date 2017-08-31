@@ -257,8 +257,10 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   if (to->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);}
   if (from->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&from->sharedwin);CHKERRQ(ierr);}
   ierr = PetscFree(to->sharedspaces);CHKERRQ(ierr);
+  ierr = PetscFree(to->sharedspacesoffset);CHKERRQ(ierr);
   ierr = PetscFree(to->sharedspaceindices);CHKERRQ(ierr);
   ierr = PetscFree(to->sharedspacestarts);CHKERRQ(ierr);
+
   ierr = PetscFree(from->sharedspaceindices);CHKERRQ(ierr);
   ierr = PetscFree(from->sharedspaces);CHKERRQ(ierr);
   ierr = PetscFree(from->sharedspacesoffset);CHKERRQ(ierr);
@@ -2507,7 +2509,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscMalloc4((ny-nprocslocal)*bs,&from->values,ny-nprocslocal,&from->indices,nsends+1,&from->starts,from->n,&from->procs);CHKERRQ(ierr);
   ctx->fromdata = (void*)from;
 
-  ierr  = PetscCalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);  
+  ierr  = PetscCalloc1(to->msize+1,&from->sharedspacestarts);CHKERRQ(ierr);
   /* move data into receive scatter */
   ierr = PetscMalloc2(size,&lowner,nsends+1,&start);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&lsharedowner,to->msize+1,&sharedstart);CHKERRQ(ierr);
@@ -2549,7 +2551,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   }
 
   ierr = PetscFree2(lowner,start);CHKERRQ(ierr);
-  ierr = PetscFree2(lsharedowner,sharedstart);CHKERRQ(ierr);  
+  ierr = PetscFree2(lsharedowner,sharedstart);CHKERRQ(ierr);
   ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
 
   /* wait on sends */

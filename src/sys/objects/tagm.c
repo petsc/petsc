@@ -393,6 +393,9 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
   for (i=0; i<(*scomm)->size; i++) sranks[i] = i;
   ierr = MPI_Group_translate_ranks(sgroup, (*scomm)->size, sranks, group, (*scomm)->ranks);CHKERRQ(ierr);
   ierr = PetscFree(sranks);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&group);CHKERRQ(ierr);
+  ierr = MPI_Group_free(&sgroup);CHKERRQ(ierr);
+
   for (i=0; i<(*scomm)->size; i++) {
     ierr = PetscInfo2(NULL,"Shared memory rank %d global rank %d\n",i,(*scomm)->ranks[i]);CHKERRQ(ierr);
   }
