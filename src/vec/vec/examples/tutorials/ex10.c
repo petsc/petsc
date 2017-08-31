@@ -122,7 +122,7 @@ int main(int argc,char **args)
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(u,&values);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
-    if (values[i] != (i + 100*rank)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
+    if (values[i] != (PetscScalar)(i + 100*rank)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
   }
   ierr = VecRestoreArrayRead(u,&values);CHKERRQ(ierr);
 
