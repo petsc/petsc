@@ -5,8 +5,12 @@
 #include <../src/mat/impls/ell/seq/ell.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
 #include <immintrin.h>
+
+#if !defined(_MM_SCALE_8)
+#define _MM_SCALE_8    8
+#endif
 
 /* these do not work
  vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
@@ -257,7 +261,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   PetscInt          totalslices;
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask,maskallset=0xff;
@@ -278,7 +282,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
     PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
 
@@ -399,7 +403,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          totalslices;
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
   __m512d           vec_x,vec_y,vec_z,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask,maskallset=0xff;
@@ -417,7 +421,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
     vec_y = _mm512_load_pd(&y[8*i]);
     #pragma novector
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
