@@ -10,13 +10,14 @@ static char help[] = "Tests I/O of vectors for different data formats (binary,HD
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  PetscInt       i,m = 20,low,high,ldim,iglobal,lsize;
-  PetscScalar    v;
-  Vec            u;
-  PetscViewer    viewer;
-  PetscBool      vstage2,vstage3,mpiio_use,isbinary,ishdf5;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size;
+  PetscInt          i,m = 20,low,high,ldim,iglobal,lsize;
+  PetscScalar       v;
+  Vec               u;
+  PetscViewer       viewer;
+  PetscBool         vstage2,vstage3,mpiio_use,isbinary,ishdf5;
+  PetscScalar const *values;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
@@ -119,6 +120,11 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(u,&values);CHKERRQ(ierr);
+  for (i=0; i<ldim; i++) {
+    if (values[i] != (PetscScalar)(i + 100*rank)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
+  }
+  ierr = VecRestoreArrayRead(u,&values);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(&u);CHKERRQ(ierr);

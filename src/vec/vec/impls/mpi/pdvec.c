@@ -637,6 +637,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
   PetscInt          timestep;
   PetscInt          low;
+  PetscInt          chunksize;
   const PetscScalar *x;
   const char        *vecname;
   PetscErrorCode    ierr;
@@ -661,6 +662,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
    * permit extending dataset).
    */
   dim = 0;
+  chunksize = 1;
   if (timestep >= 0) {
     dims[dim]      = timestep+1;
     maxDims[dim]   = H5S_UNLIMITED;
@@ -671,19 +673,49 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
+  chunksize      *= chunkDims[dim];
   ++dim;
   if (bs > 1 || dim2) {
     dims[dim]      = bs;
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
+    chunksize      *= chunkDims[dim];
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
   dims[dim]      = 2;
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
+  chunksize      *= chunkDims[dim];
+  /* hdf5 chunks must be less than the max of 32 bit int */
+  if (chunksize > PETSC_HDF5_INT_MAX/64 ) {
+    if (bs > 1 || dim2) {
+      if (chunkDims[dim-2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/128))) {
+        chunkDims[dim-2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/128));
+      } if (chunkDims[dim-1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/128))) {
+        chunkDims[dim-1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/128));
+      }
+    } else {
+      chunkDims[dim-1] = PETSC_HDF5_INT_MAX/128;
+    }
+  }
   ++dim;
+#else 
+  /* hdf5 chunks must be less than the max of 32 bit int */
+  if (chunksize > PETSC_HDF5_INT_MAX/64) {
+    if (bs > 1 || dim2) {
+      if (chunkDims[dim-2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/64))) {
+        chunkDims[dim-2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/64));
+      } if (chunkDims[dim-1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/64))) {
+        chunkDims[dim-1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_INT_MAX/64));
+      }
+    } else {
+      chunkDims[dim-1] = PETSC_HDF5_INT_MAX/64;
+    }
+  }
 #endif
+
+
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
 #if defined(PETSC_USE_REAL_SINGLE)
