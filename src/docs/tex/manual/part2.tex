@@ -7218,7 +7218,7 @@ It appears you have 1 node(s)
 \end{lstlisting}
 On this machine, one should expect a speed-up of typical memory bandwidth-bound PETSc applications of at most 4x when running multiple MPI ranks on the node.
 Most of the gains are already obtained when running with only 4-6 ranks.
-Because a smaller number of MPI ranks usually implies better preconditioners and better performance for smaller problems, the best performance for PETSc applications may be obtained with less ranks than there are physical CPU cores available.
+Because a smaller number of MPI ranks usually implies better preconditioners and better performance for smaller problems, the best performance for PETSc applications may be obtained with fewer ranks than there are physical CPU cores available.
 
 Following the results from the above run of \lstinline|make streams|, we recommend to use additional nodes instead of placing additional MPI ranks on the nodes.
 In particular, weak scaling (i.e.~constant load per process, increasing the number of processes) and strong scaling (i.e.~constant total work, increasing the number of processes) studies should keep the number of processes per node constant.
@@ -7391,6 +7391,59 @@ In contrast, the results of \lstinline|make streams| with proper processor place
 
 Machines with job submission systems such as SLURM usually provide similar mechanisms for processor placements through options specified in job submission scripts.
 Please consult the respective manuals.
+
+\subsubsection{Additional Process Placement Considerations and Details}
+
+For a typical, memory bandwidth-limited PETSc application, the primary consideration in placing MPI processes is 
+ensuring that processes are evenly distributed among sockets, and hence using all available memory channels.
+Increasingly complex processor designs and cache hierarchies, however, mean that performance may also be sensitive to how 
+processes are bound to the resources within each socket.
+Performance on the two processor machine in the preceding example may be relatively insensitive to such placement decisions, 
+because one L3 cache is shared by all cores within a NUMA domain, and each core has its own L2 and L1 caches. 
+However, processors that are less ``flat'', with more complex hierarchies, may be more sensitive.
+In many AMD Opterons or the second-generation ``Knights Landing'' Intel Xeon Phi, for instance, L2 caches are shared 
+between two cores.
+On these processors, placing consecutive MPI ranks on cores that share the same L2 cache may benefit performance if 
+the two ranks communicate frequently with each other, because the latency between cores sharing an L2 
+cache may be roughly half that of two cores not sharing one.
+There may be benefit, however, in placing consecutive ranks on cores that do not share an L2 cache, because (if there 
+are fewer MPI ranks than cores) this increases the total L2 cache capacity and bandwidth available to the application.
+There is a trade-off to be considered between placing processes close together (in terms of shared resources) to 
+optimize for efficient communication and synchronization vs.\ farther apart to maximize available resources (memory 
+channels, caches, I/O channels, etc.), and the best strategy will depend on the application and the software and 
+hardware stack.
+
+Different process placement strategies can affect performance at least as much as some commonly explored settings, 
+such as compiler optimization levels.
+Unfortunately, exploration of this space is complicated by two factors: 
+First, processor and core numberings may be completely arbitrary, changing with BIOS version, etc., and second---as 
+already noted---there is no standard mechanism used by MPI implementations (or job schedulers) to specify 
+process affinity.
+To overcome the first issue, we recommend using the \texttt{lstopo} utility of the Portable Hardware Locality 
+(\texttt{hwloc}) software package (which can be installed by configuring PETSc with \texttt{--download-hwloc}) to 
+understand the processor topology of your machine.
+We cannot fully address the second issue---consult the documenation for your MPI implementation and/or job 
+scheduler---but we offer some general observations on understanding placement options: 
+\begin{itemize}
+\item An MPI implementation may support a notion of {\it domains} in which a process may be pinned.
+  A domain may simply correspond to a single core; however, the MPI implementation may allow a deal of flexibility 
+  in specifying domains that encompass multiple cores, span sockets, etc. 
+  Some implementations, such as Intel MPI, provide means to specify whether domains should be ``compact''---composed 
+  of cores sharing resources such as caches---or ``scatter''-ed, with little resource sharing (possibly even spanning 
+  sockets).
+\item Separate from the specification of domains, MPI implementations often support different orderings in which MPI 
+  ranks should be bound to these domains. Intel MPI, for instance, supports 
+  ``compact'' ordering to place consecutive ranks close in terms of shared resources, ``scatter'' 
+  to place them far apart, and ``bunch'' to map proportionally to sockets while placing ranks as close together as 
+  possible within the sockets.
+\item An MPI implemenation that supports process pinning should offer some way to view the rank assignments. 
+  Use this output in conjunction with the topology obtained via \texttt{lstopo} or a similar tool to determine if the 
+  placements correspond to something you believe is reasonable for your application. 
+  Do not assume that the MPI implementation is doing something sensible by default!
+\end{itemize}
+
+% Point out: Differences in what pinning domains are, and differences in pinning order used
+% "compact" vs. "scatter" (vs. "bunch")
 
 \section{Performance Pitfalls and Advice}
 \sindex{performance pitfalls}
