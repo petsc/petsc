@@ -638,7 +638,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
     ierr = PetscMalloc1(groupsize,&dgroupranks);CHKERRQ(ierr);
     ierr = PetscMalloc1(groupsize,&groupranks);CHKERRQ(ierr);
     for (i=0; i<groupsize; i++) dgroupranks[i] = i;
-    ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRQ(ierr);
+    if (groupsize) {ierr = MPI_Group_translate_ranks(dgroup,groupsize,dgroupranks,group,groupranks);CHKERRQ(ierr);}
     ierr = MPI_Group_free(&group);CHKERRQ(ierr);
     ierr = PetscFree(dgroupranks);CHKERRQ(ierr);
   }
