@@ -2140,7 +2140,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
 PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
 /*@
-     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send and receive.
+     VecScatterCreateLocalMPI1 - Creates a VecScatter from a list of messages it must send and receive.
 
      Collective on VecScatter
 
@@ -2165,7 +2165,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General*,VecScatt
   Level: intermediate
 
 @*/
-PetscErrorCode VecScatterCreateLocal_MPI1(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
+PetscErrorCode VecScatterCreateLocalMPI1(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
 {
   VecScatter_MPI_General *from, *to;
   PetscInt               sendSize, recvSize;
@@ -2922,7 +2922,7 @@ PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
 }
 
 /*@
-  PetscSFCreateFromZero - Create a PetscSF that maps a Vec from sequential to distributed
+  PetscSFCreateFromZeroMPI1 - Create a PetscSF that maps a Vec from sequential to distributed
 
   Input Parameters:
 . gv - A distributed Vec
@@ -2934,7 +2934,7 @@ PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
 
 .seealso: DMPlexDistributedToSequential()
 @*/
-PetscErrorCode PetscSFCreateFromZero_MPI1(MPI_Comm comm, Vec gv, PetscSF *sf)
+PetscErrorCode PetscSFCreateFromZeroMPI1(MPI_Comm comm, Vec gv, PetscSF *sf)
 {
   PetscSFNode   *remotenodes;
   PetscInt      *localnodes;

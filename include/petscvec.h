@@ -320,8 +320,10 @@ PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
+/* PETSC_EXTERN PetscErrorCode VecScatterCreateMPI1(Vec,IS,Vec,IS,VecScatter *); */
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
+PETSC_EXTERN PetscErrorCode VecScatterCreateLocalMPI1(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
@@ -620,6 +622,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal []);
 
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
+PETSC_EXTERN PetscErrorCode PetscSFCreateFromZeroMPI1(MPI_Comm,Vec,PetscSF*);
 
 /*S
   VecTagger - Object used to manage the tagging of a subset of indices based on the values of a vector.  The
