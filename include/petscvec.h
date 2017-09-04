@@ -320,18 +320,25 @@ PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
-/* PETSC_EXTERN PetscErrorCode VecScatterCreateMPI1(Vec,IS,Vec,IS,VecScatter *); */
+PETSC_EXTERN PetscErrorCode VecScatterCreateMPI1(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
+PETSC_EXTERN PetscErrorCode VecScatterCreateEmptyMPI1(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
 PETSC_EXTERN PetscErrorCode VecScatterCreateLocalMPI1(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
 PETSC_EXTERN PetscErrorCode VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_EXTERN PetscErrorCode VecScatterBeginMPI1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+PETSC_EXTERN PetscErrorCode VecScatterEndMPI1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterDestroyMPI1(VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
+PETSC_EXTERN PetscErrorCode VecScatterCopyMPI1(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecScatterViewMPI1(VecScatter,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,PetscObject obj,const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,obj,name);}
 PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
+PETSC_EXTERN PetscErrorCode VecScatterGetMergedMPI1(VecScatter,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);

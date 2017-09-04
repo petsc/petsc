@@ -9,7 +9,7 @@
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
 #define PETSCMAP1(a)      PETSCMAP1_b(a,BS)
 
-PetscErrorCode PETSCMAP1(VecScatterBegin_MPI1)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
+PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*svalues;
@@ -127,7 +127,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin_MPI1)(VecScatter ctx,Vec xin,Vec yin,In
 
 /* --------------------------------------------------------------------------------------*/
 
-PetscErrorCode PETSCMAP1(VecScatterEnd_MPI1)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
+PetscErrorCode PETSCMAP1(VecScatterEndMPI1)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv;

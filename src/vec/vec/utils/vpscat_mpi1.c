@@ -7,7 +7,7 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscsf.h>
 
-PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode VecScatterViewMPI1_MPI(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
@@ -2235,7 +2235,7 @@ PetscErrorCode VecScatterCreateLocalMPI1(VecScatter ctx,PetscInt nsends,const Pe
 
    contains check that PetscMPIInt can handle the sizes needed
 */
-PetscErrorCode VecScatterCreate_PtoS_MPI1(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
   PetscMPIInt            size,rank,imdex,tag,n;
@@ -2654,59 +2654,59 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
 
   switch (bs) {
   case 12:
-    ctx->ops->begin = VecScatterBegin_MPI1_12;
-    ctx->ops->end   = VecScatterEnd_MPI1_12;
+    ctx->ops->begin = VecScatterBeginMPI1_12;
+    ctx->ops->end   = VecScatterEndMPI1_12;
     break;
   case 11:
-    ctx->ops->begin = VecScatterBegin_MPI1_11;
-    ctx->ops->end   = VecScatterEnd_MPI1_11;
+    ctx->ops->begin = VecScatterBeginMPI1_11;
+    ctx->ops->end   = VecScatterEndMPI1_11;
     break;
   case 10:
-    ctx->ops->begin = VecScatterBegin_MPI1_10;
-    ctx->ops->end   = VecScatterEnd_MPI1_10;
+    ctx->ops->begin = VecScatterBeginMPI1_10;
+    ctx->ops->end   = VecScatterEndMPI1_10;
     break;
   case 9:
-    ctx->ops->begin = VecScatterBegin_MPI1_9;
-    ctx->ops->end   = VecScatterEnd_MPI1_9;
+    ctx->ops->begin = VecScatterBeginMPI1_9;
+    ctx->ops->end   = VecScatterEndMPI1_9;
     break;
   case 8:
-    ctx->ops->begin = VecScatterBegin_MPI1_8;
-    ctx->ops->end   = VecScatterEnd_MPI1_8;
+    ctx->ops->begin = VecScatterBeginMPI1_8;
+    ctx->ops->end   = VecScatterEndMPI1_8;
     break;
   case 7:
-    ctx->ops->begin = VecScatterBegin_MPI1_7;
-    ctx->ops->end   = VecScatterEnd_MPI1_7;
+    ctx->ops->begin = VecScatterBeginMPI1_7;
+    ctx->ops->end   = VecScatterEndMPI1_7;
     break;
   case 6:
-    ctx->ops->begin = VecScatterBegin_MPI1_6;
-    ctx->ops->end   = VecScatterEnd_MPI1_6;
+    ctx->ops->begin = VecScatterBeginMPI1_6;
+    ctx->ops->end   = VecScatterEndMPI1_6;
     break;
   case 5:
-    ctx->ops->begin = VecScatterBegin_MPI1_5;
-    ctx->ops->end   = VecScatterEnd_MPI1_5;
+    ctx->ops->begin = VecScatterBeginMPI1_5;
+    ctx->ops->end   = VecScatterEndMPI1_5;
     break;
   case 4:
-    ctx->ops->begin = VecScatterBegin_MPI1_4;
-    ctx->ops->end   = VecScatterEnd_MPI1_4;
+    ctx->ops->begin = VecScatterBeginMPI1_4;
+    ctx->ops->end   = VecScatterEndMPI1_4;
     break;
   case 3:
-    ctx->ops->begin = VecScatterBegin_MPI1_3;
-    ctx->ops->end   = VecScatterEnd_MPI1_3;
+    ctx->ops->begin = VecScatterBeginMPI1_3;
+    ctx->ops->end   = VecScatterEndMPI1_3;
     break;
   case 2:
-    ctx->ops->begin = VecScatterBegin_MPI1_2;
-    ctx->ops->end   = VecScatterEnd_MPI1_2;
+    ctx->ops->begin = VecScatterBeginMPI1_2;
+    ctx->ops->end   = VecScatterEndMPI1_2;
     break;
   case 1:
-    ctx->ops->begin = VecScatterBegin_MPI1_1;
-    ctx->ops->end   = VecScatterEnd_MPI1_1;
+    ctx->ops->begin = VecScatterBeginMPI1_1;
+    ctx->ops->end   = VecScatterEndMPI1_1;
     break;
   default:
-    ctx->ops->begin = VecScatterBegin_MPI1_bs;
-    ctx->ops->end   = VecScatterEnd_MPI1_bs;
+    ctx->ops->begin = VecScatterBeginMPI1_bs;
+    ctx->ops->end   = VecScatterEndMPI1_bs;
 
   }
-  ctx->ops->view = VecScatterView_MPI_MPI1;
+  ctx->ops->view = VecScatterViewMPI1_MPI;
   /* Check if the local scatter is actually a copy; important special case */
   if (to->local.n) {
     ierr = VecScatterLocalOptimizeCopy_Private_MPI1(ctx,&to->local,&from->local,bs);CHKERRQ(ierr);
@@ -2722,14 +2722,14 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
          Reverses the order of the arguments, calls VecScatterCreate_PtoS() then
          reverses the result.
 */
-PetscErrorCode VecScatterCreate_StoP_MPI1(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreateMPI1_StoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode         ierr;
   MPI_Request            *waits;
   VecScatter_MPI_General *to,*from;
 
   PetscFunctionBegin;
-  ierr          = VecScatterCreate_PtoS_MPI1(ny,inidy,nx,inidx,yin,xin,bs,ctx);CHKERRQ(ierr);
+  ierr          = VecScatterCreateMPI1_PtoS(ny,inidy,nx,inidx,yin,xin,bs,ctx);CHKERRQ(ierr);
   to            = (VecScatter_MPI_General*)ctx->fromdata;
   from          = (VecScatter_MPI_General*)ctx->todata;
   ctx->todata   = (void*)to;
@@ -2751,7 +2751,7 @@ PetscErrorCode VecScatterCreate_StoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
 }
 
 /* ---------------------------------------------------------------------------------*/
-PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreateMPI1_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
@@ -2776,7 +2776,7 @@ PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = VecScatterCreate_StoP_MPI1(nx,inidx,ny,inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreateMPI1_StoP(nx,inidx,ny,inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -2916,7 +2916,7 @@ PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
   if (duplicate) {
     ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
   }
-  ierr = VecScatterCreate_StoP_MPI1(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateMPI1_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
