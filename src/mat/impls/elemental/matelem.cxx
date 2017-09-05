@@ -472,6 +472,13 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMissingDiagonal_Elemental(Mat A,PetscBool *missing,PetscInt *d)
+{
+  PetscFunctionBegin;
+  *missing = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
@@ -1246,7 +1253,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0,
+       MatMissingDiagonal_Elemental,
 /*114*/0,
        0,
        0,
