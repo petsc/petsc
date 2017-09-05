@@ -5,25 +5,27 @@
 #include <../src/mat/impls/ell/seq/ell.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+#if defined(PETSC_HAVE_IMMINTRIN_H)
 #include <immintrin.h>
 
 #if !defined(_MM_SCALE_8)
 #define _MM_SCALE_8    8
 #endif
 
+#if defined(__AVX512F__)
 /* these do not work
  vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
  vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
 */
 #define AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y) \
-/* if the mast bit is set, copy from acolidx, otherwise from vec_idx */ \
+/* if the mask bit is set, copy from acolidx, otherwise from vec_idx */ \
 vec_idx  = _mm256_maskz_load_epi32(maskallset,acolidx); \
 vec_vals = _mm512_load_pd(aval); \
 vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8); \
 vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask); \
 
 #endif
+#endif  /* PETSC_HAVE_IMMINTRIN_H */
 
 /*@C
  MatSeqELLSetPreallocation - For good matrix assembly performance
@@ -268,6 +270,11 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
   __m256i           vec_idx2,vec_idx3,vec_idx4;
   __mmask8          mask2,mask3,mask4;
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
+  __m128d           vec_x_tmp;
+  __m256d           vec_x,vec_y,vec_y2,vec_vals;
+  MatScalar         yval;
+  PetscInt          r,rows_left,row,nnz_in_row;
 #else
   PetscScalar       sum[8];
   char              bflag1,bflag2,bflag3,bflag4,bflag5,bflag6,bflag7,bflag8;
@@ -281,8 +288,8 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
-  for (i=0; i<totalslices; i++) { /* loop over slices */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+  for (i=0; i<totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
     PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
 
@@ -350,7 +357,56 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     } else {
       _mm512_store_pd(&y[8*i],vec_y);
     }
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
+  for (i=0; i<totalslices; i++) { /* loop over full slices */
+    PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+
+    vec_y  = _mm256_setzero_pd();
+    vec_y2 = _mm256_setzero_pd();
+
+    /* last slice may have padding rows. Don't use vectorization. */
+    if (i == totalslices-1 && (A->rmap->n & 0x07)) {
+      rows_left = A->rmap->n - 8*i;
+      for (r=0; r<rows_left; ++r) {
+        yval = (MatScalar)0;
+        row = 8*i + r;
+        nnz_in_row = a->rlen[row];
+        for (j=0; j<nnz_in_row; ++j) yval += aval[8*j + r] * x[acolidx[8*j + r]];
+        y[row] = yval;
+      }
+      break;
+    }
+
+    /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
+    for (; j<a->sliidx[i+1]; j+=8) {
+      vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,1);
+      vec_y     = _mm256_add_pd(_mm256_mul_pd(vec_x,vec_vals),vec_y);
+      aval     += 4;
+
+      vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,1);
+      vec_y2    = _mm256_add_pd(_mm256_mul_pd(vec_x,vec_vals),vec_y2);
+      aval     += 4;
+    }
+
+    _mm256_storeu_pd(y + i*8,     vec_y);
+    _mm256_storeu_pd(y + i*8 + 4, vec_y2);
+  }
+
 #else
+  for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=0; j<8; j++) sum[j] = 0.0;
 
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
@@ -383,8 +439,8 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
       y[8*i+6] = sum[6];
       y[8*i+7] = sum[7];
     }
-#endif
   }
+#endif
 
   ierr = PetscLogFlops(2.0*a->nz-a->nonzerorowcnt);CHKERRQ(ierr); /* theoretical minimal FLOPs */
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
@@ -1130,7 +1186,8 @@ PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
 PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
-  PetscInt       totalslices;
+  PetscInt       totalslices,i,shift,row_in_slice,row,nrow,*cp,lastcol,k;
+  MatScalar      *vp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1141,6 +1198,24 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
   ierr = PetscInfo6(A,"Matrix size: %D X %D; storage space: %D allocated %D used (%D nonzeros+%D paddedzeros)\n",A->rmap->n,A->cmap->n,a->maxallocmat,a->sliidx[totalslices],a->nz,a->sliidx[totalslices]-a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",a->rlenmax);CHKERRQ(ierr);
+  /* Set unused slots for column indices to last valid column index. Set unused slots for values to zero. This allows for a use of unmasked intrinsics -> higher performance */
+  for (i=0; i<totalslices; ++i) {
+    shift = a->sliidx[i];    /* starting index of the slice */
+    cp    = a->colidx+shift; /* pointer to the column indices of the slice */
+    vp    = a->val+shift;    /* pointer to the nonzero values of the slice */
+
+    for (row_in_slice=0; row_in_slice<8; ++row_in_slice) { /* loop over added columns */
+      row = 8*i + row_in_slice;
+      if (row >= A->rmap->n) continue;  /* do not touch padded rows, because no vectorization is used for these */
+      nrow  = a->rlen[row]; /* number of nonzeros in row */
+      lastcol = (nrow > 0) ? cp[8*(nrow-1) + row_in_slice] : 0;
+
+      for (k=nrow; k<a->maxallocrow; ++k) {
+        cp[8*k + row_in_slice] = lastcol;
+        vp[8*k + row_in_slice] = (MatScalar)0;
+      }
+    }
+  }
 
   A->info.mallocs    += a->reallocs;
   a->reallocs         = 0;
