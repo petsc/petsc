@@ -884,9 +884,9 @@ PetscErrorCode VecScatterViewMPI1_SSToSS(VecScatter in,PetscViewer viewer)
 }
 
 
-extern PetscErrorCode VecScatterCreateMPI1_PtoS_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateMPI1_PtoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateMPI1_StoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreateMPI1_PtoP(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreateMPI1_StoP(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0
@@ -995,7 +995,7 @@ $
 
 .seealso: VecScatterDestroyMPI1(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-PetscErrorCode  VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
@@ -1007,6 +1007,7 @@ PetscErrorCode  VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
   IS                tix = 0,tiy = 0;
 
   PetscFunctionBegin;
+  printf("VecScatterCreateMPI1 ...\n");
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
 
   /*
@@ -1025,7 +1026,7 @@ PetscErrorCode  VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
 
   /* generate the Scatter context */
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroyMPI1,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroyMPI1,VecScatterViewMPI1);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1499,6 +1500,8 @@ PetscErrorCode  VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
       ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%d %d)",nx,ny);
+
+      ierr = VecView(xin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = VecScatterCreateMPI1_PtoS(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
@@ -1832,7 +1835,7 @@ PetscErrorCode  VecScatterCopyMPI1(VecScatter sctx,VecScatter *ctx)
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_CLASSID,1);
   PetscValidPointer(ctx,2);
   if (!sctx->ops->copy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot copy this type");
-  ierr = PetscHeaderCreate(*ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",PetscObjectComm((PetscObject)sctx),VecScatterDestroyMPI1,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",PetscObjectComm((PetscObject)sctx),VecScatterDestroyMPI1,VecScatterViewMPI1);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->ops->copy)(sctx,*ctx);CHKERRQ(ierr);
@@ -1842,7 +1845,7 @@ PetscErrorCode  VecScatterCopyMPI1(VecScatter sctx,VecScatter *ctx)
 
 /* ------------------------------------------------------------------*/
 /*@C
-   VecScatterView - Views a vector scatter context.
+   VecScatterViewMPI1 - Views a vector scatter context.
 
    Collective on VecScatter
 
@@ -1853,7 +1856,7 @@ PetscErrorCode  VecScatterCopyMPI1(VecScatter sctx,VecScatter *ctx)
    Level: intermediate
 
 C@*/
-PetscErrorCode  VecScatterView_MPI1(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode  VecScatterViewMPI1(VecScatter ctx,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -1870,7 +1873,7 @@ PetscErrorCode  VecScatterView_MPI1(VecScatter ctx,PetscViewer viewer)
 }
 
 /*@C
-   VecScatterRemap - Remaps the "from" and "to" indices in a
+   VecScatterRemapMPI1 - Remaps the "from" and "to" indices in a
    vector scatter context. FOR EXPERTS ONLY!
 
    Collective on VecScatter
@@ -1891,7 +1894,7 @@ PetscErrorCode  VecScatterView_MPI1(VecScatter ctx,PetscViewer viewer)
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
 @*/
-PetscErrorCode  VecScatterRemap_MPI1(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
+PetscErrorCode VecScatterRemapMPI1(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 {
   VecScatter_Seq_General *to,*from;
   VecScatter_MPI_General *mto;
@@ -1940,6 +1943,8 @@ PetscErrorCode  VecScatterRemap_MPI1(VecScatter scat,PetscInt *rto,PetscInt *rfr
   PetscFunctionReturn(0);
 }
 
+#if 0  // rm VecScatterGetTypes_Private_MPI1
+
 /*
  VecScatterGetTypes_Private - Returns the scatter types.
 
@@ -1957,7 +1962,6 @@ PetscErrorCode VecScatterGetTypes_Private_MPI1(VecScatter scatter,VecScatterType
   *to = todata->type;
   PetscFunctionReturn(0);
 }
-
 
 /*
   VecScatterIsSequential_Private - Returns true if the scatter is sequential.
@@ -1978,6 +1982,7 @@ PetscErrorCode VecScatterIsSequential_Private_MPI1(VecScatter_Common *scatter,Pe
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VECCUDA)
 

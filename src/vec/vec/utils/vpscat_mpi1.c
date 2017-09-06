@@ -132,7 +132,7 @@ PetscErrorCode VecScatterLocalOptimize_Private_MPI1(VecScatter scatter,VecScatte
 /* --------------------------------------------------------------------------------------*/
 
 /* -------------------------------------------------------------------------------------*/
-PetscErrorCode VecScatterDestroy_PtoP_MPI1(VecScatter ctx)
+PetscErrorCode VecScatterDestroyMPI1_PtoP(VecScatter ctx)
 {
   VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
@@ -276,7 +276,7 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private_MPI1(VecScatter scatter,VecSc
 
 /* --------------------------------------------------------------------------------------*/
 
-PetscErrorCode VecScatterCopy_PtoP_X_MPI1(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopyMPI1_PtoP_X(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
@@ -404,7 +404,7 @@ PetscErrorCode VecScatterCopy_PtoP_X_MPI1(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterCopy_PtoP_AllToAll_MPI1(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopyMPI1_PtoP_AllToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
@@ -2137,7 +2137,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
 
 /*              create parallel to sequential scatter context                           */
 
-PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
+PetscErrorCode VecScatterCreateCommonMPI1_PtoS(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
 /*@
      VecScatterCreateLocalMPI1 - Creates a VecScatter from a list of messages it must send and receive.
@@ -2223,7 +2223,7 @@ PetscErrorCode VecScatterCreateLocalMPI1(VecScatter ctx,PetscInt nsends,const Pe
   to->type   = VEC_SCATTER_MPI_GENERAL;
   from->bs   = bs;
   to->bs     = bs;
-  ierr       = VecScatterCreateCommon_PtoS_MPI1(from, to, ctx);CHKERRQ(ierr);
+  ierr       = VecScatterCreateCommonMPI1_PtoS(from, to, ctx);CHKERRQ(ierr);
 
   /* mark lengths as negative so it won't check local vector lengths */
   ctx->from_n = ctx->to_n = -1;
@@ -2354,7 +2354,7 @@ PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt nx,const PetscInt *inidx,Petsc
       to->procs[i]    = onodes1[i];
       values = rsvalues;
       rsvalues += olengths1[i];
-      for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base;
+      for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base; //to->indices[0] ???
     }
   }
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
@@ -2431,14 +2431,14 @@ PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt nx,const PetscInt *inidx,Petsc
   from->bs   = bs;
   to->bs     = bs;
 
-  ierr = VecScatterCreateCommon_PtoS_MPI1(from,to,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateCommonMPI1_PtoS(from,to,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
    bs indicates how many elements there are in each block. Normally this would be 1.
 */
-PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
+PetscErrorCode VecScatterCreateCommonMPI1_PtoS(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
 {
   MPI_Comm       comm;
   PetscMPIInt    tag  = ((PetscObject)ctx)->tag, tagr;
@@ -2450,7 +2450,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ctx,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tagr);CHKERRQ(ierr);
-  ctx->ops->destroy = VecScatterDestroy_PtoP_MPI1;
+  ctx->ops->destroy = VecScatterDestroyMPI1_PtoP;
 
   ctx->reproduce = PETSC_FALSE;
   to->sendfirst  = PETSC_FALSE;
@@ -2541,12 +2541,12 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
           ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }
-    } else ctx->ops->copy = VecScatterCopy_PtoP_AllToAll_MPI1;
+    } else ctx->ops->copy = VecScatterCopyMPI1_PtoP_AllToAll;
 
 #else
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
-    ctx->ops->copy      = VecScatterCopy_PtoP_AllToAll_MPI1;
+    ctx->ops->copy      = VecScatterCopyMPI1_PtoP_AllToAll;
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
@@ -2642,7 +2642,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     }
 
-    ctx->ops->copy = VecScatterCopy_PtoP_X_MPI1;
+    ctx->ops->copy = VecScatterCopyMPI1_PtoP_X;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
 
