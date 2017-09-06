@@ -45,7 +45,7 @@
       PetscScalar xx,sd
       common /cb/ sd
       data sd /0/
-      cb = cb+xx
+      sd = sd+xx
       end
 
       subroutine  ComputeRHS(da,x,ierr)
