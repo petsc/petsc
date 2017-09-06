@@ -10,7 +10,6 @@ PC Object: (physical_) 4 MPI processes
     Use user-defined CSR: 1
     Use local mat graph: 0
     Connectivity graph topological dimension: 3
-    Graph max count: 2147483647
     Use vertices: 1 (vertex size 1)
     Use edges: 1
     Use faces: 0
@@ -226,7 +225,6 @@ KSP Object: (fluxes_) 4 MPI processes
           Use user-defined CSR: 1
           Use local mat graph: 0
           Connectivity graph topological dimension: 3
-          Graph max count: 2147483647
           Use vertices: 1 (vertex size 1)
           Use edges: 1
           Use faces: 0
