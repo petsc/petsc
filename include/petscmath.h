@@ -214,7 +214,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
 #endif  /* ! PETSC_SKIP_COMPLEX */
 
-#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
+#elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
 #if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
@@ -414,7 +414,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-#if   defined(__cplusplus)
+#if   defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
   return PetscComplex(x,y);
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;
