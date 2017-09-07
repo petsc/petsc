@@ -262,7 +262,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          totalslices;
   const PetscInt    *acolidx=a->colidx;
-  PetscInt          i,j;
+  PetscInt          i,j=0;
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
@@ -357,6 +357,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     } else {
       _mm512_store_pd(&y[8*i],vec_y);
     }
+  }
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
   for (i=0; i<totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
