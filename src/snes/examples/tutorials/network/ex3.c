@@ -227,18 +227,24 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
           hf = xarr[offsetnode1];
           ht = xarr[offsetnode2];
-          flow = Flow_Pump(pump,hf,ht);
-          flow_couple = 8.81*load->pl/pump->h0;
+          flow        = Flow_Pump(pump,hf,ht);
+          flow_couple = 8.81*load->pl/(ht-hf);     //pump->h0;
           //printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
           if (key_0 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
           ierr = DMNetworkGetComponent(networkdm,econe[1],0,&key_1,(void**)&vertexnode2);CHKERRQ(ierr);
           if (key_1 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
-#if 0
-          /* add flow_couple to flow_pump ??? */
-          if (vertexnode1->type == VERTEX_TYPE_JUNCTION) farr[offsetnode1] -= flow_couple;
-          if (vertexnode2->type == VERTEX_TYPE_JUNCTION) farr[offsetnode2] += flow_couple;
+#if 1
+          /* subtract flow_pump computed in FormFunction_Water() and add flow_couple to connected nodes */
+          if (vertexnode1->type == VERTEX_TYPE_JUNCTION) {
+            farr[offsetnode1] += flow;
+            farr[offsetnode1] -= flow_couple;
+          }
+          if (vertexnode2->type == VERTEX_TYPE_JUNCTION) {
+            farr[offsetnode2] -= flow;
+            farr[offsetnode2] += flow_couple;
+          }
 #endif
           ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
           ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
@@ -654,7 +660,7 @@ int main(int argc,char **argv)
   PetscLogStagePush(stage[3]);
   user.it = 0;
   while (user.it < it_max && reason<0) {
-#if 1
+#if 0
     user.subsnes_id = 0;
     ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
 
