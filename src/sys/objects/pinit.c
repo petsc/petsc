@@ -1219,6 +1219,11 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
 
+  /*
+     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
+
   ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -1235,8 +1240,13 @@ PetscErrorCode  PetscFinalize(void)
       ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
   }
-  mname[0] = 0;
 
+  /*
+     Free any objects created by the last block of code.
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
+
+  mname[0] = 0;
   ierr = PetscOptionsGetString(NULL,NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
@@ -1244,11 +1254,6 @@ PetscErrorCode  PetscFinalize(void)
     else          PetscLogDump(0);
   }
 #endif
-
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
-  */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
   ierr = PetscStackDestroy();CHKERRQ(ierr);
 
