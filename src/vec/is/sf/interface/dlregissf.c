@@ -23,7 +23,7 @@ PetscErrorCode PetscSFInitializePackage(void)
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
   PetscSFPackageInitialized = PETSC_TRUE;
 
-  ierr = PetscClassIdRegister("Star Forest Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Star Forest Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
   ierr = PetscSFRegisterAll();CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFSetGraph"     , PETSCSF_CLASSID, &PETSCSF_SetGraph);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin);CHKERRQ(ierr);
