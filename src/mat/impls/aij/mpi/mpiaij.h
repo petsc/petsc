@@ -58,7 +58,8 @@ typedef struct {
   /* The following variables are used for matrix-vector products */
   Vec        lvec;                 /* local vector */
   Vec        diag;
-  VecScatter Mvctx;                /* scatter context for vector */
+  VecScatter Mvctx,Mvctx_mpi1;     /* scatter context for vector */
+  PetscBool  Mvctx_mpi1_flg;       /* if true, Mvctx_mpi1 is requested, default false */
   PetscBool  roworiented;          /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */

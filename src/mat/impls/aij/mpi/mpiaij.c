@@ -1112,6 +1112,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
   ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
+  if (aij->Mvctx_mpi1) {ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);}
   ierr = PetscFree2(aij->rowvalues,aij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
@@ -3042,9 +3043,12 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   Vec            lvec=a->lvec,lcmap;
   PetscInt       i,cstart,cend,Bn=B->cmap->N;
   MPI_Comm       comm;
+  PetscMPIInt    rank;
+  VecScatter     Mvctx;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
@@ -3088,13 +3092,19 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = ISSetBlockSize(*isrow_d,i);CHKERRQ(ierr);
 
   /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
-  ierr = VecScatterBegin(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (!a->Mvctx_mpi1) {
+    /* a->Mvctx causes random 'count' in o-build? See src/mat/examples/tests/runex59_2 */
+    a->Mvctx_mpi1_flg = PETSC_TRUE;
+    ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
+  }
+  Mvctx = a->Mvctx_mpi1;
+  ierr = VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
 
-  ierr = VecScatterEnd(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* (3) create sequential iscol_o (a subset of iscol) and isgarray */
   /* off-process column indices */
@@ -3112,7 +3122,7 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
-
+  /* printf("[%d] count %d\n",rank,count); */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
   /* cannot ensure iscol_o has same blocksize as iscol! */
 
@@ -5124,9 +5134,9 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   PetscErrorCode         ierr;
   Mat_MPIAIJ             *a=(Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ             *b_oth;
-  VecScatter             ctx =a->Mvctx;
+  VecScatter             ctx;
   MPI_Comm               comm;
-  PetscMPIInt            *rprocs,*sprocs,tag=((PetscObject)ctx)->tag,rank;
+  PetscMPIInt            *rprocs,*sprocs,tag,rank;
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap->n,row,*b_othi,*b_othj;
   PetscInt               *rvalues,*svalues;
   MatScalar              *b_otha,*bufa,*bufA;
@@ -5153,6 +5163,13 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
     *B_oth    = NULL;
     PetscFunctionReturn(0);
   }
+
+  if (!a->Mvctx_mpi1) { /* create a->Mvctx_mpi1 to be used for Mat-Mat ops */
+    a->Mvctx_mpi1_flg = PETSC_TRUE;
+    ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+  }
+  ctx = a->Mvctx_mpi1;
+  tag = ((PetscObject)ctx)->tag;
 
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
   gen_from = (VecScatter_MPI_General*)ctx->fromdata;

@@ -1007,7 +1007,6 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
   IS                tix = 0,tiy = 0;
 
   PetscFunctionBegin;
-  printf("VecScatterCreateMPI1 ...\n");
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
 
   /*
