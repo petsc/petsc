@@ -96,7 +96,7 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   f0[0] = 0.0;
-  f0[1] = -sin(a[1]*PETSC_PI*x[1])*cos(a[0]*PETSC_PI*x[0]);
+  f0[1] = -PetscSinReal(a[1]*PETSC_PI*x[1])*PetscCosReal(a[0]*PETSC_PI*x[0]);
 }
 
 static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -377,16 +377,16 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /* rho = -sin(km*z)*cos(kn*x) */
   x = pos[0];
   z = pos[1];
-  Z = exp( 2.0 * B * x );
+  Z = PetscExpReal( 2.0 * B * x );
   km = m*PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
   kn = (PetscReal) n*PETSC_PI;
   /*************************************************************************/
   /*************************************************************************/
   a = B*B + km*km;
   b = 2.0*km*B;
-  r = sqrt(a*a + b*b);
-  Rp = sqrt( (r+a)/2.0 );
-  Rm  = sqrt( (r-a)/2.0 );
+  r = PetscSqrtReal(a*a + b*b);
+  Rp = PetscSqrtReal( (r+a)/2.0 );
+  Rm  = PetscSqrtReal( (r-a)/2.0 );
   UU  = Rp - B;
   VV = Rp + B;
 
@@ -431,7 +431,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t2 = B - Rp;
   t4 = Rp + B;
   t6 = UU * x;
-  t9 = exp(t6 - 0.4e1 * Rp);
+  t9 = PetscExpReal(t6 - 0.4e1 * Rp);
   t13 = B * B;
   t16 = Rp * t1;
   t18 = Rp * Rp;
@@ -441,10 +441,10 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t24 = B * t1;
   t32 = 0.8e1 * t13 * BB * kn * Rp;
   t34 = 0.2e1 * Rm;
-  t35 = cos(t34);
+  t35 = PetscCosReal(t34);
   t37 = Rp * Rm;
-  t49 = sin(t34);
-  t63 = exp(t6 - 0.2e1 * Rp);
+  t49 = PetscSinReal(t34);
+  t63 = PetscExpReal(t6 - 0.2e1 * Rp);
   t65 = Rm * t2;
   t67 = 0.2e1 * B * kn;
   t68 = B * Rm;
@@ -454,21 +454,21 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t76 = t73 - t75 + t1 - t22 - t18;
   t78 = t65 * t76 * BB;
   t80 = Rm - kn;
-  t81 = cos(t80);
+  t81 = PetscCosReal(t80);
   t83 = -t67 + t68 + t37;
   t88 = Rm + kn;
-  t89 = cos(t88);
+  t89 = PetscCosReal(t88);
   t92 = t65 * t76 * AA;
-  t97 = sin(t80);
-  t103 = sin(t88);
-  t108 = exp(t6 - 0.3e1 * Rp - B);
+  t97 = PetscSinReal(t80);
+  t103 = PetscSinReal(t88);
+  t108 = PetscExpReal(t6 - 0.3e1 * Rp - B);
   t110 = Rm * t4;
   t111 = t67 + t68 - t37;
   t115 = t73 + t75 + t1 - t22 - t18;
   t117 = t110 * t115 * BB;
   t120 = -t67 + t68 - t37;
   t127 = t110 * t115 * AA;
-  t140 = exp(t6 - Rp - B);
+  t140 = PetscExpReal(t6 - Rp - B);
   num1 = -0.4e1 * t1 * t2 * t4 * AA * t9 + ((0.2e1 * Rp * (0.3e1 * t13 * B - 0.2e1 * t16 - t19 - 0.2e1 * t20 - B * t22 - t24) * AA - t32) * t35 + (0.2e1 * t37 * (t1 + 0.5e1 * t13 - t22 - t18) * AA - 0.8e1 * B * BB * kn * Rm * Rp) * t49 - 0.2e1 * B * (0.3e1 * t20 - Rp * t22 - t18 * Rp - 0.2e1 * t19 - t16 - 0.2e1 * t24) * AA + t32) * t63 + ((0.2e1 * t65 * t69 * AA + t78) * t81 + (0.2e1 * t65 * t83 * AA - t78) * t89 + (t92 - 0.2e1 * t65 * t69 * BB) * t97 + (t92 + 0.2e1 * t65 * t83 * BB) * t103) * t108 + ((-0.2e1 * t110 * t111 * AA - t117) * t81 + (-0.2e1 * t110 * t120 * AA + t117) * t89 + (-t127 + 0.2e1 * t110 * t111 * BB) * t97 + (-t127 - 0.2e1 * t110 * t120 * BB) * t103) * t140;
 
   t1 = Rp + B;
@@ -483,17 +483,17 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t12 = t2 * t10 * AA;
   t14 = B * Rm;
   t20 = UU * x;
-  t23 = exp(t20 - 0.4e1 * Rp);
+  t23 = PetscExpReal(t20 - 0.4e1 * Rp);
   t25 = Rp * Rm;
   t32 = Rm * kn;
   t37 = 0.2e1 * Rm;
-  t38 = cos(t37);
+  t38 = PetscCosReal(t37);
   t40 = t3 * B;
   t44 = B * t9;
   t45 = t3 * Rp;
   t53 = t3 * BB;
-  t58 = sin(t37);
-  t69 = exp(t20 - 0.2e1 * Rp);
+  t58 = PetscSinReal(t37);
+  t69 = PetscExpReal(t20 - 0.2e1 * Rp);
   t72 = 0.3e1 * t40 * Rm;
   t73 = t9 * Rp;
   t74 = t73 * Rm;
@@ -517,26 +517,26 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t100 = 0.2e1 * t3 * Rm * kn;
   t101 = -t88 + t90 - t91 - t93 - t94 - t95 - t96 - t97 - t100;
   t105 = Rm - kn;
-  t106 = cos(t105);
+  t106 = PetscCosReal(t105);
   t108 = t72 - t80 + t83 + t76 + t84 - t81 - t74 + t78 - t77;
   t110 = -t97 - t96 - t88 + t100 + t90 - t95 + t93 - t91 - t94;
   t114 = Rm + kn;
-  t115 = cos(t114);
-  t121 = sin(t105);
-  t127 = sin(t114);
-  t132 = exp(t20 - 0.3e1 * Rp - B);
+  t115 = PetscCosReal(t114);
+  t121 = PetscSinReal(t105);
+  t127 = PetscSinReal(t114);
+  t132 = PetscExpReal(t20 - 0.3e1 * Rp - B);
   t135 = 0.2e1 * B * kn;
   t136 = t135 + t14 - t25;
   t142 = -t135 + t14 - t25;
   t152 = t2 * t10 * BB;
-  t162 = exp(t20 - Rp - B);
+  t162 = PetscExpReal(t20 - Rp - B);
   num2 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t23 + ((-0.2e1 * t25 * (t7 + 0.5e1 * t3 - t8 - t9) * AA + 0.8e1 * B * BB * t32 * Rp) * t38 + (0.2e1 * Rp * (0.3e1 * t40 - 0.2e1 * Rp * t7 - t44 - 0.2e1 * t45 - B * t8 - B * t7) * AA - 0.8e1 * t53 * kn * Rp) * t58 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t53 * t32) * t69 + ((-t85 * AA - 0.2e1 * t101 * BB) * t106 + (-t108 * AA + 0.2e1 * t110 * BB) * t115 + (-0.2e1 * t101 * AA + t85 * BB) * t121 + (-0.2e1 * t110 * AA - t108 * BB) * t127) * t132 + ((t12 - 0.2e1 * t2 * t136 * BB) * t106 + (t12 + 0.2e1 * t2 * t142 * BB) * t115 + (-0.2e1 * t2 * t136 * AA - t152) * t121 + (-0.2e1 * t2 * t142 * AA + t152) * t127) * t162;
 
   t1 = Rm * Rm;
   t2 = B - Rp;
   t4 = Rp + B;
   t6 = VV * x;
-  t7 = exp(-t6);
+  t7 = PetscExpReal(-t6);
   t11 = kn * kn;
   t13 = B * t1;
   t14 = Rp * Rp;
@@ -546,10 +546,10 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t21 = Rp * t1;
   t30 = 0.8e1 * t16 * BB * kn * Rp;
   t32 = 0.2e1 * Rm;
-  t33 = cos(t32);
+  t33 = PetscCosReal(t32);
   t35 = Rp * Rm;
-  t47 = sin(t32);
-  t61 = exp(-t6 - 0.2e1 * Rp);
+  t47 = PetscSinReal(t32);
+  t61 = PetscExpReal(-t6 - 0.2e1 * Rp);
   t63 = Rm * t2;
   t65 = 0.2e1 * B * kn;
   t66 = B * Rm;
@@ -559,21 +559,21 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t74 = t71 - t73 + t1 - t11 - t14;
   t76 = t63 * t74 * BB;
   t78 = Rm - kn;
-  t79 = cos(t78);
+  t79 = PetscCosReal(t78);
   t81 = -t65 + t66 + t35;
   t86 = Rm + kn;
-  t87 = cos(t86);
+  t87 = PetscCosReal(t86);
   t90 = t63 * t74 * AA;
-  t95 = sin(t78);
-  t101 = sin(t86);
-  t106 = exp(-t6 - 0.3e1 * Rp - B);
+  t95 = PetscSinReal(t78);
+  t101 = PetscSinReal(t86);
+  t106 = PetscExpReal(-t6 - 0.3e1 * Rp - B);
   t108 = Rm * t4;
   t109 = t65 + t66 - t35;
   t113 = t71 + t73 + t1 - t11 - t14;
   t115 = t108 * t113 * BB;
   t118 = -t65 + t66 - t35;
   t125 = t108 * t113 * AA;
-  t138 = exp(-t6 - Rp - B);
+  t138 = PetscExpReal(-t6 - Rp - B);
   num3 = -0.4e1 * t1 * t2 * t4 * AA * t7 + ((-0.2e1 * Rp * (-B * t11 - t13 - t15 + 0.2e1 * t17 + 0.3e1 * t16 * B + 0.2e1 * t21) * AA + t30) * t33 + (-0.2e1 * t35 * (t1 + 0.5e1 * t16 - t11 - t14) * AA + 0.8e1 * B * BB * kn * Rm * Rp) * t47 + 0.2e1 * B * (0.3e1 * t17 - t21 + 0.2e1 * t15 + 0.2e1 * t13 - Rp * t11 - t14 * Rp) * AA - t30) * t61 + ((-0.2e1 * t63 * t67 * AA - t76) * t79 + (-0.2e1 * t63 * t81 * AA + t76) * t87 + (-t90 + 0.2e1 * t63 * t67 * BB) * t95 + (-t90 - 0.2e1 * t63 * t81 * BB) * t101) * t106 + ((0.2e1 * t108 * t109 * AA + t115) * t79 + (0.2e1 * t108 * t118 * AA - t115) * t87 + (t125 - 0.2e1 * t108 * t109 * BB) * t95 + (t125 + 0.2e1 * t108 * t118 * BB) * t101) * t138;
 
   t1 = B - Rp;
@@ -588,28 +588,28 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t12 = t2 * t10 * AA;
   t14 = B * Rm;
   t20 = VV * x;
-  t21 = exp(-t20);
+  t21 = PetscExpReal(-t20);
   t23 = Rp * Rm;
   t30 = Rm * kn;
   t35 = 0.2e1 * Rm;
-  t36 = cos(t35);
+  t36 = PetscCosReal(t35);
   t40 = B * t9;
   t41 = t3 * Rp;
   t43 = t3 * B;
   t51 = t3 * BB;
-  t56 = sin(t35);
-  t67 = exp(-t20 - 0.2e1 * Rp);
+  t56 = PetscSinReal(t35);
+  t67 = PetscExpReal(-t20 - 0.2e1 * Rp);
   t70 = 0.2e1 * B * kn;
   t71 = t70 + t14 + t23;
   t76 = Rm - kn;
-  t77 = cos(t76);
+  t77 = PetscCosReal(t76);
   t79 = -t70 + t14 + t23;
   t84 = Rm + kn;
-  t85 = cos(t84);
+  t85 = PetscCosReal(t84);
   t91 = t2 * t10 * BB;
-  t93 = sin(t76);
-  t99 = sin(t84);
-  t104 = exp(-t20 - 0.3e1 * Rp - B);
+  t93 = PetscSinReal(t76);
+  t99 = PetscSinReal(t84);
+  t104 = PetscExpReal(-t20 - 0.3e1 * Rp - B);
   t107 = 0.3e1 * t43 * Rm;
   t108 = t9 * Rp;
   t109 = t108 * Rm;
@@ -634,7 +634,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t136 = t124 - t125 - t126 + t127 + t129 - t130 + t132 + t133 - t135;
   t141 = t107 + t115 - t118 + t111 + t119 + t116 + t109 - t113 - t112;
   t143 = t132 + t129 - t125 + t133 + t127 - t124 - t130 - t126 + t135;
-  t160 = exp(-t20 - Rp - B);
+  t160 = PetscExpReal(-t20 - Rp - B);
   num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 + 0.5e1 * t3 - t8 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-B * t8 - B * t7 - t40 + 0.2e1 * t41 + 0.3e1 * t43 + 0.2e1 * Rp * t7) * AA + 0.8e1 * t51 * kn * Rp) * t56 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t120 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t120 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
 
 
@@ -643,33 +643,33 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t3 = t1 * t2;
   t4 = B * B;
   t5 = t1 * t4;
-  t9 = exp(-0.4e1 * Rp);
-  t15 = cos(0.2e1 * Rm);
-  t22 = exp(-0.2e1 * Rp);
+  t9 = PetscExpReal(-0.4e1 * Rp);
+  t15 = PetscCosReal(0.2e1 * Rm);
+  t22 = PetscExpReal(-0.2e1 * Rp);
   den1 = (-0.4e1 * t3 + 0.4e1 * t5) * t9 + ((0.8e1 * t1 + 0.8e1 * t4) * t2 * t15 - 0.8e1 * t5 - 0.8e1 * t2 * t4) * t22 - 0.4e1 * t3 + 0.4e1 * t5;
 
   _PC1=num1/den1; _PC2=num2/den1; _PC3=num3/den1; _PC4=num4/den1;
 
   t1 = Rm * x;
-  t2 = cos(t1);
-  t4 = sin(t1);
-  t10 = exp(-0.2e1 * x * B);
+  t2 = PetscCosReal(t1);
+  t4 = PetscSinReal(t1);
+  t10 = PetscExpReal(-0.2e1 * x * B);
   t12 = kn * x;
-  t13 = cos(t12);
-  t16 = sin(t12);
+  t13 = PetscCosReal(t12);
+  t16 = PetscSinReal(t12);
   u1 = -km * (_PC1 * t2 + _PC2 * t4 + _PC3 * t2 + _PC4 * t4 + t10 * AA * t13 + t10 * BB * t16);
 
   t2 = Rm * x;
-  t3 = cos(t2);
-  t6 = sin(t2);
-  t22 = exp(-0.2e1 * x * B);
+  t3 = PetscCosReal(t2);
+  t6 = PetscSinReal(t2);
+  t22 = PetscExpReal(-0.2e1 * x * B);
   t23 = B * t22;
   t24 = kn * x;
-  t25 = cos(t24);
-  t29 = sin(t24);
+  t25 = PetscCosReal(t24);
+  t29 = PetscSinReal(t24);
   u2 = UU * _PC1 * t3 + UU * _PC2 * t6 - _PC1 * t6 * Rm + _PC2 * t3 * Rm - VV * _PC3 * t3 - VV * _PC4 * t6 - _PC3 * t6 * Rm + _PC4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
 
-  t3 = exp(0.2e1 * x * B);
+  t3 = PetscExpReal(0.2e1 * x * B);
   t4 = t3 * B;
   t8 = km * km;
   t9 = t3 * t8;
@@ -679,11 +679,11 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t15 = UU * UU;
   t19 = 0.4e1 * t4 * UU * Rm - t11 - t14 + 0.3e1 * t3 * t15 * Rm;
   t20 = Rm * x;
-  t21 = sin(t20);
+  t21 = PetscSinReal(t20);
   t27 = 0.2e1 * B * t9;
   t33 = 0.2e1 * t4 * t12;
   t36 = 0.3e1 * t3 * UU * t12 - t27 - 0.2e1 * t4 * t15 + 0.3e1 * t9 * UU + t33 - t3 * t15 * UU;
-  t37 = cos(t20);
+  t37 = PetscCosReal(t20);
   t49 = VV * VV;
   t53 = -0.4e1 * t4 * VV * Rm - t11 + 0.3e1 * t3 * t49 * Rm - t14;
   t64 = t3 * t49 * VV + t33 - 0.3e1 * t9 * VV - 0.2e1 * t4 * t49 - t27 - 0.3e1 * t3 * VV * t12;
@@ -692,23 +692,23 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t83 = B * B;
   t87 = t80 * kn;
   t90 = kn * x;
-  t91 = sin(t90);
-  t106 = cos(t90);
+  t91 = PetscSinReal(t90);
+  t106 = PetscCosReal(t90);
   u3 = -((t19 * t21 + t36 * t37) * _PC1 + (t36 * t21 - t19 * t37) * _PC2 + (t53 * t21 + t64 * t37) * _PC3 + (t64 * t21 - t53 * t37) * _PC4 + (-0.3e1 * t8 * AA * kn - 0.8e1 * t76 * BB - 0.4e1 * BB * B * t80 + 0.4e1 * AA * t83 * kn - AA * t87) * t91 + (-0.4e1 * AA * t80 * B - 0.4e1 * t83 * BB * kn + 0.3e1 * t8 * BB * kn - sigma + BB * t87 - 0.8e1 * t76 * AA) * t106) / km;
 
-  t3 = exp(0.2e1 * x * B);
+  t3 = PetscExpReal(0.2e1 * x * B);
   t4 = km * km;
   t5 = t3 * t4;
   t6 = Rm * x;
-  t7 = cos(t6);
+  t7 = PetscCosReal(t6);
   t8 = _PC1 * t7;
-  t10 = sin(t6);
+  t10 = PetscSinReal(t6);
   t11 = _PC2 * t10;
   t13 = _PC3 * t7;
   t15 = _PC4 * t10;
   t18 = kn * x;
-  t19 = cos(t18);
-  t22 = sin(t18);
+  t19 = PetscCosReal(t18);
+  t22 = PetscSinReal(t18);
   t24 = UU * UU;
   t25 = t3 * t24;
   t28 = t3 * UU;
@@ -724,7 +724,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _PC3 * t10 * Rm - 0.2e1 * t49 * _PC4 * t7 * Rm - t3 * _PC3 * t39 - t3 * _PC4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
   u4 = t44 + t82;
 
-  t3 = exp(0.2e1 * x * B);
+  t3 = PetscExpReal(0.2e1 * x * B);
   t4 = t3 * B;
   t8 = km * km;
   t9 = t3 * t8;
@@ -734,11 +734,11 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t14 = UU * UU;
   t18 = 0.4e1 * t4 * UU * Rm - t10 - t13 + 0.3e1 * t3 * t14 * Rm;
   t19 = Rm * x;
-  t20 = sin(t19);
+  t20 = PetscSinReal(t19);
   t26 = 0.2e1 * B * t9;
   t31 = 0.2e1 * t4 * t11;
   t34 = 0.3e1 * t3 * UU * t11 - t26 - 0.2e1 * t4 * t14 + t9 * UU + t31 - t3 * t14 * UU;
-  t35 = cos(t19);
+  t35 = PetscCosReal(t19);
   t47 = VV * VV;
   t51 = -0.4e1 * t4 * VV * Rm - t10 + 0.3e1 * t3 * t47 * Rm - t13;
   t61 = t3 * t47 * VV + t31 - t9 * VV - 0.2e1 * t4 * t47 - t26 - 0.3e1 * t3 * VV * t11;
@@ -747,11 +747,11 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t79 = B * B;
   t83 = t76 * kn;
   t86 = kn * x;
-  t87 = sin(t86);
-  t101 = cos(t86);
+  t87 = PetscSinReal(t86);
+  t101 = PetscCosReal(t86);
   u5 = ((t18 * t20 + t34 * t35) * _PC1 + (t34 * t20 - t18 * t35) * _PC2 + (t51 * t20 + t61 * t35) * _PC3 + (t61 * t20 - t51 * t35) * _PC4 + (-t8 * AA * kn - 0.4e1 * t72 * BB - 0.4e1 * BB * B * t76 + 0.4e1 * AA * t79 * kn - AA * t83) * t87 + (-0.4e1 * AA * t76 * B - 0.4e1 * t79 * BB * kn + t8 * BB * kn - sigma + BB * t83 - 0.4e1 * t72 * AA) * t101) / km;
 
-  t3 = exp(0.2e1 * x * B);
+  t3 = PetscExpReal(0.2e1 * x * B);
   t4 = UU * UU;
   t8 = km * km;
   t9 = t3 * t8;
@@ -761,11 +761,11 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t14 = t3 * B;
   t18 = 0.3e1 * t3 * t4 * Rm + t10 - t13 + 0.4e1 * t14 * UU * Rm;
   t19 = Rm * x;
-  t20 = sin(t19);
+  t20 = PetscSinReal(t19);
   t28 = 0.2e1 * B * t9;
   t33 = 0.2e1 * t14 * t11;
   t34 = -0.2e1 * t4 * t14 + 0.3e1 * t3 * UU * t11 - t28 - t3 * t4 * UU - t9 * UU + t33;
-  t35 = cos(t19);
+  t35 = PetscCosReal(t19);
   t47 = VV * VV;
   t51 = -0.4e1 * t14 * VV * Rm - t13 + t10 + 0.3e1 * t3 * t47 * Rm;
   t61 = -0.3e1 * t3 * VV * t11 + t33 + t3 * t47 * VV + t9 * VV - 0.2e1 * t14 * t47 - t28;
@@ -773,25 +773,25 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t74 = B * B;
   t80 = t71 * kn;
   t83 = kn * x;
-  t84 = sin(t83);
-  t96 = cos(t83);
+  t84 = PetscSinReal(t83);
+  t96 = PetscCosReal(t83);
   u6 = -((t18 * t20 + t34 * t35) * _PC1 + (t34 * t20 - t18 * t35) * _PC2 + (t51 * t20 + t61 * t35) * _PC3 + (t61 * t20 - t51 * t35) * _PC4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
 
   /*SS = sin(km*z)*(exp(UU*x)*(_PC1*cos(Rm*x)+_PC2*sin(Rm*x)) + exp(-VV*x)*(_PC3*cos(Rm*x)+_PC4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
 
   /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
 
-  sum5 += u5*cos(km*z);  /* pressure */
-  sum6 += u6*cos(km*z);  /* zz total stress */
+  sum5 += u5*PetscCosReal(km*z);  /* pressure */
+  sum6 += u6*PetscCosReal(km*z);  /* zz total stress */
 
-  u1 *= cos(km*z); /* x velocity */
+  u1 *= PetscCosReal(km*z); /* x velocity */
   sum1 += u1;
-  u2 *= sin(km*z); /* z velocity */
+  u2 *= PetscSinReal(km*z); /* z velocity */
   sum2 += u2;
 
-  u3 *= cos(km*z); /* xx total stress */
+  u3 *= PetscCosReal(km*z); /* xx total stress */
   sum3 += u3;
-  u4 *= sin(km*z); /* zx stress */
+  u4 *= PetscSinReal(km*z); /* zx stress */
   sum4 += u4;
 
   /* rho = -sigma*sin(km*z)*cos(kn*x); */ /* density */
@@ -931,17 +931,17 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   _PC1A = 0;
   /****************************************************************************************/
   t1 = nx * 0.3141592654e1;
-  t2 = sin(t1);
+  t2 = PetscSinReal(t1);
   t3 = nx * t2;
   t4 = nz * nz;
   t5 = t4 * t4;
   t6 = 0.3141592654e1 * 0.3141592654e1;
   t8 = t3 * t5 * t6;
   t9 = ZA * xc;
-  t12 = exp(xc * nz * 0.3141592654e1);
+  t12 = PetscExpReal(xc * nz * 0.3141592654e1);
   t13 = t12 * t12;
   t15 = nz * 0.3141592654e1;
-  t16 = exp(t15);
+  t16 = PetscExpReal(t15);
   t17 = t16 * t16;
   t18 = t17 * t16;
   t19 = ZB * t13 * t18;
@@ -954,7 +954,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t29 = t28 * t13;
   t33 = nx * ZB;
   t34 = t1 * xc;
-  t35 = sin(t34);
+  t35 = PetscSinReal(t34);
   t36 = t4 * nz;
   t37 = t35 * t36;
   t38 = t33 * t37;
@@ -969,7 +969,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t53 = xc * xc;
   t54 = t36 * t53;
   t56 = t54 * t6 * t45;
-  t57 = cos(t34);
+  t57 = PetscCosReal(t34);
   t58 = t57 * t24;
   t59 = t28 * t12;
   t60 = t17 * t59;
@@ -1189,23 +1189,23 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t3 = t2 * 0.3141592654e1;
   t4 = t3 * xc;
   t5 = ZB * ZB;
-  t7 = exp(nz * 0.3141592654e1);
+  t7 = PetscExpReal(nz * 0.3141592654e1);
   t8 = t7 * t7;
   t9 = t5 * t8;
-  t12 = exp(xc * nz * 0.3141592654e1);
+  t12 = PetscExpReal(xc * nz * 0.3141592654e1);
   t13 = t12 * t12;
   t14 = t13 * t13;
   t15 = t14 * t13;
   t19 = nx * nx;
   t21 = nx * 0.3141592654e1;
-  t22 = sin(t21);
+  t22 = PetscSinReal(t21);
   t23 = t19 * nx * t22;
   t24 = t23 * 0.3141592654e1;
   t25 = ZA * ZB;
   t26 = t7 * t15;
   t27 = t25 * t26;
   t30 = t21 * xc;
-  t31 = sin(t30);
+  t31 = PetscSinReal(t30);
   t32 = t31 * nx;
   t33 = t32 * nz;
   t34 = ZA * ZA;
@@ -1240,7 +1240,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t81 = t80 * t34;
   t83 = t61 * t14;
   t87 = t1 * t19;
-  t88 = cos(t30);
+  t88 = PetscCosReal(t30);
   t90 = t87 * t88 * t61;
   t91 = t5 * t64;
   t92 = t13 * t12;
@@ -1437,22 +1437,22 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /****************************************************************************************/
   t1 = nx * 0.3141592654e1;
   t2 = t1 * xc;
-  t3 = cos(t2);
+  t3 = PetscCosReal(t2);
   t4 = nx * nx;
   t6 = nz * 0.3141592654e1;
   t7 = t3 * t4 * t6;
   t8 = ZA * ZB;
-  t9 = exp(t6);
+  t9 = PetscExpReal(t6);
   t10 = t9 * t9;
   t11 = xc * nz;
-  t13 = exp(t11 * 0.3141592654e1);
+  t13 = PetscExpReal(t11 * 0.3141592654e1);
   t14 = t13 * t13;
   t15 = t14 * t13;
   t16 = t14 * t14;
   t17 = t16 * t15;
   t18 = t10 * t17;
   t19 = t8 * t18;
-  t22 = sin(t2);
+  t22 = PetscSinReal(t2);
   t23 = nx * t22;
   t24 = t23 * nz;
   t25 = ZB * ZB;
@@ -1466,7 +1466,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t38 = t16 * t13;
   t39 = t10 * t38;
   t40 = t37 * t39;
-  t43 = sin(t1);
+  t43 = PetscSinReal(t1);
   t44 = nx * t43;
   t45 = t30 * 0.3141592654e1;
   t46 = t44 * t45;
@@ -1761,12 +1761,12 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t5 = t3 * t4;
   t6 = nx * 0.3141592654e1;
   t7 = t6 * xc;
-  t8 = sin(t7);
+  t8 = PetscSinReal(t7);
   t9 = t8 * ZB;
   t10 = nz * 0.3141592654e1;
-  t11 = exp(t10);
+  t11 = PetscExpReal(t10);
   t12 = t11 * t11;
-  t15 = exp(xc * nz * 0.3141592654e1);
+  t15 = PetscExpReal(xc * nz * 0.3141592654e1);
   t16 = t15 * t15;
   t17 = t16 * t16;
   t18 = t17 * t15;
@@ -1781,7 +1781,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t34 = t1 * xc;
   t35 = 0.3141592654e1 * ZB;
   t36 = t34 * t35;
-  t37 = cos(t7);
+  t37 = PetscCosReal(t7);
   t38 = ZA * t37;
   t39 = nx * nx;
   t40 = t39 * t12;
@@ -1790,7 +1790,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t46 = t25 * nz;
   t47 = t46 * 0.3141592654e1;
   t48 = t39 * nx;
-  t49 = sin(t6);
+  t49 = PetscSinReal(t6);
   t50 = t48 * t49;
   t51 = t12 * t11;
   t52 = t51 * t17;
@@ -2168,17 +2168,17 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t3 = t2 * nx;
   t4 = nx * 0.3141592654e1;
   t5 = t4 * xc;
-  t6 = sin(t5);
+  t6 = PetscSinReal(t5);
   t7 = 0.3141592654e1 * 0.3141592654e1;
   t9 = t3 * t6 * t7;
   t10 = xc * xc;
   t11 = ZA * ZA;
   t12 = t10 * t11;
   t13 = nz * 0.3141592654e1;
-  t14 = exp(t13);
+  t14 = PetscExpReal(t13);
   t15 = t14 * t14;
   t16 = xc * nz;
-  t18 = exp(t16 * 0.3141592654e1);
+  t18 = PetscExpReal(t16 * 0.3141592654e1);
   t19 = t18 * t18;
   t20 = t19 * t18;
   t21 = t15 * t20;
@@ -2203,7 +2203,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t49 = t7 * xc;
   t50 = t35 * t15;
   t51 = t49 * t50;
-  t55 = sin(t4);
+  t55 = PetscSinReal(t4);
   t56 = t46 * nx * t55;
   t58 = t56 * nz * t7;
   t59 = ZB * ZB;
@@ -2214,7 +2214,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t66 = t19 * t14;
   t67 = t60 * t66;
   t70 = t28 * t42;
-  t73 = cos(t5);
+  t73 = PetscCosReal(t5);
   t74 = t47 * t73;
   t75 = t7 * t11;
   t77 = t75 * t10 * t36;
@@ -2534,13 +2534,13 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t5 = t2 * 0.3141592654e1 * t3;
   t6 = nx * 0.3141592654e1;
   t7 = t6 * xc;
-  t8 = cos(t7);
+  t8 = PetscCosReal(t7);
   t9 = nx * nx;
   t10 = t8 * t9;
   t11 = nz * 0.3141592654e1;
-  t12 = exp(t11);
+  t12 = PetscExpReal(t11);
   t13 = t12 * t12;
-  t16 = exp(xc * nz * 0.3141592654e1);
+  t16 = PetscExpReal(xc * nz * 0.3141592654e1);
   t17 = t16 * t16;
   t18 = t17 * t16;
   t19 = t17 * t17;
@@ -2556,7 +2556,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t31 = t29 * t30;
   t35 = t9 * nx;
   t36 = t3 * t35;
-  t37 = sin(t6);
+  t37 = PetscSinReal(t6);
   t38 = t13 * t12;
   t39 = t37 * t38;
   t40 = t39 * t19;
@@ -2587,7 +2587,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t80 = t77 * t79;
   t82 = t3 * t38;
   t84 = t54 * t37;
-  t87 = sin(t7);
+  t87 = PetscSinReal(t7);
   t88 = t29 * t87;
   t89 = t47 * t44;
   t93 = nx * t25;
@@ -2918,7 +2918,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t13 = nx * nx;
   t14 = t13 * t13;
   t15 = t12 * t14;
-  t19 = exp(t12 * 0.3141592654e1);
+  t19 = PetscExpReal(t12 * 0.3141592654e1);
   t20 = t19 * t19;
   t21 = t4 * t20;
   t24 = _PC1 * t5;
@@ -2943,7 +2943,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t90 = -0.4e1 * t11 * t33 - 0.4e1 * t58 * t59 * t13 - 0.4e1 * t58 * t51 * t63 - 0.2e1 * t67 * t51 * t68 + 0.4e1 * t32 * t45 * t13 - 0.2e1 * t67 * t59 * t14 - 0.2e1 * t30 * t21 + t1 + 0.2e1 * t24 * t25 * t2 + 0.2e1 * t12 * t45 * t14 + 0.4e1 * t24 * Z * t87;
   t106 = _PC3 * t5;
   t120 = -0.4e1 * t30 * t32 * t63 + t63 + 0.4e1 * t24 * Z * t1 * t13 + 0.2e1 * t29 * Z * x * t3 - 0.4e1 * t58 * t51 * t13 - 0.2e1 * t106 * t2 + t32 * 0.3141592654e1 - 0.2e1 * t106 * t14 - 0.2e1 * t30 * t12 * t68 - 0.2e1 * t67 * t51 * t14 + 0.4e1 * t106 * t87;
-  t129 = sin(nx * 0.3141592654e1 * x);
+  t129 = PetscSinReal(nx * 0.3141592654e1 * x);
   t155 = 0.2e1 * t30 * t15 + x * 0.3141592654e1 * t41 * t13 - 0.4e1 * t19 * nx * t129 * nz + t32 * 0.3141592654e1 * t20 + 0.2e1 * t106 * t68 + 0.2e1 * t106 * t20 * t2 - 0.4e1 * t106 * t1 * t13 - 0.2e1 * t11 * t4 + 0.2e1 * t4 * t45 + 0.2e1 * t24 * Z * t2 + 0.2e1 * t24 * Z * t14 + t12 * 0.3141592654e1 * t13;
   t158 = t5 * Z;
 
@@ -2963,7 +2963,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t14 = x * t13;
   t15 = t5 * _PC4;
   t16 = x * nz;
-  t18 = exp(t16 * 0.3141592654e1);
+  t18 = PetscExpReal(t16 * 0.3141592654e1);
   t19 = t18 * t18;
   t23 = t16 * t5;
   t24 = t8 * t8;
@@ -2984,7 +2984,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t91 = 0.4e1 * t58 * t60 + 0.2e1 * t33 * t16 * t63 + 0.4e1 * t33 * t67 + 0.2e1 * t33 * t29 - x * 0.3141592654e1 * t73 * t8 - 0.2e1 * t53 + 0.2e1 * t32 * Z * x * t13 - 0.2e1 * t58 * t12 - 0.2e1 * t58 * t24 + t3 * 0.3141592654e1 + 0.4e1 * t86 * t2 * t19 * t8;
   t94 = Z * t12;
   t121 = -0.2e1 * t8 + 0.2e1 * t45 * t94 * t19 + 0.2e1 * t14 * t5 * t7 * t19 + 0.4e1 * t6 * t7 * t53 + 0.2e1 * t23 * t7 * t63 - 0.4e1 * t28 * t67 + 0.2e1 * t45 * t94 + 0.2e1 * t58 * t12 * t19 + t16 * 0.3141592654e1 * t8 + 0.2e1 * t14 * t15 - 0.2e1 * t28 * t14;
-  t146 = cos(nx * 0.3141592654e1 * x);
+  t146 = PetscCosReal(nx * 0.3141592654e1 * x);
   t156 = -t3 * 0.3141592654e1 * t19 + 0.2e1 * t58 * t63 - 0.4e1 * t58 * t1 * t8 + 0.4e1 * t45 * Z * t1 * t8 - 0.2e1 * t28 * t34 + 0.2e1 * t86 * t73 * t24 + 0.4e1 * t3 * t15 * t8 + 0.4e1 * t45 * Z * t60 + 0.4e1 * t18 * t146 * t8 + 0.2e1 * t45 * Z * t24 + 0.2e1 * t16 * t15 * t24;
   t159 = t4 * Z;
 
@@ -3000,7 +3000,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t7 = t6 * nz;
   t8 = x * t7;
   t9 = x * nz;
-  t11 = exp(t9 * 0.3141592654e1);
+  t11 = PetscExpReal(t9 * 0.3141592654e1);
   t12 = t11 * t11;
   t13 = t8 * t12;
   t16 = t5 * nz;
@@ -3025,7 +3025,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t78 = _PC1 * t1;
   t90 = Z * t12;
   t94 = 0.2e1 * t28 * t58 + 0.2e1 * t61 * t62 + 0.2e1 * t61 * t12 * t6 - 0.4e1 * t4 * t17 * t48 + 0.2e1 * t28 * t8 + 0.4e1 * t61 * t73 - 0.2e1 * t8 * t24 - 0.2e1 * t78 * Z * t6 - 0.2e1 * t44 * t40 * t62 - 0.2e1 * t78 * Z * t31 - t9 * 0.3141592654e1 * t20 + 0.2e1 * t78 * t90 * t6;
-  t101 = cos(nx * 0.3141592654e1 * x);
+  t101 = PetscCosReal(nx * 0.3141592654e1 * x);
   t102 = t11 * t101;
   t109 = t12 * t5;
   t110 = t109 * t20;
@@ -3045,7 +3045,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t8 = t3 * t6 * x;
   t11 = x * t4;
   t12 = t11 * t3;
-  t15 = exp(x * nz * 0.3141592654e1);
+  t15 = PetscExpReal(x * nz * 0.3141592654e1);
   t16 = t15 * t15;
   t17 = _PC3 * t16;
   t18 = nx * nx;
@@ -3058,7 +3058,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   t33 = _PC4 * t3;
   t34 = t5 * x;
   t35 = t34 * t18;
-  t41 = sin(nx * 0.3141592654e1 * x);
+  t41 = PetscSinReal(nx * 0.3141592654e1 * x);
   t47 = t11 * t19;
   t54 = t3 * _PC3;
   t57 = 0.2e1 * t1 * t8 + 0.2e1 * t12 * t17 * t19 + 0.2e1 * t1 * t24 * t16 + 0.2e1 * t28 * t30 - 0.4e1 * t33 * t35 + 0.2e1 * t15 * nx * t41 * t4 + 0.4e1 * t28 * t35 - 0.2e1 * t33 * t47 - 0.2e1 * t1 * t24 - 0.2e1 * t33 * t29 + 0.2e1 * t29 * t54;
@@ -3087,19 +3087,19 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /****************************************************************************************/
 
 
-  u5 = (PetscReal)(-2*Z*nz*PETSC_PI*u2-u3*2*nz*PETSC_PI)*cos(nz*PETSC_PI*z); /* pressure */
+  u5 = (PetscReal)(-2*Z*nz*PETSC_PI*u2-u3*2*nz*PETSC_PI)*PetscCosReal(nz*PETSC_PI*z); /* pressure */
 
-  u6 = (PetscReal)(u3*2*nz*PETSC_PI + 4*Z*nz*PETSC_PI*u2)*cos(nz*PETSC_PI*z); /* zz stress */
+  u6 = (PetscReal)(u3*2*nz*PETSC_PI + 4*Z*nz*PETSC_PI*u2)*PetscCosReal(nz*PETSC_PI*z); /* zz stress */
   sum5 +=u5;
   sum6 +=u6;
 
-  u1 *= cos(nz*PETSC_PI*z); /* x velocity */
+  u1 *= PetscCosReal(nz*PETSC_PI*z); /* x velocity */
   sum1 += u1;
-  u2 *= sin(nz*PETSC_PI*z); /* z velocity */
+  u2 *= PetscSinReal(nz*PETSC_PI*z); /* z velocity */
   sum2 += u2;
-  u3 *= 2*nz*PETSC_PI*cos(nz*PETSC_PI*z); /* xx stress */
+  u3 *= 2*nz*PETSC_PI*PetscCosReal(nz*PETSC_PI*z); /* xx stress */
   sum3 += u3;
-  u4 *= 2*nz*PETSC_PI*sin(nz*PETSC_PI*z); /* zx stress */
+  u4 *= 2*nz*PETSC_PI*PetscSinReal(nz*PETSC_PI*z); /* zx stress */
   sum4 += u4;
 
   /* Output */
@@ -3287,7 +3287,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         PetscInt  off;
 
         ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-        for (d = 0; d < dim; ++d) vert[d] = round(PetscRealPart(coords[off+d])*cells[d]);
+        for (d = 0; d < dim; ++d) vert[d] = PetscRoundReal(PetscRealPart(coords[off+d])*cells[d]);
         theta = axes[perm[0]][vert[perm[0]]]*2.0*PETSC_PI/360;
         phi   = axes[perm[1]][vert[perm[1]]]*2.0*PETSC_PI/360;
         r     = axes[perm[2]][vert[perm[2]]];

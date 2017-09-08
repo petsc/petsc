@@ -561,7 +561,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
         p1 = press*(1.0+2.0*gamma/(gamma+1.0)*(amach*amach-1.0));
         gas1 = (gamma-1.0)/(gamma+1.0);
         uu->r = rho*(p1/press+gas1)/(gas1*p1/press+1.0);
-        uu->ru[0]   = ((uu->r - rho)*sqrt(gamma*press/rho)*amach);
+        uu->ru[0]   = ((uu->r - rho)*PetscSqrtReal(gamma*press/rho)*amach);
         uu->E = p1/(gamma-1.0) + .5/uu->r*uu->ru[0]*uu->ru[0];
       }
       else { /* left of discontinuity (0) */
@@ -765,7 +765,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     alpha = 60.;
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
     if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
-    eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * PETSC_PI / 180.0 );
+    eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0 );
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
     if (is) {
@@ -2062,8 +2062,8 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     gascr4 = 1. / (*gamr - 1.);
     iterno = 10;
 /*        find pstar: */
-    cl = sqrt(*gaml * *pl / *rl);
-    cr = sqrt(*gamr * *pr / *rr);
+    cl = PetscSqrtReal(*gaml * *pl / *rl);
+    cr = PetscSqrtReal(*gamr * *pr / *rr);
     wl = *rl * cl;
     wr = *rr * cr;
     /* csqrl = wl * wl; */
@@ -2071,11 +2071,11 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     *pstar = (wl * *pr + wr * *pl) / (wl + wr);
     *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
     pst = *pl / *pr;
-    skpr1 = cr * (pst - 1.) * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
+    skpr1 = cr * (pst - 1.) * PetscSqrtReal(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
     d__1 = (*gamr - 1.) / (*gamr * 2.);
     rarepr2 = gascr4 * 2. * cr * (1. - PetscPowScalar(pst, d__1));
     pst = *pr / *pl;
-    skpr2 = cl * (pst - 1.) * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
+    skpr2 = cl * (pst - 1.) * PetscSqrtReal(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
     d__1 = (*gaml - 1.) / (*gaml * 2.);
     rarepr1 = gascl4 * 2. * cl * (1. - PetscPowScalar(pst, d__1));
     durl = *uxr - *uxl;
@@ -2104,13 +2104,13 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    d__1 = *pstar / *pl;
 	    d__2 = 1. / *gaml;
 	    *rstarl = *rl * PetscPowScalar(d__1, d__2);
-	    cstarl = sqrt(*gaml * *pstar / *rstarl);
+	    cstarl = PetscSqrtReal(*gaml * *pstar / *rstarl);
 	    ustarl = *uxl - gascl4 * 2. * (cstarl - cl);
 	    zl = *rstarl * cstarl;
 	    d__1 = *pstar / *pr;
 	    d__2 = 1. / *gamr;
 	    *rstarr = *rr * PetscPowScalar(d__1, d__2);
-	    cstarr = sqrt(*gamr * *pstar / *rstarr);
+	    cstarr = PetscSqrtReal(*gamr * *pstar / *rstarr);
 	    ustarr = *uxr + gascr4 * 2. * (cstarr - cr);
 	    zr = *rstarr * cstarr;
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
@@ -2128,12 +2128,12 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	i__1 = iterno;
 	for (i0 = 1; i0 <= i__1; ++i0) {
 	    pst = *pstar / *pl;
-	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
-	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
+	    ustarl = *uxl - (pst - 1.) * cl * PetscSqrtReal(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
+	    zl = *pl / cl * PetscSqrtReal(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
 	    d__1 = *pstar / *pr;
 	    d__2 = 1. / *gamr;
 	    *rstarr = *rr * PetscPowScalar(d__1, d__2);
-	    cstarr = sqrt(*gamr * *pstar / *rstarr);
+	    cstarr = PetscSqrtReal(*gamr * *pstar / *rstarr);
 	    zr = *rstarr * cstarr;
 	    ustarr = *uxr + gascr4 * 2. * (cstarr - cr);
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
@@ -2151,11 +2151,11 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	i__1 = iterno;
 	for (i0 = 1; i0 <= i__1; ++i0) {
 	    pst = *pstar / *pl;
-	    ustarl = *uxl - (pst - 1.) * cl * sqrt(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
-	    zl = *pl / cl * sqrt(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
+	    ustarl = *uxl - (pst - 1.) * cl * PetscSqrtReal(2. / (*gaml * (*gaml - 1. + (*gaml + 1.) * pst)));
+	    zl = *pl / cl * PetscSqrtReal(*gaml * 2. * (*gaml - 1. + (*gaml + 1.) * pst)) * (*gaml - 1. + (*gaml + 1.) * pst) / (*gaml * 3. - 1. + (*gaml + 1.) * pst);
 	    pst = *pstar / *pr;
-	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
-	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
+	    ustarr = *uxr + (pst - 1.) * cr * PetscSqrtReal(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
+	    zr = *pr / cr * PetscSqrtReal(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
@@ -2173,12 +2173,12 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    d__1 = *pstar / *pl;
 	    d__2 = 1. / *gaml;
 	    *rstarl = *rl * PetscPowScalar(d__1, d__2);
-	    cstarl = sqrt(*gaml * *pstar / *rstarl);
+	    cstarl = PetscSqrtReal(*gaml * *pstar / *rstarl);
 	    ustarl = *uxl - gascl4 * 2. * (cstarl - cl);
 	    zl = *rstarl * cstarl;
 	    pst = *pstar / *pr;
-	    ustarr = *uxr + (pst - 1.) * cr * sqrt(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
-	    zr = *pr / cr * sqrt(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
+	    ustarr = *uxr + (pst - 1.) * cr * PetscSqrtReal(2. / (*gamr * (*gamr - 1. + (*gamr + 1.) * pst)));
+	    zr = *pr / cr * PetscSqrtReal(*gamr * 2. * (*gamr - 1. + (*gamr + 1.) * pst)) * (*gamr - 1. + (*gamr + 1.) * pst) / (*gamr * 3. - 1. + (*gamr + 1.) * pst);
 	    dpstar = zl * zr * (ustarr - ustarl) / (zl + zr);
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
@@ -2261,7 +2261,7 @@ int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
     gasc2 = (*gam + 1.) * .5;
     gasc3 = gasc2 / *gam;
     gasc4 = 1. / (*gam - 1.);
-    c0 = sqrt(*gam * p0 / r0);
+    c0 = PetscSqrtReal(*gam * p0 / r0);
     streng = pstar - p0;
     w0 = *gam * r0 * p0 * (gasc3 * streng / p0 + 1.);
     rstars = r0 / (1. - r0 * streng / w0);
@@ -2269,8 +2269,8 @@ int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
     d__2 = -1. / *gam;
     rstarr = r0 * PetscPowScalar(d__1, d__2);
     rstar = cvmgm_(&rstarr, &rstars, &streng);
-    w0 = sqrt(w0);
-    cstar = sqrt(*gam * pstar / rstar);
+    w0 = PetscSqrtReal(w0);
+    cstar = PetscSqrtReal(*gam * pstar / rstar);
     wsp0 = u0 + sgn0 * c0;
     wspst = ustar + sgn0 * cstar;
     ushock = ustar + sgn0 * w0 / rstar;
@@ -2356,7 +2356,7 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
 	d__2 = bn[1];
 /* Computing 2nd power */
 	d__3 = bn[2];
-	tmp = sqrt(d__1 * d__1 + d__2 * d__2 + d__3 * d__3);
+	tmp = PetscSqrtReal(d__1 * d__1 + d__2 * d__2 + d__3 * d__3);
 	i__1 = *ndim;
 	for (k = 1; k <= i__1; ++k) {
 	    bn[k - 1] /= tmp;
@@ -2511,7 +2511,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   projecteqstate(wc, ueq, lv);
   wcp[0] = wc[0];
   wcp[1] = wc[1];
-  wcp[2] = wc[2] + eps * cos(coord[0] * 2. * twopi / Lx);
+  wcp[2] = wc[2] + eps * PetscCosReal(coord[0] * 2. * twopi / Lx);
   projecttoprim(vp, wcp, rv);
   ux->r = vp[0]; /* density */
   ux->ru[0] = vp[0] * vp[1]; /* x momentum */

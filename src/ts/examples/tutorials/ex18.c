@@ -550,7 +550,7 @@ static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscR
     const PetscReal eta = x[1] - PetscRealPart(xn[1]);
     const PetscReal r2  = xi*xi + eta*eta;
 
-    u[0] = PetscExpReal(-r2/(2.0*sigma*sigma))/(sigma*sqrt(2.0*PETSC_PI));
+    u[0] = PetscExpReal(-r2/(2.0*sigma*sigma))/(sigma*PetscSqrtReal(2.0*PETSC_PI));
   }
   return 0;
 }

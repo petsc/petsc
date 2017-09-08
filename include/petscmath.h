@@ -24,6 +24,7 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
+#define PetscRoundReal(a)   round(a)
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
@@ -49,6 +50,7 @@ typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
+#define PetscRoundReal(a)   round(a)
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
@@ -82,6 +84,7 @@ extern "C" {
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
+#define PetscRoundReal(a)   roundq(a)
 #define PetscSqrtReal(a)    sqrtq(a)
 #define PetscExpReal(a)     expq(a)
 #define PetscLogReal(a)     logq(a)
@@ -108,6 +111,7 @@ typedef __float128 PetscReal;
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #define MPIU_REAL MPIU___FP16
 typedef __fp16 PetscReal;
+#define PetscRound(a)       roundf(a)
 #define PetscSqrtReal(a)    sqrtf(a)
 #define PetscExpReal(a)     expf(a)
 #define PetscLogReal(a)     logf(a)
