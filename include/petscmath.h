@@ -291,7 +291,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #else
-# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX)
+# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
   typedef complexlib::complex<double> petsc_mpiu_c_double_complex;
   typedef complexlib::complex<float> petsc_mpiu_c_complex;
 # elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
