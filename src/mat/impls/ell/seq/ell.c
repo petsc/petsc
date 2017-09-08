@@ -19,10 +19,10 @@
 */
 #define AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y) \
 /* if the mask bit is set, copy from acolidx, otherwise from vec_idx */ \
-vec_idx  = _mm256_maskz_load_epi32(maskallset,acolidx); \
+vec_idx  = _mm256_load_si256((__m256i const*)acolidx); \
 vec_vals = _mm512_load_pd(aval); \
-vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8); \
-vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask); \
+vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
+vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
 
 #endif
 #endif  /* PETSC_HAVE_IMMINTRIN_H */
@@ -266,10 +266,9 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
-  __mmask8          mask,maskallset=0xff;
+  __mmask8          mask;
   __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
   __m256i           vec_idx2,vec_idx3,vec_idx4;
-  __mmask8          mask2,mask3,mask4;
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
   __m128d           vec_x_tmp;
   __m256d           vec_x,vec_y,vec_y2,vec_vals;
@@ -301,9 +300,6 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     j = a->sliidx[i]>>3; /* index of the bit array; 8 bits are read at each time, corresponding to a slice columnn */
     switch ((a->sliidx[i+1]-a->sliidx[i])/8 & 3) {
     case 3:
-      mask  = (__mmask8)a->bt[j];
-      mask2 = (__mmask8)a->bt[j+1];
-      mask3 = (__mmask8)a->bt[j+2];
       AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
       AVX512_Mult_Private(mask2,vec_idx2,vec_x2,vec_vals2,vec_y2);
@@ -313,8 +309,6 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
       j += 3;
       break;
     case 2:
-      mask  = (__mmask8)a->bt[j];
-      mask2 = (__mmask8)a->bt[j+1];
       AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
       AVX512_Mult_Private(mask2,vec_idx2,vec_x2,vec_vals2,vec_y2);
@@ -322,7 +316,6 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
       j += 2;
       break;
     case 1:
-      mask = (__mmask8)a->bt[j];
       AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
       j += 1;
@@ -330,10 +323,6 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     }
     #pragma novector
     for (; j<(a->sliidx[i+1]>>3); j+=4) {
-      mask  = (__mmask8)a->bt[j];
-      mask2 = (__mmask8)a->bt[j+1];
-      mask3 = (__mmask8)a->bt[j+2];
-      mask4 = (__mmask8)a->bt[j+3];
       /*
       vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
       vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
@@ -482,12 +471,10 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
     vec_y = _mm512_load_pd(&y[8*i]);
     #pragma novector
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
-      mask = (__mmask8)a->bt[j>>3];
       AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
     }
     if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
-      mask  = (__mmask8)a->bt[a->sliidx[i]>>3];
       _mm512_mask_store_pd(&z[8*i],mask,vec_y);
     } else {
       _mm512_store_pd(&z[8*i],vec_y);
