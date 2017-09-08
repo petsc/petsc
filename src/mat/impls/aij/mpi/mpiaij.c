@@ -3051,10 +3051,14 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
+  //ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = ISView(iscol,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
   ierr = MatCreateVecs(mat,&x,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
   ierr = VecSet(x,-1.0);CHKERRQ(ierr);
+  ierr = VecSet(lvec,-1.0);CHKERRQ(ierr);
 
   /* Get start indices */
   ierr = MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -3073,6 +3077,7 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(cmap,&cmaparray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
+  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Get iscol_d */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d);CHKERRQ(ierr);
@@ -3092,17 +3097,20 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = ISSetBlockSize(*isrow_d,i);CHKERRQ(ierr);
 
   /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
+#if 0
   if (!a->Mvctx_mpi1) {
     /* a->Mvctx causes random 'count' in o-build? See src/mat/examples/tests/runex59_2 */
     a->Mvctx_mpi1_flg = PETSC_TRUE;
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
   Mvctx = a->Mvctx_mpi1;
+#endif
+  Mvctx = a->Mvctx;
   ierr = VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
-
-  ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecSet(lcmap,-1.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -3117,12 +3125,19 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   for (i=0; i<Bn; i++) {
     if (PetscRealPart(xarray[i]) > -1.0) {
       idx[count]     = i;                   /* local column index in off-diagonal part B */
-      cmap1[count++] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
+      cmap1[count] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
+      count++;
     }
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
-  /* printf("[%d] count %d\n",rank,count); */
+  printf("[%d] count %d, nlvec %d\n",rank,count,lvec->map->N);
+  if (count != 6) {
+    //if (rank == 1) {
+    printf("[%d] lvec:\n",rank);
+    ierr = VecView(lvec,0);CHKERRQ(ierr);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"count %d != 6",count);
+  }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
   /* cannot ensure iscol_o has same blocksize as iscol! */
 
