@@ -2611,8 +2611,8 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
 
    Level: beginner
 
-   Notes: to use the SPRNG you must have ./configure PETSc
-   with the option --download-sprng
+   Notes: to use SPRNG or RANDOM123 you must have ./configure PETSc
+   with the option --download-sprng or --download-random123
 
 .seealso: PetscRandomSetType(), PetscRandom, PetscRandomCreate()
 J*/
@@ -2621,6 +2621,7 @@ typedef const char* PetscRandomType;
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
 #define PETSCRANDER48   "rander48"
+#define PETSCRANDOM123  "random123"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;

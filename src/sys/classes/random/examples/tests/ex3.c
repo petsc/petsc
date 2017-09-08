@@ -122,5 +122,10 @@ int main(int argc, char **argv)
     suffix: sprng_failure
     requires: sprng
     args: -random_type sprng
+  test:
+    suffix: random123
+    nsize: 8
+    requires: random123
+    args: -random_type random123
 
 TEST*/
