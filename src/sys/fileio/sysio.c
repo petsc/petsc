@@ -92,6 +92,24 @@ PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
 }
 /* --------------------------------------------------------- */
 /*
+  PetscByteSwapReal - Swap bytes in a PetscReal
+*/
+PetscErrorCode  PetscByteSwapReal(PetscReal *buff,PetscInt n)
+{
+  PetscInt  i,j;
+  PetscReal tmp,*buff1 = (PetscReal*)buff;
+  char      *ptr1,*ptr2 = (char*)&tmp;
+
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff1 + j);
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
+  }
+  PetscFunctionReturn(0);
+}
+/* --------------------------------------------------------- */
+/*
   PetscByteSwapScalar - Swap bytes in a PetscScalar
   The complex case is dealt with with an array of PetscReal, twice as long.
 */
@@ -158,6 +176,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_REAL)   {ierr = PetscByteSwapReal((PetscReal*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_FLOAT)  {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
@@ -230,6 +249,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
   if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
+  else if (type == PETSC_REAL)    m *= sizeof(PetscReal);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_FLOAT)   m *= sizeof(float);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
@@ -242,7 +262,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
-  if (type == PETSC_SCALAR && readdouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL) && readdouble) {
     m    = m/2;
     ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pp   = (char*)ppp;
@@ -260,7 +280,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   }
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if (type == PETSC_SCALAR && readdouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL) && readdouble) {
     PetscScalar *pv = (PetscScalar*) p;
     PetscInt    i;
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -375,7 +395,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary_write_double",&writedouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still write in doubles to file */
-  if (type == PETSC_SCALAR && writedouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL) && writedouble) {
     wtype = PETSC_DOUBLE;
     ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pv = (PetscReal*)pp;
@@ -389,6 +409,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 
   if (wtype == PETSC_INT)          m *= sizeof(PetscInt);
   else if (wtype == PETSC_SCALAR)  m *= sizeof(PetscScalar);
+  else if (wtype == PETSC_REAL)    m *= sizeof(PetscReal);
   else if (wtype == PETSC_DOUBLE)  m *= sizeof(double);
   else if (wtype == PETSC_FLOAT)   m *= sizeof(float);
   else if (wtype == PETSC_SHORT)   m *= sizeof(short);
@@ -420,7 +441,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     free(fname);
   }
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if (type == PETSC_SCALAR && writedouble) {
+  if ((type == PETSC_SCALAR || type == PETSC_REAL) && writedouble) {
     ierr = PetscFree(ppp);CHKERRQ(ierr);
   }
 #endif
