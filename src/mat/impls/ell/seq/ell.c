@@ -188,7 +188,7 @@ PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Ma
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      bflag = a->bt[j>>3] & (char)(1<<row);
+      bflag = (PetscBool)(a->bt[j>>3] & (char)(1<<row));
       if (bflag) {
         ierr = MatSetValue(B,8*i+row,a->colidx[j],a->val[j],INSERT_VALUES);CHKERRQ(ierr);
       }

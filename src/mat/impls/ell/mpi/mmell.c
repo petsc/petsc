@@ -58,7 +58,7 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
   totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=Bell->sliidx[i],row=0; j<Bell->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      bflag = Bell->bt[j>>3] & (char)(1<<row);
+      bflag = (PetscBool)(Bell->bt[j>>3] & (char)(1<<row));
       if (bflag) {
         ierr = MatSetValue(Bnew,8*i+row,ell->garray[Bell->colidx[j]],Bell->val[j],B->insertmode);CHKERRQ(ierr);
       }
