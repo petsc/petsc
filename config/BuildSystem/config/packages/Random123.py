@@ -29,6 +29,7 @@ class Configure(config.package.Package):
       shutil.copytree(packageIncludeDir,destDir)
     except RuntimeError, e:
       raise RuntimeError('Error installing '+self.PACKAGE+' headers: '+str(e))
+    self.postInstall('Headers successfully copied\n',conffile)
     return self.installDir
 
 
