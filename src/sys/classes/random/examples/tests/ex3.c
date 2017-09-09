@@ -60,10 +60,10 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (log2d * t > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%D) is too big for size_t.", log2d * t);
+  if ((size_t)log2d * t > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%D) is too big for size_t.", log2d * t);
   d = ((size_t) 1) << log2d;
   k = ((size_t) 1) << (log2d * t);
-  if (log2n > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%D) is too big for size_t.", log2n);
+  if ((size_t)log2n > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%D) is too big for size_t.", log2n);
   n = ((size_t) 1) << log2n;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   N    = size;

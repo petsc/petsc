@@ -19,7 +19,7 @@ ex3: ex3.o chkopts
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3
 
-TESTEXAMPLES_C		       = ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_C		       =
 TESTEXAMPLES_C_X	       =
 TESTEXAMPLES_FORTRAN	       =
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
