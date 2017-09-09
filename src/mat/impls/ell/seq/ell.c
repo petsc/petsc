@@ -1026,7 +1026,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->val[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j]));CHKERRQ(ierr);
-          } else if (PetscImaginaryPart(a->[j]) < 0.0) {
+          } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]),(double)-PetscImaginaryPart(a->val[shift+8*j]));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->colidx[shift+8*j],(double)PetscRealPart(a->val[shift+8*j]));CHKERRQ(ierr);
@@ -1620,7 +1620,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 99*/ 0,
                                        0,
                                        0,
-                                       0,
+                                       MatConjugate_SeqELL,
                                        0,
                                /*104*/ 0,
                                        0,
@@ -1916,9 +1916,6 @@ PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data,*b=(Mat_SeqELL*)B->data;
   PetscInt       totalslices;
   PetscErrorCode ierr;
-#if defined(PETSC_USE_COMPLEX)
-  PetscInt k;
-#endif
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
@@ -1934,16 +1931,7 @@ PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
   ierr = PetscMemcmp(a->colidx,b->colidx,a->sliidx[totalslices]*sizeof(PetscInt),flg);CHKERRQ(ierr);
   if (!*flg) PetscFunctionReturn(0);
   /* if a->val are the same */
-#if defined(PETSC_USE_COMPLEX)
-  for (k=0; k<matsize; k++) {
-    if (PetscRealPart(a->val[k]) != PetscRealPart(b->val[k]) || PetscImaginaryPart(a->val[k]) != PetscImaginaryPart(b->val[k])) {
-      *flg = PETSC_FALSE;
-      PetscFunctionReturn(0);
-    }
-  }
-#else
   ierr = PetscMemcmp(a->val,b->val,a->sliidx[totalslices]*sizeof(PetscScalar),flg);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1954,5 +1942,23 @@ PetscErrorCode MatSeqELLInvalidateDiagonal(Mat A)
   PetscFunctionBegin;
   a->idiagvalid  = PETSC_FALSE;
   a->ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConjugate_SeqELL(Mat A)
+{
+#if defined(PETSC_USE_COMPLEX)
+  Mat_SeqELL  *a = (Mat_SeqELL*)A->data;
+  PetscInt    i,totalslices;
+  PetscScalar *val = a->val;
+
+  PetscFunctionBegin;
+  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0);
+  for (i=0; i<a->sliidx[totalslices]; i++) {
+    val[i] = PetscConj(val[i]);
+  }
+#else
+  PetscFunctionBegin;
+#endif
   PetscFunctionReturn(0);
 }
