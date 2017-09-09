@@ -3056,9 +3056,11 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
 
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
   ierr = MatCreateVecs(mat,&x,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
   ierr = VecSet(x,-1.0);CHKERRQ(ierr);
-  ierr = VecSet(lvec,-1.0);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
+  ierr = VecSet(cmap,-1.0);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
 
   /* Get start indices */
   ierr = MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -3109,8 +3111,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
-  ierr = VecSet(lcmap,-1.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -3131,9 +3131,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
-  printf("[%d] count %d, nlvec %d\n",rank,count,lvec->map->N);
+  //printf("[%d] count %d, nlvec %d\n",rank,count,lvec->map->N);
   if (count != 6) {
-    //if (rank == 1) {
     printf("[%d] lvec:\n",rank);
     ierr = VecView(lvec,0);CHKERRQ(ierr);
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"count %d != 6",count);
