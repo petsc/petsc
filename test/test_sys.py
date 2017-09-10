@@ -8,9 +8,6 @@ class TestVersion(unittest.TestCase):
     def testGetVersion(self):
         version = PETSc.Sys.getVersion()
         self.assertTrue(version > (0, 0, 0))
-        v, patch = PETSc.Sys.getVersion(patch=True)
-        self.assertTrue(version == v)
-        self.assertTrue(patch >= 0)
         v, date = PETSc.Sys.getVersion(date=True)
         self.assertTrue(version == v)
         self.assertTrue(isinstance(date, str))
@@ -26,8 +23,6 @@ class TestVersion(unittest.TestCase):
                           info['minor'],
                           info['subminor'],))
         self.assertTrue(isinstance(info['release'], bool))
-        _, patch = PETSc.Sys.getVersion(patch=True)
-        self.assertEqual(patch, info['patch'])
         v, date = PETSc.Sys.getVersion(date=True)
         self.assertEqual(date, info['date'])
 

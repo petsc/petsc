@@ -3,49 +3,37 @@
 cdef class Sys:
 
     @classmethod
-    def getVersion(cls, patch=False, devel=False,
-                   date=False, author=False):
-        cdef int cmajor = PETSC_VERSION_MAJOR
-        cdef int cminor = PETSC_VERSION_MINOR
-        cdef int cmicro = PETSC_VERSION_SUBMINOR
-        cdef int cpatch = PETSC_VERSION_PATCH
-        cdef int cdevel = PETSC_VERSION_RELEASE != 1
-        cdef const_char *cdate = PETSC_VERSION_DATE
-        cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
-        version = (cmajor, cminor, cmicro)
-        out = version
-        if patch or devel or date or author:
+    def getVersion(cls, devel=False, date=False, author=False):
+        cdef char cversion[256]
+        cdef PetscInt major=0, minor=0, micro=0, release=0
+        CHKERR( PetscGetVersion(cversion, sizeof(cversion)) )
+        CHKERR( PetscGetVersionNumber(&major, &minor, &micro, &release) )
+        out = version = (toInt(major), toInt(minor), toInt(micro))
+        if devel or date or author:
             out = [version]
-            if patch:
-                out.append(cpatch)
             if devel:
-                out.append(<bint>cdevel)
+                out.append(not <bint>release)
             if date:
-                date = bytes2str(cdate)
+                vstr = bytes2str(cversion)
+                if release != 0:
+                    date = vstr.split(",", 1)[-1].strip()
+                else:
+                    date = vstr.split("GIT Date:")[-1].strip()
                 out.append(date)
             if author:
-                author = bytes2str(cauthorinfo).split('\n')
-                author = [s.strip() for s in author if s]
+                author = bytes2str(PETSC_AUTHOR_INFO).split('\n')
+                author = tuple([s.strip() for s in author if s])
                 out.append(author)
         return tuple(out)
 
     @classmethod
     def getVersionInfo(cls):
-        cdef int cmajor = PETSC_VERSION_MAJOR
-        cdef int cminor = PETSC_VERSION_MINOR
-        cdef int cmicro = PETSC_VERSION_SUBMINOR
-        cdef int cpatch = PETSC_VERSION_PATCH
-        cdef int crelease = PETSC_VERSION_RELEASE == 1
-        cdef const_char *cdate = PETSC_VERSION_DATE
-        cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
-        author = bytes2str(cauthorinfo).split('\n')
-        author = [s.strip() for s in author if s]
-        return dict(major      = cmajor,
-                    minor      = cminor,
-                    subminor   = cmicro,
-                    patch      = cpatch,
-                    release    = <bint>crelease,
-                    date       = bytes2str(cdate),
+        version, dev, date, author = cls.getVersion(True, True, True)
+        return dict(major      = version[0],
+                    minor      = version[1],
+                    subminor   = version[2],
+                    release    = not dev,
+                    date       = date,
                     authorinfo = author)
 
     # --- xxx ---

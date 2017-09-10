@@ -1,18 +1,8 @@
 cdef extern from * nogil:
 
-    enum: PETSC_VERSION_MAJOR
-    enum: PETSC_VERSION_MINOR
-    enum: PETSC_VERSION_SUBMINOR
-    enum: PETSC_VERSION_PATCH
-    enum: PETSC_VERSION_RELEASE
-    char* PETSC_VERSION_DATE
-    char* PETSC_AUTHOR_INFO
-
-    bint PETSC_VERSION_LT(int,int,int)
-    bint PETSC_VERSION_LE(int,int,int)
-    bint PETSC_VERSION_EQ(int,int,int)
-    bint PETSC_VERSION_GE(int,int,int)
-    bint PETSC_VERSION_GT(int,int,int)
+    const_char PETSC_AUTHOR_INFO[]
+    int PetscGetVersion(char[],size_t)
+    int PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*)
 
     int PetscInitialize(int*,char***,char[],char[])
     int PetscInitializeNoArguments()
