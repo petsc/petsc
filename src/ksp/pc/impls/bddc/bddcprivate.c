@@ -1643,11 +1643,17 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   Vec            local,global;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  PetscBool      monolithic = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC topology options","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_monolithic","Discard any information on dofs splitting",NULL,monolithic,&monolithic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* need to convert from global to local topology information and remove references to information in global ordering */
   ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
+  if (monolithic) goto boundary;
+
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) {
       PetscInt i;
@@ -1707,6 +1713,7 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
     }
   }
 
+boundary:
   if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) {
     ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   } else if (pcbddc->DirichletBoundariesLocal) {
