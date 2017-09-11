@@ -7,7 +7,7 @@ SOURCEC	 = mpibaij.c mmbaij.c baijov.c mpb_baij.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
 LIBBASE	 = libpetscmat
-DIRS	 = 
+DIRS	 = baijmkl
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/baij/mpi/
 

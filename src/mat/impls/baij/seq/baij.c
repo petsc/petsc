@@ -12,6 +12,10 @@
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 #endif
 
+#if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,const MatType,MatReuse,Mat*);
+#endif
+
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
@@ -2797,7 +2801,7 @@ PetscErrorCode  MatRetrieveValues_SeqBAIJ(Mat mat)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
 
-static PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
+PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;

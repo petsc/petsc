@@ -76,6 +76,6 @@ PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat,IS,IS,PetscIn
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIBAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscInt);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS*);
-
+PETSC_INTERN PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat,const PetscInt *,Mat,const PetscInt*,PetscInt*);
 #endif
