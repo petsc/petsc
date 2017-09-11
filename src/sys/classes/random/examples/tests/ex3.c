@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   N    = size;
   lambda = PetscPowRealInt(2.,(3 * log2n - (2 + log2d * t)));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %D dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(size_t), t, d);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %D dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(PetscInt64), t, d);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Expected spacing collisions per process %f (%f total).\n", (double) lambda, N * lambda);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&random);CHKERRQ(ierr);
   ierr = PetscRandomSetType(random,PETSCRANDER48);CHKERRQ(ierr);
