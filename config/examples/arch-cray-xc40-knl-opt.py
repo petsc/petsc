@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # This option has not been tested, and should NOT be used, with later 
     # compiler versions -- the behavior may change without warning between 
     # versions. It is anticipated that the code generation issue will be fixed 
-    # in the version 18 compiler at release
+    # in the version 18 compiler at release.
     '--COPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
     '--CXXOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
     '--FOPTFLAGS=-g -xMIC-AVX512 -O3 -mP2OPT_hpo_vec_remainder=F',
