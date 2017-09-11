@@ -9,10 +9,10 @@ static char help[] = "Run Birthday Spacing Tests for PetscRandom.\n\n";
  * https://doi.org/10.1016/S0378-4754(00)00253-6
  */
 
-static int size_t_compar(const void *a, const void *b)
+static int PetscInt64Compare(const void *a, const void *b)
 {
-  size_t A = *((const size_t *)a);
-  size_t B = *((const size_t *)b);
+  PetscInt64 A = *((const PetscInt64 *)a);
+  PetscInt64 B = *((const PetscInt64 *)b);
   if (A < B)  return -1;
   if (A == B) return 0;
   return 1;
@@ -41,12 +41,11 @@ static PetscErrorCode PoissonTailProbability(PetscReal lambda, PetscInt Y, Petsc
 int main(int argc, char **argv)
 {
   PetscMPIInt    size;
-  PetscInt       log2d, log2n, t, N;
-  size_t         d, k, n, i, Y;
-  PetscReal      lambda;
-  size_t         *X;
+  PetscInt       log2d, log2n, t, N, Y;
+  PetscInt64     d, k, *X;
+  size_t         n, i;
+  PetscReal      lambda, p;
   PetscRandom    random;
-  PetscReal      p;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
@@ -60,16 +59,16 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-log2n", "The log of n, the number of samples per process", "ex3.c", log2n, &log2n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if ((size_t)log2d * t > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%D) is too big for size_t.", log2d * t);
-  d = ((size_t) 1) << log2d;
-  k = ((size_t) 1) << (log2d * t);
+  if ((size_t)log2d * t > sizeof(PetscInt64) * 8 - 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of bins (2^%D) is too big for PetscInt64.", log2d * t);
+  d = ((PetscInt64) 1) << log2d;
+  k = ((PetscInt64) 1) << (log2d * t);
   if ((size_t)log2n > sizeof(size_t) * 8 - 1) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%D) is too big for size_t.", log2n);
   n = ((size_t) 1) << log2n;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   N    = size;
   lambda = PetscPowRealInt(2.,(3 * log2n - (2 + log2d * t)));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %D dimensional space with %zu bins per dimension.\n", n, (n*1.e-9)*sizeof(size_t), t, d);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Generating %zu samples (%g GB) per process in a %D dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n*1.e-9)*sizeof(size_t), t, d);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Expected spacing collisions per process %f (%f total).\n", (double) lambda, N * lambda);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&random);CHKERRQ(ierr);
   ierr = PetscRandomSetType(random,PETSCRANDER48);CHKERRQ(ierr);
@@ -78,35 +77,35 @@ int main(int argc, char **argv)
   ierr = PetscRandomView(random,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&X);CHKERRQ(ierr);
   for (i = 0; i < n; i++) {
-    PetscInt j;
-    size_t   bin  = 0;
-    size_t   mult = 1;
+    PetscInt   j;
+    PetscInt64 bin  = 0;
+    PetscInt64 mult = 1;
 
     for (j = 0; j < t; j++, mult *= d) {
       PetscReal x;
-      size_t slot;
+      PetscInt64 slot;
 
       ierr = PetscRandomGetValueReal(random,&x);CHKERRQ(ierr);
       /* worried about precision here */
-      slot = (size_t) (x * d);
+      slot = (PetscInt64) (x * d);
       bin += mult * slot;
     }
-    if (bin >= k) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %zu, but only %zu bins\n",bin,k);
+    if (bin >= k) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Generated point in bin %" PetscInt64_FMT ", but only %" PetscInt64_FMT " bins\n",bin,k);
     X[i] = bin;
   }
 
-  qsort(X, n, sizeof(size_t), size_t_compar);
+  qsort(X, n, sizeof(PetscInt64), PetscInt64Compare);
   for (i = 0; i < n - 1; i++) {
     X[i] = X[i + 1] - X[i];
   }
-  qsort(X, n - 1, sizeof(size_t), size_t_compar);
+  qsort(X, n - 1, sizeof(PetscInt64), PetscInt64Compare);
   for (i = 0, Y = 0; i < n - 2; i++) {
     Y += (X[i + 1] == X[i]);
   }
 
-  ierr = MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE, &Y, 1, MPIU_INT, MPI_SUM, MPI_COMM_WORLD);CHKERRQ(ierr);
   ierr = PoissonTailProbability(N*lambda,Y,&p);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%zu total collisions counted: that many or more should occur with probabilty %g.\n",Y,(double)p);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%D total collisions counted: that many or more should occur with probabilty %g.\n",Y,(double)p);CHKERRQ(ierr);
 
   ierr = PetscFree(X);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
