@@ -1140,12 +1140,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&work);CHKERRQ(ierr);
 
     /* matrices for deluxe scaling and adaptive selection */
-    if (!sub_schurs->sum_S_Ej_all) {
-      ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
-      ierr = MatSetSizes(sub_schurs->sum_S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,size_active_schur,size_active_schur);CHKERRQ(ierr);
-      ierr = MatSetType(sub_schurs->sum_S_Ej_all,MATAIJ);CHKERRQ(ierr);
-      ierr = MatSeqAIJSetPreallocation(sub_schurs->sum_S_Ej_all,0,nnz);CHKERRQ(ierr);
-    }
     if (compute_Stilda) {
       if (!sub_schurs->sum_S_Ej_tilda_all) {
         ierr = MatDuplicate(sub_schurs->sum_S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
@@ -1504,7 +1498,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
   /* Get local part of (\sum_j S_Ej) */
   ierr = MatCreateSubMatrices(global_schur_subsets,1,&all_subsets_n,&all_subsets_n,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
-  ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (!sub_schurs->sum_S_Ej_all) {
+    ierr = MatDuplicate(submats[0],MAT_COPY_VALUES,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy(submats[0],sub_schurs->sum_S_Ej_all,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
 
   /* Get local part of (\sum_j S^-1_Ej) (\sum_j St^-1_Ej) */
   if (compute_Stilda) {

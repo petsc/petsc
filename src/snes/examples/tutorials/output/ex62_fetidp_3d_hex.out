@@ -274,7 +274,6 @@ SNES Object: 5 MPI processes
             Use user-defined CSR: 0
             Use local mat graph: 1
             Connectivity graph topological dimension: 3
-            Graph max count: 2147483647
             Use vertices: 1 (vertex size 3)
             Use edges: 1
             Use faces: 0

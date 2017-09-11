@@ -1040,7 +1040,11 @@ int main(int argc,char **args)
   /* create KSP/PC for FETIDP */
   ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
   /* create random exact solution */
+#if defined(PETSC_USE_COMPLEX)
+  ierr = VecSet(exact_solution,1.0 + PETSC_i);CHKERRQ(ierr);
+#else
   ierr = VecSetRandom(exact_solution,NULL);CHKERRQ(ierr);
+#endif
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
   ierr = VecGetSize(exact_solution,&ndofs);CHKERRQ(ierr);
