@@ -681,7 +681,7 @@ $  PetscMalloc1(10*sizeof(PetscInt),&id);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc1(m1,r1) PetscMalloc((m1)*sizeof(**(r1)),r1)
+#define PetscMalloc1(m1,r1) PetscMallocA(1,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1))
 
 /*MC
    PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to PETSC_MEMALIGN
@@ -707,7 +707,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscCalloc1(m1,r1) (PetscMalloc1((m1),r1) || PetscMemzero(*(r1),(m1)*sizeof(**(r1))))
+#define PetscCalloc1(m1,r1) PetscMallocA(1,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1))
 
 /*MC
    PetscMalloc2 - Allocates 2 arrays of memory both aligned to PETSC_MEMALIGN
@@ -733,13 +733,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)))
-#else
-#define PetscMalloc2(m1,r1,m2,r2) ((((m1)+(m2)) ? (*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) : 0) \
-                                   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),0) \
-                                   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0))
-#endif
+#define PetscMalloc2(m1,r1,m2,r2) PetscMallocA(2,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2))
 
 /*MC
    PetscCalloc2 - Allocates 2 cleared (zeroed) arrays of memory both aligned to PETSC_MEMALIGN
@@ -764,7 +758,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#define PetscCalloc2(m1,r1,m2,r2) (PetscMalloc2((m1),(r1),(m2),(r2)) || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))))
+#define PetscCalloc2(m1,r1,m2,r2) PetscMallocA(2,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2))
 
 /*MC
    PetscMalloc3 - Allocates 3 arrays of memory, all aligned to PETSC_MEMALIGN
@@ -792,13 +786,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)))
-#else
-#define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((((m1)+(m2)+(m3)) ? (*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) : 0) \
-                                         || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),0) \
-                                         || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0))
-#endif
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) PetscMallocA(3,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3))
 
 /*MC
    PetscCalloc3 - Allocates 3 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
@@ -825,9 +813,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#define PetscCalloc3(m1,r1,m2,r2,m3,r3)                                 \
-  (PetscMalloc3((m1),(r1),(m2),(r2),(m3),(r3))                          \
-   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))))
+#define PetscCalloc3(m1,r1,m2,r2,m3,r3) PetscMallocA(3,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3))
 
 /*MC
    PetscMalloc4 - Allocates 4 arrays of memory, all aligned to PETSC_MEMALIGN
@@ -857,14 +843,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)))
-#else
-#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
-  ((((m1)+(m2)+(m3)+(m4)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+3*(PETSC_MEMALIGN-1),r1)) : 0) \
-   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),0) \
-   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0))
-#endif
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) PetscMallocA(4,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4))
 
 /*MC
    PetscCalloc4 - Allocates 4 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
@@ -894,10 +873,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscCalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
-  (PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                                \
-   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
-   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))))
+#define PetscCalloc4(m1,r1,m2,r2,m3,r3,m4,r4) PetscMallocA(4,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4))
 
 /*MC
    PetscMalloc5 - Allocates 5 arrays of memory, all aligned to PETSC_MEMALIGN
@@ -929,14 +905,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)))
-#else
-#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
-  ((((m1)+(m2)+(m3)+(m4)+(m5)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+4*(PETSC_MEMALIGN-1),r1)) : 0) \
-   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),0) \
-   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0))
-#endif
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) PetscMallocA(5,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5))
 
 /*MC
    PetscCalloc5 - Allocates 5 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
@@ -968,10 +937,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscCalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)                     \
-  (PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)                          \
-   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
-   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))))
+#define PetscCalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) PetscMallocA(5,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5))
 
 /*MC
    PetscMalloc6 - Allocates 6 arrays of memory, all aligned to PETSC_MEMALIGN
@@ -1005,14 +971,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)) || PetscMalloc1((m6),(r6)))
-#else
-#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
-  ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+5*(PETSC_MEMALIGN-1),r1)) : 0) \
-   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),0) \
-   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0) || (0==(m6) ? (*(r6) = 0,0) : 0))
-#endif
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) PetscMallocA(6,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5),(m6)*sizeof(**(r6)),(r6))
 
 /*MC
    PetscCalloc6 - Allocates 6 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
@@ -1045,10 +1004,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#define PetscCalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6)               \
-  (PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6)                    \
-   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
-   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))) || PetscMemzero(*(r6),(m6)*sizeof(**(r6))))
+#define PetscCalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) PetscMallocA(6,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5),(m6)*sizeof(**(r6)),(r6))
 
 /*MC
    PetscMalloc7 - Allocates 7 arrays of memory, all aligned to PETSC_MEMALIGN
@@ -1084,14 +1040,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)) || PetscMalloc1((m6),(r6)) || PetscMalloc1((m7),(r7)))
-#else
-#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
-  ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)+(m7)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+(m7)*sizeof(**(r7))+6*(PETSC_MEMALIGN-1),r1)) : 0) \
-   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),*(void**)(r7) = PetscAddrAlign(*(r6)+(m6)),0) \
-   || (0==(m1) ? (*(r1) = 0,0) : 0) || (0==(m2) ? (*(r2) = 0,0) : 0) || (0==(m3) ? (*(r3) = 0,0) : 0) || (0==(m4) ? (*(r4) = 0,0) : 0) || (0==(m5) ? (*(r5) = 0,0) : 0) || (0==(m6) ? (*(r6) = 0,0) : 0) || (0==(m7) ? (*(r7) = 0,0) : 0))
-#endif
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) PetscMallocA(7,PETSC_FALSE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5),(m6)*sizeof(**(r6)),(r6),(m7)*sizeof(**(r7)),(r7))
 
 /*MC
    PetscCalloc7 - Allocates 7 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
@@ -1126,11 +1075,7 @@ M*/
 
   Concepts: memory allocation
 M*/
-#define PetscCalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)         \
-  (PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)              \
-   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
-   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))) || PetscMemzero(*(r6),(m6)*sizeof(**(r6))) \
-   || PetscMemzero(*(r7),(m7)*sizeof(**(r7))))
+#define PetscCalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) PetscMallocA(7,PETSC_TRUE,__LINE__,PETSC_FUNCTION_NAME,__FILE__,(m1)*sizeof(**(r1)),(r1),(m2)*sizeof(**(r2)),(r2),(m3)*sizeof(**(r3)),(r3),(m4)*sizeof(**(r4)),(r4),(m5)*sizeof(**(r5)),(r5),(m6)*sizeof(**(r6)),(r6),(m7)*sizeof(**(r7)),(r7))
 
 /*MC
    PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN
@@ -1226,11 +1171,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree2(m1,m2)   ((m1) ? ((m2)=0,PetscFree(m1)) : ((m1)=0,PetscFree(m2)))
-#endif
+#define PetscFree2(m1,m2)   PetscFreeA(2,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2))
 
 /*MC
    PetscFree3 - Frees 3 chunks of memory obtained with PetscMalloc3()
@@ -1255,11 +1196,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree3(m1,m2,m3)   ((m1) ? ((m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m3)=0,(m1)=0,PetscFree(m2)) : ((m2)=0,(m1)=0,PetscFree(m3))))
-#endif
+#define PetscFree3(m1,m2,m3)   PetscFreeA(3,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2),&(m3))
 
 /*MC
    PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
@@ -1285,11 +1222,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree4(m1,m2,m3,m4)   ((m1) ? ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m3)=0,(m2)=0,(m1)=0,PetscFree(m4)))))
-#endif
+#define PetscFree4(m1,m2,m3,m4)   PetscFreeA(4,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2),&(m3),&(m4))
 
 /*MC
    PetscFree5 - Frees 5 chunks of memory obtained with PetscMalloc5()
@@ -1316,13 +1249,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree5(m1,m2,m3,m4,m5)   ((m1) ? ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : \
-                                     ((m4) ? ((m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : ((m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5))))))
-#endif
-
+#define PetscFree5(m1,m2,m3,m4,m5)   PetscFreeA(5,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2),&(m3),&(m4),&(m5))
 
 /*MC
    PetscFree6 - Frees 6 chunks of memory obtained with PetscMalloc6()
@@ -1351,13 +1278,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m1) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
-                                        ((m3) ? ((m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
-                                        ((m5) ? ((m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)))))))
-#endif
+#define PetscFree6(m1,m2,m3,m4,m5,m6)   PetscFreeA(6,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2),&(m3),&(m4),&(m5),&(m6))
 
 /*MC
    PetscFree7 - Frees 7 chunks of memory obtained with PetscMalloc7()
@@ -1388,18 +1309,14 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
-#else
-#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m1) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
-                                           ((m3) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m7)=0,(m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
-                                           ((m5) ? ((m7)=0,(m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m6) ? ((m7)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)) : \
-                                                   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m7))))))))
-#endif
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   PetscFreeA(7,__LINE__,PETSC_FUNCTION_NAME,__FILE__,&(m1),&(m2),&(m3),&(m4),&(m5),&(m6),&(m7))
 
+PETSC_EXTERN PetscErrorCode PetscMallocA(int,PetscBool,int,const char *,const char *,size_t,void *,...);
+PETSC_EXTERN PetscErrorCode PetscFreeA(int,int,const char *,const char *,void *,...);
 PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
