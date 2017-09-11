@@ -3060,8 +3060,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
   ierr = VecSet(cmap,-1.0);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
-
   /* Get start indices */
   ierr = MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   isstart -= ncols;
@@ -3079,7 +3077,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(cmap,&cmaparray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Get iscol_d */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d);CHKERRQ(ierr);
@@ -3099,17 +3096,11 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = ISSetBlockSize(*isrow_d,i);CHKERRQ(ierr);
 
   /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
-#if 0
-  if (!a->Mvctx_mpi1) {
-    /* a->Mvctx causes random 'count' in o-build? See src/mat/examples/tests/runex59_2 */
-    a->Mvctx_mpi1_flg = PETSC_TRUE;
-    ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
-  }
-  Mvctx = a->Mvctx_mpi1;
-#endif
   Mvctx = a->Mvctx;
   ierr = VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -3131,17 +3122,11 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
-  //printf("[%d] count %d, nlvec %d\n",rank,count,lvec->map->N);
-  if (count != 6) {
-    printf("[%d] lvec:\n",rank);
-    ierr = VecView(lvec,0);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"count %d != 6",count);
-  }
+
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
   /* cannot ensure iscol_o has same blocksize as iscol! */
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
-
   *garray = cmap1;
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
