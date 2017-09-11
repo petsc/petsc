@@ -24,6 +24,7 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
+#define PetscRoundReal(a)   round(a)
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
@@ -49,6 +50,7 @@ typedef float PetscReal;
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
+#define PetscRoundReal(a)   round(a)
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
@@ -82,6 +84,7 @@ extern "C" {
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
+#define PetscRoundReal(a)   roundq(a)
 #define PetscSqrtReal(a)    sqrtq(a)
 #define PetscExpReal(a)     expq(a)
 #define PetscLogReal(a)     logq(a)
@@ -108,6 +111,7 @@ typedef __float128 PetscReal;
 PETSC_EXTERN MPI_Datatype MPIU___FP16 PetscAttrMPITypeTag(__fp16);
 #define MPIU_REAL MPIU___FP16
 typedef __fp16 PetscReal;
+#define PetscRound(a)       roundf(a)
 #define PetscSqrtReal(a)    sqrtf(a)
 #define PetscExpReal(a)     expf(a)
 #define PetscLogReal(a)     logf(a)
@@ -214,7 +218,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
 #endif  /* ! PETSC_SKIP_COMPLEX */
 
-#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
+#elif defined(PETSC_HAVE_C99_COMPLEX) && !defined(PETSC_USE_REAL___FP16)
 #if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
@@ -291,7 +295,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #else
-# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX)
+# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
   typedef complexlib::complex<double> petsc_mpiu_c_double_complex;
   typedef complexlib::complex<float> petsc_mpiu_c_complex;
 # elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
@@ -414,7 +418,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 */
 PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
-#if   defined(__cplusplus)
+#if   defined(__cplusplus) && !defined(PETSC_USE_REAL___FLOAT128)
   return PetscComplex(x,y);
 #elif defined(_Imaginary_I)
   return x + y * _Imaginary_I;

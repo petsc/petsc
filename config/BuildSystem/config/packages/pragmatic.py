@@ -41,6 +41,6 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('Pragmatic cannot be built with 64-bit integers')
     if self.scalartypes.precision == 'single':
       raise RuntimeError('Pragmatic cannot be built with single precision')
-    elif self.scalartypes.precision == 'quad':
+    elif self.scalartypes.precision == '__float128':
       raise RuntimeError('Pragmatic cannot be built with quad precision')
     return args

@@ -43,7 +43,6 @@ class Configure(config.package.Package):
   def getPrefix(self):
     if self.defaultPrecision == 'single': return 's'
     if self.defaultPrecision == 'double': return 'd'
-    if self.defaultPrecision == 'quad': return 'q'
     if self.defaultPrecision == '__float128': return 'q'
     if self.defaultPrecision == '__fp16': return 'h'
     return 'Unknown precision'

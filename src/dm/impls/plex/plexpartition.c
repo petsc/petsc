@@ -1405,8 +1405,8 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
   PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
   PetscInt       ncon       = 1;           /* The number of weights per vertex */
-  PetscReal     *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
-  PetscReal     *ubvec;                    /* The balance intolerance for vertex weights */
+  real_t        *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
+  real_t        *ubvec;                    /* The balance intolerance for vertex weights */
   PetscInt       options[5];               /* Options */
   /* Outputs */
   PetscInt       edgeCut;                  /* The number of edges cut by the partition */

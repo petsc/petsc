@@ -363,7 +363,7 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
      are not called; at least on IRIX.
   */
   {
-#if defined(PETSC_CLANGUAGE_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_REAL___FLOAT128)
     PetscComplex ic(0.0,1.0);
     PETSC_i = ic;
 #else
