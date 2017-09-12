@@ -93,6 +93,12 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   ierr = PetscFree(garrayCMap);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscFree(nnz);CHKERRQ(ierr);
+
+    if (subCommSize > 1) { /* create Mvctx_mpi1 for *subMat to be used for MatMult() */
+      aij = (Mat_MPIAIJ*)(*subMat)->data;
+      aij->Mvctx_mpi1_flg = PETSC_TRUE;
+      ierr = MatSetUpMultiply_MPIAIJ(*subMat);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
