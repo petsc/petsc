@@ -222,9 +222,7 @@ MFEM_cid mfem_table_cid[4][7] = { {MFEM_POINT,MFEM_UNDEF,MFEM_UNDEF  ,MFEM_UNDEF
                                   {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE     ,MFEM_UNDEF, MFEM_UNDEF},
                                   {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_TETRAHEDRON,MFEM_UNDEF, MFEM_CUBE } };
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointMFEMCellID_Internal"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt p, PetscInt *mid, PetscInt *cid)
+static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt p, PetscInt *mid, PetscInt *cid)
 {
   DMLabel        dlabel;
   PetscInt       depth,csize;
@@ -243,21 +241,32 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointMFEMVertexIDs_Internal"
-PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscInt *nv, int vids[])
+static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscSection csec, PetscInt *nv, int vids[])
 {
-  PetscInt       dim,i,q,vStart,vEnd,numPoints,*points = NULL;
+  PetscInt       dim,sdim,dof = 0,off = 0,i,q,vStart,vEnd,numPoints,*points = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
-  for (i=0,q=0;i<numPoints*2;i+= 2)
-    if ((points[i] >= vStart) && (points[i] < vEnd))
-      vids[q++] = points[i]-vStart;
-  ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  sdim = dim;
+  if (csec) {
+    ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(csec,vStart,&off);CHKERRQ(ierr);
+    off  = off/sdim;
+    ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
+  }
+  if (!dof) {
+    ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
+    for (i=0,q=0;i<numPoints*2;i+= 2)
+      if ((points[i] >= vStart) && (points[i] < vEnd))
+        vids[q++] = points[i]-vStart+off;
+    ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSectionGetOffset(csec,p,&off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
+    for (q=0;q<dof/sdim;q++) vids[q] = off/sdim + q;
+  }
   ierr = DMPlexInvertCell(dim,q,vids);CHKERRQ(ierr);
   *nv  = q;
   PetscFunctionReturn(0);
@@ -266,7 +275,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, P
 /* ASCII visualization/dump: full support for simplices and tensor product cells. It supports AMR */
 static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 {
-  DM                   cdm;
   DMLabel              label;
   PetscSection         coordSection,parentSection;
   Vec                  coordinates;
@@ -274,30 +282,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   const PetscScalar    *array;
   const PetscInt       *gNum;
   PetscInt             bf,p,sdim,dim,depth,novl;
-  PetscInt             cStart,cEnd,cEndInterior,fStart,fEnd,fEndInterior,vStart,vEnd;
+  PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
   PetscMPIInt          commsize;
-  PetscBool            ovl,isascii,enable_boundary,enable_ncmesh;
+  PetscBool            localized,ovl,isascii,enable_boundary,enable_ncmesh;
   PetscBT              pown;
   PetscErrorCode       ierr;
-  PetscInt             *faces = NULL,fpc = 0,vpf = 0;
-  PetscInt             fv1[]     = {0,1},
-                       fv2tri[]  = {0,1,
-                                    1,2,
-                                    2,0},
-                       fv2quad[] = {0,1,
-                                    1,2,
-                                    2,3,
-                                    3,0},
-                       fv3tet[]  = {0,1,2,
-                                    0,3,1,
-                                    0,2,3,
-                                    2,1,3},
-                       fv3hex[]  = {0,1,2,3,
-                                 4,5,6,7,
-                                 0,3,5,4,
-                                 2,1,7,6,
-                                 3,2,6,5,
-                                 0,4,7,1};
   PetscContainer       glvis_container;
   PetscBool            enabled = PETSC_TRUE;
 
@@ -320,10 +309,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
     enabled = glvis_info->enabled;
   }
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, &fEndInterior, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
 
   /*
      a couple of sections of the mesh specification are disabled
@@ -404,7 +395,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       }
     }
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
-    ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,&nv,vids);CHKERRQ(ierr);
+    ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,localized ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
     for (i=0;i<nv;i++) {
       ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
@@ -412,80 +403,103 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   }
 
-  /* determine orientation of boundary mesh */
-  if (cEnd-cStart) {
-    ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
-    switch(dim) {
-      case 1:
-        if (fpc != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case faces per cell %D",fpc);
-        faces = fv1;
-        vpf = 1;
-        break;
-      case 2:
-        switch (fpc) {
-          case 3:
-            faces = fv2tri;
-            vpf   = 2;
-            break;
-          case 4:
-            faces = fv2quad;
-            vpf   = 2;
-            break;
-          default:
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
-            break;
-        }
-        break;
-      case 3:
-        switch (fpc) {
-          case 4:
-            faces = fv3tet;
-            vpf   = 3;
-            break;
-          case 6:
-            faces = fv3hex;
-            vpf   = 4;
-            break;
-          default:
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
-            break;
-        }
-        break;
-      default:
-        SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dim");
-        break;
-    }
-  }
-
   /* boundary */
-  ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
-  fEnd = fEndInterior < 0 ? fEnd : fEndInterior;
-  if (!ovl) {
-    for (p=fStart,bf=0;p<fEnd;p++) {
-      PetscInt supportSize;
-
-      ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
-      if (supportSize == 1) bf++;
-    }
-  } else {
-    for (p=fStart,bf=0;p<fEnd;p++) {
-      const PetscInt *support;
-      PetscInt       i,supportSize;
-      PetscBool      has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
-
-      ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-      for (i=0;i<supportSize;i++) {
-        if (PetscBTLookup(pown,support[i]-cStart)) has_owned = PETSC_TRUE;
-        else has_ghost = PETSC_TRUE;
-      }
-      if ((supportSize == 1 && has_owned) || (supportSize > 1 && has_owned && has_ghost)) bf++;
-    }
-  }
   ierr = PetscViewerASCIIPrintf(viewer,"\nboundary\n");CHKERRQ(ierr);
   if (!enable_boundary) {
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
   } else {
+    PetscInt fStart,fEnd,fEndInterior;
+    PetscInt *faces = NULL,fpc = 0,vpf = 0;
+    PetscInt fv1[]     = {0,1},
+             fv2tri[]  = {0,1,
+                          1,2,
+                          2,0},
+             fv2quad[] = {0,1,
+                          1,2,
+                          2,3,
+                          3,0},
+             fv3tet[]  = {0,1,2,
+                          0,3,1,
+                          0,2,3,
+                          2,1,3},
+             fv3hex[]  = {0,1,2,3,
+                       4,5,6,7,
+                       0,3,5,4,
+                       2,1,7,6,
+                       3,2,6,5,
+                       0,4,7,1};
+
+    if (localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Boundary specification with periodic mesh");
+    /* determine orientation of boundary mesh */
+    if (cEnd-cStart) {
+      ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
+      switch(dim) {
+        case 1:
+          if (fpc != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case faces per cell %D",fpc);
+          faces = fv1;
+          vpf = 1;
+          break;
+        case 2:
+          switch (fpc) {
+            case 3:
+              faces = fv2tri;
+              vpf   = 2;
+              break;
+            case 4:
+              faces = fv2quad;
+              vpf   = 2;
+              break;
+            default:
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+              break;
+          }
+          break;
+        case 3:
+          switch (fpc) {
+            case 4:
+              faces = fv3tet;
+              vpf   = 3;
+              break;
+            case 6:
+              faces = fv3hex;
+              vpf   = 4;
+              break;
+            default:
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+              break;
+          }
+          break;
+        default:
+          SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dim");
+          break;
+      }
+    }
+
+    ierr = DMPlexGetHybridBounds(dm, NULL, &fEndInterior, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
+    fEnd = fEndInterior < 0 ? fEnd : fEndInterior;
+    if (!ovl) {
+      for (p=fStart,bf=0;p<fEnd;p++) {
+        PetscInt supportSize;
+
+        ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
+        if (supportSize == 1) bf++;
+      }
+    } else {
+      for (p=fStart,bf=0;p<fEnd;p++) {
+        const PetscInt *support;
+        PetscInt       i,supportSize;
+        PetscBool      has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
+
+        ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
+        for (i=0;i<supportSize;i++) {
+          if (PetscBTLookup(pown,support[i]-cStart)) has_owned = PETSC_TRUE;
+          else has_ghost = PETSC_TRUE;
+        }
+        if ((supportSize == 1 && has_owned) || (supportSize > 1 && has_owned && has_ghost)) bf++;
+      }
+    }
     /* TODO: is this the label we want to use for marking boundary facets?
        We should decide to have a single marker for these stuff
        Proposal: DMSetBoundaryLabel?
@@ -626,7 +640,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           switch (size) {
             case 2: /* edge */
               nv   = 0;
-              ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,parent,&nv,vids);CHKERRQ(ierr);
+              ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,parent,localized ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
               ierr = PetscViewerASCIIPrintf(viewer,"%D",p-vStart);CHKERRQ(ierr);
               for (i=0;i<nv;i++) {
                 ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
@@ -703,23 +717,18 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
   /* vertices */
   ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(cdm,0,&vStart,&vEnd);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coordinates,&nvert);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D\n",vEnd-vStart);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D\n",nvert/sdim);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates,&array);CHKERRQ(ierr);
-  for (p=vStart;p<vEnd;p++) {
-    PetscInt i,st,dof;
-
-    ierr = PetscSectionGetDof(coordSection,p,&dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(coordSection,p,&st);CHKERRQ(ierr);
-    for (i=st;i<st+dof-1;i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%g ",PetscRealPart(array[i]));CHKERRQ(ierr);
+  for (p=0;p<nvert/sdim;p++) {
+    PetscInt s;
+    for (s=0;s<sdim;s++) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%g ",PetscRealPart(array[p*sdim+s]));CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(array[i]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(coordinates,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
