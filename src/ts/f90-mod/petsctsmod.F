@@ -66,7 +66,7 @@
         function tsadaptequals(A,B)
           use petsctsdefdummy
           logical tsadaptequals
-          type(tTS), intent(in) :: A,B
+          type(tTSAdapt), intent(in) :: A,B
           tsadaptequals = (A%v .eq. B%v)
         end function
 
