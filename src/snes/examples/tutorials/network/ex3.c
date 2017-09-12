@@ -190,7 +190,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
     if (key != user_power.compkey_load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
     load = (LOAD)(component);
-    //printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
+    printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
 
     /* Get coupling waternet vertex and pump edge */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
@@ -228,7 +228,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           hf = xarr[offsetnode1];
           ht = xarr[offsetnode2];
           flow        = Flow_Pump(pump,hf,ht);
-          flow_couple = 8.81*load->pl/(ht-hf);     //pump->h0;
+          PetscScalar Hp = 0.1; // load->pl
+          flow_couple = 8.81*Hp*1.e6/(ht-hf);     //pump->h0;
           //printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
