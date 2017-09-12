@@ -935,13 +935,24 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nt;
+  VecScatter     Mvctx = a->Mvctx;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%D) and xx (%D)",A->cmap->n,nt);
-  ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (a->Mvctx_mpi1_flg) {
+    Mvctx = a->Mvctx_mpi1;
+#if 0
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    ierr = VecView(xx,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = VecSet(a->lvec,0.0);CHKERRQ(ierr);
+    ierr = VecView(a->lvec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);CHKERRQ(ierr);
+#endif
+  }
+  ierr = VecScatterBegin(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->B->ops->multadd)(a->B,a->lvec,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

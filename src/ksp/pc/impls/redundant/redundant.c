@@ -65,6 +65,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -76,7 +77,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  
+
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) red->useparallelmat = PETSC_FALSE;
@@ -86,7 +87,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (!red->psubcomm) { /* create red->psubcomm, new ksp and pc over subcomm */
       KSP ksp;
       ierr = PCRedundantGetKSP(pc,&ksp);CHKERRQ(ierr);
-    } 
+    }
     subcomm = PetscSubcommChild(red->psubcomm);
 
     if (red->useparallelmat) {
@@ -96,6 +97,17 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
       if (size > 1) {
         PetscBool foundpack;
+
+        PetscBool ismpiaij;
+        ierr = PetscObjectTypeCompare((PetscObject)(red->pmats),MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+        if (ismpiaij) {
+          Mat_MPIAIJ  *a=(Mat_MPIAIJ*)(red->pmats)->data;
+          if (!a->Mvctx_mpi1) { /* create a->Mvctx_mpi1 to be used for MatMult() */
+            a->Mvctx_mpi1_flg = PETSC_TRUE;
+            ierr = MatSetUpMultiply_MPIAIJ(red->pmats);CHKERRQ(ierr);
+          }
+        }
+
         ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
         if (!foundpack) { /* reset default ksp and pc */
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
@@ -106,7 +118,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       }
 
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
-       
+
       /* get working vectors xsub and ysub */
       ierr = MatCreateVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
 
