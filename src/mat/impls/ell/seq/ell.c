@@ -263,13 +263,13 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   PetscInt          totalslices;
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j=0;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask;
   __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
   __m256i           vec_idx2,vec_idx3,vec_idx4;
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   __m128d           vec_x_tmp;
   __m256d           vec_x,vec_y,vec_y2,vec_vals;
   MatScalar         yval;
@@ -287,7 +287,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   for (i=0; i<totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
     PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -347,7 +347,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
       _mm512_store_pd(&y[8*i],vec_y);
     }
   }
-#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__)
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   for (i=0; i<totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
     PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -449,7 +449,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          totalslices;
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)  && !defined(PETSC_USE_64BIT_INDICES)
   __m512d           vec_x,vec_y,vec_z,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask,maskallset=0xff;
@@ -467,7 +467,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__)
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
     vec_y = _mm512_load_pd(&y[8*i]);
     #pragma novector
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
