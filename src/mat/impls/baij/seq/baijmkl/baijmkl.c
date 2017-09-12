@@ -23,6 +23,7 @@ typedef struct {
 #endif
 } Mat_SeqBAIJMKL;
 
+PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode);
 extern PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat,MatAssemblyType);
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
@@ -161,6 +162,10 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
   if (baijmkl->sparse_optimized) {
     /* Matrix has been previously assembled and optimized. Must destroy old
      * matrix handle before running the optimization step again. */
+#ifndef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
+    ierr = PetscFree(baijmkl->ai1);CHKERRQ(ierr);
+    ierr = PetscFree(baijmkl->aj1);CHKERRQ(ierr);
+#endif     
     stat = mkl_sparse_destroy(baijmkl->bsrA);
     if (stat != SPARSE_STATUS_SUCCESS) {
       PetscFunctionReturn(PETSC_ERR_LIB);
@@ -223,18 +228,6 @@ PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   ierr = PetscMemcpy(baijmkl_dest,baijmkl,sizeof(Mat_SeqBAIJMKL));CHKERRQ(ierr);
   baijmkl_dest->sparse_optimized = PETSC_FALSE;
   ierr = MatSeqBAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
-{
-  PetscErrorCode  ierr;
-  PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-
-  ierr = MatAssemblyEnd_SeqBAIJ(A, mode);CHKERRQ(ierr);
-  ierr = MatSeqBAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -501,16 +494,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A,MatType type,Mat
 
   /* Set function pointers for methods that we inherit from BAIJ but override. 
    * We also parse some command line options below, since those determine some of the methods we point to. */
-  B->ops->duplicate        = MatDuplicate_SeqBAIJMKL;
   B->ops->assemblyend      = MatAssemblyEnd_SeqBAIJMKL;
-  B->ops->destroy          = MatDestroy_SeqBAIJMKL;
-  B->ops->mult             = MatMult_SeqBAIJMKL_SpMV2;
-  B->ops->multtranspose    = MatMultTranspose_SeqBAIJMKL_SpMV2;
-  B->ops->multadd          = MatMultAdd_SeqBAIJMKL_SpMV2;
-  B->ops->multtransposeadd = MatMultTransposeAdd_SeqBAIJMKL_SpMV2;
-  B->ops->scale            = MatScale_SeqBAIJMKL;
-  B->ops->diagonalscale    = MatDiagonalScale_SeqBAIJMKL;
-  B->ops->axpy             = MatAXPY_SeqBAIJMKL;
   
   baijmkl->sparse_optimized = PETSC_FALSE;
 
@@ -519,6 +503,25 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A,MatType type,Mat
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJMKL);CHKERRQ(ierr);
   *newmat = B;
+  PetscFunctionReturn(0);
+}
+PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
+{
+  PetscErrorCode  ierr;
+  PetscFunctionBegin;
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+
+  ierr = MatAssemblyEnd_SeqBAIJ(A, mode);CHKERRQ(ierr);
+  ierr = MatSeqBAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  A->ops->destroy          = MatDestroy_SeqBAIJMKL;
+  A->ops->mult             = MatMult_SeqBAIJMKL_SpMV2;
+  A->ops->multtranspose    = MatMultTranspose_SeqBAIJMKL_SpMV2;
+  A->ops->multadd          = MatMultAdd_SeqBAIJMKL_SpMV2;
+  A->ops->multtransposeadd = MatMultTransposeAdd_SeqBAIJMKL_SpMV2;
+  A->ops->scale            = MatScale_SeqBAIJMKL;
+  A->ops->diagonalscale    = MatDiagonalScale_SeqBAIJMKL;
+  A->ops->axpy             = MatAXPY_SeqBAIJMKL;
+  A->ops->duplicate        = MatDuplicate_SeqBAIJMKL;   
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
