@@ -1,14 +1,15 @@
+#requirespackage 'PETSC_HAVE_RANDOM123'
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${RANDOM123_INCLUDE}
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = random123.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     = rand rand48 rander48 sprng random123
-LOCDIR   = src/sys/classes/random/impls/
+DIRS     =
+LOCDIR   = src/sys/classes/random/impls/random123/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

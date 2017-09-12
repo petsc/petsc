@@ -1,0 +1,6 @@
+Generating 1048576 samples (0.00838861 GB) per process in a 8 dimensional space with 128 bins per dimension.
+Expected spacing collisions per process 4.000000 (4.000000 total).
+PetscRandom Object: 1 MPI processes
+  type: sprng
+[0] Random type sprng, seed 305419896
+76 total collisions counted: that many or more should occur with probabilty 1.06233e-16.

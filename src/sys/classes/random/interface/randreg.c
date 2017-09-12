@@ -132,6 +132,9 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 #endif
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom);
+#if defined(PETSC_HAVE_RANDOM123)
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom);
+#endif
 
 /*@C
   PetscRandomRegisterAll - Registers all of the components in the PetscRandom package.
@@ -160,6 +163,9 @@ PetscErrorCode  PetscRandomRegisterAll(void)
   ierr = PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   ierr = PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_RANDOM123)
+  ierr = PetscRandomRegister(PETSCRANDOM123, PetscRandomCreate_Random123);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
