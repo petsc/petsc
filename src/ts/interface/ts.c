@@ -4338,7 +4338,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      TSTrajectory to incorrectly save the output files
   */
   /* reset time step and iteration counters */
-
   if (!ts->steps) {
     ts->ksp_its           = 0;
     ts->snes_its          = 0;
@@ -4347,6 +4346,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
   }
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
