@@ -4,15 +4,14 @@
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,MatType,MatReuse,Mat*);
 
 PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJMKL(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
-                                                   //(Mat B,            PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIBAIJ     *b = (Mat_MPIBAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMPIBAIJSetPreallocation_MPIBAIJ(B,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  ierr = MatConvert_SeqBAIJ_SeqBAIJMKL(b->A, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqBAIJ_SeqBAIJMKL(b->B, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqBAIJ_SeqBAIJMKL(b->A,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqBAIJ_SeqBAIJMKL(b->B,MATSEQBAIJMKL,MAT_INPLACE_MATRIX,&b->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
