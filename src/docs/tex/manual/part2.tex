@@ -7452,14 +7452,12 @@ This section looks into a potpourri of performance pitfalls encountered by users
 Many of these pitfalls require a deeper understanding of the system and experience to detect.
 The purpose of this section is to summarize and share our experience so that these pitfalls can be avoided in the future.
 
-\subsection{Compiler Options}
+\subsection{Debug vs.\ Optimized Builds}
 \sindex{compiler options}
 
-PETSc code builds in debug mode per default.
+PETSc's \trl{./configure} defaults to building PETSc with debug mode enabled.
 Any code development should be done in this mode, because it provides handy debugging facilities such as accurate stack traces, memory leak checks, or memory corruption checks.
-Only once the new code is thoroughly tested, one should disable debugging facilities by passing \lstinline|--with-debugging=no| to configure.
-
-PETSc has no reliable way of knowing whether a particular run is a production or debug run.
+Note that PETSc has no reliable way of knowing whether a particular run is a production or debug run.
 In the case that a user requests profiling information via \lstinline|-log_view|, a debug build of PETSc issues the following warning:
 \begin{lstlisting}
       ##########################################################
@@ -7474,6 +7472,45 @@ In the case that a user requests profiling information via \lstinline|-log_view|
       ##########################################################
 \end{lstlisting}
 Conversely, one way of checking whether a particular build of PETSc has debugging enabled is to inspect the output of \lstinline|-log_view|.
+
+Debug mode will generally be most useful for code development if appropriate compiler options are set to faciliate debugging.
+The compiler should be instructed to generate binaries with debug symbols (command line option \trl{-g} for most compilers), 
+and the optimization level chosen should either completely disable optimizations (\trl{-O0} for most compilers) or enable only 
+optimizations that do not interfere with debugging (GCC, for instance, supports a \trl{-Og} optimization level that does this). 
+
+Only once the new code is thoroughly tested and ready for production, one should disable debugging facilities by passing 
+\lstinline|--with-debugging=no| to {\trl{./configure}.
+One should also ensure that an appropriate compiler optimization level is set.
+Note that some compilers (e.g., Intel) default to fairly comprehensive optimization levels, while others (e.g., GCC) default to no 
+optimization at all.
+The best optimization flags will depend on your code, the compiler, and the target architecture, but we offer a few guidelines for 
+finding those that will offer the best performance:
+\begin{itemize}
+\item Most compilers have a number of optimization levels (with level n usually specified via \trl{-On}) that provide a quick way 
+  to enable sets of several optimization flags. 
+  We suggest trying the higher optimization levels (the highest level is not guaranteed to produce the fastest executable, 
+  so some experimentation may be merited).
+  With most recent processors now supporting some form of SIMD or vector instructions, it is important to choose a level that 
+  enables the compiler's auto-vectorizer; many compilers do not enable auto-vectorization at lower optimization levels 
+  (e.g., GCC does not enable it below \trl{-O3} and the Intel compiler does not enable it below \trl{-O2}).
+\item For processors supporting newer vector instruction sets, such as Intel AVX2 and AVX-512, it is also important to direct the 
+compiler to generate code that targets these processors (.e.g., \trl{-march=knl} to generate AVX-512 binaries targeting the 
+Intel ``Knights Landing'' Xeon Phi processor); 
+otherwise, the executables built will not utilize the newer instructions sets and will not take advantage of the vector processing units.
+\item Beyond choosing the optimization levels, some value-unsafe optimizations (such as using reciprocals of values instead of dividing 
+by those values, or allowing re-association of operands in a series of calculations) for floating point calculations may yield 
+significant performance gains. Compilers often provide flags (e.g., \trl{-ffast-math} in GCC) to enable a set of these optimizations, 
+and they may be turned on when using options for very aggressive optimization (\trl{-fast} or \trl{-Ofast} in many compilers). 
+These are worth exploring to maximize performance, but, if employed, it important to verify that these do not cause erroneous results 
+with your code, since calculations may violate the IEEE standard for floating-point arithmetic.
+\end{itemize}
+% Some experimentation required! Best choice depends on code, compiler, architecture.
+% Some guidelines:
+% * Make sure compiler will optimize for target architecture
+% * Vectorization is enabled
+% * Worth exploring value-unsafe optimizations, but must verify that numerical results are OK!
+
+
 
 
 \subsection{Profiling}
