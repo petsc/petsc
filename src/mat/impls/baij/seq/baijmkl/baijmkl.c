@@ -224,7 +224,8 @@ PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionBegin;
   ierr = MatDuplicate_SeqBAIJ(A,op,M);CHKERRQ(ierr);
   baijmkl      = (Mat_SeqBAIJMKL*) A->spptr;
-  baijmkl_dest = (Mat_SeqBAIJMKL*) (*M)->spptr;
+  ierr         = PetscNewLog((*M),&baijmkl_dest);CHKERRQ(ierr);
+  (*M)->spptr  = (void*)baijmkl_dest;
   ierr = PetscMemcpy(baijmkl_dest,baijmkl,sizeof(Mat_SeqBAIJMKL));CHKERRQ(ierr);
   baijmkl_dest->sparse_optimized = PETSC_FALSE;
   ierr = MatSeqBAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
