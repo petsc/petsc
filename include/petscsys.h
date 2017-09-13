@@ -2581,6 +2581,7 @@ PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscInt, const PetscInt[], PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscInt, const PetscMPIInt[], PetscInt*);

@@ -193,13 +193,16 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   nb   = n/bs;
-  ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
+  if (sub->sorted) {
+    ierr = PetscSortedRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutSetLocalSize(is->map, nb*bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);

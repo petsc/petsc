@@ -83,6 +83,39 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 }
 
 /*@
+   PetscSortedRemoveDupsInt - Removes all duplicate entries of a sorted input array
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  ii  - sorted array of integers
+
+   Output Parameter:
+.  n - number of non-redundant values
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortInt()
+@*/
+PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt ii[])
+{
+  PetscInt i,s = 0,N = *n, b = 0;
+
+  PetscFunctionBegin;
+  for (i=0; i<N-1; i++) {
+    if (PetscUnlikely(ii[b+s+1] < ii[b])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input array is not sorted");
+    if (ii[b+s+1] != ii[b]) {
+      ii[b+1] = ii[b+s+1]; b++;
+    } else s++;
+  }
+  *n = N - s;
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
 
    Not Collective
@@ -98,21 +131,15 @@ PetscErrorCode  PetscSortInt(PetscInt n,PetscInt i[])
 
    Concepts: sorting^ints
 
-.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt(), PetscSortedRemoveDupsInt()
 @*/
 PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,s = 0,N = *n, b = 0;
 
   PetscFunctionBegin;
-  ierr = PetscSortInt(N,ii);CHKERRQ(ierr);
-  for (i=0; i<N-1; i++) {
-    if (ii[b+s+1] != ii[b]) {
-      ii[b+1] = ii[b+s+1]; b++;
-    } else s++;
-  }
-  *n = N - s;
+  ierr = PetscSortInt(*n,ii);CHKERRQ(ierr);
+  ierr = PetscSortedRemoveDupsInt(n,ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

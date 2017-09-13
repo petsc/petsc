@@ -496,10 +496,15 @@ static PetscErrorCode ISSortRemoveDups_General(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
-  ierr = PetscSortRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
+  if (sub->sorted) {
+    ierr = PetscSortedRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSortRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
+  ierr = PetscLayoutSetSize(is->map, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
