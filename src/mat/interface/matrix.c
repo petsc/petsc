@@ -4062,6 +4062,15 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 foundconv:
     ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
+    if (mat->rmap->mapping && mat->cmap->mapping && !(*M)->rmap->mapping && !(*M)->cmap->mapping) {
+      ierr = MatSetLocalToGlobalMapping(*M,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
+    }
+    (*M)->stencil.dim = mat->stencil.dim;
+    (*M)->stencil.noc = mat->stencil.noc;
+    for (i=0; i<=mat->stencil.dim; i++) {
+      (*M)->stencil.dims[i]   = mat->stencil.dims[i];
+      (*M)->stencil.starts[i] = mat->stencil.starts[i];
+    }
     ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)*M);CHKERRQ(ierr);
