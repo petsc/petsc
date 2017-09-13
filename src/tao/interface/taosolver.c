@@ -10,6 +10,11 @@ PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_GradientEval, Tao_ObjGradientEva
 
 const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
 
+struct _n_TaoMonitorDrawCtx {
+  PetscViewer viewer;
+  PetscInt    howoften;  /* when > 0 uses iteration % howoften, when negative only final solution plotted */
+};
+
 /*@
   TaoCreate - Creates a TAO solver
 
@@ -472,7 +477,10 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     flg = PETSC_FALSE;
     ierr = PetscOptionsBool("-tao_draw_solution","Plot solution vector at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = TaoSetMonitor(tao,TaoDrawSolutionMonitor,NULL,NULL);CHKERRQ(ierr);
+      TaoMonitorDrawCtx drawctx;
+      PetscInt          howoften = 1;
+      ierr = TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoDrawSolutionMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy);CHKERRQ(ierr);
     }
 
     flg = PETSC_FALSE;
@@ -484,7 +492,10 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     flg = PETSC_FALSE;
     ierr = PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,NULL,NULL);CHKERRQ(ierr);
+      TaoMonitorDrawCtx drawctx;
+      PetscInt          howoften = 1;
+      ierr = TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy);CHKERRQ(ierr);
     }
     flg = PETSC_FALSE;
     ierr = PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",flg,&flg,NULL);CHKERRQ(ierr);
@@ -1635,7 +1646,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 
    Input Parameters:
 +  tao - the Tao context
--  ctx - PetscViewer context
+-  ctx - TaoMonitorDraw context
 
    Options Database Keys:
 .  -tao_draw_solution
@@ -1646,12 +1657,12 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) ctx;
+  PetscErrorCode    ierr;
+  TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->solution, viewer);CHKERRQ(ierr);
+  if (!(((ictx->howoften > 0) && (!(tao->niter % ictx->howoften))) || ((ictx->howoften == -1) && tao->reason))) PetscFunctionReturn(0);
+  ierr = VecView(tao->solution,ictx->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1675,12 +1686,12 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer)ctx;
+  PetscErrorCode    ierr;
+  TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->gradient, viewer);CHKERRQ(ierr);
+  if (!(((ictx->howoften > 0) && (!(tao->niter % ictx->howoften))) || ((ictx->howoften == -1) && tao->reason))) PetscFunctionReturn(0);
+  ierr = VecView(tao->gradient,ictx->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2603,4 +2614,55 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
   PetscFunctionReturn(0);
 }
 
+/*@C
+   TaoMonitorDrawCtxCreate - Creates the monitor context for TaoMonitorDrawCtx
 
+   Collective on Tao
+
+   Output Patameter:
+.    ctx - the monitor context
+
+   Options Database:
+.   -tao_draw_solution_initial - show initial guess as well as current solution
+
+   Level: intermediate
+
+.keywords: Tao,  vector, monitor, view
+
+.seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawCtx()
+@*/
+PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TaoMonitorDrawCtx *ctx)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
+  (*ctx)->howoften = howoften;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TaoMonitorDrawCtxDestroy - Destroys the monitor context for TaoMonitorDrawSolution()
+
+   Collective on Tao
+
+   Input Parameters:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: Tao,  vector, monitor, view
+
+.seealso: TaoMonitorSet(), TaoMonitorDefault(), VecView(), TaoMonitorDrawSolution()
+@*/
+PetscErrorCode  TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx *ictx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerDestroy(&(*ictx)->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(*ictx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
