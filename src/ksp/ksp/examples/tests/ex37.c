@@ -3,10 +3,11 @@ static char help[] = "Test MatGetMultiProcBlock() and MatCreateRedundantMatrix()
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*
   Example:
-  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -subcomm_view -subcomm_type <1 or 2>
+  mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -psubcomm_view -subcomm_type <1 or 2>
 */
 
 #include <petscksp.h>
+#include <petscsys.h>
 
 int main(int argc,char **args)
 {
@@ -76,8 +77,26 @@ int main(int argc,char **args)
 
   /* Test MatCreateRedundantMatrix() */
   if (size > 1) {
-    ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-    ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+    //ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    //ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+
+    //subcomm obtained from MPI_Comm_split() causes hang in MatMult()
+    ierr = MatCreate(subcomm,&subA);CHKERRQ(ierr);
+    ierr = MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(subA);CHKERRQ(ierr);
+    ierr = MatSetUp(subA);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(subA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(subA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatZeroEntries(subA);CHKERRQ(ierr);
+    //ierr = MatView(subA,PETSC_VIEWER_STDOUT_(shcomm));CHKERRQ(ierr);
+
+    /* Test MatMult() */
+    ierr = MatCreateVecs(subA,&subx,&subb);CHKERRQ(ierr);
+    ierr = VecSet(subx,1.0);CHKERRQ(ierr);
+    ierr = MatMult(subA,subx,subb);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&subx);CHKERRQ(ierr);
+    ierr = VecDestroy(&subb);CHKERRQ(ierr);
     ierr = MatDestroy(&subA);CHKERRQ(ierr);
   }
 
