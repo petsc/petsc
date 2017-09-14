@@ -103,7 +103,9 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer, "%s", petsclinkerinfo);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%s\n", PETSC_MPICC_SHOW);CHKERRQ(ierr);
   ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HWLOC)
   ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n");CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n");
