@@ -80,6 +80,20 @@ int main(int argc,char **args)
     //ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
     //ierr = MatCreateRedundantMatrix(A,nsubcomm,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
 
+    PetscMPIInt subrank=-1,color=-1;
+    MPI_Comm    dcomm;
+
+    if (rank == 0) {
+      color = 0; subrank = 0;
+    } else if (rank == 1) {
+      color = 0; subrank = 1;
+    } else {
+      color = 1; subrank = 0;
+    }
+
+    ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&dcomm,NULL);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(dcomm,color,subrank,&subcomm);CHKERRQ(ierr);
+
     //subcomm obtained from MPI_Comm_split() causes hang in MatMult()
     ierr = MatCreate(subcomm,&subA);CHKERRQ(ierr);
     ierr = MatSetSizes(subA,PETSC_DECIDE,PETSC_DECIDE,10,10);CHKERRQ(ierr);
@@ -94,10 +108,12 @@ int main(int argc,char **args)
     ierr = MatCreateVecs(subA,&subx,&subb);CHKERRQ(ierr);
     ierr = VecSet(subx,1.0);CHKERRQ(ierr);
     ierr = MatMult(subA,subx,subb);CHKERRQ(ierr);
+    printf("[%d] MatMult is done\n",rank);
 
     ierr = VecDestroy(&subx);CHKERRQ(ierr);
     ierr = VecDestroy(&subb);CHKERRQ(ierr);
     ierr = MatDestroy(&subA);CHKERRQ(ierr);
+    ierr = PetscCommDestroy(&dcomm);CHKERRQ(ierr);
   }
 
   /* Create subA */
