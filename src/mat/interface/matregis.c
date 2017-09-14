@@ -27,6 +27,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 #if defined PETSC_HAVE_MKL
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat);
+
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJMKL(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat);
@@ -104,6 +107,10 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegisterBaseName(MATAIJMKL, MATSEQAIJMKL,MATMPIAIJMKL);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIAIJMKL,      MatCreate_MPIAIJMKL);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJMKL,      MatCreate_SeqAIJMKL);CHKERRQ(ierr);
+  
+  ierr = MatRegisterBaseName(MATBAIJMKL,MATSEQBAIJMKL,MATMPIBAIJMKL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIBAIJMKL,      MatCreate_MPIBAIJMKL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQBAIJMKL,      MatCreate_SeqBAIJMKL);CHKERRQ(ierr);
 #endif
 
   ierr = MatRegisterBaseName(MATAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL);CHKERRQ(ierr);

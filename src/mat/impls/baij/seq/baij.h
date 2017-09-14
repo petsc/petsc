@@ -30,6 +30,9 @@ typedef struct {
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
+PETSC_INTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz,PetscInt *nnz);
+PETSC_INTERN PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str);
+
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqBAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
