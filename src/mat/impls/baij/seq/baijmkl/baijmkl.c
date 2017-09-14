@@ -179,7 +179,7 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
   bs  = A->rmap->bs;
   aa  = a->a;  
   
-  if (nz) {
+  if ((nz!=0) & !(A->structure_only)) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
 #ifdef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
