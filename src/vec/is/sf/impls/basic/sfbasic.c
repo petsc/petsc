@@ -53,7 +53,8 @@ typedef struct {
   PetscSFBasicPack inuse;       /* Buffers being used for transactions that have not yet completed */
 } PetscSF_Basic;
 
-#if !defined(PETSC_HAVE_MPI_TYPE_DUP) /* Danger: type is not reference counted; subject to ABA problem */
+#if !defined(PETSC_HAVE_MPI_TYPE_DUP) && !defined(PETSC_HAVE_MPIUNI)
+/* Danger: type is not reference counted; subject to ABA problem */
 PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
 {
   *newtype = datatype;
@@ -872,7 +873,7 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   for (link=bas->avail; link; link=next) {
     PetscInt i;
     next = link->next;
-#if defined(PETSC_HAVE_MPI_TYPE_DUP)
+#if defined(PETSC_HAVE_MPI_TYPE_DUP) || defined(PETSC_HAVE_MPIUNI)
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
 #endif
     for (i=0; i<bas->niranks; i++) {ierr = PetscFree(link->root[i]);CHKERRQ(ierr);}
