@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=cc',
+  '--with-cxx=CC',
+  '--with-fc=f90',
   #'--with-debugger=/bin/true',
   '--with-debugging=0',
   'FFLAGS=-ftrap=%none',
