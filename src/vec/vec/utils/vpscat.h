@@ -179,8 +179,9 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv,bs);CHKERRQ(ierr);
   } else if (!to->use_alltoallw) {
-    MPI_Barrier(PETSC_COMM_WORLD);
     PetscMPIInt i;
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+
     /* unpack one at a time */
     count = nrecvs;
     while (count) {
