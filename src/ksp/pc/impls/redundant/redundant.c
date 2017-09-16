@@ -97,17 +97,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = MPI_Comm_size(subcomm,&size);CHKERRQ(ierr);
       if (size > 1) {
         PetscBool foundpack;
-
-        PetscBool ismpiaij;
-        ierr = PetscObjectTypeCompare((PetscObject)(red->pmats),MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-        if (ismpiaij) {
-          Mat_MPIAIJ  *a=(Mat_MPIAIJ*)(red->pmats)->data;
-          if (!a->Mvctx_mpi1) { /* create a->Mvctx_mpi1 to be used for MatMult() */
-            a->Mvctx_mpi1_flg = PETSC_TRUE;
-            ierr = MatSetUpMultiply_MPIAIJ(red->pmats);CHKERRQ(ierr);
-          }
-        }
-
         ierr = MatGetFactorAvailable(red->pmats,NULL,MAT_FACTOR_LU,&foundpack);CHKERRQ(ierr);
         if (!foundpack) { /* reset default ksp and pc */
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
