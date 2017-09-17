@@ -291,7 +291,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   if (ts_terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
   event->status = ts_terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
   ierr = MPIU_Allreduce(&restart,&ts_restart,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_restart) ts->steprestart = PETSC_TRUE;
+  if (ts_restart) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
 
   event->ptime_prev = t;
   /* Reset event residual functions as states might get changed by the postevent callback */
