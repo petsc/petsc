@@ -273,7 +273,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   PetscBool      terminate = PETSC_FALSE;
   PetscBool      restart = PETSC_FALSE;
   PetscInt       i,ctr,stepnum;
-  PetscBool      ts_terminate,ts_restart;
+  PetscBool      inflag[2],outflag[2];
   PetscBool      forwardsolve = PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
 
   PetscFunctionBegin;
@@ -287,11 +287,12 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 
   /* Handle termination events and step restart */
   for (i=0; i<event->nevents_zero; i++) if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
-  ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
-  event->status = ts_terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
-  ierr = MPIU_Allreduce(&restart,&ts_restart,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_restart) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
+  inflag[0] = restart; inflag[1] = terminate;
+  ierr = MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  restart = outflag[0]; terminate = outflag[1];
+  if (restart) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
+  if (terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
+  event->status = terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
 
   event->ptime_prev = t;
   /* Reset event residual functions as states might get changed by the postevent callback */
