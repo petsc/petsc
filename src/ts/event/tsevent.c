@@ -294,11 +294,17 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   if (terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
   event->status = terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
 
-  event->ptime_prev = t;
   /* Reset event residual functions as states might get changed by the postevent callback */
-  if (event->postevent) {ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);}
-  /* Cache current event residual functions */
-  for (i=0; i < event->nevents; i++) event->fvalue_prev[i] = event->fvalue[i];
+  if (event->postevent) {
+    ierr = VecLockPush(U);CHKERRQ(ierr);
+    ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
+    ierr = VecLockPop(U);CHKERRQ(ierr);
+  }
+
+  /* Cache current time and event residual functions */
+  event->ptime_prev = t;
+  for (i=0; i<event->nevents; i++)
+    event->fvalue_prev[i] = event->fvalue[i];
 
   /* Record the event in the event recorder */
   ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
@@ -372,7 +378,9 @@ PetscErrorCode TSEventHandler(TS ts)
     event->ptime_end = t;
   }
 
+  ierr = VecLockPush(U);CHKERRQ(ierr);
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
+  ierr = VecLockPop(U);CHKERRQ(ierr);
 
   for (i=0; i < event->nevents; i++) {
     if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
