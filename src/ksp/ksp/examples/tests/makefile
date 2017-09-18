@@ -5,7 +5,7 @@ CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
-                ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
+                ex15.c ex17.c ex18.c ex19.c ex20.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c
@@ -422,25 +422,6 @@ runex20:
 	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
 
-runex21:
-	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1; \
-	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex21_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex21_1.tmp
-
-runex21_2:
-	-@${MPIEXEC} -n 2 ./ex21 > ex21_2.tmp 2>&1; \
-	   if (${DIFF} output/ex21_2.out ex21_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex21_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex21_2.tmp
-
-
-runex21_3:
-	-@${MPIEXEC} -n 3 ./ex21 > ex21_3.tmp 2>&1; \
-	   if (${DIFF} output/ex21_3.out ex21_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex21_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex21_3.tmp
-
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22  > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || printf "${PWD}\nPossible problem with ex22, diffs above\n=========================================\n"; \
@@ -795,12 +776,12 @@ runex32_cholmod:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dm_mat_type aij -pc_factor_mat_solver_package cholmod -ksp_monitor_short -pc_type cholesky -ksp_view > ex32.tmp 2>&1;\
 	if (${DIFF} output/ex32_cholmod.out ex32.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex32_cholmod, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex32.tmp; 
+	   ${RM} -f ex32.tmp;
 runex32_cholmod_seqsbaij:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dm_mat_type sbaij -pc_factor_mat_solver_package cholmod -ksp_monitor_short -pc_type cholesky -ksp_view > ex32.tmp 2>&1;\
 	if (${DIFF} output/ex32_cholmod_sbaij.out ex32.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex32_cholmod_seqsbai, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex32.tmp; 
+	   ${RM} -f ex32.tmp;
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \

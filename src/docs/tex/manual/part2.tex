@@ -3592,8 +3592,10 @@ The problem with the last approach is that $\hat S$ is used in unassembled, matr
 such matrices. Instead, you can \emph{assemble}  an approximation to $\hat S$ by inverting $A_{00}$, but only approximately, so as to ensure the sparsity of $\hat Sp$ as much as possible.
 Specifically, using \trl{-pc_fieldsplit_schur_precondition selfp} will assemble $\hat Sp = A_{11} - A_{10} \text{inv}(A_{00}) A_{01}$.
 
-By default $\text{inv}(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will lump $A_{00}$ first.  Option \trl{-mat_schur_complement_ainv_type}
-applies to any matrix of \lstinline{MatSchurComplement} type and here it is used with the prefix \trl{-fieldsplit_1} of the linear system in the second split.
+By default $\text{inv}(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will
+lump $A_{00}$ first. Using \trl{-fieldsplit_1_mat_schur_complement_ainv_type blockdiag} will use the inverse of the block diagonal of $A_{00}$.
+Option \trl{-mat_schur_complement_ainv_type} applies to any matrix of \lstinline{MatSchurComplement} type and here it is used with the prefix
+\trl{-fieldsplit_1} of the linear system in the second split.
 
 Finally, you can use the \lstinline{PCLSC} preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[

@@ -8834,7 +8834,7 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
    Use MatFactorGetSchurComplement() to get access to the Schur complement matrix inside the factored matrix instead of making a copy of it (which this function does)
 
    Developer Notes: The reason this routine exists is because the representation of the Schur complement within the factor matrix may be different than a standard PETSc
-   matrix representation and we normally do not want to use the time or memory to make a copy as a regular PETSc matrix. 
+   matrix representation and we normally do not want to use the time or memory to make a copy as a regular PETSc matrix.
 
    See MatCreateSchurComplement() or MatGetSchurComplement() for ways to create virtual or approximate Schur complements.
 
@@ -10292,6 +10292,8 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
    This routine is not available from Fortran.
 
   Level: advanced
+
+.seealso: MatInvertBockDiagonalMat
 @*/
 PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
@@ -10303,6 +10305,50 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->invertblockdiagonal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported");
   ierr = (*mat->ops->invertblockdiagonal)(mat,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  MatInvertBlockDiagonalMat - Matrix with inverted block diagonal
+
+  Collective on Mat
+
+  Input Parameters:
+. A - the matrix
+
+  Output Parameters:
+. C - matrix with inverted block diagonal of A
+
+  Level: advanced
+
+.seealso: MatInvertBockDiagonal
+@*/
+PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat *C)
+{
+  PetscErrorCode     ierr;
+  const PetscScalar *vals;
+  PetscInt          *dnnz;
+  PetscInt           M,N,m,n,rstart,rend,bs,i,j;
+
+  PetscFunctionBegin;
+  ierr = MatInvertBlockDiagonal(A,&vals);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatSetSizes(*C,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*C,bs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m/bs,&dnnz);CHKERRQ(ierr);
+  for(j = 0; j < m/bs; j++) {
+      dnnz[j] = 1;
+  }
+  ierr = MatXAIJSetPreallocation(*C,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscFree(dnnz);
+  ierr = MatGetOwnershipRange(*C,&rstart,&rend);CHKERRQ(ierr);
+  for (i = rstart/bs; i < rend/bs; i++) {
+    ierr = MatSetValuesBlocked(*C,1,&i,1,&i,&vals[(i-rstart/bs)*bs*bs],INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
