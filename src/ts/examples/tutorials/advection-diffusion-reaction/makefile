@@ -120,37 +120,37 @@ runex5adj_knl:
 runex5adj_ell:
 	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type none > ex5adj_ell_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_1.out ex5adj_ell_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_1.tmp
 
 runex5adj_ell2:
 	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor > ex5adj_ell_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_2.out ex5adj_ell_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_2.tmp
 
 runex5adj_ell3:
 	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi > ex5adj_ell_3.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_3.out ex5adj_ell_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_3.tmp
 
 runex5adj_ell4:
 	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi > ex5adj_ell_4.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_4.out ex5adj_ell_4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_4.tmp
 
 runex5adj_ell5:
 	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -aijpc > ex5adj_ell_5.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_5.out ex5adj_ell_5.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_5.tmp
 
 runex5adj_ell6:
 	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -dm_mat_type ell -pc_type jacobi > ex5adj_ell_6.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_ell_6.out ex5adj_ell_6.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5adj, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell6, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5adj_ell_6.tmp
 
 runex6:

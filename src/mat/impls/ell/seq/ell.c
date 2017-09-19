@@ -93,7 +93,7 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
 
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-
+  
   if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 5;
   if (maxallocrow < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"maxallocrow cannot be less than 0: value %D",maxallocrow);
   if (rlen) {
@@ -111,10 +111,7 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
   if (!skipallocation) {
     if (B->rmap->n & 0x07) PetscInfo1(B,"Padding rows to the SEQELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);
 
-    if (!b->rlen) {
-      /* sliidx gives the starting index of each slice, the last element is the total space allocated */
-      ierr = PetscMalloc1(B->rmap->n,&b->rlen);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory((PetscObject)B,B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    if (!b->sliidx) { /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       ierr = PetscMalloc1(totalslices+1,&b->sliidx);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)B,(totalslices+1)*sizeof(PetscInt));CHKERRQ(ierr);
     }
@@ -139,16 +136,18 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
       maxallocrow = PetscMax(b->sliidx[totalslices],maxallocrow);
       b->sliidx[totalslices] = b->sliidx[totalslices-1] + 8*b->sliidx[totalslices];
     }
-    /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
-    for (i=0; i<B->rmap->n; i++) b->rlen[i] = 0;
 
-    /* allocate space for val, colidx and bt */
+    /* allocate space for val, colidx, rlen, and bt */
     /* FIXME: should B's old memory be unlogged? */
     ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx,&b->bt);CHKERRQ(ierr);
     /* FIXME: assuming an element of the bit array takes 8 bits */
     ierr = PetscMalloc3(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx,b->sliidx[totalslices]/8,&b->bt);CHKERRQ(ierr);
     ierr = PetscMemzero(b->bt,b->sliidx[totalslices]/8);CHKERRQ(ierr); /* must set to zero */
     ierr = PetscLogObjectMemory((PetscObject)B,b->sliidx[totalslices]*(sizeof(PetscScalar)+sizeof(PetscInt))+b->sliidx[totalslices]/4);CHKERRQ(ierr);
+    /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
+    ierr = PetscCalloc1(8*totalslices,&b->rlen);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)B,8*totalslices*sizeof(PetscInt));CHKERRQ(ierr);
+
     b->singlemalloc = PETSC_TRUE;
     b->free_val     = PETSC_TRUE;
     b->free_colidx  = PETSC_TRUE;
@@ -1195,7 +1194,7 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
       row  = 8*i + row_in_slice;
       nrow = a->rlen[row]; /* number of nonzeros in row */
       if (nrow>0) { /* nonempty row */
-        lastcol = cp[8*(nrow-1)+row_in_slice]; /* use the index from the previous column */
+        lastcol = cp[8*(nrow-1)+row_in_slice]; /* use the index from the last nonzero at current row */
       } else if (!row_in_slice) { /* first row of the currect slice is empty */
         /*
           Search for the nearest nonzero. Normally setting the index to zero may cause extra communication.
