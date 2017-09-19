@@ -1198,7 +1198,7 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
       nrow  = a->rlen[row]; /* number of nonzeros in row */
       lastcol = (nrow > 0) ? cp[8*(nrow-1) + row_in_slice] : 0;
 
-      for (k=nrow; k<a->maxallocrow; ++k) {
+      for (k=nrow; k<(a->sliidx[i+1]-shift)/8; ++k) {
         cp[8*k + row_in_slice] = lastcol;
         vp[8*k + row_in_slice] = (MatScalar)0;
       }
