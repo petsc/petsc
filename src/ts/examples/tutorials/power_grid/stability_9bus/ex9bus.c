@@ -151,12 +151,13 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 #define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
-  PetscErrorCode ierr;
-  Userctx        *user;
-  Vec            X;
-  PetscScalar    *x,*mat;
-  PetscInt       idx;
-  PetscReal      t;
+  PetscErrorCode    ierr;
+  Userctx           *user;
+  Vec               X;
+  const PetscScalar *x;
+  PetscScalar       *mat;
+  PetscInt          idx;
+  PetscReal         t;
 
   PetscFunctionBegin;
   ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
@@ -164,11 +165,11 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
   idx      = user->stepnum*(user->neqs_pgrid+1);
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
   ierr     = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;
   PetscFunctionReturn(0);
 }
@@ -931,7 +932,7 @@ int main(int argc,char **argv)
     for(k=0; k < 7*ngen; k++) vatoli[idx[k]] = 1e-2;
     ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
   }
-  
+
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);

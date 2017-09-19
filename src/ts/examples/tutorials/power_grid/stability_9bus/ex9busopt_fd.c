@@ -1018,7 +1018,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
 
   ctx->alg_flg = PETSC_FALSE;
   /* Prefault period */
