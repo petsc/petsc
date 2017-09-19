@@ -1174,7 +1174,7 @@ PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
 PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
-  PetscInt       totalslices,i,shift,row_in_slice,row,nrow,*cp,lastcol,k;
+  PetscInt       totalslices,i,shift,row_in_slice,row,nrow,*cp,lastcol,j,k;
   MatScalar      *vp;
   PetscErrorCode ierr;
 
@@ -1192,11 +1192,29 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
     cp    = a->colidx+shift; /* pointer to the column indices of the slice */
     vp    = a->val+shift;    /* pointer to the nonzero values of the slice */
 
-    for (row_in_slice=0; row_in_slice<8; ++row_in_slice) { /* loop over added columns */
+    for (row_in_slice=0; row_in_slice<8; ++row_in_slice) { /* loop over rows in the slice */
       row = 8*i + row_in_slice;
-      if (row >= A->rmap->n) continue;  /* do not touch padded rows, because no vectorization is used for these */
       nrow  = a->rlen[row]; /* number of nonzeros in row */
-      lastcol = (nrow > 0) ? cp[8*(nrow-1) + row_in_slice] : 0;
+      if (nrow>0) {
+        lastcol = cp[8*(nrow-1)+row_in_slice];
+      } else { /* empty row */
+        if (!row_in_slice) { /* first row of the currect slice is empty */
+          lastcol = 0;
+          /*
+            Search for the nearest nonzero. Normally setting the index to zero may cause
+            extra communication. But if all the rows in the current slice are empty,
+            it is fine to use 0 since the index will not be loaded
+          */
+          for (j=1;j<8;j++) { /* search for the nearest nonzero */
+            if (a->rlen[8*i+j]) {
+              lastcol = cp[j];
+              break;
+            }
+          }
+        } else {
+          lastcol = cp[row_in_slice-1]; /* use the index from the previous row */
+        }
+      }
 
       for (k=nrow; k<(a->sliidx[i+1]-shift)/8; ++k) {
         cp[8*k + row_in_slice] = lastcol;
