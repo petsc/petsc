@@ -98,7 +98,7 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
 
 
 /*@
-  Compute_Lagrange_Basis_1D_Internal: Evaluate bases and derivatives at quadrature points for a EDGE2 or EDGE3 element.
+  Compute_Lagrange_Basis_1D_Internal - Evaluate bases and derivatives at quadrature points for a EDGE2 or EDGE3 element.
 
   The routine is given the coordinates of the vertices of a linear or quadratic edge element.
 
@@ -229,7 +229,7 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const
 
 
 /*@
-  Compute_Lagrange_Basis_2D_Internal: Evaluate bases and derivatives at quadrature points for a QUAD4 or TRI3 element.
+  Compute_Lagrange_Basis_2D_Internal - Evaluate bases and derivatives at quadrature points for a QUAD4 or TRI3 element.
 
   The routine is given the coordinates of the vertices of a quadrangle or triangle.
 
@@ -403,7 +403,7 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
 
 
 /*@
-  Compute_Lagrange_Basis_3D_Internal: Evaluate bases and derivatives at quadrature points for a HEX8 or TET4 element.
+  Compute_Lagrange_Basis_3D_Internal - Evaluate bases and derivatives at quadrature points for a HEX8 or TET4 element.
 
   The routine is given the coordinates of the vertices of a hexahedra or tetrahedra.
 
@@ -672,7 +672,7 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
 
 
 /*@
-  DMMoabFEMComputeBasis: Evaluate bases and derivatives at quadrature points for a linear EDGE/QUAD/TRI/HEX/TET element.
+  DMMoabFEMComputeBasis - Evaluate bases and derivatives at quadrature points for a linear EDGE/QUAD/TRI/HEX/TET element.
 
   The routine takes the coordinates of the vertices of an element and computes basis functions associated with
   each quadrature point provided, and their derivatives with respect to X, Y and Z as appropriate.
@@ -746,7 +746,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 
 
 /*@
-  DMMoabFEMCreateQuadratureDefault: Create default quadrature rules for integration over an element with a given
+  DMMoabFEMCreateQuadratureDefault - Create default quadrature rules for integration over an element with a given
   dimension and polynomial order (deciphered from number of element vertices).
 
   Input Parameter:
@@ -1045,7 +1045,7 @@ PetscErrorCode FEMComputeBasis_JandF ( const PetscInt dim, const PetscInt nverts
 
 
 /*@
-  DMMoabPToRMapping: Compute the mapping from the physical coordinate system for a given element to the 
+  DMMoabPToRMapping - Compute the mapping from the physical coordinate system for a given element to the
   canonical reference element. In addition to finding the inverse mapping evaluation through Newton iteration,
   the basis function at the parametric point is also evaluated optionally.
 

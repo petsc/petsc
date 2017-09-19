@@ -1503,7 +1503,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->view                            = DMView_Moab;
-  dm->ops->load                            = NULL /*DMLoad_Moab*/;
+  dm->ops->load                            = NULL /* DMLoad_Moab */;
   dm->ops->setfromoptions                  = DMSetFromOptions_Moab;
   dm->ops->clone                           = DMClone_Moab;
   dm->ops->setup                           = DMSetUp_Moab;
@@ -1513,12 +1513,12 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->createlocalvector               = DMCreateLocalVector_Moab;
   dm->ops->getlocaltoglobalmapping         = NULL;
   dm->ops->createfieldis                   = NULL;
-  dm->ops->createcoordinatedm              = NULL /*DMCreateCoordinateDM_Moab*/;
+  dm->ops->createcoordinatedm              = NULL /* DMCreateCoordinateDM_Moab */;
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Moab;
   dm->ops->createinterpolation             = DMCreateInterpolation_Moab;
   dm->ops->getaggregates                   = NULL;
-  dm->ops->getinjection                    = NULL /*DMCreateInjection_Moab*/;
+  dm->ops->getinjection                    = NULL /* DMCreateInjection_Moab */;
   dm->ops->refine                          = DMRefine_Moab;
   dm->ops->coarsen                         = DMCoarsen_Moab;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Moab;
@@ -1528,9 +1528,9 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->localtoglobalbegin              = DMLocalToGlobalBegin_Moab;
   dm->ops->localtoglobalend                = DMLocalToGlobalEnd_Moab;
   dm->ops->destroy                         = DMDestroy_Moab;
-  dm->ops->createsubdm                     = NULL /*DMCreateSubDM_Moab*/;
-  dm->ops->getdimpoints                    = NULL /*DMGetDimPoints_Moab*/;
-  dm->ops->locatepoints                    = NULL /*DMLocatePoints_Moab*/;
+  dm->ops->createsubdm                     = NULL /* DMCreateSubDM_Moab */;
+  dm->ops->getdimpoints                    = NULL /* DMGetDimPoints_Moab */;
+  dm->ops->locatepoints                    = NULL /* DMLocatePoints_Moab */;
   PetscFunctionReturn(0);
 }
 
