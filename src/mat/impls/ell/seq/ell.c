@@ -1191,40 +1191,36 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
     shift = a->sliidx[i];    /* starting index of the slice */
     cp    = a->colidx+shift; /* pointer to the column indices of the slice */
     vp    = a->val+shift;    /* pointer to the nonzero values of the slice */
-
     for (row_in_slice=0; row_in_slice<8; ++row_in_slice) { /* loop over rows in the slice */
-      row = 8*i + row_in_slice;
-      nrow  = a->rlen[row]; /* number of nonzeros in row */
-      if (nrow>0) {
-        lastcol = cp[8*(nrow-1)+row_in_slice];
-      } else { /* empty row */
-        if (!row_in_slice) { /* first row of the currect slice is empty */
-          lastcol = 0;
-          /*
-            Search for the nearest nonzero. Normally setting the index to zero may cause
-            extra communication. But if all the rows in the current slice are empty,
-            it is fine to use 0 since the index will not be loaded
-          */
-          for (j=1;j<8;j++) { /* search for the nearest nonzero */
-            if (a->rlen[8*i+j]) {
-              lastcol = cp[j];
-              break;
-            }
+      row  = 8*i + row_in_slice;
+      nrow = a->rlen[row]; /* number of nonzeros in row */
+      if (nrow>0) { /* nonempty row */
+        lastcol = cp[8*(nrow-1)+row_in_slice]; /* use the index from the previous column */
+      } else if (!row_in_slice) { /* first row of the currect slice is empty */
+        /*
+          Search for the nearest nonzero. Normally setting the index to zero may cause extra communication.
+          But if the entire slice are empty, it is fine to use 0 since the index will not be loaded.
+        */
+        lastcol = 0;
+        for (j=1;j<8;j++) {
+          if (a->rlen[8*i+j]) {
+            lastcol = cp[j];
+            break;
           }
-        } else {
-          lastcol = cp[row_in_slice-1]; /* use the index from the previous row */
         }
+      } else {
+        lastcol = cp[row_in_slice-1]; /* use the index from the previous row */
       }
 
       for (k=nrow; k<(a->sliidx[i+1]-shift)/8; ++k) {
-        cp[8*k + row_in_slice] = lastcol;
-        vp[8*k + row_in_slice] = (MatScalar)0;
+        cp[8*k+row_in_slice] = lastcol;
+        vp[8*k+row_in_slice] = (MatScalar)0;
       }
     }
   }
 
-  A->info.mallocs    += a->reallocs;
-  a->reallocs         = 0;
+  A->info.mallocs += a->reallocs;
+  a->reallocs      = 0;
 
   ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
