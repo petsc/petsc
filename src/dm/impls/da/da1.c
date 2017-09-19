@@ -265,7 +265,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   }
 
   ierr = ISCreateBlock(comm,dof,nn-IXs+Xs,&idx[IXs-Xs],PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
+  ierr = VecScatterCreateMPI1(global,from,local,to,&gtol);CHKERRQ(ierr); /* src/ts/examples/tutorials/runex10_3 needs MPI1 here? */
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
