@@ -412,6 +412,7 @@ struct _p_Mat {
   MatFactorError         factorerrortype;               /* type of error in factorization */
   PetscReal              factorerror_zeropivot_value;   /* If numerical zero pivot was detected this is the computed value */
   PetscInt               factorerror_zeropivot_row;     /* Row where zero pivot was detected */
+  PetscBool              mpi1; /* Mvctx user MPI1 */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

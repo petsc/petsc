@@ -2354,7 +2354,7 @@ PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt nx,const PetscInt *inidx,Petsc
       to->procs[i]    = onodes1[i];
       values = rsvalues;
       rsvalues += olengths1[i];
-      for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base; //to->indices[0] ???
+      for (j=0; j<olengths1[i]; j++) to->indices[to->starts[i] + j] = values[j] - base;
     }
   }
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
