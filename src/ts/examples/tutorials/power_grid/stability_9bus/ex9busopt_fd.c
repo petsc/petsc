@@ -994,7 +994,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetMaxTime(ts,ctx->tmax);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  /* ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr); */
 
   /* Prefault period */
   ctx->alg_flg = PETSC_FALSE;
