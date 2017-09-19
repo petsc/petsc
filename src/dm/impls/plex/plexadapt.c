@@ -358,6 +358,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
 */
 PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *dmNew)
 {
+#ifdef PETSC_HAVE_PRAGMATIC
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
 #if 0
@@ -377,7 +378,6 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, numLocVertices, v;
   PetscInt           off, maxConeSize, numBdFaces, f, bdSize;
   PetscBool          flg;
-#ifdef PETSC_HAVE_PRAGMATIC
   DMLabel            bdLabelNew;
   double            *coordsNew;
   PetscInt          *bdTags;
@@ -385,7 +385,6 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   PetscInt          *cellsNew;
   PetscInt           d, numCellsNew, numVerticesNew;
   PetscInt           numCornersNew, fStart, fEnd;
-#endif
   PetscMPIInt        numProcs;
   PetscErrorCode     ierr;
 
@@ -483,7 +482,6 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
 #endif
   /* Create new mesh */
-#ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
     pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm);break;
@@ -548,8 +546,10 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
   ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
   ierr = PetscFree(coordsNew);CHKERRQ(ierr);
   pragmatic_finalize();
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
-#endif
   PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+#endif
 }

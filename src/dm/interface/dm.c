@@ -6126,7 +6126,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   PetscValidPointer(label,2);
   PetscValidPointer(dmAdapt,3);
   *dmAdapt = NULL;
-  if (!dm->ops->adaptlabel) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMAdaptLabel",((PetscObject)dm)->type_name);
+  if (!dm->ops->adaptlabel) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMAdaptLabel",((PetscObject)dm)->type_name);
   ierr = (dm->ops->adaptlabel)(dm, label, dmAdapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -6137,7 +6137,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
   Input Parameters:
 + dm - The DM object
 . metric - The metric to which the mesh is adapted, defined vertex-wise.
-- bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "boundary".
+- bdLabel - Label for boundary tags, which will be preserved in the output mesh. bdLabel should be NULL if there is no such label, and should be different from "_boundary_".
 
   Output Parameter:
 . dmAdapt  - Pointer to the DM object containing the adapted mesh
@@ -6157,7 +6157,8 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DM *dmAdapt)
   PetscValidHeaderSpecific(metric, VEC_CLASSID, 2);
   if (bdLabel) PetscValidPointer(bdLabel, 3);
   PetscValidPointer(dmAdapt, 4);
-  if (!dm->ops->adaptlabel) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMAdaptLabel",((PetscObject)dm)->type_name);
+  *dmAdapt = NULL;
+  if (!dm->ops->adaptmetric) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMAdaptMetric",((PetscObject)dm)->type_name);
   ierr = (dm->ops->adaptmetric)(dm, metric, bdLabel, dmAdapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
