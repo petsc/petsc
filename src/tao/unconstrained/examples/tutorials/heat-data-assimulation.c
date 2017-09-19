@@ -99,8 +99,6 @@ extern PetscErrorCode RHSAdjointgllDM(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode Objective(PetscReal,Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
@@ -263,8 +261,6 @@ int main(int argc,char **argv)
     return ierr;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time.
 
@@ -306,8 +302,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Objective"
 /*
    Sets the profile at end time
 
@@ -355,8 +349,6 @@ PetscErrorCode Objective(PetscReal t,Vec obj,AppCtx *appctx)
 
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSMatrixHeatgllDM"
 
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
@@ -422,8 +414,6 @@ PetscErrorCode RHSMatrixHeatgllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx
 }
 
 /* ------------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
    FormFunctionGradient - Evaluates the function and corresponding gradient.
 

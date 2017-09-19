@@ -613,8 +613,6 @@ PetscErrorCode DMMoabGetDimension(DM dm, PetscInt *dim)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetHierarchyLevel"
 /*@
   DMMoabGetHierarchyLevel - Get the current level of the mesh hierarchy
   generated through uniform refinement.
@@ -640,8 +638,6 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetMaterialBlock"
 /*@
   DMMoabGetMaterialBlock - Get the material ID corresponding to the current entity of the DM Mesh
 
@@ -992,8 +988,6 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Moab"
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptionsObject, DM dm)
 {
   PetscErrorCode ierr;
@@ -1289,8 +1283,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateVertices"
 /*@
   DMMoabCreateVertices - Creates and adds several vertices to the primary set represented by the DM.
 
@@ -1332,8 +1324,6 @@ PetscErrorCode DMMoabCreateVertices(DM dm, const PetscReal* coords, PetscInt nve
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateElement"
 /*@
   DMMoabCreateElement - Adds an element of specified type to the primary set represented by the DM.
 
@@ -1375,8 +1365,6 @@ PetscErrorCode DMMoabCreateElement(DM dm, const moab::EntityType type, const moa
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateSubmesh"
 /*@
   DMMoabCreateSubmesh - Creates a sub-DM object with a set that contains all vertices/elements of the parent
   in addition to providing support for dynamic mesh modifications. This is useful for AMR calculations to
@@ -1430,8 +1418,6 @@ PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabView_Ascii"
 PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Moab          *dmmoab = (DM_Moab*)(dm)->data;
@@ -1474,22 +1460,16 @@ PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabView_VTK"
 PETSC_EXTERN PetscErrorCode DMMoabView_VTK(DM dm, PetscViewer v)
 {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabView_HDF5"
 PETSC_EXTERN PetscErrorCode DMMoabView_HDF5(DM dm, PetscViewer v)
 {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Moab"
 PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
 {
   PetscBool      iascii, ishdf5, isvtk;
@@ -1519,8 +1499,6 @@ PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInitialize_Moab"
 PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
 {
   PetscFunctionBegin;
@@ -1557,8 +1535,6 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone_Moab"
 PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
 {
   PetscErrorCode     ierr;
@@ -1575,8 +1551,6 @@ PETSC_EXTERN PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Moab"
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
 {
   PetscErrorCode ierr;

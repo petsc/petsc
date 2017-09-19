@@ -1437,8 +1437,6 @@ PETSC_STATIC_INLINE PetscReal DotReal(PetscInt dim, const PetscReal x[], const P
   return prod;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSphereMesh"
 /*@
   DMPlexCreateSphereMesh - Creates a mesh on the d-dimensional sphere, S^d.
 

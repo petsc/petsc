@@ -95,8 +95,6 @@ static PetscErrorCode ComputeRHS_MOAB(KSP, Vec, void*);
 static PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user);
 static PetscErrorCode InitializeOptions(UserContext* user);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   const char    *fields[1] = {"T-Variable"};
@@ -221,8 +219,6 @@ int main(int argc, char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeDiffusionCoefficient"
 PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
@@ -239,8 +235,6 @@ PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeReactionCoefficient"
 PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
@@ -257,8 +251,6 @@ PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext* user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho_MOAB"
 double ExactSolution(PetscReal coords[3], UserContext* user)
 {
   if (user->problem == 2) {
@@ -279,8 +271,6 @@ PetscReal exact_solution(PetscReal x, PetscReal y, PetscReal z)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho_MOAB"
 double ForcingFunction(PetscReal coords[3], UserContext* user)
 {
   const PetscReal exact = ExactSolution(coords, user);
@@ -295,8 +285,6 @@ double ForcingFunction(PetscReal coords[3], UserContext* user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS_MOAB"
 PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
@@ -397,8 +385,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix_MOAB"
 PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
@@ -512,8 +498,6 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeDiscreteL2Error"
 PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 {
   DM                dm;
@@ -577,8 +561,6 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "InitializeOptions"
 PetscErrorCode InitializeOptions(UserContext* user)
 {
   const char     *bcTypes[2] = {"dirichlet", "neumann"};

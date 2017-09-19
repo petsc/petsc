@@ -198,8 +198,6 @@ int main(int argc,char **argv)
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
@@ -253,8 +251,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   UserCtx           user = (UserCtx)ptr;
@@ -295,8 +291,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   UserCtx         user = (UserCtx)ctx;
@@ -362,8 +356,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   UserCtx           user = (UserCtx)ctx;

@@ -441,8 +441,6 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetDofsLocal"
 /*@C
   DMMoabGetDofsLocal - Gets the local degree-of-freedom for all fields (components) defined on an
   array of MOAB EntityHandles.

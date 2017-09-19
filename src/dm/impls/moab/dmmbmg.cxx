@@ -3,8 +3,6 @@
 #include <MBTagConventions.hpp>
 #include <moab/NestedRefine.hpp>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGenerateHierarchy"
 /*@
   DMMoabGenerateHierarchy - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
@@ -83,8 +81,6 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHierarchy_Moab"
 /*@
   DMRefineHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively refining a coarse mesh.
@@ -116,8 +112,6 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHierarchy_Moab"
 /*@
   DMCoarsenHierarchy_Moab - Generate a multi-level DM hierarchy
   by succesively coarsening a refined mesh.
@@ -151,8 +145,6 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_Moab"
 /*@
   DMCreateInterpolation_Moab - Generate the interpolation operators to transform
   operators (matrices, vectors) from parent level to child level as defined by
@@ -396,8 +388,6 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_Moab"
 /*@
   DMCreateInjection_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
@@ -430,8 +420,6 @@ PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter* c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DM_UMR_Moab_Private"
 PetscErrorCode  DM_UMR_Moab_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
 {
   PetscErrorCode  ierr;
@@ -521,8 +509,6 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Moab"
 /*@
   DMRefine_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object
@@ -554,8 +540,6 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Moab"
 /*@
   DMCoarsen_Moab - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the DM object

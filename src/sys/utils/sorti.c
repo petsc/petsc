@@ -179,8 +179,6 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFindMPIInt"
 /*@
   PetscFindMPIInt - Finds MPI integer in a sorted array of integers
 

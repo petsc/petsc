@@ -26,8 +26,6 @@ typedef struct {
 } DMMoabMeshGeneratorCtx;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetTensorElementConnectivity_Private"
 PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, PetscInt offset, PetscInt corner, std::vector<PetscInt>& subent_conn, moab::EntityHandle *connectivity)
 {
   switch (genCtx.dim) {
@@ -63,8 +61,6 @@ PetscInt DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx& gen
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetSimplexElementConnectivity_Private"
 PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, PetscInt subelem, PetscInt offset, PetscInt corner, std::vector<PetscInt>& subent_conn, moab::EntityHandle *connectivity)
 {
   PetscInt A, B, C, D, E, F, G, H, M;
@@ -187,8 +183,6 @@ PetscInt DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& ge
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
 std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, PetscInt offset, PetscInt corner, moab::EntityHandle *connectivity)
 {
   PetscInt vcount = 0;
@@ -211,8 +205,6 @@ std::pair<PetscInt, PetscInt> DMMoab_SetElementConnectivity_Private(DMMoabMeshGe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_GenerateVertices_Private"
 PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx& genCtx, PetscInt m, PetscInt n, PetscInt k,
     PetscInt a, PetscInt b, PetscInt c, moab::Tag& global_id_tag, moab::EntityHandle& startv, moab::Range& uverts)
 {
@@ -268,8 +260,6 @@ PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::Re
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_GenerateElements_Private"
 PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::ReadUtilIface* iface, DMMoabMeshGeneratorCtx& genCtx, PetscInt m, PetscInt n, PetscInt k,
     PetscInt a, PetscInt b, PetscInt c, moab::Tag& global_id_tag, moab::EntityHandle startv, moab::Range& cells)
 {
@@ -356,8 +346,6 @@ PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::Re
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMBUtil_InitializeOptions"
 PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal* bounds, PetscInt nelems)
 {
   PetscFunctionBegin;
@@ -772,8 +760,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_GetReadOptions_Private"
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, PetscInt nghost, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
   char           *ropts;
@@ -906,8 +892,6 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm, PetscInt dim, PetscInt nghost, 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabRenumberMeshEntities"
 /*@
   DMMoabRenumberMeshEntities - Order and number all entities (vertices->elements) to be contiguously ordered
   in parallel

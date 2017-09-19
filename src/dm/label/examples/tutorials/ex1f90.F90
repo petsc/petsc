@@ -27,8 +27,6 @@ program  ex1f90
   call PetscFinalize(ierr)
 
 contains
-#undef __FUNCT__
-#define __FUNCT__ "viewLabels"
   subroutine ViewLabels(dm,viewer,ierr)
     type(tDM)                        :: dm
     type(tPetscViewer)               :: viewer

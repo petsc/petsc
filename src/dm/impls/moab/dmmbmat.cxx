@@ -7,8 +7,6 @@
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscBool);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Moab"
 PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 {
   PetscErrorCode  ierr;
@@ -64,8 +62,6 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_Compute_NNZ_From_Connectivity"
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt* innz, PetscInt* nnz, PetscInt* ionz, PetscInt* onz, PetscBool isbaij)
 {
   PetscInt        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
@@ -192,8 +188,6 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetBlockFills_Private"
 static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill)
 {
   PetscErrorCode ierr;

@@ -111,8 +111,6 @@ static PetscErrorCode ComputeRHS(KSP, Vec, void*);
 static PetscErrorCode ComputeDiscreteL2Error(KSP, Vec, UserContext*);
 static PetscErrorCode InitializeOptions(UserContext*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   KSP             ksp;
@@ -234,8 +232,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeDiffusionCoefficient"
 PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 {
   switch (user->problem) {
@@ -253,8 +249,6 @@ PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
 PetscScalar ExactSolution(PetscReal coords[3], UserContext* user)
 {
   switch (user->problem) {
@@ -267,8 +261,6 @@ PetscScalar ExactSolution(PetscReal coords[3], UserContext* user)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeForcingFunction"
 PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
 {
   switch (user->problem) {
@@ -287,8 +279,6 @@ PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
 #define BCHECKEPS 1e-10
 #define BCHECK(coordxyz,truetrace) ((coordxyz < truetrace+BCHECKEPS && coordxyz > truetrace-BCHECKEPS))
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateStrongDirichletCondition"
 PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext* user)
 {
   switch (user->problem) {
@@ -305,8 +295,6 @@ PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext* u
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
@@ -414,8 +402,6 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
@@ -531,8 +517,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeDiscreteL2Error"
 PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
 {
   DM                dm;
@@ -600,8 +584,6 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitializeOptions"
 PetscErrorCode InitializeOptions(UserContext* user)
 {
   const char     *bcTypes[2] = {"dirichlet", "neumann"};
