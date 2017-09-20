@@ -641,7 +641,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
 
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
+  /* src/snes/examples/tutorials/runex19_9 */
+  ierr = VecScatterCreateMPI1(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
