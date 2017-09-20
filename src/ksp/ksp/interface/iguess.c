@@ -73,7 +73,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
-  if (*guess->ops->setfromoptions) { ierr = (*guess->ops->setfromoptions)(guess);CHKERRQ(ierr); }
+  if (guess->ops->setfromoptions) { ierr = (*guess->ops->setfromoptions)(guess);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +271,7 @@ PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (*guess->ops->update) { ierr = (*guess->ops->update)(guess,rhs,sol);CHKERRQ(ierr); }
+  if (guess->ops->update) { ierr = (*guess->ops->update)(guess,rhs,sol);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -299,7 +299,7 @@ PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
-  if (*guess->ops->formguess) { ierr = (*guess->ops->formguess)(guess,rhs,sol);CHKERRQ(ierr); }
+  if (guess->ops->formguess) { ierr = (*guess->ops->formguess)(guess,rhs,sol);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -338,6 +338,6 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
   } else {
     ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);
   }
-  if (*guess->ops->setup) { ierr = (*guess->ops->setup)(guess);CHKERRQ(ierr); }
+  if (guess->ops->setup) { ierr = (*guess->ops->setup)(guess);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
