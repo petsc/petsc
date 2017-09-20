@@ -63,11 +63,11 @@ contains
   end subroutine viewLabels
 end program ex1F90
 
-/*TEST
-
-  test:
-    suffix: 0
-    args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate
-    requires: exodusii
-
-TEST*/
+!/*TEST
+!
+!  test:
+!    suffix: 0
+!    args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate
+!    requires: exodusii
+!
+!TEST*/

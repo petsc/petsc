@@ -96,7 +96,7 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   f0[0] = 0.0;
-  f0[1] = -PetscSinReal(a[1]*PETSC_PI*x[1])*PetscCosReal(a[0]*PETSC_PI*x[0]);
+  f0[1] = -PetscSinScalar(a[1]*PETSC_PI*x[1])*PetscCosScalar(a[0]*PETSC_PI*x[0]);
 }
 
 static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
