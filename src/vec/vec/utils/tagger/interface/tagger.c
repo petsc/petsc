@@ -471,7 +471,7 @@ PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is)
         }
         if (b == bs) break;
       }
-      if ((k < numBoxes) ^ invert) {
+      if ((PetscBool)(k < numBoxes) ^ invert) {
         if (!i) numTagged++;
         else    tagged[offset++] = j;
       }

@@ -3868,22 +3868,6 @@ M*/
 .seealso: MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL, MATSEQAIJCRL, MATMPIAIJCRL
 M*/
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
-#if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
-#endif
-#if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A,MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
-#endif
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat,MatType,MatReuse,Mat*);
-
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
-PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
-#endif
-
-
 /*@C
    MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
 
@@ -4578,7 +4562,7 @@ $     -mat_seqaij_type my_mat
 
   Level: advanced
 @*/
-PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(Mat,const MatType,MatReuse,Mat *))
+PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(Mat,MatType,MatReuse,Mat *))
 {
   PetscErrorCode ierr;
 
@@ -4588,15 +4572,6 @@ PetscErrorCode  MatSeqAIJRegister(const char sname[],PetscErrorCode (*function)(
 }
 
 PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
-
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,const MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
-#if defined(PETSC_HAVE_MKL)
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat,const MatType,MatReuse,Mat*);
-#endif
-#if defined(PETSC_HAVE_VIENNACL) && defined(PETSC_HAVE_VIENNACL_NO_CUDA)
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat,const MatType,MatReuse,Mat*);
-#endif
 
 /*@C
   MatSeqAIJRegisterAll - Registers all of the matrix subtypes of SeqAIJ
