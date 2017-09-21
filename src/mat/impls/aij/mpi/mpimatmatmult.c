@@ -953,8 +953,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ptap  = c->ptap;
   merge = ptap->merge;
 
-  /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
-  /*--------------------------------------------------------------*/
+  /* 2) compute numeric C_seq = P_loc^T*A_loc - dominating part */
+  /*------------------------------------------------------------*/
   /* get data from symbolic products */
   coi  = merge->coi; coj = merge->coj;
   ierr = PetscCalloc1(coi[pon]+1,&coa);CHKERRQ(ierr);
