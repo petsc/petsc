@@ -5,6 +5,7 @@ petsc-dist/.nagged
 petsc-dist/.hg
 petsc-dist/.hgignore
 petsc-dist/.hgtags
+petsc-dist/README.md
 petsc-dist/CMakeLists.txt
 petsc-dist/externalpackages
 petsc-dist/tmp

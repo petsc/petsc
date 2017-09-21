@@ -3,7 +3,7 @@
 
 ### What is this repository for? ###
 
-Host the PETSc numerical library package. http://www.mcs.anl.gov
+Host the PETSc numerical library package. http://www.mcs.anl.gov/petsc
 
 ### How do I get set up? ###
 
@@ -12,7 +12,7 @@ Host the PETSc numerical library package. http://www.mcs.anl.gov
 
 ### Contribution guidelines ###
 
-* See the file CONTRIBUTING 
+* See the file CONTRIBUTING
 * https://bitbucket.org/petsc/petsc/wiki/Home
 
 ### Who do I talk to? ###
