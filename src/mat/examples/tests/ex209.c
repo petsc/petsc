@@ -24,15 +24,20 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (!rank) printf("A is loaded...\n");
 
-  ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = A^T*A */
+  /* Compute C = A^T*A */
+  ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   if (!rank) printf("C = A^T*A is done...\n");
+  ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  if (!rank) printf("REUSE C = A^T*A is done...\n");
 
+  /* Compute At=A^T and AtA = At*A */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
   if (!rank) printf("At is done...\n");
   ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
   if (!rank) printf("AtA is done...\n");
 
-  ierr = MatEqual(C,AtA,&equal);CHKERRQ(ierr);
+  /* Compare C and AtA */
+  ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
 
   ierr = MatDestroy(&At);CHKERRQ(ierr);
