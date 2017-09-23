@@ -381,7 +381,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
      We should decide to have a single marker for these stuff
      Proposal: DMSetMaterialLabel?
   */
-  ierr = DMGetLabel(dm,"Cell sets",&label);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,"Cell Sets",&label);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nelements\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",cEnd-cStart-novl);CHKERRQ(ierr);
   for (p=cStart;p<cEnd;p++) {
