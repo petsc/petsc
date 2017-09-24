@@ -107,7 +107,7 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
 
   b = (Mat_SeqELL*)B->data;
 
-  totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   if (!skipallocation) {
     if (B->rmap->n & 0x07) PetscInfo1(B,"Padding rows to the SEQELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);
 
@@ -184,7 +184,7 @@ PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Ma
   ierr = MatSeqAIJSetPreallocation(B,0,a->rlen);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
 
-  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
       bflag = (PetscBool)(a->bt[j>>3] & (char)(1<<row));
@@ -285,7 +285,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   for (i=0; i<totalslices; i++) { /* loop over slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -464,7 +464,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
     vec_y = _mm512_load_pd(&y[8*i]);
@@ -546,7 +546,7 @@ PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) { ierr = VecCopy(zz,yy);CHKERRQ(ierr); }
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
       bflag = a->bt[j>>3] & (char)(1<<row);
@@ -1193,14 +1193,14 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
     for (row_in_slice=0; row_in_slice<8; ++row_in_slice) { /* loop over rows in the slice */
       row  = 8*i + row_in_slice;
       nrow = a->rlen[row]; /* number of nonzeros in row */
+      /*
+        Search for the nearest nonzero. Normally setting the index to zero may cause extra communication.
+        But if the entire slice are empty, it is fine to use 0 since the index will not be loaded.
+      */
+      lastcol = 0;
       if (nrow>0) { /* nonempty row */
         lastcol = cp[8*(nrow-1)+row_in_slice]; /* use the index from the last nonzero at current row */
       } else if (!row_in_slice) { /* first row of the currect slice is empty */
-        /*
-          Search for the nearest nonzero. Normally setting the index to zero may cause extra communication.
-          But if the entire slice are empty, it is fine to use 0 since the index will not be loaded.
-        */
-        lastcol = 0;
         for (j=1;j<8;j++) {
           if (a->rlen[8*i+j]) {
             lastcol = cp[j];
@@ -1208,7 +1208,7 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
           }
         }
       } else {
-        lastcol = cp[row_in_slice-1]; /* use the index from the previous row */
+        if (a->sliidx[i+1] != shift) lastcol = cp[row_in_slice-1]; /* use the index from the previous row */
       }
 
       for (k=nrow; k<(a->sliidx[i+1]-shift)/8; ++k) {
@@ -1403,12 +1403,13 @@ PetscErrorCode MatScale_SeqELL(Mat inA,PetscScalar alpha)
   Mat_SeqELL     *a     = (Mat_SeqELL*)inA->data;
   MatScalar      *aval=a->val;
   PetscScalar    oalpha = alpha;
+  PetscInt       totalslices = inA->rmap->n/8+((inA->rmap->n & 0x07)?1:0);
+  PetscBLASInt   one = 1,size;
   PetscErrorCode ierr;
-  PetscBLASInt   one = 1,bnz;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
-  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,aval,&one));
+  ierr = PetscBLASIntCast(a->sliidx[totalslices],&size);CHKERRQ(ierr);
+  PetscStackCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   ierr = MatSeqELLInvalidateDiagonal(inA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1790,7 +1791,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
   Mat_SeqELL     *c,*a=(Mat_SeqELL*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,m=A->rmap->n;
-  PetscInt       totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
+  PetscInt       totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
 
   PetscFunctionBegin;
   c = (Mat_SeqELL*)C->data;

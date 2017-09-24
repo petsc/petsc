@@ -7,7 +7,7 @@
 
 /*
  Struct header for SeqELL matrix format
- */
+*/
 #define SEQELLHEADER(datatype) \
 PetscBool   roworiented;       /* if true, row-oriented input, default */ \
 PetscInt    nonew;             /* 1 don't add new nonzeros, -1 generate error on new */ \
@@ -37,19 +37,18 @@ PetscBool   pivotinblocks;     /* pivot inside factorization of each diagonal bl
 Mat         parent;            /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
 means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
 PetscInt    *sliidx;           /* slice index */ \
+PetscInt    totalslices;       /* total number of slices */ \
 char        *bt                /* bit array */
 
 typedef struct {
   SEQELLHEADER(MatScalar);
-  MatScalar        *saved_values;             /* location for stashing nonzero values of matrix */
-
-  PetscScalar *idiag,*mdiag,*ssor_work;       /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
-  PetscBool   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
-  PetscScalar *ibdiag;                        /* inverses of block diagonals */
-  PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
-  PetscScalar fshift,omega;                   /* last used omega and fshift */
-
-  ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
+  MatScalar   *saved_values;             /* location for stashing nonzero values of matrix */
+  PetscScalar *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
+  PetscBool   idiagvalid;                /* current idiag[] and mdiag[] are valid */
+  PetscScalar *ibdiag;                   /* inverses of block diagonals */
+  PetscBool   ibdiagvalid;               /* inverses of block diagonals are valid. */
+  PetscScalar fshift,omega;              /* last used omega and fshift */
+  ISColoring  coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqELL;
 
 /*
@@ -57,22 +56,18 @@ typedef struct {
  */
 PETSC_STATIC_INLINE PetscErrorCode MatSeqXELLFreeELL(Mat AA,MatScalar **val,PetscInt **colidx,char **bt)
 {
-  PetscErrorCode ierr;
   Mat_SeqELL     *A = (Mat_SeqELL*) AA->data;
+  PetscErrorCode ierr;
   if (A->singlemalloc) {
     ierr = PetscFree3(*val,*colidx,*bt);CHKERRQ(ierr);
   } else {
-    if (A->free_val)  {ierr = PetscFree(*val);CHKERRQ(ierr);}
+    if (A->free_val) {ierr = PetscFree(*val);CHKERRQ(ierr);}
     if (A->free_colidx) {ierr = PetscFree(*colidx);CHKERRQ(ierr);}
     if (A->free_bt) {ierr = PetscFree(*bt);CHKERRQ(ierr);}
   }
   return 0;
 }
 
-/*
- Allocates a larger array for the XELL matrix types; only extend the current slice by one more column.
- This is a macro because it takes the datatype as an argument which can be either a Mat or a MatScalar
- */
 #define MatSeqXELLReallocateELL(Amat,AM,BS2,WIDTH,SIDX,SID,ROW,COL,COLIDX,VAL,BT,CP,VP,BP,NONEW,datatype) \
 if (WIDTH >= (SIDX[SID+1]-SIDX[SID])/8) { \
 Mat_SeqELL *Ain = (Mat_SeqELL*)Amat->data; \
@@ -112,6 +107,85 @@ if (WIDTH>=Ain->maxallocrow) Ain->maxallocrow++; \
 if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
 } \
 
+#define MatSetValue_SeqELL_Private(A,row,col,value,addv,orow,ocol,cp,vp,bp,lastcol,low,high) \
+{ \
+  Mat_SeqELL  *a=(Mat_SeqELL*)A->data; \
+  found=PETSC_FALSE; \
+  if (col <= lastcol) low = 0; \
+  else high = a->rlen[row]; \
+  lastcol = col; \
+  while (high-low > 5) { \
+    t = (low+high)/2; \
+    if (*(cp+8*t) > col) high = t; \
+    else low = t; \
+  } \
+  for (_i=low; _i<high; _i++) { \
+    if (*(cp+8*_i) > col) break; \
+    if (*(cp+8*_i) == col) { \
+      if (addv == ADD_VALUES)*(vp+8*_i) += value; \
+      else *(vp+8*_i) = value; \
+      found = PETSC_TRUE; \
+      break; \
+    } \
+  } \
+  if (!found) { \
+    if (a->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
+    if (a->nonew != 1 && !(value == 0.0 && a->ignorezeroentries) && a->rlen[row] >= (a->sliidx[row/8+1]-a->sliidx[row/8])/8) { \
+      /* there is no extra room in row, therefore enlarge 8 elements (1 slice column) */ \
+      if (a->maxallocmat < a->sliidx[a->totalslices]+8) { \
+        /* allocates a larger array for the XELL matrix types; only extend the current slice by one more column. */ \
+        PetscInt  new_size=a->maxallocmat+8,*new_colidx; \
+        char      *new_bt; \
+        MatScalar *new_val; \
+        if (a->nonew == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",orow,ocol); \
+        /* malloc new storage space */ \
+        ierr = PetscMalloc3(new_size,&new_val,new_size,&new_colidx,new_size/8,&new_bt);CHKERRQ(ierr); \
+        /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
+        ierr = PetscMemcpy(new_val,a->val,a->sliidx[row/8+1]*sizeof(MatScalar));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_colidx,a->colidx,a->sliidx[row/8+1]*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_bt,a->bt,a->sliidx[row/8+1]/8*sizeof(char));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(MatScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_bt+a->sliidx[row/8+1]/8+1,a->bt+a->sliidx[row/8+1]/8,(a->sliidx[a->totalslices]-a->sliidx[row/8+1])/8*sizeof(char));CHKERRQ(ierr); \
+        /* update pointers. Notice that they point to the FIRST postion of the row */ \
+        cp = new_colidx+a->sliidx[row/8]+(row & 0x07); \
+        vp = new_val+a->sliidx[row/8]+(row & 0x07); \
+        bp = new_bt+a->sliidx[row/8]/8; \
+        /* free up old matrix storage */ \
+        ierr            = MatSeqXELLFreeELL(A,&a->val,&a->colidx,&a->bt);CHKERRQ(ierr); \
+        a->val          = (MatScalar*)new_val; \
+        a->colidx       = new_colidx; \
+        a->bt           = new_bt; \
+        a->singlemalloc = PETSC_TRUE; \
+        a->maxallocmat  = new_size; \
+        a->reallocs++; \
+      } else { \
+        /* no need to reallocate, just shift the following slices to create space for the added slice column */ \
+        ierr = PetscMemmove(a->val+a->sliidx[row/8+1]+8,a->val+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(MatScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemmove(a->colidx+a->sliidx[row/8+1]+8,a->colidx+a->sliidx[row/8+1],(a->sliidx[a->totalslices]-a->sliidx[row/8+1])*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemmove(a->bt+a->sliidx[row/8+1]/8+1,a->bt+a->sliidx[row/8+1]/8,(a->sliidx[a->totalslices]-a->sliidx[row/8+1])/8*sizeof(char));CHKERRQ(ierr); \
+      } \
+      /* set the mask for the added slice column to zero */ \
+      *(a->bt+a->sliidx[row/8+1]-1)=0; \
+      /* update slice_idx */ \
+      for (ii=row/8+1;ii<=a->totalslices;ii++) a->sliidx[ii] += 8; \
+      if (a->rlen[row]>=a->maxallocrow) a->maxallocrow++; \
+      if (a->rlen[row]>=a->rlenmax) a->rlenmax++; \
+    } \
+    /* shift up all the later entries in this row */ \
+    for (ii=a->rlen[row]-1; ii>=_i; ii--) { \
+      *(cp+8*(ii+1)) = *(cp+8*ii); \
+      *(vp+8*(ii+1)) = *(vp+8*ii); \
+      if (*(bp+ii) & (char)1<<(row&0x07)) *(bp+ii+1) |= (char)1<<(row&0x07); \
+    } \
+    *(cp+8*_i) = col; \
+    *(vp+8*_i) = value; \
+    *(bp+_i)  |= (char)1<<(row&0x07); \
+    a->nz++; a->rlen[row]++; A->nonzerostate++; \
+    low = _i+1; high++; \
+  } \
+} \
+
 PETSC_INTERN PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat,PetscInt,const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatMult_SeqELL(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqELL(Mat,Vec,Vec,Vec);
@@ -145,5 +219,7 @@ PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqELL(Mat,ISColoring,MatFDColor
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqELL(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
-PETSC_INTERN PetscErrorCode MatConjugate_SeqELL(Mat A); 
+PETSC_INTERN PetscErrorCode MatConjugate_SeqELL(Mat A);
+PETSC_INTERN PetscErrorCode MatScale_SeqELL(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqELL(Mat,Vec,Vec); 
 #endif
