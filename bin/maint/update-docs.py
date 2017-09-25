@@ -127,6 +127,7 @@ def main():
         'changes/35.html',
         'changes/36.html',
         'changes/37.html',
+        'changes/38.html',
         'changes/dev.html',
         'changes/index.html',
         'installation.html']

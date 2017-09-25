@@ -1,12 +1,12 @@
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 
-#define PETSC_VERSION_RELEASE    0
+#define PETSC_VERSION_RELEASE    1
 #define PETSC_VERSION_MAJOR      3
-#define PETSC_VERSION_MINOR      7
-#define PETSC_VERSION_SUBMINOR   7
+#define PETSC_VERSION_MINOR      8
+#define PETSC_VERSION_SUBMINOR   0
 #define PETSC_VERSION_PATCH      0
-#define PETSC_RELEASE_DATE       "Apr, 25, 2016"
+#define PETSC_RELEASE_DATE       "Sep, 26, 2017"
 #define PETSC_VERSION_DATE       "unknown"
 
 #if !defined (PETSC_VERSION_GIT)

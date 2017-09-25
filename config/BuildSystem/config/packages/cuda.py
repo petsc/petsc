@@ -167,6 +167,7 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
+    raise RuntimeError('Please use master branch from petsc git clone for CUDA functionality')
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
