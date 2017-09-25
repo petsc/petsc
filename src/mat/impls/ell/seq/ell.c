@@ -792,6 +792,45 @@ PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDiagonalScale_SeqELL(Mat A,Vec ll,Vec rr)
+{
+  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  const PetscScalar *l,*r;
+  PetscScalar       x;
+  PetscInt          i,j,m,n,row;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (ll) {
+    /* The local size is used so that VecMPI can be passed to this routine
+       by MatDiagonalScale_MPIELL */
+    ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
+    if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+    ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
+    for (i=0; i<a->totalslices; i++) { /* loop over slices */
+      for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+        a->val[j] *= l[8*i+row];
+      }
+    }
+    ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
+    ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  }
+  if (rr) {
+    ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
+    if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
+    ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
+    for (i=0; i<a->totalslices; i++) { /* loop over slices */
+      for (j=a->sliidx[i]; j<a->sliidx[i+1]; j++) {
+        a->val[j] *= r[a->colidx[j]];
+      }
+    }
+    ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
+    ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  }
+  ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode MatSetValues_SeqELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
 PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
@@ -1550,7 +1589,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 15*/ MatGetInfo_SeqELL,
                                        MatEqual_SeqELL,
                                        MatGetDiagonal_SeqELL,
-                                       0,
+                                       MatDiagonalScale_SeqELL,
                                        0,
                                /* 20*/ 0,
                                        MatAssemblyEnd_SeqELL,

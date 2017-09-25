@@ -565,9 +565,8 @@ PetscErrorCode MatDestroy_MPIELL(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIELLSetPreallocation_C",NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_MPIELL_elemental_C",NULL);CHKERRQ(ierr);
-#endif
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiell_mpiaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1924,6 +1923,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_MPIELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIELLSetPreallocation_C",MatMPIELLSetPreallocation_MPIELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiell_mpiaij_C",MatConvert_MPIELL_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIELL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIELL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

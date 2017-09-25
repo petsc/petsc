@@ -62,3 +62,4 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatSOR_MPIELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 PETSC_INTERN PetscErrorCode MatCreateColmap_MPIELL_Private(Mat);
+PETSC_INTERN PetscErrorCode MatDiagonalScaleLocal_MPIELL(Mat,Vec);

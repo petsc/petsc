@@ -195,3 +195,97 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*      ugly stuff added for Glenn someday we should fix this up */
+static PetscInt *auglyrmapd = 0,*auglyrmapo = 0; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
+static Vec auglydd          = 0,auglyoo     = 0; /* work vectors used to scale the two parts of the local matrix */
+
+PetscErrorCode MatMPIELLDiagonalScaleLocalSetUp(Mat inA,Vec scale)
+{
+  Mat_MPIELL     *ina = (Mat_MPIELL*) inA->data; /*access private part of matrix */
+  PetscErrorCode ierr;
+  PetscInt       i,n,nt,cstart,cend,no,*garray = ina->garray,*lindices;
+  PetscInt       *r_rmapd,*r_rmapo;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
+  ierr = MatGetSize(ina->A,NULL,&n);CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapd);CHKERRQ(ierr);
+  nt   = 0;
+  for (i=0; i<inA->rmap->mapping->n; i++) {
+    if (inA->rmap->mapping->indices[i] >= cstart && inA->rmap->mapping->indices[i] < cend) {
+      nt++;
+      r_rmapd[i] = inA->rmap->mapping->indices[i] + 1;
+    }
+  }
+  if (nt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D n %D",nt,n);
+  ierr = PetscMalloc1(n+1,&auglyrmapd);CHKERRQ(ierr);
+  for (i=0; i<inA->rmap->mapping->n; i++) {
+    if (r_rmapd[i]) {
+      auglyrmapd[(r_rmapd[i]-1)-cstart] = i;
+    }
+  }
+  ierr = PetscFree(r_rmapd);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&auglydd);CHKERRQ(ierr);
+
+  ierr = PetscCalloc1(inA->cmap->N+1,&lindices);CHKERRQ(ierr);
+  for (i=0; i<ina->B->cmap->n; i++) {
+    lindices[garray[i]] = i+1;
+  }
+  no   = inA->rmap->mapping->n - nt;
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapo);CHKERRQ(ierr);
+  nt   = 0;
+  for (i=0; i<inA->rmap->mapping->n; i++) {
+    if (lindices[inA->rmap->mapping->indices[i]]) {
+      nt++;
+      r_rmapo[i] = lindices[inA->rmap->mapping->indices[i]];
+    }
+  }
+  if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
+  ierr = PetscFree(lindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nt+1,&auglyrmapo);CHKERRQ(ierr);
+  for (i=0; i<inA->rmap->mapping->n; i++) {
+    if (r_rmapo[i]) {
+      auglyrmapo[(r_rmapo[i]-1)] = i;
+    }
+  }
+  ierr = PetscFree(r_rmapo);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nt,&auglyoo);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDiagonalScaleLocal_MPIELL(Mat A,Vec scale)
+{
+  Mat_MPIELL        *a = (Mat_MPIELL*) A->data; /*access private part of matrix */
+  PetscErrorCode    ierr;
+  PetscInt          n,i;
+  PetscScalar       *d,*o;
+  const PetscScalar *s;
+
+  PetscFunctionBegin;
+  if (!auglyrmapd) {
+    ierr = MatMPIELLDiagonalScaleLocalSetUp(A,scale);CHKERRQ(ierr);
+  }
+
+  ierr = VecGetArrayRead(scale,&s);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(auglydd,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(auglydd,&d);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    d[i] = s[auglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
+  }
+  ierr = VecRestoreArray(auglydd,&d);CHKERRQ(ierr);
+  /* column scale "diagonal" portion of local matrix */
+  ierr = MatDiagonalScale(a->A,NULL,auglydd);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(auglyoo,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(auglyoo,&o);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    o[i] = s[auglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
+  }
+  ierr = VecRestoreArrayRead(scale,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(auglyoo,&o);CHKERRQ(ierr);
+  /* column scale "off-diagonal" portion of local matrix */
+  ierr = MatDiagonalScale(a->B,NULL,auglyoo);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
