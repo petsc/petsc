@@ -791,7 +791,6 @@ PetscErrorCode MatDiagonalScale_SeqELL(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
   const PetscScalar *l,*r;
-  PetscScalar       x;
   PetscInt          i,j,m,n,row;
   PetscErrorCode    ierr;
 

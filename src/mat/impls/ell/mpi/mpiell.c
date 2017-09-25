@@ -144,7 +144,7 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
   Mat_MPIELL     *ell=(Mat_MPIELL*)mat->data;
   PetscScalar    value;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,rstart=mat->rmap->rstart,rend=mat->rmap->rend,shift1,shift2;
+  PetscInt       i,j,rstart=mat->rmap->rstart,rend=mat->rmap->rend,shift1,shift2;
   PetscInt       cstart=mat->cmap->rstart,cend=mat->cmap->rend,row,col;
   PetscBool      roworiented=ell->roworiented;
 
@@ -154,10 +154,8 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscBool      ignorezeroentries=a->ignorezeroentries,found;
   Mat            B=ell->B;
   Mat_SeqELL     *b=(Mat_SeqELL*)B->data;
-  PetscInt       bm=ell->B->rmap->n,am=ell->A->rmap->n;
 
   PetscInt       *cp1,*cp2,ii,_i,nrow1,nrow2,low1,high1,low2,high2,t,lastcol1,lastcol2;
-  PetscInt       nonew;
   MatScalar      *vp1,*vp2;
   char           *bp1,*bp2;
 
@@ -192,10 +190,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
-          /*
-          nonew = a->nonew;
-          MatSetValues_SeqELL_A_Private(row,col,value,addv,im[i],in[j]);
-          */
           MatSetValue_SeqELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,bp1,lastcol1,low1,high1); /* set one value */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -227,10 +221,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
               high2  = nrow2;
             } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", im[i], in[j]);
           } else col = in[j];
-          /*
-          nonew = b->nonew;
-          MatSetValues_SeqELL_B_Private(row,col,value,addv,im[i],in[j]);
-          */
           MatSetValue_SeqELL_Private(B,row,col,value,addv,im[i],in[j],cp2,vp2,bp2,lastcol2,low2,high2); /* set one value */
         }
       }
