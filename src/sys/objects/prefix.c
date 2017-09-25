@@ -46,6 +46,8 @@ PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
 
    Concepts: prefix^setting
 
+  Level: advanced
+
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
           PetscObjectGetOptionsPrefix(), TSSetOptionsPrefix(), SNESSetOptionsPrefix(), KSPSetOptionsPrefix()
 
@@ -82,6 +84,8 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    hyphen.
 
    Concepts: prefix^setting
+
+  Level: advanced
 
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
           PetscObjectGetOptionsPrefix(), TSAppendOptionsPrefix(), SNESAppendOptionsPrefix(), KSPAppendOptionsPrefix()
@@ -122,6 +126,8 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
 
    Concepts: prefix^getting
 
+  Level: advanced
+
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
           TSGetOptionsPrefix(), SNESGetOptionsPrefix(), KSPGetOptionsPrefix()
 
@@ -149,6 +155,8 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
    hyphen.
 
    Concepts: prefix^setting
+
+  Level: advanced
 
 .seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(),
           PetscObjectGetOptionsPrefix(), TSPrependOptionsPrefix(), SNESPrependOptionsPrefix(), KSPPrependOptionsPrefix()

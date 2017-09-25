@@ -3031,6 +3031,9 @@ PetscErrorCode TSGetMaxTime(TS ts,PetscReal *maxtime)
 
 /*@
    TSSetInitialTimeStep - Deprecated, use TSSetTime() and TSSetTimeStep().
+
+   Level: deprecated
+
 @*/
 PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
@@ -3044,6 +3047,9 @@ PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time
 
 /*@
    TSGetDuration - Deprecated, use TSGetMaxSteps() and TSGetMaxTime().
+
+   Level: deprecated
+
 @*/
 PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 {
@@ -3062,6 +3068,9 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 
 /*@
    TSSetDuration - Deprecated, use TSSetMaxSteps() and TSSetMaxTime().
+
+   Level: deprecated
+
 @*/
 PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
@@ -3076,11 +3085,17 @@ PetscErrorCode TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 
 /*@
    TSGetTimeStepNumber - Deprecated, use TSGetStepNumber().
+
+   Level: deprecated
+
 @*/
 PetscErrorCode TSGetTimeStepNumber(TS ts,PetscInt *steps) { return TSGetStepNumber(ts,steps); }
 
 /*@
    TSGetTotalSteps - Deprecated, use TSGetStepNumber().
+
+   Level: deprecated
+
 @*/
 PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(ts,steps); }
 

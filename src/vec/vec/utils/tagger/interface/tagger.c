@@ -369,6 +369,8 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
    Notes:
 .  A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
 
+   Level: advanced
+
 .seealso: VecTaggerComputeIS()
 @*/
 PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
@@ -404,6 +406,8 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes
 
    Output Arguments:
 .  IS - a list of the indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
+
+   Level: advanced
 
 .seealso: VecTaggerComputeBoxes()
 @*/

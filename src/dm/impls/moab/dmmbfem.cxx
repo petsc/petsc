@@ -125,6 +125,8 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal (PetscReal *inmat, PetscReal *
 .  PetscReal phi[npts],        the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts],     the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 
+  Level: advanced
+
 .keywords: DMMoab, FEM, 1-D
 @*/
 PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts,
@@ -259,6 +261,8 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal ( const PetscInt nverts, const
 .  PetscReal phi[npts],        the bases evaluated at the specified quadrature points
 .  PetscReal dphidx[npts],     the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts],     the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
+
+  Level: advanced
 
 .keywords: DMMoab, FEM, 2-D
 @*/
@@ -436,6 +440,8 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal ( const PetscInt nverts, const
 .  PetscReal dphidx[npts],     the derivative of the bases wrt X-direction evaluated at the specified quadrature points
 .  PetscReal dphidy[npts],     the derivative of the bases wrt Y-direction evaluated at the specified quadrature points
 .  PetscReal dphidz[npts],     the derivative of the bases wrt Z-direction evaluated at the specified quadrature points
+
+  Level: advanced
 
 .keywords: DMMoab, FEM, 3-D
 @*/
@@ -690,6 +696,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal ( const PetscInt nverts, const
 .  PetscReal fe_basis[npts],        the bases values evaluated at the specified quadrature points
 .  PetscReal fe_basis_derivatives[dim][npts],  the derivative of the bases wrt (X,Y,Z)-directions (depending on the dimension) evaluated at the specified quadrature points
 
+  Level: advanced
+
 .keywords: DMMoab, FEM, 3-D
 @*/
 PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, 
@@ -756,6 +764,8 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 
   Output Parameter:
 .  PetscQuadrature quadrature,  the quadrature object with default settings to integrate polynomials defined over the element
+
+  Level: advanced
 
 .keywords: DMMoab, Quadrature, PetscDT
 @*/
@@ -1059,6 +1069,8 @@ PetscErrorCode FEMComputeBasis_JandF ( const PetscInt dim, const PetscInt nverts
   Output Parameter:
 .  PetscReal[3] natparam,  the natural coordinates (in reference frame) corresponding to xphy
 .  PetscReal[nverts] phi,  the basis functions evaluated at the natural coordinates (natparam)
+
+  Level: advanced
 
 .keywords: DMMoab, Mapping, FEM
 @*/

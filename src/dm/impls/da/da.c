@@ -1334,6 +1334,8 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
           on each process much be divisible by the number of GLL elements needed per process. This depends on whether the DM is
           periodic or not.
 
+   Level: advanced
+
 .seealso:   DMDACreate(), PetscGLLCreate(), DMGetCoordinates()
 @*/
 PetscErrorCode DMDASetGLLCoordinates(DM da,PetscGLL *gll)
