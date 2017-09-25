@@ -158,10 +158,13 @@ class TestTSPython(unittest.TestCase):
 
     def testResetAndSolve(self):
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolve()
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testFDColor()
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolve()
         self.ts.reset()
 

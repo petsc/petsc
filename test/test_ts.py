@@ -157,8 +157,10 @@ class BaseTestTSNonlinearRHS(BaseTestTSNonlinear):
 
     def testResetAndSolveRHS(self):
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolveRHS()
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolveRHS()
         self.ts.reset()
 
@@ -242,8 +244,10 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinear):
 
     def testResetAndSolveI(self):
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolveI()
         self.ts.reset()
+        self.ts.setStepNumber(0)
         self.testSolveI()
         self.ts.reset()
 
