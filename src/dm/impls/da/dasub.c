@@ -5,7 +5,7 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/*@C
+/*@
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
 
    Collective on DMDA
@@ -75,7 +75,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a DMDA vector
 
    Collective on DMDA
