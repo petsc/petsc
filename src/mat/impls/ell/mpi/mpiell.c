@@ -162,8 +162,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
   char           *bp1,*bp2;
 
   PetscFunctionBegin;
-  a->totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
-  b->totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -642,7 +640,7 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat        A;
     Mat_SeqELL *Aloc;
-    PetscInt   M = mat->rmap->N,N = mat->cmap->N,totalslices,*acolidx,row,col,i,j;
+    PetscInt   M = mat->rmap->N,N = mat->cmap->N,*acolidx,row,col,i,j;
     MatScalar  *aval;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
@@ -660,8 +658,7 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* copy over the A part */
     Aloc = (Mat_SeqELL*)ell->A->data;
     acolidx = Aloc->colidx; aval = Aloc->val;
-    totalslices = ell->A->rmap->n/8+((ell->A->rmap->n & 0x07)?1:0); /* ceil(n/8) */
-    for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (i=0; i<Aloc->totalslices; i++) { /* loop over slices */
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
         if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) { /* check the mask bit */
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
@@ -675,8 +672,7 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* copy over the B part */
     Aloc = (Mat_SeqELL*)ell->B->data;
     acolidx = Aloc->colidx; aval = Aloc->val;
-    totalslices = ell->B->rmap->n/8+((ell->B->rmap->n & 0x07)?1:0); /* floor(n/8) */
-    for (i=0; i<totalslices; i++) {
+    for (i=0; i<Aloc->totalslices; i++) {
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
         if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) {
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart;
