@@ -811,7 +811,7 @@ The example
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c}}
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.F}};
+\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex5f.F90}};
 see Chapter \ref{chapter_snes} for a discussion of the nonlinear
 solvers.
 
@@ -3875,7 +3875,7 @@ is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
 pointers to PETSc objects. \href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c}} and
-\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F.html}{\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F}} give examples of user-defined
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F90}} give examples of user-defined
 application contexts in C and Fortran, respectively.
 
 \subsection{Jacobian Evaluation}
@@ -6265,7 +6265,7 @@ the test is assumed to be written in Fortran.
 
 Figure \ref{fig_make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
-of the Fortran program \trl{ex3.F} with the actions \trl{make}  \trl{ex3} and
+of the Fortran program \trl{ex3.F90} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{makelisting}
 ex3: ex3.o 
@@ -6329,7 +6329,7 @@ corresponding to
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex4f.F.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex4f.F}},
 \break 
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/sys/classes/draw/examples/tests/ex5f.F.html}{\trl{${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex5f.F}}, and
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1f.F.html}{\trl{${PETSC_DIR}/src/snes/examples/ex1f.F}}, respectively.  We also
+\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1f.F90.html}{\trl{${PETSC_DIR}/src/snes/examples/ex1f.F90}}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
 since PETSc usage within the two languages differs only slightly.
 
@@ -7271,7 +7271,7 @@ a user-defined context.  In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and pointers
 to PETSc objects. See \href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5.c.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5.c}} and
-\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5f.F}} for examples of user-defined application
+\href{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex5f.F90.html}{\trl{${PETSC_DIR}/snes/examples/tutorials/ex5f.F90}} for examples of user-defined application
 contexts in C and Fortran, respectively.
 
 \section{Numerical Experiments}
