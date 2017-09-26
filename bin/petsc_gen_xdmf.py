@@ -44,6 +44,32 @@ class Xdmf:
 ''' % (numVertices, spaceDim, geometryPath))
     return
 
+  def writeLocations(self, fp, numParticles, spaceDim):
+    fp.write('''\
+    <DataItem Name="xcoord"
+	      Format="HDF"
+	      Dimensions="%d">
+      &HeavyData;:/particles/xcoord
+    </DataItem>
+''' % (numParticles))
+    if spaceDim == 1: return
+    fp.write('''\
+    <DataItem Name="ycoord"
+	      Format="HDF"
+	      Dimensions="%d">
+      &HeavyData;:/particles/ycoord
+    </DataItem>
+''' % (numParticles))
+    if spaceDim == 2: return
+    fp.write('''\
+    <DataItem Name="zcoord"
+	      Format="HDF"
+	      Dimensions="%d">
+      &HeavyData;:/particles/zcoord
+    </DataItem>
+''' % (numParticles))
+    return
+
   def writeTimeGridHeader(self, fp, time):
     fp.write('''\
     <Grid Name="TimeSeries" GridType="Collection" CollectionType="Temporal">
@@ -174,6 +200,29 @@ class Xdmf:
     fp.write('      </Grid>\n')
     return
 
+  def writeParticleGridHeader(self, fp, numParticles, spaceDim):
+    fp.write('''\
+      <Grid Name="particle_domain" GridType="Uniform">
+	<Topology TopologyType="Polyvertex" NodesPerElement="%d" />
+	<Geometry GeometryType="%s">
+	  <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="xcoord"]</DataItem>
+	  <DataItem Reference="XML">/Xdmf/Domain/DataItem[@Name="ycoord"]</DataItem>
+	  %s
+	</Geometry>
+''' % (numParticles, "X_Y_Z" if spaceDim > 2 else "X_Y", "<DataItem Reference=\"XML\">/Xdmf/Domain/DataItem[@Name=\"zcoord\"]</DataItem>" if spaceDim > 2 else ""))
+    return
+
+  def writeParticleField(self, fp, numParticles, spaceDim):
+    fp.write('''\
+    <Attribute Name="particles/icoord">
+      <DataItem Name="icoord"
+                Format="HDF"
+                Dimensions="%d">
+                &HeavyData;:/particles/icoord
+      </DataItem>
+    </Attribute>''' % (numParticles))
+    return
+
   def writeTimeGridFooter(self, fp):
     fp.write('    </Grid>\n')
     return
@@ -182,10 +231,11 @@ class Xdmf:
     fp.write('  </Domain>\n</Xdmf>\n')
     return
 
-  def write(self, hdfFilename, topologyPath, numCells, numCorners, cellDim, geometryPath, numVertices, spaceDim, time, vfields, cfields):
+  def write(self, hdfFilename, topologyPath, numCells, numCorners, cellDim, geometryPath, numVertices, spaceDim, time, vfields, cfields, numParticles):
     useTime = not (len(time) < 2 and time[0] == -1)
     with file(self.filename, 'w') as fp:
       self.writeHeader(fp, hdfFilename)
+      # Field information
       self.writeCells(fp, topologyPath, numCells, numCorners)
       self.writeVertices(fp, geometryPath, numVertices, spaceDim)
       if useTime: self.writeTimeGridHeader(fp, time)
@@ -193,6 +243,13 @@ class Xdmf:
         self.writeSpaceGridHeader(fp, numCells, numCorners, cellDim, spaceDim)
         for vf in vfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/vertex_fields/'+vf[0], vf, 'Node')
         for cf in cfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
+        self.writeSpaceGridFooter(fp)
+      if useTime: self.writeTimeGridFooter(fp)
+      # Particle information
+      self.writeLocations(fp, numParticles, spaceDim)
+      if useTime: self.writeTimeGridHeader(fp, time)
+      for t in range(len(time)):
+        self.writeParticleGridHeader(fp, numParticles, spaceDim)
         self.writeSpaceGridFooter(fp)
       if useTime: self.writeTimeGridFooter(fp)
       self.writeFooter(fp)
@@ -230,9 +287,11 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   cfields     = []
   if 'vertex_fields' in h5: vfields = h5['vertex_fields'].items()
   if 'cell_fields' in h5: cfields = h5['cell_fields'].items()
+  numParticles = 0
+  if 'particles' in h5: numParticles = h5['particles']['xcoord'].shape[0]
 
   # Write Xdmf
-  Xdmf(xdmfFilename).write(hdfFilename, topoPath, numCells, numCorners, cellDim, geomPath, numVertices, spaceDim, time, vfields, cfields)
+  Xdmf(xdmfFilename).write(hdfFilename, topoPath, numCells, numCorners, cellDim, geomPath, numVertices, spaceDim, time, vfields, cfields, numParticles)
   h5.close()
   return
 
