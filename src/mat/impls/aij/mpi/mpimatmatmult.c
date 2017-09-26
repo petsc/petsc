@@ -1431,26 +1431,25 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 {
   PetscErrorCode      ierr;
   Mat_PtAPMPI         *ptap;
-  Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
+  Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
   Mat                 Cmpi;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
-  PetscInt            am=A->rmap->n,pm=P->rmap->n,pN=P->cmap->N,pn=P->cmap->n;
-  PetscInt            *lnk,i,k,pnz,row,nsend;
+  PetscInt            pN=P->cmap->N,pn=P->cmap->n;
+  PetscInt            *lnk,i,k,nsend;
   PetscBT             lnkbt;
   PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0,nrecv;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
-  PetscInt            len,proc,*dnz,*onz,*owners,nzi,nspacedouble;
+  PetscInt            len,proc,*dnz,*onz,*owners,nzi;
   PetscInt            nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextci;
   MPI_Request         *swaits,*rwaits;
   MPI_Status          *sstatus,rstatus;
   PetscLayout         rowmap;
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
-  PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0,Crmax,*aj,*ai,*pi;
-  Mat_SeqAIJ          *p_loc,*p_oth=NULL,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=NULL,*c_loc,*c_oth;
-  PetscScalar         *apv;
+  PetscInt            *Jptr,*prmap=p->garray,con,j,Crmax;
+  Mat_SeqAIJ          *p_loc,*p_oth=NULL,*c_loc,*c_oth;
   PetscTable          ta;
 #if defined(PETSC_HAVE_HYPRE)
   const char          *algTypes[3] = {"scalable","nonscalable","hypre"};
@@ -1510,8 +1509,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  if (size > 1) ao = (Mat_SeqAIJ*)(a->B)->data;
-
   /* create symbolic parallel matrix Cmpi */
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
@@ -1534,105 +1531,23 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
   ierr = MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
 
-  /* (1) compute symbolic A_loc [AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj)] */
-  /* ----------------------------------------------------------------- */
+  /* (1) compute symbolic A_loc (A_loc = P_loc in ex209!!!) */
+  /* -------------------------------------------------------*/
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
 
-  /* create and initialize a linked list */
+  /* create and initialize a linked list ??? */
   ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Prows) */
   /* printf("[%d] est %d, Crmax %d; pN %d\n",rank,5*(p_loc->rmax+p_oth->rmax + (PetscInt)(1.e-2*pN)),Crmax,pN); */
 
-  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr);
+  ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->AP_loc);CHKERRQ(ierr); //ptap->AP_loc = A_loc
 
-  /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) */
-  if (ao) {
-    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],PetscIntSumTruncate(ao->i[am],p_loc->i[pm]))),&free_space);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],p_loc->i[pm])),&free_space);CHKERRQ(ierr);
-  }
-  current_space = free_space;
-  nspacedouble  = 0;
-
-  ierr   = PetscMalloc1(am+1,&api);CHKERRQ(ierr);
-  api[0] = 0;
-  for (i=0; i<am; i++) {
-    /* diagonal portion: Ad[i,:]*P */
-    ai = ad->i; pi = p_loc->i;
-    nzi = ai[i+1] - ai[i];
-    aj  = ad->j + ai[i];
-    for (j=0; j<nzi; j++) {
-      row  = aj[j];
-      pnz  = pi[row+1] - pi[row];
-      Jptr = p_loc->j + pi[row];
-      /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
-    }
-    /* off-diagonal portion: Ao[i,:]*P */
-    if (ao) {
-      ai = ao->i; pi = p_oth->i;
-      nzi = ai[i+1] - ai[i];
-      aj  = ao->j + ai[i];
-      for (j=0; j<nzi; j++) {
-        row  = aj[j];
-        pnz  = pi[row+1] - pi[row];
-        Jptr = p_oth->j + pi[row];
-        ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
-      }
-    }
-    apnz     = lnk[0];
-    api[i+1] = api[i] + apnz;
-    if (ap_rmax < apnz) ap_rmax = apnz;
-
-    /* if free space is not available, double the total space in the list */
-    if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(PetscIntSumTruncate(apnz,current_space->total_array_size),&current_space);CHKERRQ(ierr);
-      nspacedouble++;
-    }
-
-    /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(pN,apnz,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
-
-    current_space->array           += apnz;
-    current_space->local_used      += apnz;
-    current_space->local_remaining -= apnz;
-  }
-  /* Allocate space for apj and apv, initialize apj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr   = PetscMalloc2(api[am],&apj,api[am],&apv);CHKERRQ(ierr);
-  ierr   = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
-  ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
-
-  /* Create AP_loc for reuse */
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,pN,api,apj,apv,&ptap->AP_loc);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_INFO)
-  if (ao) {
-    apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
-  } else {
-    apfill = (PetscReal)api[am]/(ad->i[am]+p_loc->i[pm]+1);
-  }
-  ptap->AP_loc->info.mallocs           = nspacedouble;
-  ptap->AP_loc->info.fill_ratio_given  = fill;
-  ptap->AP_loc->info.fill_ratio_needed = apfill;
-
-  if (api[am]) {
-    ierr = PetscInfo3(ptap->AP_loc,"Nonscalable algorithm, AP_loc reallocs %D; Fill ratio: given %g needed %g.\n",nspacedouble,(double)fill,(double)apfill);CHKERRQ(ierr);
-    ierr = PetscInfo1(ptap->AP_loc,"Use MatPtAP(A,B,MatReuse,%g,&C) for best AP_loc performance.;\n",(double)apfill);CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(ptap->AP_loc,"Nonscalable algorithm, AP_loc is empty \n");CHKERRQ(ierr);
-  }
-#endif
-
-  /* (2-1) compute symbolic Co = Ro*AP_loc  */
+  /* (2-1) compute symbolic Co = Ro*A_loc  */
   /* ------------------------------------ */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
-#endif
 
   /* (3) send coj of C_oth to other processors  */
   /* ------------------------------------------ */
@@ -1654,7 +1569,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   proc  = 0;
   for (i=0; i<con; i++) {
     while (prmap[i] >= owners[proc+1]) proc++;
-    len_si[proc]++;               /* num of rows in Co(=Pt*AP) to be sent to [proc] */
+    len_si[proc]++;               /* num of rows in Co(=Pt*A) to be sent to [proc] */
     len_s[proc] += coi[i+1] - coi[i]; /* num of nonzeros in Co to be sent to [proc] */
   }
 
@@ -1685,7 +1600,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     k++;
   }
 
-  /* (2-2) compute symbolic C_loc = Rd*AP_loc */
+  /* (2-2) compute symbolic C_loc = Rd*A_loc */
   /* ---------------------------------------- */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,fill,&ptap->C_loc);CHKERRQ(ierr);
   c_loc = (Mat_SeqAIJ*)ptap->C_loc->data;
