@@ -7442,9 +7442,6 @@ scheduler---but we offer some general observations on understanding placement op
   Do not assume that the MPI implementation is doing something sensible by default!
 \end{itemize}
 
-% Point out: Differences in what pinning domains are, and differences in pinning order used
-% "compact" vs. "scatter" (vs. "bunch")
-
 \section{Performance Pitfalls and Advice}
 \sindex{performance pitfalls}
 
@@ -7504,12 +7501,6 @@ and they may be turned on when using options for very aggressive optimization (\
 These are worth exploring to maximize performance, but, if employed, it important to verify that these do not cause erroneous results 
 with your code, since calculations may violate the IEEE standard for floating-point arithmetic.
 \end{itemize}
-% Some experimentation required! Best choice depends on code, compiler, architecture.
-% Some guidelines:
-% * Make sure compiler will optimize for target architecture
-% * Vectorization is enabled
-% * Worth exploring value-unsafe optimizations, but must verify that numerical results are OK!
-
 
 
 
