@@ -434,8 +434,14 @@ getautoconfargs:
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
-.c.a .cpp.a .cc.a .C.a:
+.c.a:
 	-${PETSC_COMPILE_SINGLE} `pwd`/$<
+	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
+	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
+	-${RM} $*.o $*.lo
+
+.cpp.a .cxx.a .cc.a .C.a:
+	-${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
