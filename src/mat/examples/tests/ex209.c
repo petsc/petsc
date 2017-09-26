@@ -4,7 +4,7 @@ static char help[] = "Test MatTransposeMatMult() \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,C,AtA,At;
+  Mat            A,C,AtA,At,B;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN]="ceres_solver_iteration_001_A.petsc";
   PetscErrorCode ierr;
@@ -24,23 +24,49 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (!rank) printf("A is loaded...\n");
 
+  /* Create identity matrix B */
+  PetscInt    i,m,n,rstart,rend;
+  PetscScalar one=1.0;
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
+
+  ierr = MatGetOwnershipRange(B,&rstart,&rend);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  //ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* Compute C = A^T*A */
-  ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-  if (!rank) printf("C = A^T*A is done...\n");
-  ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  if (!rank) printf("C = A^T*B is done...\n");
+  //ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   if (!rank) printf("REUSE C = A^T*A is done...\n");
 
+  /* Compute AtA = A^T*B*A, B = identity matrix */
+  ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
+  ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
+  if (!rank) printf("C = A^T*B*A is done...\n");
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+#if 0
   /* Compute At=A^T and AtA = At*A */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
   if (!rank) printf("At is done...\n");
   ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
   if (!rank) printf("AtA is done...\n");
+  ierr = MatDestroy(&At);CHKERRQ(ierr);
+#endif
 
   /* Compare C and AtA */
   ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
 
-  ierr = MatDestroy(&At);CHKERRQ(ierr);
   ierr = MatDestroy(&AtA);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
