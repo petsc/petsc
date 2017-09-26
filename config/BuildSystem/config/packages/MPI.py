@@ -305,6 +305,8 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    self.addDefine('HAVE_MPI_TYPE_DUP', 1)
+    self.addDefine('HAVE_MPI_TYPE_GET_ENVELOPE', 1)
     self.framework.saveLog()
     self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')

@@ -13,7 +13,8 @@
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1
 
-void *MPIUNI_TMP         = 0;
+void *MPIUNI_TMP = NULL;
+
 /*
        With MPI Uni there are exactly four distinct communicators:
     MPI_COMM_SELF, MPI_COMM_WORLD, and a MPI_Comm_dup() of each of these (duplicates of duplicates return the same communictor)
@@ -56,10 +57,10 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   char *aa= (char*)a;
   char *bb= (char*)b;
 
-  if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return 0;
-  if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return 0;
+  if (a == MPI_IN_PLACE || a == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
+  if (b == MPI_IN_PLACE || b == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
   for (i=0; i<n; i++) aa[i] = bb[i];
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Type_get_envelope(MPI_Datatype datatype,int *num_integers,int *num_addresses,int *num_datatypes,int *combiner)
@@ -87,7 +88,7 @@ int MPI_Type_get_envelope(MPI_Datatype datatype,int *num_integers,int *num_addre
   default:
     return MPIUni_Abort(MPI_COMM_SELF,1);
   }
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Type_get_contents(MPI_Datatype datatype,int max_integers,int max_addresses,int max_datatypes,int *array_of_integers,MPI_Aint *array_of_addresses,MPI_Datatype *array_of_datatypes)
@@ -109,7 +110,7 @@ int MPI_Type_get_contents(MPI_Datatype datatype,int max_integers,int max_address
   default:
     return MPIUni_Abort(MPI_COMM_SELF,1);
   }
-  return 0;
+  return MPI_SUCCESS;
 }
 
 /*
@@ -121,7 +122,7 @@ static int Keyval_setup(void)
   attr[MPI_COMM_WORLD-1][0].attribute_val = &mpi_tag_ub;
   attr[MPI_COMM_SELF-1][0].active         = 1;
   attr[MPI_COMM_SELF-1][0].attribute_val  = &mpi_tag_ub;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
@@ -131,7 +132,7 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
   attr_keyval[num_attr].extra_state = extra_state;
   attr_keyval[num_attr].del         = delete_fn;
   *keyval                           = num_attr++;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Keyval_free(int *keyval)
@@ -145,7 +146,7 @@ int MPI_Keyval_free(int *keyval)
 
 int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   attr[comm-1][keyval].active        = 1;
   attr[comm-1][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
@@ -153,7 +154,7 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   if (attr[comm-1][keyval].active && attr_keyval[keyval].del) {
     void *save_attribute_val = attr[comm-1][keyval].attribute_val;
     attr[comm-1][keyval].active        = 0;
@@ -165,7 +166,7 @@ int MPI_Attr_delete(MPI_Comm comm,int keyval)
 
 int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   if (!keyval) Keyval_setup();
   *flag                  = attr[comm-1][keyval].active;
   *(void**)attribute_val = attr[comm-1][keyval].attribute_val;
@@ -175,7 +176,7 @@ int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
   int j;
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   for (j=3; j<MaxComm; j++) {
     if (!comm_active[j-1]) {
       comm_active[j-1] = 1;
@@ -192,7 +193,7 @@ int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   int j;
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   for (j=3; j<MaxComm; j++) {
     if (!comm_active[j-1]) {
       comm_active[j-1] = 1;
@@ -203,14 +204,14 @@ int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
   if (MaxComm > MAX_COMM) return MPI_FAILURE;
   *out = MaxComm++;
   comm_active[*out-1] = 1;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
-  if (*comm-1 < 0 || *comm-1 > MaxComm) return 1;
+  if (*comm-1 < 0 || *comm-1 > MaxComm) return MPI_FAILURE;
   for (i=0; i<num_attr; i++) {
     if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
     attr[*comm-1][i].active        = 0;
@@ -223,14 +224,14 @@ int MPI_Comm_free(MPI_Comm *comm)
 
 int MPI_Comm_size(MPI_Comm comm, int *size)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   *size=1;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_rank(MPI_Comm comm, int *rank)
 {
-  if (comm-1 < 0 || comm-1 > MaxComm) return 1;
+  if (comm-1 < 0 || comm-1 > MaxComm) return MPI_FAILURE;
   *rank=0;
   return MPI_SUCCESS;
 }
@@ -254,35 +255,35 @@ static int MPI_was_finalized   = 0;
 
 int MPI_Init(int *argc, char ***argv)
 {
-  if (MPI_was_initialized) return 1;
-  if (MPI_was_finalized) return 1;
+  if (MPI_was_initialized) return MPI_FAILURE;
+  if (MPI_was_finalized) return MPI_FAILURE;
   MPI_was_initialized = 1;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Finalize(void)
 {
   MPI_Comm comm;
-  if (MPI_was_finalized) return 1;
-  if (!MPI_was_initialized) return 1;
+  if (MPI_was_finalized) return MPI_FAILURE;
+  if (!MPI_was_initialized) return MPI_FAILURE;
   comm = MPI_COMM_WORLD;
   MPI_Comm_free(&comm);
   comm = MPI_COMM_SELF;
   MPI_Comm_free(&comm);
   MPI_was_finalized = 1;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Initialized(int *flag)
 {
   *flag = MPI_was_initialized;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int MPI_Finalized(int *flag)
 {
   *flag = MPI_was_finalized;
-  return 0;
+  return MPI_SUCCESS;
 }
 
 /* -------------------     Fortran versions of several routines ------------------ */
@@ -574,9 +575,9 @@ PETSC_EXTERN void PETSC_STDCALL petsc_mpi_comm_create_(int *comm,int *group,int 
   *ierr    = MPI_SUCCESS;
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsc_mpi_address_(void *location,MPIUNI_INTPTR *address,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL petsc_mpi_address_(void *location,MPI_Aint *address,int *ierr)
 {
-  *address =  (MPIUNI_INTPTR) location;
+  *address =  (MPI_Aint) ((char *)location);
   *ierr    = MPI_SUCCESS;
 }
 

@@ -53,11 +53,13 @@ typedef struct {
   PetscSFBasicPack inuse;       /* Buffers being used for transactions that have not yet completed */
 } PetscSF_Basic;
 
-#if !defined(PETSC_HAVE_MPI_TYPE_DUP) /* Danger: type is not reference counted; subject to ABA problem */
-PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
+#if !defined(PETSC_HAVE_MPI_TYPE_DUP)
+PETSC_STATIC_INLINE int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
 {
-  *newtype = datatype;
-  return 0;
+  int ierr;
+  ierr = MPI_Type_contiguous(1,datatype,newtype); if (ierr) return ierr;
+  ierr = MPI_Type_commit(newtype); if (ierr) return ierr;
+  return MPI_SUCCESS;
 }
 #endif
 
@@ -872,9 +874,7 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   for (link=bas->avail; link; link=next) {
     PetscInt i;
     next = link->next;
-#if defined(PETSC_HAVE_MPI_TYPE_DUP)
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
-#endif
     for (i=0; i<bas->niranks; i++) {ierr = PetscFree(link->root[i]);CHKERRQ(ierr);}
     for (i=sf->ndranks; i<sf->nranks; i++) {ierr = PetscFree(link->leaf[i]);CHKERRQ(ierr);} /* Free only non-distinguished leaf buffers */
     ierr = PetscFree2(link->root,link->leaf);CHKERRQ(ierr);
