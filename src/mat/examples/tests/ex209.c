@@ -1,21 +1,26 @@
 static char help[] = "Test MatTransposeMatMult() \n\n";
 
+/* Example:
+  mpiexec -n 8 ./ex209 -f <inputfile> (e.g., inputfile=ceres_solver_iteration_001_A.petsc)
+*/
+
 #include <petscmat.h>
 
 int main(int argc,char **args)
 {
-  Mat            A,C,AtA,At,B;
+  Mat            A,C,AtA,B;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN]="ceres_solver_iteration_001_A.petsc";
   PetscErrorCode ierr;
   PetscReal      fill = 4.0;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   PetscBool      equal;
   PetscInt       i,m,n,rstart,rend;
   PetscScalar    one=1.0;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Load matrix A */
@@ -24,7 +29,6 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  if (!rank) printf("A is loaded...\n");
 
   /* Create identity matrix B */
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -40,7 +44,14 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Compute AtA = A^T*B*A, B = identity matrix */
+  if (size > 1) { /* sequential MatPtAP() is too slow for large matrix, e.g. ceres_solver_iteration_001_A. It needs optimized! */
+    ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
+    ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
+    if (!rank) printf("C = A^T*B*A is done...\n");
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
 
   /* Compute C = A^T*A */
   ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -48,15 +59,11 @@ int main(int argc,char **args)
   ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   if (!rank) printf("REUSE C = A^T*A is done...\n");
 
-  /* Compute AtA = A^T*B*A, B = identity matrix */
-  ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
-  ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
-  if (!rank) printf("C = A^T*B*A is done...\n");
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-
   /* Compare C and AtA */
-  ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+  if (size > 1) {
+    ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+  }
 
   ierr = MatDestroy(&AtA);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

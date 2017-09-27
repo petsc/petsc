@@ -866,18 +866,39 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
 {
   PetscErrorCode ierr;
   const char     *algTypes[3] = {"scalable","nonscalable","matmatmult"};
-  PetscInt       alg=0; /* set default algorithm */
+  PetscInt       aN=A->cmap->N,alg=1; /* set default algorithm */
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
     PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
-    ierr = PetscOptionsEList("-mattransposematmult_via","Algorithmic approach","MatTransposeMatMult",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mattransposematmult_via","Algorithmic approach","MatTransposeMatMult",algTypes,3,algTypes[1],&alg,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,P,A,0,0);CHKERRQ(ierr);
     switch (alg) {
     case 1:
+      if (!flg && aN > 100000) { /* may switch to scalable algorithm as default */
+        MatInfo     Ainfo,Pinfo;
+        PetscInt    nz_local;
+        PetscBool   alg_scalable_loc=PETSC_FALSE,alg_scalable;
+        MPI_Comm    comm;
+
+        ierr = MatGetInfo(A,MAT_LOCAL,&Ainfo);CHKERRQ(ierr);
+        ierr = MatGetInfo(P,MAT_LOCAL,&Pinfo);CHKERRQ(ierr);
+        nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated); /* estimated local nonzero entries */
+
+        if (aN > fill*nz_local) alg_scalable_loc = PETSC_TRUE;
+        ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+        ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+
+        if (alg_scalable) {
+          alg  = 0; /* scalable algorithm would slower than nonscalable algorithm */
+          ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(P,A,fill,C);CHKERRQ(ierr);
+          break;
+        }
+      }
       ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(P,A,fill,C);CHKERRQ(ierr);
       break;
     case 2:
@@ -894,7 +915,7 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
       PetscFunctionReturn(0);
     }
       break;
-    default:
+    default: /* scalable algorithm */
       ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(P,A,fill,C);CHKERRQ(ierr);
       break;
     }
@@ -1089,7 +1110,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable_old(Mat P,Ma
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat, MatDuplicateOption,Mat*);
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat,MatDuplicateOption,Mat*);
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable_old(Mat P,Mat A,PetscReal fill,Mat *C)
 {
@@ -1435,7 +1456,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   PetscMPIInt         size,rank;
   Mat                 Cmpi;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
-  PetscInt            pN=P->cmap->N,pn=P->cmap->n,aN=A->cmap->N,an=A->cmap->n;
+  PetscInt            pn=P->cmap->n,aN=A->cmap->N,an=A->cmap->n;
   PetscInt            *lnk,i,k,nsend;
   PetscBT             lnkbt;
   PetscMPIInt         tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0,nrecv;
@@ -1448,52 +1469,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
   PetscInt            *Jptr,*prmap=p->garray,con,j,Crmax;
-  Mat_SeqAIJ          *p_loc,*c_loc,*c_oth;
+  Mat_SeqAIJ          *a_loc,*c_loc,*c_oth;
   PetscTable          ta;
-#if defined(PETSC_HAVE_HYPRE)
-  const char          *algTypes[3] = {"scalable","nonscalable","hypre"};
-  PetscInt            nalg = 3;
-#else
-  const char          *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt            nalg = 2;
-#endif
-  PetscInt            alg = 1; /* set default algorithm */
-  PetscBool           flg;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  printf("MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable..\n");
-#if 0
-  /* pick an algorithm */
-  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-  PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
-  ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[1],&alg,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  if (!flg && pN > 100000) { /* may switch to scalable algorithm as default */
-    MatInfo     Ainfo,Pinfo;
-    PetscInt    nz_local;
-    PetscBool   alg_scalable_loc=PETSC_FALSE,alg_scalable;
-
-    ierr = MatGetInfo(A,MAT_LOCAL,&Ainfo);CHKERRQ(ierr);
-    ierr = MatGetInfo(P,MAT_LOCAL,&Pinfo);CHKERRQ(ierr);
-    nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated);
-
-    if (pN > fill*nz_local) alg_scalable_loc = PETSC_TRUE;
-    ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
-
-    if (alg_scalable) {
-      alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
-    }
-  }
-
-  if (alg == 0) {
-    ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(A,P,fill,C);CHKERRQ(ierr);
-    (*C)->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable;
-    PetscFunctionReturn(0);
-  }
-#endif
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -1501,16 +1481,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
 
-  /* Do dense axpy in MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ() */
   Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
 
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr        = PetscNew(&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
   ptap->reuse = MAT_INITIAL_MATRIX;
-  ptap->algType = alg;
-
-  /* get P_loc by taking all local rows of P */
-  ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
   /* (0) compute Rd = Pd^T, Ro = Po^T  */
   /* --------------------------------- */
@@ -1519,11 +1494,11 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* (1) compute symbolic A_loc */
   /* ---------------------------*/
-  ierr = MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&ptap->AP_loc);CHKERRQ(ierr); /* ptap->AP_loc = A_loc */
+  ierr = MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&ptap->A_loc);CHKERRQ(ierr);
 
-  /* (2-1) compute symbolic Co = Ro*A_loc  */
+  /* (2-1) compute symbolic C_oth = Ro*A_loc  */
   /* ------------------------------------ */
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->A_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
 
   /* (3) send coj of C_oth to other processors  */
   /* ------------------------------------------ */
@@ -1578,7 +1553,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* (2-2) compute symbolic C_loc = Rd*A_loc */
   /* ---------------------------------------- */
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Rd,ptap->AP_loc,fill,&ptap->C_loc);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Rd,ptap->A_loc,fill,&ptap->C_loc);CHKERRQ(ierr);
   c_loc = (Mat_SeqAIJ*)ptap->C_loc->data;
 
   /* receives coj are complete */
@@ -1589,17 +1564,16 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   if (nsend) {ierr = MPI_Waitall(nsend,swaits,sstatus);CHKERRQ(ierr);}
 
   /* add received column indices into ta to update Crmax */
-  p_loc  = (Mat_SeqAIJ*)(ptap->AP_loc)->data;
+  a_loc = (Mat_SeqAIJ*)(ptap->A_loc)->data;
 
   /* create and initialize a linked list */
-  ierr = PetscTableCreate(an,aN,&ta);CHKERRQ(ierr); /* for compute A_loc and Cmpi */
-  MatRowMergeMax_SeqAIJ(p_loc,ptap->AP_loc->rmap->N,ta);
-  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Arows) */
+  ierr = PetscTableCreate(an,aN,&ta);CHKERRQ(ierr); /* for compute Crmax */
+  MatRowMergeMax_SeqAIJ(a_loc,ptap->A_loc->rmap->N,ta);
 
   for (k=0; k<nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -1659,8 +1633,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     nextci[k]   = buf_ri_k[k] + (nrows + 1); /* poins to the next i-structure of k-th recved i-structure  */
   }
 
-  ierr = MatPreallocateInitialize(comm,pn,pn,dnz,onz);CHKERRQ(ierr);
-  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
+  ierr = MatPreallocateInitialize(comm,pn,an,dnz,onz);CHKERRQ(ierr);
+  ierr = PetscLLCondensedCreate(Crmax,aN,&lnk,&lnkbt);CHKERRQ(ierr); 
   for (i=0; i<pn; i++) {
     /* add C_loc into Cmpi */
     nzi  = c_loc->i[i+1] - c_loc->i[i];
@@ -1679,7 +1653,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
     nzi = lnk[0];
 
     /* copy data into free space, then initialize lnk */
-    ierr = PetscLLCondensedClean(pN,nzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
+    ierr = PetscLLCondensedClean(aN,nzi,current_space->array,lnk,lnkbt);CHKERRQ(ierr);
     ierr = MatPreallocateSet(i+owners[rank],nzi,current_space->array,dnz,onz);CHKERRQ(ierr);
   }
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
@@ -1687,7 +1661,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = PetscFreeSpaceDestroy(free_space);CHKERRQ(ierr);
 
   /* local sizes and preallocation */
-  ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cmpi,pn,an,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1738,11 +1712,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
 
     /* 2) compute numeric A_loc */
     /*--------------------------*/
-    ierr = MatMPIAIJGetLocalMat(A,MAT_REUSE_MATRIX,&ptap->AP_loc);CHKERRQ(ierr);
+    ierr = MatMPIAIJGetLocalMat(A,MAT_REUSE_MATRIX,&ptap->A_loc);CHKERRQ(ierr);
   }
 
   /* 3) C_loc = Rd*A_loc, C_oth = Ro*A_loc */
-  A_loc = ptap->AP_loc;
+  A_loc = ptap->A_loc;
   ierr = ((ptap->C_loc)->ops->matmultnumeric)(ptap->Rd,A_loc,ptap->C_loc);CHKERRQ(ierr);
   ierr = ((ptap->C_oth)->ops->matmultnumeric)(ptap->Ro,A_loc,ptap->C_oth);CHKERRQ(ierr);
   C_loc = ptap->C_loc;
@@ -1764,10 +1738,10 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   }
 
   /* Co -> C, off-processor part */
-  cm = C_oth->rmap->N;
+  cm    = C_oth->rmap->N;
   c_seq = (Mat_SeqAIJ*)C_oth->data;
-  cols = c_seq->j;
-  vals = c_seq->a;
+  cols  = c_seq->j;
+  vals  = c_seq->a;
   for (i=0; i<cm; i++) {
     ncols = c_seq->i[i+1] - c_seq->i[i];
     row = p->garray[i];
@@ -1943,8 +1917,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscFunctionReturn(0);
 }
 
-/* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ();
-   differ from MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable in using LLCondensedCreate_Scalable() */
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;

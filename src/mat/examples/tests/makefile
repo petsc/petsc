@@ -1911,8 +1911,8 @@ runex94_scalable1:
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_scalable1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
-runex94_2_mattransposematmult_nonscalable:
-	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via nonscalable> ex94_2.tmp 2>&1; \
+runex94_2_mattransposematmult_scalable:
+	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via scalable> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_2_mattransposematmult, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_2.tmp
@@ -2946,6 +2946,16 @@ runex208_baij_2:
 	   else printf "${PWD}\nPossible problem with ex208_baij_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex208_1.tmp
 
+runex209:
+	-@${MPIEXEC} -n 1 ./ex209 -f ${DATAFILESPATH}/matrices/arco1 > ex209_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex209_1.out ex209_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex209_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex209_1.tmp
+runex209_2:
+	-@${MPIEXEC} -n 4 ./ex209 -f ${DATAFILESPATH}/matrices/arco1 -matptap_via nonscalable > ex209_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex209_2.out ex209_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex209_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex209_1.tmp
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm \
                                  ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm \
@@ -3029,7 +3039,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc
                                  ex198.PETSc runex198 runex198_2 ex198.rm \
                                  ex199.PETSc runex199 ex199.rm printdot \
                                  ex206.PETSc runex206_aij_1 runex206_aij_2 runex206_baij_1_2 runex206_baij_2_2 runex206_sbaij_1_1 runex206_sbaij_1_2 runex206_sbaij_2_2 \
-                                 runex206_aij_2_d runex206_baij_2_1_d runex206_baij_2_2_d runex206_sbaij_2_1_d ex206.rm
+                                 runex206_aij_2_d runex206_baij_2_1_d runex206_baij_2_2_d runex206_sbaij_2_1_d ex206.rm \
+                                 ex209.PETSc runex209 runex209_2 ex209.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f runex67f_2 ex67f.rm
 TESTEXAMPLES_DOUBLEINT32       =  ex72.PETSc runex72 ex72.rm
 TESTEXAMPLES_FORTRAN_DOUBLEINT32  = ex79f.PETSc runex79f ex79f.rm ex58f.PETSc runex58f ex58f.rm
