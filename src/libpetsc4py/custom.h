@@ -86,6 +86,8 @@ PetscErrorCode SNESConverged(SNES snes,
 #if PY_MAJOR_VERSION < 3
 PyMODINIT_FUNC initlibpetsc4py(void);
 #else
+#undef  CYTHON_PEP489_MULTI_PHASE_INIT
+#define CYTHON_PEP489_MULTI_PHASE_INIT 0
 PyMODINIT_FUNC PyInit_libpetsc4py(void);
 static void initlibpetsc4py(void)
 {
