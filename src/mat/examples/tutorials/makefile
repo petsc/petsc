@@ -23,6 +23,10 @@ ex3: ex3.o  chkopts
 	-${CLINKER}  -o ex3 ex3.o ${PETSC_MAT_LIB}
 	${RM} ex3.o
 
+ex4: ex4.o  chkopts
+	-${CLINKER}  -o ex4 ex4.o ${PETSC_MAT_LIB}
+	${RM} ex4.o
+
 ex2_kds: ex2_kds.o  chkopts
 	-${CLINKER}  -o ex2_kds ex2_kds.o ${PETSC_MAT_LIB}
 	${RM} ex2_kds.o
@@ -69,6 +73,18 @@ ex17: ex17.o  chkopts
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+	
+runex4_1:
+	-@${MPIEXEC} -n 1 ./ex4 > ex4_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex4_1.tmp
+	 
+runex4_2:
+	-@${MPIEXEC} -n 2 ./ex4 > ex4_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex4_2.tmp	   
 
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
@@ -143,7 +159,7 @@ runex17:
 	   ${RM} -f ex17_1.tmp
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C		    = ex5.PETSc ex5.rm ex10.PETSc ex8.PETSc runex8 runex8_2 ex8.rm  ex10.rm ex12.PETSc ex12.rm
+TESTEXAMPLES_C		    = ex4.PETSc runex4_1 runex4_2 ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex8.PETSc runex8 runex8_2 ex8.rm  ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X	    = ex2.PETSc ex2.rm
 TESTEXAMPLES_DOUBLEINT32    = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	    =
