@@ -16,6 +16,7 @@
   PetscInt  maxnz;                    /* allocated nonzeros */ \
   PetscInt  *imax;                    /* maximum space allocated for each row */ \
   PetscInt  *ilen;                    /* actual length of each row */ \
+  PetscInt  *ipre;                    /* space preallocated for each row by user */ \
   PetscBool free_imax_ilen;  \
   PetscInt  reallocs;                 /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */\
