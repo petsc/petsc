@@ -3687,14 +3687,14 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
     PetscFunctionReturn(0);
   }
   if (!a->i || !a->j || !a->a || !a->imax || !a->ilen) {
-	ierr = PetscInfo(A, "Memory info is incomplete, and can not reset preallocation \n");CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+    ierr = PetscInfo(A, "Memory info is incomplete, and can not reset preallocation \n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   ierr = PetscMemcpy(a->imax,a->ipre,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(a->ilen,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   a->i[0] = 0;
   for (i=1; i<A->rmap->n+1; i++) {
-	a->i[i] = a->i[i-1] + a->imax[i-1];
+    a->i[i] = a->i[i-1] + a->imax[i-1];
   }
   A->preallocated     = PETSC_TRUE;
   a->nz               = 0;
