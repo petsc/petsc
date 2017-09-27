@@ -19,8 +19,6 @@
 
 #include "Bratu3Dimpl.h"
 
-#undef  __FUNCT__
-#define __FUNCT__ "FormInitGuess"
 PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
@@ -91,8 +89,6 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
 }
 
 
-#undef  __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
@@ -183,8 +179,6 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 }
 
 
-#undef  __FUNCT__
-#define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;

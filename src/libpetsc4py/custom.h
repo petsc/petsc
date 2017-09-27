@@ -7,8 +7,6 @@
 
 PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLogHistory"
 PETSC_STATIC_INLINE
 PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
@@ -19,8 +17,6 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLogHistory"
 PETSC_STATIC_INLINE
 PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 {
@@ -31,8 +27,6 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConverged"
 PETSC_STATIC_INLINE
 PetscErrorCode KSPConverged(KSP ksp, 
                             PetscInt iter,PetscReal rnorm,
@@ -58,8 +52,6 @@ PetscErrorCode KSPConverged(KSP ksp,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESConverged"
 PETSC_STATIC_INLINE
 PetscErrorCode SNESConverged(SNES snes,
                              PetscInt iter,PetscReal xnorm,PetscReal ynorm,PetscReal fnorm,
@@ -106,6 +98,3 @@ static void initlibpetsc4py(void)
   Py_DECREF(m);
 }
 #endif
-
-#undef  __FUNCT__
-#define __FUNCT__ "<libpetsc4py>"

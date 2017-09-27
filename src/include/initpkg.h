@@ -1,7 +1,5 @@
 /* ------------------------------------------------------------------------- */
 
-#undef  __FUNCT__
-#define __FUNCT__ "PetscInitializePackageAll"
 static PetscErrorCode PetscInitializePackageAll(void)
 {
   PetscErrorCode ierr;
@@ -23,8 +21,6 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef  __FUNCT__
-#define __FUNCT__ "<petsc4py.PETSc>"
 
 /* ------------------------------------------------------------------------- */
 

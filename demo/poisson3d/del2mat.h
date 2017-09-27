@@ -19,8 +19,6 @@ typedef struct {
   PetscScalar *F;
 } Del2Mat;
 
-#undef  __FUNCT__  
-#define __FUNCT__ "Del2Mat_mult"
 /* y <- A * x */
 PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y) 
 {
@@ -40,8 +38,7 @@ PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef  __FUNCT__  
-#define __FUNCT__ "Del2Mat_diag"
+
 /*D_i <- A_ii */
 PetscErrorCode Del2Mat_diag(Mat A, Vec D) 
 {

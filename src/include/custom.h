@@ -1,9 +1,6 @@
 #ifndef PETSC4PY_CUSTOM_H
 #define PETSC4PY_CUSTOM_H
 
-#undef  __FUNCT__
-#define __FUNCT__ "<petsc4py.PETSc>"
-
 #include "petsc/private/vecimpl.h"
 #include "petsc/private/matimpl.h"
 #include "petsc/private/kspimpl.h"
@@ -35,8 +32,6 @@ static PetscStageLog petsc_stageLog = NULL;
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].classid)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageFindId"
 static PetscErrorCode
 PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 {
@@ -57,8 +52,6 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogClassFindId"
 static PetscErrorCode
 PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
@@ -80,8 +73,6 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventFindId"
 static PetscErrorCode
 PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 {
@@ -102,8 +93,6 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageFindName"
 static PetscErrorCode
 PetscLogStageFindName(PetscLogStage stageid,
                       const char *name[])
@@ -119,8 +108,6 @@ PetscLogStageFindName(PetscLogStage stageid,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogClassFindName"
 static PetscErrorCode
 PetscLogClassFindName(PetscClassId classid,
                       const char *name[])
@@ -140,8 +127,6 @@ PetscLogClassFindName(PetscClassId classid,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventFindName"
 static PetscErrorCode
 PetscLogEventFindName(PetscLogEvent eventid,
                       const char *name[])
@@ -158,8 +143,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
 }
 
 #if !defined(PETSC_USE_LOG)
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventGetPerfInfo"
 static PetscErrorCode
 PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 {
@@ -186,8 +169,6 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArrayReadWrite(Vec,PetscScalar**);
 
 #else
 
-#undef  __FUNCT__
-#define __FUNCT__ "VecCUSPGetCUDAArray"
 PETSC_STATIC_INLINE PetscErrorCode
 VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
 {
@@ -195,15 +176,13 @@ VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() requires CUSP");
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires CUSP",PETSC_FUNCTION_NAME);
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 #define VecCUSPGetCUDAArrayRead      VecCUSPGetCUDAArray
 #define VecCUSPGetCUDAArrayWrite     VecCUSPGetCUDAArray
 #define VecCUSPGetCUDAArrayReadWrite VecCUSPGetCUDAArray
 
-#undef  __FUNCT__
-#define __FUNCT__ "VecCUSPRestoreCUDAArray"
 PETSC_STATIC_INLINE PetscErrorCode
 VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
 {
@@ -211,7 +190,7 @@ VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidType(v,1);
   PetscValidPointer(a,2);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() requires CUSP");
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires CUSP",PETSC_FUNCTION_NAME);
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 #define VecCUSPRestoreCUDAArrayRead      VecCUSPRestoreCUDAArray
@@ -220,8 +199,6 @@ VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
 
 #endif
 
-#undef  __FUNCT__
-#define __FUNCT__ "VecStrideSum"
 PETSC_STATIC_INLINE PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 {
@@ -253,8 +230,6 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 /* ---------------------------------------------------------------- */
 
 PETSC_STATIC_INLINE
-#undef  __FUNCT__
-#define __FUNCT__ "MatIsPreallocated"
 PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
@@ -265,8 +240,6 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 }
 
 PETSC_STATIC_INLINE
-#undef  __FUNCT__
-#define __FUNCT__ "MatHasPreallocationAIJ"
 PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij)
 {
   void (*f)(void) = 0;
@@ -297,8 +270,6 @@ typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfoDefaults"
 static PetscErrorCode
 MatFactorInfoDefaults(PetscBool incomplete,PetscBool cholesky,
                       MatFactorInfo *info)
@@ -338,8 +309,6 @@ MatFactorInfoDefaults(PetscBool incomplete,PetscBool cholesky,
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetIterationNumber"
 static PetscErrorCode
 KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
@@ -351,8 +320,6 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetResidualNorm"
 static PetscErrorCode
 KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
@@ -364,8 +331,6 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPConvergenceTestCall"
 static PetscErrorCode
 KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReason *reason)
 {
@@ -381,8 +346,6 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetConvergedReason"
 static PetscErrorCode
 KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 {
@@ -394,8 +357,6 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESConvergenceTestCall"
 static PetscErrorCode
 SNESConvergenceTestCall(SNES snes, PetscInt its,
                         PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
@@ -417,8 +378,6 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetUseMFFD"
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscBool *flag)
 {
@@ -435,8 +394,6 @@ SNESGetUseMFFD(SNES snes,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUseMFFD"
 static PetscErrorCode
 SNESSetUseMFFD(SNES snes,PetscBool flag)
 {
@@ -488,8 +445,6 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetUseFDColoring"
 static PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 {
@@ -504,8 +459,6 @@ SNESGetUseFDColoring(SNES snes,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUseFDColoring"
 static PetscErrorCode
 SNESSetUseFDColoring(SNES snes,PetscBool flag)
 {
@@ -543,8 +496,6 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreateND"
 static PetscErrorCode
 DMDACreateND(MPI_Comm comm,
              PetscInt dim,PetscInt dof,
@@ -573,9 +524,6 @@ DMDACreateND(MPI_Comm comm,
 }
 
 /* ---------------------------------------------------------------- */
-
-#undef  __FUNCT__
-#define __FUNCT__ "<petsc4py.PETSc>"
 
 #endif/* PETSC4PY_CUSTOM_H*/
 

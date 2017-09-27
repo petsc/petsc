@@ -12,8 +12,6 @@ typedef struct AppCtx {
   PetscScalar h[3];
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitial"
 PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
 {
   PetscScalar    *x;
@@ -29,8 +27,6 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx)
 {
   const PetscScalar *x;
@@ -52,8 +48,6 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RunTest"
 PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
 {
   Vec            x,f;
@@ -111,8 +105,6 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetInt"
 PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
 {
   PetscErrorCode ierr;
@@ -122,8 +114,6 @@ PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   double         wt;
