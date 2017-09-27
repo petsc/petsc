@@ -795,7 +795,7 @@ PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
 
 .keywords: Mat, ResetPreallocation
 
-.seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatXAIJSetPreallocation
+.seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatXAIJSetPreallocation()
 @*/
 PetscErrorCode MatResetPreallocation(Mat A)
 {
