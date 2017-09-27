@@ -26,6 +26,16 @@ class TSType(object):
     CRANK_NICOLSON = CN
     RUNGE_KUTTA    = RK
 
+class TSRKType(object):
+    RK1FE = S_(TSRK1FE)
+    RK2A  = S_(TSRK2A)
+    RK4   = S_(TSRK4)
+    RK3BS = S_(TSRK3BS)
+    RK3   = S_(TSRK3)
+    RK5F  = S_(TSRK5F)
+    RK5DP = S_(TSRK5DP)
+    RK5BS = S_(TSRK5BS)
+
 class TSProblemType(object):
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
@@ -69,6 +79,7 @@ class TSConvergedReason(object):
 cdef class TS(Object):
 
     Type = TSType
+    RKType = TSRKType
     ProblemType = TSProblemType
     EquationType = TSEquationType
     ExactFinalTime = TSExactFinalTime
@@ -112,9 +123,19 @@ cdef class TS(Object):
         ts_type = str2bytes(ts_type, &cval)
         CHKERR( TSSetType(self.ts, cval) )
 
+    def setRKType(self, ts_type):
+        cdef const_char *cval = NULL
+        ts_type = str2bytes(ts_type, &cval)
+        CHKERR( TSRKSetType(self.ts, cval) )
+
     def getType(self):
         cdef PetscTSType cval = NULL
         CHKERR( TSGetType(self.ts, &cval) )
+        return bytes2str(cval)
+
+    def getRKType(self):
+        cdef PetscTSRKType cval = NULL
+        CHKERR( TSRKGetType(self.ts, &cval) )
         return bytes2str(cval)
 
     def setProblemType(self, ptype):
@@ -276,7 +297,7 @@ cdef class TS(Object):
         PetscINCREF(J.obj); PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
-        
+
     def setI2Function(self, function, Vec f=None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
@@ -329,7 +350,7 @@ cdef class TS(Object):
         CHKERR( TSGetI2Jacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
         PetscINCREF(J.obj); PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__i2jacobian__')
-        return (J, P, jacobian)        
+        return (J, P, jacobian)
 
     # --- solution vector ---
 
@@ -341,7 +362,7 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscINCREF(u.obj)
         return u
-        
+
     def setSolution2(self, Vec u, Vec v):
         CHKERR( TS2SetSolution(self.ts, u.vec, v.vec) )
 
@@ -608,6 +629,102 @@ cdef class TS(Object):
         cdef PetscReal rval = asReal(t)
         CHKERR( TSInterpolate(self.ts, rval, u.vec) )
 
+    # --- Adjoint methods ---
+
+    def setSaveTrajectory(self):
+        CHKERR(TSSetSaveTrajectory(self.ts))
+
+    def getCostIntegral(self):
+        cdef Vec cost = Vec()
+        CHKERR( TSGetCostIntegral(self.ts, &cost.vec) )
+        PetscINCREF(cost.obj)
+        return cost
+
+    def setCostGradients(self, vl, vm=None):
+        cdef PetscInt n = 0;
+        cdef PetscVec *vecl = NULL
+        cdef PetscVec *vecm = NULL
+        cdef mem1 = None, mem2 = None
+        if isinstance(vl, Vec): vl = [vl]
+        if isinstance(vm, Vec): vm = [vm]
+        if vl is not None:
+            n = <PetscInt>len(vl)
+        elif vm is not None:
+            n = <PetscInt>len(vm)
+        if vl is not None:
+            assert len(vl) == <Py_ssize_t>n
+            mem1 = oarray_p(empty_p(n), NULL, <void**>&vecl)
+            for i from 0 <= i < n:
+                vecl[i] = (<Vec?>vl[i]).vec
+        if vm is not None:
+            assert len(vm) == <Py_ssize_t>n
+            mem2 = oarray_p(empty_p(n), NULL, <void**>&vecm)
+            for i from 0 <= i < n:
+                vecm[i] = (<Vec?>vm[i]).vec
+        self.set_attr('__costgradients_memory', (mem1, mem2))
+        CHKERR( TSSetCostGradients(self.ts, n, vecl, vecm) )
+
+    def getCostGradients(self):
+        cdef PetscInt i = 0, n = 0
+        cdef PetscVec *vecl = NULL
+        cdef PetscVec *vecm = NULL
+        CHKERR( TSGetCostGradients(self.ts, &n, &vecl, &vecm) )
+        cdef object vl = None, vm = None
+        if vecl != NULL:
+            vl = [ref_Vec(vecl[i]) for i from 0 <= i < n]
+        if vecm != NULL:
+            vm = [ref_Vec(vecm[i]) for i from 0 <= i < n]
+        return (vl, vm)
+
+    def setCostIntegrand(self, Vec cost or None, rfunction,
+                         n=0, drdyfunction=None, drdpfunction=None,
+                         forward=True, args=None, kargs=None):
+        cdef PetscInt ival = asInt(n)
+        cdef PetscVec vec = NULL
+        cdef int (*R   )(PetscTS,PetscReal,PetscVec,PetscVec,  void*) nogil except PETSC_ERR_PYTHON
+        cdef int (*DRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) nogil except PETSC_ERR_PYTHON
+        cdef int (*DRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) nogil except PETSC_ERR_PYTHON
+        R = NULL; DRDY = NULL; DRDP = NULL;
+        if cost is not None: vec = (<Vec>cost).vec
+        if rfunction    is not None: R    = TSAdjoint_CostIntegrand
+        if drdyfunction is not None: DRDY = TSAdjoint_CostIntegrand_DY
+        if drdpfunction is not None: DRDP = TSAdjoint_CostIntegrand_DP
+        cdef PetscBool fwd = forward
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = ((rfunction, drdyfunction, drdpfunction), args, kargs)
+        self.set_attr('__costintegrand__', context)
+        CHKERR( TSSetCostIntegrand(self.ts, ival, vec, R, DRDY, DRDP, fwd, <void*>context) )
+
+    def adjointSetRHSJacobian(self, adjointjacobian, Mat A=None, args=None, kargs=None):
+        cdef PetscMat Amat=NULL
+        if A is not None: Amat = A.mat
+        if adjointjacobian is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (adjointjacobian, args, kargs)
+            self.set_attr('__adjointrhsjacobian__', context)
+            CHKERR( TSAdjointSetRHSJacobian(self.ts, Amat, TSAdjoint_RHSJacobian, <void*>context) )
+        else:
+            CHKERR( TSAdjointSetRHSJacobian(self.ts, Amat, NULL, NULL) )
+
+    def adjointComputeRHSJacobian(self, t, Vec x, Mat J):
+        cdef PetscReal rval = asReal(t)
+        CHKERR( TSAdjointComputeRHSJacobian(self.ts, rval, x.vec, J.mat) )
+
+    def adjointSetSteps(self, adjoint_steps):
+        cdef PetscInt ival = asInt(adjoint_steps)
+        CHKERR( TSAdjointSetSteps(self.ts, ival) )
+
+    def adjointSetUp(self):
+        CHKERR(TSAdjointSetUp(self.ts))
+
+    def adjointSolve(self):
+        CHKERR( TSAdjointSolve(self.ts) )
+
+    def adjointStep(self):
+        CHKERR(TSAdjointStep(self.ts))
+
 
     # --- Python ---
 
@@ -783,6 +900,7 @@ cdef class TS(Object):
 # -----------------------------------------------------------------------------
 
 del TSType
+del TSRKType
 del TSProblemType
 del TSEquationType
 del TSExactFinalTime

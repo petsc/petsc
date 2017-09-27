@@ -85,7 +85,7 @@ cdef extern from * nogil:
                                              PetscMat,
                                              PetscMat,
                                              void*) except PETSC_ERR_PYTHON
-                                             
+
     ctypedef int (*PetscTSI2FunctionFunction)(PetscTS,
                                               PetscReal,
                                               PetscVec,
@@ -193,6 +193,44 @@ cdef extern from * nogil:
     int TSMonitorCancel(PetscTS)
     int TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
 
+    ctypedef int (*PetscTSAdjointR)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSAdjointDRDY)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSAdjointDRDP)(PetscTS,PetscReal,PetscVec,PetscVec[],void*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscTSAdjointRHSJacobianFunction)(PetscTS,
+                                                      PetscReal,
+                                                      PetscVec,
+                                                      PetscMat,
+                                                      void*) except PETSC_ERR_PYTHON
+
+
+    int TSSetSaveTrajectory(PetscTS)
+    int TSSetCostGradients(PetscTS,PetscInt,PetscVec*,PetscVec*)
+    int TSGetCostGradients(PetscTS,PetscInt*,PetscVec**,PetscVec**)
+    int TSGetCostIntegral(PetscTS,PetscVec*)
+
+    int TSSetCostIntegrand(PetscTS,PetscInt,PetscVec,PetscTSAdjointR,PetscTSAdjointDRDY,PetscTSAdjointDRDP,PetscBool,void*)
+    int TSAdjointSetRHSJacobian(PetscTS,PetscMat,PetscTSAdjointRHSJacobianFunction,void*)
+    int TSComputeCostIntegrand(PetscTS,PetscReal,PetscVec,PetscVec)
+    int TSAdjointComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat)
+
+    int TSAdjointSolve(PetscTS)
+    int TSAdjointSetSteps(PetscTS,PetscInt)
+    int TSAdjointStep(PetscTS)
+    int TSAdjointSetUp(PetscTS)
+    int TSAdjointComputeDRDPFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
+    int TSAdjointComputeDRDYFunction(PetscTS,PetscReal,PetscVec,PetscVec*)
+    int TSAdjointCostIntegral(PetscTS)
+
+    int TSForwardSetSensitivities(PetscTS,PetscInt,PetscVec*,PetscInt,PetscVec*)
+    int TSForwardGetSensitivities(PetscTS,PetscInt*,PetscVec**,PetscInt*,PetscVec**)
+    int TSForwardSetIntegralGradients(PetscTS,PetscInt,PetscVec *,PetscVec *)
+    int TSForwardGetIntegralGradients(PetscTS,PetscInt*,PetscVec **,PetscVec **)
+    int TSForwardSetRHSJacobianP(PetscTS,PetscVec*,PetscTSCostIntegrandFunction,void*)
+    int TSForwardComputeRHSJacobianP(PetscTS,PetscReal,PetscVec,PetscVec*)
+    int TSForwardSetUp(PetscTS)
+    int TSForwardCostIntegral(PetscTS)
+    int TSForwardStep(PetscTS)
+
     int TSSetPreStep(PetscTS, PetscTSPreStepFunction)
     int TSSetPostStep(PetscTS, PetscTSPostStepFunction)
 
@@ -211,6 +249,19 @@ cdef extern from * nogil:
     int TSAlphaSetRadius(PetscTS,PetscReal)
     int TSAlphaSetParams(PetscTS,PetscReal,PetscReal,PetscReal)
     int TSAlphaGetParams(PetscTS,PetscReal*,PetscReal*,PetscReal*)
+
+    ctypedef char* PetscTSRKType "const char*"
+    PetscTSRKType TSRK1FE
+    PetscTSRKType TSRK2A
+    PetscTSRKType TSRK3
+    PetscTSRKType TSRK3BS
+    PetscTSRKType TSRK4
+    PetscTSRKType TSRK5F
+    PetscTSRKType TSRK5DP
+    PetscTSRKType TSRK5BS
+
+    int TSRKGetType(PetscTS ts,PetscTSRKType*)
+    int TSRKSetType(PetscTS ts,PetscTSRKType)
 
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
@@ -309,7 +360,7 @@ cdef int TS_IJacobian(
     (jacobian, args, kargs) = context
     jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), Jmat, Pmat, *args, **kargs)
     return 0
-    
+
 cdef int TS_I2Function(
     PetscTS   ts,
     PetscReal t,
@@ -389,6 +440,77 @@ cdef int TS_PostStep(
     cdef TS Ts = ref_TS(ts)
     (poststep, args, kargs) = Ts.get_attr('__poststep__')
     poststep(Ts, *args, **kargs)
+    return 0
+
+# -----------------------------------------------------------------------------
+
+cdef int TSAdjoint_CostIntegrand(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  y,
+    PetscVec  r,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Yvec = ref_Vec(y)
+    cdef Vec Rvec = ref_Vec(r)
+    cdef object context = Ts.get_attr('__costintegrand__')
+    if context is None and ctx != NULL: context = <object>ctx
+    ((rfunction, _, _), args, kargs) = context
+    rfunction(Ts, toReal(t), Yvec, Rvec, *args, **kargs)
+    return 0
+
+cdef int TSAdjoint_CostIntegrand_DY(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  y,
+    PetscVec  drdy[],
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Yvec = ref_Vec(y)
+    cdef PetscInt i = 0, n = 0
+    CHKERR( TSGetCostGradients(ts, &n, NULL, NULL) )
+    cdef list vecs = [ref_Vec(drdy[i]) for i from 0 <= i < n]
+    cdef object context = Ts.get_attr('__costintegrand__')
+    if context is None and ctx != NULL: context = <object>ctx
+    ((_, drdyfunction, _), args, kargs) = context
+    drdyfunction(Ts, toReal(t), Yvec, vecs, *args, **kargs)
+    return 0
+
+cdef int TSAdjoint_CostIntegrand_DP(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  y,
+    PetscVec  drdp[],
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Yvec = ref_Vec(y)
+    cdef PetscInt i = 0, n = 0
+    CHKERR( TSGetCostGradients(ts, &n, NULL, NULL) )
+    cdef list vecs = [ref_Vec(drdp[i]) for i from 0 <= i < n]
+    cdef object context = Ts.get_attr('__costintegrand__')
+    if context is None and ctx != NULL: context = <object>ctx
+    ((_, _, drdpfunction), args, kargs) = context
+    drdpfunction(Ts, toReal(t), Yvec, vecs, *args, **kargs)
+    return 0
+
+cdef int TSAdjoint_RHSJacobian(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscMat  J,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Xvec = ref_Vec(x)
+    cdef Mat Jmat = ref_Mat(J)
+    cdef object context = Ts.get_attr('__adjointrhsjacobian__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (adjointjacobian, args, kargs) = context
+    adjointjacobian(Ts, toReal(t), Xvec, Jmat, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
