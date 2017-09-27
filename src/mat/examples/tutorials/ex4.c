@@ -11,7 +11,7 @@ static char help[] = "Illustrate the use of MatResetPreallocation.\n";
 
 int main(int argc,char **argv)
 {
-  Mat             A,B;
+  Mat             A;
   MPI_Comm        comm;
   PetscInt        n=5,m=5,*dnnz,*onnz,i,rstart,rend,M,N;
   PetscErrorCode  ierr;

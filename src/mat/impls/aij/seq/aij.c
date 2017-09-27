@@ -3675,7 +3675,7 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
 PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a;
-  PetscInt       i,nz;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
