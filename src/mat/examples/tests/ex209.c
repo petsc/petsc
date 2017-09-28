@@ -50,8 +50,8 @@ int main(int argc,char **args)
     ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
     ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
     if (!rank) printf("C = A^T*B*A is done...\n");
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Compute C = A^T*A */
   ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);

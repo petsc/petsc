@@ -1032,7 +1032,7 @@ PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
       ierr = MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
       ierr = MatMatMult_SeqAIJ_SeqAIJ(At,B,MAT_INITIAL_MATRIX,fill,C);CHKERRQ(ierr);
 
-      c                  = (*C)->data;
+      c                  = (Mat_SeqAIJ*)(*C)->data;
       c->atb             = atb;
       atb->At            = At;
       atb->destroy       = (*C)->ops->destroy;
