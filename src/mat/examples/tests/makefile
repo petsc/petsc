@@ -3027,7 +3027,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc
                                  ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_matmatmult_scalable \
                                  runex94_scalable0 runex94_scalable1 \
-                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
+                                 runex94_2_mattransposematmult_scalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex111.PETSc runex111_3 ex111.rm printdot ex116.PETSc runex116 runex116_2 ex116.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
