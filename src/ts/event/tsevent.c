@@ -156,7 +156,7 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if(nevents) {
+  if (nevents) {
     PetscValidIntPointer(direction,2);
     PetscValidIntPointer(terminate,3);
   }
@@ -183,7 +183,7 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   event->ctx = ctx;
 
   event->recsize = 8;  /* Initial size of the recorder */
-  ierr = PetscOptionsBegin(((PetscObject)ts)->comm,"","TS Event options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)ts)->comm,((PetscObject)ts)->prefix,"TS Event options","TS");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_event_tol","Scalar event tolerance for zero crossing check","TSSetEventTolerances",tol,&tol,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_event_monitor","Print choices made by event handler","",&flg);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
   PetscBool      terminate = PETSC_FALSE;
   PetscBool      restart = PETSC_FALSE;
   PetscInt       i,ctr,stepnum;
-  PetscBool      ts_terminate,ts_restart;
+  PetscBool      inflag[2],outflag[2];
   PetscBool      forwardsolve = PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
 
   PetscFunctionBegin;
@@ -287,17 +287,24 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 
   /* Handle termination events and step restart */
   for (i=0; i<event->nevents_zero; i++) if (event->terminate[event->events_zero[i]]) terminate = PETSC_TRUE;
-  ierr = MPIU_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
-  event->status = ts_terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
-  ierr = MPIU_Allreduce(&restart,&ts_restart,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  if (ts_restart) ts->steprestart = PETSC_TRUE;
+  inflag[0] = restart; inflag[1] = terminate;
+  ierr = MPIU_Allreduce(inflag,outflag,2,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  restart = outflag[0]; terminate = outflag[1];
+  if (restart) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
+  if (terminate) {ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);}
+  event->status = terminate ? TSEVENT_NONE : TSEVENT_RESET_NEXTSTEP;
 
-  event->ptime_prev = t;
   /* Reset event residual functions as states might get changed by the postevent callback */
-  if (event->postevent) {ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);}
-  /* Cache current event residual functions */
-  for (i=0; i < event->nevents; i++) event->fvalue_prev[i] = event->fvalue[i];
+  if (event->postevent) {
+    ierr = VecLockPush(U);CHKERRQ(ierr);
+    ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
+    ierr = VecLockPop(U);CHKERRQ(ierr);
+  }
+
+  /* Cache current time and event residual functions */
+  event->ptime_prev = t;
+  for (i=0; i<event->nevents; i++)
+    event->fvalue_prev[i] = event->fvalue[i];
 
   /* Record the event in the event recorder */
   ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
@@ -371,7 +378,9 @@ PetscErrorCode TSEventHandler(TS ts)
     event->ptime_end = t;
   }
 
+  ierr = VecLockPush(U);CHKERRQ(ierr);
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue,event->ctx);CHKERRQ(ierr);
+  ierr = VecLockPop(U);CHKERRQ(ierr);
 
   for (i=0; i < event->nevents; i++) {
     if (PetscAbsScalar(event->fvalue[i]) < event->vtol[i]) {
