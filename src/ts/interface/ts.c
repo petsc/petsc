@@ -3474,7 +3474,7 @@ PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
   Level: intermediate
 
 .keywords: TS, timestep
-.seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep()
+.seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep(), TSRestartStep()
 @*/
 PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -3515,7 +3515,7 @@ PetscErrorCode  TSPreStep(TS ts)
     ierr = PetscObjectStateGet((PetscObject)U,&sprev);CHKERRQ(ierr);
     PetscStackCallStandard((*ts->prestep),(ts));
     ierr = PetscObjectStateGet((PetscObject)U,&spost);CHKERRQ(ierr);
-    if (sprev != spost) ts->steprestart = PETSC_TRUE;
+    if (sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -3702,7 +3702,14 @@ PetscErrorCode  TSPostEvaluate(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->postevaluate) {
+    Vec              U;
+    PetscObjectState sprev,spost;
+
+    ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)U,&sprev);CHKERRQ(ierr);
     PetscStackCallStandard((*ts->postevaluate),(ts));
+    ierr = PetscObjectStateGet((PetscObject)U,&spost);CHKERRQ(ierr);
+    if (sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -3728,7 +3735,7 @@ $ func (TS ts);
   Level: intermediate
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetStepNumber(), TSGetTime()
+.seealso: TSSetPreStep(), TSSetPreStage(), TSSetPostEvaluate(), TSGetTimeStep(), TSGetStepNumber(), TSGetTime(), TSRestartStep()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -3768,7 +3775,7 @@ PetscErrorCode  TSPostStep(TS ts)
     ierr = PetscObjectStateGet((PetscObject)U,&sprev);CHKERRQ(ierr);
     PetscStackCallStandard((*ts->poststep),(ts));
     ierr = PetscObjectStateGet((PetscObject)U,&spost);CHKERRQ(ierr);
-    if (sprev != spost) ts->steprestart = PETSC_TRUE;
+    if (sprev != spost) {ierr = TSRestartStep(ts);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -3790,7 +3797,7 @@ PetscErrorCode  TSPostStep(TS ts)
           (may be NULL)
 
    Calling sequence of monitor:
-$    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
+$    PetscErrorCode monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 
 +    ts - the TS context
 .    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
@@ -7753,6 +7760,36 @@ PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
   ierr = VecDestroy(&(*ctx)->min);CHKERRQ(ierr);
   ierr = VecDestroy(&(*ctx)->max);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TSRestartStep - Flags the solver to restart the next step
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: advanced
+
+   Notes:
+   Multistep methods like BDF or Runge-Kutta methods with FSAL property require restarting the solver in the event of
+   discontinuities. These discontinuities may be introduced as a consequence of explicitly modifications to the solution
+   vector (which PETSc attempts to detect and handle) or problem coefficients (which PETSc is not able to detect). For
+   the sake of correctness and maximum safety, users are expected to call TSRestart() whenever they introduce
+   discontinuities in callback routines (e.g. prestep and poststep routines, or implicit/rhs function routines with
+   discontinuous source terms).
+
+.keywords: TS, timestep, restart
+
+.seealso: TSSolve(), TSSetPreStep(), TSSetPostStep()
+@*/
+PetscErrorCode TSRestartStep(TS ts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->steprestart = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
