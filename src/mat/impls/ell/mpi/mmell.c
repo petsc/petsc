@@ -142,8 +142,10 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
 
   for (i=0; i<B->sliidx[totalslices]; i++) {
-    if ((B->bt[i>>3] & (char)(1<<(i&0x07))) && !indices[bcolidx[i]]) ec++;
-    indices[bcolidx[i]] = 1;
+    if (B->bt[i>>3] & (char)(1<<(i&0x07))) {
+      if (!indices[bcolidx[i]]) ec++;
+      indices[bcolidx[i]] = 1;
+    }
   }
 
   /* form array of columns we need */
