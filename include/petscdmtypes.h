@@ -53,6 +53,20 @@ typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUN
 E*/
 typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_REMOVE} DMPointLocationType;
 
+/*E
+  DMAdaptationType - Describes the strategy used for adaptive solves
+
+  Level: beginner
+
+  If a search using DM_POINTLOCATION_NONE fails, the failure is signaled with a negative cell number. On the
+  other hand, if DM_POINTLOCATION_NEAREST is used, on failure, the (approximate) nearest point in the mesh is
+  used, replacing the given point in the input vector. DM_POINTLOCATION_REMOVE returns values only for points
+  which were located.
+
+.seealso: DMAdaptorSolve()
+E*/
+typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationType;
+
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
 
