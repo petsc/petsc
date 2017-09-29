@@ -177,10 +177,14 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_USE_DEBUG)
   /* Check whether A is symmetric, then set A->symmetric option */
-  ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
-#endif
+  ierr = PetscOptionsGetBool(NULL,NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
+    if (!isSymmetric) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric \n");CHKERRQ(ierr);
+    }
+  }
 
   /*
      If the loaded matrix is larger than the vector (due to being padded
