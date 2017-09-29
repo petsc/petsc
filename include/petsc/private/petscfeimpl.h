@@ -351,7 +351,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe,
         compGradient[d] += x[f]*realSpaceDer[d];
       }
     }
-    for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
+    if (n) {
+      for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
+    } else {
+      for (d = 0; d < dim; ++d) interpolant[fc*dim+d] = compGradient[d];
+    }
   }
   PetscFunctionReturn(0);
 }
