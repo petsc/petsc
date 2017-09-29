@@ -159,7 +159,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 void mass_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   g0[0] = 1.0;
 }
@@ -167,20 +167,20 @@ void mass_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 void laplace_kernel(PetscInt dim, PetscInt Nf, PetscInt NfAux,
            const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
            const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
 }
 
 /* data we seek to match */
-PetscErrorCode data_kernel(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
+PetscErrorCode data_kernel(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *y, void *ctx)
 {
   *y = 1.0/(2*M_PI*M_PI) * sin(M_PI*x[0]) * sin(M_PI*x[1]);
   /* the associated control is sin(pi*x[0])*sin(pi*x[1]) */
   return 0;
 }
-PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = 0.0;
   return 0;
@@ -204,7 +204,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   const PetscInt* points;
   const PetscInt dim = 2;
   const PetscInt id  = 1;
-  PetscErrorCode (**wtf)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**wtf)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 
   PetscFunctionBeginUser;
 
@@ -244,7 +244,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = PetscDSAddBoundary(prob_laplace, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
+  ierr = PetscDSAddBoundary(prob_laplace, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);
   ierr = DMGetDefaultSection(dm_laplace, &section);CHKERRQ(ierr);
   ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
