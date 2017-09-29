@@ -1951,6 +1951,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   B->structurally_symmetric_set = PETSC_TRUE;
   B->symmetric_eternal          = PETSC_TRUE;
 
+  B->hermitian                  = PETSC_FALSE;
+  B->hermitian_set              = PETSC_FALSE;
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),((PetscObject)B)->prefix,"Options for SEQSBAIJ matrix","Mat");CHKERRQ(ierr);
