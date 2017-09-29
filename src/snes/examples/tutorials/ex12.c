@@ -5,6 +5,7 @@ This example supports discretized auxiliary fields (conductivity) as well as\n\
 multilevel nonlinear solvers.\n\n\n";
 
 #include <petscdmplex.h>
+#include <petscdmadaptor.h>
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscviewerhdf5.h>
@@ -997,6 +998,21 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
       ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+
+    {
+      DMAdaptor adaptor;
+      DM        dmAdapt = NULL;
+
+      ierr = DMViewFromOptions(dm, NULL, "-dm_adapt_pre_view");CHKERRQ(ierr);
+      ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+      ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
+      ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+      ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
+      ierr = DMAdaptorAdapt(adaptor, u, DM_ADAPTATION_INITIAL, &dmAdapt);CHKERRQ(ierr);
+      ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
+      ierr = DMViewFromOptions(dmAdapt, NULL, "-dm_adapt_view");CHKERRQ(ierr);
+      ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
     }
   } else if (user.runType == RUN_PERF) {
     PetscReal res = 0.0;
