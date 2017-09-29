@@ -118,6 +118,16 @@ int main(int argc,char **args)
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
 
+  /* Test MUMPS Choleskyfactorization */
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_mumps_choleskyfactor", &flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat F;
+    ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+  }
+#endif
+
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
   if (disp_mat) {

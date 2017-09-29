@@ -2123,6 +2123,9 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscBool      isSeqAIJ;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  if (A->hermitian && ftype == MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY Factor is not supported");
+#endif
   /* Create the factorization matrix */
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
