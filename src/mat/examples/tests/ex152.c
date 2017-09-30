@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(size+1,&vtxdist);CHKERRQ(ierr);

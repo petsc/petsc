@@ -488,7 +488,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
     ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);
   } else if (fas->inject) {
     ierr = MatCreateVecs(fas->inject,Xcoarse,NULL);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");
   PetscFunctionReturn(0);
 }
 

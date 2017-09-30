@@ -2746,7 +2746,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(newprob, &Ng);CHKERRQ(ierr);
-  if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);CHKERRQ(ierr);
+  if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);
   for (f = 0; f < Nf; ++f) {
     PetscPointFunc   obj;
     PetscPointFunc   f0, f1;

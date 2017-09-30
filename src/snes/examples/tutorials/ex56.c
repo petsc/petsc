@@ -316,9 +316,9 @@ int main(int argc,char **args)
     }
     ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
+    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
     ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;

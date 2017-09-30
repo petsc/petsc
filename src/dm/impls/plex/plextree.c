@@ -3250,7 +3250,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
               ierr = DMPlexRestoreTransitiveClosure(refTree,child,PETSC_FALSE,&numStar,&star);CHKERRQ(ierr);
               if (childCell >= 0) break;
             }
-            if (childCell < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate quadrature point");CHKERRQ(ierr);
+            if (childCell < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate quadrature point");
             ierr = DMPlexComputeCellGeometryFEM(refTree, childCell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
             ierr = DMPlexComputeCellGeometryFEM(refTree, parentCell, NULL, v0parent, Jparent, NULL, &detJparent);CHKERRQ(ierr);
             CoordinatesRefToReal(dim, dim, v0parent, Jparent, pointReal, vtmp);

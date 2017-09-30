@@ -2535,7 +2535,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
           ierr = PetscDualSpaceGetFunctional(hsp, q, &fn);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(fn,&fdim,&Nc,&nPoints,&points,&weights);CHKERRQ(ierr);
-          if (fdim != pointDim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected height dual space dim %D, got %D",pointDim,fdim);CHKERRQ(ierr);
+          if (fdim != pointDim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected height dual space dim %D, got %D",pointDim,fdim);
           ierr = PetscMalloc1(nPoints * dim, &qpoints);CHKERRQ(ierr);
           ierr = PetscCalloc1(nPoints * Nc,  &qweights);CHKERRQ(ierr);
           for (i = 0; i < nPoints; i++) {
