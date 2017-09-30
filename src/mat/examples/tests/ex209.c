@@ -63,9 +63,9 @@ int main(int argc,char **args)
   if (size > 1) {
     ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+    ierr = MatDestroy(&AtA);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(&AtA);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
