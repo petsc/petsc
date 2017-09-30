@@ -211,7 +211,12 @@ Arg class, which wraps the usual value.'''
         if v.isValueSet():
           try:
             value.setValue(v.getValue())
-          except TypeError: pass
+          except TypeError:
+            print value.__class__.__name__[3:]
+            print '-----------------------------------------------------------------------'
+            print 'Warning! Incorrect argument type specified: -'+str(key)+'='+str(v.getValue())+' - expecting type '+value.__class__.__name__[3:]+'.'
+            print '-----------------------------------------------------------------------'
+            pass
       dict.__setitem__(self, key, value)
       self.save()
     else:

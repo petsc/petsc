@@ -1,11 +1,11 @@
-
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
-routine to check candidate iterates produced by line search routines.  This code also\n\
+routine to check candidate iterates produced by line search routines.\n\
 The command line options include:\n\
   -pre_check_iterates : activate checking of iterates\n\
   -post_check_iterates : activate checking of iterates\n\
-  -check_tol <tol>: set tolerance for iterate checking\n\n";
+  -check_tol <tol>: set tolerance for iterate checking\n\
+  -user_precond : activate a (trivial) user-defined preconditioner\n\n";
 
 /*T
    Concepts: SNES^basic parallel example
@@ -18,11 +18,14 @@ T*/
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscsys.h    - base PETSc routines
+     petscvec.h    - vectors
+     petscmat.h    - matrices
+     petscis.h     - index sets
+     petscksp.h    - Krylov subspace methods
+     petscviewer.h - viewers
+     petscpc.h     - preconditioners
+     petscksp.h    - linear solvers
 */
 
 #include <petscdm.h>
@@ -30,12 +33,7 @@ T*/
 #include <petscsnes.h>
 
 /*
-   User-defined routines.  Note that immediately before each routine below,
-   If defined, this macro is used in the PETSc error handlers to provide a
-   complete traceback of routine names.  All PETSc library routines use this
-   macro, and users can optionally employ it as well in their application
-   codes.  Note that users can get a traceback of PETSc errors regardless of
-   provides the added traceback detail of the application routine names.
+   User-defined routines.
 */
 PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
@@ -81,7 +79,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
-  SNESLineSearch linesearch;          /* SNESLineSearch context */
+  SNESLineSearch linesearch;           /* SNESLineSearch context */
   Mat            J;                    /* Jacobian matrix */
   ApplicationCtx ctx;                  /* user-defined context */
   Vec            x,r,U,F;              /* vectors */
@@ -94,7 +92,6 @@ int main(int argc,char **argv)
   PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      flg;
-
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
@@ -159,7 +156,7 @@ int main(int argc,char **argv)
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
 
   /*
-     Optional allow user provided preconditioner
+     Optionally allow user-provided preconditioner
    */
   ierr = PetscOptionsHasName(NULL,NULL,"-user_precond",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -306,6 +303,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
 /* ------------------------------------------------------------------- */
 /*
    FormInitialGuess - Computes initial guess.
@@ -322,6 +320,7 @@ PetscErrorCode FormInitialGuess(Vec x)
   ierr = VecSet(x,pfive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 /*
    FormFunction - Evaluates nonlinear function, F(x).
@@ -404,6 +403,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.
@@ -483,6 +483,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------------- */
 /*
    Monitor - Optional user-defined monitoring routine that views the
@@ -604,7 +605,6 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   PetscFunctionReturn(0);
 }
 
-
 /* ------------------------------------------------------------------- */
 /*
    PostSetSubKSP - Optional user-defined routine that reset SubKSP options when hierarchical bjacobi PC is used
@@ -675,10 +675,3 @@ PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }
-
-
-
-
-
-
-
