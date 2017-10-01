@@ -16,8 +16,8 @@ except ImportError:
     setuptools = None
 
 pyver = sys.version_info[:2]
-if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
-    raise RuntimeError("Python version 2.6, 2.7 or >= 3.2 required")
+if pyver < (2, 6) or (3, 0) <= pyver < (3, 3):
+    raise RuntimeError("Python version 2.6, 2.7 or >= 3.3 required")
 
 # --------------------------------------------------------------------
 # Metadata

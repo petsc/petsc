@@ -56,19 +56,19 @@ project website generously hosted by Bitbucket. You can use
 
 * Using :program:`curl`::
 
-    $ curl -O https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.tar.gz
+    $ curl -O https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.Z.tar.gz
 
 * Using :program:`wget`::
 
-    $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.tar.gz
+    $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.Z.tar.gz
 
 Building
 ^^^^^^^^
 
 After unpacking the release tarball::
 
-  $ tar -zxf petsc4py-X.Y.tar.gz
-  $ cd petsc4py-X.Y
+  $ tar -zxf petsc4py-X.Y.Z.tar.gz
+  $ cd petsc4py-X.Y.Z
 
 the distribution is ready for building.
 
@@ -118,7 +118,7 @@ your system for all users, just do::
   $ python setup.py install
 
 The previous steps will install the :mod:`petsc4py` package at standard
-location :file:`{prefix}/lib/python{X}.{X}/site-packages`.
+location :file:`{prefix}/lib/python{X}.{Y}/site-packages`.
 
 If you do not have root privileges or you want to install *PETSc for
 Python* for your private use, just do::
