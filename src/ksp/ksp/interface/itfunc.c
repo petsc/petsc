@@ -203,14 +203,15 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 @*/
 PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 {
+  PC             pc;
   PetscErrorCode ierr;
   PCFailedReason pcreason;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetUpOnBlocks(ksp->pc);CHKERRQ(ierr);
-  ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
+  ierr = PCGetSetUpFailedReason(pc,&pcreason);CHKERRQ(ierr);
   if (pcreason) {
     ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;
   }
@@ -234,11 +235,13 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 @*/
 PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 {
+  PC             pc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PCSetReusePreconditioner(ksp->pc,flag);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetReusePreconditioner(pc,flag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -344,6 +347,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   default: break;
   }
 
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   /* scale the matrix if requested */
   if (ksp->dscale) {
@@ -373,7 +377,6 @@ PetscErrorCode KSPSetUp(KSP ksp)
     ksp->dscalefix2 = PETSC_FALSE;
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetErrorIfFailure(ksp->pc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr); 
