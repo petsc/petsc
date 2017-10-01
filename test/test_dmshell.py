@@ -79,15 +79,15 @@ class TestDMShell(unittest.TestCase):
     def testGlobalToLocal(self):
         def begin(dm, ivec, mode, ovec):
             if mode == PETSc.InsertMode.INSERT_VALUES:
-                ivec.copy(ovec)
+                ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
-                ovec.axpy(1.0, ivec)
+                ovec[...] += ivec[...]
         def end(dm, ivec, mode, ovec):
             pass
         vec = PETSc.Vec().create(comm=self.COMM)
         vec.setSizes((10, None))
         vec.setUp()
-        vec.set(self.dm.comm.rank + 1)
+        vec[...] = self.dm.comm.rank + 1
         ovec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         ovec.setSizes((10, None))
         ovec.setUp()
@@ -100,15 +100,15 @@ class TestDMShell(unittest.TestCase):
     def testLocalToGlobal(self):
         def begin(dm, ivec, mode, ovec):
             if mode == PETSc.InsertMode.INSERT_VALUES:
-                ivec.copy(ovec)
+                ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
-                ovec.axpy(1.0, ivec)
+                ovec[...] += ivec[...]
         def end(dm, ivec, mode, ovec):
             pass
         vec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         vec.setSizes((10, None))
         vec.setUp()
-        vec.set(self.dm.comm.rank + 1)
+        vec[...] = self.dm.comm.rank + 1
         ovec = PETSc.Vec().create(comm=self.COMM)
         ovec.setSizes((10, None))
         ovec.setUp()
@@ -120,17 +120,16 @@ class TestDMShell(unittest.TestCase):
 
     def testLocalToLocal(self):
         def begin(dm, ivec, mode, ovec):
-            pass
-        def end(dm, ivec, mode, ovec):
             if mode == PETSc.InsertMode.INSERT_VALUES:
-                ivec.copy(ovec)
+                ovec[...] = ivec[...]
             elif mode == PETSc.InsertMode.ADD_VALUES:
-                ovec.axpy(1.0, ivec)
-
+                ovec[...] += ivec[...]
+        def end(dm, ivec, mode, ovec):
+            pass
         vec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         vec.setSizes((10, None))
         vec.setUp()
-        vec.set(self.dm.comm.rank + 1)
+        vec[...] = self.dm.comm.rank + 1
         ovec = vec.duplicate()
         self.dm.setLocalToLocal(begin, end)
         self.dm.localToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
@@ -156,7 +155,6 @@ class TestDMShell(unittest.TestCase):
         sct, ovec = PETSc.Scatter.toAll(vec)
         self.dm.setGlobalToLocalVecScatter(sct)
         self.dm.globalToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
-        self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
 
     def testLocalToGlobalVecScatter(self):
         vec = PETSc.Vec().create()
@@ -165,7 +163,6 @@ class TestDMShell(unittest.TestCase):
         sct, ovec = PETSc.Scatter.toAll(vec)
         self.dm.setLocalToGlobalVecScatter(sct)
         self.dm.localToGlobal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
-        self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
 
     def testLocalToLocalVecScatter(self):
         vec = PETSc.Vec().create()
@@ -174,7 +171,6 @@ class TestDMShell(unittest.TestCase):
         sct, ovec = PETSc.Scatter.toAll(vec)
         self.dm.setLocalToLocalVecScatter(sct)
         self.dm.localToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
-        self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
 
     def testCoarsenRefine(self):
         cdm = PETSc.DMShell().create(comm=self.COMM)
