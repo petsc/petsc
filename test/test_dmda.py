@@ -249,14 +249,17 @@ class TestDA_2D_W2_N2(TestDA_2D):
     DOF = 2
     SWIDTH = 2
 class TestDA_2D_PXY(TestDA_2D):
+    SIZES = [13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 5
     BOUNDARY = (PERIODIC,)*2
 class TestDA_2D_GXY(TestDA_2D):
+    SIZES = [13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 5
     BOUNDARY = (GHOSTED,)*2
 class TestDA_2D_TXY(TestDA_2D):
+    SIZES = [13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 5
     BOUNDARY = (TWIST,)*2
@@ -274,14 +277,17 @@ class TestDA_3D_W2_N2(TestDA_3D):
     DOF = 2
     SWIDTH = 2
 class TestDA_3D_PXYZ(TestDA_3D):
+    SIZES = [11*SCALE,13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 3
     BOUNDARY = (PERIODIC,)*3
 class TestDA_3D_GXYZ(TestDA_3D):
+    SIZES = [11*SCALE,13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 3
     BOUNDARY = (GHOSTED,)*3
 class TestDA_3D_TXYZ(TestDA_3D):
+    SIZES = [11*SCALE,13*SCALE,17*SCALE]
     DOF = 2
     SWIDTH = 3
     BOUNDARY = (TWIST,)*3
