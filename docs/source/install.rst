@@ -40,7 +40,7 @@ build *PETSc for Python*:
 * NumPy_ package.
 
 .. [#] Unless you have appropiatelly configured and built PETSc
-       without MPI (configure option :option:`--with-mpi=0`).
+       without MPI (configure option ``--with-mpi=0``).
 
 .. [#] You may need to use a parallelized version of the Python
        interpreter with some MPI-1 implementations (e.g. MPICH1).
