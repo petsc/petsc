@@ -1905,6 +1905,7 @@ PETSC_EXTERN PetscErrorCode PetscContainerSetPointer(PetscContainer,void *);
 PETSC_EXTERN PetscErrorCode PetscContainerDestroy(PetscContainer*);
 PETSC_EXTERN PetscErrorCode PetscContainerCreate(MPI_Comm,PetscContainer *);
 PETSC_EXTERN PetscErrorCode PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void*));
+PETSC_EXTERN PetscErrorCode PetscContainerUserDestroyDefault(void*);
 
 /*
    For use in debuggers
