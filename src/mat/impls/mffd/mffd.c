@@ -221,6 +221,16 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSetUp_MFFD(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    MatMFFDView_MFFD - Views matrix-free parameters.
 
@@ -589,7 +599,6 @@ static PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveInt(mat,period,2);
   ctx->recomputeperiod = period;
   PetscFunctionReturn(0);
 }
@@ -609,7 +618,6 @@ static PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveReal(mat,error,2);
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
   PetscFunctionReturn(0);
 }
@@ -673,6 +681,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   A->ops->mult            = MatMult_MFFD;
   A->ops->destroy         = MatDestroy_MFFD;
+  A->ops->setup           = MatSetUp_MFFD;
   A->ops->view            = MatView_MFFD;
   A->ops->assemblyend     = MatAssemblyEnd_MFFD;
   A->ops->getdiagonal     = MatGetDiagonal_MFFD;
@@ -682,10 +691,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   A->ops->diagonalset     = MatDiagonalSet_MFFD;
   A->ops->setfromoptions  = MatSetFromOptions_MFFD;
   A->ops->missingdiagonal = MatMissingDiagonal_MFFD;
-  A->assembled           = PETSC_TRUE;
-
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  A->assembled            = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetBase_C",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctioniBase_C",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);
@@ -779,7 +785,6 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
   PetscFunctionReturn(0);
 }
 
-
 /*@
    MatMFFDGetH - Gets the last value that was used as the differencing
    parameter.
@@ -805,6 +810,8 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
   PetscBool      match;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(h,2);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
 
@@ -847,6 +854,7 @@ PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = PetscTryMethod(mat,"MatMFFDSetFunction_C",(Mat,PetscErrorCode (*)(void*,Vec,Vec),void*),(mat,func,funcctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -881,7 +889,6 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
   ierr = PetscTryMethod(mat,"MatMFFDSetFunctioni_C",(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*)),(mat,funci));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@C
    MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation
@@ -939,6 +946,8 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(mat,period,2);
   ierr = PetscTryMethod(mat,"MatMFFDSetPeriod_C",(Mat,PetscInt),(mat,period));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -977,6 +986,8 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveReal(mat,error,2);
   ierr = PetscTryMethod(mat,"MatMFFDSetFunctionError_C",(Mat,PetscReal),(mat,error));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1012,6 +1023,9 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
   PetscBool      match;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  if (history) PetscValidPointer(history,2);
+  PetscValidLogicalCollectiveInt(J,nhistory,3);
   ierr = PetscObjectTypeCompare((PetscObject)J,MATMFFD,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
   ctx->historyh    = history;
@@ -1019,7 +1033,6 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
   ctx->currenth    = 0.;
   PetscFunctionReturn(0);
 }
-
 
 /*@
    MatMFFDResetHHistory - Resets the counter to zero to begin
@@ -1046,10 +1059,10 @@ PetscErrorCode  MatMFFDResetHHistory(Mat J)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   ierr = PetscTryMethod(J,"MatMFFDResetHHistory_C",(Mat),(J));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /*@
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
@@ -1147,6 +1160,9 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(U,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(a,VEC_CLASSID,3);
+  PetscValidPointer(h,4);
   ierr   = PetscObjectGetComm((PetscObject)U,&comm);CHKERRQ(ierr);
   ierr   = VecGetArray(U,&u_vec);CHKERRQ(ierr);
   ierr   = VecGetArray(a,&a_vec);CHKERRQ(ierr);
@@ -1168,10 +1184,3 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
