@@ -348,8 +348,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
     ierr = DMGetLocalVector(subdm,&slvec);CHKERRQ(ierr);
 
     if (iscat) {ierr = VecScatterCreate(dvec,idis,svec,isis,&(*iscat)[i]);CHKERRQ(ierr);}
-    /* User mpi1 -- see src/ts/examples/tutorials/runex26_2 */
-    if (oscat) {ierr = VecScatterCreateMPI1(dvec,odis,svec,osis,&(*oscat)[i]);CHKERRQ(ierr);}
+    if (oscat) {ierr = VecScatterCreate(dvec,odis,svec,osis,&(*oscat)[i]);CHKERRQ(ierr);}
     if (lscat) {ierr = VecScatterCreate(dvec,gdis,slvec,NULL,&(*lscat)[i]);CHKERRQ(ierr);}
 
     ierr = DMRestoreGlobalVector(dm,&dvec);CHKERRQ(ierr);
