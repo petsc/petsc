@@ -631,7 +631,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
 
   /* We expect that dgroup is reliably "small" while nranks could be large */
   {
-    MPI_Group group;
+    MPI_Group group = MPI_GROUP_NULL;
     PetscMPIInt *dgroupranks;
     ierr = MPI_Comm_group(PetscObjectComm((PetscObject)sf),&group);CHKERRQ(ierr);
     ierr = MPI_Group_size(dgroup,&groupsize);CHKERRQ(ierr);
@@ -707,7 +707,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf,MPI_Group dgroup)
 PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoing)
 {
   PetscErrorCode ierr;
-  MPI_Group      group;
+  MPI_Group      group = MPI_GROUP_NULL;
 
   PetscFunctionBegin;
   if (sf->ingroup == MPI_GROUP_NULL) {

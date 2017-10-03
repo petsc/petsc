@@ -24,7 +24,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   int             snum;
   PetscBool       match;
   int             fT;
-  PetscInt        fileType;
+  PetscInt        fileType = 0;
   float           version;
   PetscErrorCode  ierr;
 

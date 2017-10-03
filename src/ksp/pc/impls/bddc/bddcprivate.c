@@ -6886,7 +6886,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
         ranks_send_to_idx[0] = is_indices[0];
       }
     } else {
-      PetscInt    idxs[1];
+      PetscInt    idx = 0;
       PetscMPIInt tag;
       MPI_Request *reqs;
 
@@ -6895,18 +6895,18 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
       for (i=rstart;i<rend;i++) {
         ierr = MPI_Isend(is_indices+i-rstart,1,MPIU_INT,i,tag,subcomm,&reqs[i-rstart]);CHKERRQ(ierr);
       }
-      ierr = MPI_Recv(idxs,1,MPIU_INT,MPI_ANY_SOURCE,tag,subcomm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Recv(&idx,1,MPIU_INT,MPI_ANY_SOURCE,tag,subcomm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       ierr = MPI_Waitall(rend-rstart,reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
       ierr = PetscFree(reqs);CHKERRQ(ierr);
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
 #if defined(PETSC_USE_DEBUG)
         if (!oldranks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
 #endif
-        ranks_send_to_idx[0] = procs_candidates[oldranks[idxs[0]]];
+        ranks_send_to_idx[0] = procs_candidates[oldranks[idx]];
       } else if (oldranks) {
-        ranks_send_to_idx[0] = oldranks[idxs[0]];
+        ranks_send_to_idx[0] = oldranks[idx];
       } else {
-        ranks_send_to_idx[0] = idxs[0];
+        ranks_send_to_idx[0] = idx;
       }
     }
     ierr = ISRestoreIndices(new_ranks_contig,(const PetscInt**)&is_indices);CHKERRQ(ierr);

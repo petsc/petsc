@@ -253,7 +253,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   PetscInt       nloc,d, len, i, j;
   PetscBLASInt   bnvec,pas,blen;
   PetscInt       dpt;
-  PetscReal      c, s, rho, zp, zq, yd, tt;
+  PetscReal      c, s, rho, zp, zq, yd=0.0, tt;
   MPI_Status     status;
 
   PetscFunctionBegin;
