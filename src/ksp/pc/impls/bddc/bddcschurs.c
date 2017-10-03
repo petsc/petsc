@@ -404,7 +404,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_COMPLEX)
+  sub_schurs->is_hermitian = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
+#else
   sub_schurs->is_hermitian = PETSC_TRUE;
+#endif
   sub_schurs->is_posdef    = PETSC_TRUE;
   if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);

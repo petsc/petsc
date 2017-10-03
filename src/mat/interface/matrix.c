@@ -4320,6 +4320,10 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
   if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
+#if defined(PETSC_USE_COMPLEX)
+  if (mat->hermitian && (ftype == MAT_FACTOR_CHOLESKY||ftype == MAT_FACTOR_ICC)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Hermitian CHOLESKY or ICC Factor is not supported");
+#endif
+
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
