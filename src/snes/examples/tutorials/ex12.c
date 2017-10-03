@@ -12,7 +12,7 @@ multilevel nonlinear solvers.\n\n\n";
 
 typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_EXACT, RUN_TEST, RUN_PERF} RunType;
-typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR} CoeffType;
+typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR, COEFF_CIRCLE} CoeffType;
 
 typedef struct {
   PetscInt       debug;             /* The debugging level */
@@ -89,12 +89,36 @@ static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   uexact[0] = a[0];
 }
 
+static PetscErrorCode circle_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  const PetscReal alpha   = 500.;
+  const PetscReal radius2 = PetscSqr(0.15);
+  const PetscReal r2      = PetscSqr(x[0] - 0.5) + PetscSqr(x[1] - 0.5);
+  const PetscReal xi      = alpha*(radius2 - r2);
+
+  *u = PetscTanhScalar(xi) + 1.0;
+  return 0;
+}
+
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   f0[0] = 4.0;
+}
+
+static void f0_circle_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal alpha   = 500.;
+  const PetscReal radius2 = PetscSqr(0.15);
+  const PetscReal r2      = PetscSqr(x[0] - 0.5) + PetscSqr(x[1] - 0.5);
+  const PetscReal xi      = alpha*(radius2 - r2);
+
+  f0[0] = (-4.0*alpha - 8.0*PetscSqr(alpha)*r2*PetscTanhReal(xi)) * PetscSqr(1.0/PetscCoshReal(xi));
 }
 
 static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -344,7 +368,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[4] = {"full", "exact", "test", "perf"};
-  const char    *coeffTypes[4] = {"none", "analytic", "field", "nonlinear"};
+  const char    *coeffTypes[5] = {"none", "analytic", "field", "nonlinear", "circle"};
   PetscInt       bd, bc, run, coeff, n;
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -401,7 +425,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
-  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,4,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,5,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
   options->variableCoefficient = (CoeffType) coeff;
 
   ierr = PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL);CHKERRQ(ierr);
@@ -593,19 +617,28 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     ierr = PetscDSSetResidual(prob, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu);CHKERRQ(ierr);
     break;
+  case COEFF_CIRCLE:
+    ierr = PetscDSSetResidual(prob, 0, f0_circle_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    break;
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
   switch (user->dim) {
   case 2:
-    if (user->periodicity[0]) {
-      if (user->periodicity[1]) {
-        user->exactFuncs[0] = xytrig_u_2d;
+    switch (user->variableCoefficient) {
+    case COEFF_CIRCLE:
+      user->exactFuncs[0]  = circle_u_2d;break;
+    default:
+      if (user->periodicity[0]) {
+        if (user->periodicity[1]) {
+          user->exactFuncs[0] = xytrig_u_2d;
+        } else {
+          user->exactFuncs[0] = xtrig_u_2d;
+        }
       } else {
-        user->exactFuncs[0] = xtrig_u_2d;
+        user->exactFuncs[0]  = quadratic_u_2d;
+        user->exactFields[0] = quadratic_u_field_2d;
       }
-    } else {
-      user->exactFuncs[0]  = quadratic_u_2d;
-      user->exactFields[0] = quadratic_u_field_2d;
     }
     if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
