@@ -17,6 +17,10 @@ if len(sys.argv) < 4:
   sys.exit(1)
 
 
+######### Packages to list ########
+
+packages=["Chaco","CMake","CUDA","CUSP","Elemental","Exodusii","HDF5","Hypre","Metis","ML","MOAB","MUMPS","NetCDF","Pardiso","Parmetis","ptscotch","SPAI","STRUMPACK","Suitesparse","SuperLU","SuperLU_dist","cTetgen","triangle","ViennaCL"];
+
 
 
 ######### Helper routines #########
@@ -63,10 +67,15 @@ def execution_time(logfilename):
 # Helper function: Convert number of seconds to format hh:mm:ss
 def format_time(time_in_seconds):
   #print "time_in_seconds: " + str(time_in_seconds)
+  time_string = "";
   if time_in_seconds > 1800:
-    return "<td class=\"yellow\">" + str(time_in_seconds / 3600).zfill(2) + ":" + str((time_in_seconds % 3600) / 60).zfill(2) + ":" + str(time_in_seconds % 60).zfill(2) + "</td>"
+    time_string = "<td class=\"yellow\">";
+  else:
+    time_string = "<td class=\"green\">";
 
-  return "<td class=\"green\">" + str(time_in_seconds / 3600).zfill(2) + ":" + str((time_in_seconds % 3600) / 60).zfill(2) + ":" + str(time_in_seconds % 60).zfill(2) + "</td>"
+  time_string += str(time_in_seconds / 60) + ":" + str(time_in_seconds % 60).zfill(2) + "</td>"
+
+  return time_string;
 
 
 
@@ -83,7 +92,7 @@ outfile.write("""
 <head><title>PETSc Test Summary</title>
 <style type="text/css">
 div.main {
-  max-width: 1300px;
+  max-width: 1500px;
   background: white;
   margin-left: auto;
   margin-right: auto;
@@ -110,13 +119,37 @@ td a:hover {
   color: black;
 }
 th {
-  padding: 10px;
+  padding: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
   font-size: 1.1em;
   font-weight: bold;
   text-align: center;
 }
+.verticalTableHeader {
+    text-align:center;
+    white-space:nowrap;
+    transform-origin:50% 50%;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+.verticalTableHeader p {
+    margin:0 -100% ;
+    display:inline-block;
+    width:7px;
+    font-size:0.75em;
+}
+.verticalTableHeader p:before{
+    content:'';
+    width:0;
+    padding-top:110%;/* takes width as reference, + 10% for faking some extra padding */
+    display:inline-block;
+    vertical-align:middle;
+}
+
 td.desc {
   max-width: 650px;
   padding: 2px;
@@ -127,21 +160,32 @@ td.green {
   vertical-align: middle;
   padding: 2px;
   background: #01DF01;
-  min-width: 50px;
+  min-width: 30px;
 }
 td.yellow {
   text-align: center;
   vertical-align: middle;
   padding: 2px;
   background: #F4FA58;
-  min-width: 50px;
+  min-width: 30px;
 }
 td.red {
   text-align: center;
   vertical-align: middle;
   padding: 2px;
   background: #FE2E2E;
-  min-width: 50px;
+  min-width: 30px;
+}
+td.have {
+  text-align: center;
+  vertical-align: middle;
+  background: #01DF01;
+  padding:0;
+}
+td.centered {
+  text-align: center;
+  vertical-align: middle;
+  padding:0;
 }
 </style>
 </head>
@@ -150,10 +194,18 @@ td.red {
 
 outfile.write("<center><span style=\"font-size:1.3em; font-weight: bold;\">PETSc Test Summary</span><br />Last update: " + time.strftime("%c") + "</center>\n")
 
-outfile.write("<center><table>\n");
+outfile.write("<center><table border=\"0\">\n");
 
-outfile.write("<tr><th></th><th colspan=\"2\">Configure</th><th></th><th></th> <th colspan=\"3\">Make</th><th></th><th></th> <th colspan=\"2\">Examples</th></tr>\n");
-outfile.write("<tr><th>Arch</th><th>Status</th><th>Duration</th><th></th><th></th> <th>Warnings</th><th>Errors</th><th>Duration</th><th></th><th></th> <th>Problems?</th><th>Duration</th><td><a href=\"examples_full_"+sys.argv[1]+".log\">[all]</a></td></tr>\n");
+outfile.write("<tr><th></th><th colspan=\"" + str(4+len(packages)) + "\">&nbsp;</td><th colspan=\"2\">Configure</th><th></th><th></th> <th colspan=\"3\">Make</th><th></th><th></th> <th colspan=\"2\">Examples</th></tr>\n");
+outfile.write('<tr style="height:70px"></tr>');
+outfile.write("<tr><th>Arch</th>");
+outfile.write('<th class="verticalTableHeader"><p>Debug</p></th>');
+outfile.write('<th class="verticalTableHeader"><p>Precision</p></th>');
+outfile.write('<th class="verticalTableHeader"><p>Complex</p></th>');
+outfile.write('<th class="verticalTableHeader"><p>Indices</p></th>');
+for package in packages:
+ outfile.write('<th class="verticalTableHeader"><p>' + package + '</p></th>');
+outfile.write("<th>Stat</th><th>Time</th><th></th><th></th> <th>Warn</th><th>Err</th><th>Time</th><th></th><th></th> <th>Prob?</th><th>Time</th><td><a href=\"examples_full_"+sys.argv[1]+".log\">[all]</a></td></tr>\n");
 
 num_builds = 0
 
@@ -211,8 +263,8 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
         outfile.write("<td class=\"red\">Incomplete</td>")
         if os.path.isfile(logfile_examples_full): outfile.write("<td><a href=\"" + logfile_examples + "\">[log]</a></td>")
         else: outfile.write("<td></td>\n")
+        outfile.write("</tr>\n");
         continue
-
 
       #
       ### Configure section
@@ -221,8 +273,43 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       # Checking for successful completion
       configure_success = False
       for line in open(logfile_configure_full):
+        if line.startswith("Configure Options: "):
+           configline = line.lower();
+           # Debug:
+           if configline.find("with-debugging=0") > 0:
+             outfile.write("<td class=\"have\">N</td>");
+           else:
+             outfile.write("<td class=\"centered\">Y</td>");
+
+           # Precision:
+           if configline.find("--with-precision=single") > 0:
+             outfile.write("<td class=\"have\">S</td>");
+           elif configline.find("--with-precision=__float128") > 0:
+             outfile.write("<td class=\"have\">Q</td>");
+           else:
+             outfile.write("<td class=\"centered\">D</td>");
+
+           # Complex:
+           if configline.find("with-scalar-type=complex") > 0:
+             outfile.write("<td class=\"have\">Y</td>");
+           else:
+             outfile.write("<td class=\"centered\">N</td>");
+
+           # Indices:
+           if configline.find("with-64-bit-indices=1") > 0:
+             outfile.write("<td class=\"have\">64</td>");
+           else:
+             outfile.write("<td class=\"centered\">32</td>");
+
+           # Packages:
+           for package in packages:
+             if configline.find(package.lower()) > 0:
+               outfile.write("<td class=\"have\">Y</td>");
+             else:
+               outfile.write("<td class=\"centered\">N</td>");
+
         if re.search(r'Configure stage complete', line) or  re.search(r'Installation complete', line):
-          outfile.write("<td class=\"green\">Success</td>")
+          outfile.write("<td class=\"green\">OK</td>")
           outfile.write(format_time(execution_time(logfile_configure_full)))
           configure_success = True
 
