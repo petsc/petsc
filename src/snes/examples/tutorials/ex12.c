@@ -1032,19 +1032,26 @@ int main(int argc, char **argv)
       ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+    ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
 
     {
       DMAdaptor adaptor;
-      DM        dmAdapt = NULL;
+      DM        dmAdapt;
+      Vec       uAdapt;
 
       ierr = DMViewFromOptions(dm, NULL, "-dm_adapt_pre_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(u, NULL, "-sol_adapt_pre_view");CHKERRQ(ierr);
       ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
       ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
       ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
       ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
       ierr = DMAdaptorAdapt(adaptor, u, DM_ADAPTATION_INITIAL, &dmAdapt);CHKERRQ(ierr);
       ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(dmAdapt, &uAdapt);CHKERRQ(ierr);
+      ierr = DMProjectFunction(dmAdapt, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, uAdapt);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmAdapt, NULL, "-dm_adapt_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(uAdapt, NULL, "-sol_adapt_view");CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dmAdapt, &uAdapt);CHKERRQ(ierr);
       ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
     }
   } else if (user.runType == RUN_PERF) {
