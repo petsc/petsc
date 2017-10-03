@@ -804,7 +804,7 @@ PetscErrorCode MatResetPreallocation(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  ierr = PetscTryMethod(A,"MatResetPreallocation_C",(Mat),(A));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"MatResetPreallocation_C",(Mat),(A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
