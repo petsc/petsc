@@ -9119,7 +9119,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of AIJ matrices and classes
+   This routine is currently only implemented for pairs of sequential dense matrices, AIJ matrices and classes
    which inherit from AIJ.
 
    Level: intermediate
@@ -9132,12 +9132,8 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=NULL;
-  PetscBool      viatranspose=PETSC_FALSE,viamatmatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)A)->options,((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,NULL);CHKERRQ(ierr);
-
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
@@ -9158,25 +9154,12 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
-    if (viatranspose || viamatmatmatmult) {
-      Mat Pt;
-      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-      if (viamatmatmatmult) {
-        ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
-      } else {
-        Mat AP;
-        ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
-        ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
-        ierr = MatDestroy(&AP);CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(&Pt);CHKERRQ(ierr);
-    } else {
-      ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-      ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-    }
+
+    ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+    ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -9200,25 +9183,9 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     if (!ptap) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
 
-  if (viatranspose || viamatmatmatmult) {
-    Mat Pt;
-    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    if (viamatmatmatmult) {
-      ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
-      ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
-    } else {
-      Mat AP;
-      ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
-      ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
-      ierr = MatDestroy(&AP);CHKERRQ(ierr);
-      ierr = PetscInfo(*C,"MatPtAP via MatTranspose and MatMatMult\n");CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&Pt);CHKERRQ(ierr);
-  } else {
-    ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-    ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  }
+  ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
+  ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
