@@ -65,7 +65,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
   /* Used in converged criteria check */
   PetscReal          reg;
-  PetscReal          jtwt, max_jtwt, pre_epsilon, epsilon, jw, min_jw;
+  PetscReal          jtwt = 0.0, max_jtwt, pre_epsilon, epsilon, jw, min_jw;
   PetscReal          innerSolverTol;
   MPI_Comm           comm;
 
