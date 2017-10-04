@@ -398,7 +398,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
         temp = BLASnrm2_(&iblas,&a[0 + (indef-1)*lda],&blas1);
         CHKMEMQ;
         a[indef-1 + (indef-1)*lda] -= temp*temp;
-        PetscStackCallBLAS("LAPACKtrtr",LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
+        PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","N","N",&iblas,&blas1,a,&blaslda,wa2,&blasn,&blasinfo));
       }
 
       wa2[indef-1] = -1.0;
