@@ -603,6 +603,23 @@ class sdist(_sdist):
 
 # --------------------------------------------------------------------
 
+if setuptools:
+    try:
+        from setuptools.command import egg_info as mod_egg_info
+        _FileList = mod_egg_info.FileList
+        class FileList(_FileList):
+            def process_template_line(self, line):
+                level = log.set_threshold(log.ERROR)
+                try:
+                    _FileList.process_template_line(self, line)
+                finally:
+                    log.set_threshold(level)
+        mod_egg_info.FileList = FileList
+    except:
+        pass
+
+# --------------------------------------------------------------------
+
 def append(seq, item):
     if item not in seq:
         seq.append(item)
