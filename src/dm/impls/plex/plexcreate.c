@@ -965,7 +965,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
 {
   PetscReal      low[3] = {lower ? lower[0] : 0.0, lower ? lower[1] : 0.0, lower ? lower[2] : 0.0};
   PetscReal      upp[3] = {upper ? upper[0] : 1.0, upper ? upper[1] : 1.0, upper ? upper[2] : 1.0};
-  PetscInt       fac[3] = {faces ? faces[0] : 4-dim, faces ? faces[1] : 4-dim, faces ? faces[2] : (dim > 2 ? 4-dim : 0)};
+  PetscInt       fac[3] = {faces ? faces[0] : 4-dim, faces ? faces[1] : 4-dim, dim > 2 ? (faces ? faces[2] : 4-dim) : 0};
   DMBoundaryType bdt[3] = {periodicity ? periodicity[0] : DM_BOUNDARY_NONE, periodicity ? periodicity[1] : DM_BOUNDARY_NONE, periodicity ? periodicity[2] : DM_BOUNDARY_NONE};
   PetscErrorCode ierr;
 
