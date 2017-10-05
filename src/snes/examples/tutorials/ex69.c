@@ -3239,7 +3239,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"dim %D is too big, must be <= 3",dim);
-  cells[0] = cells[1] = cells[2] = dim;
+  cells[0] = cells[1] = cells[2] = user->simplex ? dim : 3;
   if (user->solType == COMPOSITE) {
     PetscViewer viewer;
     PetscInt    count;

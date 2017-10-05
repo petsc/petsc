@@ -171,7 +171,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
   DM             pdm = NULL;
   const PetscInt dim = ctx->dim;
-  PetscInt       cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 

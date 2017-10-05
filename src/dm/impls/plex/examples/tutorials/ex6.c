@@ -345,6 +345,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, user.dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* Create a section for SEM order k */
   {
     PetscInt *numDof, d;
