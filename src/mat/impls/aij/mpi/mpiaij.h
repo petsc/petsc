@@ -119,8 +119,11 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 
-PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat,Mat,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat,Mat,Mat);
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+#endif
 
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
 PETSC_INTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
