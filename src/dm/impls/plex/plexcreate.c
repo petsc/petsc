@@ -439,7 +439,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices.
 
   Collective on MPI_Comm
@@ -447,7 +447,9 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
-. numFaces - Number of faces per dimension
+. faces - Number of faces per dimension, or NULL for (2, 2) in 2D and (1, 1, 1) in 3D
+. lower - The lower left corner, or NULL for (0, 0, 0)
+. upper - The upper right corner, or NULL for (1, 1, 1)
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -458,9 +460,12 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 .keywords: DM, create
 .seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFaces, PetscBool interpolate, DM *dm)
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], PetscBool interpolate, DM *dm)
 {
   DM             boundary;
+  PetscReal      low[3] = {lower ? lower[0] : 0.0, lower ? lower[1] : 0.0, lower ? lower[2] : 0.0};
+  PetscReal      upp[3] = {upper ? upper[0] : 1.0, upper ? upper[1] : 1.0, upper ? upper[2] : 1.0};
+  PetscInt       fac[3] = {faces ? faces[0] : 4-dim, faces ? faces[1] : 4-dim, faces ? faces[2] : 4-dim};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -471,28 +476,9 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
   ierr = DMSetDimension(boundary, dim-1);CHKERRQ(ierr);
   ierr = DMSetCoordinateDim(boundary, dim);CHKERRQ(ierr);
   switch (dim) {
-  case 2:
-  {
-    PetscReal lower[2] = {0.0, 0.0};
-    PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2];
-
-    edges[0] = numFaces; edges[1] = numFaces;
-    ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
-    break;
-  }
-  case 3:
-  {
-    PetscReal lower[3] = {0.0, 0.0, 0.0};
-    PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3];
-
-    faces[0] = numFaces; faces[1] = numFaces; faces[2] = numFaces;
-    ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
-    break;
-  }
-  default:
-    SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+  case 2: ierr = DMPlexCreateSquareBoundary(boundary, low, upp, fac);CHKERRQ(ierr);break;
+  case 3: ierr = DMPlexCreateCubeBoundary(boundary, low, upp, fac);CHKERRQ(ierr);break;
+  default: SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
   }
   ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);

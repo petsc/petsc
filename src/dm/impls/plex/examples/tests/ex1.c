@@ -136,7 +136,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->domainShape) {
     case BOX:
-      if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
+      if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);}
       else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);}
       break;
     case CYLINDER:

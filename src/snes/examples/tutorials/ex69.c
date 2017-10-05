@@ -3232,13 +3232,14 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             dmDist   = NULL;
-  PetscInt       dim      = user->dim;
-  PetscInt       cells[3] = {3, 3, 3};
+  DM             dmDist = NULL;
+  PetscInt       dim    = user->dim;
+  PetscInt       cells[3];
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"dim %D is too big, must be <= 3",dim);
+  cells[0] = cells[1] = cells[2] = dim;
   if (user->solType == COMPOSITE) {
     PetscViewer viewer;
     PetscInt    count;
@@ -3299,7 +3300,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     for (d = 0; d < 3; ++d) {ierr = PetscFree(axes[d]);CHKERRQ(ierr);}
   } else {
-    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
+    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, cells, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
     else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   }
   /* Make split labels so that we can have corners in multiple labels */

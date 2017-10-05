@@ -445,7 +445,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
     if (user->simplex) {
-      ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateBoxMesh(comm, dim, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
     } else {
       PetscInt d;
 
