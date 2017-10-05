@@ -230,7 +230,7 @@ PetscErrorCode pic_insert_DMPLEX_triangle(PetscInt dim)
   /* Create the background cell DM */
   if (dim == 2) {
     PetscInt faces[3] = {1, 1, 1};
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, faces, NULL, NULL, PETSC_FALSE, &celldm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_FALSE, &celldm);CHKERRQ(ierr);
   }
   if (dim == 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
   

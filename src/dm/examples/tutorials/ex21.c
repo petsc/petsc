@@ -63,7 +63,7 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     Vec facegeom = NULL;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMPLEX\n");CHKERRQ(ierr);
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, faces, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
     
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);

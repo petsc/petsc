@@ -35,15 +35,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBegin;
   cells[0] = cells[1] = cells[2] = n;
-  if (cellSimplex) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, cells, NULL, NULL, PETSC_FALSE, dm);CHKERRQ(ierr);
-  } else {
-    DM odm;
-
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &odm);CHKERRQ(ierr);
-    ierr = DMPlexUninterpolate(odm, dm);CHKERRQ(ierr);
-    ierr = DMDestroy(&odm);CHKERRQ(ierr);
-  }
+  ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, cells, NULL, NULL, NULL, PETSC_FALSE, dm);CHKERRQ(ierr);
   {
     DM ddm = NULL;
 

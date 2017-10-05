@@ -355,9 +355,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->periodicity[0]      = DM_BOUNDARY_NONE;
   options->periodicity[1]      = DM_BOUNDARY_NONE;
   options->periodicity[2]      = DM_BOUNDARY_NONE;
-  options->cells[0]            = 1;
-  options->cells[1]            = 1;
-  options->cells[2]            = 1;
+  options->cells[0]            = 2;
+  options->cells[1]            = 2;
+  options->cells[2]            = 2;
   options->filename[0]         = '\0';
   options->interpolate         = PETSC_FALSE;
   options->refinementLimit     = 0.0;
@@ -444,14 +444,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
-    if (user->simplex) {
-      ierr = DMPlexCreateBoxMesh(comm, dim, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);
-    } else {
-      PetscInt d;
+    PetscInt d;
 
-      if (user->periodicity[0] || user->periodicity[1] || user->periodicity[2]) for (d = 0; d < dim; ++d) user->cells[d] = PetscMax(user->cells[d], 3);
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, user->cells, NULL, NULL, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);
-    }
+    if (user->periodicity[0] || user->periodicity[1] || user->periodicity[2]) for (d = 0; d < dim; ++d) user->cells[d] = PetscMax(user->cells[d], 3);
+    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, user->cells, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);

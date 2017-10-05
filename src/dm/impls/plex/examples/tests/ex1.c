@@ -136,9 +136,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->domainShape) {
     case BOX:
-      if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, NULL, NULL, NULL, interpolate, dm);CHKERRQ(ierr);}
-      else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);}
-      break;
+      ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);break;
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
