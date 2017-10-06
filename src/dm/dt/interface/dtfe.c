@@ -2009,7 +2009,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
 - ctx   - A context for the function
 
   Output Parameter:
-. value - The output value
+. value - The output value (scalar)
 
   Note: The calling sequence for the callback func is given by:
 
@@ -2044,11 +2044,11 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   ierr = PetscQuadratureGetData(n, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
   if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
   ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
-  for (c = 0; c < Nc; ++c) value[c] = 0.0;
+  *value = 0.;
   for (q = 0; q < Nq; ++q) {
     ierr = (*func)(dimEmbed, time, cgeom->centroid, Nc, val, ctx);CHKERRQ(ierr);
     for (c = 0; c < Nc; ++c) {
-      value[c] += val[c]*weights[q*Nc+c];
+      *value += val[c]*weights[q*Nc+c];
     }
   }
   ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
