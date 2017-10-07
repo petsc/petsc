@@ -1923,7 +1923,7 @@ runex94_rap:
 	   else printf "${PWD}\nPossible problem with ex94_rap, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_2.tmp
 runex94_ptap:
-	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -matrap false > ex94_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -matptap_via scalable > ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_ptap, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_2.tmp
