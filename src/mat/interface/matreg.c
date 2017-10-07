@@ -36,7 +36,7 @@ PetscFunctionList MatList = 0;
 PetscErrorCode  MatSetType(Mat mat, MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
-  PetscBool      sametype,found;
+  PetscBool      sametype,found,subclass = PETSC_FALSE;
   MatBaseName    names = MatBaseNameList;
 
   PetscFunctionBegin;
@@ -60,8 +60,14 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   ierr =  PetscFunctionListFind(MatList,matype,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
-  /* free the old data structure if it existed */
-  if (mat->ops->destroy) {
+  if (((PetscObject)mat)->type_name) {
+    ierr = PetscStrbeginswith(matype,((PetscObject)mat)->type_name,&subclass);CHKERRQ(ierr);
+  }
+  if (subclass) {
+    ierr = MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } if (mat->ops->destroy) {
+    /* free the old data structure if it existed */
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
     mat->ops->destroy = NULL;
 
