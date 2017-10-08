@@ -963,13 +963,17 @@ $  8----4----9----5----10
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
-  PetscReal      low[3] = {lower ? lower[0] : 0.0, lower ? lower[1] : 0.0, lower ? lower[2] : 0.0};
-  PetscReal      upp[3] = {upper ? upper[0] : 1.0, upper ? upper[1] : 1.0, upper ? upper[2] : 1.0};
-  PetscInt       fac[3] = {faces ? faces[0] : 4-dim, faces ? faces[1] : 4-dim, dim > 2 ? (faces ? faces[2] : 4-dim) : 0};
-  DMBoundaryType bdt[3] = {periodicity ? periodicity[0] : DM_BOUNDARY_NONE, periodicity ? periodicity[1] : DM_BOUNDARY_NONE, periodicity ? periodicity[2] : DM_BOUNDARY_NONE};
+  PetscReal      low[3];
+  PetscReal      upp[3];
+  PetscInt       fac[3];
+  DMBoundaryType bdt[3];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  low[0] = lower ? lower[0] : 0.0; low[1] = lower ? lower[1] : 0.0; low[2] = lower ? lower[2] : 0.0;
+  upp[0] = upper ? upper[0] : 1.0; upp[1] = upper ? upper[1] : 1.0; upp[2] = upper ? upper[2] : 1.0;
+  fac[0] = faces ? faces[0] : 4-dim; fac[1] = faces ? faces[1] : 4-dim; fac[2] = dim > 2 ? (faces ? faces[2] : 4-dim) : 0;
+  bdt[0] = periodicity ? periodicity[0] : DM_BOUNDARY_NONE; bdt[1] = periodicity ? periodicity[1] : DM_BOUNDARY_NONE; bdt[2] = periodicity ? periodicity[2] : DM_BOUNDARY_NONE;
   if (simplex) {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
   else         {ierr = DMPlexCreateBoxMesh_Tensor_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
