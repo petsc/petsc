@@ -4448,7 +4448,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 {
@@ -4489,7 +4489,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(),
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs(),
           MatGetRowMax()
 @*/
 PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
@@ -4531,7 +4531,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4573,7 +4573,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4614,7 +4614,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4651,7 +4651,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row sums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
@@ -6497,7 +6497,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Level: intermediate
 
-.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL, MatSetValues()
+.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
 {

@@ -2568,15 +2568,15 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
    Notes:
    For basic use of the TS solvers the user need not explicitly call
    TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
+   the call to TSStep() or TSSolve().  However, if one wishes to control this
    phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
+   and optional routines of the form TSSetXXX(), but before TSStep() and TSSolve().
 
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSStep(), TSDestroy(), TSSolve()
 @*/
 PetscErrorCode  TSSetUp(TS ts)
 {
