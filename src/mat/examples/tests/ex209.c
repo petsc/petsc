@@ -46,11 +46,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Compute AtA = A^T*B*A, B = identity matrix */
-  if (size > 1) { /* sequential MatPtAP() is too slow for large matrix, e.g. ceres_solver_iteration_001_A. It needs optimized! */
-    ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
-    ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
-    if (!rank) printf("C = A^T*B*A is done...\n");
-  }
+  ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
+  ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
+  if (!rank) printf("C = A^T*B*A is done...\n");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Compute C = A^T*A */
@@ -60,11 +58,9 @@ int main(int argc,char **args)
   if (!rank) printf("REUSE C = A^T*A is done...\n");
 
   /* Compare C and AtA */
-  if (size > 1) {
-    ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
-    if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
-    ierr = MatDestroy(&AtA);CHKERRQ(ierr);
-  }
+  ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+  ierr = MatDestroy(&AtA);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
