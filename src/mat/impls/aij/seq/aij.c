@@ -3681,15 +3681,11 @@ PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   a = (Mat_SeqAIJ*)A->data;
-  /* if no saved info, we just return without doing anything  */
-  if (!a->ipre) {
-    ierr = PetscInfo(A, "No saved preallocation info \n");CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  if (!a->i || !a->j || !a->a || !a->imax || !a->ilen) {
-    ierr = PetscInfo(A, "Memory info is incomplete, and can not reset preallocation \n");CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
+  /* if no saved info, we error out */
+  if (!a->ipre) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"No saved preallocation info \n");
+
+  if (!a->i || !a->j || !a->a || !a->imax || !a->ilen) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Memory info is incomplete, and can not reset preallocation \n");
+
   ierr = PetscMemcpy(a->imax,a->ipre,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(a->ilen,A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   a->i[0] = 0;
