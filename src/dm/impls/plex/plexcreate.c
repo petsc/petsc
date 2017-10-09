@@ -17,7 +17,7 @@
 - refinementLimit - A nonzero number indicates the largest admissible volume for a refined cell
 
   Output Parameter:
-. dm  - The DM object
+. dm - The DM object
 
   Level: beginner
 
