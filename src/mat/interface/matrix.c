@@ -4664,7 +4664,7 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   MatCheckPreallocated(mat,1);
-  ierr = MatCreateVecs(mat,NULL,&ones);CHKERRQ(ierr);
+  ierr = MatCreateVecs(mat,&ones,NULL);CHKERRQ(ierr);
   ierr = VecSet(ones,1.);CHKERRQ(ierr);
   ierr = MatMult(mat,ones,v);CHKERRQ(ierr);
   ierr = VecDestroy(&ones);CHKERRQ(ierr);
