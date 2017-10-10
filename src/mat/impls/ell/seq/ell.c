@@ -252,6 +252,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat A,MatType newtype,MatReuse reuse,Mat
   }
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
