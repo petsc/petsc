@@ -983,6 +983,8 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 @*/
 PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC)
 {
+  DM_Plex         *mesh  = (DM_Plex *) dm->data;
+  PetscInt         debug = mesh->printFEM;
   DM               dmC;
   PetscSection     section;
   PetscQuadrature  quad;
@@ -1075,15 +1077,17 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
         qc          += Nc;
       }
       ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d gradient: [", cell);CHKERRQ(ierr);
-      for (fc = 0; fc < numComponents; ++fc) {
-        for (d = 0; d < coordDim; ++d) {
-          if (fc || d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%g", grad[fc*coordDim+d]);CHKERRQ(ierr);
-          gradsum[fc*coordDim+d] += grad[fc*coordDim+d];
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d gradient: [", cell);CHKERRQ(ierr);
+        for (fc = 0; fc < numComponents; ++fc) {
+          for (d = 0; d < coordDim; ++d) {
+            if (fc || d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g", grad[fc*coordDim+d]);CHKERRQ(ierr);
+            gradsum[fc*coordDim+d] += grad[fc*coordDim+d];
+          }
         }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
       }
-      ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
       volsum += vol;
     }
     for (fc = 0; fc < numComponents; ++fc) {
