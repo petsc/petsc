@@ -3,6 +3,7 @@
 #include <petscdmshell.h>
 #include <petscdraw.h>
 #include <petscds.h>
+#include <petscdmadaptor.h>
 #include <petscconvest.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
@@ -4036,6 +4037,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
 
+  /* High level operations using the nonlinear solver */
   {
     PetscViewer       viewer;
     PetscViewerFormat format;
@@ -4043,6 +4045,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     static PetscBool  incall = PETSC_FALSE;
 
     if (!incall) {
+      /* Estimate the convergence rate of the discretization */
       ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) snes), ((PetscObject) snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscConvEst conv;
@@ -4059,6 +4062,21 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+      /* Adaptively refine the initial grid */
+      flg  = PETSC_FALSE;
+      ierr = PetscOptionsGetBool(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_initial", &flg, NULL);CHKERRQ(ierr);
+      if (flg) {
+        DMAdaptor adaptor;
+
+        incall = PETSC_TRUE;
+        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+        ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_INITIAL, &dm, &x);CHKERRQ(ierr);
+        ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
         incall = PETSC_FALSE;
       }
     }
