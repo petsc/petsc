@@ -21,16 +21,18 @@ struct _p_DMAdaptor
   DM                 idm;  /* Initial grid */
   SNES               snes; /* Solver */
   VecTagger          refineTag, coarsenTag; /* Criteria for adaptivity */
+  /*   control */
+  PetscBool          labelType, femType;
   /*   FVM support */
   PetscBool          computeGradient;
   DM                 cellDM, gradDM;
   Vec                cellGeom, faceGeom, cellGrad; /* Local vectors */
   const PetscScalar *cellGeomArray, *cellGradArray;
   /* Outputs */
-  DM                 odm;  /* Output grid */
   PetscBool          monitor;
   /* Auxiliary objects */
   PetscLimiter       limiter;
+  PetscErrorCode  (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
 };
 
 #endif

@@ -7,6 +7,14 @@
 #include <petsc/private/dmadaptorimpl.h>
 #include <petsc/private/dmpleximpl.h>
 
+static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMProjectFunction(adm, 0.0, adaptor->exactSol, ctx, INSERT_ALL_VALUES, au);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
   DMAdaptorCreate - Create a DMAdaptor object. Its purpose is to construct a adaptation DMLabel or metric Vec that can be used to modify the DM.
@@ -74,6 +82,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
   }
   ierr = VecTaggerDestroy(&(*adaptor)->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerDestroy(&(*adaptor)->coarsenTag);CHKERRQ(ierr);
+  ierr = PetscFree((*adaptor)->exactSol);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adaptor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -198,12 +207,20 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
   PetscDS        prob;
+  PetscInt       Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDS(adaptor->idm, &prob);CHKERRQ(ierr);
   ierr = VecTaggerSetUp(adaptor->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerSetUp(adaptor->coarsenTag);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf, &adaptor->exactSol);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    ierr = PetscDSGetExactSolution(prob, f, &adaptor->exactSol[f]);CHKERRQ(ierr);
+    /* TODO Have a flag that forces projection rather than using the exact solution */
+    if (adaptor->exactSol[0]) {ierr = DMAdaptorSetTransferFunction(adaptor, DMAdaptorTransferSolution_Exact_Private);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
@@ -230,11 +247,17 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMConvert(adaptor->idm, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMGetDS(adaptor->idm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
   ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-  ierr = DMConvert(adaptor->idm, DMPLEX, &plex);CHKERRQ(ierr);
-  if (id == PETSCFV_CLASSID) {
+  ierr = DMIsForest(adaptor->idm, &adaptor->labelType);CHKERRQ(ierr);
+  if (id == PETSCFV_CLASSID) {adaptor->femType = PETSC_FALSE;}
+  else                       {adaptor->femType = PETSC_TRUE;}
+  if (adaptor->femType) {
+    /* Compute local solution bc */
+    ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, adaptor->faceGeom, adaptor->cellGeom, NULL);CHKERRQ(ierr);
+  } else {
     PetscFV      fvm = (PetscFV) obj;
     PetscLimiter noneLimiter;
     Vec          grad;
@@ -261,9 +284,6 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
     ierr = DMGlobalToLocalEnd(adaptor->gradDM, grad, INSERT_VALUES, adaptor->cellGrad);CHKERRQ(ierr);
     ierr = VecDestroy(&grad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(adaptor->cellGrad, &adaptor->cellGradArray);CHKERRQ(ierr);
-  } else if (id == PETSCFE_CLASSID) {
-    /* Compute local solution bc */
-    ierr = DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, 0.0, adaptor->faceGeom, adaptor->cellGeom, NULL);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -469,53 +489,28 @@ static void detHFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = PetscPowReal(detH, p/(2.*p + dim));
 }
 
-/*@
-  DMAdaptorAdapt - Creates a new DM that is adapted to the problem
-
-  Not collective
-
-  Input Parameter:
-+ adaptor  - The DMAdaptor object
-. x        - The global approximate solution
-- strategy - The adaptation strategy
-
-  Output Parameter:
-. odm - The output DM
-
-  Options database keys:
-. -snes_adapt <strategy> : initial, sequential, multigrid
-
-  Note: The available adaptation strategies are:
-$ 1) Adapt the intial mesh until a quality metric, e,g, a priori error bound, is satisfied
-$ 2) Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
-$ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
-
-  Level: intermediate
-
-.keywords: DMAdaptor, convergence
-.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorGetConvRate()
-@*/
-PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strategy, DM *odm)
+static PetscErrorCode DMAdaptorAdapt_Initial_Private(DMAdaptor adaptor, Vec x, DM *adm, Vec *ax)
 {
-  DM             dm = adaptor->idm, plex;
+  DM             dm = adaptor->idm, plex, odm;
   DMLabel        adaptLabel = NULL;
   PetscDS        prob;
   MPI_Comm       comm;
-  Vec            locX;
+  Vec            locX, ox;
   void          *ctx;
   PetscInt       dim, coordDim, adaptIter;
-  PetscInt       numFields, cStart, cEnd, cEndInterior, c;
-  PetscBool      useLabel, adapted = PETSC_FALSE;
+  PetscInt       numAdapt = 1, numFields, cStart, cEnd, cEndInterior, c;
+  PetscBool      adapted = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMViewFromOptions(dm, NULL, "-dm_adapt_pre_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(x, NULL, "-sol_adapt_pre_view");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) adaptor, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &numFields);CHKERRQ(ierr);
-  ierr = DMIsForest(dm, &useLabel);CHKERRQ(ierr);
 
   ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
@@ -525,21 +520,21 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
   ierr = DMAdaptorPreAdapt(adaptor, locX);CHKERRQ(ierr);
   /* Adapt until nothing changes */
   /* Adapt for a specified number of iterates */
-  for (adaptIter = 0; ; ++adaptIter) {
+  for (adaptIter = 0; adaptIter < numAdapt; ++adaptIter) {
     // ierr = DMAdaptorMonitor(adaptor);CHKERRQ(ierr);
     //   Print iterate, memory used, DM, solution
-    // Adapt DM
-    //   Create local solution
-    //   Reconstruct gradients (FVM) or solve adjoint equation (FEM)
-    //   Produce cellwise error indicator
-    IS                 refineIS, coarsenIS;
-    Vec                errVec;
-    PetscScalar       *errArray;
-    const PetscScalar *pointSols;
-    PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
-    PetscInt           nRefine, nCoarsen;
+    if (adaptor->labelType) {
+      // Adapt DM
+      //   Create local solution
+      //   Reconstruct gradients (FVM) or solve adjoint equation (FEM)
+      //   Produce cellwise error indicator
+      IS                 refineIS, coarsenIS;
+      Vec                errVec;
+      PetscScalar       *errArray;
+      const PetscScalar *pointSols;
+      PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
+      PetscInt           nRefine, nCoarsen;
 
-    if (0) {
       ierr = DMLabelCreate("adapt", &adaptLabel);CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
       ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -567,8 +562,6 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
       ierr = VecRestoreArray(errVec, &errArray);CHKERRQ(ierr);
       ierr = PetscGlobalMinMax(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
       ierr = PetscInfo2(adaptor, "error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
-    }
-    if (useLabel) {
       //   If using label:
       //     Compute IS from VecTagger
       ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS);CHKERRQ(ierr);
@@ -581,7 +574,7 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
       ierr = ISDestroy(&refineIS);CHKERRQ(ierr);
       ierr = VecDestroy(&errVec);CHKERRQ(ierr);
       //     Adapt DM from label
-      if (nRefine || nCoarsen) {ierr = DMAdaptLabel(dm, adaptLabel, odm);CHKERRQ(ierr);}
+      if (nRefine || nCoarsen) {ierr = DMAdaptLabel(dm, adaptLabel, &odm);CHKERRQ(ierr);}
       ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
     } else {
       DM           dmGrad,   dmHess,   dmMetric;
@@ -680,13 +673,11 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
       }
       ierr = VecRestoreArray(xHess, &H);CHKERRQ(ierr);
       ierr = VecRestoreArray(metric, &M);CHKERRQ(ierr);
-      //         Maybe do integral with cellwise H before throwing away
       //     Adapt DM from metric
       ierr = DMGetLabel(dm, "marker", &bdLabel);CHKERRQ(ierr);
-      ierr = DMAdaptMetric(dm, metric, bdLabel, odm);CHKERRQ(ierr);
-      //   Transfer system
-      ierr = DMSetDS(*odm, prob);CHKERRQ(ierr);
-      //   Transfer solution to new grid?
+      ierr = DMAdaptMetric(dm, metric, bdLabel, &odm);CHKERRQ(ierr);
+      adapted = PETSC_TRUE;
+      // Cleanup
       ierr = DMRestoreLocalVector(dmMetric, &metric);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
@@ -696,17 +687,21 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
     }
     // If DM was adapted, replace objects and recreate solution
     if (adapted) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      // Have solver Reset() and SetDM()
-
-      ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-      ierr = DMCreateGlobalVector(dm, &x);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) x, "solution");CHKERRQ(ierr);
-      // Get new initial guess
-      ierr = DMAdaptorComputeSolution(adaptor, dm, x);CHKERRQ(ierr);
+      /* Reconfigure solver */
+      ierr = SNESReset(adaptor->snes);CHKERRQ(ierr);
+      ierr = SNESSetDM(adaptor->snes, odm);CHKERRQ(ierr);
+      ierr = DMAdaptorSetSolver(adaptor, adaptor->snes);CHKERRQ(ierr);
+      ierr = DMPlexSetSNESLocalFEM(odm, ctx, ctx, ctx);CHKERRQ(ierr);
+      ierr = SNESSetFromOptions(adaptor->snes);CHKERRQ(ierr);
+      // Transfer system
+      ierr = DMSetDS(odm, prob);CHKERRQ(ierr);
+      // Transfer solution
+      ierr = DMCreateGlobalVector(odm, &ox);CHKERRQ(ierr);
+      ierr = DMAdaptorTransferSolution(adaptor, dm, x, odm, ox);CHKERRQ(ierr);
       // Cleanup adaptivity info
       ierr = DMForestSetAdaptivityForest(dm, NULL);CHKERRQ(ierr); /* clear internal references to the previous dm */
+      *adm = odm;
+      *ax  = ox;
     } else {
       break;
     }
@@ -714,11 +709,57 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strateg
   ierr = DMAdaptorPostAdapt(adaptor);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*adm, NULL, "-dm_adapt_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(*ax, NULL, "-sol_adapt_view");CHKERRQ(ierr);
+  /* Destroy old structures */
+  if (adapted) {
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
-  /* Restore solver */
-  ierr = SNESReset(adaptor->snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(adaptor->snes, dm);CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(dm, ctx, ctx, ctx);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(adaptor->snes);CHKERRQ(ierr);
+/*@
+  DMAdaptorAdapt - Creates a new DM that is adapted to the problem
+
+  Not collective
+
+  Input Parameter:
++ adaptor  - The DMAdaptor object
+. x        - The global approximate solution
+- strategy - The adaptation strategy
+
+  Output Parameters:
++ adm - The adapted DM
+- ax  - The adapted solution
+
+  Options database keys:
+. -snes_adapt <strategy> : initial, sequential, multigrid
+. -adapt_gradient_view : View the Clement interpolant of the solution gradient
+. -adapt_hessian_view : View the Clement interpolant of the solution Hessian
+. -adapt_metric_view : View the metric tensor for adaptive mesh refinement
+
+  Note: The available adaptation strategies are:
+$ 1) Adapt the intial mesh until a quality metric, e,g, a priori error bound, is satisfied
+$ 2) Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
+$ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
+
+  Level: intermediate
+
+.keywords: DMAdaptor, convergence
+.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorGetConvRate()
+@*/
+PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strategy, DM *adm, Vec *ax)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (strategy)
+  {
+  case DM_ADAPTATION_INITIAL:
+    ierr = DMAdaptorAdapt_Initial_Private(adaptor, x, adm, ax);CHKERRQ(ierr);
+    break;
+  default: SETERRQ1(PetscObjectComm((PetscObject) adaptor), PETSC_ERR_ARG_WRONG, "Unrecognized adaptation strategy %d", strategy);
+  }
   PetscFunctionReturn(0);
 }

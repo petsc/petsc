@@ -76,10 +76,9 @@ typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_
 
   Level: beginner
 
-  If a search using DM_POINTLOCATION_NONE fails, the failure is signaled with a negative cell number. On the
-  other hand, if DM_POINTLOCATION_NEAREST is used, on failure, the (approximate) nearest point in the mesh is
-  used, replacing the given point in the input vector. DM_POINTLOCATION_REMOVE returns values only for points
-  which were located.
+  DM_ADAPTATION_INITIAL will refine a mesh based on an initial guess. DM_ADAPTATION_SEQUENTIAL will refine the
+  mesh based on a sequence of solves, much like grid sequencing. DM_ADAPTATION_MULTILEVEL will use the sequence
+  of constructed meshes in a multilevel solve, much like the Systematic Upscaling of Brandt.
 
 .seealso: DMAdaptorSolve()
 E*/
