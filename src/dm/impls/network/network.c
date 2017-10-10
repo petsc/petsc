@@ -25,76 +25,35 @@ PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
 }
 
 /*@
-  DMNetworkSetSizes - Sets the number of subnetworks,local and global vertices and edges for each subnetwork.
+  DMNetworkSetSizes - Sets the number of subnetworks, local and global vertices and edges for each subnetwork.
 
   Collective on DM
 
   Input Parameters:
 + dm - the dm object
 . Nsubnet - number of subnetworks
-. nV - number of local vertices for each subnetwork
-. nE - number of local edges for each subnetwork
-. NV - number of global vertices (or PETSC_DETERMINE) for each subnetwork
-- NE - number of global edges (or PETSC_DETERMINE) for each subnetwork
+. NsubnetCouple - number of coupling subnetworks
+. nV - number of local vertices for each subnetwork and coupling subnetwork
+. nE - number of local edges for each subnetwork and coupling subnetwork
+. NV - number of global vertices (or PETSC_DETERMINE) for each subnetwork and coupling subnetwork
+- NE - number of global edges (or PETSC_DETERMINE) for each subnetwork and coupling subnetwork
 
    Notes
    If one processor calls this with NV (NE) of PETSC_DECIDE then all processors must, otherwise the prgram will hang.
 
-   You cannot change the sizes once they have been set
+   You cannot change the sizes once they have been set. nV, nE, NV and NE are arrays of length Nsubnet+NsubnetCouple.
 
    Level: intermediate
 
 .seealso: DMNetworkCreate()
 @*/
-PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt Nsubnet, PetscInt nV[], PetscInt nE[], PetscInt NV[], PetscInt NE[])
+PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt NsubnetCouple,PetscInt nV[], PetscInt nE[], PetscInt NV[], PetscInt NE[])
 {
   PetscErrorCode ierr;
   DM_Network     *network = (DM_Network*) dm->data;
   PetscInt       a[2],b[2],i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (Nsubnet <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subnetworks %D cannot be less than 1",Nsubnet);
-
-  if(Nsubnet > 0) PetscValidLogicalCollectiveInt(dm,Nsubnet,2);
-  if(network->nsubnet != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Network sizes alread set, cannot resize the network");
-
-  network->nsubnet = Nsubnet;
-  ierr = PetscCalloc1(Nsubnet,&network->subnet);CHKERRQ(ierr);
-  for(i=0; i < network->nsubnet; i++) {
-    if (NV[i] > 0) PetscValidLogicalCollectiveInt(dm,NV[i],5);
-    if (NE[i] > 0) PetscValidLogicalCollectiveInt(dm,NE[i],6);
-    if (NV[i] > 0 && nV[i] > NV[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local vertex size %D cannot be larger than global vertex size %D",i,nV[i],NV[i]);
-    if (NE[i] > 0 && nE[i] > NE[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local edge size %D cannot be larger than global edge size %D",i,nE[i],NE[i]);
-    a[0] = nV[i]; a[1] = nE[i];
-    ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    network->subnet[i].Nvtx = b[0]; network->subnet[i].Nedge = b[1];
-
-    network->subnet[i].id = i;
-
-    network->subnet[i].nvtx = nV[i];
-    network->subnet[i].vStart = network->nVertices;
-    network->subnet[i].vEnd   = network->subnet[i].vStart + network->subnet[i].Nvtx;
-    network->nVertices += network->subnet[i].nvtx;
-    network->NVertices += network->subnet[i].Nvtx;
-
-    network->subnet[i].nedge = nE[i];
-    network->subnet[i].eStart = network->nEdges;
-    network->subnet[i].eEnd = network->subnet[i].eStart + network->subnet[i].Nedge;
-    network->nEdges += network->subnet[i].nedge;
-    network->NEdges += network->subnet[i].Nedge;
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMNetworkSetSizesCoupled(DM dm,PetscInt Nsubnet,PetscInt NsubnetCouple,PetscInt nV[], PetscInt nE[], PetscInt NV[], PetscInt NE[])
-{
-  PetscErrorCode ierr;
-  DM_Network     *network = (DM_Network*) dm->data;
-  PetscInt       a[2],b[2],i;
-
-  PetscFunctionBegin;
-  //printf("DMNetworkSetSizesCoupled...Nsubnet %d, NsubnetCouple %d\n",Nsubnet,NsubnetCouple);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (Nsubnet <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subnetworks %D cannot be less than 1",Nsubnet);
   if (NsubnetCouple < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of coupling subnetworks %D cannot be less than 0",NsubnetCouple);
@@ -107,10 +66,15 @@ PetscErrorCode DMNetworkSetSizesCoupled(DM dm,PetscInt Nsubnet,PetscInt NsubnetC
   network->ncsubnet = NsubnetCouple;
   ierr = PetscCalloc1(Nsubnet,&network->subnet);CHKERRQ(ierr);
   for(i=0; i < Nsubnet; i++) {
-    if (NV[i] > 0) PetscValidLogicalCollectiveInt(dm,NV[i],6);
-    if (NE[i] > 0) PetscValidLogicalCollectiveInt(dm,NE[i],7);
-    if (NV[i] > 0 && nV[i] > NV[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local vertex size %D cannot be larger than global vertex size %D",i,nV[i],NV[i]);
-    if (NE[i] > 0 && nE[i] > NE[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local edge size %D cannot be larger than global edge size %D",i,nE[i],NE[i]);
+    if (NV) {
+      if (NV[i] > 0) PetscValidLogicalCollectiveInt(dm,NV[i],6);
+      if (NV[i] > 0 && nV[i] > NV[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local vertex size %D cannot be larger than global vertex size %D",i,nV[i],NV[i]);
+    }
+    if (NE) {
+      if (NE[i] > 0) PetscValidLogicalCollectiveInt(dm,NE[i],7);
+      if (NE[i] > 0 && nE[i] > NE[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Subnetwork %D: Local edge size %D cannot be larger than global edge size %D",i,nE[i],NE[i]);
+    }
+
     a[0] = nV[i]; a[1] = nE[i];
     ierr = MPIU_Allreduce(a,b,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     network->subnet[i].Nvtx = b[0]; network->subnet[i].Nedge = b[1];
@@ -159,6 +123,19 @@ PetscErrorCode DMNetworkSetEdgeList(DM dm, int *edgelist[])
   }
   PetscFunctionReturn(0);
 }
+#if 0
+PetscErrorCode DMNetworkSetEdgeListCoupled(DM dm,int *edgelist[],int *edgelistCouple[])
+{
+  DM_Network *network = (DM_Network*) dm->data;
+  PetscInt   i;
+
+  PetscFunctionBegin;
+  for(i=0; i < network->nsubnet; i++) {
+    network->subnet[i].edgelist = edgelist[i];
+  }
+  PetscFunctionReturn(0);
+}
+#endif
 
 /*@
   DMNetworkLayoutSetUp - Sets up the bare layout (graph) for the network

@@ -57,7 +57,7 @@ int main(int argc,char ** argv)
   PetscLogStagePush(stage2);
 
   /* Set numbers of nodes and edges */
-  ierr = DMNetworkSetSizes(networkdm,1,&waternetdata->nvertex,&waternetdata->nedge,&ngvtx,&ngedge);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,0,&waternetdata->nvertex,&waternetdata->nedge,&ngvtx,&ngedge);CHKERRQ(ierr);
   if (!crank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"waternet nvertices %D, nedges %D\n",waternetdata->nvertex,waternetdata->nedge);CHKERRQ(ierr);
   }

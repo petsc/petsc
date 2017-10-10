@@ -528,6 +528,7 @@ int main(int argc,char ** argv)
   Pipe              pipe,pipes;
   PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
   int               *edgelist = NULL;
+  PetscInt          *edgelists[1];
   PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
   PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
@@ -542,7 +543,6 @@ int main(int argc,char ** argv)
   PetscBool         viewpipes;
   PetscInt          pipesCase;
   DMNetworkMonitor  monitor;
-  DMNetworkComponentGenericDataType *nwarr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -569,9 +569,10 @@ int main(int argc,char ** argv)
   pipes       = wash->pipe;
 
   /* Set number of vertices and edges */
-  ierr = DMNetworkSetSizes(networkdm,numVertices,numEdges,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,0,&numVertices,&numEdges,NULL,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
-  ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr); 
+  edgelists[0] = edgelist;
+  ierr = DMNetworkSetEdgeList(networkdm,edgelists);CHKERRQ(ierr);
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
@@ -609,8 +610,6 @@ int main(int argc,char ** argv)
 
   /* PipeSetUp -- each process only sets its own pipes */
   /*---------------------------------------------------*/
-  ierr = DMNetworkGetComponentDataArray(networkdm,&nwarr);CHKERRQ(ierr);
-
   ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
   for (e=eStart; e<eEnd; e++) { /* each edge has only one component, pipe */
     ierr = DMNetworkGetComponent(networkdm,e,0,&type,(void**)&pipe);CHKERRQ(ierr);

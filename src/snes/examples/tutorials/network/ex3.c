@@ -495,7 +495,7 @@ int main(int argc,char **argv)
   user.appctx_water = appctx_water;
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local nvertices %d %d; nedges %d %d\n",crank,numVertices[0],numVertices[1],numEdges[0],numEdges[1]);
-  ierr = DMNetworkSetSizesCoupled(networkdm,nsubnet-1,1,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,nsubnet-1,1,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
   /* Add edge connectivity */
   edgelist[0] = edgelist_power;

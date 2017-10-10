@@ -151,7 +151,7 @@ int main(int argc,char ** argv)
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
-    ierr = DMNetworkSetSizes(networkdm,1, &numVertices,&numEdges,&NumVertices,&NumEdges);CHKERRQ(ierr);
+    ierr = DMNetworkSetSizes(networkdm,1,0,&numVertices,&numEdges,&NumVertices,&NumEdges);CHKERRQ(ierr);
     /* Add edge connectivity */
     ierr = DMNetworkSetEdgeList(networkdm,&edges);CHKERRQ(ierr);
     /* Set up the network layout */

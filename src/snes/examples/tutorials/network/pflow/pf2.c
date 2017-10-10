@@ -505,7 +505,7 @@ int main(int argc,char ** argv)
     numEdges[0] = numEdges1; numEdges[1] = numEdges2;
     NumEdges[0] = PETSC_DETERMINE; NumEdges[1] = PETSC_DETERMINE;
     /* Set number of nodes/edges */
-    ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
+    ierr = DMNetworkSetSizes(networkdm,nsubnet,0,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
     edgelist[0] = edgelist1; edgelist[1] = edgelist2;
 
