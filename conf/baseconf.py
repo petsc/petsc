@@ -110,6 +110,9 @@ class PetscConfig:
     def __getitem__(self, item):
         return self.configdict[item]
 
+    def get(self, item, default=None):
+        return self.configdict.get(item, default)
+
     def configure(self, extension, compiler=None):
         self.configure_extension(extension)
         if compiler is not None:
@@ -197,17 +200,19 @@ class PetscConfig:
 
     def configure_compiler(self, compiler):
         if compiler.compiler_type != 'unix': return
-        (cc, cxx, cflags, ccshared,
-         ldflags, ldshared, so_ext) = get_config_vars(
-            'CC', 'CXX', 'CFLAGS',  'CCSHARED',
-            'LDFLAGS', 'LDSHARED', 'SO')
+        # distutils C/C++ compiler
+        (cc, cflags, ccshared, cxx) = get_config_vars(
+            'CC', 'CFLAGS',  'CCSHARED', 'CXX')
         cflags = cflags or ''
-        ldflags = ldflags or ''
         cflags = cflags.replace('-Wstrict-prototypes', '')
+        ccshared = ccshared or ''
+        # distutils linker
+        (ldflags, ldshared, so_ext) = get_config_vars(
+            'LDFLAGS', 'LDSHARED', 'SO')
         ld = cc
-        ldshared = ldshared.replace(ld, '', 1).strip()
-        ldshared = [flg for flg in split_quoted(ldshared)
-                    if flg not in split_quoted(ldflags)]
+        ldflags = ldflags or ''
+        ldcmd = split_quoted(ld) + split_quoted(ldflags)
+        ldshared = [flg for flg in split_quoted(ldshared) if flg not in ldcmd]
         ldshared = str.join(' ', ldshared)
         #
         getenv = os.environ.get
@@ -218,20 +223,12 @@ class PetscConfig:
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
         PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
-        if sys.version_info[:2] < (2, 5):
-            PCC_FLAGS = PCC_FLAGS.replace('-Wwrite-strings', '')
         PCC = getenv('PCC', PCC) + ' ' +  getenv('PCCFLAGS', PCC_FLAGS)
         ccshared = getenv('CCSHARED', ccshared)
         cflags   = getenv('CFLAGS',   cflags)
         PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
         # C++ compiler
-        if self.language == 'c++':
-            PCXX = PCC
-        else:
-            try:
-                PCXX = self['CXX']
-            except KeyError:
-                PCXX = cxx
+        PCXX = PCC if self.language == 'c++' else self.get('CXX', cxx)
         # linker
         PLD = self['PCC_LINKER']
         PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
