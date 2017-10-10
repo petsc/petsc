@@ -47,6 +47,17 @@ runex2_epa:
 runex2_epa_2:
 	-@${MPIEXEC} -n 4 ./ex2 -washdata ${WASH_LOC}/tests/cases/HG-SP-1-1.inp -ksp_monitor -pc_type lu
 
+runex3:
+	-@${MPIEXEC} -n 1 ./ex3 -coupled_snes_monitor_short -options_left no> ex3.tmp 2>&1;   \
+	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3.tmp
+runex3_2:
+	-@${MPIEXEC} -n 3 ./ex3 -coupled_snes_monitor_short > ex3.tmp 2>&1;   \
+	   if (${DIFF} output/ex3_2.out ex3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3.tmp
+
 TESTEXAMPLES_C		       =  ex1.PETSc ex1.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

@@ -26,7 +26,6 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   PetscErrorCode ierr;
   UserCtx        *user = (UserCtx*)appctx;
   Vec            X,localXold=user->localXold;
-  PetscInt       subsnes_id=user->subsnes_id;
   DM             networkdm;
   PetscMPIInt    rank;
   MPI_Comm       comm;
@@ -36,6 +35,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 #if 0
   if (!rank) {
+    PetscInt       subsnes_id=user->subsnes_id;
     if (subsnes_id == 2) {
       ierr = PetscPrintf(PETSC_COMM_SELF," it %d, subsnes_id %d, fnorm %g\n",user->it,user->subsnes_id,fnorm);CHKERRQ(ierr);
     } else {
@@ -179,7 +179,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     const PetscInt *cone,*connedges,*econe;
     PetscInt       key,vid[2],nconnedges,k,e,keye;
     void*          component;
-    LOAD           load;
     PetscScalar    flow_couple;
 
     ierr = DMNetworkGetConnectedVertices(networkdm,edges[0],&cone);CHKERRQ(ierr);
@@ -191,8 +190,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     /* Get coupling powernet load vertex */
     ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
     if (key != user_power.compkey_load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
-    load = (LOAD)(component);
-    //printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
 
     /* Get coupling waternet vertex and pump edge */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
@@ -227,6 +224,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           ierr = DMNetworkGetVariableOffset(networkdm,econe[1],&offsetnode2);CHKERRQ(ierr);
 
           ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+
           hf = xarr[offsetnode1];
           ht = xarr[offsetnode2];
           flow        = Flow_Pump(pump,hf,ht);
@@ -238,7 +236,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           if (key_0 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
           ierr = DMNetworkGetComponent(networkdm,econe[1],0,&key_1,(void**)&vertexnode2);CHKERRQ(ierr);
           if (key_1 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
-#if 1
+#if 0
           /* subtract flow_pump computed in FormFunction_Water() and add flow_couple to connected nodes */
           if (vertexnode1->type == VERTEX_TYPE_JUNCTION) {
             farr[offsetnode1] += flow;
@@ -408,7 +406,7 @@ int main(int argc,char **argv)
   /* Coupling subnetwork */
   int              *edgelist_couple=NULL;
 
-  ierr = PetscInitialize(&argc,&argv,"ex1options",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"ex3options",help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&crank);CHKERRQ(ierr);
 
   /* (1) Read Data - Only rank 0 reads the data */
@@ -667,7 +665,7 @@ int main(int argc,char **argv)
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     user.it++;
   }
-  if (!crank) printf("SNES converged in %d iterations\n",user.it);
+  if (!crank) printf("Coupled_SNES converged in %d iterations\n",user.it);
   if (viewX) {
     if (!crank) printf("Final Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

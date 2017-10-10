@@ -300,8 +300,7 @@ PetscErrorCode WaterNetReadData(WATERDATA *waternet,char *filename)
     pump = &waternet->edge[j].pump;
     if (strcmp(pump->param,"HEAD") == 0) {
       /* Head-flow curve */
-      PetscInt       conv;
-      conv = SetPumpHeadCurveParams(pump);
+      ierr = SetPumpHeadCurveParams(pump);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
