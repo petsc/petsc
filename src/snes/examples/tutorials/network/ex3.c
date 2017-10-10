@@ -34,6 +34,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+#if 0
   if (!rank) {
     if (subsnes_id == 2) {
       ierr = PetscPrintf(PETSC_COMM_SELF," it %d, subsnes_id %d, fnorm %g\n",user->it,user->subsnes_id,fnorm);CHKERRQ(ierr);
@@ -41,6 +42,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
       ierr = PetscPrintf(PETSC_COMM_SELF,"       subsnes_id %d, fnorm %g\n",user->subsnes_id,fnorm);CHKERRQ(ierr);
     }
   }
+#endif
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&networkdm);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(networkdm,X,INSERT_VALUES,localXold);CHKERRQ(ierr);
@@ -190,7 +192,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     ierr = DMNetworkGetComponent(networkdm,cone[0],1,&key,&component);CHKERRQ(ierr);
     if (key != user_power.compkey_load) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
     load = (LOAD)(component);
-    printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
+    //printf("\n[%d] v_power load %d: ...load->pl %g\n",rank,vid[0],load->pl);
 
     /* Get coupling waternet vertex and pump edge */
     ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,&component);CHKERRQ(ierr);
@@ -345,13 +347,8 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
   UserCtx        *user = (UserCtx*)appctx;
   Vec            localX = user->localXold;
   UserCtx_Power  user_power = (*user).user_power;
-  //PetscMPIInt    rank;
-  //MPI_Comm       comm;
 
   PetscFunctionBegin;
-  //ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
-  //ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
   ierr = VecSet(X,0.0);CHKERRQ(ierr);
   ierr = VecSet(localX,0.0);CHKERRQ(ierr);
 
@@ -436,11 +433,13 @@ int main(int argc,char **argv)
 
     ierr = PetscMalloc1(2*numEdges[0],&edgelist_power);CHKERRQ(ierr);
     ierr = GetListofEdges_Power(pfdata,edgelist_power);CHKERRQ(ierr);
+#if 0
     printf("edgelist_power:\n");
     for (i=0; i<numEdges[0]; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",edgelist_power[2*i],edgelist_power[2*i+1]);CHKERRQ(ierr);
     }
     printf("\n");
+#endif
   }
   /* Broadcast power Sbase to all processors */
   ierr = MPI_Bcast(&Sbase,1,MPIU_SCALAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -459,12 +458,13 @@ int main(int argc,char **argv)
     ierr = GetListofEdges_Water(waterdata,edgelist_water);CHKERRQ(ierr);
     numEdges[1]    = waterdata->nedge;
     numVertices[1] = waterdata->nvertex;
-
+#if 0
     printf("edgelist_water:\n");
     for (i=0; i<numEdges[1]; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",edgelist_water[2*i],edgelist_water[2*i+1]);CHKERRQ(ierr);
     }
     printf("\n");
+#endif
   }
 
   /* Get data for the coupling subnetwork */
@@ -566,7 +566,6 @@ int main(int argc,char **argv)
   ierr = PetscLogStageRegister("SNES Setup",&stage[2]);CHKERRQ(ierr);
   PetscLogStagePush(stage[2]);
 
-#if 1
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
   //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -597,9 +596,7 @@ int main(int argc,char **argv)
     /* View assembled Jac */
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-#endif
 
-#if 1
   /* Create snes_power */
   /*-------------------*/
   if (!crank) printf("SNES_power setup ......\n");
@@ -630,9 +627,7 @@ int main(int argc,char **argv)
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   }
-#endif
 
-#if 1
   /* Create snes_water */
   /*-------------------*/
   if (!crank) printf("SNES_water setup......\n");
@@ -651,10 +646,8 @@ int main(int argc,char **argv)
     if (!crank) printf("Water Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-#endif
   PetscLogStagePop();
 
-#if 1
   /* (4) Solve */
   /*-----------*/
   ierr = PetscLogStageRegister("SNES Solve",&stage[3]);CHKERRQ(ierr);
@@ -679,7 +672,6 @@ int main(int argc,char **argv)
     if (!crank) printf("Final Solution:\n");
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
    }
-#endif
   PetscLogStagePop();
 
   /* Free objects */

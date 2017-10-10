@@ -94,7 +94,7 @@ PetscErrorCode DMNetworkSetSizesCoupled(DM dm,PetscInt Nsubnet,PetscInt NsubnetC
   PetscInt       a[2],b[2],i;
 
   PetscFunctionBegin;
-  printf("DMNetworkSetSizesCoupled...Nsubnet %d, NsubnetCouple %d\n",Nsubnet,NsubnetCouple);
+  //printf("DMNetworkSetSizesCoupled...Nsubnet %d, NsubnetCouple %d\n",Nsubnet,NsubnetCouple);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (Nsubnet <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subnetworks %D cannot be less than 1",Nsubnet);
   if (NsubnetCouple < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of coupling subnetworks %D cannot be less than 0",NsubnetCouple);
@@ -313,7 +313,7 @@ PetscErrorCode DMNetworkLayoutSetUpCoupled(DM dm)
     i++;
   }
 
-#if 1
+#if 0
   for(i=0; i < network->nEdges; i++) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D %D]",network->edges[2*i],network->edges[2*i+1]);CHKERRQ(ierr);
     printf("\n");

@@ -16,19 +16,19 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 
 waternet: $(OBJECTS_WATERNET) chkopts
 	-${CLINKER} -o waternet $(OBJECTS_WATERNET) ${PETSC_SNES_LIB}
-#	${RM} $(OBJECTS_WATERNET)
+	${RM} $(OBJECTS_WATERNET)
 
 
 
 #--------------------------------------------------------------------------
 runwaternet:
-	-@${MPIEXEC} -n 1 ./waternet -waternet_snes_monitor_short > waternet.tmp 2>&1;   \
-	   if (${DIFF} output/waternet.out waternet.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./waternet -waternet_snes_converged_reason > waternet.tmp 2>&1;   \
+	   if (${DIFF} output/waternet_1.out waternet.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with waternet, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f waternet.tmp
 
 runwaternet_2:
-	-@${MPIEXEC} -n 3 ./waternet -waternet_snes_monitor_short > waternet.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./waternet -waternet_snes_converged_reason > waternet.tmp 2>&1;   \
 	   if (${DIFF} output/waternet_2.out waternet.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with waternet_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f waternet.tmp
