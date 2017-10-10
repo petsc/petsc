@@ -1407,22 +1407,23 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   PetscInt       ncon       = 1;           /* The number of weights per vertex */
   real_t        *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
   real_t        *ubvec;                    /* The balance intolerance for vertex weights */
-  PetscInt       options[5];               /* Options */
+  PetscInt       options[64];              /* Options */
   /* Outputs */
   PetscInt       edgeCut;                  /* The number of edges cut by the partition */
-  PetscInt      *assignment, *points;
-  PetscMPIInt    rank, p, v, i;
+  PetscInt       v, i, *assignment, *points;
+  PetscMPIInt    size, rank, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
-  ierr = PetscMalloc5(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment,nvtxs,&vwgt);CHKERRQ(ierr);
+  ierr = PetscMalloc5(size+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment,nvtxs,&vwgt);CHKERRQ(ierr);
   vtxdist[0] = 0;
   ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
-  for (p = 2; p <= nparts; ++p) {
+  for (p = 2; p <= size; ++p) {
     vtxdist[p] += vtxdist[p-1];
   }
   /* Calculate weights */
@@ -1449,8 +1450,9 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   if (nparts == 1) {
     ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));CHKERRQ(ierr);
   } else {
-    if (vtxdist[1] == vtxdist[nparts]) {
-      if (!rank) {
+    for (p = 0; !vtxdist[p+1] && p < size; ++p);
+    if (vtxdist[p+1] == vtxdist[size]) {
+      if (rank == p) {
         PetscStackPush("METIS_PartGraphKway");
         ierr = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
         PetscStackPop;
