@@ -4,6 +4,12 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
 This example supports discretized auxiliary fields (conductivity) as well as\n\
 multilevel nonlinear solvers.\n\n\n";
 
+/*
+A visualization of the adaptation can be accomplished using:
+
+  -dm_adapt_view hdf5:$PWD/adapt.h5 -sol_adapt_view hdf5:$PWD/adapt.h5::append -dm_adapt_pre_view hdf5:$PWD/orig.h5 -sol_adapt_pre_view hdf5:$PWD/orig.h5::append
+*/
+
 #include <petscdmplex.h>
 #include <petscdmadaptor.h>
 #include <petscsnes.h>
@@ -653,6 +659,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
                             "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
                             user->fieldBC ? (void (*)()) user->exactFields[0] : (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSSetExactSolution(prob, 0, user->exactFuncs[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1022,6 +1029,10 @@ int main(int argc, char **argv)
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
+
+    ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+    ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
@@ -1033,27 +1044,6 @@ int main(int argc, char **argv)
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
-
-    {
-      DMAdaptor adaptor;
-      DM        dmAdapt;
-      Vec       uAdapt;
-
-      ierr = DMViewFromOptions(dm, NULL, "-dm_adapt_pre_view");CHKERRQ(ierr);
-      ierr = VecViewFromOptions(u, NULL, "-sol_adapt_pre_view");CHKERRQ(ierr);
-      ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
-      ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
-      ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
-      ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
-      ierr = DMAdaptorAdapt(adaptor, u, DM_ADAPTATION_INITIAL, &dmAdapt);CHKERRQ(ierr);
-      ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(dmAdapt, &uAdapt);CHKERRQ(ierr);
-      ierr = DMProjectFunction(dmAdapt, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, uAdapt);CHKERRQ(ierr);
-      ierr = DMViewFromOptions(dmAdapt, NULL, "-dm_adapt_view");CHKERRQ(ierr);
-      ierr = VecViewFromOptions(uAdapt, NULL, "-sol_adapt_view");CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmAdapt, &uAdapt);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
-    }
   } else if (user.runType == RUN_PERF) {
     PetscReal res = 0.0;
 
