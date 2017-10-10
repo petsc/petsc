@@ -10,7 +10,7 @@ struct _DMAdaptorOps {
   PetscErrorCode (*setup)(DMAdaptor);
   PetscErrorCode (*view)(DMAdaptor,PetscViewer);
   PetscErrorCode (*destroy)(DMAdaptor);
-  PetscErrorCode (*computesolution)(DM,Vec,void*);
+  PetscErrorCode (*transfersolution)(DMAdaptor,DM,Vec,DM,Vec,void*);
   PetscErrorCode (*computeerrorindicator)(DMAdaptor,PetscInt,PetscInt,PetscScalar*,PetscScalar*,PetscFVCellGeom*,PetscReal*,void*);
 };
 

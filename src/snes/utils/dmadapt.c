@@ -207,6 +207,20 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+{
+  PetscFunctionBegin;
+  *tfunc = adaptor->ops->transfersolution;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+{
+  PetscFunctionBegin;
+  adaptor->ops->transfersolution = tfunc;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
 {
   DM             plex;
@@ -255,16 +269,23 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorComputeSolution(DMAdaptor adaptor, DM dm, Vec x)
+PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
 {
+  PetscReal      time = 0.0;
   void          *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetApplicationContext(adaptor->idm, &ctx);CHKERRQ(ierr);
-  ierr = (*adaptor->ops->computesolution)(dm, x, ctx);CHKERRQ(ierr);
-  //ierr = DMForestTransferVec(dm, sol, adaptedDM, *solNew, PETSC_TRUE, time);CHKERRQ(ierr);
-  //ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  if (adaptor->ops->transfersolution) {
+    ierr = (*adaptor->ops->transfersolution)(adaptor, dm, x, adm, ax, ctx);CHKERRQ(ierr);
+  } else {
+    if (adaptor->labelType) {
+      ierr = DMForestTransferVec(dm, x, adm, ax, PETSC_TRUE, time);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject) adaptor), PETSC_ERR_SUP, "No built-in projection for unstructured solutions yet");
+    }
+  }
   PetscFunctionReturn(0);
 }
 
