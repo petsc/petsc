@@ -114,6 +114,7 @@ extern PetscErrorCode GetListofEdges_Water(WATERDATA*,int*);
 extern PetscErrorCode WaterSetInitialGuess(DM,Vec);
 extern PetscErrorCode WaterFormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunction_Water(DM,Vec,Vec,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
+extern PetscErrorCode SetInitialGuess_Water(DM,Vec,PetscInt,PetscInt,const PetscInt*, const PetscInt*,void*);
 extern PetscScalar Flow_Pipe(Pipe*,PetscScalar,PetscScalar);
 extern PetscScalar Flow_Pump(Pump*,PetscScalar,PetscScalar);
 #endif

@@ -144,4 +144,5 @@ extern PetscErrorCode GetListofEdges_Power(PFDATA*,int*);
 extern PetscErrorCode FormJacobian_Power(SNES,Vec, Mat,Mat,void*);
 extern PetscErrorCode FormJacobian_Power_private(DM,Vec,Mat,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
 extern PetscErrorCode FormFunction_Power(DM,Vec,Vec,PetscInt,PetscInt,const PetscInt*,const PetscInt*,void*);
+extern PetscErrorCode SetInitialGuess_Power(DM,Vec,PetscInt,PetscInt,const PetscInt *,const PetscInt *,void*);
 #endif

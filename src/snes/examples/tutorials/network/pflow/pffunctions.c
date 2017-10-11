@@ -332,3 +332,45 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
   ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode SetInitialGuess_Power(DM networkdm,Vec localX,PetscInt nv,PetscInt ne,const PetscInt *vtx,const PetscInt *edges,void* appctx)
+{
+  PetscErrorCode ierr;
+  VERTEX_Power   bus;
+  PetscInt       i;
+  GEN            gen;
+  PetscBool      ghostvtex;
+  PetscScalar    *xarr;
+  PetscInt       key,numComps,j,offset;
+  void*          component;
+  PetscMPIInt    rank;
+  MPI_Comm       comm;
+  UserCtx_Power  *User=(UserCtx_Power*)appctx;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)networkdm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
+  for (i = 0; i < nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetNumComponents(networkdm,vtx[i],&numComps);CHKERRQ(ierr);
+    for (j=0; j < numComps; j++) {
+      ierr = DMNetworkGetComponent(networkdm,vtx[i],j,&key,&component);CHKERRQ(ierr);
+      if (key == User->compkey_bus) {
+	bus = (VERTEX_Power)(component);
+	xarr[offset] = bus->va*PETSC_PI/180.0;
+	xarr[offset+1] = bus->vm;
+      } else if(key == User->compkey_gen) {
+	gen = (GEN)(component);
+	if (!gen->status) continue;
+	xarr[offset+1] = gen->vs;
+	break;
+      }
+    }
+  }
+  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

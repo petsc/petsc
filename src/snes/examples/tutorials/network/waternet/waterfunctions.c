@@ -218,3 +218,31 @@ PetscErrorCode GetListofEdges_Water(WATERDATA *waternet,int *edgelist)
   }
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode SetInitialGuess_Water(DM networkdm,Vec localX,PetscInt nv,PetscInt ne, const PetscInt *vtx, const PetscInt *edges,void* appctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,offset,key;
+  PetscBool      ghostvtex;
+  VERTEX_Water   vertex;
+  PetscScalar    *xarr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
+  for (i=0; i < nv; i++) {
+    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghostvtex);CHKERRQ(ierr);
+    if (ghostvtex) continue;
+    ierr = DMNetworkGetVariableOffset(networkdm,vtx[i],&offset);CHKERRQ(ierr);
+    ierr = DMNetworkGetComponent(networkdm,vtx[i],0,&key,(void**)&vertex);CHKERRQ(ierr);
+
+    if (vertex->type == VERTEX_TYPE_JUNCTION) {
+      xarr[offset] = 100;
+    } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
+      xarr[offset] = vertex->res.head;
+    } else {
+      xarr[offset] = vertex->tank.initlvl + vertex->tank.elev;
+    }
+  }
+  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
