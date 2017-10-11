@@ -256,7 +256,7 @@ int main(int argc,char **args)
 
   /* create DM, Plex calls DMSetup */
   ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
-  ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
   {
     DMLabel         label;
     IS              is;

@@ -113,7 +113,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
                                          75, 76, 77, 78, 79, 86, 87,  88,  90,  92, 113, 115, 116, 117, 118, 119, 120, 123, 138, 140, 141, 142, 146, 148, 149,
                                           0,  2, 11, 13, 15, 20, 21,  22,  23,  49,  52,  53,  54,  55,  56,  57,  58,  59,  60,  62,  63,  64,  65,  66,  67,
                                          68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
-  const PetscInt cells[3]             = {2, 2, 2};
   size_t         len, bdlen;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
@@ -136,9 +135,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->domainShape) {
     case BOX:
-      if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
-      else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);}
-      break;
+      ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);break;
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
@@ -392,14 +389,14 @@ int main(int argc, char **argv)
     args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
   test:
     suffix: 6
-    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -interpolate -dm_view ascii::ascii_info_detail
   test:
     suffix: 7
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ascii::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -interpolate -dm_refine 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 8
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
+    args: -dim 2 -cell_simplex 0 -interpolate -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
 
   # Parallel refinement tests with overlap
   test:
@@ -524,26 +521,26 @@ int main(int argc, char **argv)
   # Test domain shapes
   test:
     suffix: cylinder
-    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -test_shape -dm_view
+    args: -dim 3 -cell_simplex 0 -interpolate -domain_shape cylinder -test_shape -dm_view
 
   test:
     suffix: cylinder_per
-    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -test_shape -dm_view
+    args: -dim 3 -cell_simplex 0 -interpolate -domain_shape cylinder -z_periodicity periodic -test_shape -dm_view
 
   test:
     suffix: cylinder_wedge
-    args: -dim 3 -cell_simplex 0 -cell_wedge -domain_shape cylinder -dm_view
+    args: -dim 3 -cell_simplex 0 -interpolate -cell_wedge -domain_shape cylinder -dm_view
 
   test:
     suffix: box_2d
-    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
     suffix: box_2d_per
-    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
     suffix: box_3d
-    args: -dim 3 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
+    args: -dim 3 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 3 -test_shape -dm_view
 
 TEST*/

@@ -39,15 +39,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim         = user->dim;
   PetscBool      cellSimplex = user->cellSimplex;
   const char    *filename    = user->filename;
-  const PetscInt cells[3]    = {2, 2, 2};
   size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len)              {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  if (len) {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
+  else     {ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);}
   if (user->testPartition) {
     PetscPartitioner part;
     PetscInt         *sizes  = NULL;

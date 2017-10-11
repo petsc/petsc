@@ -77,8 +77,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBeginUser;
   /* Create box mesh */
-  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, user->dim, user->cells[0], PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else               {ierr = DMPlexCreateHexBoxMesh(comm, user->dim, user->cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, user->cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   /* Distribute mesh over processes */
   {
     DM               dmDist = NULL;
