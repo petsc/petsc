@@ -177,7 +177,7 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   Branch            *branch;
   Node              *node;
   PetscInt          e,v,vStart,vEnd,eStart, eEnd;
-  PetscInt          lofst,lofst_to,lofst_fr,compoffset,row[2],col[6];
+  PetscInt          lofst,lofst_to,lofst_fr,row[2],col[6];
   PetscBool         ghost;
   const PetscInt    *cone;
   PetscScalar       *barr,val[6];
@@ -305,9 +305,9 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
   /* Set number of nodes/edges */
-  ierr = DMNetworkSetSizes(networkdm,nnode,nbranch,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = DMNetworkSetSizes(networkdm,1,0,&nnode,&nbranch,NULL,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
-  ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
+  ierr = DMNetworkSetEdgeList(networkdm,&edgelist,NULL);CHKERRQ(ierr);
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 

@@ -798,11 +798,11 @@ int main(int argc,char ** argv)
     NumVertices[0] = PETSC_DETERMINE; NumVertices[1] = PETSC_DETERMINE;
     numEdges[0] = numEdges1; numEdges[1] = numEdges2;
     NumEdges[0] = PETSC_DETERMINE; NumEdges[1] = PETSC_DETERMINE;
-    ierr = DMNetworkSetSizes(networkdm,nsubnet,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
+    ierr = DMNetworkSetSizes(networkdm,nsubnet,0,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
     /* Add edge connectivity */
     edgelist[0] = edgelist1; edgelist[1] = edgelist2;
-    ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
+    ierr = DMNetworkSetEdgeList(networkdm,edgelist,NULL);CHKERRQ(ierr);
 
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

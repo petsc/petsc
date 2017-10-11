@@ -529,8 +529,8 @@ int main(int argc,char ** argv)
   PetscInt          numEdges,numVertices,KeyPipe,KeyJunction;
   int               *edgelist = NULL;
   PetscInt          *edgelists[1];
-  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,pipeOffset,key,frombType,tobType;
-  PetscInt          vfrom,vto,vkey,fromOffset,toOffset,type,varoffset,pipeoffset;
+  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key,frombType,tobType;
+  PetscInt          vfrom,vto,vkey,type,varoffset;
   PetscInt          from_nedge_in,from_nedge_out,to_nedge_in;
   const PetscInt    *cone;
   DM                networkdm;
@@ -572,7 +572,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkSetSizes(networkdm,1,0,&numVertices,&numEdges,NULL,NULL);CHKERRQ(ierr);
   /* Add edge connectivity */
   edgelists[0] = edgelist;
-  ierr = DMNetworkSetEdgeList(networkdm,edgelists);CHKERRQ(ierr);
+  ierr = DMNetworkSetEdgeList(networkdm,edgelists,NULL);CHKERRQ(ierr);
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 

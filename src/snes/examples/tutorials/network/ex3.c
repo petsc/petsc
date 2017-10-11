@@ -501,7 +501,7 @@ int main(int argc,char **argv)
   edgelist[0] = edgelist_power;
   edgelist[1] = edgelist_water;
   edgelist[2] = edgelist_couple;
-  ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
+  ierr = DMNetworkSetEdgeList(networkdm,edgelist,edgelist+2);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUpCoupled(networkdm);CHKERRQ(ierr);

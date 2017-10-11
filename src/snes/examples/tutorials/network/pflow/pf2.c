@@ -510,7 +510,7 @@ int main(int argc,char ** argv)
     edgelist[0] = edgelist1; edgelist[1] = edgelist2;
 
     /* Add edge connectivity */
-    ierr = DMNetworkSetEdgeList(networkdm,edgelist);CHKERRQ(ierr);
+    ierr = DMNetworkSetEdgeList(networkdm,edgelist,NULL);CHKERRQ(ierr);
 
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

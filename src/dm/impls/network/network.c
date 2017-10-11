@@ -102,7 +102,9 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt NsubnetCouple,P
   Logically collective on DM
 
   Input Parameters:
-. edges - list of edges for each subnetwork
++ dm - the dm object
+. edgelist - list of edges for each subnetwork
+- edgelistCouple - list of edges for each coupling subnetwork
 
   Notes:
   There is no copy involved in this operation, only the pointer is referenced. The edgelist should
@@ -110,32 +112,40 @@ PetscErrorCode DMNetworkSetSizes(DM dm,PetscInt Nsubnet,PetscInt NsubnetCouple,P
 
   Level: intermediate
 
+  Example usage:
+  Consider the following 2 separate networks and a coupling network:
+
+.vb
+ network 0: v0 -> v1 -> v2 -> v3
+ network 1: v1 -> v2 -> v0
+ coupling network: network 1: v2 -> network 0: v0
+.ve
+
+ The resulting input
+   edgelist[0] = [0 1 | 1 2 | 2 3];
+   edgelist[1] = [1 2 | 2 0]
+   edgelistCouple[0] = [(network)1 (v)2 (network)0 (v)0].
+
 .seealso: DMNetworkCreate, DMNetworkSetSizes
 @*/
-PetscErrorCode DMNetworkSetEdgeList(DM dm, int *edgelist[])
+PetscErrorCode DMNetworkSetEdgeList(DM dm,int *edgelist[],int *edgelistCouple[])
 {
   DM_Network *network = (DM_Network*) dm->data;
-  PetscInt   i;
+  PetscInt   i,nsubnet,ncsubnet=network->ncsubnet;
 
   PetscFunctionBegin;
-  for(i=0; i < network->nsubnet; i++) {
+  nsubnet = network->nsubnet - ncsubnet;
+  for(i=0; i < nsubnet; i++) {
     network->subnet[i].edgelist = edgelist[i];
+  }
+  if (edgelistCouple) {
+    PetscInt j;
+    j = 0;
+    nsubnet = network->nsubnet;
+    while (i < nsubnet) network->subnet[i++].edgelist = edgelistCouple[j++];
   }
   PetscFunctionReturn(0);
 }
-#if 0
-PetscErrorCode DMNetworkSetEdgeListCoupled(DM dm,int *edgelist[],int *edgelistCouple[])
-{
-  DM_Network *network = (DM_Network*) dm->data;
-  PetscInt   i;
-
-  PetscFunctionBegin;
-  for(i=0; i < network->nsubnet; i++) {
-    network->subnet[i].edgelist = edgelist[i];
-  }
-  PetscFunctionReturn(0);
-}
-#endif
 
 /*@
   DMNetworkLayoutSetUp - Sets up the bare layout (graph) for the network
