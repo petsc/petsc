@@ -442,11 +442,11 @@ PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *file
     while (--n > i) {
       *ptr[n] = NULL;
     }
-    ierr = PetscTrFree(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
+    ierr = (*PetscTrFree)(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
     *ptr[n] = NULL;
   } else {
     while (--n >= 0) {
-      ierr = PetscTrFree(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
+      ierr = (*PetscTrFree)(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
       *ptr[n] = NULL;
     }
   }
