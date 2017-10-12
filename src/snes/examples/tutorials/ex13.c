@@ -233,32 +233,33 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
 
     ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(label, 1, &stratum);CHKERRQ(ierr);
     ierr = ISGetLocalSize(stratum, &n);CHKERRQ(ierr);
     ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &n, MATFFTW, &F);CHKERRQ(ierr);
     ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) y, name);CHKERRQ(ierr);
     ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
     ierr = ISGetIndices(stratum, &points);CHKERRQ(ierr);
     ierr = PetscMalloc2(n, &ray, n, &perm);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
       ierr = PetscSectionGetOffset(coordSection, points[i], &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, points[i], &offu);CHKERRQ(ierr);
-      ray[i]   = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
-      perm[i]  = i;
-      rvals[i] = array[offu];
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Point[%d]: %d (%g, %g)\n", i, points[i], coords[off+0], coords[off+1]);CHKERRQ(ierr);
+      ray[i]  = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
+      perm[i] = i;
     }
-    ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
     /* Sort point along ray */
     ierr = PetscSortRealWithPermutation(n, ray, perm);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
       const PetscInt j = perm[i];
+
+      ierr = PetscSectionGetOffset(section, points[j], &offu);CHKERRQ(ierr);
+      rvals[i] = array[offu];
       ierr = PetscSectionGetOffset(coordSection, points[j], &off);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Point[%d]: %d (%g, %g)\n", j, points[j], coords[off+0], coords[off+1]);CHKERRQ(ierr);
     }
+    ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
     /* Do FFT along the ray */
     ierr = MatMult(F, x, y);CHKERRQ(ierr);
+    /* Chop FFT */
+    ierr = VecChop(y, PETSC_SMALL);CHKERRQ(ierr);
     ierr = VecViewFromOptions(x, NULL, "-real_view");CHKERRQ(ierr);
     ierr = VecViewFromOptions(y, NULL, "-fft_view");CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -350,5 +351,8 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_q3_0
     args: -dim 3 -simplex 0 -petscspace_order 3 -dm_refine 1 -num_refine 3 -snes_convergence_estimate
+  test:
+    suffix: 2d_p1_spectral_0
+    args: -petscspace_order 1 -dm_refine 6 -spectral -fft_view
 
 TEST*/
