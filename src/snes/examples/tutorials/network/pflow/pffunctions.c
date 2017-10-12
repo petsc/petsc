@@ -318,7 +318,6 @@ PetscErrorCode FormFunction_Power(DM networkdm,Vec localX, Vec localF,PetscInt n
       } else if (key == User->compkey_load) {
 	if (!ghostvtex) {
 	  load = (LOAD)(component);
-          //printf("v %d, load->pl %g\n",v,load->pl);
 	  farr[offset] += load->pl/Sbase;
 	  farr[offset+1] += load->ql/Sbase;
 	}
