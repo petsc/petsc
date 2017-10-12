@@ -41,27 +41,26 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def createBoxMesh(self, dim, numFaces=1, interpolate=True, comm=None):
-        cdef PetscInt  cdim = asInt(dim)
-        cdef PetscInt  cnumFaces = asInt(numFaces)
-        cdef PetscBool interp = interpolate
+    def createBoxMesh(self, faces, lower=(0,0,0), upper=(1,1,1),
+                      simplex=True, periodic=False, interpolate=True, comm=None):
+        cdef Py_ssize_t i = 0
+        cdef PetscInt dim = 0, *cfaces = NULL
+        faces = iarray_i(faces, &dim, &cfaces)
+        assert dim >= 1 and dim <= 3
+        cdef PetscReal clower[3]
+        clower[0] = clower[1] = clower[2] = 0
+        for i from 0 <= i < dim: clower[i] = lower[i]
+        cdef PetscReal cupper[3]
+        cupper[0] = cupper[1] = cupper[2] = 1
+        for i from 0 <= i < dim: cupper[i] = upper[i]
+        cdef PetscDMBoundaryType btype[3];
+        asBoundary(periodic, &btype[0], &btype[1], &btype[2])
+        cdef PetscBool csimplex = simplex
+        cdef PetscBool cinterp = interpolate
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM   newdm = NULL
-        CHKERR( DMPlexCreateBoxMesh(ccomm, cdim, cnumFaces, interp, &newdm) )
-        PetscCLEAR(self.obj); self.dm = newdm
-        return self
-
-    def createHexBoxMesh(self, numcells, boundary_type=None, comm=None):
-        cdef PetscInt dim = 0, *icells = NULL
-        cdef object tmp = iarray_i(numcells, &dim, &icells)
-        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
-        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
-        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
-        if boundary_type is not None:
-            asBoundary(boundary_type, &btx, &bty, &btz)
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscDM  newdm = NULL
-        CHKERR( DMPlexCreateHexBoxMesh(ccomm, dim, icells, btx, bty, btz, &newdm) )
+        CHKERR( DMPlexCreateBoxMesh(ccomm, dim, csimplex, cfaces,
+                                    clower, cupper, btype, cinterp, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 

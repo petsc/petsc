@@ -34,10 +34,12 @@ class BaseTestPlex(object):
         coords_raw = self.plex.getCoordinates().getArray()
         coords = np.reshape(coords_raw, (vEnd - vStart, dim))
         self.assertEqual(dim, self.DIM)
-        self.assertEqual(cEnd-cStart, len(self.CELLS))
-        self.assertEqual(vEnd-vStart, len(self.COORDS))
         self.assertEqual(numDepths, self.DIM+1)
-        self.assertTrue((coords == self.COORDS).all())
+        if self.CELLS is not None:
+            self.assertEqual(cEnd-cStart, len(self.CELLS))
+        if self.COORDS is not None:
+            self.assertEqual(vEnd-vStart, len(self.COORDS))
+            self.assertTrue((coords == self.COORDS).all())
 
     def testClosure(self):
         pStart, pEnd = self.plex.getChart()
@@ -182,18 +184,34 @@ class TestPlex_3D_P3(BaseTestPlex_3D, unittest.TestCase):
 class TestPlex_3D_P4(BaseTestPlex_3D, unittest.TestCase):
     DOFS = [1, 3, 3, 1]
 
+class TestPlex_2D_BoxTensor(BaseTestPlex_2D, unittest.TestCase):
+    CELLS = None
+    COORDS = None
+    def setUp(self):
+        self.plex = PETSc.DMPlex().createBoxMesh([3,3], simplex=False)
+
+class TestPlex_3D_BoxTensor(BaseTestPlex_3D, unittest.TestCase):
+    CELLS = None
+    COORDS = None
+    def setUp(self):
+        self.plex = PETSc.DMPlex().createBoxMesh([3,3,3], simplex=False)
+
 import sys
 try:
     raise PETSc.Error
-    PETSc.DMPlex().createBoxMesh(1, comm=PETSc.COMM_SELF).destroy()
+    PETSc.DMPlex().createBoxMesh([2,2], simplex=True, comm=PETSc.COMM_SELF).destroy()
 except PETSc.Error:
     pass
 else:
     class TestPlex_2D_Box(BaseTestPlex_2D, unittest.TestCase):
+        CELLS = None
+        COORDS = None
         def setUp(self):
-            self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
+            self.plex = PETSc.DMPlex().createBoxMesh([1,1], simplex=True)
 
     class TestPlex_2D_Boundary(BaseTestPlex_2D, unittest.TestCase):
+        CELLS = None
+        COORDS = None
         def setUp(self):
             boundary = PETSc.DMPlex().create(self.COMM)
             boundary.createSquareBoundary([0., 0.], [1., 1.], [2, 2])
@@ -201,10 +219,14 @@ else:
             self.plex = PETSc.DMPlex().generate(boundary)
 
     class TestPlex_3D_Box(BaseTestPlex_3D, unittest.TestCase):
+        CELLS = None
+        COORDS = None
         def setUp(self):
-            self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
+            self.plex = PETSc.DMPlex().createBoxMesh([1,1,1], simplex=True)
 
     class TestPlex_3D_Boundary(BaseTestPlex_3D, unittest.TestCase):
+        CELLS = None
+        COORDS = None
         def setUp(self):
             boundary = PETSc.DMPlex().create(self.COMM)
             boundary.createCubeBoundary([0., 0., 0.], [1., 1., 1.], [1, 1, 1])

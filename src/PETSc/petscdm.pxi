@@ -126,6 +126,10 @@ cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
     except <PetscDMBoundaryType>(-1):
     if boundary is None:
         return DM_BOUNDARY_NONE
+    if boundary is False:
+        return DM_BOUNDARY_NONE
+    if boundary is True:
+        return DM_BOUNDARY_PERIODIC
     if isinstance(boundary, str):
         if boundary == 'none':
             return DM_BOUNDARY_NONE
@@ -144,14 +148,15 @@ cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
 cdef inline PetscInt asBoundary(object boundary,
                                 PetscDMBoundaryType *_x,
                                 PetscDMBoundaryType *_y,
-                                PetscDMBoundaryType *_z) except? -1:
-    cdef PetscInt dim = PETSC_DECIDE
+                                PetscDMBoundaryType *_z) except -1:
+    cdef PetscInt dim = 0
     cdef object x=None, y=None, z=None
     if (boundary is None or
         isinstance(boundary, str) or
         isinstance(boundary, int)):
         _x[0] = _y[0] = _z[0] = asBoundaryType(boundary)
     else:
+        _x[0] = _y[0] = _z[0] = DM_BOUNDARY_NONE
         boundary = tuple(boundary)
         dim = <PetscInt>len(boundary)
         if   dim == 0: pass
