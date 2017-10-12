@@ -13,6 +13,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool simplex;           /* Simplicial mesh */
+  PetscBool spectral;          /* Look at the spectrum along planes in the solution */
   PetscInt  cells[3];          /* The initial domain division */
 } AppCtx;
 
@@ -62,12 +63,48 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cells[1] = 1;
   options->cells[2] = 1;
   options->simplex  = PETSC_TRUE;
+  options->spectral = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex13.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex13.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex13.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateSpectralPlanes(DM dm, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
+{
+  PetscSection       coordSection;
+  Vec                coordinates;
+  const PetscScalar *coords;
+  PetscInt           dim, p, vStart, vEnd, v;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  for (p = 0; p < numPlanes; ++p) {
+    DMLabel label;
+    char    name[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscInt off;
+
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      if (PetscAbsReal(planeCoord[p] - PetscRealPart(coords[off+planeDir[p]])) < PETSC_SMALL) {
+	ierr = DMLabelSetValue(label, v, 1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -117,6 +154,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   /* TODO: Add a hierachical viewer */
+  if (user->spectral) {
+    PetscInt  planeDir[2]   = {0,  1};
+    PetscReal planeCoord[2] = {0., 1.};
+
+    ierr = CreateSpectralPlanes(*dm, 2, planeDir, planeCoord, user);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -157,6 +200,74 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
+{
+  PetscSection       coordSection, section;
+  Vec                coordinates;
+  const PetscScalar *coords, *array;
+  PetscInt           p;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(u, &array);CHKERRQ(ierr);
+  for (p = 0; p < numPlanes; ++p) {
+    DMLabel         label;
+    char            name[PETSC_MAX_PATH_LEN];
+    Mat             F;
+    Vec             x, y;
+    IS              stratum;
+    PetscReal      *ray;
+    PetscScalar    *rvals;
+    PetscInt       *perm;
+    PetscInt        n, i, off, offu;
+    const PetscInt *points;
+
+    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, 1, &stratum);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(stratum, &n);CHKERRQ(ierr);
+    ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &n, MATFFTW, &F);CHKERRQ(ierr);
+    ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
+    ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
+    ierr = ISGetIndices(stratum, &points);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n, &ray, n, &perm);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {
+      ierr = PetscSectionGetOffset(coordSection, points[i], &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, points[i], &offu);CHKERRQ(ierr);
+      ray[i]   = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
+      perm[i]  = i;
+      rvals[i] = array[offu];
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Point[%d]: %d (%g, %g)\n", i, points[i], coords[off+0], coords[off+1]);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
+    /* Sort point along ray */
+    ierr = PetscSortRealWithPermutation(n, ray, perm);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {
+      const PetscInt j = perm[i];
+      ierr = PetscSectionGetOffset(coordSection, points[j], &off);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Point[%d]: %d (%g, %g)\n", j, points[j], coords[off+0], coords[off+1]);CHKERRQ(ierr);
+    }
+    /* Do FFT along the ray */
+    ierr = MatMult(F, x, y);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(x, NULL, "-real_view");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(y, NULL, "-fft_view");CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(stratum, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&stratum);CHKERRQ(ierr);
+    ierr = PetscFree2(ray, perm);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(u, &array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv)
 {
   DM             dm;    /* Problem specification */
@@ -176,6 +287,12 @@ int main(int argc, char **argv)
   ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
+  if (user.spectral) {
+    PetscInt  planeDir[2]   = {0,  1};
+    PetscReal planeCoord[2] = {0., 1.};
+
+    ierr = ComputeSpectral(dm, u, 2, planeDir, planeCoord, &user);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
