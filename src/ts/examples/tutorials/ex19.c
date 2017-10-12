@@ -247,16 +247,19 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+      requires: !single
       suffix: a
       args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp
       output_file: output/ex19_pi42.out
 
    test:
+      requires: !single
       suffix: b
       args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp -ts_adapt_dsp_filter PI42
       output_file: output/ex19_pi42.out
 
    test:
+      requires: !single
       suffix: c
       args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp -ts_adapt_dsp_pid 0.4,0.2
       output_file: output/ex19_pi42.out
