@@ -151,10 +151,10 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     ierr = VecDuplicate(X,&interpolatedX);CHKERRQ(ierr);
     ierr = TSInterpolate(ts,user->next_output,interpolatedX);CHKERRQ(ierr);
     ierr = VecGetArrayRead(interpolatedX,&x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",user->next_output,step,t,dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %3D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",(double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(interpolatedX,&x);CHKERRQ(ierr);
     ierr = VecDestroy(&interpolatedX);CHKERRQ(ierr);
-    user->next_output += 0.1;
+    user->next_output += PetscRealConstant(0.1);
   }
   PetscFunctionReturn(0);
 }
@@ -229,7 +229,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D, ftime %g\n",steps,(double)ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %3D, ftime %g\n",steps,(double)ftime);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -243,3 +243,25 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      requires: !single
+      suffix: a
+      args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp
+      output_file: output/ex19_pi42.out
+
+   test:
+      requires: !single
+      suffix: b
+      args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp -ts_adapt_dsp_filter PI42
+      output_file: output/ex19_pi42.out
+
+   test:
+      requires: !single
+      suffix: c
+      args: -monitor -ts_type bdf -ts_rtol 1e-6 -ts_atol 1e-6 -ts_view -ts_adapt_type dsp -ts_adapt_dsp_pid 0.4,0.2
+      output_file: output/ex19_pi42.out
+
+TEST*/
