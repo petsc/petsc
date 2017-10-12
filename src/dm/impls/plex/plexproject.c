@@ -343,7 +343,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
             ierr2 = DMRestoreWorkArray(dm, Nf, PETSC_BOOL, &fieldActive);CHKERRQ(ierr2);
             CHKERRQ(ierr);
           }
-          ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, values, mode);CHKERRQ(ierr);
+          ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, Ncc, comps, values, mode);CHKERRQ(ierr);
         }
         ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
         ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           ierr2 = DMRestoreWorkArray(dm, Nf, PETSC_BOOL, &fieldActive);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
-        ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, p, values, mode);CHKERRQ(ierr);
+        ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, p, Ncc, comps, values, mode);CHKERRQ(ierr);
       }
     }
     ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
