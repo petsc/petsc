@@ -203,17 +203,22 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
 {
   PetscSection       coordSection, section;
-  Vec                coordinates;
+  Vec                coordinates, uloc;
   const PetscScalar *coords, *array;
   PetscInt           p;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMGetLocalVector(dm, &uloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uloc);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, uloc, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(uloc, NULL, "-sol_view");CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(uloc, &array);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(u, &array);CHKERRQ(ierr);
   for (p = 0; p < numPlanes; ++p) {
     DMLabel         label;
     char            name[PETSC_MAX_PATH_LEN];
@@ -263,8 +268,9 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     ierr = ISDestroy(&stratum);CHKERRQ(ierr);
     ierr = PetscFree2(ray, perm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(u, &array);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(uloc, &array);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &uloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
