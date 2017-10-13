@@ -202,13 +202,18 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
 static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const PetscInt planeDir[], const PetscReal planeCoord[], AppCtx *user)
 {
+  MPI_Comm           comm;
   PetscSection       coordSection, section;
   Vec                coordinates, uloc;
   const PetscScalar *coords, *array;
   PetscInt           p;
+  PetscMPIInt        size, rank;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &uloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uloc);CHKERRQ(ierr);
@@ -225,49 +230,77 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
     Mat             F;
     Vec             x, y;
     IS              stratum;
-    PetscReal      *ray;
-    PetscScalar    *rvals;
-    PetscInt       *perm;
-    PetscInt        n, i, off, offu;
+    PetscReal      *ray, *gray;
+    PetscScalar    *rvals, *svals, *gsvals;
+    PetscInt       *perm, *nperm;
+    PetscInt        n, N, i, j, off, offu;
     const PetscInt *points;
 
     ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%D", p);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(label, 1, &stratum);CHKERRQ(ierr);
     ierr = ISGetLocalSize(stratum, &n);CHKERRQ(ierr);
-    ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &n, MATFFTW, &F);CHKERRQ(ierr);
-    ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) y, name);CHKERRQ(ierr);
-    ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
     ierr = ISGetIndices(stratum, &points);CHKERRQ(ierr);
-    ierr = PetscMalloc2(n, &ray, n, &perm);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n, &ray, n, &svals);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) {
       ierr = PetscSectionGetOffset(coordSection, points[i], &off);CHKERRQ(ierr);
-      ray[i]  = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
-      perm[i] = i;
+      ierr = PetscSectionGetOffset(section, points[i], &offu);CHKERRQ(ierr);
+      ray[i]   = PetscRealPart(coords[off+((planeDir[p]+1)%2)]);
+      svals[i] = array[offu];
     }
-    /* Sort point along ray */
-    ierr = PetscSortRealWithPermutation(n, ray, perm);CHKERRQ(ierr);
-    for (i = 0; i < n; ++i) {
-      const PetscInt j = perm[i];
+    /* Gather the ray data to proc 0 */
+    if (size > 1) {
+      PetscInt *cnt, *displs, p;
 
-      ierr = PetscSectionGetOffset(section, points[j], &offu);CHKERRQ(ierr);
-      rvals[i] = array[offu];
-      ierr = PetscSectionGetOffset(coordSection, points[j], &off);CHKERRQ(ierr);
+      ierr = PetscCalloc2(size, &cnt, size, &displs);CHKERRQ(ierr);
+      ierr = MPI_Gather(&n, 1, MPIU_INT, cnt, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for (p = 1; p < size; ++p) displs[p] = displs[p-1] + cnt[p-1];
+      N = displs[size-1] + cnt[size-1];
+      ierr = PetscMalloc2(N, &gray, N, &gsvals);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(ray, n, MPIU_REAL, gray, cnt, displs, MPIU_REAL, 0, comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(svals, n, MPIU_SCALAR, gsvals, cnt, displs, MPIU_SCALAR, 0, comm);CHKERRQ(ierr);
+      ierr = PetscFree2(cnt, displs);CHKERRQ(ierr);
+    } else {
+      N      = n;
+      gray   = ray;
+      gsvals = svals;
     }
-    ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
-    /* Do FFT along the ray */
-    ierr = MatMult(F, x, y);CHKERRQ(ierr);
-    /* Chop FFT */
-    ierr = VecChop(y, PETSC_SMALL);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(x, NULL, "-real_view");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(y, NULL, "-fft_view");CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &N, MATFFTW, &F);CHKERRQ(ierr);
+      ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) y, name);CHKERRQ(ierr);
+      ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
+      /* Sort point along ray */
+      ierr = PetscMalloc2(N, &perm, N, &nperm);CHKERRQ(ierr);
+      for (i = 0; i < N; ++i) {perm[i] = i;}
+      ierr = PetscSortRealWithPermutation(N, gray, perm);CHKERRQ(ierr);
+      /* Count duplicates and squish mapping */
+      nperm[0] = perm[0];
+      for (i = 1, j = 1; i < N; ++i) {
+        if (PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) > PETSC_SMALL) nperm[j++] = perm[i];
+      }
+      for (i = 0, j = 0; i < N; ++i) {
+        if (PetscAbsReal(gray[perm[i+1]] - gray[perm[i]]) < PETSC_SMALL) continue;
+        //ierr = PetscPrintf(PETSC_COMM_SELF, "gray[%d]: %g\n", nperm[j], gray[nperm[j]]);CHKERRQ(ierr);
+        rvals[i] = gsvals[nperm[j++]];
+      }
+      N = j;
+      ierr = PetscFree2(perm, nperm);CHKERRQ(ierr);
+      if (size > 1) {ierr = PetscFree2(gray, gsvals);CHKERRQ(ierr);}
+      ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
+      /* Do FFT along the ray */
+      ierr = MatMult(F, x, y);CHKERRQ(ierr);
+      /* Chop FFT */
+      ierr = VecChop(y, PETSC_SMALL);CHKERRQ(ierr);
+      ierr = VecViewFromOptions(x, NULL, "-real_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(y, NULL, "-fft_view");CHKERRQ(ierr);
+      ierr = VecDestroy(&x);CHKERRQ(ierr);
+      ierr = VecDestroy(&y);CHKERRQ(ierr);
+      ierr = MatDestroy(&F);CHKERRQ(ierr);
+    }
     ierr = ISRestoreIndices(stratum, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&stratum);CHKERRQ(ierr);
-    ierr = PetscFree2(ray, perm);CHKERRQ(ierr);
+    ierr = PetscFree2(ray, svals);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(uloc, &array);CHKERRQ(ierr);
@@ -354,5 +387,9 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_spectral_0
     args: -petscspace_order 1 -dm_refine 6 -spectral -fft_view
+  test:
+    suffix: 2d_p1_spectral_1
+    nsize: 2
+    args: -petscspace_order 1 -dm_refine 2 -spectral -fft_view
 
 TEST*/
