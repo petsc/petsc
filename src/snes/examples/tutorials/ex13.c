@@ -280,8 +280,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
         if (PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) > PETSC_SMALL) nperm[j++] = perm[i];
       }
       for (i = 0, j = 0; i < N; ++i) {
-        if (PetscAbsReal(gray[perm[i+1]] - gray[perm[i]]) < PETSC_SMALL) continue;
-        //ierr = PetscPrintf(PETSC_COMM_SELF, "gray[%d]: %g\n", nperm[j], gray[nperm[j]]);CHKERRQ(ierr);
+        if (i > 0 && PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) < PETSC_SMALL) continue;
         rvals[i] = gsvals[nperm[j++]];
       }
       N = j;
