@@ -14,7 +14,6 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   PetscBool      flg,preload = PETSC_TRUE;
-  PetscInt       m;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
@@ -30,12 +29,10 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
+
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecSet(b,1.0);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -56,6 +53,7 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return 0;
 }
+
 #include <petsctime.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/vecimpl.h>
