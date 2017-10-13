@@ -261,16 +261,21 @@ int main(int argc,char **args)
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_STRUMPACK)
-    /* The compression tolerance used when doing low-rank compression */
-    /* in the preconditioner. This is problem specific!               */
-    ierr = MatSTRUMPACKSetHSSRelCompTol(F,1.e-3);CHKERRQ(ierr);
-    /* Set minimum matrix size for HSS compression to 50 in order to  */
-    /* demonstrate preconditioner on small problems. For performance  */
-    /* a value of say 500 (the default) is better.                    */
-    ierr = MatSTRUMPACKSetHSSMinSize(F,50);CHKERRQ(ierr);
+    /* Set the fill-reducing reordering.                              */
+    ierr = MatSTRUMPACKSetReordering(F,MAT_STRUMPACK_METIS);CHKERRQ(ierr);
     /* Since this is a simple discretization, the diagonal is always  */
     /* nonzero, and there is no need for the extra MC64 permutation.  */
     ierr = MatSTRUMPACKSetColPerm(F,PETSC_FALSE);CHKERRQ(ierr);
+    /* The compression tolerance used when doing low-rank compression */
+    /* in the preconditioner. This is problem specific!               */
+    ierr = MatSTRUMPACKSetHSSRelTol(F,1.e-3);CHKERRQ(ierr);
+    /* Set minimum matrix size for HSS compression to 15 in order to  */
+    /* demonstrate preconditioner on small problems. For performance  */
+    /* a value of say 500 is better.                                  */
+    ierr = MatSTRUMPACKSetHSSMinSepSize(F,15);CHKERRQ(ierr);
+    /* You can further limit the fill in the preconditioner by        */
+    /* setting a maximum rank                                         */
+    ierr = MatSTRUMPACKSetHSSMaxRank(F,100);CHKERRQ(ierr);
 #endif
   }
 #endif

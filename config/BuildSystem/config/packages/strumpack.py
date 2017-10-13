@@ -4,13 +4,17 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/strumpack-2.0.1.tar.gz']
+    self.gitcommit        = '2ae796f78cc7e6f23f83ff9515d5e01fb37a5505'
+    #self.download         = ['git://https://github.com/pghysels/STRUMPACK','http://portal.nersc.gov/project/sparse/strumpack/strumpack-2.0.1.tar.gz']
+    self.download         = ['git://https://github.com/pghysels/STRUMPACK']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack.a']]
     self.cxx              = 1
     self.fc               = 1
-    self.requirescxx11    = 1
+    ## compilation of strumpack require c++11, but using the C
+    ##    interface to strumpack does not
+    # self.requirescxx11 = 1
     self.hastests         = 1
     return
 
