@@ -5,16 +5,12 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = '2ae796f78cc7e6f23f83ff9515d5e01fb37a5505'
-    #self.download         = ['git://https://github.com/pghysels/STRUMPACK','http://portal.nersc.gov/project/sparse/strumpack/strumpack-2.0.1.tar.gz']
     self.download         = ['git://https://github.com/pghysels/STRUMPACK']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack.a']]
     self.cxx              = 1
     self.fc               = 1
-    ## compilation of strumpack require c++11, but using the C
-    ##    interface to strumpack does not
-    # self.requirescxx11 = 1
     self.hastests         = 1
     return
 
@@ -54,13 +50,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=Debug')
     else:
       args.append('-DCMAKE_BUILD_TYPE=Release')
-
-    # building with shared libs results in things like:
-    #  /usr/bin/ld: ex5: hidden symbol `SCOTCH_dgraphOrderCompute' in
-    #        /home/pieterg/workspace/petsc/arch-linux2-c-debug/lib/libptscotch.a(library_dgraph_order.o)
-    #          is referenced by DSO
-    if not self.checkSharedLibrariesEnabled():
-      args.append('-DBUILD_SHARED_LIBS=off')
 
     if self.openmp.found:
       args.append('-DUSE_OPENMP=ON')
