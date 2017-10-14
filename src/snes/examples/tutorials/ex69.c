@@ -3232,13 +3232,14 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             dmDist   = NULL;
-  PetscInt       dim      = user->dim;
-  PetscInt       cells[3] = {3, 3, 3};
+  DM             dmDist = NULL;
+  PetscInt       dim    = user->dim;
+  PetscInt       cells[3];
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (dim > 3) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"dim %D is too big, must be <= 3",dim);
+  cells[0] = cells[1] = cells[2] = user->simplex ? dim : 3;
   if (user->solType == COMPOSITE) {
     PetscViewer viewer;
     PetscInt    count;
@@ -3269,7 +3270,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     if (dim == 2) {verts[perm[0]] = 1;}
     for (d = 0; d < 3; ++d) cells[d] = verts[d]-1;
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
     /* Remap coordinates to unit ball */
     {
       Vec           coordinates;
@@ -3299,8 +3300,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     for (d = 0; d < 3; ++d) {ierr = PetscFree(axes[d]);CHKERRQ(ierr);}
   } else {
-    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
-    else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+    ierr = DMPlexCreateBoxMesh(comm, dim, user->simplex, cells, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   }
   /* Make split labels so that we can have corners in multiple labels */
   {

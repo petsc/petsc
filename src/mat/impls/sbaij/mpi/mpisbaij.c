@@ -2257,6 +2257,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   B->structurally_symmetric     = PETSC_TRUE;
   B->symmetric_set              = PETSC_TRUE;
   B->structurally_symmetric_set = PETSC_TRUE;
+  B->symmetric_eternal          = PETSC_TRUE;
+
+  B->hermitian                  = PETSC_FALSE;
+  B->hermitian_set              = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJ);CHKERRQ(ierr);
   ierr      = PetscOptionsBegin(PetscObjectComm((PetscObject)B),NULL,"Options for loading MPISBAIJ matrix 1","Mat");CHKERRQ(ierr);

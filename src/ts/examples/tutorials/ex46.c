@@ -270,16 +270,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
   DM             pdm = NULL;
   const PetscInt dim = ctx->dim;
-  PetscInt       cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (ctx->simplex) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
-  }
+  ierr = DMPlexCreateBoxMesh(comm, dim, ctx->simplex, NULL, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   /* If no boundary marker exists, mark the whole boundary */
   ierr = DMHasLabel(*dm, "marker", &hasLabel);CHKERRQ(ierr);

@@ -21,6 +21,10 @@ int main(int argc,char **args)
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex build");
+#endif
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-display_mat", &disp_mat);CHKERRQ(ierr);
@@ -71,11 +75,8 @@ int main(int argc,char **args)
   /* Check whether A is symmetric */
   ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg);CHKERRQ(ierr);
   if (flg) {
-    Mat Trans;
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
-    ierr = MatEqual(A, Trans, &flg);
+    ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
-    ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -99,24 +100,21 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Check whether A is Hermitian */
+  /* Check whether A is Hermitian, then set A->hermitian flag */
   ierr = PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
   if (flg) {
-    Mat Hermit;
-    if (disp_mat) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," A:\n");CHKERRQ(ierr);
-      ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
-    ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX, &Hermit);
-    if (disp_mat) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," A_Hermitian:\n");CHKERRQ(ierr);
-      ierr = MatView(Hermit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
-    ierr = MatEqual(A, Hermit, &flg);
+    ierr = MatIsHermitian(A,0.0,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
-    ierr = MatDestroy(&Hermit);CHKERRQ(ierr);
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+
+  /* Test Cholesky factorization */
+  ierr = PetscOptionsHasName(NULL,NULL, "-test_choleskyfactor", &flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat F;
+    ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
+  }
 
   /* Create a Hermitian matrix As in sbaij format */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);

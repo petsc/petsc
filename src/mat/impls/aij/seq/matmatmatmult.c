@@ -39,7 +39,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
   Mat               BC;
   Mat_MatMatMatMult *matmatmatmult;
   Mat_SeqAIJ        *d;
-  PetscBool         scalable=PETSC_TRUE;
+  PetscBool         scalable=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);

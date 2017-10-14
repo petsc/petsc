@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
   DM             dm, dmAdapt;
   DMLabel        adaptLabel;
-  PetscInt       dim, nfaces, cStart, cEnd;
+  PetscInt       dim, nfaces, faces[3], cStart, cEnd;
   PetscBool      interpolate;
   PetscErrorCode ierr;
 
@@ -20,7 +20,8 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-dim","domain dimension",NULL,dim,&dim,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-nfaces","number of faces per dimension",NULL,nfaces,&nfaces,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,nfaces,interpolate,&dm);CHKERRQ(ierr);
+  faces[0] = faces[1] = faces[2] = nfaces;
+  ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD,dim,PETSC_TRUE,faces,NULL,NULL,NULL,interpolate,&dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)dm,"Pre Adaptation Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-pre_adapt_dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);

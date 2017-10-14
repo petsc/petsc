@@ -158,57 +158,59 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   ierr = PetscObjectCompose(oda,"GLVisGraphicsCoordsGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
 
-  /* customize the viewer */
-  ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
-  ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
-  ierr = PetscMalloc5(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname);CHKERRQ(ierr);
-  for (i=0;i<dof;i++) bss[i] = 1;
-  nf = dof;
+  /* customize the viewer if present */
+  if (viewer) {
+    ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
+    ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
+    ierr = PetscMalloc5(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname);CHKERRQ(ierr);
+    for (i=0;i<dof;i++) bss[i] = 1;
+    nf = dof;
 
-  ierr = PetscOptionsBegin(PetscObjectComm(oda),oda->prefix,"GLVis PetscViewer DMDA Options","PetscViewer");CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-viewer_glvis_dm_da_bs","Block sizes for subfields; enable vector representation",NULL,bss,&nf,&bsset);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (bsset) {
-    PetscInt t;
-    for (i=0,t=0;i<nf;i++) t += bss[i];
-    if (t != dof) SETERRQ2(PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
-  } else nf = dof;
+    ierr = PetscOptionsBegin(PetscObjectComm(oda),oda->prefix,"GLVis PetscViewer DMDA Options","PetscViewer");CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-viewer_glvis_dm_da_bs","Block sizes for subfields; enable vector representation",NULL,bss,&nf,&bsset);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (bsset) {
+      PetscInt t;
+      for (i=0,t=0;i<nf;i++) t += bss[i];
+      if (t != dof) SETERRQ2(PetscObjectComm(oda),PETSC_ERR_USER,"Sum of block sizes %D should equal %D",t,dof);
+    } else nf = dof;
 
-  for (i=0,s=0;i<nf;i++) {
-    ierr = PetscStrallocpy(fec,&fec_type[i]);CHKERRQ(ierr);
-    if (bss[i] == 1) {
-      ierr = PetscStrallocpy(dafieldname[s],&fieldname[i]);CHKERRQ(ierr);
-    } else {
-      PetscInt b;
-      size_t tlen = 9; /* "Vector-" + end */
-      for (b=0;b<bss[i];b++) {
-        size_t len;
-        ierr = PetscStrlen(dafieldname[s+b],&len);CHKERRQ(ierr);
-        tlen += len + 1; /* field + "-" */
-      }
-      ierr = PetscMalloc1(tlen,&fieldname[i]);CHKERRQ(ierr);
-      ierr = PetscStrcpy(fieldname[i],"Vector-");CHKERRQ(ierr);
-      for (b=0;b<bss[i]-1;b++) {
+    for (i=0,s=0;i<nf;i++) {
+      ierr = PetscStrallocpy(fec,&fec_type[i]);CHKERRQ(ierr);
+      if (bss[i] == 1) {
+        ierr = PetscStrallocpy(dafieldname[s],&fieldname[i]);CHKERRQ(ierr);
+      } else {
+        PetscInt b;
+        size_t tlen = 9; /* "Vector-" + end */
+        for (b=0;b<bss[i];b++) {
+          size_t len;
+          ierr = PetscStrlen(dafieldname[s+b],&len);CHKERRQ(ierr);
+          tlen += len + 1; /* field + "-" */
+        }
+        ierr = PetscMalloc1(tlen,&fieldname[i]);CHKERRQ(ierr);
+        ierr = PetscStrcpy(fieldname[i],"Vector-");CHKERRQ(ierr);
+        for (b=0;b<bss[i]-1;b++) {
+          ierr = PetscStrcat(fieldname[i],dafieldname[s+b]);CHKERRQ(ierr);
+          ierr = PetscStrcat(fieldname[i],"-");CHKERRQ(ierr);
+        }
         ierr = PetscStrcat(fieldname[i],dafieldname[s+b]);CHKERRQ(ierr);
-        ierr = PetscStrcat(fieldname[i],"-");CHKERRQ(ierr);
       }
-      ierr = PetscStrcat(fieldname[i],dafieldname[s+b]);CHKERRQ(ierr);
+      dims[i] = dim;
+      nlocal[i] = M*N*P*bss[i];
+      s += bss[i];
     }
-    dims[i] = dim;
-    nlocal[i] = M*N*P*bss[i];
-    s += bss[i];
-  }
 
-  /* the viewer context takes ownership of xlocal (and the the properly ghosted DMDA associated with it) */
-  ierr = PetscNew(&ctx);CHKERRQ(ierr);
-  ctx->xlocal = xlocal;
+    /* the viewer context takes ownership of xlocal (and the the properly ghosted DMDA associated with it) */
+    ierr = PetscNew(&ctx);CHKERRQ(ierr);
+    ctx->xlocal = xlocal;
 
-  ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fieldname,(const char**)fec_type,nlocal,bss,dims,DMDASampleGLVisFields_Private,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
-  for (i=0;i<nf;i++) {
-    ierr = PetscFree(fec_type[i]);CHKERRQ(ierr);
-    ierr = PetscFree(fieldname[i]);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fieldname,(const char**)fec_type,nlocal,bss,dims,DMDASampleGLVisFields_Private,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+    for (i=0;i<nf;i++) {
+      ierr = PetscFree(fec_type[i]);CHKERRQ(ierr);
+      ierr = PetscFree(fieldname[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree5(fec_type,nlocal,bss,dims,fieldname);CHKERRQ(ierr);
   }
-  ierr = PetscFree5(fec_type,nlocal,bss,dims,fieldname);CHKERRQ(ierr);
   ierr = DMDestroy(&dacoord);CHKERRQ(ierr);
   ierr = DMDestroy(&daview);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -244,6 +246,9 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
     enabled = glvis_info->enabled;
   }
+  ierr = PetscObjectQuery((PetscObject)dm,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
+  /* this can happen if we are calling DMView outside of VecView_GLVis */
+  if (!xcoorl) {ierr = DMSetUpGLVisViewer_DMDA((PetscObject)dm,NULL);CHKERRQ(ierr);}
   ierr = PetscObjectQuery((PetscObject)dm,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted coords");
   ierr = VecGetDM(xcoorl,&da);CHKERRQ(ierr);

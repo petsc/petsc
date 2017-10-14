@@ -177,19 +177,13 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  /* Check whether A is symmetric */
-  flg  = PETSC_FALSE;
+  /* Check whether A is symmetric, then set A->symmetric option */
   ierr = PetscOptionsGetBool(NULL,NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    Mat Atrans;
-    ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
-    ierr = MatEqual(A, Atrans, &isSymmetric);CHKERRQ(ierr);
-    if (isSymmetric) {
-      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    } else {
+    ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
+    if (!isSymmetric) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric \n");CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   }
 
   /*

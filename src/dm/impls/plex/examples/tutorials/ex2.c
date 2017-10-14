@@ -52,7 +52,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel  label;
     PetscInt id = 1;
 
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, 2, user->interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, PETSC_TRUE, NULL, NULL, NULL, NULL, user->interpolate, dm);CHKERRQ(ierr);
     /* Mark boundary and set BC */
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);

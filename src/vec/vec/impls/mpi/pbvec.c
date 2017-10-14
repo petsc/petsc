@@ -284,7 +284,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);
   for (r=0,npending=0; r<x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
   while (npending>0) {
-    PetscMPIInt ndone,ii;
+    PetscMPIInt ndone=0,ii;
     /* Filling MPI_Status fields requires some resources from the MPI library.  We skip it on the first assembly, or
      * when VEC_SUBSET_OFF_PROC_ENTRIES has not been set, because we could exchange exact sizes in the initial
      * rendezvous.  When the rendezvous is elided, however, we use MPI_Status to get actual message lengths, so that

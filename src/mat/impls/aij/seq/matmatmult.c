@@ -994,19 +994,62 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDestroy_SeqAIJ_MatTransMatMult(Mat A)
+{
+  PetscErrorCode      ierr;
+  Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  Mat_MatTransMatMult *atb = a->atb;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&atb->At);CHKERRQ(ierr);
+  ierr = (atb->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(atb);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
+  const char          *algTypes[2] = {"matmatmult","outerproduct"};
+  PetscInt            alg=0; /* set default algorithm */
+  Mat                 At;
+  Mat_MatTransMatMult *atb;
+  Mat_SeqAIJ          *c;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
+    ierr = PetscOptionsEList("-mattransposematmult_via","Algorithmic approach","MatTransposeMatMult",algTypes,2,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+    switch (alg) {
+    case 1:
+      ierr = MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+      break;
+    default:
+      ierr = PetscNew(&atb);CHKERRQ(ierr);
+      ierr = MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+      ierr = MatMatMult_SeqAIJ_SeqAIJ(At,B,MAT_INITIAL_MATRIX,fill,C);CHKERRQ(ierr);
+
+      c                  = (Mat_SeqAIJ*)(*C)->data;
+      c->atb             = atb;
+      atb->At            = At;
+      atb->destroy       = (*C)->ops->destroy;
+      (*C)->ops->destroy = MatDestroy_SeqAIJ_MatTransMatMult;
+
+      break;
+    }
   }
-  ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  if (alg) {
+    ierr = (*(*C)->ops->mattransposemultnumeric)(A,B,*C);CHKERRQ(ierr);
+  } else if (!alg && scall == MAT_REUSE_MATRIX) {
+    c   = (Mat_SeqAIJ*)(*C)->data;
+    atb = c->atb;
+    At  = atb->At;
+    ierr = MatTranspose_SeqAIJ(A,MAT_REUSE_MATRIX,&At);CHKERRQ(ierr);
+    ierr = MatMatMult_SeqAIJ_SeqAIJ(At,B,MAT_REUSE_MATRIX,fill,C);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1028,6 +1071,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   /* clean up */
   ierr = MatDestroy(&At);CHKERRQ(ierr);
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+
+  (*C)->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ;
   PetscFunctionReturn(0);
 }
 

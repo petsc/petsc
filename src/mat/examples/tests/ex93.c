@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);}
 
-  ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
+  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);  /* D = C*A = (A^T*A)*A */
   ierr = MatSetOptionsPrefix(D,"D_");CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -66,10 +66,12 @@ int main(int argc,char **argv)
   /* Test PtAP routine. */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
-  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-15 && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);CHKERRQ(ierr);
+  if (!test_hypre) {
+    ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    if (norm > 1.e-15 && !rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error in MatPtAP: %g\n",norm);CHKERRQ(ierr);
+    }
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
@@ -77,8 +79,10 @@ int main(int argc,char **argv)
   /* Repeat PtAP to test symbolic/numeric separation for reuse of the symbolic product */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(C,"C=BtAB_");CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  if (!test_hypre) {
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  }
 
   if (!test_hypre) {
     ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
@@ -94,10 +98,10 @@ int main(int argc,char **argv)
     if (norm > 1.e-15) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   if (size == 1) {
     /* A test contributed by Tobias Neckel <neckel@in.tum.de> */

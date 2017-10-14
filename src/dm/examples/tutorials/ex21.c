@@ -56,13 +56,14 @@ PetscErrorCode pic_advect(PetscInt ppcell,PetscInt meshtype)
     DM distributedMesh = NULL;
     PetscInt numComp[] = {1};
     PetscInt numDof[] = {1,0,0}; /* vert, edge, cell */
+    PetscInt faces[]  = {1,1,1};
     PetscInt numBC = 0;
     PetscSection section;
     Vec cellgeom = NULL;
     Vec facegeom = NULL;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Mesh type: DMPLEX\n");CHKERRQ(ierr);
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, 1, PETSC_TRUE, &celldm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
     
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);
