@@ -72,7 +72,7 @@ E*/
 typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_REMOVE} DMPointLocationType;
 
 /*E
-  DMAdaptationType - Describes the strategy used for adaptive solves
+  DMAdaptationStrategy - Describes the strategy used for adaptive solves
 
   Level: beginner
 
@@ -82,7 +82,21 @@ typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_
 
 .seealso: DMAdaptorSolve()
 E*/
-typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationType;
+typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationStrategy;
+
+/*E
+  DMAdaptationCriterion - Describes the test used to decide whether to coarsen or refine parts of the mesh
+
+  Level: beginner
+
+  DM_ADAPTATION_REFINE will uniformly refine a mesh, much like grid sequencing. DM_ADAPTATION_LABEL will adapt
+  the mesh based upon a label of the cells filled with DMAdaptFlag markers. DM_ADAPTATION_METRIC will try to
+  mesh the manifold described by the input metric tensor uniformly. PETSc can also construct such a metric based
+  upon an input primal or a gradient field.
+
+.seealso: DMAdaptorSolve()
+E*/
+typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_ADAPTATION_METRIC} DMAdaptationCriterion;
 
 /*E
   DMAdaptFlag - Marker in the label prescribing adaptation

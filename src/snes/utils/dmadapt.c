@@ -30,7 +30,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
   Level: beginner
 
 .keywords: DMAdaptor, convergence, create
-.seealso: DMAdaptorDestroy(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorDestroy(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 {
@@ -67,7 +67,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   Level: beginner
 
 .keywords: DMAdaptor, convergence, destroy
-.seealso: DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 {
@@ -98,7 +98,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
   Level: beginner
 
 .keywords: DMAdaptor, convergence, options
-.seealso: DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 {
@@ -124,7 +124,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
   Level: beginner
 
 .keywords: DMAdaptor, adaptivity, view
-.seealso: DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 {
@@ -152,7 +152,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
   Level: intermediate
 
 .keywords: DMAdaptor, convergence
-.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
@@ -177,7 +177,7 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
   Note: The solver MUST have an attached DM/DS, so that we know the exact solution
 
 .keywords: DMAdaptor, convergence
-.seealso: DMAdaptorGetSolver(), DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorGetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 {
@@ -202,7 +202,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
   Level: beginner
 
 .keywords: DMAdaptor, convergence, setup
-.seealso: DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
 PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
 {
@@ -747,9 +747,9 @@ $ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a q
   Level: intermediate
 
 .keywords: DMAdaptor, convergence
-.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorGetConvRate()
+.seealso: DMAdaptorSetSolver(), DMAdaptorCreate(), DMAdaptorAdapt()
 @*/
-PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationType strategy, DM *adm, Vec *ax)
+PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
 {
   PetscErrorCode ierr;
 
