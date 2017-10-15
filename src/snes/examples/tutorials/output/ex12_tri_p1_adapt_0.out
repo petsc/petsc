@@ -17,6 +17,5 @@ Mesh in 2 dimensions:
 Labels:
   marker: 1 strata with value/size (1 (264))
   depth: 3 strata with value/size (0 (5704), 1 (16977), 2 (11274))
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-Number of SNES iterations = 1
 L_2 Error: 0.00263324
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

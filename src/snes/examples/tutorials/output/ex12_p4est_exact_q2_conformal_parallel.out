@@ -9,6 +9,7 @@
     0 SNES Function norm < 1.e-11
     1 SNES Function norm < 1.e-11
   1 SNES Function norm < 1.e-11
+L_2 Error: < 1.0e-11
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
 SNES Object: 7 MPI processes
   type: fas
@@ -112,5 +113,3 @@ SNES Object: 7 MPI processes
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=1
-Number of SNES iterations = 1
-L_2 Error: < 1.0e-11
