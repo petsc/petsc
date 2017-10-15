@@ -807,8 +807,10 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       *ax  = x;
       break;
     }
-    ierr = DMViewFromOptions(odm, NULL, "-dm_adapt_iter_view");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(ox, NULL, "-sol_adapt_iter_view");CHKERRQ(ierr);
+    if (adaptIter < numAdapt-1) {
+      ierr = DMViewFromOptions(odm, NULL, "-dm_adapt_iter_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(ox, NULL, "-sol_adapt_iter_view");CHKERRQ(ierr);
+    }
     ierr = DMAdaptorPostAdapt(adaptor);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
     ierr = DMDestroy(&plex);CHKERRQ(ierr);

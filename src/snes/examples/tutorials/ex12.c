@@ -1542,6 +1542,6 @@ int main(int argc, char **argv)
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason -pc_type lu -refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial
   test:
     suffix: tri_p1_adapt_1
-    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason -pc_type lu -refinement_factor 1.0 -dm_view -dm_adapt_iter_view -snes_adapt_sequence 2
+    args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason -pc_type lu -refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
 
 TEST*/
