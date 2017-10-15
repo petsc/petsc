@@ -4041,6 +4041,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   {
     PetscViewer       viewer;
     PetscViewerFormat format;
+    PetscInt          num;
     PetscBool         flg;
     static PetscBool  incall = PETSC_FALSE;
 
@@ -4076,6 +4077,22 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_INITIAL, &dm, &x);CHKERRQ(ierr);
+        ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+      /* Use grid sequencing to adapt */
+      num  = 0;
+      ierr = PetscOptionsGetInt(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_sequence", &num, NULL);CHKERRQ(ierr);
+      if (num) {
+        DMAdaptor adaptor;
+
+        incall = PETSC_TRUE;
+        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSequenceLength(adaptor, num);CHKERRQ(ierr);
+        ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_SEQUENTIAL, &dm, &x);CHKERRQ(ierr);
         ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
         incall = PETSC_FALSE;
       }
