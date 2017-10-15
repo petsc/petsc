@@ -22,6 +22,7 @@ J*/
 typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERCHACO    "chaco"
 #define PETSCPARTITIONERPARMETIS "parmetis"
+#define PETSCPARTITIONERPTSCOTCH "ptscotch"
 #define PETSCPARTITIONERSHELL    "shell"
 #define PETSCPARTITIONERSIMPLE   "simple"
 #define PETSCPARTITIONERGATHER   "gather"

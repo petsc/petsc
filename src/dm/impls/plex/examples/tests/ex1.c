@@ -423,6 +423,18 @@ int main(int argc, char **argv)
     nsize: 8
     args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
 
+  # Parallel ptscotch partitioner tests
+  test:
+    suffix: part_ptscotch_0
+    requires: ptscotch
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -dm_refine 0 -interpolate 0 -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality
+  test:
+    suffix: part_ptscotch_1
+    requires: ptscotch
+    nsize: 8
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_imbalance 0.1
+
   # CGNS reader tests 10-11 (need to find smaller test meshes)
   test:
     suffix: cgns_0

@@ -67,6 +67,7 @@ PetscErrorCode  DMRegisterAll(void)
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
@@ -94,6 +95,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
 
   ierr = PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
+  ierr = PetscPartitionerRegister(PETSCPARTITIONERPTSCOTCH, PetscPartitionerCreate_PTScotch);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERGATHER,   PetscPartitionerCreate_Gather);CHKERRQ(ierr);
