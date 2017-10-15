@@ -45,6 +45,10 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   (*adaptor)->monitor = PETSC_FALSE;
   (*adaptor)->adaptCriterion = DM_ADAPTATION_NONE;
   (*adaptor)->numSeq  = 1;
+  (*adaptor)->Nadapt  = -1;
+  (*adaptor)->refinementFactor = 2.0;
+  (*adaptor)->h_min = 1.;
+  (*adaptor)->h_max = 10000.;
   refineBox.min = refineBox.max = PETSC_MAX_REAL;
   ierr = VecTaggerCreate(PetscObjectComm((PetscObject) *adaptor), &(*adaptor)->refineTag);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) (*adaptor)->refineTag, "refine_");CHKERRQ(ierr);
@@ -97,6 +101,14 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
   Input Parameters:
 . adaptor - The DMAdaptor object
 
+  Options Database Keys:
++ -adaptor_monitor <bool>        : Monitor the adaptation process
+. -adaptor_sequence_num <num>    : Number of adaptations to generate an optimal grid
+. -adaptor_target_num <num>      : Set the target number of vertices N_adapt, -1 for automatic determination
+. -adaptor_refinement_factor <r> : Set r such that N_adapt = r^dim N_orig
+. -adaptor_metric_h_min <min>    : Set the minimum eigenvalue of Hessian (sqr max edge length)
+- -adaptor_metric_h_max <max>    : Set the maximum eigenvalue of Hessian (sqr min edge length)
+
   Level: beginner
 
 .keywords: DMAdaptor, convergence, options
@@ -108,7 +120,12 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) adaptor), "", "DM Adaptor Options", "DMAdaptor");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-adaptor_monitor", "Monitor the adaptation process", "DMAdaptorMonitor", adaptor->monitor, &adaptor->monitor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-adaptor_sequence_num", "Number of adaptations to generate an optimal grid", "DMAdaptorSetSequenceLength", adaptor->numSeq, &adaptor->numSeq, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-adaptor_target_num", "Set the target number of vertices N_adapt, -1 for automatic determination", "DMAdaptor", adaptor->Nadapt, &adaptor->Nadapt, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-adaptor_refinement_factor", "Set r such that N_adapt = r^dim N_orig", "DMAdaptor", adaptor->refinementFactor, &adaptor->refinementFactor, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-adaptor_metric_h_min", "Set the minimum eigenvalue of Hessian (sqr max edge length)", "DMAdaptor", adaptor->h_min, &adaptor->h_min, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-adaptor_metric_h_max", "Set the maximum eigenvalue of Hessian (sqr min edge length)", "DMAdaptor", adaptor->h_max, &adaptor->h_max, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = VecTaggerSetFromOptions(adaptor->refineTag);CHKERRQ(ierr);
   ierr = VecTaggerSetFromOptions(adaptor->coarsenTag);CHKERRQ(ierr);
@@ -430,10 +447,9 @@ PetscErrorCode PetscGlobalMinMax(MPI_Comm comm, PetscReal minMaxVal[2], PetscRea
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscScalar Hp[])
+static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscScalar Hp[])
 {
   PetscScalar   *Hpos, *eigs;
-  PetscReal      max = PETSC_MAX_REAL, min = PETSC_MIN_REAL;
   PetscInt       i, j, k;
   PetscErrorCode ierr;
 
@@ -512,14 +528,9 @@ static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscScalar H
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
 #endif
-  /* Reflect to positive orthant and enforce maximum,minimum size
-       \lambda \propto 1/h^2
-       TODO get domain bounding box
-       TODO make option for maximum, minimum size
-  */
-  min = 1.;
-  max = 10000.;
-  for (i = 0; i < dim; ++i) eigs[i] = PetscMin(max, PetscMax(min, PetscAbsScalar(eigs[i])));
+  /* Reflect to positive orthant, enforce maximum and minimum size, \lambda \propto 1/h^2
+       TODO get domain bounding box */
+  for (i = 0; i < dim; ++i) eigs[i] = PetscMin(h_max, PetscMax(h_min, PetscAbsScalar(eigs[i])));
   /* Reconstruct Hessian */
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
@@ -671,7 +682,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       Vec          xGrad,    xHess,    metric;
       PetscSection sec, msec;
       PetscScalar *H, *M;
-      PetscReal    N, integral, factor = 2.0;
+      PetscReal    N, integral;
       DMLabel      bdLabel;
       PetscInt     Nd = coordDim*coordDim, f, vStart, vEnd, v;
 
@@ -728,8 +739,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
       ierr = DMGetLocalVector(dmMetric, &metric);CHKERRQ(ierr);
       /*       N is the target size */
-      ierr = PetscOptionsGetReal(NULL, NULL, "-refinement_factor", &factor, NULL);CHKERRQ(ierr);
-      N    = PetscPowInt(factor, dim)*((PetscReal) (vEnd - vStart));
+      N    = adaptor->Nadapt >= 0 ? adaptor->Nadapt : PetscPowRealInt(adaptor->refinementFactor, dim)*((PetscReal) (vEnd - vStart));
+      if (adaptor->monitor) {ierr = PetscPrintf(PETSC_COMM_SELF, "N_orig: %D N_adapt: %g\n", vEnd - vStart, N);CHKERRQ(ierr);}
       /*       |H| means take the absolute value of eigenvalues */
       ierr = VecGetArray(xHess, &H);CHKERRQ(ierr);
       ierr = VecGetArray(metric, &M);CHKERRQ(ierr);
@@ -737,7 +748,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
         PetscScalar *Hp;
 
         ierr = DMPlexPointLocalRef(dmHess, v, H, &Hp);CHKERRQ(ierr);
-        ierr = DMAdaptorModifyHessian_Private(coordDim, Hp);CHKERRQ(ierr);
+        ierr = DMAdaptorModifyHessian_Private(coordDim, adaptor->h_min, adaptor->h_max, Hp);CHKERRQ(ierr);
       }
       /*       Pointwise on vertices M(x) = N^{2/d} (\int_\Omega det(|H|)^{p/(2p+d)})^{-2/d} det(|H|)^{-1/(2p+d)} |H| for L_p */
       ierr = PetscDSSetObjective(probHess, 0, detHFunc);CHKERRQ(ierr);

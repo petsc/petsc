@@ -24,7 +24,10 @@ struct _p_DMAdaptor
   /*   control */
   DMAdaptationCriterion adaptCriterion;
   PetscBool          femType;
-  PetscInt           numSeq; /* Number of sequential adaptations */
+  PetscInt           numSeq;            /* Number of sequential adaptations */
+  PetscInt           Nadapt;            /* Target number of vertices */
+  PetscReal          refinementFactor;  /* N_adapt = r^dim N_orig */
+  PetscReal          h_min, h_max;      /* Min and max Hessian eigenvalues */
   /*   FVM support */
   PetscBool          computeGradient;
   DM                 cellDM, gradDM;
