@@ -22,7 +22,9 @@ struct _p_DMAdaptor
   SNES               snes; /* Solver */
   VecTagger          refineTag, coarsenTag; /* Criteria for adaptivity */
   /*   control */
-  PetscBool          labelType, femType;
+  DMAdaptationCriterion adaptCriterion;
+  PetscBool          femType;
+  PetscInt           numSeq; /* Number of sequential adaptations */
   /*   FVM support */
   PetscBool          computeGradient;
   DM                 cellDM, gradDM;
