@@ -8,15 +8,15 @@ Labels:
   marker: 1 strata with value/size (1 (512))
   Face Sets: 1 strata with value/size (1 (504))
   depth: 3 strata with value/size (0 (4225), 1 (12416), 2 (8192))
-DM Object: 1 MPI processes
+DM Object: Mesh 1 MPI processes
   type: plex
-DM_0x84000000_2 in 2 dimensions:
-  0-cells: 5704
-  1-cells: 16977
-  2-cells: 11274
+Mesh in 2 dimensions:
+  0-cells: 7800
+  1-cells: 23345
+  2-cells: 15546
 Labels:
-  marker: 1 strata with value/size (1 (264))
-  depth: 3 strata with value/size (0 (5704), 1 (16977), 2 (11274))
+  marker: 1 strata with value/size (1 (104))
+  depth: 3 strata with value/size (0 (7800), 1 (23345), 2 (15546))
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
-L_2 Error: 0.00263324
+L_2 Error: 0.00687882

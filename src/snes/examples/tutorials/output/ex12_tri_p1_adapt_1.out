@@ -1,0 +1,33 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 4225
+  1-cells: 12416
+  2-cells: 8192
+Labels:
+  marker: 1 strata with value/size (1 (512))
+  Face Sets: 1 strata with value/size (1 (504))
+  depth: 3 strata with value/size (0 (4225), 1 (12416), 2 (8192))
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  DM Object: Mesh 1 MPI processes
+    type: plex
+  Mesh in 2 dimensions:
+    0-cells:   7800  
+    1-cells:   23345  
+    2-cells:   15546  
+  Labels:
+    marker: 1 strata with value/size (1 (104))
+    depth: 3 strata with value/size (0 (7800), 1 (23345), 2 (15546))
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 13976
+  1-cells: 41832
+  2-cells: 27857
+Labels:
+  marker: 1 strata with value/size (1 (186))
+  depth: 3 strata with value/size (0 (13976), 1 (41832), 2 (27857))
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Number of SNES iterations = 1
+L_2 Error: 0.0027588
