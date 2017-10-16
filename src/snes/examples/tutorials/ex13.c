@@ -266,10 +266,6 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       gsvals = svals;
     }
     if (!rank) {
-      ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &N, MATFFTW, &F);CHKERRQ(ierr);
-      ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) y, name);CHKERRQ(ierr);
-      ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
       /* Sort point along ray */
       ierr = PetscMalloc2(N, &perm, N, &nperm);CHKERRQ(ierr);
       for (i = 0; i < N; ++i) {perm[i] = i;}
@@ -279,11 +275,16 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       for (i = 1, j = 1; i < N; ++i) {
         if (PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) > PETSC_SMALL) nperm[j++] = perm[i];
       }
+      /* Create FFT structs */
+      ierr = MatCreateFFT(PETSC_COMM_SELF, 1, &j, MATFFTW, &F);CHKERRQ(ierr);
+      ierr = MatCreateVecs(F, &x, &y);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) y, name);CHKERRQ(ierr);
+      ierr = VecGetArray(x, &rvals);CHKERRQ(ierr);
       for (i = 0, j = 0; i < N; ++i) {
         if (i > 0 && PetscAbsReal(gray[perm[i]] - gray[perm[i-1]]) < PETSC_SMALL) continue;
-        rvals[i] = gsvals[nperm[j++]];
+        rvals[j] = gsvals[nperm[j]];
+        ++j;
       }
-      N = j;
       ierr = PetscFree2(perm, nperm);CHKERRQ(ierr);
       if (size > 1) {ierr = PetscFree2(gray, gsvals);CHKERRQ(ierr);}
       ierr = VecRestoreArray(x, &rvals);CHKERRQ(ierr);
