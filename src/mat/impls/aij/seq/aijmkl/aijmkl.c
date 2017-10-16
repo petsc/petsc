@@ -14,6 +14,7 @@
 
 typedef struct {
   PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
+  PetscBool eager_inspection; /* If PETSC_TRUE, then call mkl_sparse_optimize() in MatDuplicate()/MatAssemblyEnd(). */
   PetscBool sparse_optimized; /* If PETSC_TRUE, then mkl_sparse_optimize() has been called. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
@@ -112,6 +113,13 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
   PetscFunctionReturn(0);
 }
 
+/* MatSeqAIJKL_create_mkl_handle(), if called with an AIJMKL matrix that has not had mkl_sparse_optimize() called for it, 
+ * creates an MKL sparse matrix handle from the AIJ arrays and calls mkl_sparse_optimize().
+ * If called with an AIJMKL matrix for which aijmkl->sparse_optimized == PETSC_TRUE, then it destroys the old matrix 
+ * handle, creates a new one, and then calls mkl_sparse_optimize().
+ * Although in normal MKL usage it is possible to have a valid matrix handle on which mkl_sparse_optimize() has not been 
+ * called, for AIJMKL the handle creation and optimization step always occur together, so we don't handle the case of 
+ * an unoptimized matrix handle here. */
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 {
 #ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
@@ -179,7 +187,9 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
   aijmkl_dest = (Mat_SeqAIJMKL*) (*M)->spptr;
   ierr = PetscMemcpy(aijmkl_dest,aijmkl,sizeof(Mat_SeqAIJMKL));CHKERRQ(ierr);
   aijmkl_dest->sparse_optimized = PETSC_FALSE;
-  ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  if (aijmkl->eager_inspection) {
+    ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -187,6 +197,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL *aijmkl;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -197,10 +208,14 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
    * I'm not sure if this is the best way to do this, but it avoids
    * a lot of code duplication. */
   a->inode.use = PETSC_FALSE;  /* Must disable: otherwise the MKL routines won't get used. */
-  ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
-  /* Now create the MKL sparse handle (if needed; the function checks). */
-  ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  /* If the user has requested "eager" inspection, create the optimized MKL sparse handle (if needed; the function checks).
+   * (The default is to do "lazy" inspection, deferring this until something like MatMult() is called.) */
+  aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+  if (aijmkl->eager_inspection) {
+    ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -668,10 +683,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 #else
   aijmkl->no_SpMV2 = PETSC_TRUE;
 #endif
+  aijmkl->eager_inspection = PETSC_FALSE;
 
   /* Parse command line options. */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJMKL Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_aijmkl_eager_inspection","Eager Inspection","None",(PetscBool)aijmkl->eager_inspection,(PetscBool*)&aijmkl->eager_inspection,&set);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 #ifndef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if(!aijmkl->no_SpMV2) {
