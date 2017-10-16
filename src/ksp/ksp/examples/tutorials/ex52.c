@@ -235,11 +235,18 @@ int main(int argc,char **args)
   /*
     Example of how to use external package STRUMPACK
     Note: runtime options
-          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_package strumpack \
-              -mat_strumpack_rctol 1.e-3 -mat_strumpack_hssminsize 50 -mat_strumpack_colperm 0'
-          are equivalent to these procedural calls
+          '-pc_type lu/ilu \
+           -pc_factor_mat_solver_package strumpack \
+           -mat_strumpack_reordering METIS \
+           -mat_strumpack_colperm 0 \
+           -mat_strumpack_hss_rel_tol 1.e-3 \
+           -mat_strumpack_hss_min_sep_size 50 \
+           -mat_strumpack_max_rank 100 \
+           -mat_strumpack_leaf_size 4'
+       are equivalent to these procedural calls
 
-    We refer to the STRUMPACK-sparse manual, section 5, on more info on how to tune the preconditioner.
+    We refer to the STRUMPACK-sparse manual, section 5, for more info on
+    how to tune the preconditioner.
   */
 #if defined(PETSC_HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
@@ -276,6 +283,10 @@ int main(int argc,char **args)
     /* You can further limit the fill in the preconditioner by        */
     /* setting a maximum rank                                         */
     ierr = MatSTRUMPACKSetHSSMaxRank(F,100);CHKERRQ(ierr);
+    /* Set the size of the diagonal blocks (the leafs) in the HSS     */
+    /* approximation. The default value should be better for real     */
+    /* problems. This is mostly for illustration on a small problem.  */
+    ierr = MatSTRUMPACKSetHSSLeafSize(F,4);CHKERRQ(ierr);
 #endif
   }
 #endif

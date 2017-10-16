@@ -37,6 +37,7 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSRelTol_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSAbsTol_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMaxRank_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSLeafSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinFrontSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinSepSize_C",NULL);CHKERRQ(ierr);
 
@@ -134,7 +135,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F,PetscReal rtol)
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
 
   PetscFunctionBegin;
-  PetscStackCall("STRUMPACK_set_hss_rel_tol", STRUMPACK_set_hss_rel_tol(*S,rtol));
+  PetscStackCall("STRUMPACK_set_HSS_rel_tol", STRUMPACK_set_HSS_rel_tol(*S,rtol));
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -176,7 +177,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F,PetscReal atol)
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
 
   PetscFunctionBegin;
-  PetscStackCall("STRUMPACK_set_hss_abs_tol", STRUMPACK_set_hss_abs_tol(*S,atol));
+  PetscStackCall("STRUMPACK_set_HSS_abs_tol", STRUMPACK_set_HSS_abs_tol(*S,atol));
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -218,7 +219,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F,PetscInt hssmaxr
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
 
   PetscFunctionBegin;
-  PetscStackCall("STRUMPACK_set_max_rank", STRUMPACK_set_max_rank(*S,hssmaxrank));
+  PetscStackCall("STRUMPACK_set_HSS_max_rank", STRUMPACK_set_HSS_max_rank(*S,hssmaxrank));
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -249,6 +250,48 @@ PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F,PetscInt hssmaxrank)
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(F,hssmaxrank,2);
   ierr = PetscTryMethod(F,"MatSTRUMPACKSetHSSMaxRank_C",(Mat,PetscInt),(F,hssmaxrank));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSTRUMPACKSetHSSLeafSize_STRUMPACK"
+static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F,PetscInt leaf_size)
+{
+  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
+
+  PetscFunctionBegin;
+  PetscStackCall("STRUMPACK_set_HSS_leaf_size", STRUMPACK_set_HSS_leaf_size(*S,leaf_size));
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MatSTRUMPACKSetHSSLeafSize"
+/*@
+  MatSTRUMPACKSetHSSLeafSize - Set STRUMPACK HSS leaf size
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
+-  leaf_size - Size of diagonal blocks in HSS approximation
+
+  Options Database:
+.   -mat_strumpack_leaf_size    - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
+
+   Level: beginner
+
+   References:
+.      STRUMPACK manual
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F,PetscInt leaf_size)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(F,leaf_size,2);
+  ierr = PetscTryMethod(F,"MatSTRUMPACKSetHSSLeafSize_C",(Mat,PetscInt),(F,leaf_size));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -493,6 +536,7 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSol
 . -mat_strumpack_hss_min_front_size <1000>  - Minimum size of dense block for HSS compression (None)
 . -mat_strumpack_hss_min_sep_size <256>     - Minimum size of separator for HSS compression (None)
 . -mat_strumpack_max_rank                   - Maximum rank in HSS compression, when using pctype ilu (None)
+. -mat_strumpack_leaf_size                  - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
 . -mat_strumpack_reordering <METIS>         - Sparsity reducing matrix reordering (choose one of) NATURAL METIS PARMETIS SCOTCH PTSCOTCH RCM (None)
 . -mat_strumpack_iterative_solver <DIRECT>  - Select iterative solver from STRUMPACK (choose one of) AUTO DIRECT REFINE PREC_GMRES GMRES PREC_BICGSTAB BICGSTAB (None)
 
@@ -509,7 +553,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   PetscInt                      M=A->rmap->N,N=A->cmap->N;
   PetscBool                     verb,flg,set;
   PetscReal                     ctol;
-  PetscInt                      hssminsize,max_rank;
+  PetscInt                      hssminsize,max_rank,leaf_size;
   STRUMPACK_SparseSolver        *S;
   STRUMPACK_INTERFACE           iface;
   STRUMPACK_REORDERING_STRATEGY ndcurrent,ndvalue;
@@ -543,9 +587,10 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetColPerm_C",MatSTRUMPACKSetColPerm_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSRelTol_C",MatSTRUMPACKSetHSSRelTol_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSAbsTol_C",MatSTRUMPACKSetHSSAbsTol_STRUMPACK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMaxRank_C",MatSTRUMPACKSetHSSMaxRank_STRUMPACK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSLeafSize_C",MatSTRUMPACKSetHSSLeafSize_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinFrontSize_C",MatSTRUMPACKSetHSSMinFrontSize_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinSepSize_C",MatSTRUMPACKSetHSSMinSepSize_STRUMPACK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMaxRank_C",MatSTRUMPACKSetHSSMaxRank_STRUMPACK);CHKERRQ(ierr);
   B->factortype = ftype;
   ierr     = PetscNewLog(B,&S);CHKERRQ(ierr);
   B->spptr = S;
@@ -560,13 +605,13 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 
   PetscStackCall("STRUMPACK_init",STRUMPACK_init(S,PetscObjectComm((PetscObject)A),prec,iface,0,NULL,verb));
 
-  PetscStackCall("STRUMPACK_hss_rel_tol",ctol = (PetscReal)STRUMPACK_hss_rel_tol(*S));
+  PetscStackCall("STRUMPACK_HSS_rel_tol",ctol = (PetscReal)STRUMPACK_HSS_rel_tol(*S));
   ierr = PetscOptionsReal("-mat_strumpack_hss_rel_tol","Relative compression tolerance","None",ctol,&ctol,&set);CHKERRQ(ierr);
-  if (set) PetscStackCall("STRUMPACK_set_hss_rel_tol",STRUMPACK_set_hss_rel_tol(*S,(double)ctol));
+  if (set) PetscStackCall("STRUMPACK_set_HSS_rel_tol",STRUMPACK_set_HSS_rel_tol(*S,(double)ctol));
 
-  PetscStackCall("STRUMPACK_hss_abs_tol",ctol = (PetscReal)STRUMPACK_hss_abs_tol(*S));
+  PetscStackCall("STRUMPACK_HSS_abs_tol",ctol = (PetscReal)STRUMPACK_HSS_abs_tol(*S));
   ierr = PetscOptionsReal("-mat_strumpack_hss_abs_tol","Absolute compression tolerance","None",ctol,&ctol,&set);CHKERRQ(ierr);
-  if (set) PetscStackCall("STRUMPACK_set_hss_abs_tol",STRUMPACK_set_hss_abs_tol(*S,(double)ctol));
+  if (set) PetscStackCall("STRUMPACK_set_HSS_abs_tol",STRUMPACK_set_HSS_abs_tol(*S,(double)ctol));
 
   PetscStackCall("STRUMPACK_mc64job",flg = (STRUMPACK_mc64job(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
   ierr = PetscOptionsBool("-mat_strumpack_colperm","Find a col perm to get nonzero diagonal","None",flg,&flg,&set);CHKERRQ(ierr);
@@ -574,15 +619,22 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
 
   PetscStackCall("STRUMPACK_HSS_min_front_size",hssminsize = (PetscInt)STRUMPACK_HSS_min_front_size(*S));
   ierr = PetscOptionsInt("-mat_strumpack_hss_min_front_size","Minimum size of dense block for HSS compression","None",hssminsize,&hssminsize,&set);CHKERRQ(ierr);
-  if (set) PetscStackCall("STRUMPACK_set_HSS_min_front_size",STRUMPACK_set_HSS_min_front_size(*S,(int)hssminsize));
+  if (set) {
+    printf("setting HSS min front size to %d\n", hssminsize);
+    PetscStackCall("STRUMPACK_set_HSS_min_front_size",STRUMPACK_set_HSS_min_front_size(*S,(int)hssminsize));
+  }
 
   PetscStackCall("STRUMPACK_HSS_min_sep_size",hssminsize = (PetscInt)STRUMPACK_HSS_min_sep_size(*S));
   ierr = PetscOptionsInt("-mat_strumpack_hss_min_sep_size","Minimum size of separator for HSS compression","None",hssminsize,&hssminsize,&set);CHKERRQ(ierr);
   if (set) PetscStackCall("STRUMPACK_set_HSS_min_sep_size",STRUMPACK_set_HSS_min_sep_size(*S,(int)hssminsize));
 
-  PetscStackCall("STRUMPACK_max_rank",max_rank = (PetscInt)STRUMPACK_max_rank(*S));
+  PetscStackCall("STRUMPACK_HSS_max_rank",max_rank = (PetscInt)STRUMPACK_HSS_max_rank(*S));
   ierr = PetscOptionsInt("-mat_strumpack_max_rank","Maximum rank in HSS approximation","None",max_rank,&max_rank,&set);CHKERRQ(ierr);
-  if (set) PetscStackCall("STRUMPACK_set_max_rank",STRUMPACK_set_max_rank(*S,(int)max_rank));
+  if (set) PetscStackCall("STRUMPACK_set_HSS_max_rank",STRUMPACK_set_HSS_max_rank(*S,(int)max_rank));
+
+  PetscStackCall("STRUMPACK_HSS_leaf_size",leaf_size = (PetscInt)STRUMPACK_HSS_leaf_size(*S));
+  ierr = PetscOptionsInt("-mat_strumpack_leaf_size","Size of diagonal blocks in HSS approximation","None",leaf_size,&leaf_size,&set);CHKERRQ(ierr);
+  if (set) PetscStackCall("STRUMPACK_set_HSS_leaf_size",STRUMPACK_set_HSS_leaf_size(*S,(int)leaf_size));
 
   const char *const STRUMPACKNDTypes[] = {"NATURAL","METIS","PARMETIS","SCOTCH","PTSCOTCH","RCM","STRUMPACKNDTypes","",0};
   PetscStackCall("STRUMPACK_reordering_method",ndcurrent = STRUMPACK_reordering_method(*S));
