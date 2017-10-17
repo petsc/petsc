@@ -330,6 +330,20 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, const PetscReal 
   (void)PetscLogFlops(12.0);
 }
 
+PETSC_STATIC_INLINE void DMPlex_Det2D_Scalar_Internal(PetscReal *detJ, const PetscScalar J[])
+{
+  *detJ = PetscRealPart(J[0])*PetscRealPart(J[3]) - PetscRealPart(J[1])*PetscRealPart(J[2]);
+  (void)PetscLogFlops(3.0);
+}
+
+PETSC_STATIC_INLINE void DMPlex_Det3D_Scalar_Internal(PetscReal *detJ, const PetscScalar J[])
+{
+  *detJ = (PetscRealPart(J[0*3+0])*(PetscRealPart(J[1*3+1])*PetscRealPart(J[2*3+2]) - PetscRealPart(J[1*3+2])*PetscRealPart(J[2*3+1])) +
+           PetscRealPart(J[0*3+1])*(PetscRealPart(J[1*3+2])*PetscRealPart(J[2*3+0]) - PetscRealPart(J[1*3+0])*PetscRealPart(J[2*3+2])) +
+           PetscRealPart(J[0*3+2])*(PetscRealPart(J[1*3+0])*PetscRealPart(J[2*3+1]) - PetscRealPart(J[1*3+1])*PetscRealPart(J[2*3+0])));
+  (void)PetscLogFlops(12.0);
+}
+
 PETSC_STATIC_INLINE void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
 
 PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
