@@ -184,6 +184,8 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    Notes:
    All processors that share the DMDA must call this with the same gp value
 
+   After use, comm should be freed with MPI_Comm_free()
+
    This routine is particularly useful to compute boundary conditions
    or other application-specific calculations that require manipulating
    sets of data throughout a logical plane of grid points.
@@ -254,6 +256,8 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
    Notes:
    This routine is useful for distributing one-dimensional data in a tensor product grid.
+
+   After use, comm should be freed with MPI_Comm_free()
 
 .keywords: distributed array, get, processor subset
 @*/
