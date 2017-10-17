@@ -12,7 +12,7 @@ static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor,
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMProjectFunction(adm, 0.0, adaptor->exactSol, ctx, INSERT_ALL_VALUES, au);CHKERRQ(ierr);
+  ierr = DMProjectFunction(adm, 0.0, adaptor->exactSol, (void **) ctx, INSERT_ALL_VALUES, au);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -449,7 +449,8 @@ PetscErrorCode PetscGlobalMinMax(MPI_Comm comm, PetscReal minMaxVal[2], PetscRea
 
 static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscScalar Hp[])
 {
-  PetscScalar   *Hpos, *eigs;
+  PetscScalar   *Hpos;
+  PetscReal     *eigs;
   PetscInt       i, j, k;
   PetscErrorCode ierr;
 
@@ -530,7 +531,7 @@ static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_m
 #endif
   /* Reflect to positive orthant, enforce maximum and minimum size, \lambda \propto 1/h^2
        TODO get domain bounding box */
-  for (i = 0; i < dim; ++i) eigs[i] = PetscMin(h_max, PetscMax(h_min, PetscAbsScalar(eigs[i])));
+  for (i = 0; i < dim; ++i) eigs[i] = PetscMin(h_max, PetscMax(h_min, PetscAbsReal(eigs[i])));
   /* Reconstruct Hessian */
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
@@ -564,8 +565,8 @@ static void detHFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscInt p = 1;
   PetscReal      detH = 0.0;
 
-  if      (dim == 2) DMPlex_Det2D_Internal(&detH, u);
-  else if (dim == 3) DMPlex_Det3D_Internal(&detH, u);
+  if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detH, u);
+  else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detH, u);
   f0[0] = PetscPowReal(detH, p/(2.*p + dim));
 }
 
@@ -607,8 +608,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = DMAdaptorGetSolver(adaptor, &snes);CHKERRQ(ierr);
       ierr = SNESSolve(snes, NULL, adaptIter ? *ax : x);CHKERRQ(ierr);
     }
-    // ierr = DMAdaptorMonitor(adaptor);CHKERRQ(ierr);
-    //   Print iterate, memory used, DM, solution
+    /* ierr = DMAdaptorMonitor(adaptor);CHKERRQ(ierr);
+       Print iterate, memory used, DM, solution */
     switch (adaptor->adaptCriterion) {
     case DM_ADAPTATION_REFINE:
       ierr = DMRefine(dm, comm, &odm);CHKERRQ(ierr);
@@ -617,10 +618,10 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       break;
     case DM_ADAPTATION_LABEL:
     {
-      // Adapt DM
-      //   Create local solution
-      //   Reconstruct gradients (FVM) or solve adjoint equation (FEM)
-      //   Produce cellwise error indicator
+      /* Adapt DM
+           Create local solution
+           Reconstruct gradients (FVM) or solve adjoint equation (FEM)
+           Produce cellwise error indicator */
       DMLabel            adaptLabel;
       IS                 refineIS, coarsenIS;
       Vec                errVec;
@@ -656,8 +657,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = VecRestoreArray(errVec, &errArray);CHKERRQ(ierr);
       ierr = PetscGlobalMinMax(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
       ierr = PetscInfo2(adaptor, "error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
-      //   If using label:
-      //     Compute IS from VecTagger
+      /*     Compute IS from VecTagger */
       ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS);CHKERRQ(ierr);
       ierr = VecTaggerComputeIS(adaptor->coarsenTag, errVec, &coarsenIS);CHKERRQ(ierr);
       ierr = ISGetSize(refineIS, &nRefine);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = ISDestroy(&coarsenIS);CHKERRQ(ierr);
       ierr = ISDestroy(&refineIS);CHKERRQ(ierr);
       ierr = VecDestroy(&errVec);CHKERRQ(ierr);
-      //     Adapt DM from label
+      /*     Adapt DM from label */
       if (nRefine || nCoarsen) {
         ierr = DMAdaptLabel(dm, adaptLabel, &odm);CHKERRQ(ierr);
         adapted = PETSC_TRUE;
@@ -707,9 +707,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
         ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
         ierr = PetscQuadratureGetOrder(q, &qorder);CHKERRQ(ierr);
         ierr = PetscObjectGetOptionsPrefix((PetscObject) fe, &prefix);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmGrad, dim, Nc*coordDim, (vEnd-vStart) == dim+1, prefix, qorder, &feGrad);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(dmGrad, dim, Nc*coordDim, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feGrad);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probGrad, f, (PetscObject) feGrad);CHKERRQ(ierr);
-        ierr = PetscFECreateDefault(dmHess, dim, Nc*Nd, (vEnd-vStart) == dim+1, prefix, qorder, &feHess);CHKERRQ(ierr);
+        ierr = PetscFECreateDefault(dmHess, dim, Nc*Nd, (vEnd-vStart) == dim+1 ? PETSC_TRUE : PETSC_FALSE, prefix, qorder, &feHess);CHKERRQ(ierr);
         ierr = PetscDSSetDiscretization(probHess, f, (PetscObject) feHess);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feGrad);CHKERRQ(ierr);
         ierr = PetscFEDestroy(&feHess);CHKERRQ(ierr);
@@ -762,8 +762,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
 
         ierr = DMPlexPointLocalRead(dmHess, v, H, &Hp);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRef(dmMetric, v, M, &Mp);CHKERRQ(ierr);
-        if      (dim == 2) DMPlex_Det2D_Internal(&detH, Hp);
-        else if (dim == 3) DMPlex_Det3D_Internal(&detH, Hp);
+        if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detH, Hp);
+        else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detH, Hp);
         else SETERRQ1(PetscObjectComm((PetscObject) adaptor), PETSC_ERR_SUP, "Dimension %d not supported", dim);
         fact = PetscPowReal(N, 2.0/dim) * PetscPowReal(integral, -2.0/dim) * PetscPowReal(PetscAbsReal(detH), -1.0/(2*p+dim));
 #if 0
