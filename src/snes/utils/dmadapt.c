@@ -420,7 +420,7 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscGlobalMinMax - Get the global min/max from local min/max input
 
   Collective on comm

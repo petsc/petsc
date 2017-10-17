@@ -4,6 +4,7 @@ native DMDAStencilType
 native DMDAInterpolationType
 native DMDAElementType
 native DMBoundaryType
+native DMAdaptationStrategy
 native PetscDrawMarkerType
 native ISGlobalToLocalMappingMode
 native ISColoringType
