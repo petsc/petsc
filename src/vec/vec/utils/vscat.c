@@ -1018,6 +1018,15 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   */
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    PetscBool vec_mpi1_flg = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,NULL,"-vec_mpi1",&vec_mpi1_flg,NULL);CHKERRQ(ierr);
+    if (vec_mpi1_flg) {
+      ierr = VecScatterCreateMPI1(xin,ix,yin,iy,newctx);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+
   if (size > 1) xin_type = VEC_MPI_ID;
 
   ierr = PetscObjectGetComm((PetscObject)yin,&ycomm);CHKERRQ(ierr);
