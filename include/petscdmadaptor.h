@@ -21,6 +21,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptorView(DMAdaptor, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorGetSolver(DMAdaptor, SNES *);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetSolver(DMAdaptor, SNES);
+PETSC_EXTERN PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor, PetscInt);
 PETSC_EXTERN PetscErrorCode DMAdaptorSetUp(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor, PetscErrorCode (**)(DMAdaptor, DM, Vec, DM, Vec, void *));
 PETSC_EXTERN PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor, PetscErrorCode (*)(DMAdaptor, DM, Vec, DM, Vec, void *));
