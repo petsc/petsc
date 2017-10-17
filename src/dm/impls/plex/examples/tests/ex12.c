@@ -63,7 +63,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       quadSizes[2]    = {2, 2};
   PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   PetscInt       overlap         = user->overlap >= 0 ? user->overlap : 0;
-  const PetscInt cells[3]        = {2, 2, 2};
   size_t         len;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
