@@ -254,7 +254,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 #endif
-  if (to->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);} /* hangs for src/ksp/ksp/examples/tutorials/network/runex1_nest_2 */
+  if (to->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&to->sharedwin);CHKERRQ(ierr);}
   if (from->sharedwin != MPI_WIN_NULL) {ierr = MPI_Win_free(&from->sharedwin);CHKERRQ(ierr);}
   ierr = PetscFree(to->sharedspaces);CHKERRQ(ierr);
   ierr = PetscFree(to->sharedspacesoffset);CHKERRQ(ierr);

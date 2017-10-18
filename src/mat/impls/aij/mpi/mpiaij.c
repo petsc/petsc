@@ -965,7 +965,7 @@ PetscErrorCode MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   VecScatter     Mvctx = a->Mvctx;
 
   PetscFunctionBegin;
-  if (a->Mvctx_mpi1_flg || A->mpi1) Mvctx = a->Mvctx_mpi1;
+  if (a->Mvctx_mpi1_flg) Mvctx = a->Mvctx_mpi1;
   ierr = VecScatterBegin(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
   ierr = VecScatterEnd(Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
