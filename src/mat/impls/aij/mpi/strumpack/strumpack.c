@@ -38,7 +38,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSAbsTol_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMaxRank_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSLeafSize_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinFrontSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSTRUMPACKSetHSSMinSepSize_C",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -296,46 +295,6 @@ PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F,PetscInt leaf_size)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSMinFrontSize_STRUMPACK"
-static PetscErrorCode MatSTRUMPACKSetHSSMinFrontSize_STRUMPACK(Mat F,PetscInt hssminsize)
-{
-  STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
-
-  PetscFunctionBegin;
-  PetscStackCall("STRUMPACK_set_HSS_min_front_size", STRUMPACK_set_HSS_min_front_size(*S,hssminsize));
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSMinFrontSize"
-/*@
-  MatSTRUMPACKSetHSSMinFrontSize - Set STRUMPACK minimum dense matrix size for low-rank approximation
-   Logically Collective on Mat
-
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
--  hssminsize - minimum dense matrix size for low-rank approximation
-
-  Options Database:
-.   -mat_strumpack_hss_min_front_size <hssminsize>
-
-   Level: beginner
-
-   References:
-.      STRUMPACK manual
-
-.seealso: MatGetFactor()
-@*/
-PetscErrorCode MatSTRUMPACKSetHSSMinFrontSize(Mat F,PetscInt hssminsize)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveInt(F,hssminsize,2);
-  ierr = PetscTryMethod(F,"MatSTRUMPACKSetHSSMinFrontSize_C",(Mat,PetscInt),(F,hssminsize));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSTRUMPACKSetHSSMinSepSize_STRUMPACK"
@@ -533,7 +492,6 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSol
 . -mat_strumpack_hss_rel_tol <1e-2>         - Relative compression tolerance (None)
 . -mat_strumpack_hss_abs_tol <1e-8>         - Absolute compression tolerance (None)
 . -mat_strumpack_colperm <TRUE>             - Permute matrix to make diagonal nonzeros (None)
-. -mat_strumpack_hss_min_front_size <1000>  - Minimum size of dense block for HSS compression (None)
 . -mat_strumpack_hss_min_sep_size <256>     - Minimum size of separator for HSS compression (None)
 . -mat_strumpack_max_rank                   - Maximum rank in HSS compression, when using pctype ilu (None)
 . -mat_strumpack_leaf_size                  - Size of diagonal blocks in HSS approximation, when using pctype ilu (None)
@@ -589,7 +547,6 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSAbsTol_C",MatSTRUMPACKSetHSSAbsTol_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMaxRank_C",MatSTRUMPACKSetHSSMaxRank_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSLeafSize_C",MatSTRUMPACKSetHSSLeafSize_STRUMPACK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinFrontSize_C",MatSTRUMPACKSetHSSMinFrontSize_STRUMPACK);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSTRUMPACKSetHSSMinSepSize_C",MatSTRUMPACKSetHSSMinSepSize_STRUMPACK);CHKERRQ(ierr);
   B->factortype = ftype;
   ierr     = PetscNewLog(B,&S);CHKERRQ(ierr);
@@ -616,13 +573,6 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   PetscStackCall("STRUMPACK_mc64job",flg = (STRUMPACK_mc64job(*S) == 0) ? PETSC_FALSE : PETSC_TRUE);
   ierr = PetscOptionsBool("-mat_strumpack_colperm","Find a col perm to get nonzero diagonal","None",flg,&flg,&set);CHKERRQ(ierr);
   if (set) PetscStackCall("STRUMPACK_set_mc64job",STRUMPACK_set_mc64job(*S,flg ? 5 : 0));
-
-  PetscStackCall("STRUMPACK_HSS_min_front_size",hssminsize = (PetscInt)STRUMPACK_HSS_min_front_size(*S));
-  ierr = PetscOptionsInt("-mat_strumpack_hss_min_front_size","Minimum size of dense block for HSS compression","None",hssminsize,&hssminsize,&set);CHKERRQ(ierr);
-  if (set) {
-    printf("setting HSS min front size to %d\n", hssminsize);
-    PetscStackCall("STRUMPACK_set_HSS_min_front_size",STRUMPACK_set_HSS_min_front_size(*S,(int)hssminsize));
-  }
 
   PetscStackCall("STRUMPACK_HSS_min_sep_size",hssminsize = (PetscInt)STRUMPACK_HSS_min_sep_size(*S));
   ierr = PetscOptionsInt("-mat_strumpack_hss_min_sep_size","Minimum size of separator for HSS compression","None",hssminsize,&hssminsize,&set);CHKERRQ(ierr);
