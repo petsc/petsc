@@ -234,8 +234,8 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if((pend-pstart)>size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%D, %D] should be smaller than or equal to size %D",pstart,pend,size);CHKERRQ(ierr);
-  if(pstart>pend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %D should be smaller than pend %D",pstart,pend);CHKERRQ(ierr);
+  if((pend-pstart)>size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"range [%D, %D] should be smaller than or equal to size %D",pstart,pend,size);
+  if(pstart>pend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP," pstart %D should be smaller than pend %D",pstart,pend);
   ierr = ISGetLocalSize(partitioning,&plocalsize);CHKERRQ(ierr);
   ierr = PetscCalloc1(plocalsize,&dest_indices);CHKERRQ(ierr);
   ierr = ISGetIndices(partitioning,&part_indices);CHKERRQ(ierr);
