@@ -1308,10 +1308,10 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     ierr = MatSetSizes(j22, vDof, vDof, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j22, MATMPIAIJ);CHKERRQ(ierr);
 
-    bA[0][0] = j11; j11->mpi1 = PETSC_TRUE;
-    bA[0][1] = j12; j12->mpi1 = PETSC_TRUE;
-    bA[1][0] = j21; j21->mpi1 = PETSC_TRUE;
-    bA[1][1] = j22; j22->mpi1 = PETSC_TRUE;
+    bA[0][0] = j11;
+    bA[0][1] = j12;
+    bA[1][0] = j21;
+    bA[1][1] = j22;
 
     ierr = CreateSubGlobalToLocalMapping_private(network->edge.GlobalDofSection,network->edge.DofSection,&eISMap);CHKERRQ(ierr);
     ierr = CreateSubGlobalToLocalMapping_private(network->vertex.GlobalDofSection,network->vertex.DofSection,&vISMap);CHKERRQ(ierr);

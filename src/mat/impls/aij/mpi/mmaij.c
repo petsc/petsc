@@ -121,13 +121,17 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* generate the scatter context */
   if (aij->Mvctx_mpi1_flg || mat->mpi1) {
-    if (aij->Mvctx_mpi1) { 
+    if (aij->Mvctx_mpi1) {
       /* Must destroy existing Mvctx_mpi1, then recreate it. See src/ksp/ksp/examples/tutorials/network/runex1_nest_2 */
       ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
     }
     ierr = VecScatterCreateMPI1(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
   } else {
+    if (aij->Mvctx) {
+      ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
+    }
+
     ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
@@ -166,7 +170,6 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
   ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   if (aij->colmap) {
 #if defined(PETSC_USE_CTABLE)
     ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
