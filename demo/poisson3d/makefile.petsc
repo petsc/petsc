@@ -13,10 +13,10 @@ OBJSC=${SOURCEC:.c=.o}
 OBJSF=${SOURCEF:.f90=.o}
 
 ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF} ${SOURCEH}
-	-${PETSC_FCOMPILE}
-	-${PETSC_COMPILE}
-	-${CLINKER} -o $@ ${PETSC_TS_LIB} ${OBJSC} ${OBJSF}
-	-${RM} ${OBJSC} ${OBJSF}
+	${PETSC_FCOMPILE}
+	${PETSC_COMPILE}
+	${CLINKER} -o $@ ${PETSC_TS_LIB} ${OBJSC} ${OBJSF}
+	${RM} ${OBJSC} ${OBJSF}
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
