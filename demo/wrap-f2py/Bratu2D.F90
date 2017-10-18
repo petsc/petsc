@@ -2,13 +2,13 @@
 !
 !    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !    the partial differential equation
-!  
+!
 !            -Laplacian(u) - lambda * exp(u) = 0,  0 < x,y < 1,
-!  
+!
 !    with boundary conditions
-!   
+!
 !             u = 0  for  x = 0, x = 1, y = 0, y = 1,
-!  
+!
 !    A finite difference approximation with the usual 5-point stencil
 !    is used to discretize the boundary value problem to obtain a
 !    nonlinear system of equations. The problem is solved in a 2D
@@ -17,17 +17,12 @@
 !
 ! --------------------------------------------------------------------
 
-#include "petsc/finclude/petscdef.h"
-#include "petscversion.h"
-
-#undef  CHKERRQ
-#define CHKERRQ(n) if ((n) .ne. 0) return;
-
-! --------------------------------------------------------------------
+#include <petsc/finclude/petscdm.h>
 
 module Bratu2D
 
   use petsc
+  implicit none
 
   type gridinfo
      PetscInt mx,xs,xe,xm,gxs,gxe,gxm
@@ -54,12 +49,12 @@ contains
     call DMDAGetGhostCorners(da, &
          &                   grd%gxs,grd%gys,PETSC_NULL_INTEGER, &
          &                   grd%gxm,grd%gym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
-    !
+
     grd%xs  = grd%xs+1
     grd%ys  = grd%ys+1
     grd%gxs = grd%gxs+1
     grd%gys = grd%gys+1
-    
+
     grd%ye  = grd%ys+grd%ym-1
     grd%xe  = grd%xs+grd%xm-1
     grd%gye = grd%gys+grd%gym-1
@@ -76,12 +71,12 @@ contains
     !
     PetscInt       i, j
     PetscReal      hx,hy,temp,temp1,one
-    
+
     one = 1.0
     hx  = one/(dble(grd%mx-1))
     hy  = one/(dble(grd%my-1))
     temp1 = lambda/(lambda+one)
-    
+
     do j=grd%ys,grd%ye
        temp = dble(min(j-1,grd%my-j))*hy
        do i=grd%xs,grd%xe
@@ -125,7 +120,7 @@ contains
              f(i,j) = x(i,j) - 0.0
           else
              ! interior grid points
-             u = x(i,j) 
+             u = x(i,j)
              uxx =  (two*u - x(i-1,j) - x(i+1,j)) * hydhx
              uyy =  (two*u - x(i,j-1) - x(i,j+1)) * hxdhy
              f(i,j) = uxx + uyy - lambda*exp(u)*sc
@@ -183,7 +178,7 @@ contains
           end if
        end do
     end do
-    
+
   end subroutine JacobianLocal
 
 end module Bratu2D
@@ -200,7 +195,7 @@ subroutine FormInitGuess(da, X, lambda, ierr)
   !
   type(gridinfo)      :: grd
   PetscScalar,pointer :: xx(:)
-  
+
   call VecGetArrayF90(X,xx,ierr); CHKERRQ(ierr)
 
   call GetGridInfo(da,grd,ierr); CHKERRQ(ierr)
@@ -224,14 +219,14 @@ subroutine FormFunction(da, X, F, lambda, ierr)
   Vec                 :: localX
   PetscScalar,pointer :: xx(:)
   PetscScalar,pointer :: ff(:)
-  
+
   call DMGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
   call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
   call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
 
   call VecGetArrayF90(localX,xx,ierr); CHKERRQ(ierr)
   call VecGetArrayF90(F,ff,ierr); CHKERRQ(ierr)
-  
+
   call GetGridInfo(da,grd,ierr); CHKERRQ(ierr)
   call FunctionLocal(grd,xx,ff,lambda,ierr); CHKERRQ(ierr)
 
@@ -239,7 +234,7 @@ subroutine FormFunction(da, X, F, lambda, ierr)
   call VecRestoreArrayF90(localX,xx,ierr); CHKERRQ(ierr)
 
   call DMRestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
-  
+
 end subroutine FormFunction
 
 
@@ -278,4 +273,3 @@ end subroutine FormJacobian
 ! Local Variables:
 ! mode: f90
 ! End:
-
