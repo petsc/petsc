@@ -926,13 +926,13 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         maxnbricks = 10;
         ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
         nbricks    = maxnbricks;
-        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");CHKERRQ(ierr);
+        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");
 
         flg        = PETSC_FALSE;
         maxnbricks = 10;
         ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
-        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");CHKERRQ(ierr);
-        if (maxnbricks != nbricks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");CHKERRQ(ierr);
+        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
+        if (maxnbricks != nbricks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
 
         span = 1;
         ierr = PetscOptionsGetInt(NULL,NULL,"-brick_span",&span,&flg);CHKERRQ(ierr);

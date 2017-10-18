@@ -5013,7 +5013,7 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
+  if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);
   ierr = DMLabelGetValue(label, point, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

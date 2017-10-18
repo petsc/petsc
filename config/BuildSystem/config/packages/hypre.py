@@ -84,3 +84,18 @@ class Configure(config.package.GNUPackage):
         raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       self.log.write('Found dgels() in Lapack library as needed by hypre\n')
     return
+
+  def configureLibrary(self):
+    config.package.Package.configureLibrary(self)
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if self.defaultIndexSize == 64:
+      code = '#if !defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT not defined!\n#endif'
+      msg  = '--with-64-bit-indices option requires Hypre built with --enable-bigint.\n'
+    else:
+      code = '#if defined(HYPRE_BIGINT)\n#error HYPRE_BIGINT defined!\n#endif'
+      msg= 'Hypre with --enable-bigint appears to be specified for a default 32-bit-indices build of PETSc.\n'
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
+    self.compilers.CPPFLAGS = oldFlags
+    return

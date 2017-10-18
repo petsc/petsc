@@ -1698,7 +1698,7 @@ int main(int argc, char **argv)
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
       if (flg1) {
         dim = nret1;
-        if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
+        if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);
       }
       ierr = DMPlexCreateBoxMesh(comm, dim, simplex, cells, NULL, NULL, mod->bcs, PETSC_TRUE, &dm);CHKERRQ(ierr);
       if (flg2) {
@@ -1710,7 +1710,7 @@ int main(int argc, char **argv)
         ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
         ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
         ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-        if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+        if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
         ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
         for (i = 0; i < nCoords; i += dimEmbed) {
           PetscInt j;

@@ -1,6 +1,7 @@
 # these include enums
 native PetscSubcommType
 native DMDAStencilType
+native DMDADirection
 native DMDAInterpolationType
 native DMDAElementType
 native DMBoundaryType
