@@ -484,6 +484,11 @@ runex2_pipecgrr:
 	   ${DIFF} output/ex2_pipecgrr.out ex2_pipecgrr.tmp || printf "${PWD}\nPossible problem with ex2_pipecgrr, diffs above\n=========================================\n"; \
 	   ${RM} -f ex2_pipecgrr.tmp
 
+runex2_ell:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type ell > ex2_ell.tmp 2>&1; \
+	   ${DIFF} output/ex2_ell.out ex2_ell.tmp || printf "${PWD}\nPossible problem with ex2_ell, diffs above\n=========================================\n"; \
+	   ${RM} -f ex2_ell.tmp
+
 runex2f:
 	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
@@ -1689,7 +1694,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 
 TESTEXAMPLES_C_NOTSINGLE       = ex18.PETSc runex18_bas ex18.rm ex25.PETSc runex25 ex25.rm ex43.PETSc runex43_3 ex43.rm ex67.PETSc printdot \
                                  runex67_symmetric_left runex67_symmetric_right runex67_nonsymmetric_left runex67_nonsymmetric_right ex67.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc runex15_tsirm ex15.rm \
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex2.PETSc runex2_ell ex2.rm ex23.PETSc runex23_3 ex23.rm  ex15.PETSc runex15_tsirm ex15.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
                                  ex43.PETSc runex43_4 runex43_5 ex43.rm \
                                  ex49.PETSc runex49_6 runex49_7 runex49_8 ex49.rm \

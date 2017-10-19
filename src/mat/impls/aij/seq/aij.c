@@ -1581,7 +1581,7 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
           A->factorerror_zeropivot_value = 0.0;
           A->factorerror_zeropivot_row   = i;
-        } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
       }
       idiag[i] = 1.0/v[diag[i]];
     }
@@ -3868,6 +3868,23 @@ M*/
 .seealso: MatCreateMPIAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL, MATSEQAIJCRL, MATMPIAIJCRL
 M*/
 
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
+#endif
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+#endif
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat,MatType,MatReuse,Mat*);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+PETSC_EXTERN PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
+PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
+#endif
+
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat,MatType,MatReuse,Mat*);
+
 /*@C
    MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
 
@@ -4001,6 +4018,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_seqaij_seqaij_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqdense_C",MatConvert_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqell_C",MatConvert_SeqAIJ_SeqELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsHermitianTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJSetPreallocation_C",MatSeqAIJSetPreallocation_SeqAIJ);CHKERRQ(ierr);

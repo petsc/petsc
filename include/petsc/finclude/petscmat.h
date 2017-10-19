@@ -133,6 +133,9 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
+#define MATELL             'ell'
+#define MATSEQELL          'seqell'
+#define MATMPIELL          'mpiell'
 #define MATDUMMY           'dummy'
 
 !
