@@ -1084,11 +1084,11 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
       }
       volsum += vol;
       if (debug) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d gradient: [", cell);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D gradient: [", cell);CHKERRQ(ierr);
         for (fc = 0; fc < numComponents; ++fc) {
           for (d = 0; d < coordDim; ++d) {
             if (fc || d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-            ierr = PetscPrintf(PETSC_COMM_SELF, "%g", grad[fc*coordDim+d]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(grad[fc*coordDim+d]));CHKERRQ(ierr);
           }
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
