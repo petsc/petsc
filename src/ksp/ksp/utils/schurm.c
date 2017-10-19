@@ -689,7 +689,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
   ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
   if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
   schur = (Mat_SchurComplement*)S->data;
-  if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D",ainvtype);
+  if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d",(int)ainvtype);
   schur->ainvtype = ainvtype;
   PetscFunctionReturn(0);
 }
@@ -807,8 +807,8 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
       ierr = MatGetType(A00,&type);CHKERRQ(ierr);
       ierr = MatCreate(comm,&A00_inv);CHKERRQ(ierr);
       ierr = MatSetType(A00_inv,type);CHKERRQ(ierr);
-      ierr = MatInvertBlockDiagonalMat(A00,&A00_inv);CHKERRQ(ierr);
-      ierr = MatMatMult(A00_inv,A01,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AdB);
+      ierr = MatInvertBlockDiagonalMat(A00,A00_inv);CHKERRQ(ierr);
+      ierr = MatMatMult(A00_inv,A01,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AdB);CHKERRQ(ierr);
       ierr = MatDestroy(&A00_inv);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D", ainvtype);
     /* Cannot really reuse Spmat in MatMatMult() because of MatAYPX() -->

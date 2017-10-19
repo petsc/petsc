@@ -10309,7 +10309,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 }
 
 /*@
-  MatInvertBlockDiagonalMat - Matrix with inverted block diagonal
+  MatInvertBlockDiagonalMat - set matrix C to be the inverted block diagonal of matrix A
 
   Collective on Mat
 
@@ -10317,13 +10317,13 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 . A - the matrix
 
   Output Parameters:
-. C - matrix with inverted block diagonal of A
+. C - matrix with inverted block diagonal of A.  This matrix should be created and may have its type set.
 
   Level: advanced
 
-.seealso: MatInvertBockDiagonal
+.seealso: MatInvertBockDiagonal()
 @*/
-PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat *C)
+PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat C)
 {
   PetscErrorCode     ierr;
   const PetscScalar *vals;
@@ -10335,20 +10335,20 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat *C)
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatSetSizes(*C,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*C,bs);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(C,bs);CHKERRQ(ierr);
   ierr = PetscMalloc1(m/bs,&dnnz);CHKERRQ(ierr);
   for(j = 0; j < m/bs; j++) {
-      dnnz[j] = 1;
+    dnnz[j] = 1;
   }
-  ierr = MatXAIJSetPreallocation(*C,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
-  PetscFree(dnnz);
-  ierr = MatGetOwnershipRange(*C,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatXAIJSetPreallocation(C,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscFree(dnnz);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
   for (i = rstart/bs; i < rend/bs; i++) {
-    ierr = MatSetValuesBlocked(*C,1,&i,1,&i,&vals[(i-rstart/bs)*bs*bs],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(C,1,&i,1,&i,&vals[(i-rstart/bs)*bs*bs],INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

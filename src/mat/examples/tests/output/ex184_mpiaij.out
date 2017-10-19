@@ -1,4 +1,4 @@
-Inverse of bloack diagonal A
+Inverse of block diagonal A
 Mat Object: 2 MPI processes
   type: mpiaij
 row 0: (0, 0.5)  (1, 0.25)  (2, 0.25) 

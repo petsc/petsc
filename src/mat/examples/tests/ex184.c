@@ -39,7 +39,7 @@ int main(int argc, char **args)
         dnnz[j] = 1;
     }
     ierr = MatXAIJSetPreallocation(A,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
-    PetscFree(dnnz);
+    ierr = PetscFree(dnnz);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     for (j = rstart/bs; j < rend/bs; j++) {
@@ -62,10 +62,10 @@ int main(int argc, char **args)
     /* check that A  = inv(inv(A)) */
     ierr = MatCreate(PETSC_COMM_WORLD,&A_inv);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A_inv);CHKERRQ(ierr);
-    ierr = MatInvertBlockDiagonalMat(A,&A_inv);CHKERRQ(ierr);
+    ierr = MatInvertBlockDiagonalMat(A,A_inv);CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"Inverse of bloack diagonal A\n");
-    MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Inverse of block diagonal A\n");CHKERRQ(ierr);
+    ierr = MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&A_inv);CHKERRQ(ierr);
