@@ -99,14 +99,13 @@ int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
   Mat                        A,S = NULL,Sexplicit = NULL;
-  MatSchurComplementAinvType ainv_type;
+  MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0,is1;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21","KSP");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementAinvType",MatSchurComplementAinvTypes,(PetscEnum)ainv_type,(PetscEnum*)&ainv_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
 
   /* Test the Schur complement one way */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
