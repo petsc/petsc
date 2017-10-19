@@ -504,7 +504,16 @@ static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_m
 
       ierr = PetscBLASIntCast(dim, &nb);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+      {
+        PetscReal *rwork;
+        ierr = PetscMalloc1(3*dim, &rwork);CHKERRQ(ierr);
+        PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Hpos,&nb,eigs,work,&lwork,rwork,&lierr));
+        ierr = PetscFree(rwork);CHKERRQ(ierr);
+      }
+#else
       PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&nb,Hpos,&nb,eigs,work,&lwork,&lierr));
+#endif
       if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
