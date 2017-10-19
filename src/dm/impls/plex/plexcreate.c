@@ -439,6 +439,59 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateLineMesh_Internal(MPI_Comm comm,PetscInt segments,PetscReal lower,PetscReal upper,DMBoundaryType bd,DM *dm)
+{
+  PetscInt       i,fStart,fEnd,numCells = 0,numVerts = 0;
+  PetscInt       numPoints[2],*coneSize,*cones,*coneOrientations;
+  PetscScalar    *vertexCoords;
+  PetscReal      L,maxCell;
+  PetscBool      markerSeparate = PETSC_FALSE;
+  PetscInt       markerLeft  = 1, faceMarkerLeft  = 1;
+  PetscInt       markerRight = 1, faceMarkerRight = 2;
+  PetscBool      wrap = (bd == DM_BOUNDARY_PERIODIC || bd == DM_BOUNDARY_TWIST) ? PETSC_TRUE : PETSC_FALSE;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dm,4);
+
+  ierr = DMCreate(comm,dm);CHKERRQ(ierr);
+  ierr = DMSetType(*dm,DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm,1);CHKERRQ(ierr);
+  ierr = DMCreateLabel(*dm,"marker");CHKERRQ(ierr);
+  ierr = DMCreateLabel(*dm,"Face Sets");CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) numCells = segments;
+  if (!rank) numVerts = segments + (wrap ? 0 : 1);
+
+  numPoints[0] = numVerts ; numPoints[1] = numCells;
+  ierr = PetscMalloc4(numCells+numVerts,&coneSize,numCells*2,&cones,numCells+numVerts,&coneOrientations,numVerts,&vertexCoords);CHKERRQ(ierr);
+  ierr = PetscMemzero(coneOrientations,(numCells+numVerts)*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i = 0; i < numCells; ++i) { coneSize[i] = 2; }
+  for (i = 0; i < numVerts; ++i) { coneSize[numCells+i] = 0; }
+  for (i = 0; i < numCells; ++i) { cones[2*i] = numCells + i%numVerts; cones[2*i+1] = numCells + (i+1)%numVerts; }
+  for (i = 0; i < numVerts; ++i) { vertexCoords[i] = lower + (upper-lower)*((PetscReal)i/(PetscReal)numCells); }
+  ierr = DMPlexCreateFromDAG(*dm,1,numPoints,coneSize,cones,coneOrientations,vertexCoords);CHKERRQ(ierr);
+  ierr = PetscFree4(coneSize,cones,coneOrientations,vertexCoords);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(((PetscObject)*dm)->options,((PetscObject)*dm)->prefix,"-dm_plex_separate_marker",&markerSeparate,NULL);CHKERRQ(ierr);
+  if (markerSeparate) { markerLeft = faceMarkerLeft; markerRight = faceMarkerRight;}
+  if (!wrap && !rank) {
+    ierr = DMPlexGetHeightStratum(*dm,1,&fStart,&fEnd);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(*dm,"marker",fStart,markerLeft);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(*dm,"marker",fEnd-1,markerRight);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(*dm,"Face Sets",fStart,faceMarkerLeft);CHKERRQ(ierr);
+    ierr = DMSetLabelValue(*dm,"Face Sets",fEnd-1,faceMarkerRight);CHKERRQ(ierr);
+  }
+  if (wrap) {
+    L       = upper - lower;
+    maxCell = (PetscReal)1.1*(L/(PetscReal)PetscMax(1,segments));
+    ierr = DMSetPeriodicity(*dm,PETSC_TRUE,&maxCell,&L,&bd);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(MPI_Comm comm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
   DM             boundary;
@@ -916,10 +969,10 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(MPI_Comm comm, PetscIn
 + comm        - The communicator for the DM object
 . dim         - The spatial dimension
 . simplex     - PETSC_TRUE for simplices, PETSC_FALSE for tensor cells
-. faces       - Number of faces per dimension, or NULL for (2, 2) in 2D and (1, 1, 1) in 3D
+. faces       - Number of faces per dimension, or NULL for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
 . lower       - The lower left corner, or NULL for (0, 0, 0)
 . upper       - The upper right corner, or NULL for (1, 1, 1)
-. periodicity - The boundary type for the X,Y,Z direction, or NULL for DM_BOUDNARY_NONE
+. periodicity - The boundary type for the X,Y,Z direction, or NULL for DM_BOUNDARY_NONE
 - interpolate - Flag to create intermediate mesh pieces (edges, faces)
 
   Output Parameter:
@@ -963,19 +1016,22 @@ $  8----4----9----5----10
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate, DM *dm)
 {
-  PetscReal      low[3];
-  PetscReal      upp[3];
-  PetscInt       fac[3];
-  DMBoundaryType bdt[3];
+  PetscInt       i;
+  PetscInt       fac[3] = {0, 0, 0};
+  PetscReal      low[3] = {0, 0, 0};
+  PetscReal      upp[3] = {1, 1, 1};
+  DMBoundaryType bdt[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  low[0] = lower ? lower[0] : 0.0; low[1] = lower ? lower[1] : 0.0; low[2] = lower ? lower[2] : 0.0;
-  upp[0] = upper ? upper[0] : 1.0; upp[1] = upper ? upper[1] : 1.0; upp[2] = upper ? upper[2] : 1.0;
-  fac[0] = faces ? faces[0] : 4-dim; fac[1] = faces ? faces[1] : 4-dim; fac[2] = dim > 2 ? (faces ? faces[2] : 4-dim) : 0;
-  bdt[0] = periodicity ? periodicity[0] : DM_BOUNDARY_NONE; bdt[1] = periodicity ? periodicity[1] : DM_BOUNDARY_NONE; bdt[2] = periodicity ? periodicity[2] : DM_BOUNDARY_NONE;
-  if (simplex) {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
-  else         {ierr = DMPlexCreateBoxMesh_Tensor_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
+  for (i = 0; i < dim; ++i) fac[i] = faces ? faces[i] : (dim == 1 ? 1 : 4-dim);
+  if (lower) for (i = 0; i < dim; ++i) low[i] = lower[i];
+  if (upper) for (i = 0; i < dim; ++i) upp[i] = upper[i];
+  if (periodicity) for (i = 0; i < dim; ++i) bdt[i] = periodicity[i];
+
+  if (dim == 1)      {ierr = DMPlexCreateLineMesh_Internal(comm, fac[0], low[0], upp[0], bdt[0], dm);CHKERRQ(ierr);}
+  else if (simplex)  {ierr = DMPlexCreateBoxMesh_Simplex_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
+  else               {ierr = DMPlexCreateBoxMesh_Tensor_Internal(comm, dim, fac, low, upp, bdt, interpolate, dm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
