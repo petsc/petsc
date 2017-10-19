@@ -2554,13 +2554,52 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(global,DM_CLASSID,1);
-  for (p=&global->subdomainhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
+  for (p=&global->subdomainhook; *p; p=&(*p)->next) { /* Scan to the end of the current list of hooks */
+    if ((*p)->ddhook == ddhook && (*p)->restricthook == restricthook && (*p)->ctx == ctx) PetscFunctionReturn(0);
+  }
   ierr               = PetscNew(&link);CHKERRQ(ierr);
   link->restricthook = restricthook;
   link->ddhook       = ddhook;
   link->ctx          = ctx;
   link->next         = NULL;
   *p                 = link;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSubDomainHookRemove - remove a callback from the list to be run when restricting a problem to the coarse grid
+
+   Logically Collective
+
+   Input Arguments:
++  global - global DM
+.  ddhook - function to run to pass data to the decomposition DM upon its creation
+.  restricthook - function to run to update data on block solve (at the beginning of the block solve)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
+
+   Level: advanced
+
+   Notes:
+
+   This function is currently not available from Fortran.
+
+.seealso: DMSubDomainHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
+@*/
+PetscErrorCode DMSubDomainHookRemove(DM global,PetscErrorCode (*ddhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
+{
+  PetscErrorCode      ierr;
+  DMSubDomainHookLink link,*p;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(global,DM_CLASSID,1);
+  for (p=&global->subdomainhook; *p; p=&(*p)->next) { /* Search the list of current hooks */
+    if ((*p)->ddhook == ddhook && (*p)->restricthook == restricthook && (*p)->ctx == ctx) {
+      link = *p;
+      *p = link->next;
+      ierr = PetscFree(link);CHKERRQ(ierr);
+      break;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
