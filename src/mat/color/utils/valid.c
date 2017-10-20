@@ -18,11 +18,10 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
   PetscInt       dist=mc->dist;
   const PetscInt *degrees;
   PetscInt       *stateleafrow,*stateleafcol,nleafrows,nleafcols,idx,nentries,maxcolors;
-  MPI_Datatype   itype;
+  MPI_Datatype   itype = MPIU_INT;
 
   PetscFunctionBegin;
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
-  ierr = PetscDataTypeToMPIDataType(PETSC_INT,&itype);CHKERRQ(ierr);
   /* get the communication structures and the colors */
   ierr = MatColoringCreateBipartiteGraph(mc,&etoc,&etor);CHKERRQ(ierr);
   ierr = ISColoringGetIS(coloring,&ncolors,&colors);CHKERRQ(ierr);
