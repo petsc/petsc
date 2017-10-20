@@ -175,6 +175,52 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 #endif
 }
 
+/* MatSeqAIJMKL_create_from_mkl_handle() creates a sequential AIJMKL matrix from an MKL sparse matrix handle. 
+ * We need this to implement MatMatMult() using the MKL inspector-executor routines, which return an (unoptimized) 
+ * matrix handle. */
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,Mat *mat)
+{
+  PetscErrorCode ierr;
+  sparse_status_t stat;
+  sparse_index_base_t indexing;
+  PetscInt nrows, ncols;
+  PetscInt *aj,*ai;
+  MatScalar *aa;
+  Mat A;
+  Mat_SeqAIJMKL *aijmkl;
+
+  stat = mkl_sparse_x_export_csr(csrA,&indexing,&nrows,&ncols,&ai,NULL,&aj,&aa);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_x_export_csr()");
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocationCSR(A,ai,aj,aa);CHKERRQ(ierr);
+
+  /* We now have an assembled sequential AIJ matrix created from copies of the exported arrays from the MKL matrix handle.
+   * Now turn it into a MATSEQAIJMKL. */
+  ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+  aijmkl->csrA = csrA;
+  /* The below code duplicates much of what is in MatSeqAIJKL_create_mkl_handle(). I dislike this code duplication, but
+   * MatSeqAIJMKL_create_mkl_handle() cannot be used because we don't need to create a handle -- we've already got one, 
+   * and just need to be able to run the MKL optimization step. */
+  stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+  stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+  stat = mkl_sparse_optimize(aijmkl->csrA);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to set hints/complete mkl_sparse_optimize");
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+  aijmkl->sparse_optimized = PETSC_TRUE;
+
+  *mat = A;
+  PetscFunctionReturn(0);
+}
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
 PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
