@@ -27,11 +27,11 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringgetperturbedcolumnsf90_(MatFDColori
   PetscInt       len;
 
   *__ierr = MatFDColoringGetPerturbedColumns(*x,&len,&fa);   if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void*)fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*)fa,MPIU_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 PETSC_EXTERN void PETSC_STDCALL matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *__ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dDestroy(ptr,MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 /* These are not extern C because they are passed into non-extern C user level functions */
