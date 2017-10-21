@@ -286,7 +286,7 @@ setup(name='petsc',
       classifiers= classifiers.split('\n')[1:-1],
       keywords = ['PETSc', 'MPI'],
       platforms=['POSIX'],
-      license='PETSc',
+      license='BSD',
 
       url='http://www.mcs.anl.gov/petsc/',
       download_url=tarball(),
