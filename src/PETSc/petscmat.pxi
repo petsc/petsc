@@ -24,6 +24,12 @@ cdef extern from * nogil:
     PetscMatType     MATAIJPERM
     PetscMatType       MATSEQAIJPERM
     PetscMatType       MATMPIAIJPERM
+    PetscMatType     MATAIJMKL
+    PetscMatType       MATSEQAIJMKL
+    PetscMatType       MATMPIAIJMKL
+    PetscMatType     MATBAIJMKL
+    PetscMatType       MATSEQBAIJMKL
+    PetscMatType       MATMPIBAIJMKL
     PetscMatType MATSHELL
     PetscMatType MATDENSE
     PetscMatType   MATSEQDENSE
@@ -36,12 +42,6 @@ cdef extern from * nogil:
     PetscMatType MATSBAIJ
     PetscMatType   MATSEQSBAIJ
     PetscMatType   MATMPISBAIJ
-    PetscMatType MATBSTRM
-    PetscMatType   MATSEQBSTRM
-    PetscMatType   MATMPIBSTRM
-    PetscMatType MATSBSTRM
-    PetscMatType   MATSEQSBSTRM
-    PetscMatType   MATMPISBSTRM
     PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
@@ -56,12 +56,14 @@ cdef extern from * nogil:
     PetscMatType MATTRANSPOSEMAT
     PetscMatType MATSCHURCOMPLEMENT
     #PetscMatType MATPYTHON
+    PetscMatType MATHYPRE
     PetscMatType MATHYPRESTRUCT
     PetscMatType MATHYPRESSTRUCT
     PetscMatType MATSUBMATRIX
     PetscMatType MATLOCALREF
     PetscMatType MATNEST
     PetscMatType MATPREALLOCATOR
+    PetscMatType MATDUMMY
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
