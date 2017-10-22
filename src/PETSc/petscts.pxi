@@ -12,6 +12,7 @@ cdef extern from * nogil:
     PetscTSType TSALPHA
     PetscTSType TSALPHA2
     PetscTSType TSGLLE
+    PetscTSType TSGLEE
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
     PetscTSType TSROSW

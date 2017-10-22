@@ -13,6 +13,7 @@ class TSType(object):
     ALPHA    = S_(TSALPHA)
     ALPHA2  = S_(TSALPHA2)
     GLLE     = S_(TSGLLE)
+    GLEE     = S_(TSGLEE)
     SSP      = S_(TSSSP)
     ARKIMEX  = S_(TSARKIMEX)
     ROSW     = S_(TSROSW)
