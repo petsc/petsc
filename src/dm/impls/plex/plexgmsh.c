@@ -265,7 +265,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       ierr = PetscViewerRead(viewer, buffer, elementSize*numVertices, NULL, PETSC_CHAR);CHKERRQ(ierr);
       for (v = 0; v < numVertices; ++v) {
         baseptr = ((double*)(buffer+v*elementSize+sizeof(int)));
-        if (bswap) {ierr = PetscByteSwap(basptr, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
+        if (bswap) {ierr = PetscByteSwap(baseptr, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
         coordsIn[v*3+0] = (PetscReal) baseptr[0];
         coordsIn[v*3+1] = (PetscReal) baseptr[1];
         coordsIn[v*3+2] = (PetscReal) baseptr[2];
