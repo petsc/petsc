@@ -347,7 +347,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode   ierr;
-  PetscInt         m,levels = 1,cycles;
+  PetscInt         m,levels,cycles;
   PetscBool        flg;
   PC_MG            *mg = (PC_MG*)pc->data;
   PC_MG_Levels     **mglevels;
@@ -356,6 +356,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   PCMGGalerkinType gtype;
 
   PetscFunctionBegin;
+  levels = PetscMax(mg->nlevels,1);
   ierr = PetscOptionsHead(PetscOptionsObject,"Multigrid options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
   if (!flg && !mg->levels && pc->dm) {
