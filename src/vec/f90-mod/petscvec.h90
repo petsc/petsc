@@ -1,3 +1,25 @@
+       Interface
+       subroutine PetscSFBcastBegin(sf,unit,rarray,larray,ierr)
+          use petscisdef
+          PetscSF :: sf
+          PetscInt :: unit
+          type(*) :: rarray(:)
+          type(*) :: larray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFBcastBegin
+      end Interface
+
+      Interface
+      subroutine PetscSFBcastEnd(sf,unit,rarray,larray,ierr)
+          use petscisdef
+          PetscSF :: sf
+          PetscInt :: unit
+          type(*) :: rarray(:)
+          type(*) :: larray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFBcastEnd
+      end Interface
+
       Interface
       subroutine VecScatterCreateToAll(a,b,c,z)
       use petscvecdef
