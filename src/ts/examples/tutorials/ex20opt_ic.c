@@ -254,6 +254,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscScalar    *x_ptr,*y_ptr;
   PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
   ierr = VecCopy(IC,user_ptr->x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

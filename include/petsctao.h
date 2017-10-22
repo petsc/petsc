@@ -171,6 +171,7 @@ PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat);
 
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat, Mat, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianMFFD(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(Tao, Vec*, Vec*);

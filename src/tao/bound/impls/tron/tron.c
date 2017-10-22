@@ -59,7 +59,6 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /* ---------------------------------------------------------- */
 static PetscErrorCode TaoSetup_TRON(Tao tao)
 {
@@ -76,17 +75,15 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
   ierr = VecDuplicate(tao->solution, &tao->gradient);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
   if (!tao->XL) {
-      ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
-      ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
+    ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
   }
   if (!tao->XU) {
-      ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
-      ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
+    ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-
-
 
 static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
@@ -98,7 +95,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
   PetscFunctionBegin;
-  tron->pgstepsize=1.0;
+  tron->pgstepsize = 1.0;
   tao->trust = tao->trust0;
   /*   Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
@@ -230,18 +227,16 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     tao->niter++;
     ierr = TaoMonitor(tao, tao->niter, tron->f, tron->gnorm, 0.0, delta, &reason);CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
-
   PetscFunctionReturn(0);
 }
 
-
 static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
-  PetscErrorCode                 ierr;
-  PetscInt                       i;
+  PetscErrorCode               ierr;
+  PetscInt                     i;
   TaoLineSearchConvergedReason ls_reason;
-  PetscReal                      actred=-1.0,actred_max=0.0;
-  PetscReal                      f_new;
+  PetscReal                    actred=-1.0,actred_max=0.0;
+  PetscReal                    f_new;
   /*
      The gradient and function value passed into and out of this
      routine should be current and correct.
@@ -266,7 +261,6 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
                               &tron->pgstepsize, &ls_reason);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
-
     /* Update the iterate */
     actred = f_new - tron->f;
     actred_max = PetscMax(actred_max,-(f_new - tron->f));
@@ -274,7 +268,6 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
     ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -373,4 +366,3 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

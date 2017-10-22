@@ -174,6 +174,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscInt       i, j, k, nx = user->mx, ny = user->my;
 
   /* Compute initial guess */
+  PetscFunctionBeginUser;
   for (j=0; j<ny; j++) {
     temp = PetscMin(j+1,ny-j)*hy;
     for (i=0; i<nx; i++) {
@@ -184,7 +185,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   }
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -204,9 +205,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
   ierr = FormFunction(tao,X,f,ptr);CHKERRQ(ierr);
   ierr = FormGradient(tao,X,G,ptr);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -223,16 +225,17 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
 */
 PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
-  PetscReal      hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5;
-  PetscReal      zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
-  PetscReal      v, cdiv3 = user->param/three;
-  PetscReal      *x;
-  PetscErrorCode ierr;
-  PetscInt       nx = user->mx, ny = user->my, i, j, k;
+  AppCtx            *user = (AppCtx *) ptr;
+  PetscReal         hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5;
+  PetscReal         zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
+  PetscReal         v, cdiv3 = user->param/three;
+  const PetscScalar *x;
+  PetscErrorCode    ierr;
+  PetscInt          nx = user->mx, ny = user->my, i, j, k;
 
+  PetscFunctionBeginUser;
   /* Get pointer to vector data */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Compute function contributions over the lower triangular elements */
   for (j=-1; j<ny; j++) {
@@ -269,14 +272,14 @@ PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
   }
 
   /* Restore vector */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Scale the function */
   area = p5*hx*hy;
   *f = area*(p5*fquad+flin);
 
   ierr = PetscLogFlops(nx*ny*24);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -293,19 +296,21 @@ PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
 */
 PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
-  PetscReal      zero=0.0, p5=0.5, three = 3.0, area, val, *x;
-  PetscErrorCode ierr;
-  PetscInt       nx = user->mx, ny = user->my, ind, i, j, k;
-  PetscReal      hx = user->hx, hy = user->hy;
-  PetscReal      vb, vl, vr, vt, dvdx, dvdy;
-  PetscReal      v, cdiv3 = user->param/three;
+  AppCtx            *user = (AppCtx *) ptr;
+  PetscReal         zero=0.0, p5=0.5, three = 3.0, area, val;
+  PetscErrorCode    ierr;
+  PetscInt          nx = user->mx, ny = user->my, ind, i, j, k;
+  PetscReal         hx = user->hx, hy = user->hy;
+  PetscReal         vb, vl, vr, vt, dvdx, dvdy;
+  PetscReal         v, cdiv3 = user->param/three;
+  const PetscScalar *x;
 
+  PetscFunctionBeginUser;
   /* Initialize gradient to zero */
   ierr = VecSet(G, zero);CHKERRQ(ierr);
 
   /* Get pointer to vector data */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Compute gradient contributions over the lower triangular elements */
   for (j=-1; j<ny; j++) {
@@ -360,7 +365,7 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
       }
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Assemble gradient vector */
   ierr = VecAssemblyBegin(G);CHKERRQ(ierr);
@@ -370,7 +375,7 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
   area = p5*hx*hy;
   ierr = VecScale(G, area);CHKERRQ(ierr);
   ierr = PetscLogFlops(nx*ny*24);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -401,6 +406,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
   PetscReal      *y, zero = 0.0, one = 1.0;
   PetscBool      assembled;
 
+  PetscFunctionBeginUser;
   user->xvec = X;
 
   /* Initialize Hessian entries and work vector to zero */
@@ -431,7 +437,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
   }
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -455,7 +461,7 @@ PetscErrorCode MatrixFreeHessian(Tao tao,Vec X,Mat H,Mat PrecH, void *ptr)
 
   /* Sets location of vector for use in computing matrix-vector products  of the form H(X)*y  */
   user->xvec = X;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -475,9 +481,10 @@ PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
   void           *ptr;
   PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
   ierr = MatShellGetContext(mat,&ptr);CHKERRQ(ierr);
   ierr = HessianProduct(ptr,svec,y);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -494,12 +501,14 @@ PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
 */
 PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
 {
-  AppCtx         *user = (AppCtx *)ptr;
-  PetscReal      p5 = 0.5, zero = 0.0, one = 1.0, hx, hy, val, area, *x, *s;
-  PetscReal      v, vb, vl, vr, vt, hxhx, hyhy;
-  PetscErrorCode ierr;
-  PetscInt       nx, ny, i, j, k, ind;
+  AppCtx            *user = (AppCtx *)ptr;
+  PetscReal         p5 = 0.5, zero = 0.0, one = 1.0, hx, hy, val, area;
+  const PetscScalar *x, *s;
+  PetscReal         v, vb, vl, vr, vt, hxhx, hyhy;
+  PetscErrorCode    ierr;
+  PetscInt          nx, ny, i, j, k, ind;
 
+  PetscFunctionBeginUser;
   nx   = user->mx;
   ny   = user->my;
   hx   = user->hx;
@@ -508,8 +517,8 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
   hyhy = one/(hy*hy);
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(user->xvec,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(svec,&s);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(svec,&s);CHKERRQ(ierr);
 
   /* Initialize product vector to zero */
   ierr = VecSet(y, zero);CHKERRQ(ierr);
@@ -564,8 +573,8 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
     }
   }
   /* Restore vector data */
-  ierr = VecRestoreArray(svec,&s);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(svec,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->xvec,&x);CHKERRQ(ierr);
 
   /* Assemble vector */
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
@@ -575,7 +584,5 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
   area = p5*hx*hy;
   ierr = VecScale(y, area);CHKERRQ(ierr);
   ierr = PetscLogFlops(nx*ny*18);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
-
-

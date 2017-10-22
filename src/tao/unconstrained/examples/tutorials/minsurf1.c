@@ -136,20 +136,22 @@ int main( int argc, char **argv )
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *userCtx)
 {
-  AppCtx         *user = (AppCtx *) userCtx;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row;
-  PetscInt       mx=user->mx, my=user->my;
-  PetscReal      rhx=mx+1, rhy=my+1;
-  PetscReal      hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
-  PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscReal      df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
-  PetscReal      zero=0.0;
-  PetscReal      *g, *x;
+  AppCtx            *user = (AppCtx *) userCtx;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,row;
+  PetscInt          mx=user->mx, my=user->my;
+  PetscReal         rhx=mx+1, rhy=my+1;
+  PetscReal         hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
+  PetscReal         f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal         df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+  PetscReal         zero=0.0;
+  PetscScalar       *g;
+  const PetscScalar *x;
 
+  PetscFunctionBeginUser;
   ierr = VecSet(G, zero);CHKERRQ(ierr);
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the mesh */
@@ -159,28 +161,28 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
       if (i==0){ /* left side */
-        xl= user->left[j+1];
+        xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[row-1];
       }
 
       if (j==0){ /* bottom side */
-        xb=user->bottom[i+1];
+        xb  = user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
 
       if (i+1 == mx){ /* right side */
-        xr=user->right[j+1];
+        xr  = user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[row+1];
       }
 
       if (j+1==0+my){ /* top side */
-        xt=user->top[i+1];
+        xt  = user->top[i+1];
         xlt = user->top[i];
       }else {
         xt = x[row+mx];
@@ -239,46 +241,46 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
   }
 
   for (j=0; j<my; j++){   /* left side */
-    d3=(user->left[j+1] - user->left[j+2])*rhy;
-    d2=(user->left[j+1] - x[j*mx])*rhx;
+    d3 = (user->left[j+1] - user->left[j+2])*rhy;
+    d2 = (user->left[j+1] - x[j*mx])*rhx;
     ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
   }
 
   for (i=0; i<mx; i++){ /* bottom */
-    d2=(user->bottom[i+1]-user->bottom[i+2])*rhx;
-    d3=(user->bottom[i+1]-x[i])*rhy;
+    d2 = (user->bottom[i+1]-user->bottom[i+2])*rhx;
+    d3 = (user->bottom[i+1]-x[i])*rhy;
     ft = ft+PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
   }
 
   for (j=0; j< my; j++){ /* right side */
-    d1=(x[(j+1)*mx-1]-user->right[j+1])*rhx;
-    d4=(user->right[j]-user->right[j+1])*rhy;
+    d1 = (x[(j+1)*mx-1]-user->right[j+1])*rhx;
+    d4 = (user->right[j]-user->right[j+1])*rhy;
     ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
   }
 
   for (i=0; i<mx; i++){ /* top side */
-    d1=(x[(my-1)*mx + i] - user->top[i+1])*rhy;
-    d4=(user->top[i+1] - user->top[i])*rhx;
+    d1 = (x[(my-1)*mx + i] - user->top[i+1])*rhy;
+    d4 = (user->top[i+1] - user->top[i])*rhx;
     ft = ft+PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
   }
 
   /* Bottom left corner */
-  d1=(user->left[0]-user->left[1])*rhy;
-  d2=(user->bottom[0]-user->bottom[1])*rhx;
-  ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
+  d1  = (user->left[0]-user->left[1])*rhy;
+  d2  = (user->bottom[0]-user->bottom[1])*rhx;
+  ft += PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
 
   /* Top right corner */
-  d1=(user->right[my+1] - user->right[my])*rhy;
-  d2=(user->top[mx+1] - user->top[mx])*rhx;
-  ft +=PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
+  d1  = (user->right[my+1] - user->right[my])*rhy;
+  d2  = (user->top[mx+1] - user->top[mx])*rhx;
+  ft += PetscSqrtScalar( 1.0 + d1*d1 + d2*d2);
 
   (*fcn)=ft*area;
 
   /* Restore vectors */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
   ierr = PetscLogFlops(67*mx*my);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -301,9 +303,10 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *) ptr;
 
+  PetscFunctionBeginUser;
   /* Evaluate the Hessian entries*/
   ierr = QuadraticH(user,X,H);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -319,18 +322,19 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 */
 PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,row;
-  PetscInt       mx=user->mx, my=user->my;
-  PetscInt       col[7];
-  PetscReal      hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
-  PetscReal      rhx=mx+1, rhy=my+1;
-  PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscReal      hl,hr,ht,hb,hc,htl,hbr;
-  PetscReal      *x, v[7];
+  PetscErrorCode    ierr;
+  PetscInt          i,j,k,row;
+  PetscInt          mx=user->mx, my=user->my;
+  PetscInt          col[7];
+  PetscReal         hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscReal         rhx=mx+1, rhy=my+1;
+  PetscReal         f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal         hl,hr,ht,hb,hc,htl,hbr;
+  const PetscScalar *x;
+  PetscReal         v[7];
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Initialize matrix entries to zero */
   ierr = MatZeroEntries(Hessian); CHKERRQ(ierr);
@@ -450,14 +454,14 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Assemble the matrix */
   ierr = MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(199*mx*my);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -484,6 +488,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscReal      b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscReal      *boundary;
 
+  PetscFunctionBeginUser;
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
   ierr = PetscMalloc1(bsize,&user->bottom);CHKERRQ(ierr);
@@ -541,7 +546,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -562,6 +567,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscReal      zero=0.0;
   PetscBool      flg;
 
+  PetscFunctionBeginUser;
   ierr = VecSet(X, zero);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
@@ -584,5 +590,5 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Restore vectors */
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
