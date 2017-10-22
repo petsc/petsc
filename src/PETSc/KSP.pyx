@@ -25,6 +25,7 @@ class KSPType(object):
     FBCGS      = S_(KSPFBCGS)
     FBCGSR     = S_(KSPFBCGSR)
     BCGSL      = S_(KSPBCGSL)
+    PIPEBCGS   = S_(KSPPIPEBCGS)
     CGS        = S_(KSPCGS)
     TFQMR      = S_(KSPTFQMR)
     CR         = S_(KSPCR)

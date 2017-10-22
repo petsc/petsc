@@ -41,6 +41,8 @@ cdef extern from * nogil:
     PetscPCType PCSACUSPPOLY
     PetscPCType PCBICGSTABCUSP
     PetscPCType PCAINVCUSP
+    PetscPCType PCCHOWILUVIENNACL
+    PetscPCType PCROWSCALINGVIENNACL
     PetscPCType PCBDDC
     PetscPCType PCKACZMARZ
     PetscPCType PCTELESCOPE
