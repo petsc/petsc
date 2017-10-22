@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,F
   PetscFortranAddr *is;
 
   *__ierr = F90Array1dAccess(ptr,MPIU_FORTRANADDR,(void**)&is PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = F90Array1dDestroy(ptr,MPI_LONG PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = ISColoringRestoreIS(*iscoloring,(IS**)is);if (*__ierr) return;
   *__ierr = PetscFree(is);
 }

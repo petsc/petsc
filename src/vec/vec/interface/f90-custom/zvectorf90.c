@@ -81,6 +81,6 @@ PETSC_EXTERN void PETSC_STDCALL vecdestroyvecsf90_(int *m,F90Array1d *ptr,int *_
     *__ierr = VecDestroy(&vecs[i]);
     if (*__ierr) return;
   }
-  *__ierr = F90Array1dDestroy(ptr,MPI_LONG PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(vecs);
 }
