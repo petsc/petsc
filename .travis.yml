@@ -8,8 +8,7 @@ compiler: gcc
 
 os: linux
 sudo: false
-#sudo: required
-#dist: trusty
+dist: trusty
 
 env:
 
@@ -43,32 +42,32 @@ matrix:
 
   include:
 
-    - env:
+    - env: INT64=1 SCALAR=complex LANGUAGE=C
       compiler: clang
-      os: osx
-      osx_image: xcode8
+
     - env: INT64=1 SCALAR=complex LANGUAGE=C++
       compiler: clang
-      os: osx
-      osx_image: xcode8
 
-    - env: MPI=mpich
-      compiler: clang
-      os: osx
-      osx_image: xcode8
-    - env: MPI=mpich INT64=1 SCALAR=complex LANGUAGE=C++
-      compiler: clang
-      os: osx
-      osx_image: xcode8
+#   - env: INT64=0 SCALAR=real LANGUAGE=C
+#     compiler: clang
+#     os: osx
+#   - env: INT64=1 SCALAR=complex LANGUAGE=C++
+#     compiler: clang
+#     os: osx
 
-    - env: MPI=openmpi
-      compiler: clang
-      os: osx
-      osx_image: xcode8
-    - env: MPI=openmpi INT64=1 SCALAR=complex LANGUAGE=C++
-      compiler: clang
-      os: osx
-      osx_image: xcode8
+#   - env: MPI=mpich
+#     compiler: clang
+#     os: osx
+#   - env: MPI=mpich INT64=1 SCALAR=complex LANGUAGE=C++
+#     compiler: clang
+#     os: osx
+
+#   - env: MPI=openmpi
+#     compiler: clang
+#     os: osx
+#   - env: MPI=openmpi INT64=1 SCALAR=complex LANGUAGE=C++
+#     compiler: clang
+#     os: osx
 
 git:
   depth: 3
@@ -86,15 +85,17 @@ addons:
       - libblas-dev
       - liblapack-dev
 
+osx_image: xcode8
+
 before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export TMPDIR=/tmp; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc $MPI; fi
-  - if [[ -n "$MPI" ]]; then export CC=mpicc CXX=mpicxx FC=mpif90; fi
+  - if [[ -n "$MPI" ]]; then export CC=mpicc CXX=mpicxx FC=mpifort; fi
 install:
   - ./configure --with-cc=$CC --with-cxx=$CXX --with-fc=$FC --with-clanguage=${LANGUAGE:-C} --with-64-bit-indices=${INT64:-0} --with-scalar-type=${SCALAR:-real} --with-precision=${PRECISION:-double} --with-mpi=${MPI:-0} $BLASLAPACK
-  - make MAKE_NP=2  CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
-  - make test       CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$MPI" == "openmpi" ]]; then export TMPDIR=/tmp; fi
-  - make alltests ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+  - make check    MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND
+# - make alltests MAKE_NP=2 CPPFLAGS=-DPETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND ALLTESTS_CHECK_FAILURES=yes ALLTESTS_PRINT_PROGRESS=dot
