@@ -14,9 +14,9 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   ierr = DMGetDimension(dm,&dimR);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&dimC);CHKERRQ(ierr);
 
-  ierr = DMGetWorkArray(dm,dimR * numPoints,PETSC_REAL,&preimage);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimC * numPoints,PETSC_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm,dimR * numPoints,PETSC_REAL,&inverted);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
 
   for (i = 0; i < dimR * numPoints; i++) {
     ierr = PetscRandomGetValueReal(randCtx, &preimage[i]);CHKERRQ(ierr);
@@ -103,9 +103,9 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
     }
   }
 
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,PETSC_REAL,&inverted);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimC * numPoints,PETSC_REAL,&mapped);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,dimR * numPoints,PETSC_REAL,&preimage);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&inverted);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimC * numPoints,MPIU_REAL,&mapped);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimR * numPoints,MPIU_REAL,&preimage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
