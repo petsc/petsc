@@ -24,6 +24,12 @@ cdef extern from * nogil:
     PetscMatType     MATAIJPERM
     PetscMatType       MATSEQAIJPERM
     PetscMatType       MATMPIAIJPERM
+    PetscMatType     MATAIJMKL
+    PetscMatType       MATSEQAIJMKL
+    PetscMatType       MATMPIAIJMKL
+    PetscMatType     MATBAIJMKL
+    PetscMatType       MATSEQBAIJMKL
+    PetscMatType       MATMPIBAIJMKL
     PetscMatType MATSHELL
     PetscMatType MATDENSE
     PetscMatType   MATSEQDENSE
@@ -36,12 +42,6 @@ cdef extern from * nogil:
     PetscMatType MATSBAIJ
     PetscMatType   MATSEQSBAIJ
     PetscMatType   MATMPISBAIJ
-    PetscMatType MATBSTRM
-    PetscMatType   MATSEQBSTRM
-    PetscMatType   MATMPIBSTRM
-    PetscMatType MATSBSTRM
-    PetscMatType   MATSEQSBSTRM
-    PetscMatType   MATMPISBSTRM
     PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
@@ -56,12 +56,14 @@ cdef extern from * nogil:
     PetscMatType MATTRANSPOSEMAT
     PetscMatType MATSCHURCOMPLEMENT
     #PetscMatType MATPYTHON
+    PetscMatType MATHYPRE
     PetscMatType MATHYPRESTRUCT
     PetscMatType MATHYPRESSTRUCT
     PetscMatType MATSUBMATRIX
     PetscMatType MATLOCALREF
     PetscMatType MATNEST
     PetscMatType MATPREALLOCATOR
+    PetscMatType MATDUMMY
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
@@ -78,6 +80,7 @@ cdef extern from * nogil:
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
         MAT_IGNORE_MATRIX
+        MAT_INPLACE_MATRIX
 
     ctypedef enum PetscMatDuplicateOption "MatDuplicateOption":
         MAT_DO_NOT_COPY_VALUES
@@ -109,10 +112,6 @@ cdef extern from * nogil:
         MAT_SAME_NONZERO_PATTERN      "SAME_NONZERO_PATTERN"
         MAT_DIFFERENT_NONZERO_PATTERN "DIFFERENT_NONZERO_PATTERN"
         MAT_SUBSET_NONZERO_PATTERN    "SUBSET_NONZERO_PATTERN"
-
-    ctypedef enum PetscMatReuse "MatReuse":
-        MAT_INITIAL_MATRIX
-        MAT_REUSE_MATRIX
 
     ctypedef enum PetscMatOption "MatOption":
         MAT_UNUSED_NONZERO_LOCATION_ERR

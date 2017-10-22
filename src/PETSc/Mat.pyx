@@ -24,6 +24,12 @@ class MatType(object):
     AIJPERM         = S_(MATAIJPERM)
     SEQAIJPERM      = S_(MATSEQAIJPERM)
     MPIAIJPERM      = S_(MATMPIAIJPERM)
+    AIJMKL          = S_(MATAIJMKL)
+    SEQAIJMKL       = S_(MATSEQAIJMKL)
+    MPIAIJMKL       = S_(MATMPIAIJMKL)
+    BAIJMKL         = S_(MATBAIJMKL)
+    SEQBAIJMKL      = S_(MATSEQBAIJMKL)
+    MPIBAIJMKL      = S_(MATMPIBAIJMKL)
     SHELL           = S_(MATSHELL)
     DENSE           = S_(MATDENSE)
     SEQDENSE        = S_(MATSEQDENSE)
@@ -48,14 +54,16 @@ class MatType(object):
     FFTW            = S_(MATFFTW)
     SEQCUFFT        = S_(MATSEQCUFFT)
     TRANSPOSEMAT    = S_(MATTRANSPOSEMAT)
-    PYTHON          = S_(MATPYTHON)
     SCHURCOMPLEMENT = S_(MATSCHURCOMPLEMENT)
+    PYTHON          = S_(MATPYTHON)
+    HYPRE           = S_(MATHYPRE)
     HYPRESTRUCT     = S_(MATHYPRESTRUCT)
     HYPRESSTRUCT    = S_(MATHYPRESSTRUCT)
     SUBMATRIX       = S_(MATSUBMATRIX)
     LOCALREF        = S_(MATLOCALREF)
     NEST            = S_(MATNEST)
     PREALLOCATOR    = S_(MATPREALLOCATOR)
+    DUMMY           = S_(MATDUMMY)
 
 class MatOption(object):
     UNUSED_NONZERO_LOCATION_ERR = MAT_UNUSED_NONZERO_LOCATION_ERR
@@ -649,14 +657,24 @@ cdef class Mat(Object):
         mat_type = str2bytes(mat_type, &mtype)
         if mtype == NULL: mtype = MATSAME
         if out is None: out = self
-        if out.mat != NULL: reuse = MAT_REUSE_MATRIX
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
         CHKERR( MatConvert(self.mat, mtype, reuse, &out.mat) )
         return out
 
     def transpose(self, Mat out=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         if out is None: out = self
-        if out.mat != NULL: reuse = MAT_REUSE_MATRIX
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 

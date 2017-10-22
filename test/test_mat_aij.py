@@ -164,12 +164,35 @@ class BaseTestMatAnyAIJ(object):
             self.assertTrue(N.allclose(aj[ai[i]:ai[i+1]], cols))
             self.assertTrue(N.allclose(av[ai[i]:ai[i+1]], vals))
 
-    #def testConvertToAIJ(self):
-    #    self._preallocate()
-    #    self._set_values_ijv()
-    #    A = self.A
-    #    A.assemble()
-    #    A.convert('aij')
+    def testConvertToSAME(self):
+        self._preallocate()
+        self._set_values_ijv()
+        A = self.A
+        A.assemble()
+        A.convert('same')
+
+    def testConvertToDENSE(self):
+        self._preallocate()
+        self._set_values_ijv()
+        A = self.A
+        A.assemble()
+        if A.type.endswith('sbaij'): return
+        B = PETSc.Mat()
+        A.convert('dense', B)  # initial
+        #A.convert('dense', B)  # reuse  # FIXME: PETSc leaks
+        A.convert('dense')     # inplace
+        B.destroy()
+
+    def testConvertToAIJ(self):
+        self._preallocate()
+        self._set_values_ijv()
+        A = self.A
+        A.assemble()
+        if A.type.endswith('sbaij'): return
+        B = PETSc.Mat()
+        A.convert('aij', B)  # initial
+        #A.convert('aij', B)  # reuse  # FIXME: PETSc leaks
+        A.convert('aij')     # inplace
 
     def testGetDiagonalBlock(self):
         self._preallocate()
