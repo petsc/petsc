@@ -78,6 +78,7 @@ cdef extern from * nogil:
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
         MAT_IGNORE_MATRIX
+        MAT_INPLACE_MATRIX
 
     ctypedef enum PetscMatDuplicateOption "MatDuplicateOption":
         MAT_DO_NOT_COPY_VALUES
@@ -109,10 +110,6 @@ cdef extern from * nogil:
         MAT_SAME_NONZERO_PATTERN      "SAME_NONZERO_PATTERN"
         MAT_DIFFERENT_NONZERO_PATTERN "DIFFERENT_NONZERO_PATTERN"
         MAT_SUBSET_NONZERO_PATTERN    "SUBSET_NONZERO_PATTERN"
-
-    ctypedef enum PetscMatReuse "MatReuse":
-        MAT_INITIAL_MATRIX
-        MAT_REUSE_MATRIX
 
     ctypedef enum PetscMatOption "MatOption":
         MAT_UNUSED_NONZERO_LOCATION_ERR

@@ -649,14 +649,24 @@ cdef class Mat(Object):
         mat_type = str2bytes(mat_type, &mtype)
         if mtype == NULL: mtype = MATSAME
         if out is None: out = self
-        if out.mat != NULL: reuse = MAT_REUSE_MATRIX
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
         CHKERR( MatConvert(self.mat, mtype, reuse, &out.mat) )
         return out
 
     def transpose(self, Mat out=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         if out is None: out = self
-        if out.mat != NULL: reuse = MAT_REUSE_MATRIX
+        if out.mat == self.mat:
+            reuse = MAT_INPLACE_MATRIX
+        elif out.mat == NULL:
+            reuse = MAT_INITIAL_MATRIX
+        else:
+            reuse = MAT_REUSE_MATRIX
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 
