@@ -203,6 +203,8 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   ierr = VecDestroy(&ctx->drscale);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->dlscale);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->dshift);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->dshiftw);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->current_u);CHKERRQ(ierr);
   if (ctx->current_f_allocated) {
     ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);
   }
@@ -376,8 +378,11 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecPointwiseMult(y,ctx->dlscale,y);CHKERRQ(ierr);
   }
   if (ctx->dshift) {
-    ierr = VecPointwiseMult(ctx->dshift,a,U);CHKERRQ(ierr);
-    ierr = VecAXPY(y,1.0,U);CHKERRQ(ierr);
+    if (!ctx->dshiftw) {
+      ierr = VecDuplicate(y,&ctx->dshiftw);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(ctx->dshift,a,ctx->dshiftw);CHKERRQ(ierr);
+    ierr = VecAXPY(y,1.0,ctx->dshiftw);CHKERRQ(ierr);
   }
 
   if (mat->nullsp) {ierr = MatNullSpaceRemove(mat->nullsp,y);CHKERRQ(ierr);}
@@ -500,8 +505,13 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 
   PetscFunctionBegin;
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
-
-  ctx->current_u = U;
+  if (!ctx->current_u) {
+    ierr = VecDuplicate(U,&ctx->current_u);CHKERRQ(ierr);
+    ierr = VecLockPush(ctx->current_u);CHKERRQ(ierr);
+  }
+  ierr = VecLockPop(ctx->current_u);CHKERRQ(ierr);
+  ierr = VecCopy(U,ctx->current_u);CHKERRQ(ierr);
+  ierr = VecLockPush(ctx->current_u);CHKERRQ(ierr);
   if (F) {
     if (ctx->current_f_allocated) {ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);}
     ctx->current_f           = F;
@@ -512,7 +522,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
     ctx->current_f_allocated = PETSC_TRUE;
   }
   if (!ctx->w) {
-    ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
+    ierr = VecDuplicate(ctx->current_u,&ctx->w);CHKERRQ(ierr);
   }
   J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
