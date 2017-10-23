@@ -38,8 +38,8 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
     PetscReal coorx,coory;
     PetscInt mi,mj;
     
-    coorx = coor[2*p];
-    coory = coor[2*p+1];
+    coorx = PetscRealPart(coor[2*p]);
+    coory = PetscRealPart(coor[2*p+1]);
     
     mi = (PetscInt)( (coorx - (-1.0))/dx );
     mj = (PetscInt)( (coory - (-1.0))/dy );
@@ -181,7 +181,7 @@ PetscErrorCode ex3_1(void)
   
   {
     PetscInt si,sj,milocal,mjlocal;
-    const PetscReal *LA_coors;
+    const PetscScalar *LA_coors;
     Vec coors;
     PetscInt cnt;
     
@@ -204,8 +204,8 @@ PetscErrorCode ex3_1(void)
       ierr = PetscRandomGetValueReal(rand,&rx);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(rand,&ry);CHKERRQ(ierr);
       
-      px = LA_coors[2*p+0] + 0.1*rx*dx;
-      py = LA_coors[2*p+1] + 0.1*ry*dx;
+      px = PetscRealPart(LA_coors[2*p+0]) + 0.1*rx*dx;
+      py = PetscRealPart(LA_coors[2*p+1]) + 0.1*ry*dx;
       
       r2 = px*px + py*py;
       if (r2 < 0.75*0.75) {
