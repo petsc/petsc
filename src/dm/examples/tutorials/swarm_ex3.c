@@ -91,6 +91,7 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm,Vec pos,DMPointLocationType ltyp
 
   nfound = npoints;
   ierr = PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
