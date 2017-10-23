@@ -1256,7 +1256,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
     ierr = PetscNewLog(dm,&link);CHKERRQ(ierr);
   }
   ierr = MPI_Type_size(dtype,&dsize);CHKERRQ(ierr);
-  if (dsize*count > link->bytes) {
+  if (((size_t)dsize*count) > link->bytes) {
     ierr        = PetscFree(link->mem);CHKERRQ(ierr);
     ierr        = PetscMalloc(dsize*count,&link->mem);CHKERRQ(ierr);
     link->bytes = dsize*count;
