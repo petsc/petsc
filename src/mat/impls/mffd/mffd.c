@@ -126,6 +126,8 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatGetDiagonal_MFFD(Mat,Vec);
+
 typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to not be extern C*/
 static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 {
@@ -133,6 +135,11 @@ static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 
   PetscFunctionBegin;
   ctx->funcisetbase = func;
+  /* allow users to compose their own getdiagonal and allow MatHasOperation return false if the two functions pointers are not set */
+  if (!mat->ops->getdiagonal || mat->ops->getdiagonal == MatGetDiagonal_MFFD) {
+    mat->ops->getdiagonal = mat->ops->getdiagonal ? ( func ? mat->ops->getdiagonal : NULL) :
+                                                    ( (func && ctx->funci) ? MatGetDiagonal_MFFD : NULL);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -143,6 +150,11 @@ static PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 
   PetscFunctionBegin;
   ctx->funci = funci;
+  /* allow users to compose their own getdiagonal and allow MatHasOperation return false if the two functions pointers are not set */
+  if (!mat->ops->getdiagonal || mat->ops->getdiagonal == MatGetDiagonal_MFFD) {
+    mat->ops->getdiagonal = mat->ops->getdiagonal ? ( funci ? mat->ops->getdiagonal : NULL) :
+                                                    ( (funci && ctx->funcisetbase) ? MatGetDiagonal_MFFD : NULL);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -399,7 +411,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
         u = current iterate
         h = difference interval
 */
-static PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
+PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatMFFD        ctx = (MatMFFD)mat->data;
   PetscScalar    h,*aa,*ww,v;
@@ -410,7 +422,7 @@ static PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
   PetscFunctionBegin;
   if (!ctx->funci) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioni() first");
-
+  if (!ctx->funcisetbase) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioniBase() first");
   w    = ctx->w;
   U    = ctx->current_u;
   ierr = (*ctx->func)(ctx->funcctx,U,a);CHKERRQ(ierr);
@@ -694,7 +706,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   A->ops->setup           = MatSetUp_MFFD;
   A->ops->view            = MatView_MFFD;
   A->ops->assemblyend     = MatAssemblyEnd_MFFD;
-  A->ops->getdiagonal     = MatGetDiagonal_MFFD;
   A->ops->scale           = MatScale_MFFD;
   A->ops->shift           = MatShift_MFFD;
   A->ops->diagonalscale   = MatDiagonalScale_MFFD;
