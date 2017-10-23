@@ -179,7 +179,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
     const PetscInt *cone,*connedges,*econe;
     PetscInt       key,vid[2],nconnedges,k,e,keye;
     void*          component;
-    PetscScalar    flow_couple;
 
     ierr = DMNetworkGetConnectedVertices(networkdm,edges[0],&cone);CHKERRQ(ierr);
 
@@ -206,9 +205,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       if (keye == appctx_water.compkey_edge) { /* water_compkey_edge */
         EDGE_Water        edge=(EDGE_Water)component;
         if (edge->type == EDGE_TYPE_PUMP) {
-          Pump *pump;
-          pump = &edge->pump;
-
           /* compute flow_pump */
           ierr = DMNetworkGetConnectedVertices(networkdm,e,&econe);CHKERRQ(ierr);
           ierr = DMNetworkGetGlobalVertexIndex(networkdm,econe[0],&vid[0]);CHKERRQ(ierr);
@@ -216,7 +212,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
 
           PetscInt offsetnode1,offsetnode2,key_0,key_1;
           const PetscScalar *xarr;
-          PetscScalar       hf,ht,flow,*farr;
+          PetscScalar       *farr;
           VERTEX_Water      vertexnode1,vertexnode2;
 
           ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
@@ -224,13 +220,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           ierr = DMNetworkGetVariableOffset(networkdm,econe[1],&offsetnode2);CHKERRQ(ierr);
 
           ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
-
+#if 0
+          PetscScalar  hf,ht;
+          Pump         *pump;
+          pump = &edge->pump;
           hf = xarr[offsetnode1];
           ht = xarr[offsetnode2];
-          flow        = Flow_Pump(pump,hf,ht);
+
+          PetscScalar flow = Flow_Pump(pump,hf,ht);
           PetscScalar Hp = 0.1; // load->pl
-          flow_couple = 8.81*Hp*1.e6/(ht-hf);     //pump->h0;
+          PetscScalar flow_couple = 8.81*Hp*1.e6/(ht-hf);     //pump->h0;
           //printf("pump %d: connected vtx %d %d; flow_pump %g flow_couple %g; offset %d %d\n",e,vid[0],vid[1],flow,flow_couple,offsetnode1,offsetnode2);
+#endif
           /* Get the components at the two vertices */
           ierr = DMNetworkGetComponent(networkdm,econe[0],0,&key_0,(void**)&vertexnode1);CHKERRQ(ierr);
           if (key_0 != appctx_water.compkey_vtx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
@@ -420,7 +421,7 @@ int main(int argc,char **argv)
   ierr = DMNetworkRegisterComponent(networkdm,"vertex_water",sizeof(struct _p_VERTEX_Water),&appctx_water.compkey_vtx);CHKERRQ(ierr);
   user.appctx_water = appctx_water;
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] local nvertices %d %d; nedges %d %d\n",crank,numVertices[0],numVertices[1],numEdges[0],numEdges[1]);
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] Total local nvertices %D + %D = %D, nedges %D + %D = %D\n",crank,numVertices[0],numVertices[1],numVertices[0]+numVertices[1],numEdges[0],numEdges[1],numEdges[0]+numEdges[1]);}
   ierr = DMNetworkSetSizes(networkdm,nsubnet-1,1,numVertices,numEdges,NumVertices,NumEdges);CHKERRQ(ierr);
 
   /* Add edge connectivity */
@@ -435,7 +436,7 @@ int main(int argc,char **argv)
   /* Add network components - only process[0] has any data to add */
   /* ADD VARIABLES AND COMPONENTS FOR THE POWER SUBNETWORK */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,0,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (!crank) printf("[%d] Power network: nv %d, ne %d\n",crank,nv,ne);
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Power network: nv %D, ne %D\n",nv,ne);CHKERRQ(ierr);}
   genj = 0; loadj = 0;
   for (i = 0; i < ne; i++) {
     ierr = DMNetworkAddComponent(networkdm,edges[i],user_power.compkey_branch,&pfdata->branch[i]);CHKERRQ(ierr);
@@ -459,7 +460,7 @@ int main(int argc,char **argv)
 
   /* ADD VARIABLES AND COMPONENTS FOR THE WATER SUBNETWORK */
   ierr = DMNetworkGetSubnetworkInfo(networkdm,1,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-  if (!crank) printf("[%d] Water network: nv %d, ne %d\n",crank,nv,ne);
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Water network: nv %D, ne %D\n",nv,ne);CHKERRQ(ierr);}
   for (i = 0; i < ne; i++) {
     ierr = DMNetworkAddComponent(networkdm,edges[i],appctx_water.compkey_edge,&waterdata->edge[i]);CHKERRQ(ierr);
   }
@@ -495,7 +496,7 @@ int main(int argc,char **argv)
 
   /* Create coupled snes */
   /*-------------------- */
-  if (!crank) printf("SNES setup ......\n");
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"SNES_coupled setup ......\n");CHKERRQ(ierr);}
   user.subsnes_id = nsubnet-1;
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,networkdm);CHKERRQ(ierr);
@@ -503,7 +504,6 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,F,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESMonitorSet(snes,UserMonitor,&user,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  //ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
   if (viewJ) {
     /* View Jac structure */
@@ -512,7 +512,7 @@ int main(int argc,char **argv)
   }
 
   if (viewX) {
-    if (!crank) printf("Solution:\n");
+    if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Solution:\n");CHKERRQ(ierr);}
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -523,7 +523,7 @@ int main(int argc,char **argv)
 
   /* Create snes_power */
   /*-------------------*/
-  if (!crank) printf("SNES_power setup ......\n");
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"SNES_power setup ......\n");CHKERRQ(ierr);}
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
 
   user.subsnes_id = 0;
@@ -539,14 +539,13 @@ int main(int argc,char **argv)
   ierr = SNESSetJacobian(snes_power,Jac,Jac,FormJacobian_subPower,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes_power);CHKERRQ(ierr);
-  //ierr = SNESSolve(snes_power,NULL,X);CHKERRQ(ierr);
 
   if (viewX) {
-    if (!crank) printf("Power Solution:\n");
+    if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Power Solution:\n");CHKERRQ(ierr);}
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   if (viewJ) {
-    if (!crank) printf("Power Jac:\n");
+    if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Power Jac:\n");CHKERRQ(ierr);}
     ierr = SNESGetJacobian(snes_power,&Jac,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = MatView(Jac,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* ierr = MatView(Jac,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -554,7 +553,7 @@ int main(int argc,char **argv)
 
   /* Create snes_water */
   /*-------------------*/
-  if (!crank) printf("SNES_water setup......\n");
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"SNES_water setup......\n");CHKERRQ(ierr);}
   ierr = SetInitialGuess(networkdm,X,&user);CHKERRQ(ierr);
 
   user.subsnes_id = 1;
@@ -564,10 +563,9 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes_water,F,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESMonitorSet(snes_water,UserMonitor,&user,NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes_water);CHKERRQ(ierr);
-  //ierr = SNESSolve(snes_water,NULL,X);CHKERRQ(ierr);
 
   if (viewX) {
-    if (!crank) printf("Water Solution:\n");
+    if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Water Solution:\n");CHKERRQ(ierr);}
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscLogStagePop();
@@ -591,9 +589,9 @@ int main(int argc,char **argv)
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     user.it++;
   }
-  if (!crank) printf("Coupled_SNES converged in %d iterations\n",user.it);
+  if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Coupled_SNES converged in %D iterations\n",user.it);CHKERRQ(ierr);}
   if (viewX) {
-    if (!crank) printf("Final Solution:\n");
+    if (!crank) {ierr = PetscPrintf(PETSC_COMM_SELF,"Final Solution:\n");CHKERRQ(ierr);}
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
    }
   PetscLogStagePop();

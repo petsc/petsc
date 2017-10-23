@@ -53,7 +53,7 @@ runex3:
 	   else printf "${PWD}\nPossible problem with ex3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3.tmp
 runex3_2:
-	-@${MPIEXEC} -n 3 ./ex3 -coupled_snes_monitor_short > ex3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex3 -coupled_snes_monitor_short -options_left no > ex3.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_2.out ex3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3.tmp
