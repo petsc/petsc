@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_MKL'
+#requirespackage 'PETSC_HAVE_MKL_SPARSE'
 
 ALL: lib
 
