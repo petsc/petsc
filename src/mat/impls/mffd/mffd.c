@@ -421,8 +421,8 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
   PetscInt       i,rstart,rend;
 
   PetscFunctionBegin;
-  if (!ctx->funci) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioni() first");
-  if (!ctx->funcisetbase) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Requires calling MatMFFDSetFunctioniBase() first");
+  if (!ctx->funci) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Functioni function");
+  if (!ctx->funcisetbase) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing FunctioniBase function");
   w    = ctx->w;
   U    = ctx->current_u;
   ierr = (*ctx->func)(ctx->funcctx,U,a);CHKERRQ(ierr);
@@ -893,12 +893,13 @@ PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec)
 
    Notes:
     If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
-    matrix inside your compute Jacobian routine
+    matrix inside your compute Jacobian routine.
+    This function is necessary to compute the diagonal of the matrix.
 
 
 .keywords: SNES, matrix-free, function
 
-.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
+.seealso: MatCreateSNESMF(),MatMFFDGetH(), MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
 
 @*/
 PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscInt,Vec,PetscScalar*))
@@ -924,13 +925,14 @@ PetscErrorCode  MatMFFDSetFunctioni(Mat mat,PetscErrorCode (*funci)(void*,PetscI
 
    Notes:
     If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
-    matrix inside your compute Jacobian routine
+    matrix inside your compute Jacobian routine.
+    This function is necessary to compute the diagonal of the matrix.
 
 
 .keywords: SNES, matrix-free, function
 
 .seealso: MatCreateSNESMF(),MatMFFDGetH(), MatCreateMFFD(), MATMFFD
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), SNESetFunction(), MatGetDiagonal()
 @*/
 PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec))
 {
