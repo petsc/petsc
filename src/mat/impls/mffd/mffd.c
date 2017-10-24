@@ -235,16 +235,6 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetUp_MFFD(Mat mat)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*
    MatMFFDView_MFFD - Views matrix-free parameters.
 
@@ -703,7 +693,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   A->ops->mult            = MatMult_MFFD;
   A->ops->destroy         = MatDestroy_MFFD;
-  A->ops->setup           = MatSetUp_MFFD;
   A->ops->view            = MatView_MFFD;
   A->ops->assemblyend     = MatAssemblyEnd_MFFD;
   A->ops->scale           = MatScale_MFFD;
