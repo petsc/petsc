@@ -245,6 +245,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
   /* The below code duplicates much of what is in MatSeqAIJKL_create_mkl_handle(). I dislike this code duplication, but
    * MatSeqAIJMKL_create_mkl_handle() cannot be used because we don't need to create a handle -- we've already got one, 
    * and just need to be able to run the MKL optimization step. */
+  aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
+  aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
+  aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
   stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
   stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
   stat = mkl_sparse_optimize(aijmkl->csrA);
