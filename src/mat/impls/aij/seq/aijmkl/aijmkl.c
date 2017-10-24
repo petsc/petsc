@@ -184,9 +184,16 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 
 /* MatSeqAIJMKL_create_from_mkl_handle() creates a sequential AIJMKL matrix from an MKL sparse matrix handle. 
  * We need this to implement MatMatMult() using the MKL inspector-executor routines, which return an (unoptimized) 
- * matrix handle. */
+ * matrix handle.
+ * Note: This routine supports replacing the numerical values in an existing matrix that has the same sparsity 
+ * structure as in the MKL handle. However, this code currently doesn't actually get used when MatMatMult() 
+ * is called with MAT_REUSE_MATRIX, because the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
+ * MKL has no notion of separately callable symbolic vs. numeric phases of sparse matrix-matrix multiply, so in the 
+ * MAT_REUSE_MATRIX case, the SeqAIJ routines end up being used. Even though this means that the (hopefully more 
+ * optimized) MKL routines do not get used, this probably is best because the MKL routines would waste time re-computing 
+ * the symbolic portion, whereas the native PETSc SeqAIJ routines will avoid this. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
-PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,Mat *mat)
+PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,MatReuse reuse,Mat *mat)
 {
   PetscErrorCode ierr;
   sparse_status_t stat;
@@ -195,6 +202,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
   PetscInt *aj,*ai,*dummy;
   MatScalar *aa;
   Mat A;
+  Mat_SeqAIJ *a;
   Mat_SeqAIJMKL *aijmkl;
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
@@ -203,16 +211,35 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete mkl_sparse_x_export_csr()");
     PetscFunctionReturn(PETSC_ERR_LIB);
   }
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nrows,ncols);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocationCSR(A,ai,aj,aa);CHKERRQ(ierr);
 
-  /* We now have an assembled sequential AIJ matrix created from copies of the exported arrays from the MKL matrix handle.
-   * Now turn it into a MATSEQAIJMKL. */
-  ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nrows,ncols);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocationCSR(A,ai,aj,aa);CHKERRQ(ierr);
+
+    /* We now have an assembled sequential AIJ matrix created from copies of the exported arrays from the MKL matrix handle.
+     * Now turn it into a MATSEQAIJMKL. */
+    ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  } else {
+    A = *mat;
+  }
+
+  a = (Mat_SeqAIJ*)A->data;
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    /* Need to destroy old MKL handle. */
+    stat = mkl_sparse_destroy(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+
+    /* The new matrix is supposed to have the same sparsity pattern, so copy only the array of numerical values. */
+    ierr = PetscMemcpy(a->a,aa,sizeof(MatScalar)*a->nz);CHKERRQ(ierr);
+  }
   aijmkl->csrA = csrA;
+
   /* The below code duplicates much of what is in MatSeqAIJKL_create_mkl_handle(). I dislike this code duplication, but
    * MatSeqAIJMKL_create_mkl_handle() cannot be used because we don't need to create a handle -- we've already got one, 
    * and just need to be able to run the MKL optimization step. */
@@ -686,8 +713,7 @@ PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,P
     PetscFunctionReturn(PETSC_ERR_LIB);
   }
 
-  /* TODO: Make this handle MAT_REUSE_MATRIX sensibly; MKL has no notion of this, but we still need to do the right thing. */
-  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,C);CHKERRQ(ierr);
+  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
