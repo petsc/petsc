@@ -48,6 +48,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   B->ops->multadd          = MatMultAdd_SeqAIJ;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJ;
   B->ops->matmult          = MatMatMult_SeqAIJ_SeqAIJ;
+  B->ops->transposematmult = MatTransposeMatMult_SeqAIJ_SeqAIJ;
   B->ops->scale            = MatScale_SeqAIJ;
   B->ops->diagonalscale    = MatDiagonalScale_SeqAIJ;
   B->ops->diagonalset      = MatDiagonalSet_SeqAIJ;
@@ -60,6 +61,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   if(!aijmkl->no_SpMV2) {
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
 #endif
   }
 
@@ -719,6 +721,38 @@ PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,P
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+PetscErrorCode MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
+{
+  Mat_SeqAIJMKL *a, *b;
+  sparse_matrix_t csrA, csrB, csrC;
+  PetscErrorCode ierr;
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+
+  PetscFunctionBegin;
+  a = (Mat_SeqAIJMKL*)A->spptr;
+  b = (Mat_SeqAIJMKL*)B->spptr;
+  if (!a->sparse_optimized) {
+    MatSeqAIJMKL_create_mkl_handle(A);
+  }
+  if (!b->sparse_optimized) {
+    MatSeqAIJMKL_create_mkl_handle(B);
+  }
+  csrA = a->csrA;
+  csrB = b->csrA;
+
+  stat = mkl_sparse_spmm(SPARSE_OPERATION_TRANSPOSE,csrA,csrB,&csrC);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: unable to complete sparse matrix-matrix multiply");
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+
+  ierr = MatSeqAIJMKL_create_from_mkl_handle(PETSC_COMM_SELF,csrC,scall,C);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+#endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
 PetscErrorCode MatScale_SeqAIJMKL(Mat inA,PetscScalar alpha)
 {
   PetscErrorCode ierr;
@@ -818,6 +852,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
     B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
     B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
     B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
+    B->ops->mattransposemult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #endif
   } else {
     B->ops->mult             = MatMult_SeqAIJMKL;
@@ -839,6 +874,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   if(!aijmkl->no_SpMV2) {
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2);CHKERRQ(ierr);
 #endif
   }
 
