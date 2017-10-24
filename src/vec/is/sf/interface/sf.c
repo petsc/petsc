@@ -262,6 +262,8 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 
    Level: intermediate
 
+   Notes: In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
+
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/
 PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscSFNode *iremote,PetscCopyMode remotemode)
