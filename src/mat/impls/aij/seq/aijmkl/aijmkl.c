@@ -302,6 +302,16 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
   if (aijmkl->eager_inspection) {
     ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+  } else if (aijmkl->sparse_optimized) {
+    /* If doing lazy inspection and there is an optimized MKL handle, we need to destroy it, so that it will be 
+     * rebuilt later when needed. Otherwise, some SeqAIJ implementations that we depend on for some operations
+     * (such as MatMatMultNumeric()) can modify the result matrix without the matrix handle being rebuilt.
+     * (The SeqAIJ version MatMatMultNumeric() knows nothing about matrix handles, but it *does* call MatAssemblyEnd(). */
+    sparse_status_t stat = mkl_sparse_destroy(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+    aijmkl->sparse_optimized = PETSC_FALSE;
   }
 
   PetscFunctionReturn(0);
