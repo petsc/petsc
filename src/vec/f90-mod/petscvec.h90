@@ -9,6 +9,17 @@
         end Subroutine PetscSFBcastBegin
       end Interface
 
+       Interface
+       subroutine PetscSFGetGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
+          use petscisdef
+          PetscSF :: sf
+          PetscInt :: nroots,nleaves
+          PetscInt, pointer :: ilocal(:)
+          type(PetscSFNode), pointer :: iremote(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFGetGraph
+      end Interface
+
       Interface
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,ierr)
           use petscisdef

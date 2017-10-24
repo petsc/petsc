@@ -10,12 +10,17 @@
       use petscvec
       implicit none
 
-      PetscErrorCode    ierr
-      PetscInt          i,nroots,nrootsalloc,nleaves,nleavesalloc,mine(6),stride
-      type(PetscSFNode) remote(6)
-      PetscMPIInt       rank,size
-      PetscSF           sf
-      PetscInt          rootdata(6),leafdata(6)
+      PetscErrorCode                ierr
+      PetscInt                      i,nroots,nrootsalloc,nleaves,nleavesalloc,mine(6),stride
+      type(PetscSFNode)             remote(6)
+      PetscMPIInt                   rank,size
+      PetscSF                       sf
+      PetscInt                      rootdata(6),leafdata(6)
+
+! used with PetscSFGetGraph()
+      type(PetscSFNode), pointer :: gremote(:)
+      PetscInt, pointer ::          gmine(:)
+      PetscInt                      gnroots,gnleaves;
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -82,12 +87,22 @@
       enddo
 
 !     Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls.
-      call PetscSFBcastBegin(sf,MPI_INT,rootdata,leafdata,ierr);CHKERRQ(ierr);
-      call PetscSFBcastEnd(sf,MPI_INT,rootdata,leafdata,ierr);CHKERRQ(ierr);
+      call PetscSFBcastBegin(sf,MPI_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
+      call PetscSFBcastEnd(sf,MPI_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
       call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n",ierr);CHKERRQ(ierr);
       call PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr);
       call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n",ierr);CHKERRQ(ierr);
       call PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr);
+
+      call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRQ(ierr);
+      if (gnroots .ne. nrootsalloc) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nroots returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+      if (gnleaves .ne. nleaves) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+      do i=1,nrootsalloc
+         if (gmine(i) .ne. mine(i))  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Root from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+      enddo
+      do i=1,nleaves
+         if (gremote(i)%index .ne. remote(i)%index)  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaf from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+      enddo
 
 !    Clean storage for star forest.
       call PetscSFDestroy(sf,ierr);CHKERRQ(ierr);
