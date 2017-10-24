@@ -138,7 +138,7 @@ static PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
   /* allow users to compose their own getdiagonal and allow MatHasOperation
      to return false if the two functions pointers are not set */
   if (!mat->ops->getdiagonal && func) {
-    mat->ops->getdiagonal == MatGetDiagonal_MFFD;
+    mat->ops->getdiagonal = MatGetDiagonal_MFFD;
   }
   PetscFunctionReturn(0);
 }
@@ -153,7 +153,7 @@ static PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
   /* allow users to compose their own getdiagonal and allow MatHasOperation
      to return false if the two functions pointers are not set */
   if (!mat->ops->getdiagonal && funci) {
-    mat->ops->getdiagonal == MatGetDiagonal_MFFD;
+    mat->ops->getdiagonal = MatGetDiagonal_MFFD;
   }
   PetscFunctionReturn(0);
 }
