@@ -2,6 +2,8 @@ static char help[] = "Tests mesh adaptation with DMPlex and pragmatic.\n";
 
 #include <petsc/private/dmpleximpl.h>
 
+#include <petscksp.h>
+
 typedef struct {
   DM        dm;
   /* Definition of the test case (mesh and metric field) */
@@ -11,6 +13,7 @@ typedef struct {
   char      bdLabel[PETSC_MAX_PATH_LEN]; /* Name of the label marking boundary facets */
   PetscInt  metOpt;                      /* Different choices of metric */
   PetscReal hmax, hmin;                  /* Max and min sizes prescribed by the metric */
+  PetscBool doL2;                        /* Test L2 projection */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -25,6 +28,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->metOpt     = 1;
   options->hmin       = 0.05;
   options->hmax       = 0.5;
+  options->doL2       = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex19.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -34,6 +38,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-met", "Different choices of metric", "ex19.c", options->metOpt, &options->metOpt, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-hmax", "Max size prescribed by the metric", "ex19.c", options->hmax, &options->hmax, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-hmin", "Min size prescribed by the metric", "ex19.c", options->hmin, &options->hmin, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-do_L2", "Test L2 projection", "ex19.c", options->doL2, &options->doL2, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -144,6 +149,102 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  u[0] = x[0] + x[1];
+  return 0;
+}
+
+static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                     PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
+  g0[0] = 1.0;
+}
+
+static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
+{
+  PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
+  KSP              ksp;
+  PetscDS          prob;
+  PetscFE          fe;
+  Mat              Interp, mass;
+  Vec              u, ua, scaling, ones, massLumped, rhs, uproj;
+  PetscReal        error;
+  PetscInt         dim;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dma, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = DMGetDS(dma, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 0, 0, identity, NULL, NULL, NULL);CHKERRQ(ierr);
+
+  funcs[0] = linear;
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dma, &ua);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dma, &ones);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dma, &massLumped);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dma, &rhs);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dma, &uproj);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "Original");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-orig_vec_view");CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Original L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dm, dma, &Interp, &scaling);CHKERRQ(ierr);
+  ierr = MatInterpolate(Interp, u, ua);CHKERRQ(ierr);
+  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
+  ierr = VecDestroy(&scaling);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) ua, "Interpolation");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ua, NULL, "-interp_vec_view");CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dma, 0.0, funcs, NULL, ua, &error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Interpolated L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+
+  ierr = VecSet(ones, 1.0);CHKERRQ(ierr);
+  ierr = DMPlexSNESComputeJacobianActionFEM(dma, ua, ones, massLumped, user);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) massLumped, "Lumped mass");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(massLumped, NULL, "-mass_vec_view");CHKERRQ(ierr);
+  ierr = DMCreateMassMatrix(dm, dma, &mass);CHKERRQ(ierr);
+  ierr = MatMult(mass, u, rhs);CHKERRQ(ierr);
+  ierr = MatDestroy(&mass);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(rhs, NULL, "-lumped_rhs_view");CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(uproj, rhs, massLumped);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) uproj, "Different Lumped Projection");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(uproj, NULL, "-lumped_rhs_vec_view");CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dma, 0.0, funcs, NULL, uproj, &error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Lumped (rhs) L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+
+  ierr = DMCreateMatrix(dma, &mass);CHKERRQ(ierr);
+  ierr = DMPlexSNESComputeJacobianFEM(dma, ua, mass, mass, user);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mass, NULL, "-mass_mat_view");CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, mass, mass);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, rhs, uproj);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) uproj, "Full Projection");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(uproj, NULL, "-proj_vec_view");CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dma, 0.0, funcs, NULL, uproj, &error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Projected L2 Error: %g\n", (double) error);CHKERRQ(ierr);
+  ierr = MatDestroy(&mass);CHKERRQ(ierr);
+
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dma, &ua);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dma, &ones);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dma, &massLumped);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dma, &rhs);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dma, &uproj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main (int argc, char * argv[]) {
   AppCtx         user;                 /* user-defined work context */
   DMLabel        bdLabel = NULL;
@@ -175,6 +276,7 @@ int main (int argc, char * argv[]) {
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) dma, "adapt_");CHKERRQ(ierr);
   ierr = DMViewFromOptions(dma, NULL, "-dm_view");CHKERRQ(ierr);
+  if (user.doL2) {ierr = TestL2Projection(user.dm, dma, &user);CHKERRQ(ierr);}
   ierr = DMDestroy(&dma);CHKERRQ(ierr);
   ierr = VecDestroy(&metric);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
@@ -220,4 +322,13 @@ int main (int argc, char * argv[]) {
     requires: pragmatic
     nsize: 5
     args: -dim 2 -nbrVerEdge 20 -dm_plex_separate_marker 0 -met 2 -hmax 0.5 -hmin 0.001 -init_dm_view -adapt_dm_view
+  test:
+    suffix: proj_0
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_order 1 -petscfe_default_quadrature_order 1 -dm_plex_hash_location -pc_type lu
+  test:
+    suffix: proj_1
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -init_dm_view -adapt_dm_view -do_L2 -petscspace_order 2 -petscfe_default_quadrature_order 4 -dm_plex_hash_location -pc_type lu
+
 TEST*/
