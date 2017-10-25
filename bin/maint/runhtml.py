@@ -203,6 +203,7 @@ outfile.write('<th class="verticalTableHeader"><p>Debug</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Precision</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Complex</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Indices</p></th>');
+outfile.write('<th class="verticalTableHeader"><p>MPICH-ErrorCheck</p></th>');
 for package in packages:
  outfile.write('<th class="verticalTableHeader"><p>' + package + '</p></th>');
 outfile.write("<th>Stat</th><th>Time</th><th></th><th></th> <th>Warn</th><th>Err</th><th>Time</th><th></th><th></th> <th>Prob?</th><th>Time</th><td><a href=\"examples_full_"+sys.argv[1]+".log\">[all]</a></td></tr>\n");
@@ -273,6 +274,12 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
              outfile.write("<td class=\"have\">64</td>");
            else:
              outfile.write("<td class=\"centered\">32</td>");
+
+           #MPICH-ErrorCheck
+           if configline.find("enable-error-messages=all") > 0:
+             outfile.write("<td class=\"have\">Y</td>");
+           else:
+             outfile.write("<td class=\"centered\">N</td>");
 
            # Packages:
            for package in packages:
