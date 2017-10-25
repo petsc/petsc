@@ -228,11 +228,10 @@ PetscErrorCode pic_insert_DMPLEX_triangle(PetscInt dim)
   PetscFunctionBegin;
   
   /* Create the background cell DM */
-  if (dim == 2) {
-    PetscInt faces[3] = {1, 1, 1};
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_TRUE, faces, NULL, NULL, PETSC_FALSE, &celldm);CHKERRQ(ierr);
+  {
+    PetscInt faces[3] = {4, 2, 4};
+    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
   }
-  if (dim == 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
   
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);
