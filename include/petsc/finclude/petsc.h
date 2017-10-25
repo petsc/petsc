@@ -12,6 +12,7 @@
 #include "petsc/finclude/petscdm.h"
 #include "petsc/finclude/petscdmda.h"
 #include "petsc/finclude/petscdmplex.h"
+#include "petsc/finclude/petscdmlabel.h"
 #include "petsc/finclude/petscpc.h"
 #include "petsc/finclude/petscksp.h"
 #include "petsc/finclude/petscsnes.h"
