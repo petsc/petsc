@@ -200,12 +200,6 @@ PetscErrorCode FormStartingPoint(Vec X)
   x[0] = 1.19;
   x[1] = -1.86;
   x[2] = 1.08;
-
-/*
-  x[0] = 0.15;
-  x[1] = 0.008;
-  x[2] = 0.010;
-*/
   VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
