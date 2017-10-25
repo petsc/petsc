@@ -328,10 +328,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
               if (!flag) SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
             }
             if (loc2_fmt) {
-              PetscBool tk;
+              PetscBool tk,im;
               ierr = PetscStrcmp(loc1_fname,"tikz",&tk);CHKERRQ(ierr);
-              if (tk) {
-                ierr = PetscViewerDrawSetInfo(*viewer,NULL,loc2_fmt,0,0,0,0);CHKERRQ(ierr);
+              ierr = PetscStrcmp(loc1_fname,"image",&im);CHKERRQ(ierr);
+              if (tk || im) {
+                ierr = PetscViewerDrawSetInfo(*viewer,NULL,loc2_fmt,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
                 *loc2_fmt = 0;
               }
             }
