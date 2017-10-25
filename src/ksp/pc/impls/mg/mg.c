@@ -186,8 +186,8 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mglevels) {
     mgctype = mglevels[0]->cycles;
     /* changing the number of levels so free up the previous stuff */
@@ -347,25 +347,24 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode   ierr;
-  PetscInt         m,levels = 1,cycles;
+  PetscInt         m,levels,cycles;
   PetscBool        flg;
-  PC_MG            *mg        = (PC_MG*)pc->data;
+  PC_MG            *mg = (PC_MG*)pc->data;
   PC_MG_Levels     **mglevels;
   PCMGType         mgtype;
   PCMGCycleType    mgctype;
   PCMGGalerkinType gtype;
 
   PetscFunctionBegin;
+  levels = PetscMax(mg->nlevels,1);
   ierr = PetscOptionsHead(PetscOptionsObject,"Multigrid options");CHKERRQ(ierr);
-  if (!mg->levels) {
-    ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
-    if (!flg && pc->dm) {
-      ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
-      levels++;
-      mg->usedmfornumberoflevels = PETSC_TRUE;
-    }
-    ierr = PCMGSetLevels(pc,levels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
+  if (!flg && !mg->levels && pc->dm) {
+    ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
+    levels++;
+    mg->usedmfornumberoflevels = PETSC_TRUE;
   }
+  ierr = PCMGSetLevels(pc,levels,NULL);CHKERRQ(ierr);
   mglevels = mg->levels;
 
   mgctype = (PCMGCycleType) mglevels[0]->cycles;
@@ -402,7 +401,7 @@ PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
   if (flg) {
     PetscInt i;
     char     eventname[128];
-    if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+
     levels = mglevels[0]->levels;
     for (i=0; i<levels; i++) {
       sprintf(eventname,"MGSetup Level %d",(int)i);
@@ -542,7 +541,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
-  PetscInt       i,n = mglevels[0]->levels;
+  PetscInt       i,n;
   PC             cpc;
   PetscBool      dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
   Mat            dA,dB;
@@ -552,6 +551,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscBool      dAeqdB = PETSC_FALSE, needRestricts = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels with PCMGSetLevels() before setting up");
+  n = mglevels[0]->levels;
   /* FIX: Move this to PCSetFromOptions_MG? */
   if (mg->usedmfornumberoflevels) {
     PetscInt levels;
@@ -980,10 +981,9 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveEnum(pc,n,2);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
-
   for (i=0; i<levels; i++) mglevels[i]->cycles = n;
   PetscFunctionReturn(0);
 }
@@ -1123,10 +1123,9 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
-
   for (i=1; i<levels; i++) {
     PetscInt nc;
     ierr = KSPGetTolerances(mglevels[i]->smoothd,NULL,NULL,NULL,&nc);CHKERRQ(ierr);
@@ -1178,8 +1177,8 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {
@@ -1232,8 +1231,8 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
 
   for (i=1; i<levels; i++) {

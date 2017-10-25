@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse r
   Mat               M;
   const PetscScalar *vwork;
   PetscErrorCode    ierr;
-  PetscInt          nz,i,m,n,rstart,rend,lm,ln;
+  PetscInt          i,rstart,rend,nz;
   const PetscInt    *cwork;
   PetscBool         isSBAIJ;
 
@@ -23,29 +23,30 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse r
   }
   if (isSBAIJ) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot convert from SBAIJ matrix since cannot obtain entire rows of matrix");
 
+  if (reuse == MAT_REUSE_MATRIX) {
+    M = *newmat;
+  } else {
+    PetscInt m,n,lm,ln;
+    ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
+    if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
+    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
+    ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(M,mat,mat);CHKERRQ(ierr);
+    ierr = MatSetType(M,newtype);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(M,NULL);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(M,NULL);CHKERRQ(ierr);
+    ierr = MatSetUp(M);CHKERRQ(ierr);
 
-  ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
-
-  if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
-  ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(M,mat,mat);CHKERRQ(ierr);
-  ierr = MatSetType(M,newtype);CHKERRQ(ierr);
-
-  ierr = MatSeqDenseSetPreallocation(M,NULL);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(M,NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(M);CHKERRQ(ierr);
-  ierr = MatSetOption(M,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-
+    ierr = MatSetOption(M,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)M,MATSEQSBAIJ,&isSBAIJ);CHKERRQ(ierr);
-  if (!isSBAIJ) {
-    ierr = PetscObjectTypeCompare((PetscObject)M,MATMPISBAIJ,&isSBAIJ);CHKERRQ(ierr);
-  }
-  if (isSBAIJ) {
-    ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+    if (!isSBAIJ) {
+      ierr = PetscObjectTypeCompare((PetscObject)M,MATMPISBAIJ,&isSBAIJ);CHKERRQ(ierr);
+    }
+    if (isSBAIJ) {
+      ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+    }
   }
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);

@@ -4,6 +4,8 @@
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
+  Mat_SeqAIJ     *b;
+  PetscBool      roworiented;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       bs = A->rmap->bs,*ai = a->i,*aj = a->j,n = A->rmap->N/bs,i,j,k;
@@ -11,20 +13,30 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   MatScalar      *aa = a->a;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(n*bs,&rowlengths);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
-    for (j=0; j<bs; j++) {
-      rowlengths[i*bs+j] = bs*(ai[i+1] - ai[i]);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+    for (i=0; i<n; i++) {
+      maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
     }
+  } else {
+    ierr = PetscMalloc1(n*bs,&rowlengths);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
+      for (j=0; j<bs; j++) {
+        rowlengths[i*bs+j] = bs*(ai[i+1] - ai[i]);
+      }
+    }
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   }
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  b = (Mat_SeqAIJ*)B->data;
+  roworiented = b->roworiented;
 
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs*maxlen,&cols);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -45,8 +57,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  B->rmap->bs = A->rmap->bs;
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,roworiented);CHKERRQ(ierr);
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
