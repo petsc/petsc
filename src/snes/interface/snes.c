@@ -1157,6 +1157,8 @@ PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool 
    can be used in your ComputeJacobian() function to cause the Jacobian to be
    recomputed every second SNES iteration.
 
+   After the SNES solve is complete this will return the number of nonlinear iterations used.
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, iteration, number,
