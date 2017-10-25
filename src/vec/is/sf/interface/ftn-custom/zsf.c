@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,P
   const PetscSFNode *iremote;
 
   *ierr = PetscSFGetGraph(*sf,nroots,nleaves,&ilocal,&iremote);if (*ierr) return;
-  *ierr = F90Array1dCreate((void*)ilocal,MPIU_INT,1,*nroots, ailocal PETSC_F90_2PTR_PARAM(pilocal));
+  *ierr = F90Array1dCreate((void*)ilocal,MPIU_INT,1,*nleaves, ailocal PETSC_F90_2PTR_PARAM(pilocal));
   /* this is iffy, since airemote is actually an array of type(PetscSFNode) not an array of PetscInt; works with gfortran, needs testing with all other compilers */
   *ierr = F90Array1dCreate((void*)iremote,MPIU_INT,1,2*(*nleaves), airemote PETSC_F90_2PTR_PARAM(pilocal));
 }
