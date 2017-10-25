@@ -865,7 +865,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
     B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
     B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
     B->ops->matmult          = MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
-    B->ops->mattransposemult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
+    B->ops->transposematmult = MatTransposeMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2;
 #endif
   } else {
     B->ops->mult             = MatMult_SeqAIJMKL;
