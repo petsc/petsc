@@ -174,9 +174,11 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscReal     *x, *v0, *J, *invJ, detJ;
   PetscScalar   *elemMat;
   PetscInt       dim, Nf, field, totDim, cStart, cEnd, cell;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dmf), &size);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dmf, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(dmf, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
@@ -232,8 +234,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
               ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
               if (missing) {
                 ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-                if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
-                else                                     ++onz[key.j-rStart];
+                if ((size == 1) || ((key.k >= rStart) && (key.k < rEnd))) ++dnz[key.j-rStart];
+                else                                                      ++onz[key.j-rStart];
               }
             }
             ierr = PetscFree(cindices);CHKERRQ(ierr);
