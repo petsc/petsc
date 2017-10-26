@@ -1703,6 +1703,11 @@ PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
    PETSc interface to STRUMPACK
 */
 #ifdef PETSC_HAVE_STRUMPACK
+/*E
+    MatSTRUMPACKReordering - sparsity reducing ordering to be used in STRUMPACK
+
+    Level: intermediate
+E*/
 typedef enum {MAT_STRUMPACK_NATURAL=0,
               MAT_STRUMPACK_METIS=1,
               MAT_STRUMPACK_PARMETIS=2,

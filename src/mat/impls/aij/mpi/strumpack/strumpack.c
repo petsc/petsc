@@ -56,7 +56,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReor
 }
 #undef __FUNCT__
 #define __FUNCT__ "MatSTRUMPACKSetReordering"
-/*
+/*@
   MatSTRUMPACKSetReordering - Set STRUMPACK fill-reducing reordering
 
    Input Parameters:
@@ -73,7 +73,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReor
 .      STRUMPACK manual
 
 .seealso: MatGetFactor()
-*/
+@*/
 PetscErrorCode MatSTRUMPACKSetReordering(Mat F,MatSTRUMPACKReordering reordering)
 {
   PetscErrorCode ierr;
