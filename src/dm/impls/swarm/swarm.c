@@ -33,7 +33,9 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
    Level: beginner
 
    Notes:
+ 
    The field with name fieldname must be defined as having a data type of PetscScalar.
+ 
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
    Mutiple calls to DMSwarmVectorDefineField() are permitted.
 

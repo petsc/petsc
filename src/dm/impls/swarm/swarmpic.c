@@ -365,16 +365,19 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
 +  dm - the DMSwarm
 .  layout_type - method used to fill each cell with the cell DM
 -  fill_param - parameter controlling how many points per cell are added (the meaning of this parameter is dependent on the layout type)
- 
- Level: beginner
- 
- Notes:
- * The insert method will reset any previous defined points within the DMSwarm.
- * When using a DMDA both 2D and 3D are supported for all layout types provided you are using DMDA_ELEMENT_Q1.
- * When using a DMPLEX the following case are supported
- (i)   DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
- (ii)  DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
- (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
+
+   Level: beginner
+
+   Notes:
+
+   The insert method will reset any previous defined points within the DMSwarm.
+
+   When using a DMDA both 2D and 3D are supported for all layout types provided you are using DMDA_ELEMENT_Q1.
+
+   When using a DMPLEX the following case are supported:
+   (i  ) DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
+   (ii ) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
+   (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
 
 .seealso: DMSwarmPICLayoutType, DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/
@@ -417,11 +420,12 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,Pets
  Notes:
  The method will reset any previous defined points within the DMSwarm.
  Only supported for DMPLEX. If you are using a DMDA it is recommended to either use
- DMSwarmInsertPointsUsingCellDM(), or extract and set the coordinates yourself using
- PetscReal *coor;
- DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
- // user code to define the coordinates here
- DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+ DMSwarmInsertPointsUsingCellDM(), or extract and set the coordinates yourself the following code
+ 
+$    PetscReal *coor;
+$    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+$    // user code to define the coordinates here
+$    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 
 .seealso: DMSwarmSetCellDM(), DMSwarmInsertPointsUsingCellDM()
 @*/
@@ -471,11 +475,15 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
    Level: beginner
  
    Notes:
-   - If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec. 
+ 
+   If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec.
      The user is responsible for destroying both the array and the individual Vec objects.
-   - Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
-   - Only swarm fields of block size = 1 can currently be projected.
-   - The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
+ 
+   Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
+ 
+   Only swarm fields of block size = 1 can currently be projected.
+ 
+   The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
  
 .seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/
