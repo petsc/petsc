@@ -8,9 +8,10 @@ static char help[] = "Tests projection with DMSwarm.\n";
 #include <petscksp.h>
 
 typedef struct {
-  PetscInt dim;                        /* The topological mesh dimension */
-  char     mshNam[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
-  PetscInt nbrVerEdge;                 /* Number of vertices per edge if unit square/cube generated */
+  PetscInt  dim;                        /* The topological mesh dimension */
+  PetscBool simplex;                    /* Flag for simplices or tensor cells */
+  char      mshNam[PETSC_MAX_PATH_LEN]; /* Name of the mesh filename if any */
+  PetscInt  nbrVerEdge;                 /* Number of vertices per edge if unit square/cube generated */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -18,13 +19,15 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim = 2;
+  options->dim     = 2;
+  options->simplex = PETSC_TRUE;
   ierr = PetscStrcpy(options->mshNam, "");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Adaptation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex19.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-msh", "Name of the mesh filename if any", "ex19.c", options->mshNam, options->mshNam, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-nbrVerEdge", "Number of vertices per edge if unit square/cube generated", "ex19.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "The flag for simplices or tensor cells", "ex1.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-msh", "Name of the mesh filename if any", "ex1.c", options->mshNam, options->mshNam, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nbrVerEdge", "Number of vertices per edge if unit square/cube generated", "ex1.c", options->nbrVerEdge, &options->nbrVerEdge, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -41,7 +44,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
     PetscInt faces[3];
 
     faces[0] = user->nbrVerEdge-1; faces[1] = user->nbrVerEdge-1; faces[2] = user->nbrVerEdge-1;
-    ierr = DMPlexCreateBoxMesh(comm, user->dim, PETSC_TRUE, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, user->simplex, faces, NULL, NULL, NULL, PETSC_TRUE, dm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->mshNam, PETSC_TRUE, dm);CHKERRQ(ierr);
     ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
@@ -89,7 +92,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
@@ -195,5 +198,17 @@ int main (int argc, char * argv[]) {
     suffix: proj_0
     requires: pragmatic
     args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_order 1 -petscfe_default_quadrature_order 1 -pc_type lu
+  test:
+    suffix: proj_1
+    requires: pragmatic
+    args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_order 1 -petscfe_default_quadrature_order 1 -pc_type lu
+  test:
+    suffix: proj_2
+    requires: pragmatic
+    args: -dim 3 -nbrVerEdge 3 -dm_view -sw_view -petscspace_order 1 -petscfe_default_quadrature_order 1 -pc_type lu
+  test:
+    suffix: proj_3
+    requires: pragmatic
+    args: -dim 2 -simplex 0 -nbrVerEdge 3 -dm_plex_separate_marker 0 -dm_view -sw_view -petscspace_order 1 -petscfe_default_quadrature_order 1 -pc_type lu
 
 TEST*/
