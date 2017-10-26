@@ -27,7 +27,8 @@ class generateExamples(Petsc):
     self.single_ex=single_ex
 
     # Set locations to handle movement
-    if not self.inInstallDir(thisscriptdir):
+    self.inInstallDir=self.getInInstallDir(thisscriptdir)
+    if not self.inInstallDir:
       self.arch_dir=os.path.join(self.petsc_dir,self.petsc_arch)
       self.srcdir=os.path.join(self.petsc_dir,'src')
     else:
@@ -85,7 +86,7 @@ class generateExamples(Petsc):
     """
     return os.path.join('src',os.path.relpath(rdir,self.srcdir))
 
-  def inInstallDir(self,thisscriptdir):
+  def getInInstallDir(self,thisscriptdir):
     """
     When petsc is installed then this file in installed in:
          <PREFIX>/share/petsc/examples/config/gmakegentest.py

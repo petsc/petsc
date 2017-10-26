@@ -171,7 +171,7 @@ class Installer(script.Script):
       elif line.startswith('CONFIGDIR'):
         newlines+='CONFIGDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples/config\n'
         newlines+='EXAMPLESDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples\n'
-      elif line.startswith('$(generatedtest)'):
+      elif line.startswith('$(generatedtest)') and 'petscvariables' in line:
         newlines+='all: test\n\n'+line+'\n'
       elif line.startswith('$(TESTDIR)/'):
         newlines+=re.sub(' %.',' $(EXAMPLESDIR)/%.',line)+'\n'
