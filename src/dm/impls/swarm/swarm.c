@@ -173,7 +173,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscInt       locRows, rStart, rEnd;
   PetscReal     *x, *v0, *J, *invJ, detJ;
   PetscScalar   *elemMat;
-  PetscInt       dim, Nf, field, totDim, cStart, cEnd, cell;
+  PetscInt       dim, Nf, field, totDim, cStart, cEnd, cell, maxC = 0;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -188,7 +188,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = DMGetDefaultGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(totDim, &elemMat);CHKERRQ(ierr);
   ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(mass, &locRows, NULL);CHKERRQ(ierr);
@@ -218,6 +217,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
       ierr = DMSwarmSortGetNumberOfPointsPerCell(dmc, cell, &Np);CHKERRQ(ierr);
       if (Np != Nq) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not all closure points located %D != %D", Np, Nq);
+      ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
+      maxC = PetscMax(maxC, numCIndices);
       /* Update preallocation info */
       {
         PetscHashJKKey  key;
@@ -227,7 +228,6 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
           key.j = findices[i];
           if (key.j >= 0) {
             /* Get indices for coarse elements */
-            ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
             for (c = 0; c < numCIndices; ++c) {
               key.k = cindices[c];
               if (key.k < 0) continue;
@@ -238,9 +238,9 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
                 else                                                      ++onz[key.j-rStart];
               }
             }
-            ierr = PetscFree(cindices);CHKERRQ(ierr);
           }
         }
+        ierr = PetscFree(cindices);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
     }
@@ -249,6 +249,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxC, &elemMat);CHKERRQ(ierr);
   for (field = 0; field < Nf; ++field) {
     PetscObject      obj;
     PetscQuadrature  quad;
