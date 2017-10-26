@@ -369,8 +369,13 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
  Level: beginner
  
  Notes:
- The insert method will reset any previous defined points within the DMSwarm
- 
+ * The insert method will reset any previous defined points within the DMSwarm.
+ * When using a DMDA both 2D and 3D are supported for all layout types provided you are using DMDA_ELEMENT_Q1.
+ * When using a DMPLEX the following case are supported
+ (i)   DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
+ (ii)  DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
+ (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
+
 .seealso: DMSwarmPICLayoutType, DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayoutType layout_type,PetscInt fill_param)
@@ -411,7 +416,12 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,Pets
 
  Notes:
  The method will reset any previous defined points within the DMSwarm.
- Only supported for DMPLEX
+ Only supported for DMPLEX. If you are using a DMDA it is recommended to either use
+ DMSwarmInsertPointsUsingCellDM(), or extract and set the coordinates yourself using
+ PetscReal *coor;
+ DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+ // user code to define the coordinates here
+ DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 
 .seealso: DMSwarmSetCellDM(), DMSwarmInsertPointsUsingCellDM()
 @*/

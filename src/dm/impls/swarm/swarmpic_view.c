@@ -343,7 +343,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
    Level: beginner
 
    Notes:
-   Only fields registered with data type PETSC_REAL can be written into the file
+   Only fields registered with data type PETSC_DOUBLE or PETSC_INT can be written into the file
  
 .seealso: DMSwarmViewXDMF()
 @*/
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
    Level: beginner
 
    Notes:
-   Only fields registered with data type PETSC_REAL will be written into the file
+   Only fields user registered with data type PETSC_DOUBLE or PETSC_INT will be written into the file
 
 .seealso: DMSwarmViewFieldsXDMF()
 @*/
