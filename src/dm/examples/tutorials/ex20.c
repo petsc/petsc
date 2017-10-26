@@ -223,7 +223,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
 {
   PetscErrorCode ierr;
   DM celldm,swarm,distributedMesh = NULL;
-  const char *fieldnames[] = {"viscosity"};
+  const char *fieldnames[] = {"viscosity","DMSwarm_rank"};
   
   PetscFunctionBegin;
   
@@ -286,7 +286,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
   /* Insert swarm coordinates cell-wise */
   ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_GAUSS,3);CHKERRQ(ierr);
   
-  ierr = DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",1,fieldnames);CHKERRQ(ierr);
+  ierr = DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",2,fieldnames);CHKERRQ(ierr);
   ierr = DMView(celldm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMView(swarm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMDestroy(&celldm);CHKERRQ(ierr);
