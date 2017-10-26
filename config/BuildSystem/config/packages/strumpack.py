@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '63a9e1072de6e757c2ffad1f874115d7c83870d1'
+    self.gitcommit        = 'v2.1.0'
     self.download         = ['git://https://github.com/pghysels/STRUMPACK']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
