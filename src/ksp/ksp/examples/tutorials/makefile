@@ -957,12 +957,12 @@ runex10_zeropivot:
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
 runex10_zeropivot_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type gmres -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
 runex10_zeropivot_3:
-	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason > ex10.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_type gmres -ksp_pc_type bjacobi > ex10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_zeropivot_3.out ex10.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp

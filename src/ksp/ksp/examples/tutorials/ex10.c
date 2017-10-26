@@ -45,7 +45,7 @@ int main(int argc,char **args)
   KSP            ksp;             /* linear solver context */
   Mat            A;               /* matrix */
   Vec            x,b,u;           /* approx solution, RHS, exact solution */
-  PetscViewer    fd;              /* viewer */
+  PetscViewer    viewer;          /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE,constantnullspace = PETSC_FALSE;
@@ -103,14 +103,14 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
   if (nearnulldim) {
     MatNullSpace nullsp;
     Vec          *nullvecs;
@@ -118,7 +118,7 @@ int main(int argc,char **args)
     ierr = PetscMalloc1(nearnulldim,&nullvecs);CHKERRQ(ierr);
     for (i=0; i<nearnulldim; i++) {
       ierr = VecCreate(PETSC_COMM_WORLD,&nullvecs[i]);CHKERRQ(ierr);
-      ierr = VecLoad(nullvecs[i],fd);CHKERRQ(ierr);
+      ierr = VecLoad(nullvecs[i],viewer);CHKERRQ(ierr);
     }
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,nearnulldim,nullvecs,&nullsp);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(A,nullsp);CHKERRQ(ierr);
@@ -145,39 +145,29 @@ int main(int argc,char **args)
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(b,one);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-      ierr = VecLoad(b,fd);CHKERRQ(ierr);
+      ierr = VecLoad(b,viewer);CHKERRQ(ierr);
     }
   } else {   /* rhs is stored in the same file as matrix */
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  /* Make A singular for testing zero-pivot of ilu factorization        */
-  /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_type <shift_type> */
+  /* Make A singular for testing zero-pivot of ilu factorization */
+  /* Example: ./ex10 -f0 <datafile> -test_zeropivot -pc_factor_shift_type <shift_type> */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-test_zeropivot", &flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+  if (flg) { /* set a row as zeros */
     PetscInt          row=0;
-    PetscBool         flg1=PETSC_FALSE;
-    PetscScalar       zero=0.0;
-
-    ierr = PetscOptionsGetBool(NULL,NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
-    if (flg1) {   /* set a row as zeros */
-      ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatZeroRows(A,1,&row,0.0,NULL,NULL);CHKERRQ(ierr);
-    } else if (!rank) {
-      /* set (row,row) entry as zero */
-      ierr = MatSetValues(A,1,&row,1,&row,&zero,INSERT_VALUES);CHKERRQ(ierr); 
-    }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatZeroRows(A,1,&row,0.0,NULL,NULL);CHKERRQ(ierr);
   }
 
   /* Check whether A is symmetric, then set A->symmetric option */
+  flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL, "-check_symmetry", &flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatIsSymmetric(A,0.0,&isSymmetric);CHKERRQ(ierr);
@@ -220,10 +210,9 @@ int main(int argc,char **args)
   ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   if (initialguessfile) {
-    PetscViewer viewer2;
-    ierr         = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
-    ierr         = VecLoad(x,viewer2);CHKERRQ(ierr);
-    ierr         = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
+    ierr         = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr         = VecLoad(x,viewer);CHKERRQ(ierr);
+    ierr         = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     initialguess = PETSC_TRUE;
   } else if (initialguess) {
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
@@ -245,8 +234,6 @@ int main(int argc,char **args)
     ierr = MatGetRowMaxAbs(A, max, NULL);CHKERRQ(ierr);
     ierr = MatGetRowMinAbs(A, min, NULL);CHKERRQ(ierr);
     {
-      PetscViewer viewer;
-
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "max.data", &viewer);CHKERRQ(ierr);
       ierr = VecView(max, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -317,7 +304,7 @@ int main(int argc,char **args)
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
-     Solve linear system; 
+     Solve linear system;
     */
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
@@ -373,7 +360,6 @@ int main(int argc,char **args)
     */
     if (table) {
       char        *matrixname,kspinfo[120];
-      PetscViewer viewer;
 
       /*
        Open a string viewer; then write info to it.
@@ -399,7 +385,6 @@ int main(int argc,char **args)
     }
     ierr = PetscOptionsGetString(NULL,NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscViewer viewer;
       Vec         xstar;
       PetscReal   norm;
 
@@ -413,8 +398,6 @@ int main(int argc,char **args)
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     if (outputSoln) {
-      PetscViewer viewer;
-
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"solution.petsc",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
       ierr = VecView(x, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -448,9 +431,9 @@ int main(int argc,char **args)
 
 
 /*TEST
-   
+
    build:
-      requires: !complex 
+      requires: !complex
 
    testset:
       suffix: 1
@@ -470,31 +453,31 @@ int main(int argc,char **args)
          suffix: 2
       test:
          suffix: 3
-         args: -pc_type asm 
-      
+         args: -pc_type asm
+
    testset:
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -ksp_type bicg
       test:
          suffix: 4
-         args: -pc_type lu 
+         args: -pc_type lu
       test:
          suffix: 5
-   
+
    testset:
       suffix: 6
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/fem1
       args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always
-   
+
    testset:
       suffix: 7
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium 
-      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -viewer_binary_skip_info -mat_type seqbaij
       args: -matload_block_size {{2 3 4 5 6 7 8}separate output}
-      args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always 
+      args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always
       args: -ksp_rtol 1.0e-15 -ksp_monitor_short
       test:
          suffix: a
@@ -508,21 +491,21 @@ int main(int argc,char **args)
    testset:
       suffix: 7_d
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium 
-      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -viewer_binary_skip_info -mat_type seqbaij
       args: -matload_block_size {{2 3 4 5 6 7 8}shared output}
       args: -ksp_type preonly -pc_type lu
-   
+
    testset:
       suffix: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium  
+      args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
-   
+
    testset:
       suffix: 9
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -f0 ${DATAFILESPATH}/matrices/medium
       args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
       test:
          suffix: a
@@ -533,7 +516,7 @@ int main(int argc,char **args)
       test:
          suffix: c
          nsize: 2
-         args: -mat_type mpibaij 
+         args: -mat_type mpibaij
       test:
          suffix: d
          nsize: 2
@@ -541,48 +524,48 @@ int main(int argc,char **args)
       test:
          suffix: e
          nsize: 3
-         args: -mat_type mpibaij 
+         args: -mat_type mpibaij
       test:
          suffix: f
          nsize: 3
          args: -mat_type mpibaij -trans
-   
+
 
    testset:
       suffix: 10
       nsize: 2
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short
-   
+
    testset:
       TODO: Need to determine goal of this test
       suffix: 11
       nsize: 2
       args: -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz
-   
+
    testset:
       suffix: 12
       requires: matlab
       args: -pc_type lu -pc_factor_mat_solver_package matlab -f0 ${DATAFILESPATH}/matrices/arco1
-   
+
    testset:
       suffix: 13
       requires: lusol
       args: -f0 ${DATAFILESPATH}/matrices/arco1
       args: -mat_type lusol -pc_type lu
-   
+
    testset:
       nsize: 3
       args: -f0 ${DATAFILESPATH}/matrices/medium
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       test:
          suffix: 14
-         requires: spai 
-         args: -pc_type spai 
+         requires: spai
+         args: -pc_type spai
       test:
          suffix: 15
          requires: hypre
-         args: -pc_type hypre -pc_hypre_type pilut 
+         args: -pc_type hypre -pc_hypre_type pilut
       test:
          suffix: 16
          requires: hypre
@@ -590,18 +573,18 @@ int main(int argc,char **args)
       test:
          suffix: 17
          requires: hypre
-         args: -pc_type hypre -pc_hypre_type boomeramg 
-   
+         args: -pc_type hypre -pc_hypre_type boomeramg
+
    testset:
       suffix: 19
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp_type cg -pc_type icc 
+      args: -ksp_type cg -pc_type icc
       args: -pc_factor_levels {{0 2 4}separate output}
       test:
       test:
          args: -mat_type seqsbaij
-   
+
 
    testset:
       suffix: ILU
@@ -612,41 +595,41 @@ int main(int argc,char **args)
       test:
          # This is tested against regular ILU (used to be denoted ILUBAIJ)
          args: -mat_type baij
-   
+
    testset:
       suffix: aijcusparse
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) cusparse
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu
-   
+
    testset:
       TODO: No output file. Need to determine if deprecated
       suffix: asm_viennacl
       nsize: 2
       requires: viennacl
       args: -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE}
-   
+
    testset:
       nsize: 2
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) hypre
-      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg 
+      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: boomeramg_euclid
-         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 
+         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01
          TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_euclid_bj
-         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj 
+         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj
          TODO: Need to determine if deprecated
       test:
          suffix: boomeramg_parasails
-         args: -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 
+         args: -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2
       test:
          suffix: boomeramg_pilut
-         args: -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 
+         args: -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2
       test:
          suffix: boomeramg_schwarz
-         args: -pc_hypre_boomeramg_smooth_type Schwarz-smoothers 
-      
+         args: -pc_hypre_boomeramg_smooth_type Schwarz-smoothers
+
    testset:
       suffix: cg_singlereduction
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
@@ -655,7 +638,7 @@ int main(int argc,char **args)
       test:
       test:
          args: -ksp_cg_single_reduction
-      
+
    testset:
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz
@@ -666,11 +649,11 @@ int main(int argc,char **args)
       test:
          suffix: lcd
          args: -ksp_type lcd
-   
+
    testset:
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
-      args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info 
+      args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info
       test:
          suffix: seqaijcrl
          args: -mat_type seqaijcrl
@@ -682,7 +665,7 @@ int main(int argc,char **args)
       nsize: 2
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
-      args: -ksp_monitor_short -ksp_view 
+      args: -ksp_monitor_short -ksp_view
       # Different output files
       test:
          suffix: mpiaijcrl
@@ -690,7 +673,7 @@ int main(int argc,char **args)
       test:
          suffix: mpiaijperm
          args: -mat_type mpiaijperm
-   
+
    testset:
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
@@ -715,7 +698,7 @@ int main(int argc,char **args)
          args: -mat_type aij
       test:
          args: -mat_type aij -matload_spd
-      
+
    testset:
       # The output file here is the same as mumps
       suffix: mumps_lu
@@ -739,7 +722,7 @@ int main(int argc,char **args)
          nsize: 2
          args: -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2
          TODO: Need to determine if deprecated
-      
+
    testset:
       # The output file here is the same as mumps
       suffix: mumps_redundant
@@ -747,14 +730,14 @@ int main(int argc,char **args)
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
-   
+
    testset:
       suffix: pastix_cholesky
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       output_file: output/ex10_mumps.out
       nsize: {{1 2}}
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
-      
+
    testset:
       suffix: pastix_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
@@ -765,41 +748,41 @@ int main(int argc,char **args)
       test:
          nsize: 2
          args: -mat_type mpiaij
-   
+
    testset:
       suffix: pastix_redundant
       output_file: output/ex10_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
-   
-     
+
+
    testset:
       suffix: superlu_dist_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
       output_file: output/ex10_mumps.out
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
-      
+
    testset:
       suffix: superlu_dist_redundant
       nsize: 8
       output_file: output/ex10_mumps_redundant.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
-   
+
    testset:
       suffix: superlu_lu
       output_file: output/ex10_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2
-   
+
    testset:
       suffix: umfpack
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) suitesparse
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package umfpack -num_numfac 2 -num_rhs 2
-   
-     
+
+
    testset:
       suffix: zeropivot
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
