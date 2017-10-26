@@ -599,7 +599,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
     }
   }
 
-  if (!draw->savefilename ){ierr = PetscDrawSetSave(draw,"");CHKERRQ(ierr);}
+  if (!draw->savefilename) {ierr = PetscDrawSetSave(draw,draw->title);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

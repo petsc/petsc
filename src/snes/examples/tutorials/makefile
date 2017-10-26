@@ -1005,7 +1005,7 @@ runex19_draw:
           ${RM} ex19_draw.tmp
 
 runex19_drawports:
-	-@${MPIEXEC} -n 1 ./ex19 -draw_ports -snes_monitor_solution draw  -da_refine 1 > ex19_draw.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_solution draw::draw_ports  -da_refine 1 > ex19_draw.tmp 2>&1; \
           ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_drawports, diffs above\n=========================================\n"; \
           ${RM} ex19_draw.tmp
 
