@@ -538,10 +538,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_bbox_recv,(void**)&recv_bbox);CHKERRQ(ierr);
+  /*  Wrong, should not be using PETSC_COMM_WORLD */
   for (p=0; p<n_bbox_recv; p++) {
-    PetscPrintf(PETSC_COMM_SELF,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
-           (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
+           (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]);CHKERRQ(ierr);
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   /* of course this is stupid as this "generic" function should have a better way to know what the coordinates are called */
   ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
   for (pk=0; pk<n_bbox_recv; pk++) {

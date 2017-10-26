@@ -128,9 +128,15 @@ PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
   PetscFunctionReturn(0);
 }
 
+/*
+    This code is horrible, who let it get into master.
+
+    Should be printing to a viewer, should not be using PETSC_COMM_WORLD
+
+*/
 PetscErrorCode DataExView(DataEx d)
 {
-  PetscMPIInt p;
+  PetscMPIInt    p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -142,20 +148,23 @@ PetscErrorCode DataExView(DataEx d)
 
   if (d->topology_status == DEOBJECT_FINALIZED) {
     ierr = PetscPrintf( PETSC_COMM_WORLD, "  Topology:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] neighbours: %d \n", (int)d->rank, (int)d->n_neighbour_procs );CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", (int)d->rank, (int)d->n_neighbour_procs );CHKERRQ(ierr);
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d]   neighbour[%D] = %d \n", (int)d->rank, p, (int)d->neighbour_procs[p]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d]   neighbour[%D] = %d \n", (int)d->rank, p, (int)d->neighbour_procs[p]);CHKERRQ(ierr);
     }
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   }
+
   if (d->message_lengths_status == DEOBJECT_FINALIZED) {
     ierr = PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] atomic size: %ld \n", (int)d->rank, (long int)d->unit_message_size );CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] atomic size: %ld \n", (int)d->rank, (long int)d->unit_message_size );CHKERRQ(ierr);
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] >>>>> ( %D units :: tag = %d ) >>>>> [%d] \n", (int)d->rank, d->messages_to_be_sent[p], d->send_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %D units :: tag = %d ) >>>>> [%d] \n", (int)d->rank, d->messages_to_be_sent[p], d->send_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
     }
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] <<<<< ( %D units :: tag = %d ) <<<<< [%d] \n", (int)d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %D units :: tag = %d ) <<<<< [%d] \n", (int)d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
     }
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   }
   if (d->packer_status == DEOBJECT_FINALIZED) {}
   if (d->communication_status == DEOBJECT_FINALIZED) {}

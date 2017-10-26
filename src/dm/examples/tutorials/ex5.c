@@ -66,3 +66,17 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      requires: x
+      output_file: output/ex5_1.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: x
+
+TEST*/

@@ -11,7 +11,6 @@ and from Fortran to C\n\n";
 /*T
    Concepts: vectors^fortran-c;
    Processors: n
-   depends: ex7f.F
 T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

@@ -1230,7 +1230,7 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscBool      iascii,ibinary,ishdf5,isvtk,isdraw;
   PetscErrorCode ierr;
 
@@ -1244,17 +1244,14 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = DataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT);CHKERRQ(ierr);
-  } else if (ibinary) {
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
-  } else if (ishdf5) {
+  } else if (ibinary) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
 #if defined(PETSC_HAVE_HDF5)
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO HDF5 support");
+  else if (ishdf5) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO HDF5 support");
 #else
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"HDF5 not supported. Please reconfigure using --download-hdf5");
+  else if (ishdf5) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"HDF5 not supported. Please reconfigure using --download-hdf5");
 #endif
-  } else if (isvtk) {
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
-  } else if (isdraw) {
+  else if (isvtk) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO VTK support");
+  else if (isdraw) {
     ierr = DMSwarmView_Draw(dm, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

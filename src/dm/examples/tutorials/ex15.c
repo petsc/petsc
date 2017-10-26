@@ -247,7 +247,15 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
 /*TEST
+
+   test:
+      output_file: output/ex15_1.out
+
+   test:
+      suffix: 2
+      nsize: 12
 
    test:
       suffix: 3

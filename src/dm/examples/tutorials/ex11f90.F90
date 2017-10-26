@@ -148,3 +148,12 @@
       CALL PetscFinalize(ierr)
       stop
       END PROGRAM
+
+!
+!/*TEST
+!
+!     test:
+!       filter: grep -v "Vec Object"
+!       requires: !complex
+
+!TEST*/
