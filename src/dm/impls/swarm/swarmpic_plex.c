@@ -259,8 +259,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dmc,PetscInt npoints)
 {
   PetscErrorCode ierr;
-  const PetscInt dim = 2;
-  PetscInt ii,jj,q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k;
+  PetscInt dim;
+  PetscInt ii,jj,q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,nfaces;
   PetscReal *xi,ds,ds2;
   PetscReal **basis;
   Vec coorlocal;
@@ -268,8 +268,17 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
   PetscScalar *elcoor = NULL;
   PetscReal *swarm_coor;
   PetscInt *swarm_cellid;
-
+  PetscBool is_simplex;
+  
   PetscFunctionBegin;
+  ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
+  if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
+  is_simplex = PETSC_FALSE;
+  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
+  if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
+  if (!is_simplex) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only the simplex is supported");
+
   ierr = PetscMalloc1(dim*npoints*npoints,&xi);CHKERRQ(ierr);
   pcnt = 0;
   ds = 1.0/((PetscReal)(npoints-1));
