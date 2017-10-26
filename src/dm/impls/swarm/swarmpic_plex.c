@@ -3,6 +3,9 @@
 #include <petscdmswarm.h>
 #include "data_bucket.h"
 
+
+PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*xi);
+
 static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)
 {
   const PetscInt Nc = 1;
@@ -349,7 +352,27 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwa
       ierr = private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm,celldm,layout_param);CHKERRQ(ierr);
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Gauss layout not supported for PLEX");
+    {
+      PetscInt npoints,npoints1,ps,pe,nfaces;
+      const PetscReal *xi;
+      PetscBool is_simplex;
+      PetscQuadrature quadrature;
+      
+      is_simplex = PETSC_FALSE;
+      ierr = DMPlexGetHeightStratum(celldm,0,&ps,&pe);CHKERRQ(ierr);
+      ierr = DMPlexGetConeSize(celldm, ps, &nfaces);CHKERRQ(ierr);
+      if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
+
+      npoints1 = layout_param;
+      if (is_simplex) {
+        ierr = PetscDTGaussJacobiQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+      } else {
+        ierr = PetscDTGaussTensorQuadrature(dim,1,npoints1,-1.0,1.0,&quadrature);CHKERRQ(ierr);
+      }
+      ierr = PetscQuadratureGetData(quadrature,NULL,NULL,&npoints,&xi,NULL);CHKERRQ(ierr);
+      ierr = private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,(PetscReal*)xi);CHKERRQ(ierr);
+      ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
+    }
       break;
     case DMSWARMPIC_LAYOUT_SUBDIVISION:
       ierr = private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(dm,celldm,layout_param);CHKERRQ(ierr);
@@ -632,7 +655,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   PetscInt dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
   PetscFE fe;
   PetscQuadrature quadrature;
-  PetscReal *B;
+  PetscReal *B,*xiq;
   Vec coorlocal;
   PetscSection coordSection;
   PetscScalar *elcoor = NULL;
@@ -683,7 +706,9 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");
 
   ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xi,NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints*dim,&xiq);CHKERRQ(ierr);
+  ierr = PetscMemcpy(xiq,xi,npoints*dim*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xiq,NULL);CHKERRQ(ierr);
   ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
