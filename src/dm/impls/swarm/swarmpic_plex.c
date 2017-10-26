@@ -558,3 +558,39 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt pro
   
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,PetscInt npoints,PetscReal xi[])
+{
+  PetscBool is_simplex,is_tensorcell;
+  PetscErrorCode ierr;
+  PetscInt dim,nfaces,ps,pe;
+  
+  ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
+  
+  is_simplex = PETSC_FALSE;
+  is_tensorcell = PETSC_FALSE;
+  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
+
+  if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
+  
+  switch (dim) {
+    case 2:
+      if (nfaces == 4) { is_tensorcell = PETSC_TRUE; }
+      break;
+    case 3:
+      if (nfaces == 6) { is_tensorcell = PETSC_TRUE; }
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for 2D, 3D");
+      break;
+  }
+
+  if (is_simplex) {
+    
+  } else if (is_tensorcell) {
+    
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");
+  
+  PetscFunctionReturn(0);
+}

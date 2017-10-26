@@ -393,13 +393,47 @@ PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayou
   PetscFunctionReturn(0);
 }
 
-/*
-PETSC_EXTERN PetscErrorCode DMSwarmAddPointCoordinatesCellWise(DM dm,PetscInt cell,PetscInt npoints,PetscReal xi[],PetscBool proximity_initialization)
+
+extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*);
+
+/*@C
+   DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
+
+   Not collective
+
+   Input parameters:
++  dm - the DMSwarm
+.  celldm - the cell DM
+.  npoints - the number of points to insert in each cell
+-  xi - the coordinates (defined in the local coordinate system for each cell) to insert
+
+ Level: beginner
+
+ Notes:
+ The method will reset any previous defined points within the DMSwarm.
+ Only supported for DMPLEX
+
+.seealso: DMSwarmSetCellDM(), DMSwarmInsertPointsUsingCellDM()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt npoints,PetscReal xi[])
 {
+  PetscErrorCode ierr;
+  DM celldm;
+  PetscBool isDA,isPLEX;
+  
   PetscFunctionBegin;
+  DMSWARMPICVALID(dm);
+  ierr = DMSwarmGetCellDM(dm,&celldm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX);CHKERRQ(ierr);
+  if (isDA) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
+  else if (isPLEX) {
+    ierr = private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,xi);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+  
   PetscFunctionReturn(0);
 }
-*/
+
 
 /* Field projection API */
 extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
