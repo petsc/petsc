@@ -178,7 +178,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
       swarm_cellid[pcnt] = e;
       pcnt++;
     }
-    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,e,NULL,&elcoor);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
   }
   ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
@@ -563,8 +563,17 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
 {
   PetscBool is_simplex,is_tensorcell;
   PetscErrorCode ierr;
-  PetscInt dim,nfaces,ps,pe;
+  PetscInt dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
+  PetscFE fe;
+  PetscQuadrature quadrature;
+  PetscReal *B;
+  Vec coorlocal;
+  PetscSection coordSection;
+  PetscScalar *elcoor = NULL;
+  PetscReal *swarm_coor;
+  PetscInt *swarm_cellid;
   
+  PetscFunctionBegin;
   ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
   
   is_simplex = PETSC_FALSE;
@@ -586,11 +595,67 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
       break;
   }
 
+  /* check points provided fail inside the reference cell */
   if (is_simplex) {
-    
+    for (p=0; p<npoints; p++) {
+      PetscReal sum;
+      for (d=0; d<dim; d++) {
+        if (xi[dim*p+d] < -1.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+      }
+      sum = 0.0;
+      for (d=0; d<dim; d++) {
+        sum += xi[dim*p+d];
+      }
+      if (sum > 0.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+    }
   } else if (is_tensorcell) {
-    
+    for (p=0; p<npoints; p++) {
+      for (d=0; d<dim; d++) {
+        if (PetscAbsReal(xi[dim*p+d]) > 1.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the tensor domain [-1,1]^d");
+      }
+    }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");
+
+  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xi,NULL);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dmc, dim, 1, is_simplex, NULL, 0, &fe);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
+  ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, &B, NULL, NULL);CHKERRQ(ierr);
+
+  /* for each cell, interpolate coordaintes and insert the interpolated points coordinates into swarm */
+  /* 0->cell, 1->edge, 2->vert */
+  ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
+  nel = pe - ps;
   
+  ierr = DMSwarmSetLocalSizes(dm,npoints*nel,-1);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  
+  ierr = DMGetCoordinatesLocal(dmc,&coorlocal);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmc,&coordSection);CHKERRQ(ierr);
+  
+  pcnt = 0;
+  for (e=0; e<nel; e++) {
+    ierr = DMPlexVecGetClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+    
+    for (p=0; p<npoints; p++) {
+      for (d=0; d<dim; d++) {
+        swarm_coor[dim*pcnt+d] = 0.0;
+        for (k=0; k<nbasis; k++) {
+          swarm_coor[dim*pcnt+d] += B[p*nbasis + k] * PetscRealPart(elcoor[dim*k+d]);
+        }
+      }
+      swarm_cellid[pcnt] = e;
+      pcnt++;
+    }
+    ierr = DMPlexVecRestoreClosure(dmc,coordSection,coorlocal,ps+e,NULL,&elcoor);CHKERRQ(ierr);
+  }
+  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
+  
+  ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

@@ -89,6 +89,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM,DMSwarmType);
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM,PetscReal*,PetscReal*,PetscInt*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM,PetscInt,PetscReal*,PetscBool,InsertMode);
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutType,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM,const char*);
 
