@@ -7,9 +7,10 @@ int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
   DM             da;
-  PetscInt       dim = 2,m,n,p,i;
+  PetscViewer    vw;
+  PetscInt       dim = 2,m,n,p;
   const PetscInt *lx,*ly,*lz;
-  PetscMPIInt    rank,size;
+  PetscMPIInt    rank;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,0,"-dim",&dim,0);CHKERRQ(ierr);
@@ -26,18 +27,16 @@ int main(int argc,char *argv[])
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, 0,0,0, &m,&n,&p, 0,0, 0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
-    ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    if (i == rank) {
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : "");CHKERRQ(ierr);
-      ierr = PetscIntView(m,lx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscIntView(n,ly,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      if (dim > 2) {ierr = PetscIntView(n,lz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    }
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  }
+
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(vw,"[%d] lx ly%s\n",rank,dim>2 ? " lz" : "");CHKERRQ(ierr);
+  ierr = PetscIntView(m,lx,vw);CHKERRQ(ierr);
+  ierr = PetscIntView(n,ly,vw);CHKERRQ(ierr);
+  if (dim > 2) {ierr = PetscIntView(n,lz,vw);CHKERRQ(ierr);}
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&vw);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
