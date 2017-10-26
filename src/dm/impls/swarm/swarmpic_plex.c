@@ -3,6 +3,72 @@
 #include <petscdmswarm.h>
 #include "data_bucket.h"
 
+static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)
+{
+  const PetscInt Nc = 1;
+  PetscQuadrature q, fq;
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscInt        order, quadPointsPerEdge;
+  PetscBool       tensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Create space */
+  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
+  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);*/
+  ierr = PetscSpacePolynomialSetTensor(P, tensor);CHKERRQ(ierr);
+  /*ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);*/
+  ierr = PetscSpaceSetType(P,PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
+  ierr = PetscSpaceSetOrder(P,1);CHKERRQ(ierr);
+  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetTensor(P, &tensor);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);*/
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetTensor(Q, tensor);CHKERRQ(ierr);
+  /*ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);*/
+  ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  /* Create element */
+  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
+  /*ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);*/
+  /*ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);*/
+  ierr = PetscFESetType(*fem,PETSCFEBASIC);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  /* Create quadrature (with specified order if given) */
+  qorder = qorder >= 0 ? qorder : order;
+  quadPointsPerEdge = PetscMax(qorder + 1,1);
+  if (isSimplex) {
+    ierr = PetscDTGaussJacobiQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  }
+  else {
+    ierr = PetscDTGaussTensorQuadrature(dim,   1, quadPointsPerEdge, -1.0, 1.0, &q);CHKERRQ(ierr);
+    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, quadPointsPerEdge, -1.0, 1.0, &fq);CHKERRQ(ierr);
+  }
+  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[3],PetscInt depth,PetscInt max,PetscReal xi[],PetscInt *np)
 {
   PetscReal v12[2],v23[2],v31[2];
@@ -139,7 +205,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
   ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
   if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
   
-  ierr = PetscFECreateDefault(dmc, dim, 1, is_simplex, NULL, 0, &fe);CHKERRQ(ierr);
+  ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   
   for (r=0; r<nsub; r++) {
     ierr = PetscFERefine(fe,&feRef);CHKERRQ(ierr);
@@ -618,7 +684,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
 
   ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject)dm),&quadrature);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(quadrature,dim,1,npoints,(const PetscReal*)xi,NULL);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dmc, dim, 1, is_simplex, NULL, 0, &fe);CHKERRQ(ierr);
+  ierr = private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe,quadrature);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fe,&nbasis);CHKERRQ(ierr);
   ierr = PetscFEGetDefaultTabulation(fe, &B, NULL, NULL);CHKERRQ(ierr);
