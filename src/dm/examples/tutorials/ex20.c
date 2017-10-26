@@ -87,7 +87,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode pic_insert_DMPLEX(PetscInt dim)
+PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
 {
   PetscErrorCode ierr;
   DM celldm,swarm,distributedMesh = NULL;
@@ -219,7 +219,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode pic_insert_DMPLEX_triangle(PetscInt dim)
+PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
 {
   PetscErrorCode ierr;
   DM celldm,swarm,distributedMesh = NULL;
@@ -230,7 +230,7 @@ PetscErrorCode pic_insert_DMPLEX_triangle(PetscInt dim)
   /* Create the background cell DM */
   {
     PetscInt faces[3] = {4, 2, 4};
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
+    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, is_simplex, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
   }
   
   /* Distribute mesh over processes */
@@ -284,7 +284,7 @@ PetscErrorCode pic_insert_DMPLEX_triangle(PetscInt dim)
   ierr = DMSwarmSetLocalSizes(swarm,4,0);CHKERRQ(ierr);
   
   /* Insert swarm coordinates cell-wise */
-  ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_SUBDIVISION,2);CHKERRQ(ierr);
+  ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_GAUSS,3);CHKERRQ(ierr);
   
   ierr = DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",1,fieldnames);CHKERRQ(ierr);
   ierr = DMView(celldm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -309,8 +309,12 @@ int main(int argc,char **args)
       ierr = pic_insert_DMDA(dim);CHKERRQ(ierr);
       break;
     case 1:
-      /*ierr = pic_insert_DMPLEX(dim);CHKERRQ(ierr);*/
-      ierr = pic_insert_DMPLEX_triangle(dim);CHKERRQ(ierr);
+      /* tri / tet */
+      ierr = pic_insert_DMPLEX(PETSC_TRUE,dim);CHKERRQ(ierr);
+      break;
+    case 2:
+      /* quad / hex */
+      ierr = pic_insert_DMPLEX(PETSC_FALSE,dim);CHKERRQ(ierr);
       break;
     default:
       ierr = pic_insert_DMDA(dim);CHKERRQ(ierr);
