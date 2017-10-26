@@ -215,8 +215,8 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
 
       ierr = DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
       ierr = DMSwarmSortGetNumberOfPointsPerCell(dmc, cell, &Np);CHKERRQ(ierr);
+      if (Np != Nq) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not all closure points located %D != %D", Np, Nq);
       /* Update preallocation info */
-      if (Np != Nq) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
       {
         PetscHashJKKey  key;
         PetscHashJKIter missing, iter;
@@ -267,7 +267,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
       ierr = DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
       ierr = DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
       ierr = DMSwarmSortGetNumberOfPointsPerCell(dmc, cell, &Np);CHKERRQ(ierr);
-      if (Np != Nq) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not all closure points located");
+      if (Np != Nq) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not all closure points located %D != %D", Np, Nq);
       ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
       /* Get elemMat entries by multiplying by weight */
       for (i = 0; i < numFIndices; ++i) {
