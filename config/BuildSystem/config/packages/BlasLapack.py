@@ -424,6 +424,10 @@ class Configure(config.package.Package):
       '''Set include directory for mkl.h and friends'''
       '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
       ''' if the script hasn't been sourced, we still try to pick up the include dir)'''
+      if 'with-blaslapack-include' in self.argDB:
+        incl = self.argDB['with-blaslapack-include']
+        if not isinstance(incl, list): incl = [incl]
+        self.include = incl
       if not self.checkCompile('#include "mkl_spblas.h"',''):
         self.logPrint('MKL include path not automatically picked up by compiler. Trying to find mkl_spblas.h...')
         if 'with-blaslapack-dir' in self.argDB:
