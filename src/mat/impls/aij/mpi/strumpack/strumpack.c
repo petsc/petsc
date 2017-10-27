@@ -516,7 +516,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   STRUMPACK_INTERFACE           iface;
   STRUMPACK_REORDERING_STRATEGY ndcurrent,ndvalue;
   STRUMPACK_KRYLOV_SOLVER       itcurrent,itsolver;
-    const STRUMPACK_PRECISION table[2][2][2] =
+  const STRUMPACK_PRECISION table[2][2][2] =
     {{{STRUMPACK_FLOATCOMPLEX_64, STRUMPACK_DOUBLECOMPLEX_64},
       {STRUMPACK_FLOAT_64,        STRUMPACK_DOUBLE_64}},
      {{STRUMPACK_FLOATCOMPLEX,    STRUMPACK_DOUBLECOMPLEX},
@@ -525,6 +525,10 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
     table[(sizeof(PetscInt)==8)?0:1]
     [(PETSC_SCALAR==PETSC_COMPLEX)?0:1]
     [(PETSC_REAL==PETSC_FLOAT)?0:1];
+  const char *const STRUMPACKNDTypes[] =
+    {"NATURAL","METIS","PARMETIS","SCOTCH","PTSCOTCH","RCM","STRUMPACKNDTypes","",0};
+  const char *const SolverTypes[] =
+    {"AUTO","NONE","REFINE","PREC_GMRES","GMRES","PREC_BICGSTAB","BICGSTAB","SolverTypes","",0};
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -586,7 +590,6 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   ierr = PetscOptionsInt("-mat_strumpack_leaf_size","Size of diagonal blocks in HSS approximation","None",leaf_size,&leaf_size,&set);CHKERRQ(ierr);
   if (set) PetscStackCall("STRUMPACK_set_HSS_leaf_size",STRUMPACK_set_HSS_leaf_size(*S,(int)leaf_size));
 
-  const char *const STRUMPACKNDTypes[] = {"NATURAL","METIS","PARMETIS","SCOTCH","PTSCOTCH","RCM","STRUMPACKNDTypes","",0};
   PetscStackCall("STRUMPACK_reordering_method",ndcurrent = STRUMPACK_reordering_method(*S));
   PetscOptionsEnum("-mat_strumpack_reordering","Sparsity reducing matrix reordering","None",STRUMPACKNDTypes,(PetscEnum)ndcurrent,(PetscEnum*)&ndvalue,&set);CHKERRQ(ierr);
   if (set) PetscStackCall("STRUMPACK_set_reordering_method",STRUMPACK_set_reordering_method(*S,ndvalue));
@@ -604,7 +607,6 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   /* the outer iterative solver, as PETSc uses STRUMPACK from within a KSP.                   */
   PetscStackCall("STRUMPACK_set_Krylov_solver", STRUMPACK_set_Krylov_solver(*S, STRUMPACK_DIRECT));
 
-  const char *const SolverTypes[] = {"AUTO","NONE","REFINE","PREC_GMRES","GMRES","PREC_BICGSTAB","BICGSTAB","SolverTypes","",0};
   PetscStackCall("STRUMPACK_Krylov_solver",itcurrent = STRUMPACK_Krylov_solver(*S));
   PetscOptionsEnum("-mat_strumpack_iterative_solver","Select iterative solver from STRUMPACK","None",SolverTypes,(PetscEnum)itcurrent,(PetscEnum*)&itsolver,&set);CHKERRQ(ierr);
   if (set) PetscStackCall("STRUMPACK_set_Krylov_solver",STRUMPACK_set_Krylov_solver(*S,itsolver));
