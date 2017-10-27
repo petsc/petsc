@@ -187,13 +187,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
 /* MatSeqAIJMKL_create_from_mkl_handle() creates a sequential AIJMKL matrix from an MKL sparse matrix handle. 
  * We need this to implement MatMatMult() using the MKL inspector-executor routines, which return an (unoptimized) 
  * matrix handle.
- * Note: This routine supports replacing the numerical values in an existing matrix that has the same sparsity 
- * structure as in the MKL handle. However, this code currently doesn't actually get used when MatMatMult() 
- * is called with MAT_REUSE_MATRIX, because the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
- * MKL has no notion of separately callable symbolic vs. numeric phases of sparse matrix-matrix multiply, so in the 
- * MAT_REUSE_MATRIX case, the SeqAIJ routines end up being used. Even though this means that the (hopefully more 
- * optimized) MKL routines do not get used, this probably is best because the MKL routines would waste time re-computing 
- * the symbolic portion, whereas the native PETSc SeqAIJ routines will avoid this. */
+ * Note: This routine simply destroys and replaces the original matrix if MAT_REUSE_MATRIX has been specified, as
+ * there is no good alternative. */
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
 PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sparse_matrix_t csrA,MatReuse reuse,Mat *mat)
 {
@@ -214,32 +209,24 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_from_mkl_handle(MPI_Comm comm,sp
     PetscFunctionReturn(PETSC_ERR_LIB);
   }
 
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nrows,ncols);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocationCSR(A,ai,aj,aa);CHKERRQ(ierr);
-
-    /* We now have an assembled sequential AIJ matrix created from copies of the exported arrays from the MKL matrix handle.
-     * Now turn it into a MATSEQAIJMKL. */
-    ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-  } else {
-    A = *mat;
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nrows,ncols);CHKERRQ(ierr);
+  /* We use MatSeqAIJSetPreallocationCSR() instead of MatCreateSeqAIJWithArrays() because we must copy the arrays exported 
+   * from MKL; MKL developers tell us that modifying the arrays may cause unexpected results when using the MKL handle, and
+   * they will be destroyed when the MKL handle is destroyed.
+   * (In the interest of reducing memory consumption in future, can we figure out good ways to deal with this?) */
+  ierr = MatSeqAIJSetPreallocationCSR(A,ai,aj,aa);CHKERRQ(ierr);
+
+  /* We now have an assembled sequential AIJ matrix created from copies of the exported arrays from the MKL matrix handle.
+   * Now turn it into a MATSEQAIJMKL. */
+  ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
 
   a = (Mat_SeqAIJ*)A->data;
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
-
-  if (reuse == MAT_REUSE_MATRIX) {
-    /* Need to destroy old MKL handle. */
-    stat = mkl_sparse_destroy(aijmkl->csrA);
-    if (stat != SPARSE_STATUS_SUCCESS) {
-      PetscFunctionReturn(PETSC_ERR_LIB);
-    }
-
-    /* The new matrix is supposed to have the same sparsity pattern, so copy only the array of numerical values. */
-    ierr = PetscMemcpy(a->a,aa,sizeof(MatScalar)*a->nz);CHKERRQ(ierr);
-  }
   aijmkl->csrA = csrA;
 
   /* The below code duplicates much of what is in MatSeqAIJKL_create_mkl_handle(). I dislike this code duplication, but
@@ -703,6 +690,12 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+/* Note that this code currently doesn't actually get used when MatMatMult() is called with MAT_REUSE_MATRIX, because 
+ * the MatMatMult() interface code calls MatMatMultNumeric() in this case. 
+ * MKL has no notion of separately callable symbolic vs. numeric phases of sparse matrix-matrix multiply, so in the 
+ * MAT_REUSE_MATRIX case, the SeqAIJ routines end up being used. Even though this means that the (hopefully more 
+ * optimized) MKL routines do not get used, this probably is best because the MKL routines would waste time re-computing 
+ * the symbolic portion, whereas the native PETSc SeqAIJ routines will avoid this. */
 PetscErrorCode MatMatMult_SeqAIJMKL_SeqAIJMKL_SpMV2(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat*C)
 {
   Mat_SeqAIJMKL *a, *b;
