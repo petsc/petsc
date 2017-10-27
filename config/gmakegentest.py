@@ -504,10 +504,14 @@ class generateExamples(Petsc):
     # Subtests are special
     if 'subtests' in testDict:
       substP=subst   # Subtests can inherit args but be careful
+      k=0  # for label suffixes
       for stest in testDict["subtests"]:
         subst=substP.copy()
         subst.update(testDict[stest])
-        subst['nsize']=str(subst['nsize'])
+        # nsize is special because it is usually overwritten
+        if 'nsize' in testDict[stest]:
+          fh.write("nsize="+str(testDict[stest]['nsize'])+"\n")
+        subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
         #if '10_9' in testname: print sLoopVars
         if sLoopVars: 
@@ -842,10 +846,20 @@ class generateExamples(Petsc):
 
           # *.counts depends on the script and either executable (will
           # be run) or the example source file (SKIP or TODO)
-          fd.write('%s.counts : %s %s\n'
-                 % (os.path.join('$(TESTDIR)/counts', nmtest),
-                    fullscript,
-                    execname if exfile in self.sources[pkg][lang]['srcs'] else fullex))
+          if exfile in self.sources[pkg][lang]:
+              fd.write('%s.counts : %s %s %s\n'
+                  % (os.path.join('$(TESTDIR)/counts', nmtest),
+                     fullscript,
+                     execname if exfile in self.sources[pkg][lang]['srcs'] else fullex,
+                     os.path.join('$(TESTDIR)',self.sources[pkg][lang][exfile]))
+                  )
+          else:
+              fd.write('%s.counts : %s %s\n'
+                  % (os.path.join('$(TESTDIR)/counts', nmtest),
+                     fullscript,
+                     execname if exfile in self.sources[pkg][lang]['srcs'] else fullex)
+                  )
+
           # Now write the args:
           fd.write(nmtest+"_ARGS := '"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
 
