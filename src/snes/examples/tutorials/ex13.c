@@ -209,11 +209,11 @@ int main(int argc, char **argv)
   test:
     suffix: 3d_p1_0
     requires: ctetgen
-    args: -dim 3 -petscspace_order 1 -dm_refine 2 -num_refine 4 -snes_convergence_estimate
+    args: -dim 3 -petscspace_order 1 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p2_0
     requires: ctetgen
-    args: -dim 3 -petscspace_order 2 -dm_refine 1 -num_refine 4 -snes_convergence_estimate
+    args: -dim 3 -petscspace_order 2 -num_refine 4 -snes_convergence_estimate
   test:
     suffix: 3d_p3_0
     requires: ctetgen
