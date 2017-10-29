@@ -109,3 +109,11 @@
       call PetscFinalize(ierr);
   end
 
+!/*TEST
+!  build:
+!    requires: !define(PETSC_USE_64BIT_INDICES)
+!
+!  test:
+!    nsize: 3
+!
+!TEST*/

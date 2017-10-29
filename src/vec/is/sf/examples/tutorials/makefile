@@ -91,10 +91,6 @@ runex1_7_basic:
 	-@${MPIEXEC} -n 4 ./ex1 -test_invert -sf_type basic > ex1_7.tmp 2>&1; \
 	   ${DIFF} output/ex1_7_basic.out ex1_7.tmp || printf "${PWD}\nPossible problem with ex1_7_basic, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_7.tmp
-runex1f:
-	-@${MPIEXEC} -n 3 ./ex1f  > ex1f_1.tmp 2>&1; \
-	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f, diffs above\n=========================================\n"; \
-	   ${RM} -f ex1f_1.tmp
 runex2_basic:
 	-@${MPIEXEC} -n 2 ./ex2 -sf_type basic > ex2.tmp 2>&1; \
           ${DIFF} output/ex2_basic.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_basic, diffs above\n=========================================\n"; \
@@ -131,6 +127,5 @@ TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_C_X_MPIUNI   =
-TESTEXAMPLES_F90	    = ex1f.PETSc runex1f ex1f.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
