@@ -262,7 +262,9 @@ int main(int argc,char **argv)
 
 /*TEST
 
+   build:
+      requires: double !complex
+
    test:
-      requires: !complex
 
 TEST*/

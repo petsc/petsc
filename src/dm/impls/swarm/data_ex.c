@@ -214,7 +214,7 @@ PetscErrorCode DataExTopologyInitialize(DataEx d)
 PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
 {
   PetscMPIInt    n,found;
-  PetscMPIInt    nproc;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -224,8 +224,8 @@ PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
   /* error on ranks larger than number of procs in communicator */
-  ierr = MPI_Comm_size(d->comm,&nproc);CHKERRQ(ierr);
-  if (proc_id >= nproc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank >= nproc");
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
+  if (proc_id >= size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour %d with a rank >= size %d",proc_id,size);
   if (d->n_neighbour_procs == 0) {ierr = PetscMalloc1(1, &d->neighbour_procs);CHKERRQ(ierr);}
   /* check for proc_id */
   found = 0;
@@ -362,7 +362,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   PetscMPIInt    symm_nn;
   PetscMPIInt   *symm_procs;
   PetscMPIInt    r0,n,st,rt;
-  PetscMPIInt    nprocs;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -385,12 +385,12 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   if (!d->send_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->send_tags);CHKERRQ(ierr);}
   if (!d->recv_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags);CHKERRQ(ierr);}
   /* compute message tags */
-  ierr = MPI_Comm_size(d->comm,&nprocs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];
 
-    _get_tags( d->instance, nprocs, r0,r1, &st, &rt );
+    _get_tags( d->instance, size, r0,r1, &st, &rt );
     d->send_tags[n] = (int)st;
     d->recv_tags[n] = (int)rt;
   }

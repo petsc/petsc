@@ -506,6 +506,9 @@ int main(int argc,char **argv)
 
 /*TEST
 
+   build:
+      requires: !complex double
+
    test:
       args: -test_mode 1
    test:

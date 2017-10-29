@@ -673,12 +673,12 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 
 PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
-  PetscMPIInt nproc;
+  PetscMPIInt size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
-  if (nproc == 1) {
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
     ierr = DataBucketView_SEQ(comm,db,filename,type);CHKERRQ(ierr);
   } else {
     ierr = DataBucketView_MPI(comm,db,filename,type);CHKERRQ(ierr);

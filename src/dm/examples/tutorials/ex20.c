@@ -305,9 +305,11 @@ int main(int argc,char **args)
 
    test:
       args:
+      requires: !complex double
    test:
       suffix: 2
-      requires: triangle
+      requires: triangle double
       args: -mode 1
+      requires: !complex double
 
 TEST*/
