@@ -409,7 +409,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 
 .seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,char ***array,int *n)
+PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
   PetscErrorCode    ierr;
   PetscInt          count = 0;
@@ -420,7 +420,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,char ***array,int *n
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc1(count+1,array);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(count+1,(char***)array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;
