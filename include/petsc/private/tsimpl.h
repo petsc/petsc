@@ -82,6 +82,7 @@ struct _p_TSTrajectory {
   PetscInt       recomps;                 /* counter for recomputations in the adjoint run */
   PetscInt       diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
   char           **names;                 /* the name of each variable; each process has only the local names */
+  PetscBool      keepfiles;               /* keep the files generated during the run after the run is complete */
   PetscErrorCode (*transform)(void*,Vec,Vec*);
   PetscErrorCode (*transformdestroy)(void*);
   void*          transformctx;
