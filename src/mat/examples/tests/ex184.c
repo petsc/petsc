@@ -15,7 +15,7 @@ int main(int argc, char **args)
     PetscInt       M,m,bs,rstart,rend,j,x,y;
     PetscInt*      dnnz;
     PetscErrorCode ierr;
-
+    PetscScalar    *v;
 
     ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -41,9 +41,9 @@ int main(int argc, char **args)
     ierr = MatXAIJSetPreallocation(A,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscFree(dnnz);CHKERRQ(ierr);
 
+    ierr = PetscMalloc1(bs*bs,&v);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
     for (j = rstart/bs; j < rend/bs; j++) {
-        PetscScalar v[bs*bs];
         for (x = 0; x < bs; x++) {
             for (y = 0; y < bs; y++) {
                 if (x == y) {
@@ -55,7 +55,7 @@ int main(int argc, char **args)
         }
         ierr = MatSetValuesBlocked(A,1,&j,1,&j,v,INSERT_VALUES);CHKERRQ(ierr);
     }
-
+    ierr = PetscFree(v);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
