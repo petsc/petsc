@@ -2979,7 +2979,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscFree2(leafIndices,leafMatrices);CHKERRQ(ierr);
   iperms = (PetscInt***)perms;
   iflips = (PetscScalar***)flips;
-  ierr = PetscFree2(perms,flips);CHKERRQ(ierr);
+  ierr = PetscFree2(iperms,iflips);CHKERRQ(ierr);
   ierr = PetscFree7(offsets,offsetsCopy,newOffsets,newOffsetsCopy,rowOffsets,numD,numO);CHKERRQ(ierr);
   ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
