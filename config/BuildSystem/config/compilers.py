@@ -119,6 +119,7 @@ class Configure(config.base.Configure):
       self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
     self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
     return
+
   def checkCxxStaticInline(self):
     '''Check for C++ keyword: static inline'''
     self.cxxStaticInlineKeyword = 'static'
@@ -606,6 +607,7 @@ class Configure(config.base.Configure):
         self.logPrint('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc', 4, 'compilers')
     self.popLanguage()
     return
+
 
   def mangleFortranFunction(self, name):
     if self.fortranMangling == 'underscore':
@@ -1127,6 +1129,17 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
+  def checkFortranTypeStar(self):
+    '''Determine whether the Fortran compiler handles type(*)'''
+    self.pushLanguage('FC')
+    if self.checkCompile(body = '      interface\n      subroutine a(b)\n     type(*) :: b(:)\n      end subroutine\n      end interface\n'):
+      self.addDefine('HAVE_FORTRAN_TYPE_STAR', 1)
+      self.logPrint('Fortran compiler supports type(*)')
+    else:
+      self.logPrint('Fortran compiler does not support type(*)')
+    self.popLanguage()
+    return
+
   def checkFortran90(self):
     '''Determine whether the Fortran compiler handles F90'''
     self.pushLanguage('FC')
@@ -1497,6 +1510,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortran90Array)
       self.executeTest(self.checkFortranModuleInclude)
       self.executeTest(self.checkFortranModuleOutput)
+      self.executeTest(self.checkFortranTypeStar)
     self.no_configure()
     return
 

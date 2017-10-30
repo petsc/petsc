@@ -87,8 +87,8 @@
       enddo
 
 !     Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls.
-      call PetscSFBcastBegin(sf,MPI_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
-      call PetscSFBcastEnd(sf,MPI_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
+      call PetscSFBcastBegin(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
+      call PetscSFBcastEnd(sf,MPIU_INTEGER,rootdata,leafdata,ierr);CHKERRQ(ierr);
       call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n",ierr);CHKERRQ(ierr);
       call PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr);
       call PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n",ierr);CHKERRQ(ierr);
@@ -111,7 +111,7 @@
 
 !/*TEST
 !  build:
-!    requires: !define(PETSC_USE_64BIT_INDICES)
+!    requires: defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
 !
 !  test:
 !    nsize: 3

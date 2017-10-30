@@ -1,4 +1,5 @@
-       Interface
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
+      Interface
        subroutine PetscSFBcastBegin(sf,unit,rarray,larray,ierr)
           use petscisdef
           PetscSF :: sf
@@ -8,18 +9,9 @@
           PetscErrorCode :: ierr
         end Subroutine PetscSFBcastBegin
       end Interface
+#endif
 
-       Interface
-       subroutine PetscSFGetGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
-          use petscisdef
-          PetscSF :: sf
-          PetscInt :: nroots,nleaves
-          PetscInt, pointer :: ilocal(:)
-          type(PetscSFNode), pointer :: iremote(:)
-          PetscErrorCode :: ierr
-        end Subroutine PetscSFGetGraph
-      end Interface
-
+#if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,ierr)
           use petscisdef
@@ -29,6 +21,18 @@
           type(*) :: larray(:)
           PetscErrorCode :: ierr
         end Subroutine PetscSFBcastEnd
+      end Interface
+#endif
+
+      Interface
+      subroutine PetscSFGetGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
+          use petscisdef
+          PetscSF :: sf
+          PetscInt :: nroots,nleaves
+          PetscInt, pointer :: ilocal(:)
+          type(PetscSFNode), pointer :: iremote(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFGetGraph
       end Interface
 
       Interface
