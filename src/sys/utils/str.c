@@ -1049,7 +1049,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
-  const char     *r[] = {0,0,0,0,0,0,0,0,0};
+  char           *r[] = {0,0,0,0,0,0,0,0,0};
   PetscBool      flag;
 
   PetscFunctionBegin;

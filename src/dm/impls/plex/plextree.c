@@ -2195,6 +2195,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   PetscInt          *offsets, *newOffsets, *offsetsCopy, *newOffsetsCopy, *rowOffsets, *numD, *numO;
   const PetscInt    ***perms;
   const PetscScalar ***flips;
+  PetscInt          ***iperms;
+  PetscScalar       ***iflips;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -2252,7 +2254,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionGetNumFields(localCoarse,&numFields);CHKERRQ(ierr);
   maxFields = PetscMax(1,numFields);
   ierr = PetscMalloc7(maxFields+1,&offsets,maxFields+1,&offsetsCopy,maxFields+1,&newOffsets,maxFields+1,&newOffsetsCopy,maxFields+1,&rowOffsets,maxFields+1,&numD,maxFields+1,&numO);CHKERRQ(ierr);
-  ierr = PetscMalloc2(maxFields+1,&perms,maxFields+1,&flips);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxFields+1,(PetscInt****)&perms,maxFields+1,(PetscScalar****)&flips);CHKERRQ(ierr);
   ierr = PetscMemzero((void *) perms, (maxFields+1) * sizeof(const PetscInt **));CHKERRQ(ierr);
   ierr = PetscMemzero((void *) flips, (maxFields+1) * sizeof(const PetscScalar **));CHKERRQ(ierr);
 
@@ -2975,6 +2977,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
   ierr = PetscSectionDestroy(&leafIndicesSec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafMatricesSec);CHKERRQ(ierr);
   ierr = PetscFree2(leafIndices,leafMatrices);CHKERRQ(ierr);
+  iperms = (PetscInt***)perms;
+  iflips = (PetscScalar***)flips;
   ierr = PetscFree2(perms,flips);CHKERRQ(ierr);
   ierr = PetscFree7(offsets,offsetsCopy,newOffsets,newOffsetsCopy,rowOffsets,numD,numO);CHKERRQ(ierr);
   ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);

@@ -59,6 +59,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   const PetscInt **idx,*idx_i;
+  PetscInt       **iidx;
   PetscInt       *n,*w3,*w4,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,*w2,*w1,nrqr;
@@ -80,7 +81,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(imax+1,&idx,imax,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc2(imax+1,(PetscInt***)&idx,imax,&n);CHKERRQ(ierr);
 
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
@@ -212,7 +213,8 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(idx,n);CHKERRQ(ierr);
+  iidx = (PetscInt**)idx; /* required because PetscFreeN() cannot work on const */
+  ierr = PetscFree2(iidx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -612,6 +614,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
   Mat            A  = c->A;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)c->B->data,*subc;
   const PetscInt **icol,**irow;
+  PetscInt       **iicol,**iirow;
   PetscInt       *nrow,*ncol,start;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag0,tag2,tag3,tag4,*w1,*w2,*w3,*w4,nrqr;
@@ -650,7 +653,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
   rank = c->rank;
 
   ierr = PetscMalloc5(ismax,&row2proc,ismax,&cmap,ismax,&rmap,ismax+1,&allcolumns,ismax,&allrows);CHKERRQ(ierr);
-  ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],&issorted[i]);CHKERRQ(ierr);
@@ -1537,8 +1540,9 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  /* Destroy allocated memory */
-  ierr = PetscFree5(irow,icol,nrow,ncol,issorted);CHKERRQ(ierr);
+  iirow = (PetscInt**) irow;  /* required because PetscFreeN() cannot work on const */
+  iicol = (PetscInt**) icol;
+  ierr = PetscFree5(iirow,iicol,nrow,ncol,issorted);CHKERRQ(ierr);
   ierr = PetscFree5(row2proc,cmap,rmap,allcolumns,allrows);CHKERRQ(ierr);
 
   if (!ijonly) {

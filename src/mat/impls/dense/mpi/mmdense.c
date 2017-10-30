@@ -78,6 +78,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   PetscMPIInt    rank,size,tag0,tag1,idex,end,i;
   PetscInt       N = C->cmap->N,rstart = C->rmap->rstart,count;
   const PetscInt **irow,**icol,*irow_i;
+  PetscInt       **iirow,**iicol;
   PetscInt       *nrow,*ncol,*w1,*w3,*w4,*rtable,start;
   PetscInt       **sbuf1,m,j,k,l,ct1,**rbuf1,row,proc;
   PetscInt       nrqs,msz,**ptr,*ctr,*pa,*tmp,bsz,nrqr;
@@ -107,7 +108,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
-  ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,m,&rtable);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,m,&rtable);CHKERRQ(ierr);
   for (i=0; i<ismax; i++) {
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
@@ -386,8 +387,9 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     ierr = ISRestoreIndices(iscol[i],icol+i);CHKERRQ(ierr);
   }
 
-  /* Destroy allocated memory */
-  ierr = PetscFree5(irow,icol,nrow,ncol,rtable);CHKERRQ(ierr);
+  iirow = (PetscInt**) irow;  /* required because PetscFreeN() cannot work on const */
+  iicol = (PetscInt**) icol;
+  ierr = PetscFree5(iirow,iicol,nrow,ncol,rtable);CHKERRQ(ierr);
   ierr = PetscFree3(w1,w3,w4);CHKERRQ(ierr);
   ierr = PetscFree(pa);CHKERRQ(ierr);
 

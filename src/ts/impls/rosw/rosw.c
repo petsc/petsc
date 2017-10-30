@@ -1391,7 +1391,7 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
     const char      **namelist;
 
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_rosw_type","Family of Rosenbrock-W method","TSRosWSetType",(const char*const*)namelist,count,ros->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSRosWSetType(ts,namelist[choice]);CHKERRQ(ierr);}

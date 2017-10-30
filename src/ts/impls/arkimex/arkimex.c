@@ -1182,7 +1182,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
     PetscBool      flg;
     const char     **namelist;
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,ark->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSARKIMEXSetType(ts,namelist[choice]);CHKERRQ(ierr);}
