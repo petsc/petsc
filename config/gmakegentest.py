@@ -738,6 +738,9 @@ class generateExamples(Petsc):
       #if not exfile.startswith("new_"+"ex"): continue
       #if not exfile.startswith("ex"): continue
 
+      # Ignore emacs files
+      if exfile.startswith("#"): continue
+
       # Convenience
       fullex=os.path.join(root,exfile)
       relpfile=os.path.join(self.srcrelpath(root),exfile)
