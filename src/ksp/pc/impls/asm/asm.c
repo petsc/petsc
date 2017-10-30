@@ -929,7 +929,7 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
 +   pc - the preconditioner context
 .   N  - the number of subdomains for all processors
 .   is - the index sets that define the subdomains for all processors
-         (or NULL to ask PETSc to compe up with subdomains)
+         (or NULL to ask PETSc to determine the subdomains)
 -   is_local - the index sets that define the local part of the subdomains for this processor
          (or NULL to not provide this information)
 
