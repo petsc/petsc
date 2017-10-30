@@ -54,7 +54,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   PetscInt       *tosizes,*tosizes_temp,*toffsets,*fromsizes,*todata,*fromdata;
   PetscInt       nrecvrows,*sbsizes = 0,*sbdata = 0;
   const PetscInt *indices_i,**indices;
-  PetscInt       **iindices;
   PetscLayout    rmap;
   PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
   PetscSF        sf;
@@ -95,8 +94,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
     }
     ierr = ISRestoreIndices(is[i],&indices[i]);CHKERRQ(ierr);
   }
-  iindices = (PetscInt**)indices; /* required because PetscFreeN() cannot work on const */
-  ierr = PetscFree2(iindices,length);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscInt***)&indices,length);CHKERRQ(ierr);
   /* test if we need to exchange messages
    * generally speaking, we do not need to exchange
    * data when overlap is 1
@@ -452,7 +450,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
   PetscMPIInt    *w1,*w2,nrqr,*w3,*w4,*onodes1,*olengths1,*onodes2,*olengths2;
   const PetscInt **idx,*idx_i;
-  PetscInt       **iidx;
   PetscInt       *n,**data,len;
 #if defined(PETSC_USE_CTABLE)
   PetscTable     *table_data,table_data_i;
@@ -639,8 +636,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  iidx = (PetscInt**)idx; /* required because PetscFreeN() cannot work on const */
-  ierr = PetscFree2(iidx,n);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscInt***)&idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -2063,7 +2059,6 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
   Mat            A  = c->A;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)c->B->data,*subc;
   const PetscInt **icol,**irow;
-  PetscInt       **iicol,**iirow;
   PetscInt       *nrow,*ncol,start;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag0,tag2,tag3,tag4,*w1,*w2,*w3,*w4,nrqr;
@@ -2857,9 +2852,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS i
   /* Destroy allocated memory */
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
-  iirow = (PetscInt**) irow;  /* required because PetscFreeN() cannot work on const */
-  iicol = (PetscInt**) icol;
-  ierr = PetscFree5(irow,icol,nrow,ncol,issorted);CHKERRQ(ierr);
+  ierr = PetscFree5(*(PetscInt***)&irow,*(PetscInt***)&icol,nrow,ncol,issorted);CHKERRQ(ierr);
 
   for (i=0; i<nrqs; ++i) {
     ierr = PetscFree(rbuf4[i]);CHKERRQ(ierr);

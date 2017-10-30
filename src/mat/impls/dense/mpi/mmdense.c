@@ -78,7 +78,6 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   PetscMPIInt    rank,size,tag0,tag1,idex,end,i;
   PetscInt       N = C->cmap->N,rstart = C->rmap->rstart,count;
   const PetscInt **irow,**icol,*irow_i;
-  PetscInt       **iirow,**iicol;
   PetscInt       *nrow,*ncol,*w1,*w3,*w4,*rtable,start;
   PetscInt       **sbuf1,m,j,k,l,ct1,**rbuf1,row,proc;
   PetscInt       nrqs,msz,**ptr,*ctr,*pa,*tmp,bsz,nrqr;
@@ -387,9 +386,7 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
     ierr = ISRestoreIndices(iscol[i],icol+i);CHKERRQ(ierr);
   }
 
-  iirow = (PetscInt**) irow;  /* required because PetscFreeN() cannot work on const */
-  iicol = (PetscInt**) icol;
-  ierr = PetscFree5(iirow,iicol,nrow,ncol,rtable);CHKERRQ(ierr);
+  ierr = PetscFree5(*(PetscInt***)&irow,*(PetscInt***)&icol,nrow,ncol,rtable);CHKERRQ(ierr);
   ierr = PetscFree3(w1,w3,w4);CHKERRQ(ierr);
   ierr = PetscFree(pa);CHKERRQ(ierr);
 
