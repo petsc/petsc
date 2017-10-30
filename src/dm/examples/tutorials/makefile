@@ -103,7 +103,7 @@ ex51: ex51.o  chkopts
 #-----------------------------------------------------------------
 runex13f90:
 	-@${MPIEXEC} -n 4 ./ex13f90  > ex13f90.tmp 2>&1;   \
-	   if (${DIFF} output/ex13f90.out ex13f90.tmp) then true; \
+	   if (${DIFF} output/ex13f90_1.out ex13f90.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex13f90, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex13f90.tmp
 
