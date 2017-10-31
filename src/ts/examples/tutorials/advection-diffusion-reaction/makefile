@@ -233,7 +233,7 @@ runex10_4:
 
 TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm \
-                            ex5adj.PETSc runex5adj ex5adj.rm ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 ex6.rm
+                            ex5adj.PETSc runex5adj runex5adj_2 ex5adj.rm ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 ex6.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
