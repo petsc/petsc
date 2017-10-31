@@ -464,7 +464,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
       PetscInt ntext;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      ierr = PetscFunctionListGet(next->flist,&next->edata,&ntext);CHKERRQ(ierr);
+      ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
       }
       break;
