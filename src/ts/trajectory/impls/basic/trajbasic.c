@@ -30,17 +30,17 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscRMTree("SA-data");CHKERRQ(ierr);
-      ierr = PetscMkdir("SA-data");CHKERRQ(ierr);
+      ierr = PetscRMTree(tj->dirname);CHKERRQ(ierr);
+      ierr = PetscMkdir(tj->dirname);CHKERRQ(ierr);
     }
-    ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,sizeof(filename),tj->filetemplate,stepnum);CHKERRQ(ierr);
     ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),tj->filetemplate,stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,tj->filetemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
 /*MC
       TSTRAJECTORYBASIC - Stores each solution of the ODE/DAE in a file
 
-      Saves each timestep into a seperate file in SA-data/SA-%06d.bin
+      Saves each timestep into a seperate file named SA-data/SA-%06d.bin. The file name can be changed.
 
       This version saves the solutions at all the stages
 
@@ -116,7 +116,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
+.seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType(), TSTrajectorySetDirname(), TSTrajectorySetFile()
 
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj,TS ts)
