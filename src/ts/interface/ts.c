@@ -552,7 +552,6 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
-    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
