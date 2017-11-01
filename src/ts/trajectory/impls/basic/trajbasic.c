@@ -99,7 +99,7 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
     ierr = PetscObjectGetComm((PetscObject)tj,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscRMTree("SA-data");CHKERRQ(ierr);
+      ierr = PetscRMTree(tj->dirname);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
