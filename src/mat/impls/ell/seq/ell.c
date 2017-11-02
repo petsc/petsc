@@ -94,6 +94,7 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
+  /* FIXME: if one preallocates more space than needed, the matrix does not shrink automatically, but for best performance it should */
   if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 5;
   if (maxallocrow < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"maxallocrow cannot be less than 0: value %D",maxallocrow);
   if (rlen) {
