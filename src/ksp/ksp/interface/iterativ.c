@@ -1085,9 +1085,14 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 +  ksp - the preconditioner context
 -  dm - the dm, cannot be NULL
 
-   Notes: If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
-          set with DMKSPSetComputeOperators(). Use KSPSetDMActive(ksp,PETSC_FALSE) to instead use the matrix
-          you've provided with KSPSetOperators().
+   Notes:
+   If this is used then the KSP will attempt to use the DM to create the matrix and use the routine set with
+   DMKSPSetComputeOperators(). Use KSPSetDMActive(ksp,PETSC_FALSE) to instead use the matrix you've provided with
+   KSPSetOperators().
+
+   A DM can only be used for solving one problem at a time because information about the problem is stored on the DM,
+   even when not using interfaces like DMKSPSetComputeOperators().  Use DMClone() to get a distinct DM when solving
+   different problems using the same function space.
 
    Level: intermediate
 
