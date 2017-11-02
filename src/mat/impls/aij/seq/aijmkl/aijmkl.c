@@ -912,7 +912,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
 .  A - the matrix
 
    Options Database Keys:
-.  -mat_aijmkl_no_spmv2 - disables use of the SpMV2 inspector-executor routines
++  -mat_aijmkl_no_spmv2 - disable use of the SpMV2 inspector-executor routines
+-  -mat_aijmkl_eager_inspection - perform MKL "inspection" phase upon matrix assembly; default is to do "lazy" inspection, performing this step the first time the matrix is applied
 
    Notes:
    If nnz is given then nz is ignored
