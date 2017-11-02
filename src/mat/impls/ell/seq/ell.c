@@ -140,10 +140,9 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
 
     /* allocate space for val, colidx, rlen */
     /* FIXME: should B's old memory be unlogged? */
-    ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx,&b->bt);CHKERRQ(ierr);
+    ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx);CHKERRQ(ierr);
     /* FIXME: assuming an element of the bit array takes 8 bits */
-    ierr = PetscMalloc3(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx,b->sliidx[totalslices]/8,&b->bt);CHKERRQ(ierr);
-    ierr = PetscMemzero(b->bt,b->sliidx[totalslices]/8);CHKERRQ(ierr); /* must set to zero */
+    ierr = PetscMalloc2(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)B,b->sliidx[totalslices]*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
     /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
     ierr = PetscCalloc1(8*totalslices,&b->rlen);CHKERRQ(ierr);
@@ -152,11 +151,9 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
     b->singlemalloc = PETSC_TRUE;
     b->free_val     = PETSC_TRUE;
     b->free_colidx  = PETSC_TRUE;
-    b->free_bt      = PETSC_TRUE;
   } else {
     b->free_val    = PETSC_FALSE;
     b->free_colidx = PETSC_FALSE;
-    b->free_bt     = PETSC_FALSE;
   }
 
   b->nz               = 0;
@@ -669,7 +666,7 @@ PetscErrorCode MatDestroy_SeqELL(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
-  ierr = MatSeqXELLFreeELL(A,&a->val,&a->colidx,&a->bt);CHKERRQ(ierr);
+  ierr = MatSeqXELLFreeELL(A,&a->val,&a->colidx);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
@@ -1268,7 +1265,6 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscInt       shift,i,k,l,low,high,t,ii,row,col,nrow;
   PetscInt       *cp,nonew=a->nonew,lastcol=-1;
   MatScalar      *vp,value;
-  char           *bp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1281,7 +1277,6 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
     shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp    = a->colidx+shift; /* pointer to the row */
     vp    = a->val+shift; /* pointer to the row */
-    bp    = a->bt+shift/8; /* pointer to the row */
     nrow  = a->rlen[row];
     low   = 0;
     high  = nrow;
@@ -1321,17 +1316,15 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
       /* If the current row length exceeds the slice width (e.g. nrow==slice_width), allocate a new space, otherwise do nothing */
-      MatSeqXELLReallocateELL(A,A->rmap->n,1,nrow,a->sliidx,row/8,row,col,a->colidx,a->val,a->bt,cp,vp,bp,nonew,MatScalar);
+      MatSeqXELLReallocateELL(A,A->rmap->n,1,nrow,a->sliidx,row/8,row,col,a->colidx,a->val,cp,vp,nonew,MatScalar);
       /* add the new nonzero to the high position, shift the remaining elements in current row to the right by one slot */
       for (ii=nrow-1; ii>=i; ii--) {
         *(cp+(ii+1)*8) = *(cp+ii*8);
         *(vp+(ii+1)*8) = *(vp+ii*8);
-        if (*(bp+ii) & (char)1<<(row&0x07)) *(bp+ii+1) |= (char)1<<(row&0x07);
       }
       a->rlen[row]++;
       *(cp+i*8) = col;
       *(vp+i*8) = value;
-      *(bp+i)  |= (char)1<<(row&0x07); /* set the mask bit */
       a->nz++;
       A->nonzerostate++;
       low = i+1; high++; nrow++;
@@ -1822,7 +1815,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
 
   /* allocate the matrix space */
   if (mallocmatspace) {
-    ierr = PetscMalloc3(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx,a->maxallocmat/8,&c->bt);CHKERRQ(ierr);
+    ierr = PetscMalloc2(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)C,a->maxallocmat*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
 
     c->singlemalloc = PETSC_TRUE;

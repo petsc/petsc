@@ -88,16 +88,14 @@ PetscErrorCode MatCreateColmap_MPIELL_Private(Mat mat)
     if (value == 0.0 && ignorezeroentries) {low1 = 0; high1 = nrow1;goto a_noinsert;} \
     if (nonew == 1) {low1 = 0; high1 = nrow1; goto a_noinsert;} \
     if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
-    MatSeqXELLReallocateELL(A,am,1,nrow1,a->sliidx,row/8,row,col,a->colidx,a->val,a->bt,cp1,vp1,bp1,nonew,MatScalar); \
+    MatSeqXELLReallocateELL(A,am,1,nrow1,a->sliidx,row/8,row,col,a->colidx,a->val,cp1,vp1,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow1-1; ii>=_i; ii--) { \
       *(cp1+8*(ii+1)) = *(cp1+8*ii); \
       *(vp1+8*(ii+1)) = *(vp1+8*ii); \
-      if (*(bp1+ii) & (char)1<<(row&0x07)) *(bp1+ii+1) |= (char)1<<(row&0x07); \
     } \
     *(cp1+8*_i) = col; \
     *(vp1+8*_i) = value; \
-    *(bp1+_i)  |= (char)1<<(row&0x07); \
     a->nz++; nrow1++; A->nonzerostate++; \
     a_noinsert: ; \
     a->rlen[row] = nrow1; \
@@ -124,16 +122,14 @@ PetscErrorCode MatCreateColmap_MPIELL_Private(Mat mat)
     if (value == 0.0 && ignorezeroentries) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == 1) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
-    MatSeqXELLReallocateELL(B,bm,1,nrow2,b->sliidx,row/8,row,col,b->colidx,b->val,b->bt,cp2,vp2,bp2,nonew,MatScalar); \
+    MatSeqXELLReallocateELL(B,bm,1,nrow2,b->sliidx,row/8,row,col,b->colidx,b->val,cp2,vp2,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow2-1; ii>=_i; ii--) { \
       *(cp2+8*(ii+1)) = *(cp2+8*ii); \
       *(vp2+8*(ii+1)) = *(vp2+8*ii); \
-      if (*(bp2+ii) & (char)1<<(row&0x07)) *(bp2+ii+1) |= (char)1<<(row&0x07); \
     } \
     *(cp2+8*_i) = col; \
     *(vp2+8*_i) = value; \
-    *(bp2+_i)  |= (char)1<<(row&0x07); \
     b->nz++; nrow2++; B->nonzerostate++; \
     b_noinsert: ; \
     b->rlen[row] = nrow2; \
@@ -157,7 +153,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
 
   PetscInt       *cp1,*cp2,ii,_i,nrow1,nrow2,low1,high1,low2,high2,t,lastcol1,lastcol2;
   MatScalar      *vp1,*vp2;
-  char           *bp1,*bp2;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -171,7 +166,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
       shift1   = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
       cp1      = a->colidx+shift1;
       vp1      = a->val+shift1;
-      bp1      = a->bt+shift1/8;
       nrow1    = a->rlen[row];
       low1     = 0;
       high1    = nrow1;
@@ -179,7 +173,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
       shift2   = b->sliidx[row>>3]+(row&0x07); /* starting index of the row */
       cp2      = b->colidx+shift2;
       vp2      = b->val+shift2;
-      bp2      = b->bt+shift2/8;
       nrow2    = b->rlen[row];
       low2     = 0;
       high2    = nrow2;
@@ -190,7 +183,7 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
-          MatSetValue_SeqELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,bp1,lastcol1,low1,high1); /* set one value */
+          MatSetValue_SeqELL_Private(A,row,col,value,addv,im[i],in[j],cp1,vp1,lastcol1,low1,high1); /* set one value */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
@@ -215,13 +208,12 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
               shift2 = b->sliidx[row>>3]+(row&0x07); /* starting index of the row */
               cp2    = b->colidx+shift2;
               vp2    = b->val+shift2;
-              bp2    = b->bt+shift2/8;
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
             } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", im[i], in[j]);
           } else col = in[j];
-          MatSetValue_SeqELL_Private(B,row,col,value,addv,im[i],in[j],cp2,vp2,bp2,lastcol2,low2,high2); /* set one value */
+          MatSetValue_SeqELL_Private(B,row,col,value,addv,im[i],in[j],cp2,vp2,lastcol2,low2,high2); /* set one value */
         }
       }
     } else {
