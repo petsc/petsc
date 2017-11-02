@@ -21,7 +21,7 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
   Mat            B     = ell->B,Bnew;
   Mat_SeqELL     *Bell = (Mat_SeqELL*)B->data;
   PetscInt       i,j,totalslices,N = A->cmap->N,ec,row;
-  PetscBool      bflag;
+  PetscBool      isnonzero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,8 +58,8 @@ PetscErrorCode MatDisAssemble_MPIELL(Mat A)
   totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=Bell->sliidx[i],row=0; j<Bell->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      bflag = (PetscBool)(Bell->bt[j>>3] & (char)(1<<row));
-      if (bflag) {
+      isnonzero = (PetscBool)((j-Bell->sliidx[i])/8 < Bell->rlen[8*i+row]);
+      if (isnonzero) {
         ierr = MatSetValue(Bnew,8*i+row,ell->garray[Bell->colidx[j]],Bell->val[j],B->insertmode);CHKERRQ(ierr);
       }
     }
@@ -80,9 +80,10 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
   Mat_SeqELL     *B   = (Mat_SeqELL*)(ell->B->data);
   PetscErrorCode ierr;
-  PetscInt       i,*bcolidx = B->colidx,ec = 0,*garray,totalslices;
+  PetscInt       i,j,*bcolidx = B->colidx,ec = 0,*garray,totalslices;
   IS             from,to;
   Vec            gvec;
+  PetscBool      isnonzero;
 #if defined(PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
@@ -97,13 +98,16 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
 #if defined(PETSC_USE_CTABLE)
   /* use a table */
   ierr = PetscTableCreate(ell->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<B->sliidx[totalslices]; i++) { /* loop over all elements */
-    if (B->bt[i>>3] & (char)(1<<(i&0x07))) { /* check the mask bit */
-      PetscInt data,gid1 = bcolidx[i] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
-      if (!data) {
-        /* one based table */
-        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (j=B->sliidx[i]; j<B->sliidx[i+1]; j++) {
+      isnonzero = (PetscBool)((j-B->sliidx[i])/8 < B->rlen[(i<<3)+(j&0x07)]);
+      if (isnonzero) { /* check the mask bit */
+        PetscInt data,gid1 = bcolidx[j] + 1;
+        ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+        if (!data) {
+          /* one based table */
+          ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -123,12 +127,15 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
   }
   /* compact out the extra columns in B */
-  for (i=0; i<B->sliidx[totalslices]; i++) {
-    if (B->bt[i>>3] & (char)(1<<(i&0x07))) {
-      PetscInt gid1 = bcolidx[i] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
-      lid--;
-      bcolidx[i] = lid;
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (j=B->sliidx[i]; j<B->sliidx[i+1]; j++) {
+      isnonzero = (PetscBool)((j-B->sliidx[i])/8 < B->rlen[(i<<3)+(j&0x07)]);
+      if (isnonzero) {
+        PetscInt gid1 = bcolidx[j] + 1;
+        ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+        lid--;
+        bcolidx[j] = lid;
+      }
     }
   }
   ell->B->cmap->n = ell->B->cmap->N = ec;
@@ -141,10 +148,13 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   /* mark those columns that are in ell->B */
   ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
 
-  for (i=0; i<B->sliidx[totalslices]; i++) {
-    if (B->bt[i>>3] & (char)(1<<(i&0x07))) {
-      if (!indices[bcolidx[i]]) ec++;
-      indices[bcolidx[i]] = 1;
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (j=B->sliidx[i]; j<B->sliidx[i+1]; j++) {
+      isnonzero = (PetscBool)((j-B->sliidx[i])/8 < B->rlen[(i<<3)+(j&0x07)]);
+      if (isnonzero) {
+        if (!indices[bcolidx[j]]) ec++;
+        indices[bcolidx[j]] = 1;
+      }
     }
   }
 
@@ -161,8 +171,11 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   }
 
   /* compact out the extra columns in B */
-  for (i=0; i<B->sliidx[totalslices]; i++) {
-    if (B->bt[i>>3] & (char)(1<<(i&0x07))) bcolidx[i] = indices[bcolidx[i]];
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (j=B->sliidx[i]; j<B->sliidx[i+1]; j++) {
+      isnonzero = (PetscBool)((j-B->sliidx[i])/8 < B->rlen[(i<<3)+(j&0x07)]);
+      if (isnonzero) bcolidx[j] = indices[bcolidx[j]];
+    }
   }
   ell->B->cmap->n = ell->B->cmap->N = ec; /* number of columns that are not all zeros */
   ell->B->cmap->bs = 1;

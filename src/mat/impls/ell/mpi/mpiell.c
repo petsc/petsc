@@ -632,6 +632,7 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat_SeqELL *Aloc;
     PetscInt   M = mat->rmap->N,N = mat->cmap->N,*acolidx,row,col,i,j;
     MatScalar  *aval;
+    PetscBool  isnonzero;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
     if (!rank) {
@@ -650,7 +651,8 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     acolidx = Aloc->colidx; aval = Aloc->val;
     for (i=0; i<Aloc->totalslices; i++) { /* loop over slices */
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
-        if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) { /* check the mask bit */
+        isnonzero = (PetscBool)((j-Aloc->sliidx[i])/8 < Aloc->rlen[(i<<3)+(j&0x07)]);
+        if (isnonzero) { /* check the mask bit */
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
           col  = *acolidx + mat->rmap->rstart;
           ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);
@@ -664,7 +666,8 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     acolidx = Aloc->colidx; aval = Aloc->val;
     for (i=0; i<Aloc->totalslices; i++) {
       for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
-        if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) {
+        isnonzero = (PetscBool)((j-Aloc->sliidx[i])/8 < Aloc->rlen[(i<<3)+(j&0x07)]);
+        if (isnonzero) {
           row  = (i<<3)+(j&0x07) + mat->rmap->rstart;
           col  = ell->garray[*acolidx];
           ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);

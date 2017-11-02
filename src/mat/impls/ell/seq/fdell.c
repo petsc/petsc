@@ -13,7 +13,7 @@ PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat A,PetscInt oshift,PetscBool symme
   PetscInt       i,j,*collengths,*cia,*cja,n = A->cmap->n,totalslices;
   PetscInt       row,col;
   PetscInt       *cspidx;
-  PetscBool      bflag;
+  PetscBool      isnonzero;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -28,8 +28,8 @@ PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat A,PetscInt oshift,PetscBool symme
   totalslices = A->rmap->n/8+((A->rmap->n & 0x07)?1:0); /* floor(n/8) */
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      bflag = (PetscBool)(a->bt[j>>3] & (char)(1<<row));
-      if (bflag) collengths[a->colidx[j]]++;
+      isnonzero = (PetscBool)((j-a->sliidx[i])/8 < a->rlen[8*i+row]);
+      if (isnonzero) collengths[a->colidx[j]]++;
     }
   }
 
@@ -41,11 +41,11 @@ PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat A,PetscInt oshift,PetscBool symme
 
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      bflag = (PetscBool)(a->bt[j>>3] & (char)(1<<row));
-      if (bflag) {
+      isnonzero = (PetscBool)((j-a->sliidx[i])/8 < a->rlen[8*i+row]);
+      if (isnonzero) {
         col = a->colidx[j];
         cspidx[cia[col]+collengths[col]-oshift] = j; /* index of a->colidx */
-        cja[cia[col]+collengths[col]-oshift]  = 8*i+row +oshift; /* row index */
+        cja[cia[col]+collengths[col]-oshift] = 8*i+row +oshift; /* row index */
         collengths[col]++;
       }
     }

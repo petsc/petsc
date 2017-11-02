@@ -221,5 +221,5 @@ PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,P
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatConjugate_SeqELL(Mat A);
 PETSC_INTERN PetscErrorCode MatScale_SeqELL(Mat,PetscScalar);
-PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqELL(Mat,Vec,Vec); 
+PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqELL(Mat,Vec,Vec);
 #endif
