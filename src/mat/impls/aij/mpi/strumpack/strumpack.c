@@ -446,6 +446,8 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorIn
   case STRUMPACK_REORDERING_ERROR: { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: matrix reordering failed"); break; }
   default:                           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"STRUMPACK error: factorization failed");
   }
+  F->assembled    = PETSC_TRUE;
+  F->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
