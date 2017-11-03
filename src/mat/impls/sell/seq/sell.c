@@ -1,8 +1,8 @@
 
 /*
-  Defines the basic matrix operations for the ELL matrix storage format.
+  Defines the basic matrix operations for the SELL matrix storage format.
 */
-#include <../src/mat/impls/ell/seq/ell.h>  /*I   "petscmat.h"  I*/
+#include <../src/mat/impls/sell/seq/sell.h>  /*I   "petscmat.h"  I*/
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
 #if defined(PETSC_HAVE_IMMINTRIN_H)
@@ -28,7 +28,7 @@ vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
 #endif  /* PETSC_HAVE_IMMINTRIN_H */
 
 /*@C
- MatSeqELLSetPreallocation - For good matrix assembly performance
+ MatSeqSELLSetPreallocation - For good matrix assembly performance
  the user should preallocate the matrix storage by setting the parameter nz
  (or the array nnz).  By setting these parameters accurately, performance
  during matrix assembly can be increased significantly.
@@ -59,27 +59,27 @@ vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
 
  The maximum number of nonzeos in any row should be as accuate as possible.
  If it is underesitmated, you will get bad performance due to reallocation
- (MatSeqXELLReallocateELL).
+ (MatSeqXSELLReallocateSELL).
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateELL(), MatSetValues(), MatGetInfo()
+ .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatGetInfo()
 
  @*/
-PetscErrorCode MatSeqELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt rlen[])
+PetscErrorCode MatSeqSELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt rlen[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
   PetscValidType(B,1);
-  ierr = PetscTryMethod(B,"MatSeqELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen));CHKERRQ(ierr);
+  ierr = PetscTryMethod(B,"MatSeqSELLSetPreallocation_C",(Mat,PetscInt,const PetscInt[]),(B,rlenmax,rlen));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const PetscInt rlen[])
+PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,const PetscInt rlen[])
 {
-  Mat_SeqELL     *b;
+  Mat_SeqSELL    *b;
   PetscInt       i,j,totalslices;
   PetscBool      skipallocation=PETSC_FALSE,realalloc=PETSC_FALSE;
   PetscErrorCode ierr;
@@ -106,12 +106,12 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
 
   B->preallocated = PETSC_TRUE;
 
-  b = (Mat_SeqELL*)B->data;
+  b = (Mat_SeqSELL*)B->data;
 
   totalslices = B->rmap->n/8+((B->rmap->n & 0x07)?1:0); /* ceil(n/8) */
   b->totalslices = totalslices;
   if (!skipallocation) {
-    if (B->rmap->n & 0x07) PetscInfo1(B,"Padding rows to the SEQELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);
+    if (B->rmap->n & 0x07) PetscInfo1(B,"Padding rows to the SEQSELL matrix because the number of rows is not the multiple of 8 (value %D)\n",B->rmap->n);
 
     if (!b->sliidx) { /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       ierr = PetscMalloc1(totalslices+1,&b->sliidx);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
 
     /* allocate space for val, colidx, rlen */
     /* FIXME: should B's old memory be unlogged? */
-    ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx);CHKERRQ(ierr);
+    ierr = MatSeqXSELLFreeSELL(B,&b->val,&b->colidx);CHKERRQ(ierr);
     /* FIXME: assuming an element of the bit array takes 8 bits */
     ierr = PetscMalloc2(b->sliidx[totalslices],&b->val,b->sliidx[totalslices],&b->colidx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)B,b->sliidx[totalslices]*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
@@ -168,10 +168,10 @@ PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL     *a=(Mat_SeqSELL*)A->data;
   PetscInt       i,j,row;
   PetscBool      isnonzero;
   PetscErrorCode ierr;
@@ -205,7 +205,7 @@ PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Ma
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat               B;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
@@ -227,8 +227,8 @@ PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat A,MatType newtype,MatReuse reuse,Mat
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQELL);CHKERRQ(ierr);
-  ierr = MatSeqELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQSELL);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
@@ -250,9 +250,9 @@ PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat A,MatType newtype,MatReuse reuse,Mat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscScalar       *y;
   const PetscScalar *x;
   const MatScalar   *aval=a->val;
@@ -426,9 +426,9 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
-PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscScalar       *y,*z;
   const PetscScalar *x;
   const MatScalar   *aval=a->val;
@@ -505,9 +505,9 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
+PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscScalar       *y;
   const PetscScalar *x;
   const MatScalar   *aval=a->val;
@@ -536,23 +536,23 @@ PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTranspose_SeqELL(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMultTranspose_SeqSELL(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecSet(yy,0.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd_SeqELL(A,xx,yy,yy);CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd_SeqSELL(A,xx,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
      Checks for missing diagonals
 */
-PetscErrorCode MatMissingDiagonal_SeqELL(Mat A,PetscBool  *missing,PetscInt *d)
+PetscErrorCode MatMissingDiagonal_SeqSELL(Mat A,PetscBool  *missing,PetscInt *d)
 {
-  Mat_SeqELL *a=(Mat_SeqELL*)A->data;
-  PetscInt   *diag,i;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
+  PetscInt    *diag,i;
 
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
@@ -574,9 +574,9 @@ PetscErrorCode MatMissingDiagonal_SeqELL(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
+PetscErrorCode MatMarkDiagonal_SeqSELL(Mat A)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscInt       i,j,m=A->rmap->n,shift;
   PetscErrorCode ierr;
 
@@ -602,9 +602,9 @@ PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
 /*
   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
 */
-PetscErrorCode MatInvertDiagonal_SeqELL(Mat A,PetscScalar omega,PetscScalar fshift)
+PetscErrorCode MatInvertDiagonal_SeqSELL(Mat A,PetscScalar omega,PetscScalar fshift)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*) A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*) A->data;
   PetscInt       i,*diag,m = A->rmap->n;
   MatScalar      *val = a->val;
   PetscScalar    *idiag,*mdiag;
@@ -612,7 +612,7 @@ PetscErrorCode MatInvertDiagonal_SeqELL(Mat A,PetscScalar omega,PetscScalar fshi
 
   PetscFunctionBegin;
   if (a->idiagvalid) PetscFunctionReturn(0);
-  ierr = MatMarkDiagonal_SeqELL(A);CHKERRQ(ierr);
+  ierr = MatMarkDiagonal_SeqSELL(A);CHKERRQ(ierr);
   diag = a->diag;
   if (!a->idiag) {
     ierr = PetscMalloc3(m,&a->idiag,m,&a->mdiag,m,&a->ssor_work);CHKERRQ(ierr);
@@ -647,27 +647,27 @@ PetscErrorCode MatInvertDiagonal_SeqELL(Mat A,PetscScalar omega,PetscScalar fshi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatZeroEntries_SeqELL(Mat A)
+PetscErrorCode MatZeroEntries_SeqSELL(Mat A)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(a->val,(a->sliidx[a->totalslices])*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = MatSeqSELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SeqELL(Mat A)
+PetscErrorCode MatDestroy_SeqSELL(Mat A)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
-  ierr = MatSeqXELLFreeELL(A,&a->val,&a->colidx);CHKERRQ(ierr);
+  ierr = MatSeqXSELLFreeSELL(A,&a->val,&a->colidx);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
@@ -686,13 +686,13 @@ PetscErrorCode MatDestroy_SeqELL(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqELLSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetOption_SeqELL(Mat A,MatOption op,PetscBool flg)
+PetscErrorCode MatSetOption_SeqSELL(Mat A,MatOption op,PetscBool flg)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -733,9 +733,9 @@ PetscErrorCode MatSetOption_SeqELL(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
+PetscErrorCode MatGetDiagonal_SeqSELL(Mat A,Vec v)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscInt       i,j,n,shift;
   PetscScalar    *x,zero=0.0;
   PetscErrorCode ierr;
@@ -768,9 +768,9 @@ PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalScale_SeqELL(Mat A,Vec ll,Vec rr)
+PetscErrorCode MatDiagonalScale_SeqSELL(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   const PetscScalar *l,*r;
   PetscInt          i,j,m,n,row;
   PetscErrorCode    ierr;
@@ -778,7 +778,7 @@ PetscErrorCode MatDiagonalScale_SeqELL(Mat A,Vec ll,Vec rr)
   PetscFunctionBegin;
   if (ll) {
     /* The local size is used so that VecMPI can be passed to this routine
-       by MatDiagonalScale_MPIELL */
+       by MatDiagonalScale_MPISELL */
     ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
     if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
@@ -802,15 +802,15 @@ PetscErrorCode MatDiagonalScale_SeqELL(Mat A,Vec ll,Vec rr)
     ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   }
-  ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = MatSeqSELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSetValues_SeqELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+extern PetscErrorCode MatSetValues_SeqSELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
-PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
+PetscErrorCode MatGetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
-  Mat_SeqELL  *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
   PetscInt    *cp,i,k,low,high,t,row,col,l;
   PetscInt    shift;
   MatScalar   *vp;
@@ -851,9 +851,9 @@ PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscInt          i,j,m=A->rmap->n,shift;
   const char        *name;
   PetscViewerFormat format;
@@ -1057,10 +1057,10 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
+PetscErrorCode MatView_SeqSELL_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat               A=(Mat)Aa;
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscInt          i,j,m=A->rmap->n,shift;
   int               color;
   PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r;
@@ -1141,7 +1141,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_SeqELL_Draw(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqSELL_Draw(Mat A,PetscViewer viewer)
 {
   PetscDraw      draw;
   PetscReal      xr,yr,xl,yl,h,w;
@@ -1157,13 +1157,13 @@ PetscErrorCode MatView_SeqELL_Draw(Mat A,PetscViewer viewer)
   xr  += w;          yr += h;         xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscDrawZoom(draw,MatView_SeqELL_Draw_Zoom,A);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(draw,MatView_SeqSELL_Draw_Zoom,A);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",NULL);CHKERRQ(ierr);
   ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqSELL(Mat A,PetscViewer viewer)
 {
   PetscBool      iascii,isbinary,isdraw;
   PetscErrorCode ierr;
@@ -1173,18 +1173,18 @@ PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MatView_SeqELL_ASCII(A,viewer);CHKERRQ(ierr);
+    ierr = MatView_SeqSELL_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    /* ierr = MatView_SeqELL_Binary(A,viewer);CHKERRQ(ierr); */
+    /* ierr = MatView_SeqSELL_Binary(A,viewer);CHKERRQ(ierr); */
   } else if (isdraw) {
-    ierr = MatView_SeqELL_Draw(A,viewer);CHKERRQ(ierr);
+    ierr = MatView_SeqSELL_Draw(A,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
+PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscInt       i,shift,row_in_slice,row,nrow,*cp,lastcol,j,k;
   MatScalar      *vp;
   PetscErrorCode ierr;
@@ -1192,7 +1192,7 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   /* To do: compress out the unused elements */
-  ierr = MatMarkDiagonal_SeqELL(A);CHKERRQ(ierr);
+  ierr = MatMarkDiagonal_SeqSELL(A);CHKERRQ(ierr);
   ierr = PetscInfo6(A,"Matrix size: %D X %D; storage space: %D allocated %D used (%D nonzeros+%D paddedzeros)\n",A->rmap->n,A->cmap->n,a->maxallocmat,a->sliidx[a->totalslices],a->nz,a->sliidx[a->totalslices]-a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",a->rlenmax);CHKERRQ(ierr);
@@ -1232,13 +1232,13 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
   A->info.mallocs += a->reallocs;
   a->reallocs      = 0;
 
-  ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = MatSeqSELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetInfo_SeqELL(Mat A,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_SeqSELL(Mat A,MatInfoType flag,MatInfo *info)
 {
-  Mat_SeqELL *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
 
   PetscFunctionBegin;
   info->block_size   = 1.0;
@@ -1260,9 +1260,9 @@ PetscErrorCode MatGetInfo_SeqELL(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
+PetscErrorCode MatSetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscInt       shift,i,k,l,low,high,t,ii,row,col,nrow;
   PetscInt       *cp,nonew=a->nonew,lastcol=-1;
   MatScalar      *vp,value;
@@ -1317,7 +1317,7 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
       /* If the current row length exceeds the slice width (e.g. nrow==slice_width), allocate a new space, otherwise do nothing */
-      MatSeqXELLReallocateELL(A,A->rmap->n,1,nrow,a->sliidx,row/8,row,col,a->colidx,a->val,cp,vp,nonew,MatScalar);
+      MatSeqXSELLReallocateSELL(A,A->rmap->n,1,nrow,a->sliidx,row/8,row,col,a->colidx,a->val,cp,vp,nonew,MatScalar);
       /* add the new nonzero to the high position, shift the remaining elements in current row to the right by one slot */
       for (ii=nrow-1; ii>=i; ii--) {
         *(cp+(ii+1)*8) = *(cp+ii*8);
@@ -1336,15 +1336,15 @@ noinsert:;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCopy_SeqELL(Mat A,Mat B,MatStructure str)
+PetscErrorCode MatCopy_SeqSELL(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* If the two matrices have the same copy implementation, use fast copy. */
   if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
-    Mat_SeqELL *a=(Mat_SeqELL*)A->data;
-    Mat_SeqELL *b=(Mat_SeqELL*)B->data;
+    Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
+    Mat_SeqSELL *b=(Mat_SeqSELL*)B->data;
 
     if (a->sliidx[a->totalslices] != b->sliidx[b->totalslices]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
     ierr = PetscMemcpy(b->val,a->val,a->sliidx[a->totalslices]*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1354,33 +1354,33 @@ PetscErrorCode MatCopy_SeqELL(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetUp_SeqELL(Mat A)
+PetscErrorCode MatSetUp_SeqSELL(Mat A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSeqELLSetPreallocation(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqELLGetArray_SeqELL(Mat A,PetscScalar *array[])
+PetscErrorCode MatSeqSELLGetArray_SeqSELL(Mat A,PetscScalar *array[])
 {
-  Mat_SeqELL *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
 
   PetscFunctionBegin;
   *array = a->val;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqELLRestoreArray_SeqELL(Mat A,PetscScalar *array[])
+PetscErrorCode MatSeqSELLRestoreArray_SeqSELL(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRealPart_SeqELL(Mat A)
+PetscErrorCode MatRealPart_SeqSELL(Mat A)
 {
-  Mat_SeqELL  *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
   PetscInt    i;
   MatScalar   *aval=a->val;
 
@@ -1389,22 +1389,22 @@ PetscErrorCode MatRealPart_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatImaginaryPart_SeqELL(Mat A)
+PetscErrorCode MatImaginaryPart_SeqSELL(Mat A)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
   PetscInt       i;
   MatScalar      *aval=a->val;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<a->sliidx[a->totalslices]; i++) aval[i] = PetscImaginaryPart(aval[i]);
-  ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
+  ierr = MatSeqSELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatScale_SeqELL(Mat inA,PetscScalar alpha)
+PetscErrorCode MatScale_SeqSELL(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)inA->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)inA->data;
   MatScalar      *aval=a->val;
   PetscScalar    oalpha=alpha;
   PetscBLASInt   one=1,size;
@@ -1414,26 +1414,26 @@ PetscErrorCode MatScale_SeqELL(Mat inA,PetscScalar alpha)
   ierr = PetscBLASIntCast(a->sliidx[a->totalslices],&size);CHKERRQ(ierr);
   PetscStackCallBLAS("BLASscal",BLASscal_(&size,&oalpha,aval,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
-  ierr = MatSeqELLInvalidateDiagonal(inA);CHKERRQ(ierr);
+  ierr = MatSeqSELLInvalidateDiagonal(inA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShift_SeqELL(Mat Y,PetscScalar a)
+PetscErrorCode MatShift_SeqSELL(Mat Y,PetscScalar a)
 {
-  Mat_SeqELL     *y=(Mat_SeqELL*)Y->data;
+  Mat_SeqSELL    *y=(Mat_SeqSELL*)Y->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!Y->preallocated || !y->nz) {
-    ierr = MatSeqELLSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
+    ierr = MatSeqSELLSetPreallocation(Y,1,NULL);CHKERRQ(ierr);
   }
   ierr = MatShift_Basic(Y,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSOR_SeqELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL       *a=(Mat_SeqSELL*)A->data;
   PetscScalar       *x,sum,*t;
   const MatScalar   *idiag=0,*mdiag;
   const PetscScalar *b,*xb;
@@ -1445,7 +1445,7 @@ PetscErrorCode MatSOR_SeqELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   its = its*lits;
 
   if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */
-  if (!a->idiagvalid) {ierr = MatInvertDiagonal_SeqELL(A,omega,fshift);CHKERRQ(ierr);}
+  if (!a->idiagvalid) {ierr = MatInvertDiagonal_SeqSELL(A,omega,fshift);CHKERRQ(ierr);}
   a->fshift = fshift;
   a->omega  = omega;
 
@@ -1535,41 +1535,41 @@ PetscErrorCode MatSOR_SeqELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
+static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                        0,
                                        0,
-                                       MatMult_SeqELL,
-                               /* 4*/  MatMultAdd_SeqELL,
-                                       MatMultTranspose_SeqELL,
-                                       MatMultTransposeAdd_SeqELL,
+                                       MatMult_SeqSELL,
+                               /* 4*/  MatMultAdd_SeqSELL,
+                                       MatMultTranspose_SeqSELL,
+                                       MatMultTransposeAdd_SeqSELL,
                                        0,
                                        0,
                                        0,
                                /* 10*/ 0,
                                        0,
                                        0,
-                                       MatSOR_SeqELL,
+                                       MatSOR_SeqSELL,
                                        0,
-                               /* 15*/ MatGetInfo_SeqELL,
-                                       MatEqual_SeqELL,
-                                       MatGetDiagonal_SeqELL,
-                                       MatDiagonalScale_SeqELL,
+                               /* 15*/ MatGetInfo_SeqSELL,
+                                       MatEqual_SeqSELL,
+                                       MatGetDiagonal_SeqSELL,
+                                       MatDiagonalScale_SeqSELL,
                                        0,
                                /* 20*/ 0,
-                                       MatAssemblyEnd_SeqELL,
-                                       MatSetOption_SeqELL,
-                                       MatZeroEntries_SeqELL,
+                                       MatAssemblyEnd_SeqSELL,
+                                       MatSetOption_SeqSELL,
+                                       MatZeroEntries_SeqSELL,
                                /* 24*/ 0,
                                        0,
                                        0,
                                        0,
                                        0,
-                               /* 29*/ MatSetUp_SeqELL,
+                               /* 29*/ MatSetUp_SeqSELL,
                                        0,
                                        0,
                                        0,
                                        0,
-                               /* 34*/ MatDuplicate_SeqELL,
+                               /* 34*/ MatDuplicate_SeqSELL,
                                        0,
                                        0,
                                        0,
@@ -1577,11 +1577,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 39*/ 0,
                                        0,
                                        0,
-                                       MatGetValues_SeqELL,
-                                       MatCopy_SeqELL,
+                                       MatGetValues_SeqSELL,
+                                       MatCopy_SeqSELL,
                                /* 44*/ 0,
-                                       MatScale_SeqELL,
-                                       MatShift_SeqELL,
+                                       MatScale_SeqSELL,
+                                       MatShift_SeqSELL,
                                        0,
                                        0,
                                /* 49*/ 0,
@@ -1595,8 +1595,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
                                        0,
                                /* 59*/ 0,
-                                       MatDestroy_SeqELL,
-                                       MatView_SeqELL,
+                                       MatDestroy_SeqSELL,
+                                       MatView_SeqSELL,
                                        0,
                                        0,
                                /* 64*/ 0,
@@ -1637,7 +1637,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 99*/ 0,
                                        0,
                                        0,
-                                       MatConjugate_SeqELL,
+                                       MatConjugate_SeqSELL,
                                        0,
                                /*104*/ 0,
                                        0,
@@ -1648,7 +1648,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
                                        0,
                                        0,
-                                       MatMissingDiagonal_SeqELL,
+                                       MatMissingDiagonal_SeqSELL,
                                /*114*/ 0,
                                        0,
                                        0,
@@ -1682,9 +1682,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                 /*144*/0
 };
 
-PetscErrorCode MatStoreValues_SeqELL(Mat mat)
+PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)mat->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1701,9 +1701,9 @@ PetscErrorCode MatStoreValues_SeqELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRetrieveValues_SeqELL(Mat mat)
+PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)mat->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1715,30 +1715,30 @@ PetscErrorCode MatRetrieveValues_SeqELL(Mat mat)
 }
 
 /*@C
- MatSeqELLRestoreArray - returns access to the array where the data for a MATSEQELL matrix is stored obtained by MatSeqELLGetArray()
+ MatSeqSELLRestoreArray - returns access to the array where the data for a MATSEQSELL matrix is stored obtained by MatSeqSELLGetArray()
 
  Not Collective
 
  Input Parameters:
- .  mat - a MATSEQELL matrix
+ .  mat - a MATSEQSELL matrix
  .  array - pointer to the data
 
  Level: intermediate
 
- .seealso: MatSeqELLGetArray(), MatSeqELLRestoreArrayF90()
+ .seealso: MatSeqSELLGetArray(), MatSeqSELLRestoreArrayF90()
  @*/
-PetscErrorCode MatSeqELLRestoreArray(Mat A,PetscScalar **array)
+PetscErrorCode MatSeqSELLRestoreArray(Mat A,PetscScalar **array)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseMethod(A,"MatSeqELLRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"MatSeqSELLRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
 {
-  Mat_SeqELL     *b;
+  Mat_SeqSELL    *b;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -1772,28 +1772,28 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat B)
   b->ibdiagvalid        = PETSC_FALSE;
   b->keepnonzeropattern = PETSC_FALSE;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqELLGetArray_C",MatSeqELLGetArray_SeqELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqELLRestoreArray_C",MatSeqELLRestoreArray_SeqELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqELLSetPreallocation_C",MatSeqELLSetPreallocation_SeqELL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqell_seqaij_C",MatConvert_SeqELL_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLGetArray_C",MatSeqSELLGetArray_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLRestoreArray_C",MatSeqSELLRestoreArray_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSELLSetPreallocation_C",MatSeqSELLSetPreallocation_SeqSELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsell_seqaij_C",MatConvert_SeqSELL_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
  Given a matrix generated with MatGetFactor() duplicates all the information in A into B
  */
-PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalues,PetscBool mallocmatspace)
+PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C,Mat A,MatDuplicateOption cpvalues,PetscBool mallocmatspace)
 {
-  Mat_SeqELL     *c,*a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL    *c,*a=(Mat_SeqSELL*)A->data;
   PetscInt       i,m=A->rmap->n;
   PetscInt       totalslices=a->totalslices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  c = (Mat_SeqELL*)C->data;
+  c = (Mat_SeqSELL*)C->data;
 
   C->factortype = A->factortype;
   c->row        = 0;
@@ -1863,7 +1863,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
+PetscErrorCode MatDuplicate_SeqSELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
 
@@ -1874,12 +1874,12 @@ PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
     ierr = MatSetBlockSizesFromMats(*B,A,A);CHKERRQ(ierr);
   }
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqELL(*B,A,cpvalues,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqSELL(*B,A,cpvalues,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
- MatCreateSeqELL - Creates a sparse matrix in ELL format.
+ MatCreateSeqSELL - Creates a sparse matrix in SELL format.
 
  Collective on MPI_Comm
 
@@ -1896,7 +1896,7 @@ PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
  It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
  MatXXXXSetPreallocation() paradgm instead of this routine directly.
- [MatXXXXSetPreallocation() is, for example, MatSeqELLSetPreallocation]
+ [MatXXXXSetPreallocation() is, for example, MatSeqSELLSetPreallocation]
 
  Notes:
  If nnz is given then nz is ignored
@@ -1908,24 +1908,24 @@ PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
  Level: intermediate
 
- .seealso: MatCreate(), MatCreateELL(), MatSetValues(), MatCreateSeqELLWithArrays()
+ .seealso: MatCreate(), MatCreateSELL(), MatSetValues(), MatCreateSeqSELLWithArrays()
 
  @*/
-PetscErrorCode MatCreateSeqELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)
+PetscErrorCode MatCreateSeqSELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt maxallocrow,const PetscInt rlen[],Mat *A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATSEQELL);CHKERRQ(ierr);
-  ierr = MatSeqELLSetPreallocation_SeqELL(*A,maxallocrow,rlen);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATSEQSELL);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation_SeqSELL(*A,maxallocrow,rlen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
+PetscErrorCode MatEqual_SeqSELL(Mat A,Mat B,PetscBool * flg)
 {
-  Mat_SeqELL     *a=(Mat_SeqELL*)A->data,*b=(Mat_SeqELL*)B->data;
+  Mat_SeqSELL     *a=(Mat_SeqSELL*)A->data,*b=(Mat_SeqSELL*)B->data;
   PetscInt       totalslices=a->totalslices;
   PetscErrorCode ierr;
 
@@ -1943,9 +1943,9 @@ PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqELLInvalidateDiagonal(Mat A)
+PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat A)
 {
-  Mat_SeqELL *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
 
   PetscFunctionBegin;
   a->idiagvalid  = PETSC_FALSE;
@@ -1953,10 +1953,10 @@ PetscErrorCode MatSeqELLInvalidateDiagonal(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConjugate_SeqELL(Mat A)
+PetscErrorCode MatConjugate_SeqSELL(Mat A)
 {
 #if defined(PETSC_USE_COMPLEX)
-  Mat_SeqELL  *a=(Mat_SeqELL*)A->data;
+  Mat_SeqSELL *a=(Mat_SeqSELL*)A->data;
   PetscInt    i;
   PetscScalar *val = a->val;
 

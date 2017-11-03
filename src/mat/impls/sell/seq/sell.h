@@ -1,14 +1,14 @@
 
-#if !defined(__ELL_H)
-#define __ELL_H
+#if !defined(__SELL_H)
+#define __SELL_H
 
 #include <petsc/private/matimpl.h>
 #include <petscctable.h>
 
 /*
- Struct header for SeqELL matrix format
+ Struct header for SeqSELL matrix format
 */
-#define SEQELLHEADER(datatype) \
+#define SEQSELLHEADER(datatype) \
 PetscBool   roworiented;       /* if true, row-oriented input, default */ \
 PetscInt    nonew;             /* 1 don't add new nonzeros, -1 generate error on new */ \
 PetscInt    nounused;          /* -1 generate error on unused space */ \
@@ -39,7 +39,7 @@ PetscInt    *sliidx;           /* slice index */ \
 PetscInt    totalslices;       /* total number of slices */ \
 
 typedef struct {
-  SEQELLHEADER(MatScalar);
+  SEQSELLHEADER(MatScalar);
   MatScalar   *saved_values;             /* location for stashing nonzero values of matrix */
   PetscScalar *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
   PetscBool   idiagvalid;                /* current idiag[] and mdiag[] are valid */
@@ -47,14 +47,14 @@ typedef struct {
   PetscBool   ibdiagvalid;               /* inverses of block diagonals are valid. */
   PetscScalar fshift,omega;              /* last used omega and fshift */
   ISColoring  coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
-} Mat_SeqELL;
+} Mat_SeqSELL;
 
 /*
- Frees the arrays from the sliced XELLPACK matrix type
+ Frees the arrays from the XSELLPACK matrix type
  */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXELLFreeELL(Mat AA,MatScalar **val,PetscInt **colidx)
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXSELLFreeSELL(Mat AA,MatScalar **val,PetscInt **colidx)
 {
-  Mat_SeqELL     *A = (Mat_SeqELL*) AA->data;
+  Mat_SeqSELL    *A = (Mat_SeqSELL*) AA->data;
   PetscErrorCode ierr;
   if (A->singlemalloc) {
     ierr = PetscFree2(*val,*colidx);CHKERRQ(ierr);
@@ -65,9 +65,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXELLFreeELL(Mat AA,MatScalar **val,Pets
   return 0;
 }
 
-#define MatSeqXELLReallocateELL(Amat,AM,BS2,WIDTH,SIDX,SID,ROW,COL,COLIDX,VAL,CP,VP,NONEW,datatype) \
+#define MatSeqXSELLReallocateSELL(Amat,AM,BS2,WIDTH,SIDX,SID,ROW,COL,COLIDX,VAL,CP,VP,NONEW,datatype) \
 if (WIDTH >= (SIDX[SID+1]-SIDX[SID])/8) { \
-Mat_SeqELL *Ain = (Mat_SeqELL*)Amat->data; \
+Mat_SeqSELL *Ain = (Mat_SeqSELL*)Amat->data; \
 /* there is no extra room in row, therefore enlarge 8 elements (1 slice column) */ \
 PetscInt new_size=Ain->maxallocmat+8,*new_colidx; \
 datatype *new_val; \
@@ -87,7 +87,7 @@ for (ii=SID+1;ii<=AM>>3;ii++) { SIDX[ii] += 8; } \
 CP = new_colidx+SIDX[SID]+(ROW & 0x07); \
 VP = new_val+SIDX[SID]+(ROW & 0x07); \
 /* free up old matrix storage */ \
-ierr              = MatSeqXELLFreeELL(A,&Ain->val,&Ain->colidx);CHKERRQ(ierr); \
+ierr              = MatSeqXSELLFreeSELL(A,&Ain->val,&Ain->colidx);CHKERRQ(ierr); \
 Ain->val          = (MatScalar*) new_val; \
 Ain->colidx       = new_colidx; \
 Ain->singlemalloc = PETSC_TRUE; \
@@ -97,9 +97,9 @@ if (WIDTH>=Ain->maxallocrow) Ain->maxallocrow++; \
 if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
 } \
 
-#define MatSetValue_SeqELL_Private(A,row,col,value,addv,orow,ocol,cp,vp,lastcol,low,high) \
+#define MatSetValue_SeqSELL_Private(A,row,col,value,addv,orow,ocol,cp,vp,lastcol,low,high) \
 { \
-  Mat_SeqELL  *a=(Mat_SeqELL*)A->data; \
+  Mat_SeqSELL  *a=(Mat_SeqSELL*)A->data; \
   found=PETSC_FALSE; \
   if (col <= lastcol) low = 0; \
   else high = a->rlen[row]; \
@@ -123,7 +123,7 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
     if (a->nonew != 1 && !(value == 0.0 && a->ignorezeroentries) && a->rlen[row] >= (a->sliidx[row/8+1]-a->sliidx[row/8])/8) { \
       /* there is no extra room in row, therefore enlarge 8 elements (1 slice column) */ \
       if (a->maxallocmat < a->sliidx[a->totalslices]+8) { \
-        /* allocates a larger array for the XELL matrix types; only extend the current slice by one more column. */ \
+        /* allocates a larger array for the XSELL matrix types; only extend the current slice by one more column. */ \
         PetscInt  new_size=a->maxallocmat+8,*new_colidx; \
         MatScalar *new_val; \
         if (a->nonew == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",orow,ocol); \
@@ -138,7 +138,7 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
         cp = new_colidx+a->sliidx[row/8]+(row & 0x07); \
         vp = new_val+a->sliidx[row/8]+(row & 0x07); \
         /* free up old matrix storage */ \
-        ierr            = MatSeqXELLFreeELL(A,&a->val,&a->colidx);CHKERRQ(ierr); \
+        ierr            = MatSeqXSELLFreeSELL(A,&a->val,&a->colidx);CHKERRQ(ierr); \
         a->val          = (MatScalar*)new_val; \
         a->colidx       = new_colidx; \
         a->singlemalloc = PETSC_TRUE; \
@@ -166,40 +166,40 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
   } \
 } \
 
-PETSC_INTERN PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat,PetscInt,const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatMult_SeqELL(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultAdd_SeqELL(Mat,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTranspose_SeqELL(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqELL(Mat,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqELL(Mat,PetscBool*,PetscInt*);
-PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqELL(Mat);
-PETSC_INTERN PetscErrorCode MatInvertDiagonal_SeqELL(Mat,PetscScalar,PetscScalar);
-PETSC_INTERN PetscErrorCode MatZeroEntries_SeqELL(Mat);
-PETSC_INTERN PetscErrorCode MatDestroy_SeqELL(Mat);
-PETSC_INTERN PetscErrorCode MatSetOption_SeqELL(Mat,MatOption,PetscBool);
-PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqELL(Mat,Vec v);
-PETSC_INTERN PetscErrorCode MatGetValues_SeqELL(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt[],PetscScalar[]);
-PETSC_INTERN PetscErrorCode MatView_SeqELL(Mat,PetscViewer);
-PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqELL(Mat,MatAssemblyType);
-PETSC_INTERN PetscErrorCode MatGetInfo_SeqELL(Mat,MatInfoType,MatInfo*);
-PETSC_INTERN PetscErrorCode MatSetValues_SeqELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-PETSC_INTERN PetscErrorCode MatCopy_SeqELL(Mat,Mat,MatStructure);
-PETSC_INTERN PetscErrorCode MatSetUp_SeqELL(Mat);
-PETSC_INTERN PetscErrorCode MatSeqELLGetArray_SeqELL(Mat,PetscScalar *[]);
-PETSC_INTERN PetscErrorCode MatSeqELLRestoreArray_SeqELL(Mat,PetscScalar *[]);
-PETSC_INTERN PetscErrorCode MatShift_SeqELL(Mat,PetscScalar);
-PETSC_INTERN PetscErrorCode MatSOR_SeqELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat);
-PETSC_INTERN PetscErrorCode MatDuplicate_SeqELL(Mat,MatDuplicateOption,Mat*);
-PETSC_INTERN PetscErrorCode MatEqual_SeqELL(Mat,Mat,PetscBool*);
-PETSC_INTERN PetscErrorCode MatSeqELLInvalidateDiagonal(Mat);
-PETSC_INTERN PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat,MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat,MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqELL(Mat,ISColoring,MatFDColoring);
-PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqELL(Mat,ISColoring,MatFDColoring);
-PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
-PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
-PETSC_INTERN PetscErrorCode MatConjugate_SeqELL(Mat A);
-PETSC_INTERN PetscErrorCode MatScale_SeqELL(Mat,PetscScalar);
-PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqELL(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat,PetscInt,const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatMult_SeqSELL(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqSELL(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqSELL(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqSELL(Mat,PetscBool*,PetscInt*);
+PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqSELL(Mat);
+PETSC_INTERN PetscErrorCode MatInvertDiagonal_SeqSELL(Mat,PetscScalar,PetscScalar);
+PETSC_INTERN PetscErrorCode MatZeroEntries_SeqSELL(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_SeqSELL(Mat);
+PETSC_INTERN PetscErrorCode MatSetOption_SeqSELL(Mat,MatOption,PetscBool);
+PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqSELL(Mat,Vec v);
+PETSC_INTERN PetscErrorCode MatGetValues_SeqSELL(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt[],PetscScalar[]);
+PETSC_INTERN PetscErrorCode MatView_SeqSELL(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqSELL(Mat,MatAssemblyType);
+PETSC_INTERN PetscErrorCode MatGetInfo_SeqSELL(Mat,MatInfoType,MatInfo*);
+PETSC_INTERN PetscErrorCode MatSetValues_SeqSELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode MatCopy_SeqSELL(Mat,Mat,MatStructure);
+PETSC_INTERN PetscErrorCode MatSetUp_SeqSELL(Mat);
+PETSC_INTERN PetscErrorCode MatSeqSELLGetArray_SeqSELL(Mat,PetscScalar *[]);
+PETSC_INTERN PetscErrorCode MatSeqSELLRestoreArray_SeqSELL(Mat,PetscScalar *[]);
+PETSC_INTERN PetscErrorCode MatShift_SeqSELL(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatSOR_SeqSELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat);
+PETSC_INTERN PetscErrorCode MatDuplicate_SeqSELL(Mat,MatDuplicateOption,Mat*);
+PETSC_INTERN PetscErrorCode MatEqual_SeqSELL(Mat,Mat,PetscBool*);
+PETSC_INTERN PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqSELL(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqSELL(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatConjugate_SeqSELL(Mat A);
+PETSC_INTERN PetscErrorCode MatScale_SeqSELL(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqSELL(Mat,Vec,Vec);
 #endif

@@ -111,7 +111,7 @@ int main(int argc,char **argv)
       ISLocalToGlobalMapping ltog;
       PetscInt               dims[3],starts[3];
 
-      ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
+      ierr = DMSetMatType(da,MATSELL);CHKERRQ(ierr);
       ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
       ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
       ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
