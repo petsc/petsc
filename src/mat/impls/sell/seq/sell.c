@@ -6,25 +6,30 @@
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blocktranspose.h>
 #if defined(PETSC_HAVE_IMMINTRIN_H)
-#include <immintrin.h>
+  #include <immintrin.h>
 
-#if !defined(_MM_SCALE_8)
-#define _MM_SCALE_8    8
-#endif
+  #if !defined(_MM_SCALE_8)
+  #define _MM_SCALE_8    8
+  #endif
 
-#if defined(__AVX512F__)
-/* these do not work
- vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
- vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
-*/
-#define AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
-/* if the mask bit is set, copy from acolidx, otherwise from vec_idx */ \
-vec_idx  = _mm256_load_si256((__m256i const*)acolidx); \
-vec_vals = _mm512_load_pd(aval); \
-vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
-vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
-
-#endif
+  #if defined(__AVX512F__)
+  /* these do not work
+   vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
+   vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
+  */
+    #define AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
+    /* if the mask bit is set, copy from acolidx, otherwise from vec_idx */ \
+    vec_idx  = _mm256_load_si256((__m256i const*)acolidx); \
+    vec_vals = _mm512_load_pd(aval); \
+    vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
+    vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y)
+  #elif defined(__AVX2__)
+    #define AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
+    vec_vals = _mm256_load_pd(aval); \
+    vec_idx  =  _mm_load_si128((__m128i const*)acolidx); /* SSE2 */ \
+    vec_x    = _mm256_i32gather_pd(x,vec_idx,_MM_SCALE_8); \
+    vec_y    = _mm256_fmadd_pd(vec_x,vec_vals,vec_y)
+  #endif
 #endif  /* PETSC_HAVE_IMMINTRIN_H */
 
 /*@C
@@ -275,6 +280,11 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
   __mmask8          mask;
   __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
   __m256i           vec_idx2,vec_idx3,vec_idx4;
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  __m128i           vec_idx;
+  __m256d           vec_x,vec_y,vec_y2,vec_vals;
+  MatScalar         yval;
+  PetscInt          r,rows_left,row,nnz_in_row;
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   __m128d           vec_x_tmp;
   __m256d           vec_x,vec_y,vec_y2,vec_vals;
@@ -347,6 +357,40 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
       _mm512_store_pd(&y[8*i],vec_y);
     }
   }
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  for (i=0; i<totalslices; i++) { /* loop over full slices */
+    PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+
+    /* last slice may have padding rows. Don't use vectorization. */
+    if (i == totalslices-1 && (A->rmap->n & 0x07)) {
+      rows_left = A->rmap->n - 8*i;
+      for (r=0; r<rows_left; ++r) {
+        yval = (MatScalar)0;
+        row = 8*i + r;
+        nnz_in_row = a->rlen[row];
+        for (j=0; j<nnz_in_row; ++j) yval += aval[8*j+r] * x[acolidx[8*j+r]];
+        y[row] = yval;
+      }
+      break;
+    }
+
+    vec_y  = _mm256_setzero_pd();
+    vec_y2 = _mm256_setzero_pd();
+
+    /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
+    #pragma novector
+    #pragma unroll(2)
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
+      aval += 4; acolidx += 4;
+      AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y2);
+      aval += 4; acolidx += 4;
+    }
+
+    _mm256_store_pd(y+i*8,vec_y);
+    _mm256_store_pd(y+i*8+4,vec_y2);
+  }
 #elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   for (i=0; i<totalslices; i++) { /* loop over full slices */
     PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
@@ -369,6 +413,8 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     }
 
     /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
+    #pragma novector
+    #pragma unroll(2)
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
       vec_vals  = _mm256_loadu_pd(aval);
       vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
