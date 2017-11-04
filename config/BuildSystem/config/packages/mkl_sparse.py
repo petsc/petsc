@@ -40,5 +40,6 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    self.executeTest(self.checksSupportBaijCrossCase)
+    if self.found:
+      self.executeTest(self.checksSupportBaijCrossCase)
 
