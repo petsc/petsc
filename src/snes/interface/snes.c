@@ -1093,6 +1093,8 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,mf_operator,2);
+  PetscValidLogicalCollectiveBool(snes,mf,3);
   if (mf && !mf_operator) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"If using mf must also use mf_operator");
   snes->mf          = mf;
   snes->mf_operator = mf_operator;

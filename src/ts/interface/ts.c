@@ -618,7 +618,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   if (ts->rhsjacobian.reuse) {
     ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
     ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-    if (A != B) {
+    if (B && A != B) {
       ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
       ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
     }
@@ -2568,15 +2568,15 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
    Notes:
    For basic use of the TS solvers the user need not explicitly call
    TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
+   the call to TSStep() or TSSolve().  However, if one wishes to control this
    phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
+   and optional routines of the form TSSetXXX(), but before TSStep() and TSSolve().
 
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSStep(), TSDestroy(), TSSolve()
 @*/
 PetscErrorCode  TSSetUp(TS ts)
 {
@@ -4311,8 +4311,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
 
-  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
-    PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && u) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,solution);CHKERRQ(ierr);
@@ -4339,7 +4338,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      TSTrajectory to incorrectly save the output files
   */
   /* reset time step and iteration counters */
-
   if (!ts->steps) {
     ts->ksp_its           = 0;
     ts->snes_its          = 0;
@@ -4348,6 +4346,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
   }
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);

@@ -1085,7 +1085,7 @@ runex28:
 	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex28_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28_1.tmp binaryoutput
+	   ${RM} -f ex28_1.tmp binaryoutput binaryoutput.info
 
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 > ex29_1.tmp 2>&1;	  \
@@ -1272,7 +1272,7 @@ runex49_3:
 runex49_4:
 	-@${MPIEXEC} -n 4 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebyshev -elas_pc_type ml -elas_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 2 -use_nonsymbc -elas_pc_ml_nullspace user > ex49_4.tmp 2>&1; \
 	   ${DIFF} output/ex49_4.out ex49_4.tmp || printf "${PWD}\nPossible problem with ex49_4, diffs above\n=========================================\n"; \
-	   ${RM} -f ex49_4.tmp
+	   ${RM} -f ex49_4.tmp mesh-p0*.dat properties-p0*.dat X-p*.dat
 
 runex49_5:
 	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi > ex49_5.tmp 2>&1; \

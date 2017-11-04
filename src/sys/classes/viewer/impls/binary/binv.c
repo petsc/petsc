@@ -19,6 +19,7 @@ typedef struct  {
   FILE          *fdes_info;           /* optional file containing info on binary file*/
   PetscBool     storecompressed;      /* gzip the write binary file when closing it*/
   char          *filename;
+  char          *ogzfilename;         /* gzip can be run after the filename has been updated */
   PetscBool     skipinfo;             /* Don't create info file for writing; don't use for reading */
   PetscBool     skipoptions;          /* don't use PETSc options database when loading */
   PetscInt      flowcontrol;          /* allow only <flowcontrol> messages outstanding at a time while doing IO */
@@ -647,7 +648,8 @@ static PetscErrorCode PetscViewerFileClose_Binary(PetscViewer v)
       FILE *fp;
       /* compress the file */
       ierr = PetscStrcpy(par,"gzip -f ");CHKERRQ(ierr);
-      ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
+      ierr = PetscStrcat(par,vbinary->ogzfilename ? vbinary->ogzfilename : vbinary->filename);CHKERRQ(ierr);
+      ierr = PetscFree(vbinary->ogzfilename);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from command %s\n%s",par,buf);
@@ -708,7 +710,8 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
-  if (vbinary->filename) { ierr = PetscFree(vbinary->filename);CHKERRQ(ierr); }
+  ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vbinary->ogzfilename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1094,7 +1097,13 @@ static PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const cha
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (vbinary->filename) { ierr = PetscFree(vbinary->filename);CHKERRQ(ierr); }
+  if (vbinary->filename) {
+    /* gzip can be run after the file with the previous filename has been closed */
+    ierr = PetscFree(vbinary->ogzfilename);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(vbinary->filename,&vbinary->ogzfilename);CHKERRQ(ierr);
+    ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
+    viewer->setupcalled = PETSC_FALSE;
+  }
   ierr = PetscStrallocpy(name,&vbinary->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1358,7 +1367,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   v->ops->read             = PetscViewerBinaryRead;
   vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;
-  vbinary->filename        = 0;
+  vbinary->filename        = NULL;
+  vbinary->ogzfilename     = NULL;
   vbinary->flowcontrol     = 256; /* seems a good number for Cray XT-5 */
 
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",PetscViewerBinaryGetFlowControl_Binary);CHKERRQ(ierr);

@@ -173,6 +173,34 @@ PetscErrorCode MatFactorClearError(Mat mat)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatFindNonzeroRows_Basic(Mat mat,IS *keptrows)
+{
+  PetscErrorCode    ierr;
+  Vec               r,l;
+  const PetscScalar *al;
+  PetscInt          i,nz,gnz,N,n;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&n,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(mat,&r,&l);CHKERRQ(ierr);
+  ierr = VecSet(l,0.0);CHKERRQ(ierr);
+  ierr = VecSetRandom(r,NULL);CHKERRQ(ierr);
+  ierr = MatMult(mat,r,l);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(l,&al);CHKERRQ(ierr);
+  for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nz++;
+  ierr = MPIU_Allreduce(&nz,&gnz,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  if (gnz != N) {
+    PetscInt *nzr;
+    ierr = PetscMalloc1(nz,&nzr);CHKERRQ(ierr);
+    if (nz) { for (i=0,nz=0;i<n;i++) if (al[i] != 0.0) nzr[nz++] = i; }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),nz,nzr,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  } else *keptrows = NULL;
+  ierr = VecRestoreArrayRead(l,&al);CHKERRQ(ierr);
+  ierr = VecDestroy(&l);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
       MatFindNonzeroRows - Locate all rows that are not completely zero in the matrix
@@ -192,12 +220,17 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
+  PetscValidPointer(keptrows,2);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!mat->ops->findnonzerorows) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not coded for this matrix type");
-  ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
+  if (!mat->ops->findnonzerorows) {
+    ierr = MatFindNonzeroRows_Basic(mat,keptrows);CHKERRQ(ierr);
+  } else {
+    ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -819,12 +852,8 @@ PetscErrorCode MatSetUp(Mat A)
     ierr = PetscInfo(A,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*A->ops->setup)(A);CHKERRQ(ierr);
   }
-  if (A->rmap->n < 0 || A->rmap->N < 0) {
-    ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  }
-  if (A->cmap->n < 0 || A->cmap->N < 0) {
-    ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  }
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -3920,6 +3949,7 @@ PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (A->rmap->N != B->rmap->N || A->cmap->N != B->cmap->N) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim (%D,%D) (%D,%D)",A->rmap->N,B->rmap->N,A->cmap->N,B->cmap->N);
   MatCheckPreallocated(A,1);
+  if (A == B) PetscFunctionReturn(0);
 
   ierr = PetscLogEventBegin(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
   if (A->ops->copy) {
@@ -4448,7 +4478,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 {
@@ -4489,7 +4519,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(),
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs(),
           MatGetRowMax()
 @*/
 PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
@@ -4531,7 +4561,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4573,7 +4603,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4614,7 +4644,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4651,7 +4681,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row sums
 
-.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
@@ -6497,7 +6527,7 @@ PetscErrorCode MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 
    Level: intermediate
 
-.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL, MatSetValues()
+.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL
 @*/
 PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
 {
