@@ -1,0 +1,36 @@
+Mat Object: 1 MPI processes
+  type: seqdense
+1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 0.0000000000000000e+00 1.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00 
+1.0000000000000000e+00 2.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 2.0000000000000000e+00 1.0000000000000000e+00 
+1.0000000000000000e+00 3.0000000000000000e+00 0.0000000000000000e+00 
+1.0000000000000000e+00 3.0000000000000000e+00 1.0000000000000000e+00 
+  0 KSP unpreconditioned resid norm 1.436871623993e+01 true resid norm 1.436871623993e+01 ||r(i)||/||b|| 1.000000000000e+00
+  0 KSP Residual norm 1.436871623993e+01
+  1 KSP unpreconditioned resid norm 1.041665673256e+00 true resid norm 1.041665434837e+00 ||r(i)||/||b|| 7.249537110329e-02
+  1 KSP Residual norm 1.041665673256e+00 Residual norm normal equations 1.779052019119e+00
+  2 KSP unpreconditioned resid norm 3.779336810112e-01 true resid norm 3.779338002205e-01 ||r(i)||/||b|| 2.630254440010e-02
+  2 KSP Residual norm 3.779336810112e-01 Residual norm normal equations 1.974391341209e-01
+  3 KSP unpreconditioned resid norm 3.376386761665e-01 true resid norm 3.376387059689e-01 ||r(i)||/||b|| 2.349818125367e-02
+  3 KSP Residual norm 3.376386761665e-01 Residual norm normal equations 4.754109540954e-04
+  4 KSP unpreconditioned resid norm 3.376386761665e-01 true resid norm 3.376392424107e-01 ||r(i)||/||b|| 2.349821850657e-02
+  4 KSP Residual norm 3.376386761665e-01 Residual norm normal equations 8.335582890595e-08
+Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 4
+KSP Object: 1 MPI processes
+  type: lsqr
+    Norm of Standard Error 0.158609, Iterations 4
+  maximum iterations=10, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+  left preconditioning
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqdense
+    rows=8, cols=3
+    total: nonzeros=24, allocated nonzeros=24
+    total number of mallocs used during MatSetValues calls =0

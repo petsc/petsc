@@ -1045,16 +1045,20 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@${MPIEXEC} -n 1 ./ex54 -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor > ex54.tmp 2>&1;\
-	if (${DIFF} output/ex54_1.out ex54.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex54, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 1 ./ex54 -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor > ex54_1.tmp 2>&1;\
+           x="bad"; \
+	   if (${DIFF} output/ex54_1.out ex54_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex54_1_alt.out ex54_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex54_1.out ex54_1.tmp ; ${DIFF} output/ex54_1_alt.out ex54_1.tmp ; printf "${PWD}\nPossible problem with ex54_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex54_1.tmp
 
 runex54_2:
-	-@${MPIEXEC} -n 4 ./ex54 -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor > ex54.tmp 2>&1;\
-	if (${DIFF} output/ex54_2.out ex54.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex54_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex54.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ksp_monitor_true_residual -ksp_max_it 10 -sys_view -ksp_converged_reason -ksp_view -ksp_lsqr_set_standard_error -ksp_lsqr_monitor > ex54_2.tmp 2>&1;\
+           x="bad"; \
+	   if (${DIFF} output/ex54_2.out ex54_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+	   if (${DIFF} output/ex54_2_alt.out ex54_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex54_2.out ex54_2.tmp ; ${DIFF} output/ex54_2_alt.out ex54_2.tmp ; printf "${PWD}\nPossible problem with ex54_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex54_2.tmp
 
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
