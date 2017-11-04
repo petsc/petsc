@@ -531,6 +531,7 @@ class Configure(config.package.Package):
       self.framework.addBatchInclude(includes)
       self.framework.addBatchBody(body)
       if lib: self.framework.addBatchLib(lib)
+      if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
       return None
     else:
       result = None

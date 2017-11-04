@@ -91,13 +91,13 @@ runjbearing2_3:
 	${DIFF} output/jbearing2_3.out jbearing2_3.tmp || printf '${PWD}\nPossible problem with jbearing2_3 stdout, diffs above \n=========================================\n';\
 	${RM} -f jbearing2_3.tmp
 
-
-
-
-
+runjbearing2_4:
+	-@${MPIEXEC} -n 2 ./jbearing2 -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 -test_getdiagonal > jbearing2_4.tmp 2>&1;\
+	${DIFF} output/jbearing2_3.out jbearing2_4.tmp || printf '${PWD}\nPossible problem with jbearing2_4 stdout, diffs above \n=========================================\n';\
+	${RM} -f jbearing2_4.tmp
 
 TESTEXAMPLES_C_NOTSINGLE        = plate2.PETSc runplate2 runplate2_2 runplate2_3 runplate2_4 runplate2_5 runplate2_6 runplate2_7 plate2.rm printdot \
-	                          jbearing2.PETSc runjbearing2 runjbearing2_2 runjbearing2_3 jbearing2.rm 
+	                          jbearing2.PETSc runjbearing2 runjbearing2_2 runjbearing2_3 runjbearing2_4 jbearing2.rm
 TESTEXAMPLES_C_X_MPIUNI         = plate2.PETSc runplate2 plate2.rm jbearing2.PETSc runjbearing2 jbearing2.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE  = plate2f.PETSc runplate2f runplate2f_2 plate2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI     = plate2f.PETSc runplate2f plate2f.rm
