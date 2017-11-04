@@ -8,6 +8,10 @@ multilevel nonlinear solvers.\n\n\n";
 A visualization of the adaptation can be accomplished using:
 
   -dm_adapt_view hdf5:$PWD/adapt.h5 -sol_adapt_view hdf5:$PWD/adapt.h5::append -dm_adapt_pre_view hdf5:$PWD/orig.h5 -sol_adapt_pre_view hdf5:$PWD/orig.h5::append
+
+Information on refinement:
+
+   -info -info_exclude null,sys,vec,is,mat,ksp,snes,ts
 */
 
 #include <petscdmplex.h>
@@ -1447,16 +1451,6 @@ int main(int argc, char **argv)
     suffix: tensor_p4est_3d
     requires: hdf5 p4est
     args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_forest_initial_refinement 1 -dm_forest_minimum_refinement 0 -dim 3 -dm_plex_convert_type p8est -cells 2,2,2
-  # Full solve tensor: AMR
-  test:
-    suffix: amr_0
-    requires: hdf5
-    nsize: 5
-    args: -run_type test -petscpartitioner_type simple -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_refine 1 -cells 2,2
-  test:
-    suffix: amr_1
-    requires: hdf5 p4est !complex
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append -cells 2,2
   test:
     suffix: p4est_test_q2_conformal_serial
     requires: hdf5 p4est
@@ -1530,11 +1524,25 @@ int main(int argc, char **argv)
     suffix: fas_newton_0_p4est
     requires: hdf5 p4est
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason ::ascii_info_detail -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
+  # Full solve simplicial AMR
   test:
     suffix: tri_p1_adapt_0
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial
   test:
     suffix: tri_p1_adapt_1
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
+  # Full solve tensor AMR
+  test:
+    suffix: quad_q1_adapt_0
+    args: -run_type exact -dim 2 -simplex 0 -dm_refine 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0.,0.1 -snes_adapt_initial -dm_view -dm_adapt_view
+  test:
+    suffix: amr_0
+    requires: hdf5
+    nsize: 5
+    args: -run_type test -petscpartitioner_type simple -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_refine 1 -cells 2,2
+  test:
+    suffix: amr_1
+    requires: hdf5 p4est !complex
+    args: -run_type test -refinement_limit 0.0 -simplex 0 -interpolate -bc_type dirichlet -petscspace_order 1 -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append -cells 2,2
 
 TEST*/
