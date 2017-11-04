@@ -3258,9 +3258,14 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
           ierr = MatCreateSubMatrix_MPIAIJ_SameRowDist(mat,isrow,iscol,iscol_local,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
-        //ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
       } else { /* call == MAT_REUSE_MATRIX */
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"not done yet");//querry iscol_sub!
+        IS    iscol_sub;
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"not done yet"); //querry iscol_sub!
+        ierr = PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_sub);CHKERRQ(ierr);
+        if (iscol_sub) {
+          ierr = MatCreateSubMatrix_MPIAIJ_SameRowDist(mat,isrow,iscol,NULL,call,newmat);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
       }
     }
   }
