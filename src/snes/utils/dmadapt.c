@@ -6,6 +6,9 @@
 
 #include <petsc/private/dmadaptorimpl.h>
 #include <petsc/private/dmpleximpl.h>
+#include <petsc/private/petscfeimpl.h>
+
+static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, PetscReal *, void *);
 
 static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx)
 {
@@ -40,7 +43,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   PetscFunctionBegin;
   PetscValidPointer(adaptor, 2);
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*adaptor, PETSC_OBJECT_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*adaptor, DM_CLASSID, "DMAdaptor", "DM Adaptor", "SNES", comm, DMAdaptorDestroy, DMAdaptorView);CHKERRQ(ierr);
 
   (*adaptor)->monitor = PETSC_FALSE;
   (*adaptor)->adaptCriterion = DM_ADAPTATION_NONE;
@@ -49,6 +52,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
   (*adaptor)->refinementFactor = 2.0;
   (*adaptor)->h_min = 1.;
   (*adaptor)->h_max = 10000.;
+  (*adaptor)->ops->computeerrorindicator = DMAdaptorSimpleErrorIndicator_Private;
   refineBox.min = refineBox.max = PETSC_MAX_REAL;
   ierr = VecTaggerCreate(PetscObjectComm((PetscObject) *adaptor), &(*adaptor)->refineTag);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) (*adaptor)->refineTag, "refine_");CHKERRQ(ierr);
@@ -81,7 +85,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 
   PetscFunctionBegin;
   if (!*adaptor) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*adaptor), PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific((*adaptor), DM_CLASSID, 1);
   if (--((PetscObject)(*adaptor))->refct > 0) {
     *adaptor = NULL;
     PetscFunctionReturn(0);
@@ -178,7 +182,7 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
 PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidPointer(snes, 2);
   *snes = adaptor->snes;
   PetscFunctionReturn(0);
@@ -205,7 +209,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
   adaptor->snes = snes;
   ierr = SNESGetDM(adaptor->snes, &adaptor->idm);CHKERRQ(ierr);
@@ -231,7 +235,7 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
 PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidPointer(num, 2);
   *num = adaptor->numSeq;
   PetscFunctionReturn(0);
@@ -254,7 +258,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adaptor, PETSC_OBJECT_CLASSID, 1);
+  PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   adaptor->numSeq = num;
   PetscFunctionReturn(0);
 }
@@ -579,6 +583,116 @@ static void detHFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[0] = PetscPowReal(detH, p/(2.*p + dim));
 }
 
+/*
+  DMAdaptorSimpleErrorIndicator - Just use the integrated gradient as an error indicator
+
+  Input Parameters:
++ adaptor  - The DMAdaptor object
+. dim      - The topological dimension
+. cell     - The cell
+. field    - The field integrated over the cell
+. gradient - The gradient integrated over the cell
+. cg       - A PetscFVCellGeom struct
+- ctx      - A user context
+
+  Output Parameter:
+. errInd   - The error indicator
+
+.seealso: DMAdaptorComputeErrorIndicator()
+*/
+static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
+{
+  PetscReal err = 0.;
+  PetscInt  c, d;
+
+  PetscFunctionBeginHot;
+  for (c = 0; c < Nc; c++) {
+    for (d = 0; d < dim; ++d) {
+      err += PetscSqr(PetscRealPart(gradient[c*dim+d]));
+    }
+  }
+  *errInd = cg->volume * err;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, DM plex, PetscInt cell, Vec locX, PetscReal *errInd)
+{
+  PetscDS         prob;
+  PetscObject     obj;
+  PetscClassId    id;
+  void           *ctx;
+  PetscQuadrature quad;
+  PetscInt        dim, d, cdim, Nc;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  *errInd = 0.;
+  ierr = DMGetDimension(plex, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(plex, &cdim);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(plex, &ctx);CHKERRQ(ierr);
+  ierr = DMGetDS(plex, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+  if (id == PETSCFV_CLASSID) {
+    const PetscScalar *pointSols;
+    const PetscScalar *pointSol;
+    const PetscScalar *pointGrad;
+    PetscFVCellGeom   *cg;
+
+    ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);
+    ierr = VecGetArrayRead(locX, &pointSols);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(plex, cell, pointSols, &pointSol);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, &pointGrad);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(adaptor->cellDM, cell, adaptor->cellGeomArray, &cg);CHKERRQ(ierr);
+    ierr = (*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, pointSol, pointGrad, cg, errInd, ctx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(locX, &pointSols);CHKERRQ(ierr);
+  } else {
+    PetscScalar     *x = NULL, *field, *gradient, *interpolant, *interpolantGrad;
+    PetscFVCellGeom  cg;
+    const PetscReal *quadWeights;
+    PetscReal       *coords, *detJ, *J, *invJ;
+    PetscInt         Nb, fc, Nq, qNc, Nf, f, fieldOffset;
+
+    ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+    ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);
+    ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights);CHKERRQ(ierr);
+    ierr = PetscMalloc6(Nc,&field,cdim*Nc,&gradient,cdim*Nq,&coords,Nq,&detJ,cdim*cdim*Nq,&J,cdim*cdim*Nq,&invJ);CHKERRQ(ierr);
+    ierr = PetscMalloc2(Nc, &interpolant, cdim*Nc, &interpolantGrad);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, J, invJ, detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL);CHKERRQ(ierr);
+    for (f = 0, fieldOffset = 0; f < Nf; ++f) {
+      PetscInt qc = 0, q;
+
+      ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+      ierr = PetscMemzero(interpolant,     Nc * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(interpolantGrad, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
+      for (q = 0; q < Nq; ++q) {
+        ierr = PetscFEInterpolateFieldAndGradient_Static((PetscFE) obj, x, dim, invJ, q, interpolant, interpolantGrad);CHKERRQ(ierr);
+        for (fc = 0; fc < Nc; ++fc) {
+          const PetscReal wt = quadWeights[q*qNc+qc+fc];
+
+          field[fc] += interpolant[fc]*wt*detJ[q];
+          for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] += interpolantGrad[fc*dim+d]*wt*detJ[q];
+        }
+      }
+      fieldOffset += Nb;
+      qc          += Nc;
+    }
+    ierr = PetscFree2(interpolant, interpolantGrad);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(plex, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+    for (fc = 0; fc < Nc; ++fc) {
+      field[fc] /= cg.volume;
+      for (d = 0; d < cdim; ++d) gradient[fc*cdim+d] /= cg.volume;
+    }
+    ierr = (*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, field, gradient, &cg, errInd, ctx);CHKERRQ(ierr);
+    ierr = PetscFree6(field,gradient,coords,detJ,J,invJ);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, PetscBool doSolve, DM *adm, Vec *ax)
 {
   PetscDS        prob;
@@ -649,15 +763,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = VecGetArray(errVec, &errArray);CHKERRQ(ierr);
       ierr = VecGetArrayRead(locX, &pointSols);CHKERRQ(ierr);
       for (c = cStart; c < cEnd; ++c) {
-        PetscReal    errInd = 0.;
-        PetscScalar *pointSol;
-        PetscScalar *pointGrad;
-        PetscFVCellGeom *cg;
+        PetscReal errInd;
 
-        ierr = DMPlexPointLocalRead(plex, c, pointSols, &pointSol);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRead(adaptor->gradDM, c, adaptor->cellGradArray, &pointGrad);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRead(adaptor->cellDM, c, adaptor->cellGeomArray, &cg);CHKERRQ(ierr);
-        ierr = (*adaptor->ops->computeerrorindicator)(adaptor, dim, c, pointSol, pointGrad, cg, &errInd, ctx);CHKERRQ(ierr);
+        ierr = DMAdaptorComputeErrorIndicator_Private(adaptor, plex, c, locX, &errInd);CHKERRQ(ierr);
         errArray[c-cStart] = errInd;
         minMaxInd[0] = PetscMin(minMaxInd[0], errInd);
         minMaxInd[1] = PetscMax(minMaxInd[1], errInd);
@@ -665,12 +773,13 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = VecRestoreArrayRead(locX, &pointSols);CHKERRQ(ierr);
       ierr = VecRestoreArray(errVec, &errArray);CHKERRQ(ierr);
       ierr = PetscGlobalMinMax(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
-      ierr = PetscInfo2(adaptor, "error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
+      ierr = PetscInfo2(adaptor, "DMAdaptor: error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
       /*     Compute IS from VecTagger */
       ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS);CHKERRQ(ierr);
       ierr = VecTaggerComputeIS(adaptor->coarsenTag, errVec, &coarsenIS);CHKERRQ(ierr);
       ierr = ISGetSize(refineIS, &nRefine);CHKERRQ(ierr);
       ierr = ISGetSize(coarsenIS, &nCoarsen);CHKERRQ(ierr);
+      ierr = PetscInfo2(adaptor, "DMAdaptor: numRefine %D, numCoarsen %D\n", nRefine, nCoarsen);CHKERRQ(ierr);
       if (nRefine)  {ierr = DMLabelSetStratumIS(adaptLabel, DM_ADAPT_REFINE,  refineIS);CHKERRQ(ierr);}
       if (nCoarsen) {ierr = DMLabelSetStratumIS(adaptLabel, DM_ADAPT_COARSEN, coarsenIS);CHKERRQ(ierr);}
       ierr = ISDestroy(&coarsenIS);CHKERRQ(ierr);
@@ -816,6 +925,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       ierr = DMSetDS(odm, prob);CHKERRQ(ierr);
       /* Transfer solution */
       ierr = DMCreateGlobalVector(odm, &ox);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) x, &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) ox, name);CHKERRQ(ierr);
       ierr = DMAdaptorTransferSolution(adaptor, dm, x, odm, ox);CHKERRQ(ierr);
       /* Cleanup adaptivity info */
       if (adaptIter > 0) {ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}

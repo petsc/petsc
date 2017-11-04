@@ -11,7 +11,7 @@ struct _DMAdaptorOps {
   PetscErrorCode (*view)(DMAdaptor,PetscViewer);
   PetscErrorCode (*destroy)(DMAdaptor);
   PetscErrorCode (*transfersolution)(DMAdaptor,DM,Vec,DM,Vec,void*);
-  PetscErrorCode (*computeerrorindicator)(DMAdaptor,PetscInt,PetscInt,PetscScalar*,PetscScalar*,PetscFVCellGeom*,PetscReal*,void*);
+  PetscErrorCode (*computeerrorindicator)(DMAdaptor,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,const PetscFVCellGeom*,PetscReal*,void*);
 };
 
 struct _p_DMAdaptor
