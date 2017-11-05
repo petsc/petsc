@@ -2,6 +2,7 @@ from petsc4py import PETSc
 import unittest
 
 import numpy as N
+import numpy as np
 
 def mkgraph(comm, m, n):
     start = m*n * comm.rank
@@ -176,23 +177,42 @@ class BaseTestMatAnyAIJ(object):
         self._set_values_ijv()
         A = self.A
         A.assemble()
+        x, y = A.getVecs()
+        x.setRandom()
+        z = y.duplicate()
+        A.mult(x, y)
         if A.type.endswith('sbaij'): return
         B = PETSc.Mat()
         A.convert('dense', B)  # initial
-        #A.convert('dense', B)  # reuse  # FIXME: PETSc leaks
+        B.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
+        A.convert('dense', B)  # reuse
+        B.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
         A.convert('dense')     # inplace
-        B.destroy()
+        A.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
 
     def testConvertToAIJ(self):
         self._preallocate()
         self._set_values_ijv()
         A = self.A
         A.assemble()
+        x, y = A.getVecs()
+        x.setRandom()
+        z = y.duplicate()
+        A.mult(x, y)
         if A.type.endswith('sbaij'): return
         B = PETSc.Mat()
         A.convert('aij', B)  # initial
-        #A.convert('aij', B)  # reuse  # FIXME: PETSc leaks
+        B.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
+        A.convert('aij', B)  # reuse
+        B.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
         A.convert('aij')     # inplace
+        A.mult(x, z)
+        self.assertTrue(np.allclose(y.array, z.array))
 
     def testGetDiagonalBlock(self):
         self._preallocate()
