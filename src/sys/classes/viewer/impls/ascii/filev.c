@@ -73,6 +73,21 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
       }
     }
   }
+
+  if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
+    PetscViewer aviewer;
+    ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    if (flg && aviewer == viewer) {
+      ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
+    }
+  }
+  if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
+    PetscViewer aviewer;
+    ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    if (flg && aviewer == viewer) {
+      ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
