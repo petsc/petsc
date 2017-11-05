@@ -352,7 +352,7 @@ void g1_adv_pu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void riemann_advection(PetscInt dim, PetscInt Nf, const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscInt numConstants, const PetscScalar constants[], PetscScalar *flux, void *ctx)
 {
   PetscReal wind[3] = {0.0, 1.0, 0.0};
-  PetscReal wn = DMPlex_DotRealD_Internal(dim, wind, n);
+  PetscReal wn = DMPlex_DotRealD_Internal(PetscMin(dim,3), wind, n);
 
   flux[0] = (wn > 0 ? uL[dim] : uR[dim]) * wn;
 }
@@ -625,7 +625,7 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
 static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscReal *x, const PetscScalar *y, PetscReal *f, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
-  PetscScalar    yexact[1];
+  PetscScalar    yexact[3]={0,0,0};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;

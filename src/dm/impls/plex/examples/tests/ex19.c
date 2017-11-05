@@ -78,12 +78,13 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   Vec                coordinates;
   const PetscScalar *coords;
   PetscScalar       *met;
-  PetscReal          h, lambda[3] = {0.0, 0.0, 0.0}, lbd, lmax;
+  PetscReal          h, *lambda, lbd, lmax;
   PetscInt           pStart, pEnd, p, d;
   const PetscInt     dim = user->dim, Nd = dim*dim;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscCalloc1(dim,&lambda);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(cdm, &csec);CHKERRQ(ierr);
@@ -141,6 +142,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMDestroy(&mdm);CHKERRQ(ierr);
+  ierr = PetscFree(lambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
