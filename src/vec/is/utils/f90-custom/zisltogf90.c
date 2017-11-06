@@ -22,15 +22,15 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetindicesf90_(ISLocalToGl
   PetscInt       n;
   *ierr = ISLocalToGlobalMappingGetIndices(*da,&idx); if (*ierr) return;
   *ierr = ISLocalToGlobalMappingGetSize(*da,&n); if (*ierr) return;
-  *ierr = F90Array1dCreate((void*)idx,PETSC_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void*)idx,MPIU_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 
-  *ierr = F90Array1dAccess(ptr,PETSC_INT,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptr,MPIU_INT,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr,MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = ISLocalToGlobalMappingRestoreIndices(*da,&fa); if (*ierr) return;
 }
 
@@ -40,15 +40,15 @@ PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetblockindicesf90_(ISLoca
   PetscInt       n;
   *ierr = ISLocalToGlobalMappingGetBlockIndices(*da,&idx); if (*ierr) return;
   *ierr = ISLocalToGlobalMappingGetSize(*da,&n); if (*ierr) return;
-  *ierr = F90Array1dCreate((void*)idx,PETSC_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void*)idx,MPIU_INT,1,n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingrestoreblockindicesf90_(ISLocalToGlobalMapping *da,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 
-  *ierr = F90Array1dAccess(ptr,PETSC_INT,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptr,MPIU_INT,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr,MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = ISLocalToGlobalMappingRestoreBlockIndices(*da,&fa); if (*ierr) return;
 }
 
