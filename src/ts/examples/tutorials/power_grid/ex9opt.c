@@ -317,9 +317,9 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   PetscScalar    *x_ptr;
   Vec            lambda[1],q,mu[1];
 
-  ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
   ctx->Pm = x_ptr[0];
-  ierr = VecRestoreArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -411,9 +411,9 @@ PetscErrorCode FormGradient(Tao tao,Vec P,Vec G,void *ctx0)
   PetscScalar    *x_ptr,*y_ptr;
   Vec            lambda[1],q,mu[1];
 
-  ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
   ctx->Pm = x_ptr[0];
-  ierr = VecRestoreArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors

@@ -280,6 +280,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   const PetscScalar *y_ptr;
   PetscErrorCode    ierr;
 
+  PetscFunctionBeginUser;
   ierr = VecGetArrayRead(P,&y_ptr);CHKERRQ(ierr);
   user_ptr->mu = y_ptr[0];
   ierr = VecRestoreArrayRead(P,&y_ptr);CHKERRQ(ierr);

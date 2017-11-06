@@ -922,11 +922,11 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   PetscInt       row_loc,col_loc;
   PetscScalar    val;
 
-  ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr  = VecGetArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
   PG[1] = x_ptr[1];
   PG[2] = x_ptr[2];
-  ierr  = VecRestoreArray(P,&x_ptr);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(P,(const PetscScalar**)&x_ptr);CHKERRQ(ierr);
 
   ctx->stepnum = 0;
 
