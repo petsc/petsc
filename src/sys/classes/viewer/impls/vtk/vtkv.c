@@ -245,6 +245,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  MPI_Datatype   vdtype=dtype;
 #if defined(PETSC_USE_REAL___FLOAT128)
   double         *tmp;
   PetscInt       i;
@@ -265,10 +266,10 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
       ierr = PetscMalloc1(n,&tmp);CHKERRQ(ierr);
       for (i=0; i<n; i++) tmp[i] = ttmp[i];
       data  = (void*) tmp;
-      dtype = MPI_DOUBLE;
+      vdtype = MPI_DOUBLE;
     }
 #endif
-    ierr  = MPI_Type_size(dtype,&dsize);
+    ierr  = MPI_Type_size(vdtype,&dsize);
     bytes = PetscVTKIntCast(dsize*n);
 
     count = fwrite(&bytes,sizeof(int),1,fp);
