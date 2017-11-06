@@ -88,6 +88,23 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  if (!tj->keepfiles) {
+    ierr = PetscObjectGetComm((PetscObject)tj,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscRMTree("SA-data");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
       TSTRAJECTORYBASIC - Stores each solution of the ODE/DAE in a file
 
@@ -105,7 +122,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj,TS ts)
 {
   PetscFunctionBegin;
-  tj->ops->set  = TSTrajectorySet_Basic;
-  tj->ops->get  = TSTrajectoryGet_Basic;
+  tj->keepfiles    = PETSC_FALSE;
+  tj->ops->set     = TSTrajectorySet_Basic;
+  tj->ops->get     = TSTrajectoryGet_Basic;
+  tj->ops->destroy = TSTrajectoryDestroy_Basic;
   PetscFunctionReturn(0);
 }
