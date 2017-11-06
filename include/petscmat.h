@@ -282,6 +282,7 @@ PETSC_EXTERN PetscErrorCode MatImaginaryPart(Mat);
 PETSC_EXTERN PetscErrorCode MatGetDiagonalBlock(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
 PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonalMat(Mat,Mat);
 
 /* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);

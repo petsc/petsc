@@ -1,6 +1,6 @@
 #include <petsc/private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
-const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
+const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","BLOCKDIAG","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
 typedef struct {
   Mat                        A,Ap,B,C,D;
@@ -591,7 +591,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in S
 .   ainvtype - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
-                       MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                       MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG, or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameters:
@@ -659,10 +659,10 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Input Parameters:
 +   S        - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 -   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, or MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG
 
     Options database:
-    -mat_schur_complement_ainv_type diag | lump
+    -mat_schur_complement_ainv_type diag | lump | blockdiag
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -689,7 +689,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
   ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
   if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
   schur = (Mat_SchurComplement*)S->data;
-  if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D",ainvtype);
+  if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %d",(int)ainvtype);
   schur->ainvtype = ainvtype;
   PetscFunctionReturn(0);
 }
@@ -704,7 +704,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
 
     Output Parameter:
 .   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP, or MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -787,16 +787,30 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     Mat         AdB;
     Vec         diag;
 
-    ierr = MatCreateVecs(A00,&diag,NULL);CHKERRQ(ierr);
-    if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
-      ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
-    } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
-      ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
+    if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP || ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+      ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
+      ierr = MatCreateVecs(A00,&diag,NULL);CHKERRQ(ierr);
+      if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
+        ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
+      } else {
+        ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
+      }
+      ierr = VecReciprocal(diag);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
+      ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG) {
+      Mat      A00_inv;
+      MatType  type;
+      MPI_Comm comm;
+
+      ierr = PetscObjectGetComm((PetscObject)A00,&comm);CHKERRQ(ierr);
+      ierr = MatGetType(A00,&type);CHKERRQ(ierr);
+      ierr = MatCreate(comm,&A00_inv);CHKERRQ(ierr);
+      ierr = MatSetType(A00_inv,type);CHKERRQ(ierr);
+      ierr = MatInvertBlockDiagonalMat(A00,A00_inv);CHKERRQ(ierr);
+      ierr = MatMatMult(A00_inv,A01,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AdB);CHKERRQ(ierr);
+      ierr = MatDestroy(&A00_inv);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D", ainvtype);
-    ierr = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
-    ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
-    ierr = VecDestroy(&diag);CHKERRQ(ierr);
     /* Cannot really reuse Spmat in MatMatMult() because of MatAYPX() -->
          MatAXPY() --> MatHeaderReplace() --> MatDestroy_XXX_MatMatMult()  */
     ierr     = MatDestroy(Spmat);CHKERRQ(ierr);
