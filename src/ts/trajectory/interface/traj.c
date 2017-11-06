@@ -125,6 +125,8 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 
    Level: intermediate
 
+   Note: Fortran interface is not possible because of the string array argument
+
 .keywords: TS, TSTrajectory, vector, monitor, view
 
 .seealso: TSTrajectory, TSGetTrajectory()
@@ -166,7 +168,7 @@ PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transf
 }
 
 
-/*@C
+/*@
   TSTrajectoryCreate - This function creates an empty trajectory object used to store the time dependent solution of an ODE/DAE
 
   Collective on MPI_Comm
@@ -414,7 +416,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    TSTrajectorySetDirname - Specify the name of the directory where disk checkpoints are stored.
 
    Collective on TSTrajectory
@@ -441,7 +443,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    TSTrajectorySetFiletemplate - Specify the name template for the files storing checkpoints.
 
    Collective on TSTrajectory
