@@ -4063,7 +4063,12 @@ foundconv:
     ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
     if (mat->rmap->mapping && mat->cmap->mapping && !(*M)->rmap->mapping && !(*M)->cmap->mapping) {
-      ierr = MatSetLocalToGlobalMapping(*M,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mat->rmap->mapping);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mat->cmap->mapping);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&(*M)->rmap->mapping);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&(*M)->cmap->mapping);CHKERRQ(ierr);
+      (*M)->rmap->mapping = mat->rmap->mapping;
+      (*M)->cmap->mapping = mat->cmap->mapping;
     }
     (*M)->stencil.dim = mat->stencil.dim;
     (*M)->stencil.noc = mat->stencil.noc;
