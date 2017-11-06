@@ -1436,6 +1436,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
    Level: beginner
 
+   Notes: Use of this should be avoided if one can directly use MPI_Datatype instead.
+
    Developer comment: It would be nice if we could always just use MPI Datatypes, why can we not?
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),

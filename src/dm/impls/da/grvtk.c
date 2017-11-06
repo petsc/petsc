@@ -1,4 +1,8 @@
 #include <petsc/private/dmdaimpl.h>
+/*
+   Note that the API for using PETSCVIEWERVTK is totally wrong since its use requires
+   including the private vtkvimpl.h file. The code should be refactored.
+*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
@@ -181,7 +185,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         }
       }
     }
-    ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,MPIU_SCALAR);CHKERRQ(ierr);
 
     /* Write each of the objects queued up for this file */
     for (link=vtk->link; link; link=link->next) {
@@ -208,7 +212,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
               }
             }
           }
-          ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,PETSC_SCALAR);CHKERRQ(ierr);
+          ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
         }
       } else if (r == rank) {
         ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
@@ -402,9 +406,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
         }
       }
       if (!rank) {
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[0]),xm,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm]),ym,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm+ym]),zm,PETSC_SCALAR);CHKERRQ(ierr);
+        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[0]),xm,MPIU_SCALAR);CHKERRQ(ierr);
+        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm]),ym,MPIU_SCALAR);CHKERRQ(ierr);
+        ierr = PetscViewerVTKFWrite(viewer,fp,&(array[xm+ym]),zm,MPIU_SCALAR);CHKERRQ(ierr);
       }
     }
 
@@ -433,7 +437,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
               }
             }
           }
-          ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,PETSC_SCALAR);CHKERRQ(ierr);
+          ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,MPIU_SCALAR);CHKERRQ(ierr);
         }
       } else if (r == rank) {
         ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
