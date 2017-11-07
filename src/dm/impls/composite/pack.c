@@ -784,18 +784,18 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
 
     /* loop over packed objects, handling one at at time */
     while (next) {
-      Vec         vec;
-      PetscScalar *array;
-      PetscInt    bs;
+      Vec               vec;
+      const PetscScalar *array;
+      PetscInt          bs;
 
       /* Should use VecGetSubVector() eventually, but would need to forward the DM for that to work */
       ierr = DMGetGlobalVector(next->dm,&vec);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
-      ierr = VecPlaceArray(vec,array+next->rstart);CHKERRQ(ierr);
-      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(vec,(PetscScalar*)array+next->rstart);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecView(vec,viewer);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
       ierr = VecResetArray(vec);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&vec);CHKERRQ(ierr);
       ierr = PetscViewerDrawBaseAdd(viewer,bs);CHKERRQ(ierr);
       cnt += bs;
