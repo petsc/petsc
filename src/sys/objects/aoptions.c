@@ -667,6 +667,8 @@ $                 if (flg) {
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
           PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
@@ -784,6 +786,8 @@ $                 if (flg) {
    Notes: If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
    Level: beginner
 
    Concepts: options database^has int
@@ -849,6 +853,8 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
 
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
+
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(NULL,),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -897,6 +903,8 @@ $                 if (flg) {
 
    Notes:  If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
    Level: beginner
 
@@ -953,6 +961,8 @@ $                 if (flg) {
 
    Notes: If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
    Level: beginner
 
@@ -1053,6 +1063,8 @@ $                 if (flg) {
 
           If the user does not supply the option at all value is NOT changed. Thus
           you should ALWAYS initialize value if you access it without first checking if the set flag is true.
+
+          The default/currentvalue passed into this routine does not get transferred to the output value variable automatically.
 
    See PetscOptionsEList() for when the choices are given in a string array
 
