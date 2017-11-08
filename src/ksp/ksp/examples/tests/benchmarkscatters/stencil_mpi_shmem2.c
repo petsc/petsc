@@ -9,7 +9,8 @@
 
 int main(int argc, char **argv) {
 
-  MPI_Init(&argc, &argv);
+  MPI_Init(&argc, &argv); 
+  //ierr = PetscInitialize(&argc,&argv,(char*)0,0);if (ierr) return ierr;
   int r,p;
   MPI_Comm comm = MPI_COMM_WORLD;
   MPI_Comm_rank(comm, &r);
@@ -75,11 +76,13 @@ int main(int argc, char **argv) {
   int size = (bx+2)*(by+2); // process-local grid (including halos (thus +2))
   double *mem;
   MPI_Win win;
-  MPI_Win_allocate_shared(2*size*sizeof(double), 1, MPI_INFO_NULL, shmcomm, &mem, &win);
+  MPI_Win_allocate_shared((1+2*size)*sizeof(double), 1, MPI_INFO_NULL, shmcomm, &mem, &win);
 
   double *tmp;
   double *anew=mem; // each rank's offset
   double *aold=mem+size; // second half is aold!
+  int *my_iter = (int*)(aold+size);
+  *my_iter = -1;
 
   double *northptr, *southptr, *eastptr, *westptr;
   double *northptr2, *southptr2, *eastptr2, *westptr2;
@@ -93,6 +96,12 @@ int main(int argc, char **argv) {
   southptr2 = southptr+size;
   eastptr2 = eastptr+size;
   westptr2 = westptr+size;
+
+  // Using volatile to tell compilers to always load data from memory in while-loops below
+  volatile int *north_iter = (int*)(northptr2 + size);
+  volatile int *south_iter = (int*)(southptr2 + size);
+  volatile int *east_iter = (int*)(eastptr2 + size);
+  volatile int *west_iter = (int*)(westptr2 + size);
 
   // initialize three heat sources
   #define nsources 3
@@ -111,26 +120,36 @@ int main(int argc, char **argv) {
 
   double t=-MPI_Wtime(); // take time
   double heat; // total heat in system
-  MPI_Win_lock_all(0, win);
+
+  MPI_Barrier(shmcomm); // make sure all procs initialized my_iter to -1
+
   for(iter=0; iter<niters; ++iter) {
     // refresh heat sources
     for(i=0; i<locnsources; ++i) {
       aold[ind(locsources[i][0],locsources[i][1])] += energy; // heat source
     }
 
-    MPI_Win_sync(win);
-    MPI_Barrier(shmcomm);
+    // make sure my_iter is written only when updated aold[] is visible to other processes
+    asm volatile("" ::: "memory");
+
+    *my_iter = iter;
+
     // exchange data with neighbors
     if(north != MPI_PROC_NULL) {
+      // read from north neighbor only when it has advanced beyond iter-th iteration
+      while(*north_iter < iter); // Compiler should not store *north_iter in registers
       for(i=0; i<bx; ++i) aold[ind(i+1,0)] = northptr2[ind(i+1,by)]; // pack loop - last valid region
     }
     if(south != MPI_PROC_NULL) {
+      while(*south_iter < iter);
       for(i=0; i<bx; ++i) aold[ind(i+1,by+1)] = southptr2[ind(i+1,1)]; // pack loop
     }
     if(east != MPI_PROC_NULL) {
+      while(*east_iter < iter);
       for(i=0; i<by; ++i) aold[ind(bx+1,i+1)] = eastptr2[ind(1,i+1)]; // pack loop
     }
     if(west != MPI_PROC_NULL) {
+      while(*west_iter < iter);
       for(i=0; i<by; ++i) aold[ind(0,i+1)] = westptr2[ind(bx,i+1)]; // pack loop
     }
 
@@ -152,10 +171,7 @@ int main(int argc, char **argv) {
 
     // optional - print image
     //if(iter == niters-1) printarr_par(iter, anew, n, px, py, rx, ry, bx, by, offx, offy, comm);
-    //MPI_Win_sync(win);
-    //MPI_Barrier(shmcomm);
   }
-  MPI_Win_unlock_all(win);
   t+=MPI_Wtime();
 
   // get final heat in the system
