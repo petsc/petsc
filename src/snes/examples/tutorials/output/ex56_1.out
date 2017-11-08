@@ -2,55 +2,19 @@
 [0] 27 equations in vector, 9 vertices
   0 SNES Function norm 122.396 
   Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 1.983e-10 
+  1 SNES Function norm 1.985e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 4 MPI processes
-  type: plex
-Mesh in 3 dimensions:
-  0-cells: 8 8 8 8
-  1-cells: 12 12 12 12
-  2-cells: 6 6 6 6
-  3-cells: 1 1 1 1
-Labels:
-  boundary: 1 strata with value/size (1 (23))
-  Face Sets: 4 strata with value/size (1 (1), 2 (1), 4 (1), 6 (1))
-  marker: 1 strata with value/size (1 (15))
-  depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
 [0] 441 global equations, 147 vertices
 [0] 441 equations in vector, 147 vertices
   0 SNES Function norm 49.7106 
   Linear solve converged due to CONVERGED_RTOL iterations 15
-  1 SNES Function norm 2.237e-10 
+  1 SNES Function norm 2.245e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 4 MPI processes
-  type: plex
-Mesh in 3 dimensions:
-  0-cells: 27 27 27 27
-  1-cells: 54 54 54 54
-  2-cells: 36 36 36 36
-  3-cells: 8 8 8 8
-Labels:
-  marker: 1 strata with value/size (1 (69))
-  Face Sets: 4 strata with value/size (1 (9), 2 (9), 4 (9), 6 (9))
-  boundary: 1 strata with value/size (1 (77))
-  depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
 [0] 4725 global equations, 1575 vertices
 [0] 4725 equations in vector, 1575 vertices
   0 SNES Function norm 17.9091 
-  Linear solve converged due to CONVERGED_RTOL iterations 19
-  1 SNES Function norm 5.967e-11 
+  Linear solve converged due to CONVERGED_RTOL iterations 18
+  1 SNES Function norm 1.730e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 4 MPI processes
-  type: plex
-Mesh in 3 dimensions:
-  0-cells: 125 125 125 125
-  1-cells: 300 300 300 300
-  2-cells: 240 240 240 240
-  3-cells: 64 64 64 64
-Labels:
-  boundary: 1 strata with value/size (1 (281))
-  Face Sets: 4 strata with value/size (1 (49), 2 (49), 4 (49), 6 (49))
-  marker: 1 strata with value/size (1 (273))
-  depth: 4 strata with value/size (0 (125), 1 (300), 2 (240), 3 (64))
 [0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
 [0] 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7
