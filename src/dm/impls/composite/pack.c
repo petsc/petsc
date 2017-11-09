@@ -702,13 +702,13 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
 }
 
 /*@C
-    DMCompositeAddDM - adds a DM  vector to a DMComposite
+    DMCompositeAddDM - adds a DM vector to a DMComposite
 
     Collective on DMComposite
 
     Input Parameter:
-+    dm - the packer object
--    dm - the DM object, if the DM is a da you will need to caste it with a (DM)
++    dmc - the DMComposite (packer) object
+-    dm - the DM object; if the DM is a DMDA you will need to cast it with a (DM)
 
     Level: advanced
 

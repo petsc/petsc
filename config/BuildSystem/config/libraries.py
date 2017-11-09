@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
             return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
           if flagSubst in self.argDB:
             return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
-        return ['-L'+dirname,' -l'+name]
+        return ['-L'+dirname,'-l'+name]
       else:
         return ['-l'+name]
     if os.path.splitext(library)[1] == '.so':
