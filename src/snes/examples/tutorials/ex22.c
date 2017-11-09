@@ -98,6 +98,8 @@ int main(int argc,char **argv)
   ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,"lambda");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
 
