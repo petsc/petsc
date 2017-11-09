@@ -458,7 +458,7 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 
    Level: beginner
 
-.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: PetscMax(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
 M*/
 #define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
