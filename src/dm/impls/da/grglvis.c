@@ -107,7 +107,7 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
 {
   DM                 da = (DM)oda,daview,dacoord;
-  Vec                xcoor,xcoorl,xlocal;
+  Vec                xcoor,xcoorl,xlocal,*Ufield;
   DMDAGLVisViewerCtx *ctx;
   const char         **dafieldname;
   char               **fec_type,**fieldname,fec[64];
@@ -162,7 +162,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   if (viewer) {
     ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
     ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
-    ierr = PetscMalloc5(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname);CHKERRQ(ierr);
+    ierr = PetscMalloc6(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname,dof,&Ufield);CHKERRQ(ierr);
     for (i=0;i<dof;i++) bss[i] = 1;
     nf = dof;
 
@@ -204,12 +204,21 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     ierr = PetscNew(&ctx);CHKERRQ(ierr);
     ctx->xlocal = xlocal;
 
-    ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fieldname,(const char**)fec_type,nlocal,bss,dims,DMDASampleGLVisFields_Private,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+    /* create work vectors */
+    for (i=0;i<nf;i++) {
+      ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),nlocal[i],PETSC_DECIDE,&Ufield[i]);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)Ufield[i],fieldname[i]);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(Ufield[i],bss[i]);CHKERRQ(ierr);
+      ierr = VecSetDM(Ufield[i],da);CHKERRQ(ierr);
+    }
+
+    ierr = PetscViewerGLVisSetFields(viewer,nf,(const char**)fec_type,dims,DMDASampleGLVisFields_Private,(PetscObject*)Ufield,ctx,DMDADestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
     for (i=0;i<nf;i++) {
       ierr = PetscFree(fec_type[i]);CHKERRQ(ierr);
       ierr = PetscFree(fieldname[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&Ufield[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree5(fec_type,nlocal,bss,dims,fieldname);CHKERRQ(ierr);
+    ierr = PetscFree6(fec_type,nlocal,bss,dims,fieldname,Ufield);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&dacoord);CHKERRQ(ierr);
   ierr = DMDestroy(&daview);CHKERRQ(ierr);
