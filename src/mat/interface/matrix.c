@@ -4063,10 +4063,11 @@ foundconv:
     ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
     if (mat->rmap->mapping && mat->cmap->mapping && !(*M)->rmap->mapping && !(*M)->cmap->mapping) {
+      /* the block sizes must be same if the mappings are copied over */
+      (*M)->rmap->bs = mat->rmap->bs;
+      (*M)->cmap->bs = mat->cmap->bs;
       ierr = PetscObjectReference((PetscObject)mat->rmap->mapping);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)mat->cmap->mapping);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&(*M)->rmap->mapping);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&(*M)->cmap->mapping);CHKERRQ(ierr);
       (*M)->rmap->mapping = mat->rmap->mapping;
       (*M)->cmap->mapping = mat->cmap->mapping;
     }
