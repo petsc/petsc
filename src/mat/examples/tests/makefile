@@ -2359,12 +2359,12 @@ runex132:
 	   ${RM} -f ex132_1.tmp
 
 runex134:
-	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular | ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular -vecscatter_mpi1| ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
 	   ${DIFF} output/ex134_1.out ex134_1.tmp || printf "${PWD}\nPossible problem with ex134, diffs above\n=========================================\n"; \
 	   ${RM} -f ex134_1.tmp
 
 runex135:
-	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ascii::ascii_info_detail | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ascii::ascii_info_detail -vecscatter_mpi1 | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
 	   ${DIFF} output/ex135_1.out ex135_1.tmp || printf "${PWD}\nPossible problem with ex135, diffs above\n=========================================\n"; \
 	   ${RM} -f ex135_1.tmp
 
