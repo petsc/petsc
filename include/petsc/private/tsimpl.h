@@ -83,6 +83,7 @@ struct _p_TSTrajectory {
   PetscInt       diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
   char           **names;                 /* the name of each variable; each process has only the local names */
   PetscBool      keepfiles;               /* keep the files generated during the run after the run is complete */
+  char           *dirname,*filetemplate;  /* directory name and file name template for disk checkpoints */
   PetscErrorCode (*transform)(void*,Vec,Vec*);
   PetscErrorCode (*transformdestroy)(void*);
   void*          transformctx;

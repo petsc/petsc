@@ -293,6 +293,8 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory,const char * const*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetTransform(TSTrajectory,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetDirname(TSTrajectory,const char[]);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory,const char[]);
 PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS,TSTrajectory*);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
