@@ -1149,7 +1149,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
   }
   if (flg) {
     ierr = PetscMalloc1(m,&ix);CHKERRQ(ierr);
-    for (i=0,n=0; i<n; i++) {
+    for (i=0,m=0; i<n; i++) {
       ISLocalToGlobalMapping smap = NULL;
       VecScatter             scat;
       IS                     isreq;
@@ -1158,7 +1158,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       Mat sub;
 
       if (sizeof(*x) != sizeof(PetscScalar)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support when scalars smaller than integers");
-      if (colflg) {
+      if (!colflg) {
         ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
       } else {
         ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
@@ -1171,6 +1171,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       }
       for (j=0; j<mi; j++) ix[m+j] = j;
       if (smap) {ierr = ISLocalToGlobalMappingApply(smap,mi,ix+m,ix+m);CHKERRQ(ierr);}
+
       /*
         Now we need to extract the monolithic global indices that correspond to the given split global indices.
         In many/most cases, we only want MatGetLocalSubMatrix() to work, in which case we only need to know the size of the local spaces.
