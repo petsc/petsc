@@ -84,7 +84,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscDS          prob;
   PetscFE          fe;
   PetscQuadrature  quad;
-  PetscReal       *v0, *J, *invJ, detJ, *coords, *vals;
+  PetscScalar     *vals;
+  PetscReal       *v0, *J, *invJ, detJ, *coords;
   PetscInt        *cellid;
   const PetscReal *qpoints;
   PetscInt         Ncell, c, Nq, q, dim;
@@ -108,7 +109,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 
   ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
   ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "f_q", 1, PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "f_q", 1, PETSC_SCALAR);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(*sw, Ncell * Nq, 0);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
