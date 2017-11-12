@@ -1849,6 +1849,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
+extern PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
 extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
@@ -2138,6 +2139,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Plex;
   dm->ops->createinterpolation             = DMCreateInterpolation_Plex;
+  dm->ops->createmassmatrix                = DMCreateMassMatrix_Plex;
   dm->ops->getaggregates                   = NULL;
   dm->ops->getinjection                    = DMCreateInjection_Plex;
   dm->ops->refine                          = DMRefine_Plex;

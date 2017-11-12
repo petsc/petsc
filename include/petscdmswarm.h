@@ -3,6 +3,17 @@
 
 #include <petscdm.h>
 
+/*E
+   DMSwarmType - Defines the type of swarm
+ 
+   DMSWARM_BASIC defines N entries of varied data-types which the user may register.
+
+   DMSWARM_PIC is suitable for particle-in-cell methods. Configured as DMSWARM_PIC, the swarm will be aware of, another DM which serves as the background mesh. Fields specific to particle-in-cell methods are registered by default. These include spatial coordinates, a unique identifier, a cell index and an index for the owning rank. The background mesh will (by default) define the spatial decomposition of the points defined in the swarm. DMSWARM_PIC provides support for particle-in-cell operations such as defining initial point coordinates, communicating particles between sub-domains, projecting particle data fields on to the mesh.
+
+   Level: beginner
+
+.seealso: DMSwarmSetType()
+E*/
 typedef enum {
   DMSWARM_BASIC=0,
   DMSWARM_PIC
@@ -22,7 +33,7 @@ typedef enum {
   DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
 
-/*J
+/*E
    DMSwarmPICLayoutType - Defines the method used to define particle coordinates within each cell. The layouts are constructured using the reference cell geometry
  
    DMSWARMPIC_LAYOUT_REGULAR defines points on a regular ijk mesh.
@@ -37,7 +48,7 @@ typedef enum {
    Level: beginner
  
 .seealso DMSwarmInsertPointsUsingCellDM()
-J*/
+E*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR=0,
   DMSWARMPIC_LAYOUT_GAUSS,
@@ -89,6 +100,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM,DMSwarmType);
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM,PetscReal*,PetscReal*,PetscInt*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM,PetscInt,PetscReal*,PetscBool,InsertMode);
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutType,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM,const char*);
 

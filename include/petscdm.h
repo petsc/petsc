@@ -74,6 +74,7 @@ PETSC_EXTERN PetscErrorCode DMSetMatrixStructureOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,Mat*);
+PETSC_EXTERN PetscErrorCode DMCreateMassMatrix(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM,PetscInt,PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);

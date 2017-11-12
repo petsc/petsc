@@ -1086,6 +1086,33 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 }
 
 /*@
+  DMCreateMassMatrix - Gets mass matrix between two DM objects, M_ij = \int \phi_i \psi_j
+
+  Collective on DM
+
+  Input Parameter:
++ dm1 - the DM object
+- dm2 - the second, finer DM object
+
+  Output Parameter:
+. mat - the interpolation
+
+  Level: developer
+
+.seealso DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateRestriction(), DMCreateInterpolation(), DMCreateInjection()
+@*/
+PetscErrorCode DMCreateMassMatrix(DM dm1, DM dm2, Mat *mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm1, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm2, DM_CLASSID, 2);
+  ierr = (*dm1->ops->createmassmatrix)(dm1, dm2, mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
     DMCreateColoring - Gets coloring for a DM
 
     Collective on DM
