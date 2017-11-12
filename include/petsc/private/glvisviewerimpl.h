@@ -26,6 +26,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetStatus_Private(PetscViewer,PetscV
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetType_Private(PetscViewer,PetscViewerGLVisType*);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer,PetscInt,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisRestoreWindow_Private(PetscViewer,PetscInt,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer,PetscInt*,const char**[],const char**[],PetscInt*[],PetscErrorCode(**)(PetscObject,PetscInt,PetscObject[],void*),PetscObject*[],void**);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer,PetscInt*,const char**[],PetscInt*[],PetscErrorCode(**)(PetscObject,PetscInt,PetscObject[],void*),PetscObject*[],void**);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer,PetscViewer*);
 #endif

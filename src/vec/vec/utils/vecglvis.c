@@ -33,45 +33,42 @@ static void PetscGLVisSigPipeHandler(PETSC_UNUSED int sig)
 /* the main function to visualize vectors using GLVis */
 PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
 {
-  PetscObject            dm;
   PetscErrorCode         (*g2lfields)(PetscObject,PetscInt,PetscObject[],void*);
   Vec                    *Ufield;
-  const char             **fec_type,**name;
+  const char             **fec_type;
   PetscViewerGLVisStatus sockstatus;
   PetscViewerGLVisType   socktype;
   void                   *userctx;
-  PetscInt               i,nfields,*locandbs;
+  PetscInt               i,nfields,*spacedim;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerGLVisGetStatus_Private(viewer,&sockstatus);CHKERRQ(ierr);
   if (sockstatus == PETSCVIEWERGLVIS_DISABLED) PetscFunctionReturn(0);
   /* if the user did not customize the viewer through the API, we need extra data that can be attached to the Vec */
-  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!nfields) {
+    PetscObject dm;
+
     ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
     if (dm) {
       ierr = PetscViewerGLVisSetDM_Private(viewer,dm);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"You need to provide a DM or use PetscViewerGLVisSetFields()");
   }
-  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,&name,&fec_type,&locandbs,&g2lfields,(PetscObject**)&Ufield,&userctx);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,&fec_type,&spacedim,&g2lfields,(PetscObject**)&Ufield,&userctx);CHKERRQ(ierr);
+  if (!nfields) PetscFunctionReturn(0);
+
   ierr = PetscViewerGLVisGetType_Private(viewer,&socktype);CHKERRQ(ierr);
-  ierr = PetscViewerGLVisGetDM_Private(viewer,&dm);CHKERRQ(ierr);
-  if (!dm) {
-    ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
-  }
-  if (!dm) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
 
-  if (!Ufield[0]) {
-    for (i=0;i<nfields;i++) {
+  for (i=0;i<nfields;i++) {
+    PetscObject    fdm;
+    PetscContainer container;
+
+    /* attach visualization info to the vector */
+    ierr = PetscObjectQuery((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
+    if (!container) {
       PetscViewerGLVisVecInfo info;
-      PetscContainer          container;
 
-      ierr = VecCreateMPI(PetscObjectComm((PetscObject)U),locandbs[3*i],PETSC_DECIDE,&Ufield[i]);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)Ufield[i],name[i]);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(Ufield[i],locandbs[3*i+1]);CHKERRQ(ierr);
-
-      /* attach visualization info to the vector */
       ierr = PetscNew(&info);CHKERRQ(ierr);
       ierr = PetscStrallocpy(fec_type[i],&info->fec_type);CHKERRQ(ierr);
       ierr = PetscContainerCreate(PetscObjectComm((PetscObject)U),&container);CHKERRQ(ierr);
@@ -79,8 +76,17 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
       ierr = PetscContainerSetUserDestroy(container,PetscViewerGLVisVecInfoDestroy_Private);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject)container);CHKERRQ(ierr);
       ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    }
+    /* attach the mesh to the viz vectors */
+    ierr = PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&fdm);CHKERRQ(ierr);
+    if (!fdm) {
+      PetscObject dm;
 
-      /* attach the mesh to the viz vectors */
+      ierr = PetscViewerGLVisGetDM_Private(viewer,&dm);CHKERRQ(ierr);
+      if (!dm) {
+        ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
+      }
+      if (!dm) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
       ierr = PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm",dm);CHKERRQ(ierr);
     }
   }
@@ -94,6 +100,7 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
 
   /* TODO callback to user routine to disable/enable subdomains */
   for (i=0;i<nfields;i++) {
+    PetscObject dm;
     PetscViewer view;
 
     ierr = PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&dm);CHKERRQ(ierr);
@@ -109,13 +116,15 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
       if (!setjmp(PetscGLVisSigPipeJmpBuf)) {
 #endif
         PetscMPIInt size,rank;
+        const char *name;
 
         ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRQ(ierr);
         ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nsolution\n",size,rank);CHKERRQ(ierr);
         ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
         ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
-        ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,locandbs[3*i+2],name[i]);CHKERRQ(ierr);
+        ierr = PetscObjectGetName((PetscObject)Ufield[i],&name);CHKERRQ(ierr);
+        ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,spacedim[i],name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SETJMP_H) && !defined(PETSC_MISSING_SIGPIPE)
       } else {
         FILE     *sock,*null = fopen(DEV_NULL,"w");

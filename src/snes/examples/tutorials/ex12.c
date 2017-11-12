@@ -757,7 +757,9 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
   Vec            du, r;
   PetscInt       level = 0;
   PetscBool      hasLevel;
+#if defined(PETSC_HAVE_HDF5)
   PetscViewer    viewer;
+#endif
   char           buf[256];
   PetscErrorCode ierr;
 
@@ -803,10 +805,14 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
   ierr = PetscObjectSetName((PetscObject) r, "solution error");CHKERRQ(ierr);
   /* View error */
   ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
   ierr = VecView(r, viewer);CHKERRQ(ierr);
-  /* Cleanup */
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You need to configure with --download-hdf5");
+#endif
+  /* Cleanup */
   ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -834,7 +840,9 @@ static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm,
   Vec            u, r;
   PetscInt       level = -1;
   PetscBool      hasLevel;
+#if defined(PETSC_HAVE_HDF5)
   PetscViewer    viewer;
+#endif
   char           buf[256];
   PetscErrorCode ierr;
 
@@ -849,10 +857,14 @@ static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm,
   /* View error */
   ierr = PetscObjectComposedDataGetInt((PetscObject) snes, PetscMGLevelId, level, hasLevel);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf, 256, "ex12-%D.h5", level);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, buf, FILE_MODE_APPEND, &viewer);CHKERRQ(ierr);
   ierr = VecView(r, viewer);CHKERRQ(ierr);
-  /* Cleanup */
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You need to configure with --download-hdf5");
+#endif
+  /* Cleanup */
   ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

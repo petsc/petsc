@@ -20,7 +20,7 @@ struct _n_PetscViewerGLVis {
   char                   **windowtitle;
   char                   **fec_type;                                            /* type of elements to be used for visualization, see FiniteElementCollection::Name() */
   PetscErrorCode         (*g2lfield)(PetscObject,PetscInt,PetscObject[],void*); /* global to local operation for generating dofs to be visualized */
-  PetscInt               *locandbs;                                             /* local and block sizes for work vectors */
+  PetscInt               *spacedim;                                             /* geometrical space dimension (just used to initialize the scene) */
   PetscObject            *Ufield;                                               /* work vectors for visualization */
   PetscInt               snapid;                                                /* snapshot id, use PetscViewerGLVisSetSnapId to change this value*/
   void                   *userctx;                                              /* User context, used by g2lfield */
@@ -61,50 +61,49 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
   PetscFunctionReturn(0);
 }
 
-/*
-     PetscViewerGLVisSetFields - Sets the required information to visualize different fields from within a vector.
+/*@C
+     PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
   Logically Collective on PetscViewer
 
   Input Parameters:
 +  viewer     - the PetscViewer
 .  nf         - number of fields to be visualized
-.  namefield  - optional name for each field
 .  fec_type   - the type of finite element to be used to visualize the data (see FiniteElementCollection::Name() in MFEM)
-.  nlocal     - array of local sizes for field vectors
-.  bs         - array of block sizes for field vectors
-.  dim        - array of topological dimension for field vectors
+.  dim        - array of space dimension for field vectors (used to initialize the scene)
 .  g2lfields  - User routine to compute the local field vectors to be visualized; PetscObject is used in place of Vec on the prototype
+.  Vfield     - array of work vectors, one for each field
 .  ctx        - User context to store the relevant data to apply g2lfields
 -  destroyctx - Destroy function for userctx
 
-  Notes: g2lfields is called on the Vec V to be visualized, in order to extract the relevant dofs to be put in Vfield[], as
+  Notes: g2lfields is called on the vector V to be visualized in order to extract the relevant dofs to be put in Vfield[], as
 .vb
-  g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx). Misses Fortran binding
+  g2lfields((PetscObject)V,nfields,(PetscObject*)Vfield[],ctx).
 .ve
+  For vector spaces, the block size of Vfield[i] represents the vector dimension. It misses the Fortran bindings.
+  PETSc will take ownership of the work vectors.
+  The names of the Vfield vectors will be displayed in the window title.
 
   Level: intermediate
 
-.seealso: PetscViewerGLVisOpen(), PetscViewerCreate(), PetscViewerSetType()
-*/
-PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char* namefield[], const char* fec_type[], PetscInt nlocal[], PetscInt bs[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*), void* ctx, PetscErrorCode(*destroyctx)(void*))
+.seealso: PetscViewerGLVisOpen(), PetscViewerCreate(), PetscViewerSetType(), PetscObjectSetName()
+@*/
+PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const char* fec_type[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*), PetscObject Vfield[], void* ctx, PetscErrorCode(*destroyctx)(void*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,nf,2);
-  if (namefield) PetscValidPointer(namefield,3);
   if (!fec_type) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
-  PetscValidPointer(fec_type,4);
-  PetscValidPointer(nlocal,5);
-  PetscValidPointer(bs,6);
-  PetscValidPointer(dim,7);
-  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetFields_C",(PetscViewer,PetscInt,const char*[],const char*[],PetscInt[],PetscInt[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),void*,PetscErrorCode(*)(void*)),(viewer,nf,namefield,fec_type,nlocal,bs,dim,g2l,ctx,destroyctx));CHKERRQ(ierr);
+  PetscValidPointer(fec_type,3);
+  PetscValidPointer(dim,4);
+  PetscValidPointer(Vfield,6);
+  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetFields_C",(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*)),(viewer,nf,fec_type,dim,g2l,Vfield,ctx,destroyctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscInt nfields, const char* namefield[], const char* fec_type[], PetscInt nlocal[], PetscInt bs[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*),void* ctx, PetscErrorCode(*destroyctx)(void*))
+static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscInt nfields, const char* fec_type[], PetscInt dim[], PetscErrorCode(*g2l)(PetscObject,PetscInt,PetscObject[],void*), PetscObject Vfield[], void* ctx, PetscErrorCode(*destroyctx)(void*))
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
   PetscInt         i;
@@ -115,20 +114,16 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
   if (!socket->nwindow) {
     socket->nwindow = nfields;
 
-    ierr = PetscCalloc5(nfields,&socket->window,nfields,&socket->windowtitle,nfields,&socket->fec_type,3*nfields,&socket->locandbs,nfields,&socket->Ufield);CHKERRQ(ierr);
+    ierr = PetscCalloc5(nfields,&socket->window,nfields,&socket->windowtitle,nfields,&socket->fec_type,nfields,&socket->spacedim,nfields,&socket->Ufield);CHKERRQ(ierr);
     for (i=0;i<nfields;i++) {
-      if (!namefield || !namefield[i]) {
-        char name[16];
+      const char     *name;
 
-        ierr = PetscSNPrintf(name,16,"Field%d",i);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(name,&socket->windowtitle[i]);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrallocpy(namefield[i],&socket->windowtitle[i]);CHKERRQ(ierr);
-      }
+      ierr = PetscObjectGetName(Vfield[i],&name);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(name,&socket->windowtitle[i]);CHKERRQ(ierr);
       ierr = PetscStrallocpy(fec_type[i],&socket->fec_type[i]);CHKERRQ(ierr);
-      socket->locandbs[3*i  ] = nlocal[i];
-      socket->locandbs[3*i+1] = bs[i];
-      socket->locandbs[3*i+2] = dim[i];
+      ierr = PetscObjectReference(Vfield[i]);CHKERRQ(ierr);
+      socket->Ufield[i] = Vfield[i];
+      socket->spacedim[i] = dim[i];
     }
   }
   /* number of fields are not allowed to vary */
@@ -295,15 +290,14 @@ PetscErrorCode PetscViewerGLVisGetDM_Private(PetscViewer viewer, PetscObject* dm
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer viewer, PetscInt* nfield, const char** names[], const char **fec[], PetscInt *locandbs[], PetscErrorCode(**g2lfield)(PetscObject,PetscInt,PetscObject[],void*), PetscObject *Ufield[], void **userctx)
+PetscErrorCode PetscViewerGLVisGetFields_Private(PetscViewer viewer, PetscInt* nfield, const char **fec[], PetscInt *spacedim[], PetscErrorCode(**g2lfield)(PetscObject,PetscInt,PetscObject[],void*), PetscObject *Ufield[], void **userctx)
 {
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
   if (nfield)   *nfield   = socket->nwindow;
-  if (names)    *names    = (const char**)socket->windowtitle;
   if (fec)      *fec      = (const char**)socket->fec_type;
-  if (locandbs) *locandbs = socket->locandbs;
+  if (spacedim) *spacedim = socket->spacedim;
   if (g2lfield) *g2lfield = socket->g2lfield;
   if (Ufield)   *Ufield   = socket->Ufield;
   if (userctx)  *userctx  = socket->userctx;
@@ -454,7 +448,7 @@ static PetscErrorCode PetscViewerDestroy_GLVis(PetscViewer viewer)
     ierr = PetscObjectDestroy(&socket->Ufield[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(socket->name);CHKERRQ(ierr);
-  ierr = PetscFree5(socket->window,socket->windowtitle,socket->fec_type,socket->locandbs,socket->Ufield);CHKERRQ(ierr);
+  ierr = PetscFree5(socket->window,socket->windowtitle,socket->fec_type,socket->spacedim,socket->Ufield);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&socket->meshwindow);CHKERRQ(ierr);
   ierr = PetscObjectDestroy(&socket->dm);CHKERRQ(ierr);
   if (socket->destroyctx && socket->userctx) { ierr = (*socket->destroyctx)(socket->userctx);CHKERRQ(ierr); }

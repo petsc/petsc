@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
   Vec            X,F,Xu,Xk,Fu,Fk;
   Mat            B;
   IS             *isg;
-  PetscBool      view_draw,pass_dm;
+  PetscBool      pass_dm;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau);CHKERRQ(ierr);
@@ -370,10 +370,9 @@ int main(int argc, char *argv[])
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Coupled problem options","SNES");CHKERRQ(ierr);
   {
-    user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
+    user->ptype = 0; pass_dm = PETSC_TRUE;
 
     ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -429,7 +428,8 @@ int main(int argc, char *argv[])
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     break;
   }
-  if (view_draw) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+  ierr = VecViewFromOptions(X,NULL,"-view_sol");CHKERRQ(ierr);
+
   if (0) {
     PetscInt  col      = 0;
     PetscBool mult_dup = PETSC_FALSE,view_dup = PETSC_FALSE;

@@ -69,6 +69,8 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,5,1,1,NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da2);CHKERRQ(ierr);
   ierr = DMSetUp(user.da2);CHKERRQ(ierr);  
+  ierr = DMDASetFieldName(user.da1,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(user.da2,0,"lambda");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,user.da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);

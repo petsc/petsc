@@ -1,6 +1,7 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
 #include <petsc/private/isimpl.h>
+#include <petsc/private/glvisviewerimpl.h>
 #include <petscds.h>
 
 /*@C
@@ -44,6 +45,7 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(com);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1252,6 +1254,106 @@ PetscErrorCode DMCompositeGetEntriesArray(DM dm,DM dms[])
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  DM          dm;
+  PetscViewer *subv;
+  Vec         *vecs;
+} GLVisViewerCtx;
+
+static PetscErrorCode  DestroyGLVisViewerCtx_Private(void *vctx)
+{
+  GLVisViewerCtx *ctx = (GLVisViewerCtx*)vctx;
+  PetscInt       i,n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetNumberDM(ctx->dm,&n);CHKERRQ(ierr);
+  for (i = 0; i < n; i++) {
+    ierr = PetscViewerDestroy(&ctx->subv[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(ctx->subv,ctx->vecs);CHKERRQ(ierr);
+  ierr = DMDestroy(&ctx->dm);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  DMCompositeSampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXfield[], void *vctx)
+{
+  Vec            X = (Vec)oX;
+  GLVisViewerCtx *ctx = (GLVisViewerCtx*)vctx;
+  PetscInt       i,n,cumf;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetNumberDM(ctx->dm,&n);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccessArray(ctx->dm,X,n,NULL,ctx->vecs);CHKERRQ(ierr);
+  for (i = 0, cumf = 0; i < n; i++) {
+    PetscErrorCode (*g2l)(PetscObject,PetscInt,PetscObject[],void*);
+    void           *fctx;
+    PetscInt       nfi;
+
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nfi,NULL,NULL,&g2l,NULL,&fctx);CHKERRQ(ierr);
+    if (!nfi) continue;
+    if (g2l) {
+      ierr = (*g2l)((PetscObject)ctx->vecs[i],nfi,oXfield+cumf,fctx);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(ctx->vecs[i],(Vec)(oXfield[cumf]));CHKERRQ(ierr);
+    }
+    cumf += nfi;
+  }
+  ierr = DMCompositeRestoreAccessArray(ctx->dm,X,n,NULL,ctx->vecs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  DMSetUpGLVisViewer_Composite(PetscObject odm, PetscViewer viewer)
+{
+  DM             dm = (DM)odm, *dms;
+  Vec            *Ufds;
+  GLVisViewerCtx *ctx;
+  PetscInt       i,n,tnf,*sdim;
+  char           **fecs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  ctx->dm = dm;
+  ierr = DMCompositeGetNumberDM(dm,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&dms);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntriesArray(dm,dms);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&ctx->subv,n,&ctx->vecs);CHKERRQ(ierr);
+  for (i = 0, tnf = 0; i < n; i++) {
+    PetscInt nf;
+
+    ierr = PetscViewerCreate(PetscObjectComm(odm),&ctx->subv[i]);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(ctx->subv[i],PETSCVIEWERGLVIS);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisSetDM_Private(ctx->subv[i],(PetscObject)dms[i]);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nf,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    tnf += nf;
+  }
+  ierr = PetscFree(dms);CHKERRQ(ierr);
+  ierr = PetscMalloc3(tnf,&fecs,tnf,&sdim,tnf,&Ufds);CHKERRQ(ierr);
+  for (i = 0, tnf = 0; i < n; i++) {
+    PetscInt   *sd,nf,f;
+    const char **fec;
+    Vec        *Uf;
+
+    ierr = PetscViewerGLVisGetFields_Private(ctx->subv[i],&nf,&fec,&sd,NULL,(PetscObject**)&Uf,NULL);CHKERRQ(ierr);
+    for (f = 0; f < nf; f++) {
+      ierr = PetscStrallocpy(fec[f],&fecs[tnf+f]);CHKERRQ(ierr);
+      Ufds[tnf+f] = Uf[f];
+      sdim[tnf+f] = sd[f];
+    }
+    tnf += nf;
+  }
+  ierr = PetscViewerGLVisSetFields(viewer,tnf,(const char**)fecs,sdim,DMCompositeSampleGLVisFields_Private,(PetscObject*)Ufds,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+  for (i = 0; i < tnf; i++) {
+    ierr = PetscFree(fecs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(fecs,sdim,Ufds);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 {
   PetscErrorCode         ierr;
@@ -1627,6 +1729,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   p->ops->destroy                         = DMDestroy_Composite;
   p->ops->view                            = DMView_Composite;
   p->ops->setup                           = DMSetUp_Composite;
+
+  ierr = PetscObjectComposeFunction((PetscObject)p,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

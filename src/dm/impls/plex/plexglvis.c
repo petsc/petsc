@@ -44,7 +44,7 @@ static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt n
 PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
 {
   DM             dm = (DM)odm;
-  Vec            xlocal,xfield;
+  Vec            xlocal,xfield,*Ufield;
   PetscDS        ds;
   IS             globalNum,isfield;
   PetscBT        vown;
@@ -92,7 +92,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
     ierr = PetscSectionGetFieldComponents(s,f,&bs);CHKERRQ(ierr);
     maxfields += bs;
   }
-  ierr = PetscCalloc6(maxfields,&fieldname,maxfields,&nlocal,maxfields,&bs,maxfields,&dims,maxfields,&fec_type,totdofs,&idxs);CHKERRQ(ierr);
+  ierr = PetscCalloc7(maxfields,&fieldname,maxfields,&nlocal,maxfields,&bs,maxfields,&dims,maxfields,&fec_type,totdofs,&idxs,maxfields,&Ufield);CHKERRQ(ierr);
   ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ierr = PetscCalloc1(maxfields,&ctx->scctx);CHKERRQ(ierr);
   ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
@@ -205,13 +205,22 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
   ierr = VecDestroy(&xlocal);CHKERRQ(ierr);
   ierr = ISRestoreIndices(globalNum,&gNum);CHKERRQ(ierr);
 
+  /* create work vectors */
+  for (f=0;f<ctx->nf;f++) {
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),nlocal[f],PETSC_DECIDE,&Ufield[f]);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)Ufield[f],fieldname[f]);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(Ufield[f],bs[f]);CHKERRQ(ierr);
+    ierr = VecSetDM(Ufield[f],dm);CHKERRQ(ierr);
+  }
+
   /* customize the viewer */
-  ierr = PetscViewerGLVisSetFields(viewer,ctx->nf,(const char**)fieldname,(const char**)fec_type,nlocal,bs,dims,DMPlexSampleGLVisFields_Private,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
+  ierr = PetscViewerGLVisSetFields(viewer,ctx->nf,(const char**)fec_type,dims,DMPlexSampleGLVisFields_Private,(PetscObject*)Ufield,ctx,DestroyGLVisViewerCtx_Private);CHKERRQ(ierr);
   for (f=0;f<ctx->nf;f++) {
     ierr = PetscFree(fieldname[f]);CHKERRQ(ierr);
     ierr = PetscFree(fec_type[f]);CHKERRQ(ierr);
+    ierr = VecDestroy(&Ufield[f]);CHKERRQ(ierr);
   }
-  ierr = PetscFree6(fieldname,nlocal,bs,dims,fec_type,idxs);CHKERRQ(ierr);
+  ierr = PetscFree7(fieldname,nlocal,bs,dims,fec_type,idxs,Ufield);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
