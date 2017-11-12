@@ -907,7 +907,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
 
     ierr = PetscStrncpy(gleetype,TSGLEEDefaultType,sizeof(gleetype));CHKERRQ(ierr);
     for (link=GLEETableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=GLEETableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_glee_type","Family of GLEE method","TSGLEESetType",(const char*const*)namelist,count,gleetype,&choice,&flg);CHKERRQ(ierr);
     ierr = TSGLEESetType(ts,flg ? namelist[choice] : gleetype);CHKERRQ(ierr);

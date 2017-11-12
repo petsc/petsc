@@ -96,7 +96,7 @@ struct _p_PetscSection {
   PetscBool                     setup;
 
   PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
-  const char                  **fieldNames;   /* The field names */
+  char                        **fieldNames;   /* The field names */
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 
