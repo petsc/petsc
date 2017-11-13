@@ -1469,8 +1469,8 @@ PetscErrorCode  PetscOptionsReject(PetscOptions options,const char name[],const 
 
    Input Parameters:
 +  options - options database, use NULL for default global database
-.  name - the option one is seeking
--  pre - string to prepend to the name or NULL
+.  pre - string to prepend to the name or NULL
+-  name - the option one is seeking
 
    Output Parameters:
 .  set - PETSC_TRUE if found else PETSC_FALSE.
