@@ -30,9 +30,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B       = *newmat;
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   Mat_SeqAIJMKL  *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
-#endif
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -58,12 +56,12 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaijmkl_C",NULL);CHKERRQ(ierr);
-  if(!aijmkl->no_SpMV2) {
 #ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
+  if(!aijmkl->no_SpMV2) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
-#endif
   }
+#endif
 
   /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this 
    * simply involves destroying the MKL sparse matrix handle and then freeing 
@@ -289,6 +287,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
   if (aijmkl->eager_inspection) {
     ierr = MatSeqAIJMKL_create_mkl_handle(A);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   } else if (aijmkl->sparse_optimized) {
     /* If doing lazy inspection and there is an optimized MKL handle, we need to destroy it, so that it will be 
      * rebuilt later when needed. Otherwise, some SeqAIJ implementations that we depend on for some operations
@@ -299,6 +298,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
       PetscFunctionReturn(PETSC_ERR_LIB);
     }
     aijmkl->sparse_optimized = PETSC_FALSE;
+#endif
   }
 
   PetscFunctionReturn(0);
