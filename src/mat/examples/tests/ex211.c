@@ -23,10 +23,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
-  //printf("[%d] ISGetSeqIS_SameColDist_Private ncols %d, Bn %d\n",rank,ncols,Bn);
-
-  //ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = ISView(iscol,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
   ierr = MatCreateVecs(mat,&x,NULL);CHKERRQ(ierr);
@@ -53,9 +49,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(cmap,&cmaparray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //if (!rank) printf("cmap\n");
-  //ierr = VecView(cmap,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Get iscol_d */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d);CHKERRQ(ierr);
@@ -164,8 +157,6 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
      Generate a new matrix consisting of every second row and column of
@@ -188,7 +179,6 @@ int main(int argc,char **args)
 
   ierr = MatCreateSubMatrix(C,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix(C,isrow,iscol,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol);CHKERRQ(ierr);
