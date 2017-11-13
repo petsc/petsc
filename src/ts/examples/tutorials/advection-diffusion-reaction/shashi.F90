@@ -26,7 +26,7 @@
       SNESLineSearch linesearch
       PetscErrorCode  ierr
       PetscInt its,i2,i20
-      PetscMPIInt size,rank
+      PetscMPIInt size
       PetscScalar   pfive
       PetscReal   tol
       PetscBool   setls
@@ -62,10 +62,7 @@
          stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      if (size .ne. 1) then
-         SETERRA(PETSC_COMM_WORLD,1,'requires one process')
-      endif
+      if (size .ne. 1) then SETERRA(PETSC_COMM_WORLD,1,'requires one process')
 
       big  = 2.88
       big  = PETSC_INFINITY

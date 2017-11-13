@@ -95,12 +95,12 @@
       call PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr);
 
       call PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr);CHKERRA(ierr);
-      if (gnleaves .ne. nleaves) SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+      if (gnleaves .ne. nleaves) then SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'nleaves returned from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
       do i=1,nleaves
-         if (gmine(i) .ne. mine(i))  SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Root from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+         if (gmine(i) .ne. mine(i)) then SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Root from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
       enddo
       do i=1,nleaves
-         if (gremote(i)%index .ne. remote(i)%index)  SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaf from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
+         if (gremote(i)%index .ne. remote(i)%index) then SETERRA(PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaf from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
       enddo
 
 !    Clean storage for star forest.

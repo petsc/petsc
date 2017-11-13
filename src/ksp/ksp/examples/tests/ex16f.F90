@@ -41,22 +41,12 @@
       endif
 
 ! Read in matrix and RHS
-      call PetscOptionsGetString(PETSC_NULL_OPTIONS,                           &
-     &             PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,            &
-     &     fd,ierr)
-      if (ierr .ne. 0) then
-        print*, 'Unable to open file ',f
-        SETERRA(PETSC_COMM_WORLD,1,' ')
-      endif
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-f',f,flg,ierr);CHKERRA(ierr)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,fd,ierr);CHKERRA(ierr)
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATSEQAIJ,ierr)
       call MatLoad(A,fd,ierr)
-      if (ierr .ne. 0) then
-        print*, 'Unable to load matrix '
-        SETERRA(PETSC_COMM_WORLD,1,' ')
-      endif
 
       call VecCreate(PETSC_COMM_WORLD,b,ierr)
       call VecLoad(b,fd,ierr)

@@ -90,12 +90,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-      if (size .ne. 1) then
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (size .ne. 1) then SETERRA(PETSC_COMM_SELF,1,'This is a uniprocessor example only')
 
 !  Initialize problem parameters
       i5 = 5
@@ -107,10 +102,7 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-         if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then SETERRA(PETSC_COMM_SELF,1,'Lambda provided with -par is out of range ')
       N       = mx*my
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
