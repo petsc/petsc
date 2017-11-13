@@ -20,9 +20,6 @@ PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesDestroy(PetscCUDAIndices*);
 PETSC_INTERN PetscErrorCode VecScatterCUDA_StoS(Vec,Vec,PetscCUDAIndices,InsertMode,ScatterMode);
 #endif
 
-/* Logging support */
-PetscClassId VEC_SCATTER_CLASSID;
-
 #if defined(PETSC_USE_DEBUG)
 /*
      Checks if any indices are less than zero and generates an error
