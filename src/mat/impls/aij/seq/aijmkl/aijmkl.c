@@ -30,7 +30,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   /* so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B       = *newmat;
+#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   Mat_SeqAIJMKL  *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+#endif
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -61,12 +63,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatTransposeMatMult_seqaijmkl_seqaijmkl_C",NULL);CHKERRQ(ierr);
   }
-#endif
 
   /* Free everything in the Mat_SeqAIJMKL data structure. Currently, this 
    * simply involves destroying the MKL sparse matrix handle and then freeing 
    * the spptr pointer. */
-#ifdef PETSC_HAVE_MKL_SPARSE_OPTIMIZE
   if (reuse == MAT_INITIAL_MATRIX) aijmkl = (Mat_SeqAIJMKL*)B->spptr;
 
   if (aijmkl->sparse_optimized) {
