@@ -663,6 +663,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     ierr = PetscMalloc2(Nc, &interpolant, cdim*Nc, &interpolantGrad);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFEM(plex, cell, quad, coords, J, invJ, detJ);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(plex, cell, &cg.volume, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscMemzero(gradient, cdim*Nc * sizeof(PetscScalar));CHKERRQ(ierr);
     for (f = 0, fieldOffset = 0; f < Nf; ++f) {
       PetscInt qc = 0, q;
 
