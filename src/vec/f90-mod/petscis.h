@@ -20,7 +20,7 @@
         PetscFortranAddr:: v
       end type tPetscSF
       type PetscSFNode
-        PetscMPIInt rank
+        PetscInt    rank
         PetscInt    index
       end type PetscSFNode
 

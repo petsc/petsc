@@ -27,6 +27,7 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit,MPI_Datatype *dtype)
   PetscFunctionBegin;
   ftype = MPI_Type_f2c(unit);
   if (ftype == MPI_INTEGER) *dtype = MPI_INT;
+  else if (ftype == MPI_INTEGER8) *dtype = MPIU_INT64;
   else if (ftype == MPI_DOUBLE_PRECISION) *dtype = MPI_DOUBLE;
   else if (ftype == MPI_COMPLEX16) *dtype = MPI_C_DOUBLE_COMPLEX;
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown Fortran MPI_Datatype");

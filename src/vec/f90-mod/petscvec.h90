@@ -3,7 +3,7 @@
        subroutine PetscSFBcastBegin(sf,unit,rarray,larray,ierr)
           use petscisdef
           PetscSF :: sf
-          PetscInt :: unit
+          PetscMPIInt :: unit
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
@@ -16,7 +16,7 @@
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,ierr)
           use petscisdef
           PetscSF :: sf
-          PetscInt :: unit
+          PetscMPIInt :: unit
           type(*) :: rarray(:)
           type(*) :: larray(:)
           PetscErrorCode :: ierr
