@@ -42,16 +42,3 @@ iter =  39, Function value 305596., Residual: 0.000206053
 iter =  40, Function value 305596., Residual: 5.18468e-05 
 iter =  41, Function value 305596., Residual: 5.20312e-05 
 iter =  42, Function value 305596., Residual: 9.34046e-06 
-Tao Object: 1 MPI processes
-  type: pounders
-      initial delta: 0.05
-      final delta: 2.44141e-05
-      model points: 7
-      subproblem solver: blmvm
-      total subproblem iterations: 271
-  convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.34046e-06
-  Objective value=305596.
-  total number of iterations=42,                          (max: 100)
-  total number of function evaluations=59,                  max: 4000
-  Solution converged:    ||g(X)|| <= gatol
