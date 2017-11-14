@@ -49,6 +49,7 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
   } else {
     ierr = VecDot(F,F,fsum);CHKERRQ(ierr);
   }
+  ierr = PetscInfo1(tao,"Separable objective norm: %20.19e\n",(double)*fsum);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(*fsum)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   PetscFunctionReturn(0);
 }
@@ -811,7 +812,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
-  ierr = PetscInfo1(tao,"Initial gradient: %10.9e\n",(double)gnorm);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Initial gradient: %20.19e\n",(double)gnorm);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
