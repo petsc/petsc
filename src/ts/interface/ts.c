@@ -3173,6 +3173,8 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 
    Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
 
+   After TSAdjointSolve() is called the lamba and the mu contain the computed sensitivities
+
 .keywords: TS, timestep, set, sensitivity, initial values
 @*/
 PetscErrorCode  TSSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)

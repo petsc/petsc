@@ -112,7 +112,7 @@ runex5adj:
 	   ${RM} -rf ex5adj_1.tmp SA-data
 
 runex5adj_2:
-	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file test-%06D.cp > ex5adj_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp > ex5adj_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_2.out ex5adj_2.tmp) then true; \
 	   else printf "${PWD}\n Possible problem with ex5adj_2, diffs above\n=======================================\n"; fi; \
 	   ${RM} -rf ex5adj_2.tmp Test-dir

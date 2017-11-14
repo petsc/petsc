@@ -430,6 +430,8 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj,PetscBool flg)
    Options Database Keys:
 .  -ts_trajectory_dirname - set the directory name
 
+   Notes: The final location of the files is determined by dirname/filetemplate where filetemplate was provided by TSTrajectorySetFiletemplate()
+
    Level: developer
 
 .keywords: TS, trajectory, set
@@ -453,16 +455,21 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 
    Input Arguments:
 +  tj      - the TSTrajectory context
--  filetemplate - the directory name
+-  filetemplate - the template
 
    Options Database Keys:
-.  -ts_trajectory_file - set the file name template
+.  -ts_trajectory_file_template - set the file name template
+
+   Notes: The name template should be of the form, for example filename-%06D.bin
+
+   The final location of the files is determined by dirname/filetemplate where dirname was provided by TSTrajectorySetDirname(). The %06D is replaced by the 
+   timestep counter
 
    Level: developer
 
 .keywords: TS, trajectory, set
 
-.seealso: TSTrajectorySetFiletemplate(),TSTrajectorySetUp()
+.seealso: TSTrajectorySetDirname(),TSTrajectorySetUp()
 @*/
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetemplate[])
 {
@@ -518,24 +525,24 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
     ierr = TSTrajectorySetDirname(tj,dirname);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsString("-ts_trajectory_file","Template for TSTrajectory file name, use filename-%06D.bin","TSTrajectorySetFiletemplate",0,filetemplate,PETSC_MAX_PATH_LEN,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-ts_trajectory_file_template","Template for TSTrajectory file name, use filename-%06D.bin","TSTrajectorySetFiletemplate",0,filetemplate,PETSC_MAX_PATH_LEN,&set);CHKERRQ(ierr);
   if (set) {
-    size_t     len;
     const char *ptr,*ptr2;
+    size_t     len;
 
-    if (!filetemplate[0]) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file requires a file name template, e.g. filename-%%06D.bin");
+    if (!filetemplate[0]) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
     /* Do some cursory validation of the input. */
     ierr = PetscStrstr(filetemplate,"%",(char**)&ptr);CHKERRQ(ierr);
-    if (!ptr) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file requires a file name template, e.g. filename-%%06D.bin");
+    if (!ptr) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
     for (ptr++; ptr && *ptr; ptr++) {
       ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
-      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file, should look like filename-%%06D.bin");
+      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file_template, should look like filename-%%06D.bin");
       if (ptr2) break;
     }
     ierr = PetscStrcat(dirname,"/");CHKERRQ(ierr);
     ierr = PetscStrlen(filetemplate,&len);CHKERRQ(ierr);
     ierr = PetscStrncat(dirname,filetemplate,PETSC_MAX_PATH_LEN-len-1);CHKERRQ(ierr);
-    ierr = TSTrajectorySetFiletemplate(tj,dirname);CHKERRQ(ierr);
+    ierr = TSTrajectorySetFiletemplate(tj,filetemplate);CHKERRQ(ierr);
   }
 
   /* Handle specific TSTrajectory options */

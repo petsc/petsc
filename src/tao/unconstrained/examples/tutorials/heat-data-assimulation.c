@@ -425,6 +425,29 @@ PetscErrorCode RHSMatrixHeatgllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx
    Output Parameters:
    f   - the newly evaluated function
    G   - the newly evaluated gradient
+
+   Notes:
+
+          The forward equation is
+              M u_t = F(U)
+          which is converted to
+                u_t = M^{-1} F(u)
+          in the user code since TS has no direct way of providing a mass matrix. The Jacobian of this is
+                 M^{-1} J
+          where J is the Jacobian of F. Now the adjoint equation is
+                M v_t = J^T v
+          but TSAdjoint does not solve this since it can only solve the transposed system for the 
+          Jacobian the user provided. Hence TSAdjoint solves
+                 w_t = J^T M^{-1} w  (where w = M v)
+          since there is no way to indicate the mass matrix as a seperate entitity to TS. Thus one
+          must be careful in initializing the "adjoint equation" and using the result. This is
+          why
+              appctx->dat.grad = -2 M(u(T) - u_d)
+          below (instead of -2(u(T) - u_d) and why the result is
+              G = G/appctx->SEMop.mass (that is G = M^{-1}w)
+          below (instead of just the result of the "adjoint solve").
+
+
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 {
@@ -482,7 +505,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-   Initial conditions for the adjoint integration
+   Initial conditions for the adjoint integration. See Notes above
    */
 
   ierr = VecScale(temp, -2.0);
@@ -491,6 +514,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetCostGradients(appctx->ts,1,&appctx->dat.grad,NULL);CHKERRQ(ierr);
   ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
   ierr = VecCopy(appctx->dat.grad,G);CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
   ierr = VecDestroy(&temp);CHKERRQ(ierr);
   ierr = VecDestroy(&temp2);CHKERRQ(ierr);
   ierr = TSDestroy(&appctx->ts);CHKERRQ(ierr);
