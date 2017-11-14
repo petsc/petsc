@@ -594,7 +594,7 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
     ierr = VecRestoreArrayRead(mfqP->Xhist[i],&x);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn,mfqP->work,&ione,mfqP->work2,&ione));
     normd = BLASnrm2_(&blasn,mfqP->work,&ione);
-    if (normd <= c*c) {
+    if (normd <= c) {
       blasj=PetscMax((mfqP->n - mfqP->nmodelpoints),0);
       if (!mfqP->q_is_I) {
         /* project D onto null */
@@ -1271,7 +1271,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;
   mfqP->deltamin=1e-6;
-  mfqP->c2 = 100.0;
+  mfqP->c2 = 10.0;
   mfqP->theta1=1e-5;
   mfqP->theta2=1e-4;
   mfqP->gamma0=0.5;
