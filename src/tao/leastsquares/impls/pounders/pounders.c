@@ -901,11 +901,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /* Compute the next interpolation set */
     mfqP->q_is_I = 1;
     mfqP->nmodelpoints=0;
+    ierr = PetscInfo2(tao,"Affine Points: xmin = %20.19e, c1 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c1);CHKERRQ(ierr);
     ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
     if (mfqP->nmodelpoints == mfqP->n) {
       valid = PETSC_TRUE;
     } else {
       valid = PETSC_FALSE;
+      ierr = PetscInfo2(tao,"Affine Points: xmin = %20.19e, c2 = %20.19e\n",(double)*mfqP->xmin,(double)mfqP->c2);CHKERRQ(ierr);
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
       if (mfqP->n > mfqP->nmodelpoints) {
         ierr = PetscInfo(tao,"Model not valid -- adding geometry points\n");CHKERRQ(ierr);
