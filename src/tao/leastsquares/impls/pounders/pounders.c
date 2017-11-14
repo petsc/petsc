@@ -222,6 +222,7 @@ static PetscErrorCode pounders_update_res(Tao tao)
     }
   } else {
     /* Default: Gres= sum_i[cigi] = G*c' */
+    ierr = PetscInfo(tao,"Identity weights\n");CHKERRQ(ierr);
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&blasn,&blasm,&one,mfqP->Fdiff,&blasn,mfqP->C,&ione,&zero,mfqP->Gres,&ione));
 
     /* compute Hres = sum_ij [wij * (*ci*Hj + cj*Hi + gi gj' + gj gi') ] */
@@ -691,13 +692,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* This provides enough information to approximate the gradient of the objective */
   /* using a forward difference scheme. */
 
-  i = 0;
+  ierr = PetscInfo1(tao,"Initialize simplex; delta = %10.9e\n",mfqP->delta);CHKERRQ(ierr);
   ierr = pounders_feval(tao,mfqP->Xhist[0],mfqP->Fhist[0],&mfqP->Fres[0]);CHKERRQ(ierr);
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
 
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
-  for (i=1;i<mfqP->n+1;i++) {
+  for (i=1;i<mfqP->n+1;++i) {
     ierr = VecCopy(mfqP->Xhist[0],mfqP->Xhist[i]);CHKERRQ(ierr);
  
     if (i-1 >= low && i-1 < high) {
@@ -714,6 +715,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   }
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
   ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Finalize simplex; minnorm = %10.9e\n",minnorm);CHKERRQ(ierr);
 
   /* Gather mpi vecs to one big local vec */
 
@@ -724,7 +726,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  if (mfqP->size == 1) {
+  ierr = PetscInfo1(tao,"Build matrix: %d\n",mfqP->size);CHKERRQ(ierr);
+  if (1 == mfqP->size) {
     ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
     ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
@@ -744,7 +747,6 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       }
       ierr = VecRestoreArray(mfqP->Fhist[i],&f);CHKERRQ(ierr);
       mfqP->model_indices[ii++] = i;
-
     }
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
@@ -754,8 +756,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     ierr = VecSet(mfqP->localxmin,0);CHKERRQ(ierr);
     ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
 
+    ierr = VecGetArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
     ierr = VecRestoreArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
 
@@ -793,6 +795,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   blasncopy = blasn;
   PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasncopy,&info));
+  ierr = PetscInfo1(tao,"Linear solve return: %d\n",info);CHKERRQ(ierr);
 
   cres = minnorm;
   ierr = pounders_update_res(tao);CHKERRQ(ierr);
@@ -808,6 +811,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
+  ierr = PetscInfo1(tao,"Initial gradient: %10.9e\n",gnorm);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
