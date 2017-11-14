@@ -311,6 +311,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->dirname);CHKERRQ(ierr);
   ierr = PetscFree((*tj)->filetemplate);CHKERRQ(ierr);
+  ierr = PetscFree((*tj)->dirfiletemplate);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -443,6 +444,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  if (tj->dirfiletemplate) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_WRONGSTATE,"Cannot set directoryname after it TSTrajectory has been setup");
   ierr = PetscFree(tj->dirname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(dirname,&tj->dirname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -474,8 +476,21 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
 PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj,const char filetemplate[])
 {
   PetscErrorCode ierr;
+  const char     *ptr,*ptr2;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj,TSTRAJECTORY_CLASSID,1);
+  if (tj->dirfiletemplate) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_WRONGSTATE,"Cannot set filetemplate after TSTrajectory has been setup");
+
+  if (!filetemplate[0]) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
+  /* Do some cursory validation of the input. */
+  ierr = PetscStrstr(filetemplate,"%",(char**)&ptr);CHKERRQ(ierr);
+  if (!ptr) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
+  for (ptr++; ptr && *ptr; ptr++) {
+    ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
+    if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file_template, should look like filename-%%06D.bin");
+    if (ptr2) break;
+  }
   ierr = PetscFree(tj->filetemplate);CHKERRQ(ierr);
   ierr = PetscStrallocpy(filetemplate,&tj->filetemplate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -527,21 +542,6 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 
   ierr = PetscOptionsString("-ts_trajectory_file_template","Template for TSTrajectory file name, use filename-%06D.bin","TSTrajectorySetFiletemplate",0,filetemplate,PETSC_MAX_PATH_LEN,&set);CHKERRQ(ierr);
   if (set) {
-    const char *ptr,*ptr2;
-    size_t     len;
-
-    if (!filetemplate[0]) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
-    /* Do some cursory validation of the input. */
-    ierr = PetscStrstr(filetemplate,"%",(char**)&ptr);CHKERRQ(ierr);
-    if (!ptr) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"-ts_trajectory_file_template requires a file name template, e.g. filename-%%06D.bin");
-    for (ptr++; ptr && *ptr; ptr++) {
-      ierr = PetscStrchr("DdiouxX",*ptr,(char**)&ptr2);CHKERRQ(ierr);
-      if (!ptr2 && (*ptr < '0' || '9' < *ptr)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Invalid file template argument to -ts_trajectory_file_template, should look like filename-%%06D.bin");
-      if (ptr2) break;
-    }
-    ierr = PetscStrcat(dirname,"/");CHKERRQ(ierr);
-    ierr = PetscStrlen(filetemplate,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(dirname,filetemplate,PETSC_MAX_PATH_LEN-len-1);CHKERRQ(ierr);
     ierr = TSTrajectorySetFiletemplate(tj,filetemplate);CHKERRQ(ierr);
   }
 
@@ -572,6 +572,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
 {
   PetscErrorCode ierr;
+  size_t         s1,s2;
 
   PetscFunctionBegin;
   if (!tj) PetscFunctionReturn(0);
@@ -592,5 +593,9 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   tj->recomps    = 0;
   tj->diskreads  = 0;
   tj->diskwrites = 0;
+  ierr = PetscStrlen(tj->dirname,&s1);CHKERRQ(ierr);
+  ierr = PetscStrlen(tj->filetemplate,&s2);CHKERRQ(ierr);
+  ierr = PetscMalloc((s1 + s2 + 1)*sizeof(char),&tj->dirfiletemplate);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(tj->dirfiletemplate,s1+s2+1,"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

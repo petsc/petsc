@@ -18,7 +18,7 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 heat-data-assimulation: heat-data-assimulation.o chkopts
-	-${CLINKER} -o heat-data-assimulation heat-data-assimulation.o ${PETSC_TAO_LIB}
+	-${CLINKER} -o heat-data-assimulation heat-data-assimulation.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
 	${RM} heat-data-assimulation.o
 
 rosenbrock1: rosenbrock1.o chkopts
