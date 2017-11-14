@@ -75,7 +75,7 @@ typedef struct {
 typedef struct {
   Vec         grid;              /* total grid */   
   Vec         mass;              /* mass matrix for total integration */
-  Mat         stiff;             // stifness matrix
+  Mat         stiff;             /* stifness matrix */
   PetscGLL    gll;
 } PetscSEMOperators;
 
@@ -145,7 +145,6 @@ int main(int argc,char **argv)
   }
 
 
-  //lenloc   = appctx.param.E*appctx.param.N; //only if I want to do it totally local for explicit
   lenglob  = appctx.param.E*(appctx.param.N-1);
 
   /*
@@ -157,7 +156,6 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,lenglob,1,1,NULL,&appctx.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(appctx.da);CHKERRQ(ierr);
   ierr = DMSetUp(appctx.da);CHKERRQ(ierr);
-  //ierr = DMDAGetInfo(appctx.da,NULL,&E,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
  
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -177,7 +175,7 @@ int main(int argc,char **argv)
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
   
-  //Compute function over the locally owned part of the grid
+  /* Compute function over the locally owned part of the grid */
   
     xs=xs/(appctx.param.N-1);
     xm=xm/(appctx.param.N-1);
@@ -199,7 +197,7 @@ int main(int argc,char **argv)
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
 
 
-  //Set Objective and Initial conditions for the problem 
+  /* Set Objective and Initial conditions for the problem  */
   ierr = Objective(appctx.param.Tend+2,appctx.dat.obj,&appctx);CHKERRQ(ierr);
   ierr = InitialConditions(appctx.dat.ic,&appctx);CHKERRQ(ierr);
 
@@ -222,17 +220,35 @@ int main(int argc,char **argv)
   ierr = MatNullSpaceTest(nsp,appctx.SEMop.stiff,NULL);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
 
-  // Create TAO solver and set desired solution method 
+  /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,appctx.dat.ic);CHKERRQ(ierr);
 
-  // Set routine for function and gradient evaluation 
+  /* Set routine for function and gradient evaluation  */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
 
-  // Check for any TAO command line options 
+  /* Check for any TAO command line options  */
   ierr = TaoSetTolerances(tao,1e-8,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+
+  /* Create the TS solver that solves the ODE and its adjoint; set its options */
+  ierr = TSCreate(PETSC_COMM_WORLD,&appctx.ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(appctx.ts,TS_LINEAR);CHKERRQ(ierr);
+  ierr = TSSetType(appctx.ts,TSRK);CHKERRQ(ierr);
+  ierr = TSSetDM(appctx.ts,appctx.da);CHKERRQ(ierr);
+  ierr = TSSetTime(appctx.ts,0.0);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(appctx.ts,appctx.initial_dt);CHKERRQ(ierr);
+  ierr = TSSetMaxSteps(appctx.ts,appctx.param.steps);CHKERRQ(ierr);
+  ierr = TSSetMaxTime(appctx.ts,appctx.param.Tend);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
+  ierr = TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(appctx.ts);
+  /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
+  ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(appctx.ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
+  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
@@ -248,6 +264,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
   ierr = PetscFree(appctx.dat.Z);
   ierr = PetscFree(appctx.dat.W);
+  ierr = TSDestroy(&appctx.ts);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -271,30 +288,23 @@ int main(int argc,char **argv)
 */
 PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 {
-  PetscScalar    *s_localptr, *xg_localptr;
-  PetscErrorCode ierr;
-  PetscInt       i,lenglob;
-  PetscReal      sum;
+  PetscScalar       *s_localptr;
+  const PetscScalar *xg_localptr;  
+  PetscErrorCode    ierr;
+  PetscInt          i,lenglob;
+  PetscReal        sum;
 
-  /*
-     Get pointers to vector data
-  */
   ierr = DMDAVecGetArray(appctx->da,u,&s_localptr);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(appctx->da,appctx->SEMop.grid,&xg_localptr);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg_localptr);CHKERRQ(ierr);
 
   lenglob  = appctx->param.E*(appctx->param.N-1);
-
-  /*      for (i=0; i<lenglob; i++) {
-        s_localptr[i]= PetscSinScalar(2.0*PETSC_PI*xg_localptr[i]);
-   }  */
-
   for (i=0; i<lenglob; i++) {
     s_localptr[i]=PetscSinScalar(2.0*PETSC_PI*xg_localptr[i])+PetscCosScalar(4.0*PETSC_PI*xg_localptr[i])+3.0*PetscSinScalar(2.0*PETSC_PI*xg_localptr[i])*PetscCosScalar(6.0*PETSC_PI*xg_localptr[i]);
   }
 
   ierr = DMDAVecRestoreArray(appctx->da,appctx->SEMop.grid,&xg_localptr);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(appctx->da,appctx->dat.ic,&s_localptr);CHKERRQ(ierr);
-  /* make sure initial conditions do not contain the constant functions */
+  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->dat.ic,&s_localptr);CHKERRQ(ierr);
+  /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
   ierr = VecSum(appctx->dat.ic,&sum);CHKERRQ(ierr);
   ierr = VecShift(appctx->dat.ic,-sum/lenglob);CHKERRQ(ierr);
   return 0;
@@ -362,7 +372,7 @@ PetscErrorCode RHSMatrixHeatgllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx
    */
   ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
 
-  // scale by the size of the element
+  /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {
     vv=-appctx->param.mu*2.0/appctx->param.Le;
     for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
@@ -437,38 +447,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscErrorCode    ierr;
   Vec               temp;
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Create timestepping solver context
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = TSCreate(PETSC_COMM_WORLD,&appctx->ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(appctx->ts,TS_LINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(appctx->ts,TSRK);CHKERRQ(ierr);
-  ierr = TSSetDM(appctx->ts,appctx->da);CHKERRQ(ierr);
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Set time
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(appctx->ts,appctx->param.steps);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(appctx->ts,appctx->param.Tend);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(appctx->ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-
-  ierr = TSSetTolerances(appctx->ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(appctx->ts);
-  /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
-  ierr = TSGetTimeStep(appctx->ts,&appctx->initial_dt);CHKERRQ(ierr);
-
-  ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(appctx->ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(appctx->ts,appctx->SEMop.stiff,appctx->SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   ierr = VecCopy(IC,appctx->dat.curr_sol);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Save trajectory of solution so that TSAdjointSolve() may be used
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetSaveTrajectory(appctx->ts);CHKERRQ(ierr);
 
   ierr = TSSolve(appctx->ts,appctx->dat.curr_sol);CHKERRQ(ierr);
 
@@ -492,7 +473,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
-  ierr = TSDestroy(&appctx->ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
