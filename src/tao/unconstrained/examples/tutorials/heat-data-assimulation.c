@@ -499,8 +499,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
 /*TEST
 
-  build:
-      requires: !complex
+   build:
+     requires: !complex
 
    test:
      requires: !single
