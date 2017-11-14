@@ -938,6 +938,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
 
     /* Update the quadratic model */
+    ierr = PetscInfo2(tao,"Get Quad, size: %D, points: %D\n",mfqP->n,mfqP->nmodelpoints);CHKERRQ(ierr);
     ierr = getquadpounders(mfqP);CHKERRQ(ierr);
     ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione));
