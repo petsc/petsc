@@ -692,7 +692,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* This provides enough information to approximate the gradient of the objective */
   /* using a forward difference scheme. */
 
-  ierr = PetscInfo1(tao,"Initialize simplex; delta = %10.9e\n",mfqP->delta);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Initialize simplex; delta = %10.9e\n",(double)mfqP->delta);CHKERRQ(ierr);
   ierr = pounders_feval(tao,mfqP->Xhist[0],mfqP->Fhist[0],&mfqP->Fres[0]);CHKERRQ(ierr);
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[0];
@@ -715,7 +715,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   }
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution);CHKERRQ(ierr);
   ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective);CHKERRQ(ierr);
-  ierr = PetscInfo1(tao,"Finalize simplex; minnorm = %10.9e\n",minnorm);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Finalize simplex; minnorm = %10.9e\n",(double)minnorm);CHKERRQ(ierr);
 
   /* Gather mpi vecs to one big local vec */
 
@@ -726,7 +726,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  ierr = PetscInfo1(tao,"Build matrix: %d\n",mfqP->size);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Build matrix: %D\n",(PetscInt)mfqP->size);CHKERRQ(ierr);
   if (1 == mfqP->size) {
     ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
@@ -795,7 +795,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   blasncopy = blasn;
   PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasncopy,&info));
-  ierr = PetscInfo1(tao,"Linear solve return: %d\n",info);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Linear solve return: %D\n",(PetscInt)info);CHKERRQ(ierr);
 
   cres = minnorm;
   ierr = pounders_update_res(tao);CHKERRQ(ierr);
@@ -811,7 +811,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ierr = TaoMonitor(tao, tao->niter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
-  ierr = PetscInfo1(tao,"Initial gradient: %10.9e\n",gnorm);CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"Initial gradient: %10.9e\n",(double)gnorm);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
     PetscReal gnm = 1e-4;
