@@ -18,13 +18,13 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   PetscViewer    viewer;
   PetscInt       ns,i;
   Vec            *Y;
-  char           filename[PETSC_MAX_PATH_LEN],template[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN],ftemplate[PETSC_MAX_PATH_LEN];
   PetscReal      tprev;
   PetscErrorCode ierr;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(template,sizeof(template),"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ftemplate,sizeof(ftemplate),"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
   if (stepnum == 0) {
@@ -34,14 +34,14 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
       ierr = PetscRMTree(tj->dirname);CHKERRQ(ierr);
       ierr = PetscMkdir(tj->dirname);CHKERRQ(ierr);
     }
-    ierr = PetscSNPrintf(filename,sizeof(filename),template,stepnum);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,sizeof(filename),ftemplate,stepnum);CHKERRQ(ierr);
     ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscSNPrintf(filename,sizeof(filename),template,stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),ftemplate,stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
@@ -64,12 +64,12 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj,TS ts,PetscInt stepn
   PetscInt       Nr,i;
   PetscViewer    viewer;
   PetscReal      timepre;
-  char           filename[PETSC_MAX_PATH_LEN],template[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN],ftemplate[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(template,sizeof(template),"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,template,stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ftemplate,sizeof(ftemplate),"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,ftemplate,stepnum);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
   ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);

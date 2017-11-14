@@ -435,7 +435,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 {
   AppCtx           *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscErrorCode    ierr;
-  Vec               temp, temp2;
+  Vec               temp;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create timestepping solver context
@@ -472,32 +472,26 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSSolve(appctx->ts,appctx->dat.curr_sol);CHKERRQ(ierr);
 
+  ierr = VecWAXPY(G,-1.0,appctx->dat.curr_sol,appctx->dat.obj);CHKERRQ(ierr);
+
   /*
      Compute the L2-norm of the objective function, cost function is f
   */
-  ierr = VecDuplicate(appctx->dat.obj,&temp);CHKERRQ(ierr);
-  ierr = VecCopy(appctx->dat.obj,temp);CHKERRQ(ierr);
-  ierr = VecAXPY(temp,-1.0,appctx->dat.curr_sol);CHKERRQ(ierr);
+  ierr = VecDuplicate(G,&temp);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(temp,G,G);CHKERRQ(ierr);
+  ierr = VecDot(temp,appctx->SEMop.mass,f);CHKERRQ(ierr);
+  ierr = VecDestroy(&temp);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(temp,&temp2);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(temp2,temp,temp);CHKERRQ(ierr);
-  ierr = VecDot(temp2,appctx->SEMop.mass,f);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Adjoint model starts here
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-   Initial conditions for the adjoint integration. See Notes above
-   */
+     Compute initial conditions for the adjoint integration. See Notes above
+  */
 
-  ierr = VecScale(temp, -2.0);
-  ierr = VecPointwiseMult(temp,temp,appctx->SEMop.mass);CHKERRQ(ierr);
-  ierr = VecCopy(temp,G);CHKERRQ(ierr);
+  ierr = VecScale(G, -2.0);
+  ierr = VecPointwiseMult(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
   ierr = TSSetCostGradients(appctx->ts,1,&G,NULL);CHKERRQ(ierr);
+
   ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
-  ierr = VecDestroy(&temp);CHKERRQ(ierr);
-  ierr = VecDestroy(&temp2);CHKERRQ(ierr);
   ierr = TSDestroy(&appctx->ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
