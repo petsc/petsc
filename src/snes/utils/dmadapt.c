@@ -694,7 +694,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, PetscBool doSolve, DM *adm, Vec *ax)
+static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx, PetscBool doSolve, DM *adm, Vec *ax)
 {
   PetscDS        prob;
   void          *ctx;
@@ -705,7 +705,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
 
   PetscFunctionBegin;
   ierr = DMViewFromOptions(adaptor->idm, NULL, "-dm_adapt_pre_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(x, NULL, "-sol_adapt_pre_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(inx, NULL, "-sol_adapt_pre_view");CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) adaptor, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(adaptor->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(adaptor->idm, &coordDim);CHKERRQ(ierr);
@@ -718,10 +718,9 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
   for (adaptIter = 0; adaptIter < numAdapt-1; ++adaptIter) {ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
   for (adaptIter = 0; adaptIter < numAdapt;   ++adaptIter) {
     PetscBool adapted = PETSC_FALSE;
-    DM        dm      = adaptIter ? *adm : adaptor->idm, plex, odm;
-    Vec       locX, ox;
+    DM        dm      = adaptIter ? *adm : adaptor->idm, odm;
+    Vec       x       = adaptIter ? *ax  : inx, locX, ox;
 
-    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, adaptIter ? *ax : x, INSERT_VALUES, locX);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, adaptIter ? *ax : x, INSERT_VALUES, locX);CHKERRQ(ierr);
@@ -746,6 +745,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
            Create local solution
            Reconstruct gradients (FVM) or solve adjoint equation (FEM)
            Produce cellwise error indicator */
+      DM                 plex;
       DMLabel            adaptLabel;
       IS                 refineIS, coarsenIS;
       Vec                errVec;
@@ -754,6 +754,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       PetscReal          minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2];
       PetscInt           nRefine, nCoarsen;
 
+      ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
       ierr = DMLabelCreate("adapt", &adaptLabel);CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd);CHKERRQ(ierr);
       ierr = DMPlexGetHybridBounds(plex, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -792,6 +793,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
         adapted = PETSC_TRUE;
       }
       ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
+      ierr = DMDestroy(&plex);CHKERRQ(ierr);
     }
     break;
     case DM_ADAPTATION_METRIC:
@@ -901,15 +903,17 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       adapted = PETSC_TRUE;
       /* Cleanup */
       ierr = DMRestoreLocalVector(dmMetric, &metric);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
       ierr = DMDestroy(&dmMetric);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dmHess, &xHess);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dmGrad, &xGrad);CHKERRQ(ierr);
       ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
       ierr = DMDestroy(&dmHess);CHKERRQ(ierr);
     }
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid adaptation type: %D", adaptor->adaptCriterion);
     }
+    ierr = DMAdaptorPostAdapt(adaptor);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
     /* If DM was adapted, replace objects and recreate solution */
     if (adapted) {
       const char *name;
@@ -932,28 +936,22 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec x, 
       /* Cleanup adaptivity info */
       if (adaptIter > 0) {ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
       ierr = DMForestSetAdaptivityForest(dm, NULL);CHKERRQ(ierr); /* clear internal references to the previous dm */
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      ierr = VecDestroy(&x);CHKERRQ(ierr);
       *adm = odm;
       *ax  = ox;
     } else {
       *adm = dm;
       *ax  = x;
-      break;
+      adaptIter = numAdapt;
     }
     if (adaptIter < numAdapt-1) {
       ierr = DMViewFromOptions(odm, NULL, "-dm_adapt_iter_view");CHKERRQ(ierr);
       ierr = VecViewFromOptions(ox, NULL, "-sol_adapt_iter_view");CHKERRQ(ierr);
     }
-    ierr = DMAdaptorPostAdapt(adaptor);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
   }
   ierr = DMViewFromOptions(*adm, NULL, "-dm_adapt_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(*ax, NULL, "-sol_adapt_view");CHKERRQ(ierr);
-  /* Destroy old structures */
-  if (*adm != adaptor->idm) {
-    ierr = DMDestroy(&adaptor->idm);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
