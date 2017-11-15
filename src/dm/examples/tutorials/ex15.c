@@ -87,7 +87,7 @@ PetscErrorCode DMDAVecGenerateEntries(DM dm,Vec a)
 
         test_value_s = dmda_i_val[i]*((PetscScalar)i) + dmda_j_val[j]*((PetscScalar)(i+j*M)) + dmda_k_val[k]*((PetscScalar)(i + j*M + k*M*N));
         for (l=0; l<dof; l++) {
-          LA_v[k][j][i][l] = dof * test_value_s + l;
+          LA_v[k][j][i][l] = (PetscScalar)dof * test_value_s + (PetscScalar)l;
         }
       }
     }
@@ -122,7 +122,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm,const char name[])
             PetscInt    index;
 
             test_value_s = dmda_i_val[i]*((PetscScalar)i) + dmda_j_val[j]*((PetscScalar)(i+j*M)) + dmda_k_val[k]*((PetscScalar)(i + j*M + k*M*N));
-            test_value = dof * test_value_s + (PetscScalar)d;
+            test_value = (PetscScalar)dof * test_value_s + (PetscScalar)d;
 
             index = dof*(i + j*M + k*M*N) + d;
             v = PetscAbsScalar(test_value-buffer[index]);
