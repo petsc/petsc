@@ -6,19 +6,17 @@
 # compare against C versions of the same kernels.
 
 ALL: lib
-#requirespackage   'PETSC_USE_FORTRAN_KERNELS'
+#requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = fmultcrl.F
-SOURCEH  = 
-OBJSC    = 
-OBJSF    = fmultcrl.o
+SOURCEH  =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/mat/impls/aij/seq/crl/ftn-kernels/
-DIRS     = 
+DIRS     =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

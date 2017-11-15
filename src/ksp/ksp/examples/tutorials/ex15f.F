@@ -3,7 +3,6 @@
 !   use of a user-provided preconditioner.  Input parameters include:
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
-!  Program usage: mpiexec ex15f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example
@@ -11,7 +10,7 @@
 !   Processors: n
 !T*/
 !
-!  ------------------------------------------------------------------------- 
+!  -------------------------------------------------------------------------
 
       program main
       implicit none
@@ -24,11 +23,11 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -44,29 +43,29 @@
 !     norm     - norm of solution error
 
       Vec              x,b,u
-      Mat              A      
-      PC               pc     
-      KSP              ksp   
+      Mat              A
+      PC               pc
+      KSP              ksp
       PetscScalar      v,one,neg_one
       double precision norm,tol
       PetscErrorCode ierr
       PetscInt   i,j,II,JJ,Istart
       PetscInt   Iend,m,n,i1,its,five
       PetscMPIInt rank
-      PetscTruth user_defined_pc,flg
+      PetscBool  user_defined_pc,flg
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external SampleShellPCSetUp, SampleShellPCApply
       external  SampleShellPCDestroy
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
       common /myshellpc/ diag
       Vec    diag
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one     = 1.0
@@ -79,10 +78,10 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -99,14 +98,14 @@
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
@@ -114,7 +113,7 @@
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
@@ -150,7 +149,7 @@
 !   - When solving a linear system, the vectors and matrices MUST
 !     be partitioned accordingly.  PETSc automatically generates
 !     appropriately partitioned matrices and vectors when MatCreate()
-!     and VecCreate() are used with the same communicator. 
+!     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -162,9 +161,9 @@
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -193,7 +192,7 @@
 
       if (user_defined_pc) then
 
-!  (Required) Indicate to PETSc that we are using a shell preconditioner 
+!  (Required) Indicate to PETSc that we are using a shell preconditioner
          call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
@@ -205,7 +204,7 @@
 !  (Optional) Frees any objects we created for the preconditioner
          call PCShellSetDestroy(pc,SampleShellPCDestroy,ierr)
 
-      else 
+      else
          call PCSetType(pc,PCJACOBI,ierr)
       endif
 
@@ -217,15 +216,15 @@
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
 
@@ -240,7 +239,7 @@
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',1pe10.4,' iterations ',i5)
+  100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -252,7 +251,7 @@
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
-!  Always call PetscFinalize() before exiting a program. 
+!  Always call PetscFinalize() before exiting a program.
 
       call PetscFinalize(ierr)
       end
@@ -263,7 +262,7 @@
 
 !
 !   SampleShellPCSetUp - This routine sets up a user-defined
-!   preconditioner context.  
+!   preconditioner context.
 !
 !   Input Parameters:
 !   pc - preconditioner object
@@ -281,15 +280,15 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
       PC      pc
 
       Mat     pmat
       integer ierr
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
 !  Normally we would recommend storing all the work data (like diag) in
 !  the context set with PCShellSetContext()
 
@@ -304,7 +303,7 @@
 
       end
 
-! ------------------------------------------------------------------- 
+! -------------------------------------------------------------------
 !
 !   SampleShellPCApply - This routine demonstrates the use of a
 !   user-provided preconditioner.
@@ -326,14 +325,14 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 
       PC      pc
       Vec     x,y
       integer ierr
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
       common /myshellpc/ diag
       Vec    diag
 
@@ -360,13 +359,13 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
       PC      pc
       PetscErrorCode ierr
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
 !  Normally we would recommend storing all the work data (like diag) in
 !  the context set with PCShellSetContext()
 

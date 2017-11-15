@@ -1,17 +1,13 @@
-#define PETSC_DLL
+
 /*
       Code for manipulating files.
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
@@ -27,9 +23,9 @@
 
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
+PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -37,7 +33,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 }
 
 #elif defined(PETSC_HAVE_PWD_H)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
 /*@C
     PetscGetUserName - Returns the name of the user.
@@ -56,9 +52,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 
 .seealso: PetscGetHostName()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
+PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
-  struct passwd *pw=0;
+  struct passwd  *pw=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -72,9 +68,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 
 #else
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetUserName(char *name,size_t nlen)
+PetscErrorCode  PetscGetUserName(char *name,size_t nlen)
 {
   PetscErrorCode ierr;
 

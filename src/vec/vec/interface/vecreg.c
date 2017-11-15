@@ -1,11 +1,10 @@
-#define PETSCVEC_DLL
 
-#include "private/vecimpl.h"    /*I "petscvec.h"  I*/
+#include <petsc-private/vecimpl.h>    /*I "petscvec.h"  I*/
 
-PetscFList VecList                       = PETSC_NULL;
-PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
+PetscFunctionList VecList              = NULL;
+PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetType"
 /*@C
   VecSetType - Builds a vector, for a particular vector implementation.
@@ -17,7 +16,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 - method - The name of the vector type
 
   Options Database Key:
-. -vec_type <type> - Sets the vector type; use -help for a list 
+. -vec_type <type> - Sets the vector type; use -help for a list
                      of available types
 
   Notes:
@@ -30,24 +29,24 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
+PetscErrorCode  VecSetType(Vec vec, VecType method)
 {
   PetscErrorCode (*r)(Vec);
-  PetscTruth     match;
+  PetscBool      match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
-  ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(VecList, ((PetscObject)vec)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(VecList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
+    vec->ops->destroy = NULL;
   }
-  if (vec->map->n < 0 && vec->map->N < 0) { 
+  if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
     vec->ops->load   = VecLoad_Default;
   } else {
@@ -56,7 +55,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetType"
 /*@C
   VecGetType - Gets the vector type name (as a string) from the Vec.
@@ -74,7 +73,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
+PetscErrorCode  VecGetType(Vec vec, VecType *type)
 {
   PetscErrorCode ierr;
 
@@ -82,7 +81,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);
@@ -91,47 +90,48 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecRegister"
 /*@C
-  VecRegister - See VecRegisterDynamic()
+  VecRegister -  Adds a new vector component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  VecRegister() may be called multiple times to add several user-defined vectors
+
+  Sample usage:
+.vb
+    VecRegister("my_vec",MyVectorCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    VecCreate(MPI_Comm, Vec *);
+    VecSetType(Vec,"my_vector_name");
+.ve
+   or at runtime via the option
+.vb
+    -vec_type my_vector_name
+.ve
 
   Level: advanced
+
+.keywords: Vec, register
+
+.seealso: VecRegisterAll(), VecRegisterDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
-{
-  char fullname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&VecList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecRegisterDestroy"
-/*@C
-   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegisterDynamic().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: Vec, register, destroy
-.seealso: VecRegister(), VecRegisterAll(), VecRegisterDynamic()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void)
+PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&VecList);CHKERRQ(ierr);
-  VecRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFunctionListAdd(&VecList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 

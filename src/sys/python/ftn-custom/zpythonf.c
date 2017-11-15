@@ -1,4 +1,4 @@
-#include "private/fortranimpl.h"
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscpythoninitialize_ PETSCPYTHONINITIALIZE
@@ -8,10 +8,7 @@
 #define petscpythonfinalize_   petscpythonfinalize
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  petscpythoninitialize_(CHAR n1 PETSC_MIXED_LEN(l1),CHAR n2 PETSC_MIXED_LEN(l2), PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2) )
+PETSC_EXTERN void PETSC_STDCALL petscpythoninitialize_(CHAR n1 PETSC_MIXED_LEN(l1),CHAR n2 PETSC_MIXED_LEN(l2), PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char *t1,*t2;
   FIXCHAR(n1,l1,t1);
@@ -21,9 +18,7 @@ void PETSC_STDCALL  petscpythoninitialize_(CHAR n1 PETSC_MIXED_LEN(l1),CHAR n2 P
   FREECHAR(n2,t2);
 }
 
-void PETSC_STDCALL  petscpythonfinalize_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscpythonfinalize_(PetscErrorCode *ierr)
 {
   *ierr = PetscPythonFinalize();
 }
-
-EXTERN_C_END

@@ -9,10 +9,10 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     return
-    
+
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     return
@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
     self.functions = framework.require('config.functions', self)
     self.headers   = framework.require('config.headers', self)
     return
- 
+
   def configureFPTrap(self):
     '''Checking the handling of floating point traps'''
     if self.headers.check('sigfpe.h'):

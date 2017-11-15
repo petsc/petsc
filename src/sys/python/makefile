@@ -4,11 +4,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonsys.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = pythonsys.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscsys
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/sys/python/
 
 include ${PETSC_DIR}/conf/variables

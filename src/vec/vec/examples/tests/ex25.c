@@ -2,7 +2,7 @@
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -16,12 +16,12 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n;
+  N    = size*n;
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(y,&low,&high);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     iglobal = i + low; value = (PetscScalar) (i + 10*rank);
-    ierr = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr    = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
@@ -53,17 +53,19 @@ int main(int argc,char **argv)
   ierr = VecScatterCreate(y,is2,x,is1,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
-  
-  if (!rank) 
-    {printf("----\n"); ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = ISDestroy(is1);CHKERRQ(ierr);
-  ierr = ISDestroy(is2);CHKERRQ(ierr);
+  if (!rank) {
+    printf("----\n");
+    ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+

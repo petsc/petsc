@@ -1,4 +1,4 @@
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #include "finclude/ftn-custom/petscviewerdef.h90"
 #endif
 #include "finclude/ftn-custom/petscviewerhide.h90"
@@ -9,30 +9,30 @@
           PETSCVIEWER_HIDE v
           PetscInt a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
-        
+
         Subroutine PetscViewerBinaryWriteScalar(v,a,cnt,tmp,ierr)
           USE_PETSC_HIDE
           PETSCVIEWER_HIDE v
           PetscScalar a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
 
-#if defined(PETSC_USE_COMPLEX)        
+#if defined(PETSC_USE_COMPLEX)
         Subroutine PetscViewerBinaryWriteReal(v,a,cnt,tmp,ierr)
           USE_PETSC_HIDE
           PETSCVIEWER_HIDE v
           PetscReal a(*)
           PetscInt cnt
-          PetscTruth tmp
+          PetscBool  tmp
           PetscErrorCode ierr
         End Subroutine
 #endif
-        
+
         Subroutine PetscViewerBinaryReadInt(v,a,cnt,ierr)
           USE_PETSC_HIDE
           PETSCVIEWER_HIDE v
@@ -49,7 +49,7 @@
           PetscErrorCode ierr
         End Subroutine
 
-#if defined(PETSC_USE_COMPLEX)        
+#if defined(PETSC_USE_COMPLEX)
         Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
           USE_PETSC_HIDE
           PETSCVIEWER_HIDE v

@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     return

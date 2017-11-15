@@ -5,11 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = redundant.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = redundant.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/redundant/
 

@@ -2,7 +2,7 @@
 #define included_ALE_Partitioner_hh
 
 #ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#include <sieve/Completion.hh>
 #endif
 
 #ifdef PETSC_HAVE_ZOLTAN
@@ -42,10 +42,7 @@ extern "C" {
 }
 #endif
 #ifdef PETSC_HAVE_PARMETIS
-extern "C" {
   #include <parmetis.h>
-  extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
-}
 #endif
 #ifdef PETSC_HAVE_HMETIS
 extern "C" {
@@ -129,7 +126,7 @@ namespace ALE {
         long seed = 123636512;                  /* for random graph mutations */
         int maxSize = 0;
 
-	    if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
+        if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
         mesh_dims[0] = partition->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
         part_type *assignment = this->_allocator.allocate(nvtxs);
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
@@ -158,7 +155,7 @@ namespace ALE {
         }
         delete [] values;
 
-	    if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
+        if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
         this->_allocator.deallocate(assignment, nvtxs);
       };
@@ -182,45 +179,45 @@ namespace ALE {
       //   partition: this section is over the partitions and takes points as values
       // TODO: Read parameters from options
       template<typename Section, typename MeshManager>
-      void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
+      void partition(const PetscInt numVertices, const PetscInt start[], const PetscInt adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
         //static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
-        int    nvtxs      = numVertices; // The number of vertices in full graph
-        int   *vtxdist;                  // Distribution of vertices across processes
-        int   *xadj       = const_cast<int*>(start);       // Start of edge list for each vertex
-        int   *adjncy     = const_cast<int*>(adjacency);   // Edge lists for all vertices
-        int   *vwgt       = NULL;        // Vertex weights
-        int   *adjwgt     = NULL;        // Edge weights
-        int    wgtflag    = 0;           // Indicates which weights are present
-        int    numflag    = 0;           // Indicates initial offset (0 or 1)
-        int    ncon       = 1;           // The number of weights per vertex
-        int    nparts     = partition->commSize(); // The number of partitions
-        float *tpwgts;                   // The fraction of vertex weights assigned to each partition
-        float *ubvec;                    // The balance intolerance for vertex weights
-        int    options[5];               // Options
-        int    maxSize    = 0;
+        PetscInt   nvtxs      = numVertices; // The number of vertices in full graph
+        PetscInt  *vtxdist;                  // Distribution of vertices across processes
+        PetscInt  *xadj       = const_cast<PetscInt*>(start);       // Start of edge list for each vertex
+        PetscInt  *adjncy     = const_cast<PetscInt*>(adjacency);   // Edge lists for all vertices
+        PetscInt  *vwgt       = NULL;        // Vertex weights
+        PetscInt  *adjwgt     = NULL;        // Edge weights
+        PetscInt   wgtflag    = 0;           // Indicates which weights are present
+        PetscInt   numflag    = 0;           // Indicates initial offset (0 or 1)
+        PetscInt   ncon       = 1;           // The number of weights per vertex
+        PetscInt   nparts     = partition->commSize(); // The number of partitions
+        PetscReal *tpwgts;                   // The fraction of vertex weights assigned to each partition
+        PetscReal *ubvec;                    // The balance intolerance for vertex weights
+        PetscInt   options[5];               // Options
+        PetscInt   maxSize    = 0;
         // Outputs
-        int        edgeCut;              // The number of edges cut by the partition
+        PetscInt   edgeCut;                  // The number of edges cut by the partition
         part_type *assignment;
 
         options[0] = 0; // Use all defaults
         // Calculate vertex distribution
         //   Not sure this still works in parallel
-        vtxdist    = new int[nparts+1];
+        vtxdist    = new PetscInt[nparts+1];
         vtxdist[0] = 0;
-        MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, partition->comm());
-        for(int p = 2; p <= nparts; ++p) {
+        MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, partition->comm());
+        for(PetscInt p = 2; p <= nparts; ++p) {
           vtxdist[p] += vtxdist[p-1];
         }
         // Calculate weights
-        tpwgts     = new float[ncon*nparts];
+        tpwgts     = new PetscReal[ncon*nparts];
         for(int p = 0; p < nparts; ++p) {
           tpwgts[p] = 1.0/nparts;
         }
-        ubvec      = new float[ncon];
+        ubvec      = new PetscReal[ncon];
         ubvec[0]   = 1.05;
 
         assignment = this->_allocator.allocate(nvtxs);
-        for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
+        for(PetscInt i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
 
         if (partition->commSize() == 1) {
           PetscMemzero(assignment, nvtxs * sizeof(part_type));
@@ -235,7 +232,11 @@ namespace ALE {
           }
           if (vtxdist[1] == vtxdist[nparts]) {
             if (partition->commRank() == 0) {
-              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+              /* Parameters changes (Matt, check to make sure works):
+               * (removed) numflags
+               * (changed) options -> NULL implies all defaults (only for  METIS, not ParMETIS!)
+               */
+              METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
               if (partition->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
             }
           } else {
@@ -249,17 +250,17 @@ namespace ALE {
         delete [] tpwgts;
         delete [] ubvec;
 
-        for(int v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
+        for(PetscInt v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
         partition->allocatePoint();
-        for(int p = 0; p < partition->commSize(); ++p) {
+        for(PetscInt p = 0; p < partition->commSize(); ++p) {
           maxSize = std::max(maxSize, partition->getFiberDimension(p));
         }
         typename Section::value_type *values = new typename Section::value_type[maxSize];
 
-        for(int p = 0; p < partition->commSize(); ++p) {
+        for(PetscInt p = 0; p < partition->commSize(); ++p) {
           int k = 0;
 
-          for(int v = 0; v < nvtxs; ++v) {
+          for(PetscInt v = 0; v < nvtxs; ++v) {
             if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
@@ -267,7 +268,7 @@ namespace ALE {
         }
         delete [] values;
 
-        for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
+        for(PetscInt i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
         this->_allocator.deallocate(assignment, nvtxs);
       };
     };
@@ -311,7 +312,7 @@ namespace ALE {
           partition->updatePoint(p, values);
         }
         delete [] values;
-      };
+      }
     };
   }
 #ifdef PETSC_HAVE_CHACO
@@ -385,7 +386,7 @@ namespace ALE {
         int       c       = 0;
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-          const double *coords = mesh->restrictClosure(coordinates, *c_iter);
+          const typename Mesh::real_section_type::value_type *coords = mesh->restrictClosure(coordinates, *c_iter);
 
           for(int d = 0; d < dim; ++d) {
             vCoords[d][c] = 0.0;
@@ -402,7 +403,7 @@ namespace ALE {
         *X = x;
         *Y = y;
         *Z = z;
-      };
+      }
       template<typename Float>
       void destroyCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
         typedef typename alloc_type::template rebind<Float>::other float_alloc_type;
@@ -410,19 +411,19 @@ namespace ALE {
 
         for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
         float_alloc_type().deallocate(x, numVertices*3);
-      };
+      }
       point_type getCell(const point_type cellNumber) const {
         if (this->simpleCellNumbering) {
           return cellNumber;
         }
         return this->cells[cellNumber];
-      };
+      }
       point_type getNumber(const point_type cell) {
         if (this->simpleCellNumbering) {
           return cell;
         }
         return this->numbers[cell];
-      };
+      }
     };
     template<typename Sieve>
     class OffsetVisitor {
@@ -546,6 +547,26 @@ namespace ALE {
         return false;
       };
     };
+    template<typename Mesh>
+    class SimpleFaceRecognizer {
+    public:
+      typedef typename Mesh::point_type point_type;
+    protected:
+      int dim;
+    public:
+      SimpleFaceRecognizer(Mesh& mesh, const int debug = 0) {
+        if (mesh.depth() != 1) {throw ALE::Exception("Only works for depth 1 meshes");}
+        this->dim = mesh.getDimension();
+      };
+      ~SimpleFaceRecognizer() {};
+    public:
+      bool operator()(point_type cellA, point_type cellB, int meetSize) {
+        if (meetSize >= dim) {
+          return true;
+        }
+        return false;
+      };
+    };
     template<typename Sieve, typename Manager, typename Recognizer>
     class MeetVisitor {
     public:
@@ -597,41 +618,75 @@ namespace ALE {
         // The arrow is from remote partition point rank (color) on rank 0 (source) to local partition point rank (target)
         recvOverlap->addCone(0, rank, rank);
       }
-    };
+    }
     // Create a mesh point overlap for distribution
     //   A local numbering is created for the remote points
     //   This is the default overlap which comes from distributing a serial mesh on process 0
     template<typename Section, typename RecvPartOverlap, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static void createDistributionMeshOverlap(const Obj<Section>& partition, const Obj<RecvPartOverlap>& recvPartOverlap, Renumbering& renumbering, const Obj<Section>& overlapPartition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
       const typename Section::chart_type& chart = partition->getChart();
+      int numRanks = 0;
 
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (*p_iter != sendOverlap->commRank() && partition->getFiberDimension(*p_iter)) numRanks++;
+      }
+      sendOverlap->setBaseSize(numRanks); // setNumRanks
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const int coneSize = partition->getFiberDimension(*p_iter);
+
+        if (*p_iter != sendOverlap->commRank() && coneSize) {
+          sendOverlap->setConeSize(*p_iter, coneSize); // setNumPoints
+        }
+      }
+      sendOverlap->assemble();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (*p_iter == sendOverlap->commRank()) continue;
         const typename Section::value_type *points     = partition->restrictPoint(*p_iter);
         const int                           numPoints  = partition->getFiberDimension(*p_iter);
-        
+
         for(int i = 0; i < numPoints; ++i) {
           // Notice here that we do not know the local renumbering (but we do not use it)
           sendOverlap->addArrow(points[i], *p_iter, points[i]);
         }
       }
+      sendOverlap->assemblePoints();
       if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
-      const Obj<typename RecvPartOverlap::traits::baseSequence> rPoints    = recvPartOverlap->base();
+      const typename RecvPartOverlap::capSequence::iterator rBegin = recvPartOverlap->capBegin();
+      const typename RecvPartOverlap::capSequence::iterator rEnd   = recvPartOverlap->capEnd();
 
-      for(typename RecvPartOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-        const Obj<typename RecvPartOverlap::coneSequence>& ranks           = recvPartOverlap->cone(*p_iter);
-        //const typename Section::point_type&                localPartPoint  = *p_iter;
-        const typename Section::point_type                 rank            = *ranks->begin();
-        const typename Section::point_type&                remotePartPoint = ranks->begin().color();
-        const typename Section::value_type                *points          = overlapPartition->restrictPoint(remotePartPoint);
-        const int                                          numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+      recvOverlap->setCapSize(recvPartOverlap->getCapSize()); // setNumRanks
+      for(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+        const int                                                 rank   = *r_iter;
+        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap->supportBegin(*r_iter);
+        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap->supportEnd(*r_iter);
 
-        for(int i = 0; i < numPoints; ++i) {
-          recvOverlap->addArrow(rank, renumbering[points[i]], points[i]);
+        for(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const typename Section::point_type& remotePartPoint = p_iter.color();
+          const int                           numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+          recvOverlap->setSupportSize(rank, numPoints); // setNumPoints
         }
       }
+      recvOverlap->assemble();
+
+      for(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+        const int                                                 rank   = *r_iter;
+        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap->supportBegin(*r_iter);
+        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap->supportEnd(*r_iter);
+
+        for(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const typename Section::point_type& remotePartPoint = p_iter.color();
+          const typename Section::value_type *points          = overlapPartition->restrictPoint(remotePartPoint);
+          const int                           numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+          for(int i = 0; i < numPoints; ++i) {
+            recvOverlap->addArrow(rank, renumbering[points[i]], points[i]);
+          }
+        }
+      }
+      recvOverlap->assemblePoints();
       if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
-    };
+    }
     // Create a partition point overlap from a partition
     //   The intention is to create an overlap which enables exchange of redistribution information
     template<typename Section, typename SendOverlap, typename RecvOverlap>
@@ -682,7 +737,7 @@ namespace ALE {
       delete [] recvRequests;
       delete [] adj;
       delete [] recvCounts;
-    };
+    }
   public: // Building CSR meshes
     // This produces the dual graph (each cell is a vertex and each face is an edge)
     //   numbering:   A contiguous numbering of the cells (not yet included)
@@ -765,7 +820,7 @@ namespace ALE {
         } else if ((dim == 3) && (corners == 8)) {
           faceVertices = 4;
         } else if ((dim == 2) && (corners == 6)) {
-	  faceVertices = 3;
+          faceVertices = 3;
         } else if ((dim == 2) && (corners == 9)) {
           faceVertices = 3;
         } else if ((dim == 3) && (corners == 10)) {
@@ -828,7 +883,7 @@ namespace ALE {
       *numVertices = numCells;
       *offsets     = off;
       *adjacency   = adj;
-    };
+    }
     template<typename Mesh>
     static void buildDualCSRV(const Obj<Mesh>& mesh, MeshManager<Mesh>& manager, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
       const Obj<typename Mesh::sieve_type>&         sieve        = mesh->getSieve();
@@ -876,9 +931,9 @@ namespace ALE {
         }
         offset = aV.getOffset();
       } else if (mesh->depth() == 1) {
-        typedef MeetVisitor<typename Mesh::sieve_type, MeshManager<Mesh>, FaceRecognizer<Mesh> > mv_type;
+        typedef MeetVisitor<typename Mesh::sieve_type, MeshManager<Mesh>, SimpleFaceRecognizer<Mesh> > mv_type;
         typedef typename ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, mv_type>       sv_type;
-        FaceRecognizer<Mesh> faceRecognizer(*mesh);
+        SimpleFaceRecognizer<Mesh> faceRecognizer(*mesh);
 
         mv_type mV(*sieve, manager, faceRecognizer, numCells);
         sv_type sV(*sieve, mV);
@@ -912,7 +967,7 @@ namespace ALE {
       *numVertices = numCells;
       *offsets     = off;
       *adjacency   = adj;
-    };
+    }
     // This produces a hypergraph (each face is a vertex and each cell is a hyperedge)
     //   numbering: A contiguous numbering of the faces
     //   numEdges:  The number of edges in the hypergraph
@@ -951,11 +1006,11 @@ namespace ALE {
       *numEdges  = numCells;
       *offsets   = off;
       *adjacency = adj;
-    };
+    }
     template<typename Mesh>
     static void buildFaceDualCSRV(const Obj<Mesh>& mesh, const Obj<typename Mesh::numbering_type>& numbering, int *numEdges, int **offsets, int **adjacency, const bool zeroBase = true) {
       throw ALE::Exception("Not implemented");
-    };
+    }
     static void destroyCSR(int numPoints, int *offsets, int *adjacency) {
       if (adjacency) {
         for(int i = 0; i < offsets[numPoints]; ++i) {alloc_type().destroy(adjacency+i);}
@@ -965,7 +1020,7 @@ namespace ALE {
         for(int i = 0; i < numPoints+1; ++i) {alloc_type().destroy(offsets+i);}
         alloc_type().deallocate(offsets, numPoints+1);
       }
-    };
+    }
     template<typename OldSection, typename Partition, typename Renumbering, typename NewSection>
     static void createLocalSection(const Obj<OldSection>& oldSection, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<NewSection>& newSection) {
       const typename Partition::value_type *points    = partition->restrictPoint(oldSection->commRank());
@@ -982,7 +1037,7 @@ namespace ALE {
           newSection->updatePointAll(renumbering[points[p]], oldSection->restrictPoint(points[p]));
         }
       }
-    };
+    }
     // Specialize to ArrowSection
     template<typename OldSection, typename Partition, typename Renumbering>
     static void createLocalSection(const Obj<OldSection>& oldSection, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<UniformSection<MinimalArrow<int,int>,int> >& newSection) {
@@ -1008,7 +1063,7 @@ namespace ALE {
           newSection->updatePointAll(typename OldSection::point_type(renumbering[c_iter->source], renumbering[c_iter->target]), values);
         }
       }
-    };
+    }
     template<typename Sifter, typename Section, typename Renumbering>
     static void createLocalSifter(const Obj<Sifter>& sifter, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sifter>& localSifter) {
       const typename Section::value_type *points    = partition->restrictPoint(sifter->commRank());
@@ -1022,7 +1077,7 @@ namespace ALE {
           localSifter->addArrow(*c_iter, renumbering[points[p]]);
         }
       }
-    };
+    }
     template<typename Sieve, typename Section, typename Renumbering>
     static void createLocalSieve(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
@@ -1037,7 +1092,7 @@ namespace ALE {
         while(current->size()) {
           for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
             const Obj<typename Sieve::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
             for(typename Sieve::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
               localSieve->addArrow(renumbering[*c_iter], renumbering[*p_iter], c_iter.color());
               next->insert(*c_iter);
@@ -1051,7 +1106,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Sieve::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
               for(typename Sieve::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                 localSieve->addArrow(renumbering[*p_iter], renumbering[*s_iter], s_iter.color());
                 next->insert(*s_iter);
@@ -1062,14 +1117,14 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Mesh, typename Section, typename Renumbering>
     static void createLocalMesh(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
       const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
       const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
 
       createLocalSieve(sieve, partition, renumbering, localSieve, height);
-    };
+    }
     template<typename Sieve, typename Section, typename Renumbering>
     static void sizeLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       typedef std::set<typename Sieve::point_type> pointSet;
@@ -1087,14 +1142,14 @@ namespace ALE {
         localSieve->setSupportSize(renumbering[points[p]], fV.getSize());
         fV.clear();
       }
-    };
+    }
     template<typename Mesh, typename Section, typename Renumbering>
     static void sizeLocalMeshV(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
       const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
       const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
 
       sizeLocalSieveV(sieve, partition, renumbering, localSieve, height);
-    };
+    }
     template<typename Sieve, typename Section, typename Renumbering>
     static void createLocalLabelV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       typedef std::set<typename Sieve::point_type> pointSet;
@@ -1126,7 +1181,7 @@ namespace ALE {
       }
       delete [] oPoints;
       delete [] oOrients;
-    };
+    }
     template<typename Sieve, typename Section, typename Renumbering>
     static void createLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       typedef std::set<typename Sieve::point_type> pointSet;
@@ -1158,14 +1213,14 @@ namespace ALE {
       }
       delete [] oPoints;
       delete [] oOrients;
-    };
+    }
     template<typename Mesh, typename Section, typename Renumbering>
     static void createLocalMeshV(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
       const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
       const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
 
       createLocalSieveV(sieve, partition, renumbering, localSieve, height);
-    };
+    }
   public: // Partitioning
     //   partition:    Should be properly allocated on input
     //   height:       Height of the point set to uniquely partition
@@ -1191,7 +1246,7 @@ namespace ALE {
       } else {
         throw ALE::Exception("Invalid partition height");
       }
-    };
+    }
     template<typename Mesh, typename Section>
     static void createPartitionV(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
       MeshManager<Mesh> manager(mesh, height);
@@ -1218,7 +1273,7 @@ namespace ALE {
         throw ALE::Exception("Invalid partition height");
       }
       PETSc::Log::Event("PartitionCreate").end();
-    };
+    }
     // Add in the points in the closure (and star) of the partitioned points
     template<typename Mesh, typename Section>
     static void createPartitionClosure(const Obj<Mesh>& mesh, const Obj<Section>& pointPartition, const Obj<Section>& partition, const int height = 0) {
@@ -1242,7 +1297,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
               for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 closure.insert(*c_iter);
                 next->insert(*c_iter);
@@ -1256,7 +1311,7 @@ namespace ALE {
             while(current->size()) {
               for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                 const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
                 for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                   closure.insert(*s_iter);
                   next->insert(*s_iter);
@@ -1289,7 +1344,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
               for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 closure.insert(*c_iter);
                 next->insert(*c_iter);
@@ -1303,7 +1358,7 @@ namespace ALE {
             while(current->size()) {
               for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                 const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
                 for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                   closure.insert(*s_iter);
                   next->insert(*s_iter);
@@ -1322,7 +1377,7 @@ namespace ALE {
         partition->updatePoint(*r_iter, values);
       }
       delete [] values;
-    };
+    }
     template<typename Mesh, typename Section>
     static void createPartitionClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPartition, const Obj<Section>& partition, const int height = 0) {
       typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
@@ -1372,7 +1427,77 @@ namespace ALE {
       }
       delete [] values;
       PETSc::Log::Event("PartitionClosure").end();
-    };
+    }
+#undef __FUNCT__
+#define __FUNCT__ "createPartitionClosureV"
+    template<typename Mesh>
+    static PetscErrorCode createPartitionClosureV(const Obj<Mesh>& mesh, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition, const int height = 0) {
+      typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
+      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
+      const PetscInt                       *partArray;
+      PetscInt                             *allPoints;
+      PetscInt                              rStart, rEnd, size;
+      PetscErrorCode                        ierr;
+
+      PetscFunctionBegin;
+      PETSc::Log::Event("PartitionClosure").begin();
+      ierr = PetscSectionGetChart(pointSection, &rStart, &rEnd);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(mesh->comm(), section);CHKERRQ(ierr);
+      ierr = PetscSectionSetChart(*section, rStart, rEnd);CHKERRQ(ierr);
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(PetscInt p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionSetDof(*section, rank, cV.getPoints().size());CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(*section, &size);CHKERRQ(ierr);
+      ierr = PetscMalloc(size * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
+
+      for(PetscInt rank = rStart; rank < rEnd; ++rank) {
+        PetscInt numPoints, offset, newOffset;
+
+        ierr = PetscSectionGetDof(pointSection, rank, &numPoints);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(pointSection, rank, &offset);CHKERRQ(ierr);
+        {
+          const PetscInt                     *points = &partArray[offset];
+          typename visitor_type::visitor_type nV;
+          visitor_type                        cV(*sieve, nV);
+
+          for(int p = 0; p < numPoints; ++p) {
+            sieve->cone(points[p], cV);
+            if (height) {
+              cV.setIsCone(false);
+              sieve->support(points[p], cV);
+            }
+          }
+          ierr = PetscSectionGetOffset(*section, rank, &newOffset);CHKERRQ(ierr);
+
+          for(typename std::set<typename Mesh::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++newOffset) {
+            allPoints[newOffset] = *p_iter;
+          }
+        }
+      }
+      ierr = ISRestoreIndices(pointPartition, &partArray);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(mesh->comm(), size, allPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+      PETSc::Log::Event("PartitionClosure").end();
+      PetscFunctionReturn(0);
+    }
     // Create a section mapping points to partitions
     template<typename Section, typename MapSection>
     static void createPartitionMap(const Obj<Section>& partition, const Obj<MapSection>& partitionMap) {
@@ -1391,7 +1516,7 @@ namespace ALE {
           partitionMap->updatePoint(points[i], &part);
         }
       }
-    };
+    }
   };
 #endif
 
@@ -1484,14 +1609,14 @@ namespace ALE {
             faceVertices = 2;
           } else if ((dim == 3) && (corners == 8)) {
             faceVertices = 4;
-	  } else if ((dim == 2) && (corners == 6)) {
-	    faceVertices = 3;
-	  } else if ((dim == 2) && (corners == 9)) {
-	    faceVertices = 3;
-	  } else if ((dim == 3) && (corners == 10)) {
-	    faceVertices = 6;
-	  } else if ((dim == 3) && (corners == 27)) {
-	    faceVertices = 9;
+          } else if ((dim == 2) && (corners == 6)) {
+            faceVertices = 3;
+          } else if ((dim == 2) && (corners == 9)) {
+            faceVertices = 3;
+          } else if ((dim == 3) && (corners == 10)) {
+            faceVertices = 6;
+          } else if ((dim == 3) && (corners == 27)) {
+            faceVertices = 9;
           } else {
             throw ALE::Exception("Could not determine number of face vertices");
           }
@@ -1590,7 +1715,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
       template<typename PartitionType>
-      static PartitionType *subordinatePartition(const Obj<bundle_type>& bundle, int levels, const Obj<bundle_type>& subBundle, const PartitionType assignment[]) {
+      static PartitionType *subordinatePartition(const Obj<bundle_type>& bundle, int levels, const Obj<bundle_type>& subBundle, PartitionType assignment[]) {
         const Obj<typename bundle_type::numbering_type>& cNumbering = bundle->getFactory()->getLocalNumbering(bundle, bundle->depth());
         const Obj<typename bundle_type::label_sequence>& cells      = subBundle->heightStratum(0);
         const Obj<typename bundle_type::numbering_type>& sNumbering = bundle->getFactory()->getLocalNumbering(subBundle, subBundle->depth());
@@ -1623,7 +1748,7 @@ namespace ALE {
           }
         }
         return subAssignment;
-      };
+      }
     };
 #ifdef PETSC_HAVE_CHACO
     namespace Chaco {
@@ -1664,36 +1789,36 @@ namespace ALE {
             int ndims = 1;                          /* number of eigenvectors (2^d sets) */
             double eigtol = 0.001;                  /* tolerance on eigenvectors */
             long seed = 123636512;                  /* for random graph mutations */
-	    float *vCoords[3];
+            float *vCoords[3];
             PetscErrorCode ierr;
 
-	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_global_method", &global_method, PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
-	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_local_method",  &local_method,  PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
-	    if (global_method == 3) {
-	      // Inertial Partitioning
-	      ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");
-	      vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
-	      const Obj<typename bundle_type::label_sequence>&    cells       = bundle->heightStratum(0);
-	      const Obj<typename bundle_type::real_section_type>& coordinates = bundle->getRealSection("coordinates");
-	      const int corners = bundle->size(coordinates, *(cells->begin()))/dim;
-	      int       c       = 0;
+            ierr = PetscOptionsGetInt(NULL, "-partitioner_chaco_global_method", &global_method, NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            ierr = PetscOptionsGetInt(NULL, "-partitioner_chaco_local_method",  &local_method,  NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+            if (global_method == 3) {
+              // Inertial Partitioning
+              ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");
+              vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+              const Obj<typename bundle_type::label_sequence>&    cells       = bundle->heightStratum(0);
+              const Obj<typename bundle_type::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+              const int corners = bundle->size(coordinates, *(cells->begin()))/dim;
+              int       c       = 0;
 
-	      for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-		const double *coords = bundle->restrictClosure(coordinates, *c_iter);
+              for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
+                const double *coords = bundle->restrictClosure(coordinates, *c_iter);
 
-		for(int d = 0; d < dim; ++d) {
-		  vCoords[d][c] = 0.0;
-		}
-		for(int v = 0; v < corners; ++v) {
-		  for(int d = 0; d < dim; ++d) {
-		    vCoords[d][c] += coords[v*dim+d];
-		  }
-		}
-		for(int d = 0; d < dim; ++d) {
-		  vCoords[d][c] /= corners;
-		}
-	      }
-	    }
+                for(int d = 0; d < dim; ++d) {
+                  vCoords[d][c] = 0.0;
+                }
+                for(int v = 0; v < corners; ++v) {
+                  for(int d = 0; d < dim; ++d) {
+                    vCoords[d][c] += coords[v*dim+d];
+                  }
+                }
+                for(int d = 0; d < dim; ++d) {
+                  vCoords[d][c] /= corners;
+                }
+              }
+            }
 
             nvtxs = bundle->heightStratum(0)->size();
             mesh_dims[0] = bundle->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
@@ -1737,10 +1862,10 @@ namespace ALE {
             }
             delete [] msgLog;
 #endif
-	    if (global_method == 3) {
-	      // Inertial Partitioning
-	      ierr = PetscFree3(x, y, z);CHKERROR(ierr, "Error in PetscFree");
-	    }
+            if (global_method == 3) {
+              // Inertial Partitioning
+              ierr = PetscFree3(x, y, z);CHKERROR(ierr, "Error in PetscFree");
+            }
           }
           if (adjacency) delete [] adjacency;
           if (start)     delete [] start;
@@ -1766,36 +1891,36 @@ namespace ALE {
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieve"
         static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
-          int    nvtxs      = 0;    // The number of vertices in full graph
-          int   *vtxdist;           // Distribution of vertices across processes
-          int   *xadj;              // Start of edge list for each vertex
-          int   *adjncy;            // Edge lists for all vertices
-          int   *vwgt       = NULL; // Vertex weights
-          int   *adjwgt     = NULL; // Edge weights
-          int    wgtflag    = 0;    // Indicates which weights are present
-          int    numflag    = 0;    // Indicates initial offset (0 or 1)
-          int    ncon       = 1;    // The number of weights per vertex
-          int    nparts     = bundle->commSize(); // The number of partitions
-          float *tpwgts;            // The fraction of vertex weights assigned to each partition
-          float *ubvec;             // The balance intolerance for vertex weights
-          int    options[5];        // Options
+          PetscInt    nvtxs      = 0;    // The number of vertices in full graph
+          PetscInt   *vtxdist;           // Distribution of vertices across processes
+          PetscInt   *xadj;              // Start of edge list for each vertex
+          PetscInt   *adjncy;            // Edge lists for all vertices
+          PetscInt   *vwgt       = NULL; // Vertex weights
+          PetscInt   *adjwgt     = NULL; // Edge weights
+          PetscInt    wgtflag    = 0;    // Indicates which weights are present
+          PetscInt    numflag    = 0;    // Indicates initial offset (0 or 1)
+          PetscInt    ncon       = 1;    // The number of weights per vertex
+          PetscInt    nparts     = bundle->commSize(); // The number of partitions
+          PetscReal  *tpwgts;            // The fraction of vertex weights assigned to each partition
+          PetscReal  *ubvec;             // The balance intolerance for vertex weights
+          int         options[5];        // Options
           // Outputs
-          int    edgeCut;           // The number of edges cut by the partition
-          int   *assignment = NULL; // The vertex partition
+          PetscInt    edgeCut;           // The number of edges cut by the partition
+          PetscInt   *assignment = NULL; // The vertex partition
 
           options[0] = 0; // Use all defaults
-          vtxdist    = new int[nparts+1];
+          vtxdist    = new PetscInt[nparts+1];
           vtxdist[0] = 0;
-          tpwgts     = new float[ncon*nparts];
-          for(int p = 0; p < nparts; ++p) {
+          tpwgts     = new PetscReal[ncon*nparts];
+          for(PetscInt p = 0; p < nparts; ++p) {
             tpwgts[p] = 1.0/nparts;
           }
-          ubvec      = new float[ncon];
+          ubvec      = new PetscReal[ncon];
           ubvec[0]   = 1.05;
           nvtxs      = bundle->heightStratum(0)->size();
           assignment = new part_type[nvtxs];
-          MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, bundle->comm());
-          for(int p = 2; p <= nparts; ++p) {
+          MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, bundle->comm());
+          for(PetscInt p = 2; p <= nparts; ++p) {
             vtxdist[p] += vtxdist[p-1];
           }
           if (bundle->commSize() == 1) {
@@ -1804,16 +1929,19 @@ namespace ALE {
             ALE::New::Partitioner<bundle_type>::buildDualCSR(bundle, dim, &xadj, &adjncy);
 
             if (bundle->debug() && nvtxs) {
-              for(int p = 0; p <= nvtxs; ++p) {
+              for(PetscInt p = 0; p <= nvtxs; ++p) {
                 std::cout << "["<<bundle->commRank()<<"]xadj["<<p<<"] = " << xadj[p] << std::endl;
               }
-              for(int i = 0; i < xadj[nvtxs]; ++i) {
+              for(PetscInt i = 0; i < xadj[nvtxs]; ++i) {
                 std::cout << "["<<bundle->commRank()<<"]adjncy["<<i<<"] = " << adjncy[i] << std::endl;
               }
             }
             if (vtxdist[1] == vtxdist[nparts]) {
               if (bundle->commRank() == 0) {
-                METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+                /* Parameters changes (Matt, check to make sure it's right):
+                 * (removed) numflags
+                 */
+                METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
                 if (bundle->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
               }
             } else {

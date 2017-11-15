@@ -6,13 +6,13 @@ static char help[] = "Demonstrates using a local ordering to set values into a p
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
      petscviewer.h - viewers
 */
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
@@ -41,29 +41,27 @@ int main(int argc,char **argv)
   ierr = VecSet(x,one);CHKERRQ(ierr);
 
   /*
-     Set the local to global ordering for the vector. Each processor 
+     Set the local to global ordering for the vector. Each processor
      generates a list of the global indices for each local index. Note that
      the local indices are just whatever is convenient for a particular application.
-     In this case we treat the vector as lying on a one dimensional grid and 
-     have one ghost point on each end of the blocks owned by each processor. 
+     In this case we treat the vector as lying on a one dimensional grid and
+     have one ghost point on each end of the blocks owned by each processor.
   */
 
   ierr = VecGetSize(x,&M);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ng   = rend - rstart + 2;
   ierr = PetscMalloc(ng*sizeof(PetscInt),&gindices);CHKERRQ(ierr);
-  gindices[0] = rstart - 1; 
-  for (i=0; i<ng-1; i++) {
-    gindices[i+1] = gindices[i] + 1;
-  }
+  gindices[0] = rstart - 1;
+  for (i=0; i<ng-1; i++) gindices[i+1] = gindices[i] + 1;
   /* map the first and last point as periodic */
   if (gindices[0]    == -1) gindices[0]    = M - 1;
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;
   {
     ISLocalToGlobalMapping ltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   }
   ierr = PetscFree(gindices);CHKERRQ(ierr);
 
@@ -78,10 +76,10 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<ng; i++) {
-    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);  
+    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -94,9 +92,9 @@ int main(int argc,char **argv)
       View the vector; then destroy it.
   */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -226,7 +226,7 @@ class Configure(config.base.Configure):
        - PetscInitialize from libpetsc
        - VecCreate from libpetscvec
        - MatCreate from libpetscmat
-       - DADestroy from libpetscdm
+       - DMDestroy from libpetscdm
        - KSPCreate from libpetscksp
        - SNESCreate from libpetscsnes
        - TSCreate from libpetscts
@@ -234,13 +234,13 @@ class Configure(config.base.Configure):
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.compilers.LIBS
     self.libraries.pushLanguage(self.languages.clanguage)
-    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec);', call = 'VecDestroy((Vec) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat);', call = 'MatDestroy((Mat) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DA *DA;int DADestroy(DA);', call = 'DADestroy((DA) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP);', call = 'KSPDestroy((KSP) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES);', call = 'SNESDestroy((SNES) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS);', call = 'TSDestroy((TS) 0)', cxxMangle = not self.languages.cSupport))
+    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);') and
+               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec*);', call = 'VecDestroy((Vec*) 0)') and
+               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat*);', call = 'MatDestroy((Mat*) 0)') and
+               self.libraries.check(libraries, 'DMDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DM *DA;int DMDestroy(DA*);', call = 'DMDestroy((DA*) 0)') and
+               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP*);', call = 'KSPDestroy((KSP*) 0)') and
+               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES*);', call = 'SNESDestroy((SNES*) 0)') and
+               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS*);', call = 'TSDestroy((TS*) 0)'))
     self.libraries.popLanguage()
     self.compilers.LIBS = oldLibs
     return found
@@ -275,7 +275,7 @@ class Configure(config.base.Configure):
   def checkWorkingLink(self):
     '''Checking that we can link a PETSc executable'''
     self.pushLanguage(self.languages.clanguage)
-    if not self.checkPETScLink('#include <petsclog.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+    if not self.checkPETScLink('#include <petsctime.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscTime(&time);CHKERRQ(ierr);\n'):
       self.logPrint('PETSc cannot link, which indicates a problem with the PETSc installation')
       return 0
     self.logPrint('PETSc can link with '+self.languages.clanguage)
@@ -284,17 +284,17 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
-      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+      if not self.checkPETScLink('#include <petsctime.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscTime(&time);CHKERRQ(ierr);\n'):
         self.logPrint('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation')
         self.popLanguage()
         return 0
       self.popLanguage()
       self.logPrint('PETSc can link with C++')
-    
+
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       self.sourceExtension = '.F'
-      if not self.checkPETScLink('', '          integer ierr\n          real time\n          call PetscGetTime(time, ierr)\n'):
+      if not self.checkPETScLink('', '          integer ierr\n          real time\n          call PetscTime(time, ierr)\n'):
         self.logPrint('PETSc cannot link Fortran, but can link C, which indicates a problem with the PETSc installation\nRun with -with-fc=0 if you do not wish to use Fortran')
         self.popLanguage()
         return 0
@@ -305,11 +305,11 @@ class Configure(config.base.Configure):
   def checkSharedLibrary(self, libraries):
     '''Check that the libraries for PETSc are shared libraries'''
     if config.setCompilers.Configure.isDarwin():
-      # on Apple if you list the MPI libraries again you will generate multiply defined errors 
+      # on Apple if you list the MPI libraries again you will generate multiply defined errors
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
     self.pushLanguage(self.languages.clanguage)
-    isShared = self.libraries.checkShared('#include <petscsys.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpiexec)
+    isShared = self.libraries.checkShared('#include <petscsys.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscBool ', executor = self.mpi.mpiexec)
     self.popLanguage()
     return isShared
 
@@ -379,8 +379,7 @@ class Configure(config.base.Configure):
     return
 
   def configureLibrary(self):
-    '''Find a working PETSc
-       - Right now, C++ builds are required to use PETSC_USE_EXTERN_CXX'''
+    '''Find a working PETSc'''
     for location, name in self.trial.items():
       self.framework.logPrintDivider()
       self.framework.logPrint('Checking for a functional PETSc in '+name+', location/origin '+str(location))

@@ -5,11 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = composite.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = composite.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/composite/
 

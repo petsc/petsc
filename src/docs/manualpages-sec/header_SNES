@@ -7,7 +7,7 @@
 <H2> Nonlinear solvers - SNES: <A HREF="PETSC_DIRsrc/snes/examples/tutorials/index.html">Examples</A></H2>
 
 The Scalable Nonlinear Equations Solvers (SNES) component provides an
-easy-to-use interface to Newton-based methods for solving systems of
+easy-to-use interface to Newton-type, quasi-Newton, full approximation scheme (FAS) multigrid, and other methods for solving systems of
 nonlinear equations.  SNES users can set various algorithmic options
 at runtime via the options database (e.g., specifying a trust region
 method via
@@ -21,7 +21,7 @@ its linear systems.
 SNES users can also set KSP options directly in application
 codes by first extracting the KSP context from the SNES context via
 <A HREF="PETSC_DIRdocs/manualpages/SNES/SNESGetKSP.html">SNESGetKSP()</A>
-and then directly calling various KSP (and KSP and PC) routines (e.g., 
+and then directly calling various KSP (and PC) routines (e.g., 
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).
 

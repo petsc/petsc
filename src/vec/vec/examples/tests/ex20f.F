@@ -1,9 +1,9 @@
 !
       program main
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscviewer.h>
 
 !
 !      This example demonstrates writing an array to a file in binary
@@ -21,7 +21,7 @@
        n            = 5
        vecclassid(1) = 1211211 + 3
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
        do 10, i=1,5
          array(i) = i
@@ -60,4 +60,4 @@
        call PetscFinalize(ierr)
        end
 
- 
+

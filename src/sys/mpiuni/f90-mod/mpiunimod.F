@@ -1,4 +1,4 @@
         module mpi
-#include "mpiuni/mpif.h"
+#include <mpiuni/mpif.h>
         end module
 

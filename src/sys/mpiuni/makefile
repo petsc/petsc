@@ -5,10 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpi.c
-SOURCEF	 = 
+SOURCEF	 =
 SOURCEH	 = ../../../include/mpiuni/mpi.h ../../../include/mpiuni/mpif.h
-OBJSC	 = mpi.o
-OBJSF	 =
 SCRIPTS  = ../../../../bin/mpiexec.uni
 LIBBASE	 = libpetscsys
 DIRS     = f90-mod

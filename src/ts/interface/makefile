@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c tsfd.c dlregists.c
+SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c dlregists.c tseig.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/interface/

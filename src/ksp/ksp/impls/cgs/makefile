@@ -1,12 +1,10 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = cgs.c
 SOURCEF  =
-OBJSC    = cgs.o
-OBJSF    = 
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/cgs/
 MANSEC   = KSP

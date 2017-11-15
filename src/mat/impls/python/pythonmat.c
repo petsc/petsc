@@ -1,4 +1,4 @@
-#include "private/matimpl.h"          /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPythonSetType"
@@ -18,18 +18,16 @@
 
 .keywords: Mat, Python
 
-.seealso: MATPYTHON, MatCreatePython(), PetscPythonInitialize()
+.seealso: MatCreate(), MatSetType(), MATPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
+PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 {
-  PetscErrorCode (*f)(Mat, const char[]) = 0;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(mat,pyname);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(mat,"MatPythonSetType_C",(Mat, const char[]),(mat,pyname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -59,9 +57,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "MatPythonCreate"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
+PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidCharPointer(pyname,6);
   PetscValidPointer(A,6);

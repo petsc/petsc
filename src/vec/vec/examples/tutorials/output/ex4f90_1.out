@@ -1,18 +1,21 @@
-initial vector:
+Vector Object:initial vector: 1 MPI processes
+  type: seq
 10
 20
 30
 40
 50
 60
-new vector 1:
+Vector Object:new vector 1: 1 MPI processes
+  type: seq
 100
 200
 300
 400
 500
 600
-new vector 2:
+Vector Object:new vector 2: 1 MPI processes
+  type: seq
 1000
 2000
 3000

@@ -1,0 +1,109 @@
+Solving a linear TS problem on 1 processor
+Timestep   0: step size = 0.0005     , time = 0          , 2-norm error = 1.05424e-15, max norm error = 3.10862e-15
+Timestep   1: step size = 0.0005     , time = 0.0005     , 2-norm error = 0.00103714 , max norm error = 0.00149349 
+Timestep   2: step size = 0.0005     , time = 0.001      , 2-norm error = 0.00173865 , max norm error = 0.00251106 
+Timestep   3: step size = 0.0005     , time = 0.0015     , 2-norm error = 0.00218619 , max norm error = 0.00316814 
+Timestep   4: step size = 0.0005     , time = 0.002      , 2-norm error = 0.00244382 , max norm error = 0.00355525 
+Timestep   5: step size = 0.0005     , time = 0.0025     , 2-norm error = 0.00256155 , max norm error = 0.003743   
+Timestep   6: step size = 0.0005     , time = 0.003      , 2-norm error = 0.0025782  , max norm error = 0.00378619 
+Timestep   7: step size = 0.0005     , time = 0.0035     , 2-norm error = 0.00252374 , max norm error = 0.00372709 
+Timestep   8: step size = 0.0005     , time = 0.004      , 2-norm error = 0.00242114 , max norm error = 0.00359803 
+Timestep   9: step size = 0.0005     , time = 0.0045     , 2-norm error = 0.00228786 , max norm error = 0.00342356 
+Timestep  10: step size = 0.0005     , time = 0.005      , 2-norm error = 0.00213706 , max norm error = 0.00322206 
+Timestep  11: step size = 0.0005     , time = 0.0055     , 2-norm error = 0.00197854 , max norm error = 0.00300716 
+Timestep  12: step size = 0.0005     , time = 0.006      , 2-norm error = 0.00181946 , max norm error = 0.00278875 
+Timestep  13: step size = 0.0005     , time = 0.0065     , 2-norm error = 0.00166502 , max norm error = 0.00257386 
+Timestep  14: step size = 0.0005     , time = 0.007      , 2-norm error = 0.00151886 , max norm error = 0.00236732 
+Timestep  15: step size = 0.0005     , time = 0.0075     , 2-norm error = 0.00138345 , max norm error = 0.00217229 
+Timestep  16: step size = 0.0005     , time = 0.008      , 2-norm error = 0.00126038 , max norm error = 0.00199257 
+Timestep  17: step size = 0.0005     , time = 0.0085     , 2-norm error = 0.00115055 , max norm error = 0.00182965 
+Timestep  18: step size = 0.0005     , time = 0.009      , 2-norm error = 0.00105433 , max norm error = 0.00168108 
+Timestep  19: step size = 0.0005     , time = 0.0095     , 2-norm error = 0.000971681, max norm error = 0.00154667 
+Timestep  20: step size = 0.0005     , time = 0.01       , 2-norm error = 0.000902173, max norm error = 0.0014259  
+Timestep  21: step size = 0.0005     , time = 0.0105     , 2-norm error = 0.000845081, max norm error = 0.00131805 
+Timestep  22: step size = 0.0005     , time = 0.011      , 2-norm error = 0.000799409, max norm error = 0.00122453 
+Timestep  23: step size = 0.0005     , time = 0.0115     , 2-norm error = 0.000763961, max norm error = 0.00114483 
+Timestep  24: step size = 0.0005     , time = 0.012      , 2-norm error = 0.000737404, max norm error = 0.00107477 
+Timestep  25: step size = 0.0005     , time = 0.0125     , 2-norm error = 0.000718358, max norm error = 0.00101512 
+Timestep  26: step size = 0.0005     , time = 0.013      , 2-norm error = 0.000705479, max norm error = 0.000966839
+Timestep  27: step size = 0.0005     , time = 0.0135     , 2-norm error = 0.00069752 , max norm error = 0.000925927
+Timestep  28: step size = 0.0005     , time = 0.014      , 2-norm error = 0.000693383, max norm error = 0.000895049
+Timestep  29: step size = 0.0005     , time = 0.0145     , 2-norm error = 0.00069213 , max norm error = 0.00087155 
+Timestep  30: step size = 0.0005     , time = 0.015      , 2-norm error = 0.000692994, max norm error = 0.000855222
+Timestep  31: step size = 0.0005     , time = 0.0155     , 2-norm error = 0.000695357, max norm error = 0.000846179
+Timestep  32: step size = 0.0005     , time = 0.016      , 2-norm error = 0.000698734, max norm error = 0.000844072
+Timestep  33: step size = 0.0005     , time = 0.0165     , 2-norm error = 0.000702754, max norm error = 0.000848209
+Timestep  34: step size = 0.0005     , time = 0.017      , 2-norm error = 0.000707133, max norm error = 0.000858882
+Timestep  35: step size = 0.0005     , time = 0.0175     , 2-norm error = 0.000711659, max norm error = 0.000875698
+Timestep  36: step size = 0.0005     , time = 0.018      , 2-norm error = 0.000716178, max norm error = 0.000898517
+Timestep  37: step size = 0.0005     , time = 0.0185     , 2-norm error = 0.000720575, max norm error = 0.00092127 
+Timestep  38: step size = 0.0005     , time = 0.019      , 2-norm error = 0.00072477 , max norm error = 0.000941312
+Timestep  39: step size = 0.0005     , time = 0.0195     , 2-norm error = 0.000728706, max norm error = 0.000958931
+Timestep  40: step size = 0.0005     , time = 0.02       , 2-norm error = 0.000732344, max norm error = 0.000974378
+Timestep  41: step size = 0.0005     , time = 0.0205     , 2-norm error = 0.000735661, max norm error = 0.000987877
+Timestep  42: step size = 0.0005     , time = 0.021      , 2-norm error = 0.000738642, max norm error = 0.000999629
+Timestep  43: step size = 0.0005     , time = 0.0215     , 2-norm error = 0.000741279, max norm error = 0.00100981 
+Timestep  44: step size = 0.0005     , time = 0.022      , 2-norm error = 0.00074357 , max norm error = 0.00101857 
+Timestep  45: step size = 0.0005     , time = 0.0225     , 2-norm error = 0.000745518, max norm error = 0.00102605 
+Timestep  46: step size = 0.0005     , time = 0.023      , 2-norm error = 0.000747128, max norm error = 0.00103237 
+Timestep  47: step size = 0.0005     , time = 0.0235     , 2-norm error = 0.000748406, max norm error = 0.00103764 
+Timestep  48: step size = 0.0005     , time = 0.024      , 2-norm error = 0.00074936 , max norm error = 0.00104195 
+Timestep  49: step size = 0.0005     , time = 0.0245     , 2-norm error = 0.00075    , max norm error = 0.00104539 
+Timestep  50: step size = 0.0005     , time = 0.025      , 2-norm error = 0.000750335, max norm error = 0.00104804 
+Timestep  51: step size = 0.0005     , time = 0.0255     , 2-norm error = 0.000750375, max norm error = 0.00104995 
+Timestep  52: step size = 0.0005     , time = 0.026      , 2-norm error = 0.000750131, max norm error = 0.0010512  
+Timestep  53: step size = 0.0005     , time = 0.0265     , 2-norm error = 0.000749612, max norm error = 0.00105182 
+Timestep  54: step size = 0.0005     , time = 0.027      , 2-norm error = 0.000748829, max norm error = 0.00105187 
+Timestep  55: step size = 0.0005     , time = 0.0275     , 2-norm error = 0.000747792, max norm error = 0.0010514  
+Timestep  56: step size = 0.0005     , time = 0.028      , 2-norm error = 0.00074651 , max norm error = 0.00105044 
+Timestep  57: step size = 0.0005     , time = 0.0285     , 2-norm error = 0.000744994, max norm error = 0.00104902 
+Timestep  58: step size = 0.0005     , time = 0.029      , 2-norm error = 0.000743253, max norm error = 0.00104717 
+Timestep  59: step size = 0.0005     , time = 0.0295     , 2-norm error = 0.000741295, max norm error = 0.00104493 
+Timestep  60: step size = 0.0005     , time = 0.03       , 2-norm error = 0.000739131, max norm error = 0.00104233 
+Timestep  61: step size = 0.0005     , time = 0.0305     , 2-norm error = 0.000736769, max norm error = 0.00103937 
+Timestep  62: step size = 0.0005     , time = 0.031      , 2-norm error = 0.000734217, max norm error = 0.00103609 
+Timestep  63: step size = 0.0005     , time = 0.0315     , 2-norm error = 0.000731483, max norm error = 0.00103251 
+Timestep  64: step size = 0.0005     , time = 0.032      , 2-norm error = 0.000728577, max norm error = 0.00102863 
+Timestep  65: step size = 0.0005     , time = 0.0325     , 2-norm error = 0.000725504, max norm error = 0.00102449 
+Timestep  66: step size = 0.0005     , time = 0.033      , 2-norm error = 0.000722274, max norm error = 0.0010201  
+Timestep  67: step size = 0.0005     , time = 0.0335     , 2-norm error = 0.000718893, max norm error = 0.00101547 
+Timestep  68: step size = 0.0005     , time = 0.034      , 2-norm error = 0.000715369, max norm error = 0.00101061 
+Timestep  69: step size = 0.0005     , time = 0.0345     , 2-norm error = 0.000711707, max norm error = 0.00100554 
+Timestep  70: step size = 0.0005     , time = 0.035      , 2-norm error = 0.000707916, max norm error = 0.00100027 
+Timestep  71: step size = 0.0005     , time = 0.0355     , 2-norm error = 0.000704002, max norm error = 0.000994817
+Timestep  72: step size = 0.0005     , time = 0.036      , 2-norm error = 0.00069997 , max norm error = 0.000989183
+Timestep  73: step size = 0.0005     , time = 0.0365     , 2-norm error = 0.000695827, max norm error = 0.000983382
+Timestep  74: step size = 0.0005     , time = 0.037      , 2-norm error = 0.000691579, max norm error = 0.000977424
+Timestep  75: step size = 0.0005     , time = 0.0375     , 2-norm error = 0.000687231, max norm error = 0.000971318
+Timestep  76: step size = 0.0005     , time = 0.038      , 2-norm error = 0.000682789, max norm error = 0.000965073
+Timestep  77: step size = 0.0005     , time = 0.0385     , 2-norm error = 0.000678258, max norm error = 0.000958697
+Timestep  78: step size = 0.0005     , time = 0.039      , 2-norm error = 0.000673644, max norm error = 0.000952199
+Timestep  79: step size = 0.0005     , time = 0.0395     , 2-norm error = 0.000668951, max norm error = 0.000945586
+Timestep  80: step size = 0.0005     , time = 0.04       , 2-norm error = 0.000664185, max norm error = 0.000938865
+Timestep  81: step size = 0.0005     , time = 0.0405     , 2-norm error = 0.000659349, max norm error = 0.000932044
+Timestep  82: step size = 0.0005     , time = 0.041      , 2-norm error = 0.000654449, max norm error = 0.00092513 
+Timestep  83: step size = 0.0005     , time = 0.0415     , 2-norm error = 0.000649488, max norm error = 0.000918128
+Timestep  84: step size = 0.0005     , time = 0.042      , 2-norm error = 0.000644472, max norm error = 0.000911046
+Timestep  85: step size = 0.0005     , time = 0.0425     , 2-norm error = 0.000639404, max norm error = 0.000903889
+Timestep  86: step size = 0.0005     , time = 0.043      , 2-norm error = 0.000634288, max norm error = 0.000896663
+Timestep  87: step size = 0.0005     , time = 0.0435     , 2-norm error = 0.000629127, max norm error = 0.000889373
+Timestep  88: step size = 0.0005     , time = 0.044      , 2-norm error = 0.000623926, max norm error = 0.000882026
+Timestep  89: step size = 0.0005     , time = 0.0445     , 2-norm error = 0.000618689, max norm error = 0.000874625
+Timestep  90: step size = 0.0005     , time = 0.045      , 2-norm error = 0.000613418, max norm error = 0.000867177
+Timestep  91: step size = 0.0005     , time = 0.0455     , 2-norm error = 0.000608116, max norm error = 0.000859685
+Timestep  92: step size = 0.0005     , time = 0.046      , 2-norm error = 0.000602788, max norm error = 0.000852155
+Timestep  93: step size = 0.0005     , time = 0.0465     , 2-norm error = 0.000597436, max norm error = 0.00084459 
+Timestep  94: step size = 0.0005     , time = 0.047      , 2-norm error = 0.000592062, max norm error = 0.000836996
+Timestep  95: step size = 0.0005     , time = 0.0475     , 2-norm error = 0.000586671, max norm error = 0.000829376
+Timestep  96: step size = 0.0005     , time = 0.048      , 2-norm error = 0.000581265, max norm error = 0.000821734
+Timestep  97: step size = 0.0005     , time = 0.0485     , 2-norm error = 0.000575845, max norm error = 0.000814074
+Timestep  98: step size = 0.0005     , time = 0.049      , 2-norm error = 0.000570416, max norm error = 0.000806399
+Timestep  99: step size = 0.0005     , time = 0.0495     , 2-norm error = 0.000564979, max norm error = 0.000798713
+Timestep 100: step size = 0.0005     , time = 0.05       , 2-norm error = 0.000559537, max norm error = 0.00079102 
+avg. error (2 norm) = 0.000913004, avg. error (max norm) = 0.00130754
+TS Object: 1 MPI processes
+  type: ssp
+  maximum steps=100
+  maximum time=100
+  total number of linear solver iterations=0
+  total number of rejected steps=0

@@ -2,11 +2,11 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Assemble"
-PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,const MatType mtype)
+PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
 {
-  const PetscInt rc[] = {0,1,2,3};
+  const PetscInt    rc[]   = {0,1,2,3};
   const PetscScalar vals[] = {1, 2, 3, 4, 5, 6, 7, 8,
                               9,10,11,12,13,14,15,16,
                               17,18,19,20,21,22,23,24,
@@ -15,9 +15,9 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,const MatType mtype)
                               41,42,43,44,45,46,47,48,
                               49,50,51,52,53,54,55,56,
                               57,58,49,60,61,62,63,64};
-  Mat A;
-  PetscViewer viewer;
-  PetscErrorCode ierr;
+  Mat               A;
+  PetscViewer       viewer;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
@@ -36,11 +36,11 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,const MatType mtype)
   ierr = MatView(A,viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {

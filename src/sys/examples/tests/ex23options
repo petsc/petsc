@@ -1,0 +1,10 @@
+---
+options:
+- ts:
+  - view: true
+  - max:
+    - time: 1.4
+    - steps: &var 10
+- snes:
+  - max_steps: *var
+...

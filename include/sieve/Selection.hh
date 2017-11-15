@@ -2,17 +2,22 @@
 #define included_ALE_Selection_hh
 
 #ifndef  included_ALE_SieveAlgorithms_hh
-#include <SieveAlgorithms.hh>
+#include <sieve/SieveAlgorithms.hh>
 #endif
 
 #ifndef  included_ALE_SieveBuilder_hh
-#include <SieveBuilder.hh>
+#include <sieve/SieveBuilder.hh>
+#endif
+
+#ifndef  included_ALE_Mesh_hh
+#include <sieve/Mesh.hh>
 #endif
 
 namespace ALE {
   template<typename Mesh_>
   class Selection {
   public:
+    typedef ALE::Mesh<PetscInt,PetscScalar>      FlexMesh;
     typedef Mesh_                                mesh_type;
     typedef typename mesh_type::sieve_type       sieve_type;
     typedef typename mesh_type::point_type       point_type;
@@ -29,7 +34,7 @@ namespace ALE {
       typedef typename Sieve::point_type point_type;
       typedef typename Sieve::arrow_type arrow_type;
     protected:
-      const FaceType& face;
+      FaceType& face;
       PointArray&     origVertices;
       PointArray&     faceVertices;
       int            *indices;
@@ -37,7 +42,7 @@ namespace ALE {
       int             oppositeVertex;
       int             v;
     public:
-      FaceVisitor(const FaceType& f, PointArray& oV, PointArray& fV, int *i, const int debug) : face(f), origVertices(oV), faceVertices(fV), indices(i), debug(debug), oppositeVertex(-1), v(0) {};
+      FaceVisitor(FaceType& f, PointArray& oV, PointArray& fV, int *i, const int debug) : face(f), origVertices(oV), faceVertices(fV), indices(i), debug(debug), oppositeVertex(-1), v(0) {};
       void visitPoint(const point_type& point) {
         if (face->find(point) != face->end()) {
           if (debug) std::cout << "    vertex " << point << std::endl;
@@ -107,7 +112,7 @@ namespace ALE {
         }
         break;
       case 3:
-        switch (numCorners)	{
+        switch (numCorners) {
         case 4 : // tetradehdron
           _numFaceVertices = 3; // Face has 3 vertices
           break;
@@ -150,6 +155,8 @@ namespace ALE {
       if (cellDim == numCorners-1) {
         // Simplices
         posOrient = !(oppositeVertex%2);
+      } else if (cellDim == 1 && numCorners == 3) {
+        posOrient = true;
       } else if (cellDim == 2 && numCorners == 4) {
         // Quads
         if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {
@@ -194,7 +201,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeTri; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeTri; ++cVertex)
                 if (indices[cVertex] == faceVerticesTri[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -237,7 +244,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeQuad; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeQuad; ++cVertex)
                 if (indices[cVertex] == faceVerticesQuad[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -298,7 +305,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeHex; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeHex; ++cVertex)
                 if (indices[cVertex] == faceVerticesHex[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -343,7 +350,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeTet; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeTet; ++cVertex)
                 if (indices[cVertex] == faceVerticesTet[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -404,7 +411,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeQuadHex; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeQuadHex; ++cVertex)
                 if (indices[cVertex] == faceVerticesQuadHex[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -440,17 +447,17 @@ namespace ALE {
       return faceOrientation(cell, mesh, numCorners, indices, v.getOppositeVertex(), origVertices, faceVertices);
     };
     template<typename FaceType>
-    static bool getOrientedFace(const Obj<ALE::Mesh>& mesh, const point_type& cell, FaceType face,
+    static bool getOrientedFace(const Obj<FlexMesh>& mesh, const point_type& cell, FaceType face,
                                 const int numCorners, int indices[], PointArray *origVertices, PointArray *faceVertices)
     {
-      const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
+      const Obj<typename FlexMesh::sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
       const int debug = mesh->debug();
       int       v     = 0;
       int       oppositeVertex;
 
       origVertices->clear();
       faceVertices->clear();
-      for(typename ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
+      for(typename FlexMesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
         if (face->find(*v_iter) != face->end()) {
           if (debug) std::cout << "    vertex " << *v_iter << std::endl;
           indices[origVertices->size()] = v;
@@ -618,7 +625,7 @@ namespace ALE {
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(typename sieveAlg::supportArray::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
           if (debug) std::cout << "  Checking cell " << *c_iter << std::endl;
-          if (submeshCells.find(*c_iter) != submeshCells.end())	continue;
+          if (submeshCells.find(*c_iter) != submeshCells.end()) continue;
           if (censor && (!mesh->getValue(depthLabel, *c_iter))) continue;
           const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *c_iter, height);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
@@ -707,11 +714,11 @@ namespace ALE {
         const Obj<typename sieveAlg::supportArray>& faces = sieveAlg::nSupport(mesh, *sv_iter, depth-1);
         const typename sieveAlg::supportArray::iterator fBegin = faces->begin();
         const typename sieveAlg::supportArray::iterator fEnd   = faces->end();
-    
+
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(typename sieveAlg::supportArray::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
           if (debug) std::cout << "  Checking face " << *f_iter << std::endl;
-          if (submeshFaces->find(*f_iter) != submeshFaces->end())	continue;
+          if (submeshFaces->find(*f_iter) != submeshFaces->end()) continue;
           const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *f_iter, height-1);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
           const typename sieveAlg::coneArray::iterator vEnd   = cone->end();
@@ -739,8 +746,8 @@ namespace ALE {
       typedef typename int_section_type::chart_type chart_type;
       const int                           dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
       const Obj<sieve_type>&              sieve      = mesh->getSieve();
-      Obj<ALE::Mesh>                      submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-      Obj<typename ALE::Mesh::sieve_type> subSieve   = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Obj<FlexMesh>                       submesh    = new FlexMesh(mesh->comm(), dim, mesh->debug());
+      Obj<typename FlexMesh::sieve_type>  subSieve   = new typename FlexMesh::sieve_type(mesh->comm(), mesh->debug());
       const bool                          censor     = mesh->hasLabel("censored depth");
       const Obj<label_type>&              depthLabel = censor ? mesh->getLabel("censored depth") : mesh->getLabel("depth");
       const chart_type&                   chart      = label->getChart();
@@ -766,7 +773,7 @@ namespace ALE {
         sieve->support(*sv_iter, sV);
         const int         numCells = sV.getSize();
         const point_type *cells    = sV.getPoints();
-    
+
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(int c = 0; c < numCells; ++c) {
           if (debug) std::cout << "  Checking cell " << cells[c] << std::endl;
@@ -825,8 +832,8 @@ namespace ALE {
           if (!boundaryFaces) throw ALE::Exception("Invalid fault mesh: Too many vertices of an element on the fault");
           // Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron)
           //   We have to take all the faces, and discard those in the interior
-          FaceInserterV<ALE::Mesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
-          PointArray                           faceVec(face->begin(), face->end());
+          FaceInserterV<FlexMesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
+          PointArray                          faceVec(face->begin(), face->end());
 
           subsets(faceVec, faceSize, inserter);
         }
@@ -951,7 +958,7 @@ namespace ALE {
         const typename sieve_type::traits::coneSequence::iterator vEnd     = vertices->end();
         //PointArray cell(vertices->begin(), vertices->end());
 
-        // For each vertex, gather 
+        // For each vertex, gather
         for(typename sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
           const Obj<typename sieve_type::traits::supportSequence>&     neighbors = sieve->support(*v_iter);
           const typename sieve_type::traits::supportSequence::iterator nBegin    = neighbors->begin();
@@ -966,7 +973,7 @@ namespace ALE {
         }
         // For each face
         // - determine if its legal
-        
+
         // - determine if its part of a neighboring cell
         // - if not, its a boundary face
         //subsets(cell, faceSize, inserter);
@@ -996,7 +1003,7 @@ namespace ALE {
         const Obj<typename sieve_type::traits::supportSequence>&     support = sieveA->support(p);
         const typename sieve_type::traits::supportSequence::iterator begin   = support->begin();
         const typename sieve_type::traits::supportSequence::iterator end     = support->end();
-            
+
         for(typename sieve_type::traits::supportSequence::iterator s_iter = begin; s_iter != end; ++s_iter) {
           sieveB->addArrow(p, *s_iter, s_iter.color());
           next->insert(*s_iter);
@@ -1051,7 +1058,7 @@ namespace ALE {
 
         sieveA->support(p, sV);
         const typename SieveTypeA::point_type *support = sV.getPoints();
-            
+
         for(int s = 0; s < (int) sV.getSize(); ++s) {
           sieveB->addArrow(p, support[s]);
         }
@@ -1080,14 +1087,14 @@ namespace ALE {
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV_uninterpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+    static Obj<FlexMesh> boundaryV_uninterpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
         throw ALE::Exception("Cannot handle uninterpolated meshes");
     };
     // This method takes in an interpolated mesh, and returns the boundary
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV_interpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
-      Obj<ALE::Mesh>                                      newMesh  = new ALE::Mesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
-      Obj<typename ALE::Mesh::sieve_type>                 newSieve = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+    static Obj<FlexMesh> boundaryV_interpolated(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+      Obj<FlexMesh>                                       newMesh  = new FlexMesh(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+      Obj<typename FlexMesh::sieve_type>                  newSieve = new typename FlexMesh::sieve_type(mesh->comm(), mesh->debug());
       const Obj<typename MeshTypeQ::sieve_type>&          sieve    = mesh->getSieve();
       const Obj<typename MeshTypeQ::label_sequence>&      faces    = mesh->heightStratum(faceHeight);
       const typename MeshTypeQ::label_sequence::iterator  fBegin   = faces->begin();
@@ -1108,7 +1115,7 @@ namespace ALE {
       return newMesh;
     };
     template<typename MeshTypeQ>
-    static Obj<ALE::Mesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+    static Obj<FlexMesh> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
       const int dim   = mesh->getDimension();
       const int depth = mesh->depth();
 
@@ -1135,7 +1142,6 @@ namespace ALE {
       const int  numVertices = mesh->depthStratum(0)->size();
       const Obj<typename mesh_type::label_sequence>&     cells       = mesh->heightStratum(0);
       const int  numCells    = cells->size();
-      const int  corners     = sieve->cone(*cells->begin())->size();
       const int  firstVertex = numCells;
       const int  debug       = sieve->debug();
       Obj<mesh_type>                                     newMesh     = new mesh_type(mesh->comm(), dim, mesh->debug());
@@ -1162,10 +1168,11 @@ namespace ALE {
       typename mesh_type::label_sequence::iterator cEnd   = cells->end();
 
       for(typename mesh_type::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
-        typename sieve_type::point_type                           cell   = *c_iter;
-        const Obj<typename sieve_type::traits::coneSequence>&     cone   = sieve->cone(cell);
-        const typename sieve_type::traits::coneSequence::iterator vBegin = cone->begin();
-        const typename sieve_type::traits::coneSequence::iterator vEnd   = cone->end();
+        typename sieve_type::point_type                           cell    = *c_iter;
+        const Obj<typename sieve_type::traits::coneSequence>&     cone    = sieve->cone(cell);
+        const int                                                 corners = cone->size();
+        const typename sieve_type::traits::coneSequence::iterator vBegin  = cone->begin();
+        const typename sieve_type::traits::coneSequence::iterator vEnd    = cone->end();
 
         // Build the cell
         bdVertices[dim].clear();
@@ -1179,6 +1186,7 @@ namespace ALE {
 
         if (corners != dim+1) {
           ALE::SieveBuilder<mesh_type>::buildHexFaces(newSieve, dim, curElement, bdVertices, faces, cell);
+          // Will need to handle cohesive cells here
         } else {
           ALE::SieveBuilder<mesh_type>::buildFaces(newSieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
         }
@@ -1326,7 +1334,7 @@ namespace ALE {
 
       //int f = sieve->base()->size() + sieve->cap()->size();
       //ALE::Obj<PointSet> face = new PointSet();
-  
+
       // Create a sieve which captures the fault
       PetscLogEventBegin(CreateFaultMesh_Event,0,0,0,0);
       fault = ALE::Selection<ALE::Mesh>::submesh(mesh, groupField);
@@ -1352,7 +1360,7 @@ namespace ALE {
       const ALE::Obj<std::set<std::string> >& groupNames = mesh->getIntSections();
       Mesh::point_type newPoint = sieve->base()->size() + sieve->cap()->size();
       std::map<int,int> vertexRenumber;
-  
+
       for(Mesh::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter, ++newPoint) {
         vertexRenumber[*v_iter] = newPoint;
         if (debug) {std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;}

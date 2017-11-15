@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscsys.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscsys.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscfixfilename_          PETSCFIXFILENAME
@@ -7,12 +7,11 @@
 #define petscfixfilename_          petscfixfilename
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR fileout PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR fileout PETSC_MIXED_LEN(len2),
                                      PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
-  PetscInt  i,n;
-  char *in,*out;
+  PetscInt i,n;
+  char     *in,*out;
 
   in  = filein;
   out = fileout;
@@ -24,5 +23,3 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR file
   }
   out[i] = 0;
 }
-
-EXTERN_C_END

@@ -2,7 +2,7 @@
 #define included_ALE_SieveAlgorithms_hh
 
 #ifndef  included_ALE_Sieve_hh
-#include <Sieve.hh>
+#include <sieve/Sieve.hh>
 #endif
 
 namespace ALE {
@@ -484,7 +484,7 @@ namespace ALE {
        }
        link_sieve->removePoint(p);
 
-      } else { //interpolated case: remove the point, its closure, and the support of that closure, 
+      } else { //interpolated case: remove the point, its closure, and the support of that closure,
 
         static Obj<supportArray> surrounding_support = sieve->Star(sieve->nCone(p, depth));
         static typename supportArray::iterator ss_iter = surrounding_support->begin();

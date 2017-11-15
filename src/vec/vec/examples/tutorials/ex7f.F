@@ -2,8 +2,8 @@
 !
        subroutine ex7f(vec,comm)
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 !
 !  This routine demonstates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.
@@ -20,7 +20,7 @@
 !
 !     The Objects vec,comm created in a C routine are now
 !     used in fortran routines.
-!       
+!
        call VecSet(vec,two,ierr)
        call MPI_Comm_rank(comm,rank,ierr)
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -32,13 +32,13 @@
 !
 !     IO from the fortran routines may cause all kinds of
 !
- 100   format ('[',i1,']',' Calling VecView from Fortran')
-       write(6,100) rank
+! 100   format ('[',i1,']',' Calling VecView from Fortran')
+!       write(6,100) rank
 !
 !  Now Call a Petsc Routine from Fortran
 !
        call VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr)
-       return 
+       return
        end
 
- 
+

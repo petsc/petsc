@@ -16,19 +16,19 @@
 #include "finclude/petscdrawdef.h"
 
 !
-! The real*8,complex*16 notatiton is used so that the 
-! PETSc double/complex variables are not affected by 
-! compiler options like -r4,-r8, sometimes invoked 
+! The real*8,complex*16 notatiton is used so that the
+! PETSc double/complex variables are not affected by
+! compiler options like -r4,-r8, sometimes invoked
 ! by the user. NAG compiler does not like integer*4,real*8
 
 #if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
-#define PetscTruth logical(kind=4)
+#define PetscBool  logical(kind=4)
 #else
 #define integer8 integer*8
 #define integer4 integer*4
-#define PetscTruth logical*4
+#define PetscBool  logical*4
 #endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -75,9 +75,11 @@
 #define PetscVoid PetscFortranAddr
 !
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
-#undef PetscTruth
-#define PetscTruth PetscEnum
+#undef PetscBool
+#define PetscBool  PetscEnum
 #endif
+!
+#define PetscCopyMode PetscEnum
 !
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
@@ -85,8 +87,8 @@
 #if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
-#define PetscFortranLongDouble real(kind=selected_real_kind(16))
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#define PetscFortranLongDouble real(kind=selected_real_kind(19))
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(5))
 #else
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
@@ -96,7 +98,7 @@
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranLongDouble real*16
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex*8
 #else
 #define PetscFortranComplex complex*16
@@ -107,13 +109,20 @@
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#define PETSC_SCALAR PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_SCALAR PETSC___FLOAT128
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
-#endif     
+#endif
+#endif
+#if defined(PETSC_USE_REAL_SINGLE)
+#define  PETSC_REAL  PETSC_FLOAT
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_REAL PETSC___FLOAT128
+#else
+#define  PETSC_REAL  PETSC_DOUBLE
 #endif
 !
 !     Macro for templating between real and complex
@@ -126,18 +135,18 @@
 #if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
-#define PetscImaginaryPart(a) aimg(a)
+#define PetscImaginaryPart(a) aimag(a)
 #else
 #define PetscRealPart(a) dreal(a)
 #define PetscConj(a) dconjg(a)
-#define PetscImaginaryPart(a) daimg(a)
+#define PetscImaginaryPart(a) daimag(a)
 #endif
 #else
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
 #define PetscScalar PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscScalar PetscFortranLongDouble
-#else
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscScalar PetscFortranDouble
 #endif
 #define PetscRealPart(a) a
@@ -145,11 +154,11 @@
 #define PetscImaginaryPart(a) a
 #endif
 
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
 #define PetscReal PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 #define PetscReal PetscFortranLongDouble
-#else
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscReal PetscFortranDouble
 #endif
 
@@ -157,13 +166,7 @@
 !    Allows the matrix Fortran Kernels to work with single precision
 !    matrix data structures
 !
-#if defined(PETSC_USE_COMPLEX)
-#define MatScalar PetscScalar 
-#elif defined(PETSC_USE_SCALAR_MAT_SINGLE)
-#define MatScalar real*4
-#else
 #define MatScalar PetscScalar
-#endif
 !
 !     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,
@@ -199,5 +202,8 @@
 #define PetscRandom PetscFortranAddr
 #define PetscRandomType character*(80)
 #define PetscBinarySeekType PetscEnum
+
+#define PetscBuildTwoSidedType PetscEnum
+
 
 #endif

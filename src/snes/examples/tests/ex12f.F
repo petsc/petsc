@@ -1,7 +1,7 @@
 !
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
-!  
+!
 !  Note:  The program ex10.f is the same as this example, except that it
 !         uses the Fortran .f suffix rather than the .F suffix.
 !
@@ -9,8 +9,8 @@
 !      ctx(1) = da    - distributed array
 !          2  = F     - global vector where the function is stored
 !          3  = xl    - local work vector
-!          4  = rank  - processor rank
-!          5  = size  - number of processors
+!          4  = comm  - MPI communictor
+!          5  = unused
 !          6  = N     - system size
 !
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -25,18 +25,18 @@
       program main
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
       PetscErrorCode ierr
       PetscInt N,start,end,nn,i
       PetscInt ii,its,i1,i0,i3
-      PetscTruth flg
+      PetscBool  flg
       SNES             snes
       Mat              J
       Vec              x,r,u
@@ -52,18 +52,17 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
+      ctx(4) = PETSC_COMM_WORLD
 
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      ctx(4) = rank
-      ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
-      call DACreateGlobalVector(ctx(1),x,ierr)
-      call DACreateLocalVector(ctx(1),ctx(3),ierr)
+      call DMCreateGlobalVector(ctx(1),x,ierr)
+      call DMCreateLocalVector(ctx(1),ctx(3),ierr)
 
       call PetscObjectSetName(x,'Approximate Solution',ierr)
       call VecDuplicate(x,r,ierr)
@@ -71,9 +70,9 @@
       call VecDuplicate(x,U,ierr)
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
-      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
+      call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,           &
      &     N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr)
-
+      call MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE,ierr)
       call MatGetType(J,matrixname,ierr)
 
 ! Store right-hand-side of PDE and exact solution
@@ -111,7 +110,7 @@
       if (ctx(4) .eq. 0) then
         write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
@@ -122,12 +121,12 @@
       call VecDestroy(ctx(2),ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(ctx(1),ierr)
+      call DMDestroy(ctx(1),ierr)
       call PetscFinalize(ierr)
       end
 
 
-! --------------------  Evaluate Function F(x) --------------------- 
+! --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
       implicit none
@@ -139,21 +138,21 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 
-      rank  = ctx(4)
-      size  = ctx(5)
+      call MPI_Comm_rank(ctx(4),rank,ierr)
+      call MPI_Comm_size(ctx(4),size,ierr)
       h     = 1.d0/(ctx(6) - 1.d0)
-      call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
-      call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
       call VecGetLocalSize(ctx(3),n,ierr)
-      if (n .gt. 1000) then 
+      if (n .gt. 1000) then
         print*, 'Local work array not big enough'
         call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
       endif
@@ -169,22 +168,22 @@
       d = h*h
 
 !
-!  Note that the array vxx() was obtained from a ghosted local vector 
-!  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
+!  Note that the array vxx() was obtained from a ghosted local vector
+!  ctx(3) while the array vff() was obtained from the non-ghosted parallel
 !  vector F. This is why there is a need for shift variable s. Since vff()
-!  does not have locations for the ghost variables we need to index in it 
-!  slightly different then indexing into vxx(). For example on processor 
-!  1 (the second processor) 
+!  does not have locations for the ghost variables we need to index in it
+!  slightly different then indexing into vxx(). For example on processor
+!  1 (the second processor)
 !
 !        xx(1)        xx(2)             xx(3)             .....
 !      ^^^^^^^        ^^^^^             ^^^^^
-!      ghost value   1st local value   2nd local value 
+!      ghost value   1st local value   2nd local value
 !
 !                      ff(1)             ff(2)
 !                     ^^^^^^^           ^^^^^^^
 !                    1st local value   2nd local value
 !
-       if (rank .eq. 0) then 
+       if (rank .eq. 0) then
         s = 0
         ff(1) = xx(1)
       else
@@ -207,37 +206,37 @@
       return
       end
 
-! --------------------  Form initial approximation ----------------- 
+! --------------------  Form initial approximation -----------------
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
-      PetscScalar      five 
+      PetscScalar      five
 
       five = 5.d-1
       call VecSet(x,five,ierr)
       return
       end
 
-! --------------------  Evaluate Jacobian -------------------- 
+! --------------------  Evaluate Jacobian --------------------
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
       SNES             snes
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      PetscTruth       flag
+      PetscBool        flag
       PetscInt  ii,istart,iend
       PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr
@@ -248,23 +247,23 @@
       i1 = 1
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
-      rank = ctx(4)
-      size = ctx(5)
+      call MPI_Comm_rank(ctx(4),rank,ierr)
+      call MPI_Comm_size(ctx(4),size,ierr)
 
       call VecGetArray(x,vxx,ixx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)
       n = end - start
 
       if (rank .eq. 0) then
-        A = 1.0 
+        A = 1.0
         call MatSetValues(jac,i1,start,i1,start,A,INSERT_VALUES,ierr)
         istart = 1
-      else 
+      else
         istart = 0
       endif
       if (rank .eq. size-1) then
-        i = ctx(6)-1
-        A = 1.0 
+        i = INT(ctx(6)-1)
+        A = 1.0
         call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1
       else
@@ -272,9 +271,9 @@
       endif
       do 10 i=istart,iend-1
         ii = i + start
-        j = start + i - 1 
+        j = start + i - 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
-        j = start + i + 1 
+        j = start + i + 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr)

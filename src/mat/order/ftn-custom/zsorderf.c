@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscmat.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matgetordering_                  MATGETORDERING
@@ -7,9 +7,7 @@
 #define matgetordering_                  matgetordering
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm,
-                       PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *rperm,IS *cperm,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(type,len,t);
@@ -17,4 +15,3 @@ void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *r
   FREECHAR(type,t);
 }
 
-EXTERN_C_END

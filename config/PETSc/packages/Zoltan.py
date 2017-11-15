@@ -5,18 +5,18 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
-    self.includes  = ['zoltan.h'] 
-    self.liblist   = [['libzoltan.a']] 
+    self.includes  = ['zoltan.h']
+    self.liblist   = [['libzoltan.a']]
     self.license   = 'http://www.cs.sandia.gov/Zoltan/Zoltan.html'
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.x11      = framework.require('PETSc.packages.X11',self)
-    self.parmetis = framework.require('PETSc.packages.ParMetis',self)
-    self.deps = [self.x11, self.mpi, self.parmetis]
+    self.x        = framework.require('PETSc.packages.X',self)
+    self.parmetis = framework.require('PETSc.packages.parmetis',self)
+    self.deps = [self.mpi, self.parmetis]
     return
-          
+
   def Install(self):
     import os
     self.framework.pushLanguage('C')
@@ -31,8 +31,8 @@ class Configure(PETSc.package.NewPackage):
       self.framework.popLanguage()
     args.append('AR="'+self.compilers.AR+' '+self.compilers.AR_FLAGS+'"')
     args.append('RANLIB="'+self.compilers.RANLIB+'"')
-    if self.x11.found:
-      args.append('X_LIBS="'+str(self.x11.lib)+'"')
+    if self.x.found:
+      args.append('X_LIBS="'+str(self.x.lib)+'"')
     if self.mpi.found:
       if self.mpi.include:
         args.append('MPI_INCPATH="'+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])+'"')
@@ -57,8 +57,8 @@ class Configure(PETSc.package.NewPackage):
 ##############################################################################
 # The location of the VTK libraries, built with OpenGL
 #   We do not do these correctly
-VTK_LIBPATH = 
-VTK_INCPATH = 
+VTK_LIBPATH =
+VTK_INCPATH =
 # The location of the GL or Mesa libraries, and the libraries
 #   We do not do these correctly
 GL_LIBPATH = -L/usr/lib
@@ -74,7 +74,7 @@ GL_LIBS    = -lGL -lGLU
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
-      output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/* '+os.path.join(self.installDir, 'lib'))
-      output4,err4,ret4  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
+      output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/lib* '+os.path.join(self.installDir, 'lib'))
+      output4,err4,ret4  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/*.h '+os.path.join(self.installDir, 'include'))
       self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4,'Zoltanconfig')
     return self.installDir

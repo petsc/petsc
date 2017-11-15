@@ -1,12 +1,10 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = preonly.c
 SOURCEF  =
-OBJSC    = preonly.o
-OBJSF    =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/preonly/
 MANSEC   = KSP

@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 #!/bin/env python
-# 
+#
 # reads in docs/exampleconcepts,manconcepts, and create
 # the file help.html
-# 
+#
 #
 #  Usage:
 #    helpindex.py
@@ -25,7 +25,7 @@ def comptxt(a,b):
 def gethelpstring(PETSC_DIR,filename):
       filename = PETSC_DIR + '/' + filename
       fd = open(filename,'r')
-      
+
       for line in fd.readlines():
             tmp = find(line,'help[]')
             if not tmp == -1:
@@ -38,7 +38,7 @@ def gethelpstring(PETSC_DIR,filename):
                   fd.close()
                   return buf
       return "PetscNoHelp"
-      
+
 
 
 # Scan and extract format information from each line
@@ -60,7 +60,7 @@ def updatedata(PETSC_DIR,dict,line):
                   link_title = replace(filename,'src/','')
                   link_title = replace(link_title,'examples/','')
                   link_title = replace(link_title,'tutorials/','')
-      
+
       # ';' is a field separator
       keys = split(concept_list,";")
       for key in keys:
@@ -90,15 +90,15 @@ def updatedata(PETSC_DIR,dict,line):
 # print the dict in html format
 def printdata(LOC,fd,dict):
 
-      # Put some  HTML Header 
+      # Put some  HTML Header
       fd.write("<HTML>\n")
       fd.write("<TITLE>Concepts_File</TITLE>\n")
       fd.write("<!-- Created by helpindex.py -->\n");
       fd.write("<BODY>\n")
-      
+
       # Put the Table Header
       fd.write("<H1><center> PETSc Help Index</center></H1>\n")
-    
+
       prim_keys = dict.keys()
       prim_keys.sort(comptxt)
 
@@ -139,18 +139,18 @@ def printdata(LOC,fd,dict):
                   link_names = dict[prim_key]['PetscNoKey'].keys()
                   link_names.sort(comptxt)
                   link_name  = link_names[0]
-                  filename = dict[prim_key]['PetscNoKey'][link_name]                  
+                  filename = dict[prim_key]['PetscNoKey'][link_name]
                   del dict[prim_key]['PetscNoKey'][link_name]
-                  
+
                   temp = "<A HREF=\"" + "../../" + filename + ".html\">" + link_name + "</A>"
                   fd.write("<TABLE>\n")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
-		  # If prim_key exists in the concepts directory, 
+		  # If prim_key exists in the concepts directory,
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
                   concept_filename = "concepts/" + concept_filename + ".html"
-                  
+
                   #if os.access(concept_filename,os.F_OK):
                   fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/'+ concept_filename)
                   buf = fd_tmp.read()
@@ -166,18 +166,18 @@ def printdata(LOC,fd,dict):
                   fd.write("<TD WIDTH=500>")
                   fd.write(temp)
                   fd.write("</TD>")
-                 
+
                   fd.write("</TR>\n")
                   fd.write("</TABLE>\n")
             else:
                   fd.write("<TABLE>")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=300 ><B><FONT SIZE=4>")
-		  # If prim_key exists in the concepts directory, 
+		  # If prim_key exists in the concepts directory,
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
                   concept_filename = "concepts/" + concept_filename + ".html"
-                  
+
                   #if os.access(concept_filename,os.F_OK):
                   fd_tmp = os.popen('ls '+ LOC + '/docs/manualpages/' + concept_filename)
                   buf = fd_tmp.read()
@@ -192,13 +192,13 @@ def printdata(LOC,fd,dict):
                   fd.write("</FONT></B></TD>")
                   fd.write("</TR>\n")
                   fd.write("</TABLE>\n")
-                  
+
 
 
             for sub_key in sub_keys:
                   link_names = dict[prim_key][sub_key].keys()
                   link_names.sort(comptxt)
-                  
+
                   if not sub_key == 'PetscNoKey':
                         # Extract the first element from link_names
                         link_name = link_names[0]
@@ -236,8 +236,8 @@ def printdata(LOC,fd,dict):
 def main():
 
       arg_len = len(argv)
-      
-      if arg_len < 3: 
+
+      if arg_len < 3:
             print 'Error! Insufficient arguments.'
             print 'Usage:', argv[0], 'PETSC_DIR','LOC'
             exit()
@@ -264,9 +264,9 @@ def main():
 
       printdata(LOC,fd,dict)
       fd.close()
-      
+
 # The classes in this file can also
 # be used in other python-programs by using 'import'
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
       main()
-    
+

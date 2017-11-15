@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -6,11 +6,11 @@
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "petscsys.h"                /*I  "petscsys.h"  I*/
+#include <petscsys.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithPermutation_Private"
 static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],PetscInt vdx[],PetscInt right)
 {
@@ -36,10 +36,10 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithPermutation"
 /*@
-   PetscSortIntWithPermutation - Computes the permutation of values that gives 
+   PetscSortIntWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -51,14 +51,14 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^ints with permutation
 
-.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+.seealso: PetscSortInt(), PetscSortRealWithPermutation(), PetscSortIntWithArray()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
+PetscErrorCode  PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -68,10 +68,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithPermutation(PetscInt n,const P
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
-	if (ik > i[idx[j]]) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (ik > i[idx[j]]) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {
@@ -82,7 +82,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortIntWithPermutation(PetscInt n,const P
 
 /* ---------------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortRealWithPermutation_Private"
 static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],PetscInt vdx[],PetscInt right)
 {
@@ -109,10 +109,10 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortRealWithPermutation"
 /*@
-   PetscSortRealWithPermutation - Computes the permutation of values that gives 
+   PetscSortRealWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -124,14 +124,14 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^doubles with permutation
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],PetscInt idx[])
+PetscErrorCode  PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp;
@@ -142,10 +142,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRealWithPermutation(PetscInt n,const 
     for (k=0; k<n; k++) {
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
-	if (ik > i[idx[j]]) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (ik > i[idx[j]]) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {
@@ -154,13 +154,13 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortRealWithPermutation(PetscInt n,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortStrWithPermutation_Private"
 static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscInt vdx[],PetscInt right)
 {
   PetscErrorCode ierr;
   PetscInt       tmp,i,last;
-  PetscTruth     gt;
+  PetscBool      gt;
   const char     *vl;
 
   PetscFunctionBegin;
@@ -184,10 +184,10 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortStrWithPermutation"
 /*@C
-   PetscSortStrWithPermutation - Computes the permutation of values that gives 
+   PetscSortStrWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -199,19 +199,19 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^ints with permutation
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt idx[])
+PetscErrorCode  PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp;
   const char     *ik;
-  PetscTruth     gt;
+  PetscBool      gt;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -219,10 +219,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortStrWithPermutation(PetscInt n,const c
       ik = i[idx[k]];
       for (j=k+1; j<n; j++) {
         ierr = PetscStrgrt(ik,i[idx[j]],&gt);CHKERRQ(ierr);
-	if (gt) {
-	  SWAP(idx[k],idx[j],tmp);
-	  ik = i[idx[k]];
-	}
+        if (gt) {
+          SWAP(idx[k],idx[j],tmp);
+          ik = i[idx[k]];
+        }
       }
     }
   } else {

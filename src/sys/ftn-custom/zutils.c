@@ -1,6 +1,6 @@
-#include "private/fortranimpl.h" 
+#include <petsc-private/fortranimpl.h>
 
-void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
+void *PETSCNULLPOINTERADDRESS = NULL;
 
 /*MC
    PetscFortranAddr - a variable type in Fortran that can hold a
@@ -22,20 +22,20 @@ M*/
 M*/
 
 /*
-    This is code for translating PETSc memory addresses to integer offsets 
+    This is code for translating PETSc memory addresses to integer offsets
     for Fortran.
 */
-char   *PETSC_NULL_CHARACTER_Fortran = 0;
-void   *PETSC_NULL_INTEGER_Fortran   = 0;
-void   *PETSC_NULL_OBJECT_Fortran    = 0;
-void   *PETSC_NULL_Fortran           = 0;
-void   *PETSC_NULL_SCALAR_Fortran    = 0;
-void   *PETSC_NULL_DOUBLE_Fortran    = 0;
-void   *PETSC_NULL_REAL_Fortran      = 0;
-void   *PETSC_NULL_TRUTH_Fortran     = 0;
+char *PETSC_NULL_CHARACTER_Fortran = 0;
+void *PETSC_NULL_INTEGER_Fortran   = 0;
+void *PETSC_NULL_OBJECT_Fortran    = 0;
+void *PETSC_NULL_SCALAR_Fortran    = 0;
+void *PETSC_NULL_DOUBLE_Fortran    = 0;
+void *PETSC_NULL_REAL_Fortran      = 0;
+void *PETSC_NULL_BOOL_Fortran      = 0;
 EXTERN_C_BEGIN
-void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
+void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
+
 size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
   size_t tmp1 = (size_t) base,tmp2 = 0;
@@ -96,7 +96,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
     itmp2 = (size_t) tmp2;
     shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
-  } else {  
+  } else {
     tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
     itmp2 = -((size_t) tmp2);
     shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
@@ -105,15 +105,15 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1);
     itmp2 = (size_t) tmp2;
-  } else {  
+  } else {
     tmp2  = (tmp1 - tmp3);
     itmp2 = -((size_t) tmp2);
   }
   shift = 0;
 #endif
 
-  if (shift) { 
-    /* 
+  if (shift) {
+    /*
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
@@ -121,13 +121,13 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     PetscScalar    *work;
     PetscContainer container;
 
-    ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
+    ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr);
 
     /* recompute shift for newly allocated space */
     tmp3 = (size_t) work;
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
       shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
-    } else {  
+    } else {
       shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
     }
 
@@ -137,7 +137,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
 
     /* store in the first location in addr how much you shift it */
     ((PetscInt*)addr)[0] = shift;
- 
+
     ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,addr);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
       tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
       itmp2 = (size_t) tmp2;
       shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
-    } else {  
+    } else {
       tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
       itmp2 = -((size_t) tmp2);
       shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
@@ -155,9 +155,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
-      /* double/int doesn't work with ADIC */
-      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",
-                         ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
+      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
@@ -174,7 +172,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     N    - the amount of data
 
     lx   - the array space that is to be passed to XXXXRestoreArray()
-*/     
+*/
 PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,size_t addr,PetscInt N,PetscScalar **lx)
 {
   PetscErrorCode ierr;
@@ -182,16 +180,17 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
   PetscContainer container;
   PetscScalar    *tlx;
 
-  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
-    tlx   = base + addr;
+    ierr = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
+    tlx  = base + addr;
 
     shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
-    tlx   = (PetscScalar*)(((char *)tlx) - shift);
+    tlx   = (PetscScalar*)(((char*)tlx) - shift);
+
     ierr = PetscFree(tlx);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
   } else {
     *lx = base + addr;
@@ -207,17 +206,15 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 #define petscisinfornanreal_            petscisinfornanreal
 #endif
 
-EXTERN_C_BEGIN
-PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
+PETSC_EXTERN PetscBool PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return (PetscTruth) PetscIsInfOrNanScalar(*v);
+  return (PetscBool) PetscIsInfOrNanScalar(*v);
 }
 
-PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+PETSC_EXTERN PetscBool PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
-  return (PetscTruth) PetscIsInfOrNanReal(*v);
+  return (PetscBool) PetscIsInfOrNanReal(*v);
 }
-EXTERN_C_END
 
 
 

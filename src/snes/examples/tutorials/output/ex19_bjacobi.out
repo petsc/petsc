@@ -1,0 +1,5 @@
+lid velocity = 0.000416493, prandtl # = 1, grashof # = 1
+  0 SNES Function norm 0.0205982 
+  1 SNES Function norm 1.75092e-06 
+  2 SNES Function norm 1.662e-11 
+Number of SNES iterations = 2

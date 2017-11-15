@@ -5,9 +5,9 @@
       program main
        implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
 
       PetscErrorCode ierr
       PetscInt  n
@@ -17,10 +17,10 @@
       Vec     v
       PetscInt i
       PetscOffset i_v1,i_v2
-      
+
       n=8
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr) 
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .gt. 1) then
         print*,'Example for one processor only'
         call MPI_Abort(MPI_COMM_WORLD,0,ierr)
@@ -46,8 +46,8 @@
 
       call VecDestroy(v,ierr)
       call PetscFinalize(ierr)
-      
+
       end
- 
+
 
 

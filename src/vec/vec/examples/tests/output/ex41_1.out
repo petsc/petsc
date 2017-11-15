@@ -1,0 +1,269 @@
+============== test_vec_ops ==============
+a = [c d] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    1
+    1
+    1
+    1
+  (1) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    2
+    2
+    2
+    2
+a = [d c] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    2
+    2
+    2
+    2
+  (1) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    1
+    1
+    1
+    1
+b = [e f] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    3
+    3
+    3
+    3
+  (1) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    4
+    4
+    4
+    4
+b = [f e] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    4
+    4
+    4
+    4
+  (1) : type=mpi, rows=4 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    3
+    3
+    3
+    3
+X = [a b] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        2
+        2
+        2
+        2
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        1
+        1
+        1
+        1
+  (1) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        4
+        4
+        4
+        4
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        3
+        3
+        3
+        3
+X.X = 120.000000 
+X = [b a] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        4
+        4
+        4
+        4
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        3
+        3
+        3
+        3
+  (1) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        2
+        2
+        2
+        2
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        1
+        1
+        1
+        1
+X.X = 120.000000 
+X = [g h] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=8 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    6
+    6
+    6
+    6
+    6
+    6
+    6
+    6
+  (1) : type=mpi, rows=6 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    5
+    5
+    5
+    5
+    5
+    5
+X.X = 438.000000 
+Y = X 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=mpi, rows=8 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    6
+    6
+    6
+    6
+    6
+    6
+    6
+    6
+  (1) : type=mpi, rows=6 
+    Vector Object:     1 MPI processes
+      type: mpi
+    Process [0]
+    5
+    5
+    5
+    5
+    5
+    5
+Y.Y = 438.000000 
+Y = [a b] 
+Vector Object:
+  type=nest, rows=2 
+  VecNest  structure: 
+  (0) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        2
+        2
+        2
+        2
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        1
+        1
+        1
+        1
+  (1) : type=nest, rows=8 
+    Vector Object:
+      type=nest, rows=2 
+      VecNest  structure: 
+      (0) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        4
+        4
+        4
+        4
+      (1) : type=mpi, rows=4 
+        Vector Object:         1 MPI processes
+          type: mpi
+        Process [0]
+        3
+        3
+        3
+        3

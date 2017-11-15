@@ -1,0 +1,55 @@
+[?1h=
+                                                               < M A T L A B (R) >
+                                                     Copyright 1984-2010 The MathWorks, Inc.
+                                                    Version 7.10.0.499 (R2010a) 32-bit (maci)
+                                                                 February 5, 2010
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+>> 
+ans =
+
+   All zero sparse: 36-by-36
+
+
+ans =
+
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+     0
+

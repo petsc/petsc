@@ -1,20 +1,19 @@
-#define PETSCMAT_DLL
 /* ido.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
-#include "../src/mat/color/color.h"
+#include <../src/mat/color/color.h>
 
 static PetscInt c_n1 = -1;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKido" 
-PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKido"
+PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt * ipntr,PetscInt * ndeg,
                PetscInt *list,PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2, i__3, i__4;
+  /* System generated locals */
+  PetscInt i__1, i__2, i__3, i__4;
 
-    /* Local variables */
-    PetscInt jcol = 0, ncomp = 0, ic, ip, jp, ir, maxinc, numinc, numord, maxlst, numwgt, numlst;
+  /* Local variables */
+  PetscInt jcol = 0, ncomp = 0, ic, ip, jp, ir, maxinc, numinc, numord, maxlst, numwgt, numlst;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines an incidence-degree ordering of the */
@@ -69,21 +68,21 @@ PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * 
 
 /*     Sort the degree sequence. */
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --iwa4;
-    --iwa3;
-    --iwa2;
-    --list;
-    --ndeg;
-    --ipntr;
-    --indcol;
-    --jpntr;
-    --indrow;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --iwa4;
+  --iwa3;
+  --iwa2;
+  --list;
+  --ndeg;
+  --ipntr;
+  --indcol;
+  --jpntr;
+  --indrow;
 
-    /* Function Body */
-    i__1 = *n - 1;
-    MINPACKnumsrt(n, &i__1, &ndeg[1], &c_n1, &iwa4[1], &iwa2[1], &iwa3[1]);
+  /* Function Body */
+  i__1 = *n - 1;
+  MINPACKnumsrt(n, &i__1, &ndeg[1], &c_n1, &iwa4[1], &iwa2[1], &iwa3[1]);
 
 /*     Initialization block. */
 /*     Create a doubly-linked list to access the incidences of the */
@@ -104,33 +103,31 @@ PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * 
 /*     columns. If jcol is an ordered column, then list(jcol) */
 /*     is the incidence-degree order of column jcol. */
 
-    maxinc = 0;
-    for (jp = *n; jp >= 1; --jp) {
-	ic = iwa4[jp];
-	iwa1[*n - jp] = 0;
-	iwa2[ic] = 0;
-	iwa3[ic] = iwa1[0];
-	if (iwa1[0] > 0) {
-	    iwa2[iwa1[0]] = ic;
-	}
-	iwa1[0] = ic;
-	iwa4[jp] = 0;
-	list[jp] = 0;
-    }
+  maxinc = 0;
+  for (jp = *n; jp >= 1; --jp) {
+    ic            = iwa4[jp];
+    iwa1[*n - jp] = 0;
+    iwa2[ic]      = 0;
+    iwa3[ic]      = iwa1[0];
+    if (iwa1[0] > 0) iwa2[iwa1[0]] = ic;
+    iwa1[0]  = ic;
+    iwa4[jp] = 0;
+    list[jp] = 0;
+  }
 
 /*     Determine the maximal search length for the list */
 /*     of columns of maximal incidence. */
 
-    maxlst = 0;
-    i__1 = *m;
-    for (ir = 1; ir <= i__1; ++ir) {
+  maxlst = 0;
+  i__1   = *m;
+  for (ir = 1; ir <= i__1; ++ir) {
 /* Computing 2nd power */
-	i__2 = ipntr[ir + 1] - ipntr[ir];
-	maxlst += i__2 * i__2;
-    }
-    maxlst /= *n;
-    *maxclq = 0;
-    numord = 1;
+    i__2    = ipntr[ir + 1] - ipntr[ir];
+    maxlst += i__2 * i__2;
+  }
+  maxlst /= *n;
+  *maxclq = 0;
+  numord  = 1;
 
 /*     Beginning of iteration loop. */
 
@@ -140,127 +137,103 @@ L30:
 /*        columns of maximal incidence maxinc. */
 
 L40:
-    jp = iwa1[maxinc];
-    if (jp > 0) {
-	goto L50;
-    }
-    --maxinc;
-    goto L40;
+  jp = iwa1[maxinc];
+  if (jp > 0) goto L50;
+  --maxinc;
+  goto L40;
 L50:
-    numwgt = -1;
-    i__1 = maxlst;
-    for (numlst = 1; numlst <= i__1; ++numlst) {
-	if (ndeg[jp] > numwgt) {
-	    numwgt = ndeg[jp];
-	    jcol = jp;
-	}
-	jp = iwa3[jp];
-	if (jp <= 0) {
-	    goto L70;
-	}
+  numwgt = -1;
+  i__1   = maxlst;
+  for (numlst = 1; numlst <= i__1; ++numlst) {
+    if (ndeg[jp] > numwgt) {
+      numwgt = ndeg[jp];
+      jcol   = jp;
     }
+    jp = iwa3[jp];
+    if (jp <= 0) goto L70;
+  }
 L70:
-    list[jcol] = numord;
+  list[jcol] = numord;
 
 /*        Update the size of the largest clique */
 /*        found during the ordering. */
 
-    if (!maxinc) {
-	ncomp = 0;
-    }
-    ++ncomp;
-    if (maxinc + 1 == ncomp) {
-	*maxclq = PetscMax(*maxclq,ncomp);
-    }
+  if (!maxinc) ncomp = 0;
+  ++ncomp;
+  if (maxinc + 1 == ncomp) *maxclq = PetscMax(*maxclq,ncomp);
 
 /*        Termination test. */
 
-    ++numord;
-    if (numord > *n) {
-	goto L100;
-    }
+  ++numord;
+  if (numord > *n) goto L100;
 
 /*        Delete column jcol from the maxinc list. */
 
-    if (!iwa2[jcol]) {
-	iwa1[maxinc] = iwa3[jcol];
-    } else {
-	iwa3[iwa2[jcol]] = iwa3[jcol];
-    }
-    if (iwa3[jcol] > 0) {
-	iwa2[iwa3[jcol]] = iwa2[jcol];
-    }
+  if (!iwa2[jcol]) iwa1[maxinc] = iwa3[jcol];
+  else iwa3[iwa2[jcol]] = iwa3[jcol];
+
+  if (iwa3[jcol] > 0) iwa2[iwa3[jcol]] = iwa2[jcol];
 
 /*        Find all columns adjacent to column jcol. */
 
-    iwa4[jcol] = *n;
+  iwa4[jcol] = *n;
 
 /*        Determine all positions (ir,jcol) which correspond */
 /*        to non-zeroes in the matrix. */
 
-    i__1 = jpntr[jcol + 1] - 1;
-    for (jp = jpntr[jcol]; jp <= i__1; ++jp) {
-	ir = indrow[jp];
+  i__1 = jpntr[jcol + 1] - 1;
+  for (jp = jpntr[jcol]; jp <= i__1; ++jp) {
+    ir = indrow[jp];
 
 /*           For each row ir, determine all positions (ir,ic) */
 /*           which correspond to non-zeroes in the matrix. */
 
-	i__2 = ipntr[ir + 1] - 1;
-	for (ip = ipntr[ir]; ip <= i__2; ++ip) {
-	    ic = indcol[ip];
+    i__2 = ipntr[ir + 1] - 1;
+    for (ip = ipntr[ir]; ip <= i__2; ++ip) {
+      ic = indcol[ip];
 
 /*              Array iwa4 marks columns which are adjacent to */
 /*              column jcol. */
 
-	    if (iwa4[ic] < numord) {
-		iwa4[ic] = numord;
+      if (iwa4[ic] < numord) {
+        iwa4[ic] = numord;
 
 /*                 Update the pointers to the current incidence lists. */
 
-		numinc = list[ic];
-		++list[ic];
+        numinc = list[ic];
+        ++list[ic];
 /* Computing MAX */
-		i__3 = maxinc, i__4 = list[ic];
-		maxinc = PetscMax(i__3,i__4);
+        i__3   = maxinc, i__4 = list[ic];
+        maxinc = PetscMax(i__3,i__4);
 
 /*                 Delete column ic from the numinc list. */
 
-		if (!iwa2[ic]) {
-		    iwa1[numinc] = iwa3[ic];
-		} else {
-		    iwa3[iwa2[ic]] = iwa3[ic];
-		}
-		if (iwa3[ic] > 0) {
-		    iwa2[iwa3[ic]] = iwa2[ic];
-		}
+        if (!iwa2[ic]) iwa1[numinc] = iwa3[ic];
+        else iwa3[iwa2[ic]] = iwa3[ic];
+
+        if (iwa3[ic] > 0) iwa2[iwa3[ic]] = iwa2[ic];
 
 /*                 Add column ic to the numinc+1 list. */
 
-		iwa2[ic] = 0;
-		iwa3[ic] = iwa1[numinc + 1];
-		if (iwa1[numinc + 1] > 0) {
-		    iwa2[iwa1[numinc + 1]] = ic;
-		}
-		iwa1[numinc + 1] = ic;
-	    }
-	}
+        iwa2[ic] = 0;
+        iwa3[ic] = iwa1[numinc + 1];
+        if (iwa1[numinc + 1] > 0) iwa2[iwa1[numinc + 1]] = ic;
+        iwa1[numinc + 1] = ic;
+      }
     }
+  }
 
 /*        End of iteration loop. */
 
-    goto L30;
+  goto L30;
 L100:
 
 /*     Invert the array list. */
 
-    i__1 = *n;
-    for (jcol = 1; jcol <= i__1; ++jcol) {
-	iwa2[list[jcol]] = jcol;
-    }
-    i__1 = *n;
-    for (jp = 1; jp <= i__1; ++jp) {
-	list[jp] = iwa2[jp];
-    }
-    PetscFunctionReturn(0);
+  i__1 = *n;
+  for (jcol = 1; jcol <= i__1; ++jcol) iwa2[list[jcol]] = jcol;
+  i__1 = *n;
+  for (jp = 1; jp <= i__1; ++jp) list[jp] = iwa2[jp];
+  PetscFunctionReturn(0);
 }
 

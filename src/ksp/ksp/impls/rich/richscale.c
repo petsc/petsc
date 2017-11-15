@@ -1,13 +1,12 @@
-#define PETSCKSP_DLL
 
-#include "private/kspimpl.h"         /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/rich/richardsonimpl.h"
+#include <petsc-private/kspimpl.h>         /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale"
 /*@
-    KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
+    KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor
     defaults to 1.0.
 
     Logically Collective on KSP
@@ -20,24 +19,21 @@
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
+PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveReal(ksp,scale,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPRichardsonSetScale_C",(KSP,PetscReal),(ksp,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetSelfScale"
 /*@
-    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the 
+    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the
        preconditioned residual
 
     Logically Collective on KSP
@@ -48,23 +44,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
     Level: intermediate
 
-    Notes: Requires two extra work vectors. Uses an extra axpy() and VecDotNorm2() per iteration.
+    Notes: Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
 
     Developer Notes: Could also minimize the 2-norm of the true residual with one less work vector
 
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP ksp,PetscTruth scale)
+PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool scale)
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscTruth);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,scale,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
-  }
+  PetscValidLogicalCollectiveBool(ksp,scale,2);
+  ierr = PetscTryMethod(ksp,"KSPRichardsonSetSelfScale_C",(KSP,PetscBool),(ksp,scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

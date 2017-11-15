@@ -2,13 +2,13 @@
 !  Progran to test random number generation routines from fortran.
 !
        program main
-#include "finclude/petscsys.h"
+#include <finclude/petscsys.h>
       PetscErrorCode  ierr
       PetscRandom     r
       PetscScalar     rand
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then 
+      if (ierr .ne. 0) then
          print*, 'Unable to begin PETSc program'
       endif
 

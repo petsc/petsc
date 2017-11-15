@@ -1,12 +1,10 @@
-# $Id: makefile,v 1.1 1999/03/30 22:50:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.1 1999/03/30 22:50:22 bsmith Exp bsmith $
 
-CFLAGS   = 
-FFLAGS   = 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = agglom.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = agglom.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/contrib/agglom/

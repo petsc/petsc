@@ -1,6 +1,4 @@
 !
-!     Program usage: mpiexec -n 2 ex4f [-help] [all PETSc options]
-!
 !     This introductory example illustrates running PETSc on a subset
 !     of processes
 !
@@ -13,7 +11,7 @@
 
       program main
       implicit none
-#include "finclude/petscsys.h"
+#include <finclude/petscsys.h>
       PetscErrorCode ierr
       PetscMPIInt    rank, size
 
@@ -41,7 +39,7 @@
 
 
 !     Here we would like to print only one message that represents all
-!     the processes in the group. 
+!     the processes in the group.
       if (rank .eq. 0) write(6,100) size,rank
  100  format("No of Procs = ",i4," rank = ",i4)
 

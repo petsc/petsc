@@ -2,16 +2,14 @@
 ALL: lib
 
 CFLAGS	 =
-FFLAGS	 = 
-CPPFLAGS = 
-FPPFLAGS = 
+FFLAGS	 =
+CPPFLAGS =
+FPPFLAGS =
 SOURCEC	 = mpisbaij.c mmsbaij.c sbaijov.c mpiaijsbaij.c
-SOURCEF	 = 
+SOURCEF	 =
 SOURCEH	 = mpisbaij.h
-OBJSC	 = mpisbaij.o mmsbaij.o sbaijov.o mpiaijsbaij.o
-OBJSF	 = 
 LIBBASE	 = libpetscmat
-DIRS	 = spooles
+DIRS	 = sbstream
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/mpi/
 

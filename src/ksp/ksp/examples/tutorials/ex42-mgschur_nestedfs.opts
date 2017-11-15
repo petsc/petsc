@@ -1,0 +1,38 @@
+#
+-stokes_ksp_type gcr
+-stokes_pc_type mg
+-levels 3
+#
+-stokes_mg_levels_ksp_type fgmres
+-stokes_mg_levels_ksp_max_it 1
+#
+-stokes_mg_levels_pc_type fieldsplit 
+-stokes_mg_levels_pc_fieldsplit_block_size 4
+-stokes_mg_levels_pc_fieldsplit_0_fields 0,1,2
+-stokes_mg_levels_pc_fieldsplit_1_fields 3
+#
+-stokes_mg_levels_pc_fieldsplit_type SCHUR
+-stokes_mg_levels_pc_fieldsplit_schur_precondition USER
+-stokes_mg_levels_pc_fieldsplit_schur_fact_type UPPER
+#
+# Apply Q^{-1} only
+-stokes_mg_levels_fieldsplit_1_ksp_type preonly
+-stokes_mg_levels_fieldsplit_1_pc_type jacobi
+#
+# direct solver for B(1,1)
+# iterative solve on B(1,1)
+-stokes_mg_levels_fieldsplit_0_ksp_type cg
+-stokes_mg_levels_fieldsplit_0_ksp_rtol 1.0e-10
+-stokes_mg_levels_fieldsplit_0_ksp_max_it 1
+-stokes_mg_levels_fieldsplit_0_pc_type fieldsplit
+-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_block_size 3
+-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_type cg
+-stokes_mg_levels_fieldsplit_0_fieldsplit_ksp_max_it 10
+-stokes_mg_levels_fieldsplit_0_fieldsplit_pc_type jacobi
+
+-stokes_mg_levels_fieldsplit_0_pc_fieldsplit_type ADDITIVE
+##
+-stokes_ksp_monitor_blocks
+-mx 16
+-model 3
+

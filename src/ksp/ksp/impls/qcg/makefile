@@ -1,15 +1,13 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = qcg.c
 SOURCEF  =
-SOURCEH  = qcgimpl.h 
-OBJSC    = qcg.o
-OBJSF    =
+SOURCEH  = qcgimpl.h
 LIBBASE  = libpetscksp
-LINCLUDE = 
+LINCLUDE =
 LOCDIR   = src/ksp/ksp/impls/qcg/
 MANSEC   = KSP
 

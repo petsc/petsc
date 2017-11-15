@@ -2,7 +2,5 @@
 #
 set MACH=n-gage
 set USR=petsc
-set LOC=/export/home/petsc/petsc-dev-3
-set CONF=arch-opensolaris-cxx-cmplx-pkgs-dbg
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
-set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
+set LOC=/export/home/petsc/${RNAME}-3
+set CONF=arch-opensolaris-cmplx-pkgs-dbg

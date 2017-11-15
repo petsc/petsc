@@ -3,23 +3,25 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.2alpha3.tar.gz']
-    self.functions = ['fftw_malloc'] 
-    self.includes  = ['fftw3.h']  
+    # host locally as fftw.org url can expire after new release.
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.3.2.tar.gz','http://www.fftw.org/fftw-3.3.2.tar.gz']
+    self.functions = ['fftw_malloc']
+    self.includes  = ['fftw3-mpi.h']
     self.liblist   = [['libfftw3_mpi.a','libfftw3.a']]
     self.complex   = 1
+    self.pkgname   = 'fftw3'
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
-          
+
   def Install(self):
     import os
 
     args = ['--prefix='+self.installDir]
-
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args.append('CC="'+self.framework.getCompiler()+'"')
@@ -44,6 +46,10 @@ class Configure(PETSc.package.NewPackage):
     if self.mpi.lib:
       args.append('LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
+    # Also build the single precision library
+    #   in order to do this, I will have to build two separate versions with different flags (thank you crap GNU buildsystem)
+    # args.append('--enable-single')
+
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'fftw'), 'w')
     fd.write(args)
@@ -62,10 +68,3 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on FFTW: '+str(e))
       self.postInstall(output1+err1+output2+err2,'fftw')
     return self.installDir
-
-  def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
-      if not self.scalartypes.scalartype.lower() == 'complex':
-        raise RuntimeError('FFTW requires the complex precision, run ./configure --with-scalar-type=complex')
-    return

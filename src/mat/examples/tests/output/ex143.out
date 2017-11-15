@@ -1,0 +1,4 @@
+Use PETSc-FFTW interface...1-DIM:30 
+Use PETSc-FFTW interface...2-DIM:900 
+Use PETSc-FFTW interface...3-DIM:27000 
+Use PETSc-FFTW interface...4-DIM:810000 

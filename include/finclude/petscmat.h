@@ -14,7 +14,7 @@
 !
 !
 !
-      PetscEnum MAT_FACTOR_NONE 
+      PetscEnum MAT_FACTOR_NONE
       PetscEnum MAT_FACTOR_LU
       PetscEnum MAT_FACTOR_CHOLESKY
       PetscEnum MAT_FACTOR_ILU
@@ -28,10 +28,11 @@
       PetscEnum MAT_DO_NOT_GET_VALUES
       PetscEnum MAT_GET_VALUES
       parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
- 
+
 !
 !  Matrix options; must match those in include/petscmat.h
 !
+      PetscEnum MAT_OPTION_MIN
       PetscEnum MAT_ROW_ORIENTED
       PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
@@ -46,7 +47,7 @@
       PetscEnum MAT_USE_INODES
       PetscEnum MAT_HERMITIAN
       PetscEnum MAT_SYMMETRY_ETERNAL
-      PetscEnum MAT_USE_COMPRESSEDROW
+      PetscEnum MAT_CHECK_COMPRESSED_ROW
       PetscEnum MAT_IGNORE_LOWER_TRIANGULAR
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
@@ -54,31 +55,44 @@
       PetscEnum MAT_SPD
       PetscEnum MAT_NO_OFF_PROC_ENTRIES
       PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
-      PetscEnum NUM_MAT_OPTIONS
+      PetscEnum MAT_DIAGBLOCK_CSR
+      PetscEnum MAT_OFFDIAGBLOCK_CSR
+      PetscEnum MAT_CSR
+      PetscEnum MAT_DIAGBLOCK_DIA
+      PetscEnum MAT_OFFDIAGBLOCK_DIA
+      PetscEnum MAT_DIA
+      PetscEnum MAT_DIAGBLOCK_ELL
+      PetscEnum MAT_OFFDIAGBLOCK_ELL
+      PetscEnum MAT_ELL
+      PetscEnum MAT_DIAGBLOCK_HYB
+      PetscEnum MAT_OFFDIAGBLOCK_HYB
+      PetscEnum MAT_HYB
+      PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_ROW_ORIENTED=0)
-      parameter (MAT_NEW_NONZERO_LOCATIONS=1)
-      parameter (MAT_SYMMETRIC=2,MAT_STRUCTURALLY_SYMMETRIC=3)
-      parameter (MAT_NEW_DIAGONALS=4)
-      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
-      parameter (MAT_USE_HASH_TABLE=8)
-      parameter (MAT_KEEP_NONZERO_PATTERN=9)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=10)
-      parameter (MAT_USE_INODES=11)
-      parameter (MAT_HERMITIAN=12)
-      parameter (MAT_SYMMETRY_ETERNAL=13)
-      parameter (MAT_USE_COMPRESSEDROW=14)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=17)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
-      parameter (MAT_SPD=19)
-      parameter (MAT_NO_OFF_PROC_ENTRIES=20)
-      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (NUM_MAT_OPTIONS=20)
- 
+      parameter (MAT_OPTION_MIN=-7)
+      parameter (MAT_ROW_ORIENTED=-2)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=-1)
+      parameter (MAT_SYMMETRIC=1)
+      parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
+      parameter (MAT_NEW_DIAGONALS=3)
+      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=4)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-7)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-3)
+      parameter (MAT_USE_HASH_TABLE=5)
+      parameter (MAT_KEEP_NONZERO_PATTERN=6)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=7)
+      parameter (MAT_USE_INODES=8)
+      parameter (MAT_HERMITIAN=9)
+      parameter (MAT_SYMMETRY_ETERNAL=10)
+      parameter (MAT_CHECK_COMPRESSED_ROW=11)
+      parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
+      parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
+      parameter (MAT_GETROW_UPPERTRIANGULAR=14)
+      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-4)
+      parameter (MAT_SPD=15)
+      parameter (MAT_NO_OFF_PROC_ENTRIES=-5)
+      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=-6)
+      parameter (MAT_OPTION_MAX=16)
 !
 !  MatFactorShiftType
 !
@@ -102,13 +116,13 @@
 !
 !  Flags for PCSetOperators()
 !
-      PetscEnum SAME_NONZERO_PATTERN
       PetscEnum DIFFERENT_NONZERO_PATTERN
-      PetscEnum SAME_PRECONDITIONER
       PetscEnum SUBSET_NONZERO_PATTERN
+      PetscEnum SAME_NONZERO_PATTERN
+      PetscEnum SAME_PRECONDITIONER
 
-      parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
-      parameter (SAME_PRECONDITIONER = 2,SUBSET_NONZERO_PATTERN=3)
+      parameter (DIFFERENT_NONZERO_PATTERN = 0,SUBSET_NONZERO_PATTERN=1)
+      parameter (SAME_NONZERO_PATTERN = 2,SAME_PRECONDITIONER = 3)
 #if !(PETSC_USE_FORTRAN_DATATYPES_)
 #include "finclude/petscmatinfosize.h"
 #endif
@@ -271,9 +285,9 @@
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
       PetscEnum MATOP_CONVERT_FROM
-      PetscEnum MATOP_USE_SCALED_FORM
-      PetscEnum MATOP_SCALE_SYSTEM
-      PetscEnum MATOP_UNSCALE_SYSTEM
+      PetscEnum MATOP_MATMAT_MULT
+      PetscEnum MATOP_MATMAT_MULT_SYMBOLIC
+      PetscEnum MATOP_MATMAT_MULT_NUMERIC
       PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
@@ -281,12 +295,12 @@
       PetscEnum MATOP_GET_ROW_MIN_ABS
       PetscEnum MATOP_CONVERT
       PetscEnum MATOP_SET_COLORING
-      PetscEnum MATOP_SET_VALUES_ADIC
+      PetscEnum MATOP_PLACEHOLDER
       PetscEnum MATOP_SET_VALUES_ADIFOR
       PetscEnum MATOP_FD_COLORING_APPLY
       PetscEnum MATOP_SET_FROM_OPTIONS
-      PetscEnum MATOP_MULT_CON
-      PetscEnum MATOP_MULT_TRANSPOSE_CON
+      PetscEnum MATOP_MULT_CONSTRAINED
+      PetscEnum MATOP_MULT_TRANSPOSE_CONSTRAIN
       PetscEnum MATOP_PERMUTE_SPARSIFY
       PetscEnum MATOP_MULT_MULTIPLE
       PetscEnum MATOP_SOLVE_MULTIPLE
@@ -303,33 +317,40 @@
       PetscEnum MATOP_PTAP
       PetscEnum MATOP_PTAP_SYMBOLIC
       PetscEnum MATOP_PTAP_NUMERIC
-      PetscEnum MATOP_MAT_MULTTRANSPOSE
-      PetscEnum MATOP_MAT_MULTTRANSPOSE_SYM
-      PetscEnum MATOP_MAT_MULTTRANSPOSE_NUM
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT_SYMBO
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT_NUMER
       PetscEnum MATOP_PTAP_SYMBOLIC_SEQAIJ
       PetscEnum MATOP_PTAP_NUMERIC_SEQAIJ
       PetscEnum MATOP_PTAP_SYMBOLIC_MPIAIJ
       PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
       PetscEnum MATOP_CONJUGATE
       PetscEnum MATOP_SET_SIZES
-      PetscEnum MATOP_SET_VALUES_ROW 
+      PetscEnum MATOP_SET_VALUES_ROW
       PetscEnum MATOP_REAL_PART
-      PetscEnum MATOP_IMAG_PART
-      PetscEnum MATOP_GET_ROW_UTRIANGULAR
-      PetscEnum MATOP_RESTORE_ROW_UTRIANGULAR
-      PetscEnum MATOP_MATSOLVE
-      PetscEnum MATOP_GET_REDUNDANTMATRIX
+      PetscEnum MATOP_IMAGINARY_PART
+      PetscEnum MATOP_GET_ROW_UPPER_TRIANGULAR
+      PetscEnum MATOP_RESTORE_ROW_UPPER_TRIANG
+      PetscEnum MATOP_MAT_SOLVE
+      PetscEnum MATOP_GET_REDUNDANT_MATRIX
       PetscEnum MATOP_GET_ROW_MIN
-      PetscEnum MATOP_GET_COLUMN_VEC
+      PetscEnum MATOP_GET_COLUMN_VECTOR
       PetscEnum MATOP_MISSING_DIAGONAL
-      PetscEnum MATOP_MATGETSEQNONZEROSTRUCTURE
+      PetscEnum MATOP_GET_SEQ_NONZERO_STRUCTUR
       PetscEnum MATOP_CREATE
       PetscEnum MATOP_GET_GHOSTS
+      PetscEnum MATOP_GET_LOCAL_SUB_MATRIX
+      PetscEnum MATOP_RESTORE_LOCALSUB_MATRIX
       PetscEnum MATOP_MULT_DIAGONAL_BLOCK
-      PetscEnum MATOP_HERMITIANTRANSPOSE
-      PetscEnum MATOP_MULTHERMITIANTRANSPOSE
-      PetscEnum MATOP_MULTHERMITIANTRANSPOSEADD
-      PetscEnum MATOP_GETMULTIPROCBLOCK
+      PetscEnum MATOP_HERMITIAN_TRANSPOSE
+      PetscEnum MATOP_MULT_HERMITIAN_TRANSPOSE
+      PetscEnum MATOP_MULT_HERMITIAN_TRANS_ADD
+      PetscEnum MATOP_GET_MULTI_PROC_BLOCK
+      PetscEnum MATOP_GET_COLUMN_NORMS
+      PetscEnum MATOP_GET_SUB_MATRICES_PARALLE
+      PetscEnum MATOP_SET_VALUES_BATCH
+      PetscEnum MATOP_SET_BLOCK_SIZES
+      PetscEnum MATOP_AYPX
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -394,9 +415,9 @@
       parameter(MATOP_DESTROY=60)
       parameter(MATOP_VIEW=61)
       parameter(MATOP_CONVERT_FROM=62)
-      parameter(MATOP_USE_SCALED_FORM=63)
-      parameter(MATOP_SCALE_SYSTEM=64)
-      parameter(MATOP_UNSCALE_SYSTEM=65)
+      parameter(MATOP_MATMAT_MULT=63)
+      parameter(MATOP_MATMAT_MULT_SYMBOLIC=64)
+      parameter(MATOP_MATMAT_MULT_NUMERIC=65)
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=66)
       parameter(MATOP_SET_VALUES_LOCAL=67)
       parameter(MATOP_ZERO_ROWS_LOCAL=68)
@@ -404,12 +425,12 @@
       parameter(MATOP_GET_ROW_MIN_ABS=70)
       parameter(MATOP_CONVERT=71)
       parameter(MATOP_SET_COLORING=72)
-      parameter(MATOP_SET_VALUES_ADIC=73)
+      parameter(MATOP_PLACEHOLDER=73)
       parameter(MATOP_SET_VALUES_ADIFOR=74)
       parameter(MATOP_FD_COLORING_APPLY=75)
       parameter(MATOP_SET_FROM_OPTIONS=76)
-      parameter(MATOP_MULT_CON=77)
-      parameter(MATOP_MULT_TRANSPOSE_CON=78)
+      parameter(MATOP_MULT_CONSTRAINED=77)
+      parameter(MATOP_MULT_TRANSPOSE_CONSTRAIN=78)
       parameter(MATOP_PERMUTE_SPARSIFY=79)
       parameter(MATOP_MULT_MULTIPLE=80)
       parameter(MATOP_SOLVE_MULTIPLE=81)
@@ -426,9 +447,9 @@
       parameter(MATOP_PTAP=92)
       parameter(MATOP_PTAP_SYMBOLIC=93)
       parameter(MATOP_PTAP_NUMERIC=94)
-      parameter(MATOP_MAT_MULTTRANSPOSE=95)
-      parameter(MATOP_MAT_MULTTRANSPOSE_SYM=96)
-      parameter(MATOP_MAT_MULTTRANSPOSE_NUM=97)
+      parameter(MATOP_MAT_TRANSPOSE_MULT=95)
+      parameter(MATOP_MAT_TRANSPOSE_MULT_SYMBO=96)
+      parameter(MATOP_MAT_TRANSPOSE_MULT_NUMER=97)
       parameter(MATOP_PTAP_SYMBOLIC_SEQAIJ=98)
       parameter(MATOP_PTAP_NUMERIC_SEQAIJ=99)
       parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=100)
@@ -437,24 +458,31 @@
       parameter(MATOP_SET_SIZES=103)
       parameter(MATOP_SET_VALUES_ROW=104)
       parameter(MATOP_REAL_PART=105)
-      parameter(MATOP_IMAG_PART=106)
-      parameter(MATOP_GET_ROW_UTRIANGULAR=107)
-      parameter(MATOP_RESTORE_ROW_UTRIANGULAR=108)
-      parameter(MATOP_MATSOLVE=109)
-      parameter(MATOP_GET_REDUNDANTMATRIX=110)
+      parameter(MATOP_IMAGINARY_PART=106)
+      parameter(MATOP_GET_ROW_UPPER_TRIANGULAR=107)
+      parameter(MATOP_RESTORE_ROW_UPPER_TRIANG=108)
+      parameter(MATOP_MAT_SOLVE=109)
+      parameter(MATOP_GET_REDUNDANT_MATRIX=110)
       parameter(MATOP_GET_ROW_MIN=111)
-      parameter(MATOP_GET_COLUMN_VEC=112)
+      parameter(MATOP_GET_COLUMN_VECTOR=112)
       parameter(MATOP_MISSING_DIAGONAL=113)
-      parameter(MATOP_MATGETSEQNONZEROSTRUCTURE=114)
+      parameter(MATOP_GET_SEQ_NONZERO_STRUCTUR=114)
       parameter(MATOP_CREATE=115)
       parameter(MATOP_GET_GHOSTS=116)
+      parameter(MATOP_GET_LOCAL_SUB_MATRIX=117)
+      parameter(MATOP_RESTORE_LOCALSUB_MATRIX=118)
       parameter(MATOP_MULT_DIAGONAL_BLOCK=119)
-      parameter(MATOP_HERMITIANTRANSPOSE=120)
-      parameter(MATOP_MULTHERMITIANTRANSPOSE=121)
-      parameter(MATOP_MULTHERMITIANTRANSPOSEADD=122)
-      parameter(MATOP_GETMULTIPROCBLOCK=123)
+      parameter(MATOP_HERMITIAN_TRANSPOSE=120)
+      parameter(MATOP_MULT_HERMITIAN_TRANSPOSE=121)
+      parameter(MATOP_MULT_HERMITIAN_TRANS_ADD=122)
+      parameter(MATOP_GET_MULTI_PROC_BLOCK=123)
+      parameter(MATOP_GET_COLUMN_NORMS=125)
+      parameter(MATOP_GET_SUB_MATRICES_PARALLE=128)
+      parameter(MATOP_SET_VALUES_BATCH=129)
+      parameter(MATOP_SET_BLOCK_SIZES=139)
+      parameter(MATOP_AYPX=140)
 !
-!  
+!
 !
       PetscEnum MATRIX_BINARY_FORMAT_DENSE
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
@@ -479,16 +507,17 @@
       PetscEnum MP_CHACO_RQI_SYMMLQ
       parameter (MP_CHACO_LANCZOS=0, MP_CHACO_RQI_SYMMLQ=1)
 !
-! MPScotchGlobalType
-      PetscEnum MP_SCOTCH_GREEDY
-      PetscEnum MP_SCOTCH_GPS
-      PetscEnum MP_SCOTCH_GR_GPS
-      parameter (MP_SCOTCH_GREEDY=0,MP_SCOTCH_GPS=1,MP_SCOTCH_GR_GPS=2)
-
-! MPScotchLocalType
-      PetscEnum MP_SCOTCH_KERNIGHAN_LIN
-      PetscEnum MP_SCOTCH_NONE
-      parameter (MP_SCOTCH_KERNIGHAN_LIN=0, MP_SCOTCH_NONE=1)
+! MPPTScotchStrategyType
+      PetscEnum MP_PTSCOTCH_QUALITY
+      PetscEnum MP_PTSCOTCH_SPEED
+      PetscEnum MP_PTSCOTCH_BALANCE
+      PetscEnum MP_PTSCOTCH_SAFETY
+      PetscEnum MP_PTSCOTCH_SCALABILITY
+      parameter (MP_PTSCOTCH_QUALITY = 0)
+      parameter (MP_PTSCOTCH_SPEED = 1)
+      parameter (MP_PTSCOTCH_BALANCE = 2)
+      parameter (MP_PTSCOTCH_SAFETY = 3)
+      parameter (MP_PTSCOTCH_SCALABILITY = 4)
 
 ! PetscScalarPrecision
       PetscEnum PETSC_SCALAR_DOUBLE
@@ -497,6 +526,49 @@
       parameter (PETSC_SCALAR_DOUBLE=0,PETSC_SCALAR_SINGLE=1)
       parameter (PETSC_SCALAR_LONG_DOUBLE=2)
 
+
+!
+!     CUSP enumerated types
+!
+#if defined(PETSC_HAVE_CUSP)
+      PetscEnum MAT_CUSP_CSR
+      PetscEnum MAT_CUSP_DIA
+      PetscEnum MAT_CUSP_ELL
+      parameter(MAT_CUSP_CSR=0,MAT_CUSP_DIA=1)
+      parameter(MAT_CUSP_ELL=2)
+      PetscEnum MAT_CUSP_MULT_DIAG
+      PetscEnum MAT_CUSP_MULT_OFFDIAG
+      PetscEnum MAT_CUSP_MULT
+      PetscEnum MAT_CUSP_SOLVE
+      PetscEnum MAT_CUSP_ALL
+      parameter(MAT_CUSP_MULT_DIAG=0)
+      parameter(MAT_CUSP_MULT_OFFDIAG=1)
+      parameter(MAT_CUSP_MULT=2)
+      parameter(MAT_CUSP_SOLVE=3)
+      parameter(MAT_CUSP_ALL=4)
+#endif
+
+
+!
+!     CUSPARSE enumerated types
+!
+#if defined(PETSC_HAVE_TXPETSCGPU)
+      PetscEnum MAT_CUSPARSE_CSR
+      PetscEnum MAT_CUSPARSE_ELL
+      PetscEnum MAT_CUSPARSE_HYB
+      parameter(MAT_CUSPARSE_CSR=0,MAT_CUSPARSE_ELL=1)
+      parameter(MAT_CUSPARSE_HYB=2)
+      PetscEnum MAT_CUSPARSE_MULT_DIAG
+      PetscEnum MAT_CUSPARSE_MULT_OFFDIAG
+      PetscEnum MAT_CUSPARSE_MULT
+      PetscEnum MAT_CUSPARSE_SOLVE
+      PetscEnum MAT_CUSPARSE_ALL
+      parameter(MAT_CUSPARSE_MULT_DIAG=0)
+      parameter(MAT_CUSPARSE_MULT_OFFDIAG=1)
+      parameter(MAT_CUSPARSE_MULT=2)
+      parameter(MAT_CUSPARSE_SOLVE=3)
+      parameter(MAT_CUSPARSE_ALL=4)
+#endif
 !
 !  End of Fortran include file for the Mat package in PETSc
 !

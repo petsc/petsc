@@ -1,0 +1,523 @@
+#include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
+#include <petscblaslapack.h>
+
+const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
+const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_NGMRES"
+PetscErrorCode SNESReset_NGMRES(SNES snes)
+{
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroyVecs(ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);
+  ierr = SNESLineSearchDestroy(&ngmres->additive_linesearch);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESDestroy_NGMRES"
+PetscErrorCode SNESDestroy_NGMRES(SNES snes)
+{
+  PetscErrorCode ierr;
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*)snes->data;
+
+  PetscFunctionBegin;
+  ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
+  ierr = PetscFree5(ngmres->h,ngmres->beta,ngmres->xi,ngmres->fnorms,ngmres->q);CHKERRQ(ierr);
+  ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
+  ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
+#if PETSC_USE_COMPLEX
+  ierr = PetscFree(ngmres->rwork);CHKERRQ(ierr);
+#endif
+  ierr = PetscFree(ngmres->work);CHKERRQ(ierr);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetUp_NGMRES"
+PetscErrorCode SNESSetUp_NGMRES(SNES snes)
+{
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
+  const char     *optionsprefix;
+  PetscInt       msize,hsize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESSetWorkVecs(snes,5);CHKERRQ(ierr);
+  if (!ngmres->Xdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);}
+  if (!ngmres->Fdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);}
+  if (!ngmres->setup_called) {
+    msize = ngmres->msize;          /* restart size */
+    hsize = msize * msize;
+
+    /* explicit least squares minimization solve */
+    ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
+                        msize,PetscScalar,&ngmres->beta,
+                        msize,PetscScalar,&ngmres->xi,
+                        msize,PetscReal, &ngmres->fnorms,
+                        hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
+    if (ngmres->singlereduction) {
+      ierr = PetscMalloc(msize*sizeof(PetscReal),&ngmres->xnorms);CHKERRQ(ierr);
+    }
+    ngmres->nrhs  = 1;
+    ngmres->lda   = msize;
+    ngmres->ldb   = msize;
+    ierr          = PetscMalloc(msize*sizeof(PetscScalar),&ngmres->s);CHKERRQ(ierr);
+    ierr          = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr          = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr          = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr          = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
+    ngmres->lwork = 12*msize;
+#if PETSC_USE_COMPLEX
+    ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
+#endif
+    ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);CHKERRQ(ierr);
+  }
+
+  /* linesearch setup */
+  ierr = SNESGetOptionsPrefix(snes,&optionsprefix);CHKERRQ(ierr);
+
+  if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
+    ierr = SNESLineSearchCreate(PetscObjectComm((PetscObject)snes),&ngmres->additive_linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetSNES(ngmres->additive_linesearch,snes);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(ngmres->additive_linesearch,SNESLINESEARCHL2);CHKERRQ(ierr);
+    ierr = SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch,"additive_");CHKERRQ(ierr);
+    ierr = SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch,optionsprefix);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetFromOptions(ngmres->additive_linesearch);CHKERRQ(ierr);
+  }
+
+  ngmres->setup_called = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetFromOptions_NGMRES"
+PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
+{
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
+  PetscErrorCode ierr;
+  PetscBool      debug;
+  SNESLineSearch linesearch;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_ngmres_select_type","Select type","SNESNGMRESSetSelectType",SNESNGMRESSelectTypes,
+                          (PetscEnum)ngmres->select_type,(PetscEnum*)&ngmres->select_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_ngmres_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,
+                          (PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_candidate", "Use candidate storage",              "SNES",ngmres->candidate,&ngmres->candidate,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_approxfunc","Linearly approximate the function", "SNES",ngmres->approxfunc,&ngmres->approxfunc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_m",          "Number of directions",               "SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_restart",    "Iterations before forced restart",   "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngmres_restart_it", "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_monitor",   "Monitor actions of NGMRES",          "SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
+  if (debug) {
+    ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsReal("-snes_ngmres_gammaA",    "Residual selection constant",   "SNES",ngmres->gammaA,&ngmres->gammaA,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_gammaC",    "Residual restart constant",     "SNES",ngmres->gammaC,&ngmres->gammaC,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_epsilonB",  "Difference selection constant", "SNES",ngmres->epsilonB,&ngmres->epsilonB,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngmres_deltaB",    "Difference residual selection constant", "SNES",ngmres->deltaB,&ngmres->deltaB,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngmres_single_reduction", "Aggregate reductions",  "SNES",ngmres->singlereduction,&ngmres->singlereduction,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if ((ngmres->gammaA > ngmres->gammaC) && (ngmres->gammaC > 2.)) ngmres->gammaC = ngmres->gammaA;
+
+  /* set the default type of the line search if the user hasn't already. */
+  if (!snes->linesearch) {
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESView_NGMRES"
+PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
+{
+  SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of stored past updates: %d\n", ngmres->msize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n",ngmres->gammaA,ngmres->gammaC);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n",ngmres->epsilonB,ngmres->deltaB);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSolve_NGMRES"
+PetscErrorCode SNESSolve_NGMRES(SNES snes)
+{
+
+  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
+  /* present solution, residual, and preconditioned residual */
+  Vec X,F,B,D,Y;
+
+  /* candidate linear combination answers */
+  Vec XA,FA,XM,FM,FPC;
+
+  /* coefficients and RHS to the minimization problem */
+  PetscReal fnorm,fMnorm,fAnorm;
+  PetscInt  k,k_restart,l,ivec,restart_count = 0;
+
+  /* solution selection data */
+  PetscBool selectRestart;
+  PetscReal dnorm,dminnorm = 0.0;
+  PetscReal fminnorm,xnorm,ynorm;
+
+  SNESConvergedReason reason;
+  PetscBool           lssucceed;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  /* variable initialization */
+  snes->reason = SNES_CONVERGED_ITERATING;
+  X            = snes->vec_sol;
+  F            = snes->vec_func;
+  B            = snes->vec_rhs;
+  XA           = snes->vec_sol_update;
+  FA           = snes->work[0];
+  D            = snes->work[1];
+
+  /* work for the line search */
+  Y  = snes->work[2];
+  XM = snes->work[3];
+  FM = snes->work[4];
+
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  snes->iter = 0;
+  snes->norm = 0.;
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+
+  /* initialization */
+
+  /* r = F(x) */
+  if (!snes->vec_func_init_set) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
+  } else snes->vec_func_init_set = PETSC_FALSE;
+
+  if (!snes->norm_init_set) {
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
+  } else {
+    fnorm               = snes->norm_init;
+    snes->norm_init_set = PETSC_FALSE;
+  }
+  fminnorm = fnorm;
+
+  /* q_{00} = nu  */
+  SNESNGMRESUpdateSubspace_Private(snes,0,0,F,fnorm,X);
+
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  snes->norm = fnorm;
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr       = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
+
+  k_restart = 1;
+  l         = 1;
+  for (k=1; k < snes->max_its+1; k++) {
+    /* select which vector of the stored subspace will be updated */
+    ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
+
+    /* Computation of x^M */
+    if (snes->pc && snes->pcside == PC_RIGHT) {
+      ierr = VecCopy(X,XM);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->pc,F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunctionNorm(snes->pc,fnorm);CHKERRQ(ierr);
+
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->pc,B,XM);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
+
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecCopy(FPC,FM);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes->pc,&fMnorm);CHKERRQ(ierr);
+    } else {
+      /* no preconditioner -- just take gradient descent with line search */
+      ierr = VecCopy(F,Y);CHKERRQ(ierr);
+      ierr = VecCopy(F,FM);CHKERRQ(ierr);
+      ierr = VecCopy(X,XM);CHKERRQ(ierr);
+
+      fMnorm = fnorm;
+
+      ierr = SNESLineSearchApply(snes->linesearch,XM,FM,&fMnorm,Y);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetSuccess(snes->linesearch,&lssucceed);CHKERRQ(ierr);
+      if (!lssucceed) {
+        if (++snes->numFailures >= snes->maxFailures) {
+          snes->reason = SNES_DIVERGED_LINE_SEARCH;
+          PetscFunctionReturn(0);
+        }
+      }
+    }
+    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);CHKERRQ(ierr);
+    /* r = F(x) */
+    if (fminnorm > fMnorm) fminnorm = fMnorm;  /* the minimum norm is now of F^M */
+
+    /* differences for selection and restart */
+    if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE || ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
+      ierr = SNESNGMRESCalculateDifferences_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,&fAnorm);CHKERRQ(ierr);
+    } else {
+      ierr = VecNorm(FA,NORM_2,&fAnorm);CHKERRQ(ierr);
+    }
+    if (PetscIsInfOrNanReal(fAnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
+
+    /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
+    ierr          = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,fMnorm,XA,FA,fAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&fnorm);CHKERRQ(ierr);
+    selectRestart = PETSC_FALSE;
+    if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
+      ierr = SNESNGMRESSelectRestart_Private(snes,l,fAnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
+      /* if the restart conditions persist for more than restart_it iterations, restart. */
+      if (selectRestart) restart_count++;
+      else restart_count = 0;
+    } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
+      if (k_restart > ngmres->restart_periodic) {
+        if (ngmres->monitor) ierr = PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart);CHKERRQ(ierr);
+        restart_count = ngmres->restart_it;
+      }
+    }
+    /* restart after restart conditions have persisted for a fixed number of iterations */
+    if (restart_count >= ngmres->restart_it) {
+      if (ngmres->monitor) {
+        ierr = PetscViewerASCIIPrintf(ngmres->monitor,"Restarted at iteration %d\n",k_restart);CHKERRQ(ierr);
+      }
+      restart_count = 0;
+      k_restart     = 1;
+      l             = 1;
+      /* q_{00} = nu */
+      if (ngmres->candidate) {
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,FM,fMnorm,XM);CHKERRQ(ierr);
+      } else {
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,0,0,F,fMnorm,X);CHKERRQ(ierr);
+      }
+    } else {
+      /* select the current size of the subspace */
+      if (l < ngmres->msize) l++;
+      k_restart++;
+      /* place the current entry in the list of previous entries */
+      if (ngmres->candidate) {
+        if (fminnorm > fMnorm) fminnorm = fMnorm;
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fMnorm,XM);CHKERRQ(ierr);
+      } else {
+        if (fminnorm > fnorm) fminnorm = fnorm;
+        ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,F,fnorm,X);CHKERRQ(ierr);
+      }
+    }
+
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    snes->iter = k;
+    snes->norm = fnorm;
+    ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    ierr = VecNormBegin(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+    ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (snes->reason) PetscFunctionReturn(0);
+  }
+  snes->reason = SNES_DIVERGED_MAX_IT;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNGMRESSetRestartType"
+/*@
+    SNESNGMRESSetRestartType - Sets the restart type for SNESNGMRES.
+
+    Logically Collective on SNES
+
+    Input Parameters:
++   snes - the iterative context
+-   rtype - restart type
+
+    Options Database:
++   -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
+-   -snes_ngmres_restart[30] - sets the number of iterations before restart for periodic
+
+    Level: intermediate
+
+    SNESNGMRESRestartTypes:
++   SNES_NGMRES_RESTART_NONE - never restart
+.   SNES_NGMRES_RESTART_DIFFERENCE - restart based upon difference criteria
+-   SNES_NGMRES_RESTART_PERIODIC - restart after a fixed number of iterations
+
+    Notes:
+    The default line search used is the L2 line search and it requires two additional function evaluations.
+
+.keywords: SNES, SNESNGMRES, restart, type, set SNESLineSearch
+@*/
+PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscTryMethod(snes,"SNESNGMRESSetRestartType_C",(SNES,SNESNGMRESRestartType),(snes,rtype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNGMRESSetSelectType"
+/*@
+    SNESNGMRESSetSelectType - Sets the selection type for SNESNGMRES.  This determines how the candidate solution and
+    combined solution are used to create the next iterate.
+
+    Logically Collective on SNES
+
+    Input Parameters:
++   snes - the iterative context
+-   stype - selection type
+
+    Options Database:
+.   -snes_ngmres_select_type<difference,none,linesearch>
+
+    Level: intermediate
+
+    SNESNGMRESSelectTypes:
++   SNES_NGMRES_SELECT_NONE - choose the combined solution all the time
+.   SNES_NGMRES_SELECT_DIFFERENCE - choose based upon the selection criteria
+-   SNES_NGMRES_SELECT_LINESEARCH - choose based upon line search combination
+
+    Notes:
+    The default line search used is the L2 line search and it requires two additional function evaluations.
+
+.keywords: SNES, SNESNGMRES, selection, type, set SNESLineSearch
+@*/
+PetscErrorCode SNESNGMRESSetSelectType(SNES snes,SNESNGMRESSelectType stype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscTryMethod(snes,"SNESNGMRESSetSelectType_C",(SNES,SNESNGMRESSelectType),(snes,stype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNGMRESSetSelectType_NGMRES"
+PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes,SNESNGMRESSelectType stype)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
+
+  PetscFunctionBegin;
+  ngmres->select_type = stype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNGMRESSetRestartType_NGMRES"
+PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType rtype)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES*)snes->data;
+
+  PetscFunctionBegin;
+  ngmres->restart_type = rtype;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  SNESNGMRES - The Nonlinear Generalized Minimum Residual method.
+
+   Level: beginner
+
+   Options Database:
++  -snes_ngmres_select_type<difference,none,linesearch> - choose the select between candidate and combined solution
+.  -snes_ngmres_restart_type<difference,none,periodic> - choose the restart conditions
+.  -snes_ngmres_candidate        - Use NGMRES variant which combines candidate solutions instead of actual solutions
+.  -snes_ngmres_m                - Number of stored previous solutions and residuals
+.  -snes_ngmres_restart_it       - Number of iterations the restart conditions hold before restart
+.  -snes_ngmres_gammaA           - Residual tolerance for solution select between the candidate and combination
+.  -snes_ngmres_gammaC           - Residual tolerance for restart
+.  -snes_ngmres_epsilonB         - Difference tolerance between subsequent solutions triggering restart
+.  -snes_ngmres_deltaB           - Difference tolerance between residuals triggering restart
+.  -snes_ngmres_monitor          - Prints relevant information about the ngmres iteration
+.  -snes_linesearch_type <basic,l2,cp> - Line search type used for the default smoother
+-  -additive_snes_linesearch_type - linesearch type used to select between the candidate and combined solution with additive select type
+
+   Notes:
+
+   The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
+   optimization problem at each iteration.
+
+   References:
+
+   "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
+   SIAM Journal on Scientific Computing, 21(5), 2000.
+
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESCreate_NGMRES"
+PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
+{
+  SNES_NGMRES    *ngmres;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  snes->ops->destroy        = SNESDestroy_NGMRES;
+  snes->ops->setup          = SNESSetUp_NGMRES;
+  snes->ops->setfromoptions = SNESSetFromOptions_NGMRES;
+  snes->ops->view           = SNESView_NGMRES;
+  snes->ops->solve          = SNESSolve_NGMRES;
+  snes->ops->reset          = SNESReset_NGMRES;
+
+  snes->usespc  = PETSC_TRUE;
+  snes->usesksp = PETSC_FALSE;
+
+  ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
+  snes->data    = (void*) ngmres;
+  ngmres->msize = 30;
+
+  if (!snes->tolerancesset) {
+    snes->max_funcs = 30000;
+    snes->max_its   = 10000;
+  }
+
+  ngmres->candidate = PETSC_FALSE;
+
+  ngmres->additive_linesearch = NULL;
+  ngmres->approxfunc       = PETSC_FALSE;
+  ngmres->restart_it       = 2;
+  ngmres->restart_periodic = 30;
+  ngmres->gammaA           = 2.0;
+  ngmres->gammaC           = 2.0;
+  ngmres->deltaB           = 0.9;
+  ngmres->epsilonB         = 0.1;
+
+  ngmres->restart_type = SNES_NGMRES_RESTART_DIFFERENCE;
+  ngmres->select_type  = SNES_NGMRES_SELECT_DIFFERENCE;
+
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

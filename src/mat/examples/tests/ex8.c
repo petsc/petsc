@@ -1,26 +1,27 @@
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v;
   MatInfo        info;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;
@@ -37,9 +38,9 @@ int main(int argc,char **args)
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %D, allocated nonzeros = %D\n",
-    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

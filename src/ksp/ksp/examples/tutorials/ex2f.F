@@ -2,7 +2,6 @@
 !  Description: Solves a linear system in parallel with KSP (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
 !
-!  Program usage: mpiexec -n <procs> ex2f [-help] [all PETSc options]
 !
 !/*T
 !  Concepts: KSP^basic parallel example
@@ -27,7 +26,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
 !  each file needed for the various PETSc components within their
@@ -46,11 +45,11 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -72,22 +71,22 @@
 !        double precision x(*).
 !  However, local vector data can be easily accessed via VecGetArray().
 !  See the Fortran section of the PETSc users manual for details.
-!  
+!
       double precision  norm
       PetscInt  i,j,II,JJ,m,n,its
       PetscInt  Istart,Iend,ione
       PetscErrorCode ierr
       PetscMPIInt     rank,size
-      PetscTruth  flg
+      PetscBool   flg
       PetscScalar v,one,neg_one
       Vec         x,b,u
-      Mat         A 
+      Mat         A
       KSP         ksp
       PetscRandom rctx
 
 !  These variables are not currently used.
 !      PC          pc
-!      PCType      ptype 
+!      PCType      ptype
 !      double precision tol
 
 
@@ -98,7 +97,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m = 3
@@ -111,10 +110,10 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -124,17 +123,18 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
@@ -147,7 +147,7 @@
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,ione,II,ione,JJ,v,INSERT_VALUES,ierr)
@@ -183,7 +183,7 @@
 !   - When solving a linear system, the vectors and matrices MUST
 !     be partitioned accordingly.  PETSc automatically generates
 !     appropriately partitioned matrices and vectors when MatCreate()
-!     and VecCreate() are used with the same communicator. 
+!     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -216,9 +216,9 @@
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -275,18 +275,17 @@
      &          PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,ierr)
       endif
 !
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
-
       call VecAXPY(x,neg_one,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
@@ -297,7 +296,7 @@
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',e10.4,' iterations ',i5)
+  100 format('Norm of error ',e11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -333,9 +332,9 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscksp.h>
 
       KSP              ksp
       Vec              x
@@ -359,7 +358,7 @@
       if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')
- 200  format('iteration ',i5,' residual norm ',e10.4)
+ 200  format('iteration ',i5,' residual norm ',e11.4)
       ierr = 0
       end
 
@@ -378,9 +377,9 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscksp.h>
 
       KSP              ksp
       PetscErrorCode ierr
@@ -388,7 +387,7 @@
       KSPConvergedReason flag
       double precision rnorm
 
-      if (rnorm .le. .05) then 
+      if (rnorm .le. .05) then
         flag = 1
       else
         flag = 0

@@ -4,7 +4,7 @@ import os
 import sys
 import popen2
 import re
-  
+
 def portabilityCheck(filename,includes):
 
   if filename.endswith('.o'):
@@ -18,12 +18,12 @@ def portabilityCheck(filename,includes):
         os.unlink(filename)
         return 1
     return 0
-  
+
   else:
-    # Check for use of system includes 
+    # Check for use of system includes
     include = re.compile(r"""#\s*include\s*('|"|<)""")
     ok = re.compile(r"""#\s*include\s*('|"|<)petsc""")
-    okf = re.compile(r"""#\s*include\s*('|"|<)include/finclude/petsc""")    
+    okf = re.compile(r"""#\s*include\s*('|"|<)include/finclude/petsc""")
     file = open(filename)
     for line in file.readlines():
       if include.search(line) and not ok.search(line) and not okf.search(line):
@@ -43,4 +43,4 @@ def portabilityCheck(filename,includes):
 if __name__=="__main__":
   sys.exit(portabilityCheck(sys.argv[1],sys.argv[2:]))
 
-      
+

@@ -1,0 +1,72 @@
+
+static char help[] = "Tests DMDA interpolation.\n\n";
+
+#include <petscdmda.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  PetscInt         M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
+  PetscErrorCode   ierr;
+  DM               da_c,da_f;
+  Vec              v_c,v_f;
+  Mat              Interp;
+  PetscScalar      one = 1.0;
+  PetscBool        pt;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&M1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-stencil_width",&s,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-periodic",(PetscBool*)&pt,NULL);CHKERRQ(ierr);
+
+  if (pt) {
+    if (dim > 0) bx = DMDA_BOUNDARY_PERIODIC;
+    if (dim > 1) by = DMDA_BOUNDARY_PERIODIC;
+    if (dim > 2) bz = DMDA_BOUNDARY_PERIODIC;
+  }
+  if (bx == DMDA_BOUNDARY_NONE) {
+    M2 = ratio*(M1-1) + 1;
+  } else {
+    M2 = ratio*M1;
+  }
+
+  /* Set up the array */
+  if (dim == 1) {
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,NULL,&da_f);CHKERRQ(ierr);
+  } else if (dim == 2) {
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f);CHKERRQ(ierr);
+  } else if (dim == 3) {
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f);CHKERRQ(ierr);
+  }
+
+  ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
+
+  ierr = VecSet(v_c,one);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da_c,da_f,&Interp,NULL);CHKERRQ(ierr);
+  ierr = MatMult(Interp,v_c,v_f);CHKERRQ(ierr);
+  ierr = VecView(v_f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Interp,v_f,v_c);CHKERRQ(ierr);
+  ierr = VecView(v_c,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
+  ierr = VecDestroy(&v_c);CHKERRQ(ierr);
+  ierr = DMDestroy(&da_c);CHKERRQ(ierr);
+  ierr = VecDestroy(&v_f);CHKERRQ(ierr);
+  ierr = DMDestroy(&da_f);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return 0;
+}
+
+
+
+

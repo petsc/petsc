@@ -2,7 +2,7 @@
 static char help[] = "Demonstrates the use of fast Richardson for SOR. And tests\n\
 the MatSOR() routines.\n\n";
 
-#include "petscpc.h"
+#include <petscpc.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -15,22 +15,22 @@ int main(int argc,char **args)
   PetscInt       n = 5,i,col[3];
   PetscScalar    value[3];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Create vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr     = MatCreateSeqDense(PETSC_COMM_SELF,n,n,NULL,&mat);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n - 1; col[0] = n - 2; col[1] = n - 1;
+  i    = n - 1; col[0] = n - 2; col[1] = n - 1;
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+  i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -53,13 +53,13 @@ int main(int argc,char **args)
   }
 
   /* Free data structures */
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PCDestroy(pc);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr); 
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = PCDestroy(&pc);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
-    
+
 
 

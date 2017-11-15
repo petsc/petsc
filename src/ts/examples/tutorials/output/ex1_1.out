@@ -1,1 +1,16 @@
+TS 0 dt 0.125 time 0 fnorm 0.207564
+TS 1 dt 0.1375 time 0.1375 fnorm 0.184718
+TS 2 dt 0.169957 time 0.307457 fnorm 0.160569
+TS 3 dt 0.215069 time 0.522526 fnorm 0.135283
+TS 4 dt 0.280795 time 0.803322 fnorm 0.109165
+TS 5 dt 0.382774 time 1.1861 fnorm 0.0827478
+TS 6 dt 0.555471 time 1.74157 fnorm 0.0569517
+TS 7 dt 0.887776 time 2.62934 fnorm 0.03335
+TS 8 dt 1.66766 time 4.297 fnorm 0.0144859
+TS 9 dt 4.22328 time 8.52028 fnorm 0.00341003
+TS 10 dt 19.7347 time 28.255 fnorm 0.000212272
+TS 11 dt 348.729 time 376.984 fnorm 7.95866e-07
+TS 12 dt 102314 time 102691 fnorm 1.02096e-11
+TS 13 dt 8.77318e+09 time 8.77328e+09 fnorm 0
+TS 14 dt 9.6505e+21 time 9.6505e+21 fnorm 0
 Number of pseudo timesteps = 14 final time 9.65e+21

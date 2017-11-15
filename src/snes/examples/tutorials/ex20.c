@@ -13,47 +13,45 @@ options are:\n\
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations
-   Concepts: DA^using distributed arrays
+   Concepts: DM^using distributed arrays
    Concepts: multigrid;
    Processors: n
 T*/
 
-/*  
-  
-    This example models the partial differential equation 
-   
+/*
+
+    This example models the partial differential equation
+
          - Div(alpha* T^beta (GRAD T)) = 0.
-       
+
     where beta = 2.5 and alpha = 1.0
- 
+
     BC: T_left = 1.0, T_right = 0.1, dT/dn_top = dTdn_bottom = dT/dn_up = dT/dn_down = 0.
-    
-    in the unit square, which is uniformly discretized in each of x and 
+
+    in the unit square, which is uniformly discretized in each of x and
     y in this simple encoding.  The degrees of freedom are cell centered.
- 
-    A finite volume approximation with the usual 7-point stencil 
-    is used to discretize the boundary value problem to obtain a 
-    nonlinear system of equations. 
+
+    A finite volume approximation with the usual 7-point stencil
+    is used to discretize the boundary value problem to obtain a
+    nonlinear system of equations.
 
     This code was contributed by Nickolas Jovanovic based on ex18.c
- 
+
 */
 
-#include "petscsnes.h"
-#include "petscda.h"
-#include "petscmg.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 /* User-defined application context */
 
 typedef struct {
-   PetscReal   tleft,tright;  /* Dirichlet boundary conditions */
-   PetscReal   beta,bm1,coef; /* nonlinear diffusivity parameterizations */
+  PetscReal tleft,tright;     /* Dirichlet boundary conditions */
+  PetscReal beta,bm1,coef;    /* nonlinear diffusivity parameterizations */
 } AppCtx;
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
 
-extern PetscErrorCode FormInitialGuess(DMMG,Vec);
+extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -61,65 +59,51 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
-  SNES           snes;                      
+  SNES           snes;
   AppCtx         user;
   PetscErrorCode ierr;
   PetscInt       its,lits;
   PetscReal      litspit;
-  DA             da;
+  DM             da;
 
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
 
   /* set problem parameters */
-  user.tleft  = 1.0; 
+  user.tleft  = 1.0;
   user.tright = 0.1;
-  user.beta   = 2.5; 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
-  user.bm1  = user.beta - 1.0;
-  user.coef = user.beta/2.0;
-
-
-  /*
-      Create the multilevel DA data structure 
-  */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
+  user.beta   = 2.5;
+  ierr        = PetscOptionsGetReal(NULL,"-tleft",&user.tleft,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-tright",&user.tright,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetReal(NULL,"-beta",&user.beta,NULL);CHKERRQ(ierr);
+  user.bm1    = user.beta - 1.0;
+  user.coef   = user.beta/2.0;
 
   /*
-      Set the DA (grid structure) for the grids.
+      Set the DMDA (grid structure) for the grids.
   */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
   /*
-     Create the nonlinear solver, and tell the DMMG structure to use it
+     Create the nonlinear solver
   */
-  ierr = DMMGSetSNES(dmmg,FormFunction,FormJacobian);CHKERRQ(ierr);
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,NULL,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,FormJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,NULL);CHKERRQ(ierr);
 
-  /*
-      PreLoadBegin() means that the following section of code is run twice. The first time
-     through the flag PreLoading is on this the nonlinear solver is only run for a single step.
-     The second time through (the actually timed code) the maximum iterations is set to 10
-     Preload of the executable is done to eliminate from the timing the time spent bring the 
-     executable into memory from disk (paging in).
-  */
-  PreLoadBegin(PETSC_TRUE,"Solve");
-    ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
-    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  PreLoadEnd();
-  snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+  ierr    = SNESSolve(snes,NULL,NULL);CHKERRQ(ierr);
+  ierr    = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
   litspit = ((PetscReal)lits)/((PetscReal)its);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -127,61 +111,62 @@ int main(int argc,char **argv)
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
-  AppCtx         *user = (AppCtx*)dmmg->user;
+  AppCtx         *user;
   PetscInt       i,j,k,xs,ys,xm,ym,zs,zm;
   PetscErrorCode ierr;
-  PetscReal      tleft = user->tleft;
   PetscScalar    ***x;
+  DM             da;
 
-  PetscFunctionBegin;
-
-  /* Get ghost points */
-  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,X,&x);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-        x[k][j][i] = tleft;
+        x[k][j][i] = user->tleft;
       }
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  DMMG           dmmg = (DMMG)ptr;
-  AppCtx         *user = (AppCtx*)dmmg->user;
+  AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
   PetscScalar    zero = 0.0,one = 1.0;
   PetscScalar    hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
   PetscScalar    t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  PetscScalar    tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
+  PetscScalar    tleft,tright,beta,td,ad,dd,fd=0.0,tu,au,du=0.0,fu=0.0;
   PetscScalar    ***x,***f;
   Vec            localX;
+  DM             da;
 
-  PetscFunctionBegin;
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
+  PetscFunctionBeginUser;
+  ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da,NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  hx      = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
-  tleft = user->tleft;         tright = user->tright;
-  beta  = user->beta;
- 
+  tleft   = user->tleft;         tright = user->tright;
+  beta    = user->beta;
+
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (k=zs; k<zs+zm; k++) {
@@ -191,290 +176,289 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
         if (i > 0 && i < mx-1 && j > 0 && j < my-1 && k > 0 && k < mz-1) {
 
-  	  /* general interior volume */
+          /* general interior volume */
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          dw = pow(aw,beta);
-          fw = dw*(t0 - tw);
-
-       	  te = x[k][j][i+1];
-          ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
-          fe = de*(te - t0);
-
-	  ts = x[k][j-1][i];
-          as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
-          fs = ds*(t0 - ts);
-  
-          tn = x[k][j+1][i];
-          an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
-          fn = dn*(tn - t0);
-
-          td = x[k-1][j][i];
-          ad = 0.5*(t0 + td);
-          dd = pow(ad,beta);
-          fd = dd*(t0 - td);
-
-          tu = x[k+1][j][i];
-          au = 0.5*(t0 + tu);
-          du = pow(au,beta);
-          fu = du*(tu - t0);
-
-        } else if (i == 0) {
-
- 	  /* left-hand (west) boundary */
-          tw = tleft;   
-          aw = 0.5*(t0 + tw);                 
-          dw = pow(aw,beta);
-          fw = dw*(t0 - tw);
-
-	  te = x[k][j][i+1];
-          ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
-          fe = de*(te - t0);
-
-	  if (j > 0) {
-	    ts = x[k][j-1][i];
-            as = 0.5*(t0 + ts);
-            ds = pow(as,beta);
-            fs = ds*(t0 - ts);
-	  } else {
- 	    fs = zero;
-	  }
-
-	  if (j < my-1) { 
-            tn = x[k][j+1][i];
-            an = 0.5*(t0 + tn);
-            dn = pow(an,beta);
-	    fn = dn*(tn - t0);
-	  } else {
-	    fn = zero; 
-   	  }
-
-	  if (k > 0) {
-            td = x[k-1][j][i];  
-            ad = 0.5*(t0 + td);
-            dd = pow(ad,beta);
-            fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
-
-	  if (k < mz-1) { 
-            tu = x[k+1][j][i];  
-            au = 0.5*(t0 + tu);
-            du = pow(au,beta);
-            fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
-
-        } else if (i == mx-1) {
-
-          /* right-hand (east) boundary */ 
-          tw = x[k][j][i-1];   
           aw = 0.5*(t0 + tw);
-          dw = pow(aw,beta);
-          fw = dw*(t0 - tw);
- 
-          te = tright;
-          ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
-          fe = de*(te - t0);
- 
-          if (j > 0) { 
-            ts = x[k][j-1][i];
-            as = 0.5*(t0 + ts);
-            ds = pow(as,beta);
-            fs = ds*(t0 - ts);
-          } else {
-            fs = zero;
-          }
- 
-          if (j < my-1) {
-            tn = x[k][j+1][i];
-            an = 0.5*(t0 + tn);
-            dn = pow(an,beta);
-            fn = dn*(tn - t0); 
-          } else {   
-            fn = zero; 
-          }
-
-	  if (k > 0) {
-            td = x[k-1][j][i];  
-            ad = 0.5*(t0 + td);
-            dd = pow(ad,beta);
-            fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
-
-	  if (k < mz-1) { 
-            tu = x[k+1][j][i];  
-            au = 0.5*(t0 + tu);
-            du = pow(au,beta);
-            fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
-
-        } else if (j == 0) {
-
-	  /* bottom (south) boundary, and i <> 0 or mx-1 */
-          tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);
-          dw = pow(aw,beta);
+          dw = PetscPowScalar(aw,beta);
           fw = dw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
+          fe = de*(te - t0);
+
+          ts = x[k][j-1][i];
+          as = 0.5*(t0 + ts);
+          ds = PetscPowScalar(as,beta);
+          fs = ds*(t0 - ts);
+
+          tn = x[k][j+1][i];
+          an = 0.5*(t0 + tn);
+          dn = PetscPowScalar(an,beta);
+          fn = dn*(tn - t0);
+
+          td = x[k-1][j][i];
+          ad = 0.5*(t0 + td);
+          dd = PetscPowScalar(ad,beta);
+          fd = dd*(t0 - td);
+
+          tu = x[k+1][j][i];
+          au = 0.5*(t0 + tu);
+          du = PetscPowScalar(au,beta);
+          fu = du*(tu - t0);
+
+        } else if (i == 0) {
+
+          /* left-hand (west) boundary */
+          tw = tleft;
+          aw = 0.5*(t0 + tw);
+          dw = PetscPowScalar(aw,beta);
+          fw = dw*(t0 - tw);
+
+          te = x[k][j][i+1];
+          ae = 0.5*(t0 + te);
+          de = PetscPowScalar(ae,beta);
+          fe = de*(te - t0);
+
+          if (j > 0) {
+            ts = x[k][j-1][i];
+            as = 0.5*(t0 + ts);
+            ds = PetscPowScalar(as,beta);
+            fs = ds*(t0 - ts);
+          } else {
+            fs = zero;
+          }
+
+          if (j < my-1) {
+            tn = x[k][j+1][i];
+            an = 0.5*(t0 + tn);
+            dn = PetscPowScalar(an,beta);
+            fn = dn*(tn - t0);
+          } else {
+            fn = zero;
+          }
+
+          if (k > 0) {
+            td = x[k-1][j][i];
+            ad = 0.5*(t0 + td);
+            dd = PetscPowScalar(ad,beta);
+            fd = dd*(t0 - td);
+          } else {
+            fd = zero;
+          }
+
+          if (k < mz-1) {
+            tu = x[k+1][j][i];
+            au = 0.5*(t0 + tu);
+            du = PetscPowScalar(au,beta);
+            fu = du*(tu - t0);
+          } else {
+            fu = zero;
+          }
+
+        } else if (i == mx-1) {
+
+          /* right-hand (east) boundary */
+          tw = x[k][j][i-1];
+          aw = 0.5*(t0 + tw);
+          dw = PetscPowScalar(aw,beta);
+          fw = dw*(t0 - tw);
+
+          te = tright;
+          ae = 0.5*(t0 + te);
+          de = PetscPowScalar(ae,beta);
+          fe = de*(te - t0);
+
+          if (j > 0) {
+            ts = x[k][j-1][i];
+            as = 0.5*(t0 + ts);
+            ds = PetscPowScalar(as,beta);
+            fs = ds*(t0 - ts);
+          } else {
+            fs = zero;
+          }
+
+          if (j < my-1) {
+            tn = x[k][j+1][i];
+            an = 0.5*(t0 + tn);
+            dn = PetscPowScalar(an,beta);
+            fn = dn*(tn - t0);
+          } else {
+            fn = zero;
+          }
+
+          if (k > 0) {
+            td = x[k-1][j][i];
+            ad = 0.5*(t0 + td);
+            dd = PetscPowScalar(ad,beta);
+            fd = dd*(t0 - td);
+          } else {
+            fd = zero;
+          }
+
+          if (k < mz-1) {
+            tu = x[k+1][j][i];
+            au = 0.5*(t0 + tu);
+            du = PetscPowScalar(au,beta);
+            fu = du*(tu - t0);
+          } else {
+            fu = zero;
+          }
+
+        } else if (j == 0) {
+
+          /* bottom (south) boundary, and i <> 0 or mx-1 */
+          tw = x[k][j][i-1];
+          aw = 0.5*(t0 + tw);
+          dw = PetscPowScalar(aw,beta);
+          fw = dw*(t0 - tw);
+
+          te = x[k][j][i+1];
+          ae = 0.5*(t0 + te);
+          de = PetscPowScalar(ae,beta);
           fe = de*(te - t0);
 
           fs = zero;
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0);
 
-	  if (k > 0) {
-            td = x[k-1][j][i];  
+          if (k > 0) {
+            td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) { 
-            tu = x[k+1][j][i];  
+          if (k < mz-1) {
+            tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (j == my-1) {
 
-	  /* top (north) boundary, and i <> 0 or mx-1 */ 
+          /* top (north) boundary, and i <> 0 or mx-1 */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
-          dw = pow(aw,beta);
+          dw = PetscPowScalar(aw,beta);
           fw = dw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           fe = de*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
 
           fn = zero;
 
-	  if (k > 0) {
-            td = x[k-1][j][i];  
+          if (k > 0) {
+            td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             fd = dd*(t0 - td);
-	  } else {
- 	    fd = zero;
-	  }
+          } else {
+            fd = zero;
+          }
 
-	  if (k < mz-1) { 
-            tu = x[k+1][j][i];  
+          if (k < mz-1) {
+            tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             fu = du*(tu - t0);
-	  } else {
- 	    fu = zero;
-	  }
+          } else {
+            fu = zero;
+          }
 
         } else if (k == 0) {
 
-	  /* down boundary (interior only) */
+          /* down boundary (interior only) */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
-          dw = pow(aw,beta);
+          dw = PetscPowScalar(aw,beta);
           fw = dw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           fe = de*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0);
 
- 	  fd = zero;
+          fd = zero;
 
-          tu = x[k+1][j][i];  
+          tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
-          du = pow(au,beta);
+          du = PetscPowScalar(au,beta);
           fu = du*(tu - t0);
-	
+
         } else if (k == mz-1) {
 
-	  /* up boundary (interior only) */
+          /* up boundary (interior only) */
           tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
-          dw = pow(aw,beta);
+          dw = PetscPowScalar(aw,beta);
           fw = dw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           fe = de*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0);
 
-          td = x[k-1][j][i];  
+          td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
-          dd = pow(ad,beta);
+          dd = PetscPowScalar(ad,beta);
           fd = dd*(t0 - td);
 
           fu = zero;
-	}
+        }
 
-        f[k][j][i] = - hyhzdhx*(fe-fw) - hzhxdhy*(fn-fs) - hxhydhz*(fu-fd); 
+        f[k][j][i] = -hyhzdhx*(fe-fw) - hzhxdhy*(fn-fs) - hxhydhz*(fu-fd);
       }
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops((22.0 + 4.0*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DMMG           dmmg = (DMMG)ptr;
-  AppCtx         *user = (AppCtx*)dmmg->user;
+  AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
   PetscScalar    one = 1.0;
@@ -485,20 +469,22 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   Vec            localX;
   MatStencil     c[7],row;
   Mat            jac = *B;
+  DM             da;
 
-  PetscFunctionBegin;
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
+  PetscFunctionBeginUser;
+  ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(da,NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  hx      = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
-  tleft = user->tleft;         tright = user->tright;
-  beta  = user->beta;	       bm1    = user->bm1;		coef = user->coef;
+  tleft   = user->tleft;         tright = user->tright;
+  beta    = user->beta;          bm1    = user->bm1;              coef = user->coef;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (k=zs; k<zs+zm; k++) {
@@ -511,236 +497,236 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
           /* general interior volume */
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          bw = pow(aw,bm1);
-	  /* dw = bw * aw */
-	  dw = pow(aw,beta); 
-	  gw = coef*bw*(t0 - tw);
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
+          /* dw = bw * aw */
+          dw = PetscPowScalar(aw,beta);
+          gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          be = pow(ae,bm1);
-	  /* de = be * ae; */
-	  de = pow(ae,beta);
+          be = PetscPowScalar(ae,bm1);
+          /* de = be * ae; */
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+          bs = PetscPowScalar(as,bm1);
+          /* ds = bs * as; */
+          ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
-  
+
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          bn = pow(an,bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+          bn = PetscPowScalar(an,bm1);
+          /* dn = bn * an; */
+          dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
           td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
-          bd = pow(ad,bm1);
-	  /* dd = bd * ad; */
-	  dd = pow(ad,beta);
+          bd = PetscPowScalar(ad,bm1);
+          /* dd = bd * ad; */
+          dd = PetscPowScalar(ad,beta);
           gd = coef*bd*(t0 - td);
-  
+
           tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
-          bu = pow(au,bm1);
-	  /* du = bu * au; */
-	  du = pow(au,beta);
+          bu = PetscPowScalar(au,bm1);
+          /* du = bu * au; */
+          du = PetscPowScalar(au,beta);
           gu = coef*bu*(tu - t0);
 
-	  c[0].k = k-1; c[0].j = j; c[0].i = i; v[0]   = - hxhydhz*(dd - gd); 
-	  c[1].k = k; c[1].j = j-1; c[1].i = i;
-          v[1]   = - hzhxdhy*(ds - gs); 
-	  c[2].k = k; c[2].j = j; c[2].i = i-1;
-          v[2]   = - hyhzdhx*(dw - gw); 
-	  c[3].k = k; c[3].j = j; c[3].i = i;
+          c[0].k = k-1; c[0].j = j; c[0].i = i; v[0]   = -hxhydhz*(dd - gd);
+          c[1].k = k; c[1].j = j-1; c[1].i = i;
+          v[1]   = -hzhxdhy*(ds - gs);
+          c[2].k = k; c[2].j = j; c[2].i = i-1;
+          v[2]   = -hyhzdhx*(dw - gw);
+          c[3].k = k; c[3].j = j; c[3].i = i;
           v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	  c[4].k = k; c[4].j = j; c[4].i = i+1;
-          v[4]   = - hyhzdhx*(de + ge);
-	  c[5].k = k; c[5].j = j+1; c[5].i = i;
-          v[5]   = - hzhxdhy*(dn + gn);
-	  c[6].k = k+1; c[6].j = j; c[6].i = i;
-          v[6]   = - hxhydhz*(du + gu);
+          c[4].k = k; c[4].j = j; c[4].i = i+1;
+          v[4]   = -hyhzdhx*(de + ge);
+          c[5].k = k; c[5].j = j+1; c[5].i = i;
+          v[5]   = -hzhxdhy*(dn + gn);
+          c[6].k = k+1; c[6].j = j; c[6].i = i;
+          v[6]   = -hxhydhz*(du + gu);
           ierr   =   MatSetValuesStencil(jac,1,&row,7,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
         } else if (i == 0) {
 
           /* left-hand plane boundary */
           tw = tleft;
-          aw = 0.5*(t0 + tw);                  
-          bw = pow(aw,bm1); 
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
           /* dw = bw * aw */
-          dw = pow(aw,beta); 
-          gw = coef*bw*(t0 - tw); 
- 
+          dw = PetscPowScalar(aw,beta);
+          gw = coef*bw*(t0 - tw);
+
           te = x[k][j][i+1];
-          ae = 0.5*(t0 + te); 
-          be = pow(ae,bm1); 
+          ae = 0.5*(t0 + te);
+          be = PetscPowScalar(ae,bm1);
           /* de = be * ae; */
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
- 
+
           /* left-hand bottom edge */
           if (j == 0) {
 
             tn = x[k][j+1][i];
-            an = 0.5*(t0 + tn); 
-            bn = pow(an,bm1); 
+            an = 0.5*(t0 + tn);
+            bn = PetscPowScalar(an,bm1);
             /* dn = bn * an; */
-            dn = pow(an,beta);
-            gn = coef*bn*(tn - t0); 
-          
+            dn = PetscPowScalar(an,beta);
+            gn = coef*bn*(tn - t0);
+
             /* left-hand bottom down corner */
             if (k == 0) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
-	      c[0].k = k; c[0].j = j; c[0].i = i;
-              v[0]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu); 
-	      c[1].k = k; c[1].j = j; c[1].i = i+1;
-              v[1]   = - hyhzdhx*(de + ge); 
-	      c[2].k = k; c[2].j = j+1; c[2].i = i;
-              v[2]   = - hzhxdhy*(dn + gn); 
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
-              v[3]   = - hxhydhz*(du + gu);
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
+              c[0].k = k; c[0].j = j; c[0].i = i;
+              v[0]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+              c[1].k = k; c[1].j = j; c[1].i = i+1;
+              v[1]   = -hyhzdhx*(de + ge);
+              c[2].k = k; c[2].j = j+1; c[2].i = i;
+              v[2]   = -hzhxdhy*(dn + gn);
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
+              v[3]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* left-hand bottom interior edge */
+              /* left-hand bottom interior edge */
             } else if (k < mz-1) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j; c[1].i = i;
-              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu); 
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
-              v[2]   = - hyhzdhx*(de + ge); 
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j; c[1].i = i;
+              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
+              v[2]   = -hyhzdhx*(de + ge);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* left-hand bottom up corner */
+              /* left-hand bottom up corner */
             } else {
 
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j; c[1].i = i;
-              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd); 
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
-              v[2]   = - hyhzdhx*(de + ge); 
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j; c[1].i = i;
+              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
+              v[2]   = -hyhzdhx*(de + ge);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
 
-          /* left-hand top edge */
+            /* left-hand top edge */
           } else if (j == my-1) {
 
             ts = x[k][j-1][i];
-            as = 0.5*(t0 + ts); 
-            bs = pow(as,bm1); 
+            as = 0.5*(t0 + ts);
+            bs = PetscPowScalar(as,bm1);
             /* ds = bs * as; */
-            ds = pow(as,beta);
-            gs = coef*bs*(ts - t0); 
-          
+            ds = PetscPowScalar(as,beta);
+            gs = coef*bs*(ts - t0);
+
             /* left-hand top down corner */
             if (k == 0) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-           
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
-              v[0]   = - hzhxdhy*(ds - gs); 
-	      c[1].k = k; c[1].j = j; c[1].i = i;
-              v[1]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu); 
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
-              v[2]   = - hyhzdhx*(de + ge); 
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
-              v[3]   = - hxhydhz*(du + gu);
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
+              v[0]   = -hzhxdhy*(ds - gs);
+              c[1].k = k; c[1].j = j; c[1].i = i;
+              v[1]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
+              v[2]   = -hyhzdhx*(de + ge);
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
+              v[3]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* left-hand top interior edge */
+              /* left-hand top interior edge */
             } else if (k < mz-1) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
-              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu); 
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
-              v[3]   = - hyhzdhx*(de + ge); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i;
+              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
+              v[3]   = -hyhzdhx*(de + ge);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* left-hand top up corner */
+              /* left-hand top up corner */
             } else {
 
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
-              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd); 
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
-              v[3]   = - hyhzdhx*(de + ge); 
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i;
+              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
+              v[3]   = -hyhzdhx*(de + ge);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
 
@@ -748,16 +734,16 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
             ts = x[k][j-1][i];
             as = 0.5*(t0 + ts);
-            bs = pow(as,bm1);
+            bs = PetscPowScalar(as,bm1);
             /* ds = bs * as; */
-            ds = pow(as,beta);
+            ds = PetscPowScalar(as,beta);
             gs = coef*bs*(t0 - ts);
-  
+
             tn = x[k][j+1][i];
             an = 0.5*(t0 + tn);
-            bn = pow(an,bm1);
+            bn = PetscPowScalar(an,bm1);
             /* dn = bn * an; */
-            dn = pow(an,beta);
+            dn = PetscPowScalar(an,beta);
             gn = coef*bn*(tn - t0);
 
             /* left-hand down interior edge */
@@ -765,77 +751,72 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
               tu = x[k+1][j][i];
               au = 0.5*(t0 + tu);
-              bu = pow(au,bm1);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
+              du = PetscPowScalar(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
-              v[0]   = - hzhxdhy*(ds - gs); 
-	      c[1].k = k; c[1].j = j; c[1].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
+              v[0]   = -hzhxdhy*(ds - gs);
+              c[1].k = k; c[1].j = j; c[1].i = i;
               v[1]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[2].k = k; c[2].j = j; c[2].i = i+1;
-              v[2]   = - hyhzdhx*(de + ge); 
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              c[2].k = k; c[2].j = j; c[2].i = i+1;
+              v[2]   = -hyhzdhx*(de + ge);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-            }
 
-            /* left-hand up interior edge */
-            else if (k == mz-1) {
+            } else if (k == mz-1) { /* left-hand up interior edge */
 
               td = x[k-1][j][i];
               ad = 0.5*(t0 + td);
-              bd = pow(ad,bm1);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
+              dd = PetscPowScalar(ad,beta);
               gd = coef*bd*(t0 - td);
-  
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
-              v[3]   = - hyhzdhx*(de + ge); 
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn); 
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
+              v[3]   = -hyhzdhx*(de + ge);
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
+              v[4]   = -hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-            }
-
-            /* left-hand interior plane */
-            else {
+            } else { /* left-hand interior plane */
 
               td = x[k-1][j][i];
               ad = 0.5*(t0 + td);
-              bd = pow(ad,bm1);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
+              dd = PetscPowScalar(ad,beta);
               gd = coef*bd*(t0 - td);
-  
+
               tu = x[k+1][j][i];
               au = 0.5*(t0 + tu);
-              bu = pow(au,bm1);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
+              du = PetscPowScalar(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[3].k = k; c[3].j = j; c[3].i = i+1;
-              v[3]   = - hyhzdhx*(de + ge); 
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn); 
-	      c[5].k = k+1; c[5].j = j; c[5].i = i;
-              v[5]   = - hxhydhz*(du + gu);
-              ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+              c[3].k = k; c[3].j = j; c[3].i = i+1;
+              v[3]   = -hyhzdhx*(de + ge);
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
+              v[4]   = -hzhxdhy*(dn + gn);
+              c[5].k = k+1; c[5].j = j; c[5].i = i;
+              v[5]   = -hxhydhz*(du + gu);
+              ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
           }
 
@@ -843,176 +824,176 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
           /* right-hand plane boundary */
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                  
-          bw = pow(aw,bm1); 
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
           /* dw = bw * aw */
-          dw = pow(aw,beta); 
-          gw = coef*bw*(t0 - tw); 
- 
-          te = tright; 
-          ae = 0.5*(t0 + te); 
-          be = pow(ae,bm1); 
+          dw = PetscPowScalar(aw,beta);
+          gw = coef*bw*(t0 - tw);
+
+          te = tright;
+          ae = 0.5*(t0 + te);
+          be = PetscPowScalar(ae,bm1);
           /* de = be * ae; */
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
- 
+
           /* right-hand bottom edge */
           if (j == 0) {
 
             tn = x[k][j+1][i];
-            an = 0.5*(t0 + tn); 
-            bn = pow(an,bm1); 
+            an = 0.5*(t0 + tn);
+            bn = PetscPowScalar(an,bm1);
             /* dn = bn * an; */
-            dn = pow(an,beta);
-            gn = coef*bn*(tn - t0); 
-          
+            dn = PetscPowScalar(an,beta);
+            gn = coef*bn*(tn - t0);
+
             /* right-hand bottom down corner */
             if (k == 0) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
-	      c[0].k = k; c[0].j = j; c[0].i = i-1;
-              v[0]   = - hyhzdhx*(dw - gw); 
-	      c[1].k = k; c[1].j = j; c[1].i = i;
-              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu); 
-	      c[2].k = k; c[2].j = j+1; c[2].i = i;
-              v[2]   = - hzhxdhy*(dn + gn); 
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
-              v[3]   = - hxhydhz*(du + gu);
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
+              c[0].k = k; c[0].j = j; c[0].i = i-1;
+              v[0]   = -hyhzdhx*(dw - gw);
+              c[1].k = k; c[1].j = j; c[1].i = i;
+              v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+              c[2].k = k; c[2].j = j+1; c[2].i = i;
+              v[2]   = -hzhxdhy*(dn + gn);
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
+              v[3]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* right-hand bottom interior edge */
+              /* right-hand bottom interior edge */
             } else if (k < mz-1) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
-              v[1]   = - hyhzdhx*(dw - gw); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
-              v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu); 
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
+              v[1]   = -hyhzdhx*(dw - gw);
+              c[2].k = k; c[2].j = j; c[2].i = i;
+              v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* right-hand bottom up corner */
+              /* right-hand bottom up corner */
             } else {
 
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
-              v[1]   = - hyhzdhx*(dw - gw); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
-              v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd); 
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
+              v[1]   = -hyhzdhx*(dw - gw);
+              c[2].k = k; c[2].j = j; c[2].i = i;
+              v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
 
-          /* right-hand top edge */
+            /* right-hand top edge */
           } else if (j == my-1) {
 
             ts = x[k][j-1][i];
-            as = 0.5*(t0 + ts); 
-            bs = pow(as,bm1); 
+            as = 0.5*(t0 + ts);
+            bs = PetscPowScalar(as,bm1);
             /* ds = bs * as; */
-            ds = pow(as,beta);
-            gs = coef*bs*(ts - t0); 
-          
+            ds = PetscPowScalar(as,beta);
+            gs = coef*bs*(ts - t0);
+
             /* right-hand top down corner */
             if (k == 0) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-           
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
-              v[0]   = - hzhxdhy*(ds - gs); 
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
-              v[1]   = - hyhzdhx*(dw - gw); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
-              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu); 
-	      c[3].k = k+1; c[3].j = j; c[3].i = i;
-              v[3]   = - hxhydhz*(du + gu);
-              ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
 
-            /* right-hand top interior edge */
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
+              v[0]   = -hzhxdhy*(ds - gs);
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
+              v[1]   = -hyhzdhx*(dw - gw);
+              c[2].k = k; c[2].j = j; c[2].i = i;
+              v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+              c[3].k = k+1; c[3].j = j; c[3].i = i;
+              v[3]   = -hxhydhz*(du + gu);
+              ierr   = MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
+
+              /* right-hand top interior edge */
             } else if (k < mz-1) {
 
               tu = x[k+1][j][i];
-              au = 0.5*(t0 + tu); 
-              bu = pow(au,bm1); 
+              au = 0.5*(t0 + tu);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
-              gu = coef*bu*(tu - t0); 
-          
+              du = PetscPowScalar(au,beta);
+              gu = coef*bu*(tu - t0);
+
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw); 
-	      c[3].k = k; c[3].j = j; c[3].i = i;
-              v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
+              v[2]   = -hyhzdhx*(dw - gw);
+              c[3].k = k; c[3].j = j; c[3].i = i;
+              v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
 
-            /* right-hand top up corner */
+              /* right-hand top up corner */
             } else {
 
               td = x[k-1][j][i];
-              ad = 0.5*(t0 + td); 
-              bd = pow(ad,bm1); 
+              ad = 0.5*(t0 + td);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
-              gd = coef*bd*(td - t0); 
-          
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw); 
-	      c[3].k = k; c[3].j = j; c[3].i = i;
-              v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd); 
+              dd = PetscPowScalar(ad,beta);
+              gd = coef*bd*(td - t0);
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
+              v[2]   = -hyhzdhx*(dw - gw);
+              c[3].k = k; c[3].j = j; c[3].i = i;
+              v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
               ierr   =   MatSetValuesStencil(jac,1,&row,4,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
 
@@ -1020,16 +1001,16 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
             ts = x[k][j-1][i];
             as = 0.5*(t0 + ts);
-            bs = pow(as,bm1);
+            bs = PetscPowScalar(as,bm1);
             /* ds = bs * as; */
-            ds = pow(as,beta);
+            ds = PetscPowScalar(as,beta);
             gs = coef*bs*(t0 - ts);
- 
+
             tn = x[k][j+1][i];
             an = 0.5*(t0 + tn);
-            bn = pow(an,bm1);
+            bn = PetscPowScalar(an,bm1);
             /* dn = bn * an; */
-            dn = pow(an,beta);
+            dn = PetscPowScalar(an,beta);
             gn = coef*bn*(tn - t0);
 
             /* right-hand down interior edge */
@@ -1037,101 +1018,97 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
               tu = x[k+1][j][i];
               au = 0.5*(t0 + tu);
-              bu = pow(au,bm1);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
+              du = PetscPowScalar(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k; c[0].j = j-1; c[0].i = i;
-              v[0]   = - hzhxdhy*(ds - gs); 
-	      c[1].k = k; c[1].j = j; c[1].i = i-1;
-              v[1]   = - hyhzdhx*(dw - gw); 
-	      c[2].k = k; c[2].j = j; c[2].i = i;
+              c[0].k = k; c[0].j = j-1; c[0].i = i;
+              v[0]   = -hzhxdhy*(ds - gs);
+              c[1].k = k; c[1].j = j; c[1].i = i-1;
+              v[1]   = -hyhzdhx*(dw - gw);
+              c[2].k = k; c[2].j = j; c[2].i = i;
               v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	      c[3].k = k; c[3].j = j+1; c[3].i = i;
-              v[3]   = - hzhxdhy*(dn + gn); 
-	      c[4].k = k+1; c[4].j = j; c[4].i = i;
-              v[4]   = - hxhydhz*(du + gu);
+              c[3].k = k; c[3].j = j+1; c[3].i = i;
+              v[3]   = -hzhxdhy*(dn + gn);
+              c[4].k = k+1; c[4].j = j; c[4].i = i;
+              v[4]   = -hxhydhz*(du + gu);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-            }
 
-            /* right-hand up interior edge */
-            else if (k == mz-1) {
+            } else if (k == mz-1) { /* right-hand up interior edge */
 
               td = x[k-1][j][i];
               ad = 0.5*(t0 + td);
-              bd = pow(ad,bm1);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
+              dd = PetscPowScalar(ad,beta);
               gd = coef*bd*(t0 - td);
-  
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw); 
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
+              v[2]   = -hyhzdhx*(dw - gw);
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn); 
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
+              v[4]   = -hzhxdhy*(dn + gn);
               ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-            }
 
-            /* right-hand interior plane */
-            else {
+            } else { /* right-hand interior plane */
 
               td = x[k-1][j][i];
               ad = 0.5*(t0 + td);
-              bd = pow(ad,bm1);
+              bd = PetscPowScalar(ad,bm1);
               /* dd = bd * ad; */
-              dd = pow(ad,beta);
+              dd = PetscPowScalar(ad,beta);
               gd = coef*bd*(t0 - td);
-  
+
               tu = x[k+1][j][i];
               au = 0.5*(t0 + tu);
-              bu = pow(au,bm1);
+              bu = PetscPowScalar(au,bm1);
               /* du = bu * au; */
-              du = pow(au,beta);
+              du = PetscPowScalar(au,beta);
               gu = coef*bu*(tu - t0);
 
-	      c[0].k = k-1; c[0].j = j; c[0].i = i;
-              v[0]   = - hxhydhz*(dd - gd); 
-	      c[1].k = k; c[1].j = j-1; c[1].i = i;
-              v[1]   = - hzhxdhy*(ds - gs); 
-	      c[2].k = k; c[2].j = j; c[2].i = i-1;
-              v[2]   = - hyhzdhx*(dw - gw); 
-	      c[3].k = k; c[3].j = j; c[3].i = i;
+              c[0].k = k-1; c[0].j = j; c[0].i = i;
+              v[0]   = -hxhydhz*(dd - gd);
+              c[1].k = k; c[1].j = j-1; c[1].i = i;
+              v[1]   = -hzhxdhy*(ds - gs);
+              c[2].k = k; c[2].j = j; c[2].i = i-1;
+              v[2]   = -hyhzdhx*(dw - gw);
+              c[3].k = k; c[3].j = j; c[3].i = i;
               v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	      c[4].k = k; c[4].j = j+1; c[4].i = i;
-              v[4]   = - hzhxdhy*(dn + gn); 
-	      c[5].k = k+1; c[5].j = j; c[5].i = i;
-              v[5]   = - hxhydhz*(du + gu);
-              ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+              c[4].k = k; c[4].j = j+1; c[4].i = i;
+              v[4]   = -hzhxdhy*(dn + gn);
+              c[5].k = k+1; c[5].j = j; c[5].i = i;
+              v[5]   = -hxhydhz*(du + gu);
+              ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
             }
           }
 
         } else if (j == 0) {
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          bw = pow(aw,bm1);
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
           /* dw = bw * aw */
-          dw = pow(aw,beta); 
+          dw = PetscPowScalar(aw,beta);
           gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          be = pow(ae,bm1);
+          be = PetscPowScalar(ae,bm1);
           /* de = be * ae; */
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
 
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          bn = pow(an,bm1);
+          bn = PetscPowScalar(an,bm1);
           /* dn = bn * an; */
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
 
 
@@ -1140,285 +1117,276 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            bu = pow(au,bm1);
+            bu = PetscPowScalar(au,bm1);
             /* du = bu * au; */
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             gu = coef*bu*(tu - t0);
 
-	    c[0].k = k; c[0].j = j; c[0].i = i-1;
-            v[0]   = - hyhzdhx*(dw - gw); 
-	    c[1].k = k; c[1].j = j; c[1].i = i;
+            c[0].k = k; c[0].j = j; c[0].i = i-1;
+            v[0]   = -hyhzdhx*(dw - gw);
+            c[1].k = k; c[1].j = j; c[1].i = i;
             v[1]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	    c[2].k = k; c[2].j = j; c[2].i = i+1;
-            v[2]   = - hyhzdhx*(de + ge); 
-	    c[3].k = k; c[3].j = j+1; c[3].i = i;
-            v[3]   = - hzhxdhy*(dn + gn); 
-	    c[4].k = k+1; c[4].j = j; c[4].i = i;
-            v[4]   = - hxhydhz*(du + gu);
+            c[2].k = k; c[2].j = j; c[2].i = i+1;
+            v[2]   = -hyhzdhx*(de + ge);
+            c[3].k = k; c[3].j = j+1; c[3].i = i;
+            v[3]   = -hzhxdhy*(dn + gn);
+            c[4].k = k+1; c[4].j = j; c[4].i = i;
+            v[4]   = -hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          }
 
-          /* bottom up interior edge */
-          else if (k == mz-1) {
+          } else if (k == mz-1) { /* bottom up interior edge */
 
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            bd = pow(ad,bm1);
+            bd = PetscPowScalar(ad,bm1);
             /* dd = bd * ad; */
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
-            v[1]   = - hyhzdhx*(dw - gw); 
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
+            v[0]   = -hxhydhz*(dd - gd);
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
+            v[1]   = -hyhzdhx*(dw - gw);
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
-            v[3]   = - hyhzdhx*(de + ge); 
-	    c[4].k = k; c[4].j = j+1; c[4].i = i;
-            v[4]   = - hzhxdhy*(dn + gn); 
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
+            v[3]   = -hyhzdhx*(de + ge);
+            c[4].k = k; c[4].j = j+1; c[4].i = i;
+            v[4]   = -hzhxdhy*(dn + gn);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          } 
 
-          /* bottom interior plane */
-          else {
+          } else { /* bottom interior plane */
 
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            bu = pow(au,bm1);
+            bu = PetscPowScalar(au,bm1);
             /* du = bu * au; */
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             gu = coef*bu*(tu - t0);
 
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            bd = pow(ad,bm1);
+            bd = PetscPowScalar(ad,bm1);
             /* dd = bd * ad; */
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
-            v[1]   = - hyhzdhx*(dw - gw); 
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
+            v[0]   = -hxhydhz*(dd - gd);
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
+            v[1]   = -hyhzdhx*(dw - gw);
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(dn - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
-            v[3]   = - hyhzdhx*(de + ge); 
-	    c[4].k = k; c[4].j = j+1; c[4].i = i;
-            v[4]   = - hzhxdhy*(dn + gn); 
-	    c[5].k = k+1; c[5].j = j; c[5].i = i;
-            v[5]   = - hxhydhz*(du + gu);
-            ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          } 
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
+            v[3]   = -hyhzdhx*(de + ge);
+            c[4].k = k; c[4].j = j+1; c[4].i = i;
+            v[4]   = -hzhxdhy*(dn + gn);
+            c[5].k = k+1; c[5].j = j; c[5].i = i;
+            v[5]   = -hxhydhz*(du + gu);
+            ierr   = MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
+          }
 
         } else if (j == my-1) {
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          bw = pow(aw,bm1);
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
           /* dw = bw * aw */
-          dw = pow(aw,beta); 
+          dw = PetscPowScalar(aw,beta);
           gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          be = pow(ae,bm1);
+          be = PetscPowScalar(ae,bm1);
           /* de = be * ae; */
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
+          bs = PetscPowScalar(as,bm1);
           /* ds = bs * as; */
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
-  
+
           /* top down interior edge */
           if (k == 0) {
 
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            bu = pow(au,bm1);
+            bu = PetscPowScalar(au,bm1);
             /* du = bu * au; */
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             gu = coef*bu*(tu - t0);
 
-	    c[0].k = k; c[0].j = j-1; c[0].i = i;
-            v[0]   = - hzhxdhy*(ds - gs); 
-	    c[1].k = k; c[1].j = j; c[1].i = i-1;
-            v[1]   = - hyhzdhx*(dw - gw); 
-	    c[2].k = k; c[2].j = j; c[2].i = i;
+            c[0].k = k; c[0].j = j-1; c[0].i = i;
+            v[0]   = -hzhxdhy*(ds - gs);
+            c[1].k = k; c[1].j = j; c[1].i = i-1;
+            v[1]   = -hyhzdhx*(dw - gw);
+            c[2].k = k; c[2].j = j; c[2].i = i;
             v[2]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	    c[3].k = k; c[3].j = j; c[3].i = i+1;
-            v[3]   = - hyhzdhx*(de + ge); 
-	    c[4].k = k+1; c[4].j = j; c[4].i = i;
-            v[4]   = - hxhydhz*(du + gu);
+            c[3].k = k; c[3].j = j; c[3].i = i+1;
+            v[3]   = -hyhzdhx*(de + ge);
+            c[4].k = k+1; c[4].j = j; c[4].i = i;
+            v[4]   = -hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          }
 
-          /* top up interior edge */
-          else if (k == mz-1) {
+          } else if (k == mz-1) { /* top up interior edge */
 
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            bd = pow(ad,bm1);
+            bd = PetscPowScalar(ad,bm1);
             /* dd = bd * ad; */
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j-1; c[1].i = i;
-            v[1]   = - hzhxdhy*(ds - gs); 
-	    c[2].k = k; c[2].j = j; c[2].i = i-1;
-            v[2]   = - hyhzdhx*(dw - gw); 
-	    c[3].k = k; c[3].j = j; c[3].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
+            v[0]   = -hxhydhz*(dd - gd);
+            c[1].k = k; c[1].j = j-1; c[1].i = i;
+            v[1]   = -hzhxdhy*(ds - gs);
+            c[2].k = k; c[2].j = j; c[2].i = i-1;
+            v[2]   = -hyhzdhx*(dw - gw);
+            c[3].k = k; c[3].j = j; c[3].i = i;
             v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	    c[4].k = k; c[4].j = j; c[4].i = i+1;
-            v[4]   = - hyhzdhx*(de + ge); 
+            c[4].k = k; c[4].j = j; c[4].i = i+1;
+            v[4]   = -hyhzdhx*(de + ge);
             ierr   =   MatSetValuesStencil(jac,1,&row,5,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          }
 
-          /* top interior plane */
-          else {
+          } else { /* top interior plane */
 
             tu = x[k+1][j][i];
             au = 0.5*(t0 + tu);
-            bu = pow(au,bm1);
+            bu = PetscPowScalar(au,bm1);
             /* du = bu * au; */
-            du = pow(au,beta);
+            du = PetscPowScalar(au,beta);
             gu = coef*bu*(tu - t0);
 
             td = x[k-1][j][i];
             ad = 0.5*(t0 + td);
-            bd = pow(ad,bm1);
+            bd = PetscPowScalar(ad,bm1);
             /* dd = bd * ad; */
-            dd = pow(ad,beta);
+            dd = PetscPowScalar(ad,beta);
             gd = coef*bd*(td - t0);
 
-	    c[0].k = k-1; c[0].j = j; c[0].i = i;
-            v[0]   = - hxhydhz*(dd - gd);
-	    c[1].k = k; c[1].j = j-1; c[1].i = i;
-            v[1]   = - hzhxdhy*(ds - gs); 
-	    c[2].k = k; c[2].j = j; c[2].i = i-1;
-            v[2]   = - hyhzdhx*(dw - gw); 
-	    c[3].k = k; c[3].j = j; c[3].i = i;
+            c[0].k = k-1; c[0].j = j; c[0].i = i;
+            v[0]   = -hxhydhz*(dd - gd);
+            c[1].k = k; c[1].j = j-1; c[1].i = i;
+            v[1]   = -hzhxdhy*(ds - gs);
+            c[2].k = k; c[2].j = j; c[2].i = i-1;
+            v[2]   = -hyhzdhx*(dw - gw);
+            c[3].k = k; c[3].j = j; c[3].i = i;
             v[3]   =   hzhxdhy*(ds + gs) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + du + gd - gu);
-	    c[4].k = k; c[4].j = j; c[4].i = i+1;
-            v[4]   = - hyhzdhx*(de + ge); 
-	    c[5].k = k+1; c[5].j = j; c[5].i = i;
-            v[5]   = - hxhydhz*(du + gu);
+            c[4].k = k; c[4].j = j; c[4].i = i+1;
+            v[4]   = -hyhzdhx*(de + ge);
+            c[5].k = k+1; c[5].j = j; c[5].i = i;
+            v[5]   = -hxhydhz*(du + gu);
             ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
-          } 
+          }
 
         } else if (k == 0) {
 
           /* down interior plane */
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          bw = pow(aw,bm1);
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
           /* dw = bw * aw */
-          dw = pow(aw,beta); 
+          dw = PetscPowScalar(aw,beta);
           gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          be = pow(ae,bm1);
+          be = PetscPowScalar(ae,bm1);
           /* de = be * ae; */
-          de = pow(ae,beta);
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
+          bs = PetscPowScalar(as,bm1);
           /* ds = bs * as; */
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
-  
+
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          bn = pow(an,bm1);
+          bn = PetscPowScalar(an,bm1);
           /* dn = bn * an; */
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
- 
+
           tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
-          bu = pow(au,bm1);
+          bu = PetscPowScalar(au,bm1);
           /* du = bu * au; */
-          du = pow(au,beta);
+          du = PetscPowScalar(au,beta);
           gu = coef*bu*(tu - t0);
 
-	  c[0].k = k; c[0].j = j-1; c[0].i = i;
-          v[0]   = - hzhxdhy*(ds - gs); 
-	  c[1].k = k; c[1].j = j; c[1].i = i-1;
-          v[1]   = - hyhzdhx*(dw - gw); 
-	  c[2].k = k; c[2].j = j; c[2].i = i;
-	  v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
-	  c[3].k = k; c[3].j = j; c[3].i = i+1;
-          v[3]   = - hyhzdhx*(de + ge); 
-	  c[4].k = k; c[4].j = j+1; c[4].i = i;
-          v[4]   = - hzhxdhy*(dn + gn); 
-	  c[5].k = k+1; c[5].j = j; c[5].i = i;
-	  v[5]   = - hxhydhz*(du + gu);
+          c[0].k = k; c[0].j = j-1; c[0].i = i;
+          v[0]   = -hzhxdhy*(ds - gs);
+          c[1].k = k; c[1].j = j; c[1].i = i-1;
+          v[1]   = -hyhzdhx*(dw - gw);
+          c[2].k = k; c[2].j = j; c[2].i = i;
+          v[2]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(du - gu);
+          c[3].k = k; c[3].j = j; c[3].i = i+1;
+          v[3]   = -hyhzdhx*(de + ge);
+          c[4].k = k; c[4].j = j+1; c[4].i = i;
+          v[4]   = -hzhxdhy*(dn + gn);
+          c[5].k = k+1; c[5].j = j; c[5].i = i;
+          v[5]   = -hxhydhz*(du + gu);
           ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
-        } 
-	
-	else if (k == mz-1) {
+
+        } else if (k == mz-1) {
 
           /* up interior plane */
 
           tw = x[k][j][i-1];
-          aw = 0.5*(t0 + tw);                 
-          bw = pow(aw,bm1);
-	  /* dw = bw * aw */
-	  dw = pow(aw,beta); 
-	  gw = coef*bw*(t0 - tw);
+          aw = 0.5*(t0 + tw);
+          bw = PetscPowScalar(aw,bm1);
+          /* dw = bw * aw */
+          dw = PetscPowScalar(aw,beta);
+          gw = coef*bw*(t0 - tw);
 
           te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
-          be = pow(ae,bm1);
-	  /* de = be * ae; */
-	  de = pow(ae,beta);
+          be = PetscPowScalar(ae,bm1);
+          /* de = be * ae; */
+          de = PetscPowScalar(ae,beta);
           ge = coef*be*(te - t0);
 
           ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
-	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+          bs = PetscPowScalar(as,bm1);
+          /* ds = bs * as; */
+          ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
-  
+
           tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
-          bn = pow(an,bm1);
-	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+          bn = PetscPowScalar(an,bm1);
+          /* dn = bn * an; */
+          dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);
- 
+
           td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
-          bd = pow(ad,bm1);
-	  /* dd = bd * ad; */
-	  dd = pow(ad,beta);
+          bd = PetscPowScalar(ad,bm1);
+          /* dd = bd * ad; */
+          dd = PetscPowScalar(ad,beta);
           gd = coef*bd*(t0 - td);
-  
-	  c[0].k = k-1; c[0].j = j; c[0].i = i;
-          v[0]   = - hxhydhz*(dd - gd); 
-	  c[1].k = k; c[1].j = j-1; c[1].i = i;
-          v[1]   = - hzhxdhy*(ds - gs); 
-	  c[2].k = k; c[2].j = j; c[2].i = i-1;
-          v[2]   = - hyhzdhx*(dw - gw); 
-	  c[3].k = k; c[3].j = j; c[3].i = i;
-	  v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
-	  c[4].k = k; c[4].j = j; c[4].i = i+1;
-          v[4]   = - hyhzdhx*(de + ge); 
-	  c[5].k = k; c[5].j = j+1; c[5].i = i;
-          v[5]   = - hzhxdhy*(dn + gn); 
+
+          c[0].k = k-1; c[0].j = j; c[0].i = i;
+          v[0]   = -hxhydhz*(dd - gd);
+          c[1].k = k; c[1].j = j-1; c[1].i = i;
+          v[1]   = -hzhxdhy*(ds - gs);
+          c[2].k = k; c[2].j = j; c[2].i = i-1;
+          v[2]   = -hyhzdhx*(dw - gw);
+          c[3].k = k; c[3].j = j; c[3].i = i;
+          v[3]   =   hzhxdhy*(ds + dn + gs - gn) + hyhzdhx*(dw + de + gw - ge) + hxhydhz*(dd + gd);
+          c[4].k = k; c[4].j = j; c[4].i = i+1;
+          v[4]   = -hyhzdhx*(de + ge);
+          c[5].k = k; c[5].j = j+1; c[5].i = i;
+          v[5]   = -hzhxdhy*(dn + gn);
           ierr   =   MatSetValuesStencil(jac,1,&row,6,c,v,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
@@ -1430,8 +1398,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   ierr = PetscLogFlops((41.0 + 8.0*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -7,15 +7,21 @@
 
 #include "finclude/petscsysdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES) 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define IS PetscFortranAddr
 #define ISColoring PetscFortranAddr
+#define PetscSection PetscFortranAddr
 #endif
+
+#define PetscSF PetscFortranAddr
+#define PetscLayout PetscFortranAddr
 
 #define ISType PetscEnum
 #define ISLocalToGlobalMapping PetscFortranAddr
 #define ISGlobalToLocalMappingType PetscEnum
 #define ISColoringType PetscEnum
 
-
+#define ISGENERAL 'general'
+#define ISSTRIDE 'stride'
+#define ISBLOCK 'block'
 #endif

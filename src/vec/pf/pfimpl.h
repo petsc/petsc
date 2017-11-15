@@ -1,12 +1,14 @@
 
-#ifndef _PFIMPL
+#if !defined(_PFIMPL)
 #define _PFIMPL
 
-#include "petscpf.h"
+#include <petscpf.h>
+#include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {
-  PetscErrorCode (*apply)(void*,PetscInt,PetscScalar*,PetscScalar*);
+  PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*);
   PetscErrorCode (*applyvec)(void*,Vec,Vec);
   PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*view)(void*,PetscViewer);

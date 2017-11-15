@@ -15,35 +15,39 @@ functionality, and documentation for PETSc.
 \vspace{.3in}
 \noindent
 Some of the source code and utilities in PETSc
-have been written by 
+have been written by
 \begin{itemize}
   \item Asbjorn Hoiland Aarrestad - the explicit Runge-Kutta implementations;
   \item Mark Adams - scalability features of MPIBAIJ matrices;
-  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages Jostle, Scotch, Chaco, and Party;
+  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages PTScotch, Chaco, and Party;
   \item Allison Baker - the flexible GMRES code and LGMRES;
   \item Chad Carroll - Win32 graphics;
+  \item Ethan Coon - the PetscBag and many bug fixes;
   \item Cameron Cooper - portions of the VecScatter routines;
   \item Paulo Goldfeld - balancing Neumann-Neumann preconditioner;
   \item Matt Hille;
   \item Joel Malard - the BICGStab(l) implementation;
+  \item Paul Mullowney, enhancements to portions of the Nvidia GPU interface;
   \item Dave May - the GCR implementation
   \item Peter Mell - portions of the DA routines;
   \item Richard Mills - the AIJPERM matrix format for the Cray X1 and universal F90 array interface;
   \item Victor Minden - the NVidia GPU interface;
   \item Todd Munson - the LUSOL (sparse solver in MINOS) interface and several Krylov methods;
-  \item Adam Powell - the PETSc Debian package, 
+  \item Adam Powell - the PETSc Debian package,
   \item Robert Scheichl - the MINRES implementation,
+  \item Kerry Stevens - the pthread based Vec and Mat classes plus the various thread pools
   \item Karen Toonen - designed and implemented much of the PETSc web pages,
+  \item Desire Nuentsa Wakam - the deflated GMRES implementation,
   \item Liyang Xu - the interface to PVODE (now Sundials/CVODE).
 \end{itemize}
 
 \vspace{.3in}
 \noindent
-PETSc uses routines from 
+PETSc uses routines from
 \begin{itemize}
   \item BLAS;
   \item LAPACK;
-  \item LINPACK -    dense matrix factorization and solve; converted to C using {\tt f2c} and then 
+  \item LINPACK -    dense matrix factorization and solve; converted to C using {\tt f2c} and then
                      hand-optimized for small matrix sizes, for block matrix data structures;
   \item MINPACK -    see page \pageref{sec_fdmatrix}, sequential matrix coloring routines for finite difference Jacobian
                      evaluations; converted to C using {\tt f2c};
@@ -56,55 +60,42 @@ PETSc uses routines from
 \noindent
 PETSc interfaces to the following external software:
 \begin{itemize}
-  \item ADIC/ADIFOR -  automatic differentiation for the computation of sparse Jacobians,\\ 
-                     \href{http://www.mcs.anl.gov/adic}{http://www.mcs.anl.gov/adic},
+  \item ADIFOR -  automatic differentiation for the computation of sparse Jacobians,\\
                      \href{http://www.mcs.anl.gov/adifor}{http://www.mcs.anl.gov/adifor},
-  \item AMG -         the algebraic multigrid code of John Ruge and Klaus Stueben,
-                     \href{http://www.mgnet.org/mgnet-codes-gmd.html}{http://www.mgnet.org/mgnet-codes-gmd.html}
-  \item BLOPEX - Block Locally Optimal Preconditioned Eigenvalue Xolvers developed by Andrew Knyazev,
-                    \href{http://www-math.cudenver.edu/~aknyazev/software/BLOPEX/},
   \item Chaco -     A graph partitioning package, \href{ http://www.cs.sandia.gov/CRF/chac.html}{ http://www.cs.sandia.gov/CRF/chac.html}
-  \item DSCPACK -    see page \pageref{sec_externalsol}, Domain-Separator Codes for solving sparse symmetric
-                      positive-definite systems, 
-                     developed by Padma Raghavan,   
-                     \href{http://www.cse.psu.edu/~raghavan/Dscpack/}{http://www.cse.psu.edu/~raghavan/Dscpack/},
   \item ESSL -         IBM's math library for fast sparse direct LU factorization,
   \item Euclid  -   parallel ILU(k) developed by David Hysom, accessed through the Hypre interface,
   \item Hypre -    the LLNL preconditioner library, \href{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
-  \item Jostle -     A graph partitioning package, \href{http://www.gre.ac.uk/~c.walshaw/jostle/}{http://www.gre.ac.uk/~c.walshaw/jostle/}
   \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
                       Systems Optimization Laboratory, Stanford University,
                      \href{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},
   \item Mathematica -  see page \pageref{ch_mathematica},
-  \item Matlab -      see page \pageref{ch_matlab},
-  \item MUMPS -      see page \pageref{sec_externalsol}, MUltifrontal Massively Parallel sparse direct Solver developed by Patrick Amestoy, 
+  \item MATLAB -      see page \pageref{ch_matlab},
+  \item MUMPS -      see page \pageref{sec_externalsol}, MUltifrontal Massively Parallel sparse direct Solver developed by Patrick Amestoy,
                      Iain Duff, Jacko Koster, and Jean-Yves L'Excellent, \\
                      \href{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html}{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html},
   \item ParMeTiS -     see page \pageref{sec_partitioning}, parallel graph partitioner,
                      \href{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/~karypis/metis/},
   \item Party -     A graph partitioning package, \\ \href{http://www.uni-paderborn.de/fachbereich/AG/monien/RESEARCH/PART/party.html}{http://www.uni-paderborn.de/fachbereich/AG/monien/RESEARCH/PART/party.html},
   \item PaStiX -     Parallel LU and Cholesky solvers,
-  \item PLAPACK - Parallel Linear Algebra Package, \href{http://www.cs.utexas.edu/users/plapack/},
-  \item Scotch -     A graph partitioning package, \href{http://www.labri.fr/Perso/~pelegrin/scotch/}{http://www.labri.fr/Perso/~pelegrin/scotch/}
-  \item SPAI -        for parallel sparse approximate inverse preconditiong, 
+  \item PTScotch -    A graph partitioning package, \href{http://www.labri.fr/Perso/~pelegrin/scotch/}{http://www.labri.fr/Perso/~pelegrin/scotch/}
+  \item SPAI -        for parallel sparse approximate inverse preconditiong,
                      \href{http://www.sam.math.ethz.ch/~grote/spai/}{http://www.sam.math.ethz.ch/~grote/spai/},
-  \item SPOOLES - see page \pageref{sec_externalsol}, SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
-                    \href{http://www.netlib.org/linalg/spooles/spooles.2.2.html}{http://www.netlib.org/linalg/spooles/spooles.2.2.html},
   \item Sundial/CVODE - see page \pageref{sec_sundials}, parallel ODE integrator,
-                     \href{http://www.llnl.gov/CASC/sundials/},
-  \item SuperLU and SuperLU\_Dist - see page \pageref{sec_externalsol}, 
-                    the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, 
+                     \href{http://www.llnl.gov/CASC/sundials/}{http://www.llnl.gov/CASC/sundials/},
+  \item SuperLU and SuperLU\_Dist - see page \pageref{sec_externalsol},
+                    the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert,
                     \href{http://www.nersc.gov/~xiaoye/SuperLU}{http://www.nersc.gov/~xiaoye/SuperLU},
-  \item Trilinos/ML - Sandia's main multigrid preconditioning package, \href{http://software.sandia.gov/trilinos/},
-  \item UMFPACK - see page \pageref{sec_externalsol}, 
-                    developed by Timothy A. Davis, 
+  \item Trilinos/ML - Sandia's main multigrid preconditioning package, \href{http://software.sandia.gov/trilinos/}{http://software.sandia.gov/trilinos/},
+  \item UMFPACK - see page \pageref{sec_externalsol},
+                    developed by Timothy A. Davis,
                     \href{http://www.cise.ufl.edu/research/sparse/umfpack/}{http://www.cise.ufl.edu/research/sparse/umfpack/}.
 \end{itemize}
 These are all optional packages and do not need to be installed to use PETSc.
 
-PETSc software is developed and maintained with 
+PETSc software is developed and maintained with
 \begin{itemize}
-\item \href{http://mercurial.selenic.com/}{Mecurial} revision control system
+\item \href{http://git-scm.com/}{Git} revision control system
 \item Emacs editor
 \end{itemize}
 

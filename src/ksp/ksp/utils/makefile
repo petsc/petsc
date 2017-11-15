@@ -4,9 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = schurm.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = schurm.o
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

@@ -2,26 +2,25 @@
       program main
        implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscviewer.h>
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:
-!        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
-!                          use the file petsc/src/mat/examples/matbinary.ex
+!        -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices
 !
 
       PetscErrorCode  ierr
       PetscInt its,m,n,mlocal,nlocal
-      PetscTruth flg
+      PetscBool  flg
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
-      character*(128)  f 
+      character*(128)  f
       PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)
       KSP              ksp
@@ -31,7 +30,6 @@
 
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      print *,f
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,     &
      &     fd,ierr)
 

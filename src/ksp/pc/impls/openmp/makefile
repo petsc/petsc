@@ -3,13 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = openmp.c
+SOURCEC  = hpc.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = openmp.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/openmp/
 

@@ -1,27 +1,25 @@
 
-#include "private/fortranimpl.h"
+#include <petsc-private/fortranimpl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
 #define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
 #define petscobjectstatedecrease_  PETSCOBJECTSTATEDECREASE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoffsetfortran_        petscoffsetfortran     
+#define petscoffsetfortran_        petscoffsetfortran
 #define chkmemfortran_             chkmemfortran
 #define flush__                    flush_
 #define petscobjectstateincrease_  petscobjectstateincrease
 #define petscobjectstatedecrease_  petscobjectstatedecrease
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr )
+PETSC_EXTERN void PETSC_STDCALL petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
-void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr ){
+PETSC_EXTERN void PETSC_STDCALL petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr)
+{
   *ierr = PetscObjectStateDecrease(*obj);
 }
 
@@ -33,15 +31,15 @@ void flush__(int unit)
 #endif
 
 
-void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
-  *ierr = 0;
+  *ierr  = 0;
   *shift = y - x;
 }
 
 /* ---------------------------------------------------------------------------------*/
 /*
-        This version does not do a malloc 
+        This version does not do a malloc
 */
 static char FIXCHARSTRING[1024];
 
@@ -51,7 +49,7 @@ static char FIXCHARSTRING[1024];
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
     b = a = 0; \
   } else { \
-    while((n > 0) && (a[n-1] == ' ')) n--; \
+    while ((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = FIXCHARSTRING; \
       *ierr = PetscStrncpy(b,a,n); \
@@ -61,7 +59,7 @@ static char FIXCHARSTRING[1024];
   } \
 }
 
-void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -69,7 +67,5 @@ void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),Petsc
   *ierr = PetscMallocValidate(*line,"Userfunction",c1," ");
 }
 
-
-EXTERN_C_END
 
 

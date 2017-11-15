@@ -1,0 +1,8 @@
+dmBody: 
+Mesh in 2 dimensions:
+  0-cells: 6 6
+  2-cells: 4 4
+dmFS: 
+Mesh in 1 dimensions:
+  0-cells: 0 3
+  1-cells: 0 2

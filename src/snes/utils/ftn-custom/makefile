@@ -1,16 +1,18 @@
 
-#requirespackage   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdamgsnesf.c zdamgf.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = zdmdasnesf.c zdmlocalsnesf.c zdmsnesf.c
 SOURCEF  =
 SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscsnes
+MANSEC   = SNES
+DIRS     =
+EDIRS    =
 LOCDIR   = src/snes/utils/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+

@@ -1,2 +1,0 @@
-MatMatMult: nz_allocated = 76519; nz_used = 76519; nz_unneeded = 0
-MatMatMultTranspose: nz_allocated = 123115; nz_used = 123115; nz_unneeded = 0

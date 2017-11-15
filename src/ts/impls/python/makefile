@@ -1,15 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonts.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = pythonts.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscts
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/ts/impls/python/
 MANSEC   = TS
 

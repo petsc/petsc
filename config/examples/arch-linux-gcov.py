@@ -2,7 +2,7 @@
 
 configure_options = [
   '--download-mpich=1',
-  '--with-gcov=1'
+  #'--with-gcov=1'
   ]
 
 if __name__ == '__main__':

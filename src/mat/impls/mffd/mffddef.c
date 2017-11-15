@@ -1,8 +1,7 @@
-#define PETSCMAT_DLL
 
 /*
-  Implements the DS PETSc approach for computing the h 
-  parameter used with the finite difference based matrix-free 
+  Implements the DS PETSc approach for computing the h
+  parameter used with the finite difference based matrix-free
   Jacobian-vector products.
 
   To make your own: clone this file and modify for your needs.
@@ -14,13 +13,13 @@
       MatCreateMFFD _ - fills in the MatMFFD data structure
                            for this particular implementation
 
-      
+
    Optional functions:
    -------------------
       MatMFFDView_ - prints information about the parameters being used.
                        This is called when SNESView() or -snes_view is used.
 
-      MatMFFDSetFromOptions_ - checks the options database for options that 
+      MatMFFDSetFromOptions_ - checks the options database for options that
                                apply to this method.
 
       MatMFFDDestroy_ - frees any space allocated by the routines above
@@ -28,15 +27,15 @@
 */
 
 /*
-    This include file defines the data structure  MatMFFD that 
-   includes information about the computation of h. It is shared by 
+    This include file defines the data structure  MatMFFD that
+   includes information about the computation of h. It is shared by
    all implementations that people provide
 */
-#include "private/matimpl.h"
-#include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
+#include <petsc-private/matimpl.h>
+#include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
 /*
-      The  method has one parameter that is used to 
+      The  method has one parameter that is used to
    "cutoff" very small values. This is stored in a data structure
    that is only visible to this file. If your method has no parameters
    it can omit this, if it has several simply reorganize the data structure.
@@ -47,7 +46,7 @@ typedef struct {
   PetscReal umin;          /* minimum allowable u'a value relative to |u|_1 */
 } MatMFFD_DS;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDCompute_DS"
 /*
    MatMFFDCompute_DS - Standard PETSc code for computing the
@@ -58,23 +57,23 @@ typedef struct {
 .  U - the location at which you want the Jacobian
 -  a - the direction you want the derivative
 
-  
+
    Output Parameter:
 .  h - the scale computed
 
 */
-static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
+static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,PetscBool  *zeroa)
 {
-  MatMFFD_DS      *hctx = (MatMFFD_DS*)ctx->hctx;
-  PetscReal        nrm,sum,umin = hctx->umin;
-  PetscScalar      dot;
-  PetscErrorCode   ierr;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscReal      nrm,sum,umin = hctx->umin;
+  PetscScalar    dot;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
     /*
      This algorithm requires 2 norms and 1 inner product. Rather than
-     use directly the VecNorm() and VecDot() routines (and thus have 
+     use directly the VecNorm() and VecDot() routines (and thus have
      three separate collective operations, we use the VecxxxBegin/End() routines
     */
     ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
@@ -90,16 +89,11 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
     }
     *zeroa = PETSC_FALSE;
 
-    /* 
+    /*
       Safeguard for step sizes that are "too small"
     */
-#if defined(PETSC_USE_COMPLEX)
     if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
     else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
-#else
-    if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
-    else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
-#endif
     *h = ctx->error_rel*dot/(nrm*nrm);
   } else {
     *h = ctx->currenth;
@@ -107,12 +101,12 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   if (*h != *h) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %G dot = %G norm = %G",sum,PetscRealPart(dot),nrm);
   ctx->count++;
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDView_DS"
 /*
-   MatMFFDView_DS - Prints information about this particular 
+   MatMFFDView_DS - Prints information about this particular
    method for computing h. Note that this does not print the general
    information about the matrix-free method, as such info is printed
    by the calling routine.
@@ -120,12 +114,12 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
    Input Parameters:
 +  ctx - the matrix free context
 -  viewer - the PETSc viewer
-*/   
+*/
 static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 {
-  MatMFFD_DS       *hctx = (MatMFFD_DS *)ctx->hctx;
-  PetscErrorCode   ierr;
-  PetscTruth       iascii;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   /*
@@ -133,19 +127,17 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
-  }    
+    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFromOptions_DS"
 /*
-   MatMFFDSetFromOptions_DS - Looks in the options database for 
+   MatMFFDSetFromOptions_DS - Looks in the options database for
    any options appropriate for this method.
 
    Input Parameter:
@@ -154,26 +146,26 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 */
 static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx)
 {
-  PetscErrorCode   ierr;
-  MatMFFD_DS       *hctx = (MatMFFD_DS*)ctx->hctx;
+  PetscErrorCode ierr;
+  MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Finite difference matrix free parameters");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDDestroy_DS"
 /*
-   MatMFFDDestroy_DS - Frees the space allocated by 
-   MatCreateMFFD_DS(). 
+   MatMFFDDestroy_DS - Frees the space allocated by
+   MatCreateMFFD_DS().
 
    Input Parameter:
 .  ctx - the matrix free context
 
-   Notes: 
+   Notes:
    Does not free the ctx, that is handled by the calling routine
 */
 static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
@@ -185,8 +177,7 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDDSSetUmin_DS"
 /*
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
@@ -194,21 +185,20 @@ EXTERN_C_BEGIN
 */
 PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 {
-  MatMFFD     ctx = (MatMFFD)mat->data;
+  MatMFFD    ctx = (MatMFFD)mat->data;
   MatMFFD_DS *hctx;
 
   PetscFunctionBegin;
   if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
-  hctx = (MatMFFD_DS*)ctx->hctx;
+  hctx       = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;
   PetscFunctionReturn(0);
-} 
-EXTERN_C_END
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDDSSetUmin"
 /*@
-    MatMFFDDSSetUmin - Sets the "umin" parameter used by the 
+    MatMFFDDSSetUmin - Sets the "umin" parameter used by the
     PETSc routine for computing the differencing parameter, h, which is used
     for matrix-free Jacobian-vector products.
 
@@ -225,16 +215,13 @@ EXTERN_C_END
 .seealso: MatMFFDSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
+PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscReal);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMFFDDSSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,umin);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(A,"MatMFFDDSSetUmin_C",(Mat,PetscReal),(A,umin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -264,34 +251,29 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat A,PetscReal umin)
 .seealso: MATMFFD, MatCreateMFFD(), MatCreateSNESMF(), MATMFFD_WP, MatMFFDDSSetUmin()
 
 M*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateMFFD_DS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD_DS(MatMFFD ctx)
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 {
-  MatMFFD_DS       *hctx;
-  PetscErrorCode   ierr;
+  MatMFFD_DS     *hctx;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   /* allocate my own private data structure */
-  ierr       = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
-  ctx->hctx  = (void*)hctx;
+  ierr      = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
+  ctx->hctx = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;
 
   /* set the functions I am providing */
   ctx->ops->compute        = MatMFFDCompute_DS;
   ctx->ops->destroy        = MatMFFDDestroy_DS;
-  ctx->ops->view           = MatMFFDView_DS;  
-  ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;  
+  ctx->ops->view           = MatMFFDView_DS;
+  ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",
-                            "MatMFFDDSSetUmin_DS",
-                             MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

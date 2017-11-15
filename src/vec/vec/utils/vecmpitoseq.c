@@ -1,16 +1,15 @@
-#define PETSCVEC_DLL
 
-#include "private/vecimpl.h"    /*I "petscvec.h" I*/
+#include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToAll"
 /*@
-      VecScatterCreateToAll - Creates a vector and a scatter context that copies all 
+      VecScatterCreateToAll - Creates a vector and a scatter context that copies all
           vector values to each processor
 
   Collective on Vec
 
-  Input Parameter: 
+  Input Parameter:
 .  vin  - input MPIVEC
 
   Output Parameter:
@@ -19,13 +18,13 @@
 
   Level: intermediate
 
-   Note: vout may be PETSC_NULL [PETSC_NULL_OBJECT from fortran] if you do not 
+   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
    need to have it created
 
    Usage:
 $        VecScatterCreateToAll(vin,&ctx,&vout);
 $
-$        // scatter as many times as you need 
+$        // scatter as many times as you need
 $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
@@ -34,20 +33,20 @@ $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
-  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
+  automatically (unless you pass NULL in for that argument if you do not need it).
 
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
   PetscInt       N;
   IS             is;
   Vec            tmp;
-  Vec           *tmpv;
-  PetscTruth     tmpvout = PETSC_FALSE;
+  Vec            *tmpv;
+  PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
@@ -58,7 +57,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;
-    tmpv = &tmp;
+    tmpv    = &tmp;
   }
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
@@ -67,21 +66,21 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToZero"
 /*@
-      VecScatterCreateToZero - Creates an output vector and a scatter context used to 
+      VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor
 
   Collective on Vec
 
-  Input Parameter: 
+  Input Parameter:
 .  vin  - input MPIVEC
 
   Output Parameter:
@@ -91,13 +90,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 
   Level: intermediate
 
-   Note: vout may be PETSC_NULL [PETSC_NULL_OBJECT from fortran] if you do not 
+   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
    need to have it created
 
    Usage:
 $        VecScatterCreateToZero(vin,&ctx,&vout);
 $
-$        // scatter as many times as you need 
+$        // scatter as many times as you need
 $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
@@ -108,10 +107,10 @@ $        VecDestroy(vout);
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
-  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
+  automatically (unless you pass NULL in for that argument if you do not need it).
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
@@ -119,8 +118,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   PetscMPIInt    rank;
   IS             is;
   Vec            tmp;
-  Vec           *tmpv;
-  PetscTruth     tmpvout = PETSC_FALSE;
+  Vec            *tmpv;
+  PetscBool      tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_CLASSID,1);
@@ -131,19 +130,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
     tmpv = vout;
   } else {
     tmpvout = PETSC_TRUE;
-    tmpv = &tmp;
+    tmpv    = &tmp;
   }
 
   /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)vin)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vin),&rank);CHKERRQ(ierr);
   if (rank) N = 0;
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

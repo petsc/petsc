@@ -1,17 +1,14 @@
-#define PETSCMAT_DLL
- 
-#include "petscmat.h"
-#include "../src/mat/color/color.h"
 
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN_C_END
+#include <petscmat.h>
+#include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringRegisterAll" 
+PETSC_EXTERN PetscErrorCode MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringRegisterAll"
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
@@ -20,8 +17,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatColoringRegisterDynamic() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatColoringRegister() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -32,19 +29,19 @@ EXTERN_C_END
 
 .keywords: matrix, coloring, register, all
 
-.seealso: MatColoringRegisterDynamic(), MatColoringRegisterDestroy()
+.seealso: MatColoringRegister(), MatColoringRegisterDestroy()
 @*/
-PetscErrorCode MatColoringRegisterAll(const char path[])
+PetscErrorCode MatColoringRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  MatColoringRegisterAllCalled = PETSC_TRUE;  
-  ierr = MatColoringRegisterDynamic(MATCOLORINGNATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
+  MatColoringRegisterAllCalled = PETSC_TRUE;
 
+  ierr = MatColoringRegister(MATCOLORINGNATURAL,MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGSL,     MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGLF,     MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGID,     MatGetColoring_ID_Minpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

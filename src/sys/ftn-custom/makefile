@@ -1,14 +1,12 @@
-#requirespackage   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplog.c zstart.c zstartf.c zsys.c  zutils.c
-SOURCEF  = 
-SOURCEH  = ../../../include/private/fortranimpl.h
-OBJSC    =  zplog.o zstart.o zstartf.o zsys.o zutils.o
-OBJSF    = 
+SOURCEC  =  zsys.c  zutils.c
+SOURCEF  =
+SOURCEH  = ../../../include/petsc-private/fortranimpl.h
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/sys/ftn-custom/

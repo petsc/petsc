@@ -1,11 +1,8 @@
-#define PETSCMAT_DLL
 
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
-#include "petscsys.h"
-
-EXTERN PetscErrorCode SPARSEPACKfn1wd(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+#include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /*****************************************************************/
 /***********     GEN1WD ..... GENERAL ONE-WAY DISSECTION  ********/
@@ -31,83 +28,72 @@ EXTERN PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(Pet
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKgen1wd" 
-PetscErrorCode SPARSEPACKgen1wd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy, 
-	                        PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKgen1wd"
+PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2, i__3;
+  /* System generated locals */
+  PetscInt i__1, i__2, i__3;
 
-    /* Local variables */
-    PetscInt node, nsep, lnum, nlvl, root;
-    PetscInt i, j, k, ccsize;
-    PetscInt num;
+  /* Local variables */
+  PetscInt node, nsep, lnum, nlvl, root;
+  PetscInt i, j, k, ccsize;
+  PetscInt num;
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --ls;
-    --xls;
-    --perm;
-    --xblk;
-    --mask;
-    --xadj;
-    --adjncy;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --ls;
+  --xls;
+  --perm;
+  --xblk;
+  --mask;
+  --xadj;
+  --adjncy;
 
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
-	mask[i] = 1;
-    }
-    *nblks = 0;
-    num = 0;
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
-	if (!mask[i]) {
-	    goto L400;
-	}
+  i__1 = *neqns;
+  for (i = 1; i <= i__1; ++i) mask[i] = 1;
+  *nblks = 0;
+  num    = 0;
+  i__1   = *neqns;
+  for (i = 1; i <= i__1; ++i) {
+    if (!mask[i]) goto L400;
 /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
-	root = i;
-	SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
-		nlvl, &xls[1], &ls[1]);
-	num += nsep;
-	++(*nblks);
-	xblk[*nblks] = *neqns - num + 1;
-	ccsize = xls[nlvl + 1] - 1;
+    root = i;
+    SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &nlvl, &xls[1], &ls[1]);
+    num += nsep;
+    ++(*nblks);
+    xblk[*nblks] = *neqns - num + 1;
+    ccsize       = xls[nlvl + 1] - 1;
 /*             NUMBER THE REMAINING NODES IN THE COMPONENT.*/
 /*             EACH COMPONENT IN THE REMAINING SUBGRAPH FORMS*/
 /*             A NEW BLOCK IN THE PARTITIONING.*/
-	i__2 = ccsize;
-	for (j = 1; j <= i__2; ++j) {
-	    node = ls[j];
-	    if (!mask[node]) {
-		goto L300;
-	    }
-	    SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
-		    perm[num + 1]);
-	    lnum = num + 1;
-	    num = num + xls[nlvl + 1] - 1;
-	    ++(*nblks);
-	    xblk[*nblks] = *neqns - num + 1;
-	    i__3 = num;
-	    for (k = lnum; k <= i__3; ++k) {
-		node = perm[k];
-		mask[node] = 0;
-	    }
-	    if (num > *neqns) {
-		goto L500;
-	    }
+    i__2 = ccsize;
+    for (j = 1; j <= i__2; ++j) {
+      node = ls[j];
+      if (!mask[node]) goto L300;
+      SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[num + 1]);
+      lnum = num + 1;
+      num  = num + xls[nlvl + 1] - 1;
+      ++(*nblks);
+      xblk[*nblks] = *neqns - num + 1;
+      i__3         = num;
+      for (k = lnum; k <= i__3; ++k) {
+        node       = perm[k];
+        mask[node] = 0;
+      }
+      if (num > *neqns) goto L500;
 L300:
-	    ;
-	}
-L400:
-	;
+      ;
     }
+L400:
+    ;
+  }
 /*       SINCE DISSECTORS FOUND FIRST SHOULD BE ORDERED LAST,*/
 /*       ROUTINE REVRSE IS CALLED TO ADJUST THE ORDERING*/
 /*       VECTOR, AND THE BLOCK INDEX VECTOR.*/
 L500:
-    SPARSEPACKrevrse(neqns, &perm[1]);
-    SPARSEPACKrevrse(nblks, &xblk[1]);
-    xblk[*nblks + 1] = *neqns + 1;
-    PetscFunctionReturn(0);
+  SPARSEPACKrevrse(neqns, &perm[1]);
+  SPARSEPACKrevrse(nblks, &xblk[1]);
+  xblk[*nblks + 1] = *neqns + 1;
+  PetscFunctionReturn(0);
 }

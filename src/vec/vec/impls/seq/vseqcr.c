@@ -1,12 +1,11 @@
-#define PETSCVEC_DLL
+
 /*
    Implements the sequential vectors.
 */
 
-#include "private/vecimpl.h"          /*I  "petscvec.h"   I*/
-#include "../src/vec/vec/impls/dvecimpl.h" 
+#include <../src/vec/vec/impls/dvecimpl.h>          /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateSeq"
 /*@
    VecCreateSeq - Creates a standard, sequential array-style vector.
@@ -15,7 +14,7 @@
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
--  n - the vector length 
+-  n - the vector length
 
    Output Parameter:
 .  V - the vector
@@ -30,7 +29,7 @@
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
+PetscErrorCode  VecCreateSeq(MPI_Comm comm,PetscInt n,Vec *v)
 {
   PetscErrorCode ierr;
 

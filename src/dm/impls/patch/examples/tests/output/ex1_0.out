@@ -1,0 +1,221 @@
+Patch DM Patch Mesh
+  Coarse DM
+  Processor [0] M 6 N 6 m 1 n 1 w 1 s 1
+  X range of indices: 0 6, Y range of indices: 0 6
+Patch 0: (0, 0, 0)--(2, 2, 1)
+Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=9, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,6)
+  [0] 4 <- (0,7)
+  [0] 5 <- (0,8)
+  [0] 6 <- (0,12)
+  [0] 7 <- (0,13)
+  [0] 8 <- (0,14)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 3 <- (0,6)
+  [0] 4 <- (0,7)
+Patch 1: (2, 0, 0)--(4, 2, 1)
+Processor [0] M 4 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 4, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=12, remote ranks=1
+  [0] 0 <- (0,1)
+  [0] 1 <- (0,2)
+  [0] 2 <- (0,3)
+  [0] 3 <- (0,4)
+  [0] 4 <- (0,7)
+  [0] 5 <- (0,8)
+  [0] 6 <- (0,9)
+  [0] 7 <- (0,10)
+  [0] 8 <- (0,13)
+  [0] 9 <- (0,14)
+  [0] 10 <- (0,15)
+  [0] 11 <- (0,16)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 1 <- (0,2)
+  [0] 2 <- (0,3)
+  [0] 5 <- (0,8)
+  [0] 6 <- (0,9)
+Patch 2: (4, 0, 0)--(6, 2, 1)
+Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=9, remote ranks=1
+  [0] 0 <- (0,3)
+  [0] 1 <- (0,4)
+  [0] 2 <- (0,5)
+  [0] 3 <- (0,9)
+  [0] 4 <- (0,10)
+  [0] 5 <- (0,11)
+  [0] 6 <- (0,15)
+  [0] 7 <- (0,16)
+  [0] 8 <- (0,17)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 1 <- (0,4)
+  [0] 2 <- (0,5)
+  [0] 4 <- (0,10)
+  [0] 5 <- (0,11)
+Patch 3: (0, 2, 0)--(2, 4, 1)
+Processor [0] M 3 N 4 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 4
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=12, remote ranks=1
+  [0] 0 <- (0,6)
+  [0] 1 <- (0,7)
+  [0] 2 <- (0,8)
+  [0] 3 <- (0,12)
+  [0] 4 <- (0,13)
+  [0] 5 <- (0,14)
+  [0] 6 <- (0,18)
+  [0] 7 <- (0,19)
+  [0] 8 <- (0,20)
+  [0] 9 <- (0,24)
+  [0] 10 <- (0,25)
+  [0] 11 <- (0,26)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 3 <- (0,12)
+  [0] 4 <- (0,13)
+  [0] 6 <- (0,18)
+  [0] 7 <- (0,19)
+Patch 4: (2, 2, 0)--(4, 4, 1)
+Processor [0] M 4 N 4 m 1 n 1 w 1 s 0
+X range of indices: 0 4, Y range of indices: 0 4
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=16, remote ranks=1
+  [0] 0 <- (0,7)
+  [0] 1 <- (0,8)
+  [0] 2 <- (0,9)
+  [0] 3 <- (0,10)
+  [0] 4 <- (0,13)
+  [0] 5 <- (0,14)
+  [0] 6 <- (0,15)
+  [0] 7 <- (0,16)
+  [0] 8 <- (0,19)
+  [0] 9 <- (0,20)
+  [0] 10 <- (0,21)
+  [0] 11 <- (0,22)
+  [0] 12 <- (0,25)
+  [0] 13 <- (0,26)
+  [0] 14 <- (0,27)
+  [0] 15 <- (0,28)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 5 <- (0,14)
+  [0] 6 <- (0,15)
+  [0] 9 <- (0,20)
+  [0] 10 <- (0,21)
+Patch 5: (4, 2, 0)--(6, 4, 1)
+Processor [0] M 3 N 4 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 4
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=12, remote ranks=1
+  [0] 0 <- (0,9)
+  [0] 1 <- (0,10)
+  [0] 2 <- (0,11)
+  [0] 3 <- (0,15)
+  [0] 4 <- (0,16)
+  [0] 5 <- (0,17)
+  [0] 6 <- (0,21)
+  [0] 7 <- (0,22)
+  [0] 8 <- (0,23)
+  [0] 9 <- (0,27)
+  [0] 10 <- (0,28)
+  [0] 11 <- (0,29)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 4 <- (0,16)
+  [0] 5 <- (0,17)
+  [0] 7 <- (0,22)
+  [0] 8 <- (0,23)
+Patch 6: (0, 4, 0)--(2, 6, 1)
+Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=9, remote ranks=1
+  [0] 0 <- (0,18)
+  [0] 1 <- (0,19)
+  [0] 2 <- (0,20)
+  [0] 3 <- (0,24)
+  [0] 4 <- (0,25)
+  [0] 5 <- (0,26)
+  [0] 6 <- (0,30)
+  [0] 7 <- (0,31)
+  [0] 8 <- (0,32)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 3 <- (0,24)
+  [0] 4 <- (0,25)
+  [0] 6 <- (0,30)
+  [0] 7 <- (0,31)
+Patch 7: (2, 4, 0)--(4, 6, 1)
+Processor [0] M 4 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 4, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=12, remote ranks=1
+  [0] 0 <- (0,19)
+  [0] 1 <- (0,20)
+  [0] 2 <- (0,21)
+  [0] 3 <- (0,22)
+  [0] 4 <- (0,25)
+  [0] 5 <- (0,26)
+  [0] 6 <- (0,27)
+  [0] 7 <- (0,28)
+  [0] 8 <- (0,31)
+  [0] 9 <- (0,32)
+  [0] 10 <- (0,33)
+  [0] 11 <- (0,34)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 5 <- (0,26)
+  [0] 6 <- (0,27)
+  [0] 9 <- (0,32)
+  [0] 10 <- (0,33)
+Patch 8: (4, 4, 0)--(6, 6, 1)
+Processor [0] M 3 N 3 m 1 n 1 w 1 s 0
+X range of indices: 0 3, Y range of indices: 0 3
+Star Forest Object:Buffered Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=9, remote ranks=1
+  [0] 0 <- (0,21)
+  [0] 1 <- (0,22)
+  [0] 2 <- (0,23)
+  [0] 3 <- (0,27)
+  [0] 4 <- (0,28)
+  [0] 5 <- (0,29)
+  [0] 6 <- (0,33)
+  [0] 7 <- (0,34)
+  [0] 8 <- (0,35)
+Star Forest Object:Restricted Map 1 MPI processes
+  type not yet set
+  [0] Number of roots=36, leaves=4, remote ranks=1
+  [0] 4 <- (0,28)
+  [0] 5 <- (0,29)
+  [0] 7 <- (0,34)
+  [0] 8 <- (0,35)

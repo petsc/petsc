@@ -1,7 +1,7 @@
-#define PETSC_DLL
-#include "petscsys.h"              /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__  
+#include <petscsys.h>              /*I  "petscsys.h"  I*/
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscPopUpSelect"
 /*@C
      PetscPopUpSelect - Pops up a windows with a list of choices; allows one to be chosen
@@ -9,9 +9,9 @@
      Collective on MPI_Comm
 
      Input Parameters:
-+    comm - MPI communicator, all processors in communicator must call this but input 
++    comm - MPI communicator, all processors in communicator must call this but input
             from first communicator is the only one that is used
-.    machine - location to run popup program or PETSC_NULL
+.    machine - location to run popup program or NULL
 .    title - text to display above choices
 .    n - number of choices
 -    choices - array of strings
@@ -24,7 +24,7 @@
      Notes:
        Uses DISPLAY variable or -display option to determine where it opens the window
 
-       Currently this uses a file ~username/.popuptmp to pass the value back from the 
+       Currently this uses a file ~username/.popuptmp to pass the value back from the
        xterm; hence this program must share a common file system with the machine
        parameter passed in below.
 
@@ -33,7 +33,7 @@
    Concepts: menu
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
+PetscErrorCode  PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
 {
   PetscMPIInt    rank;
   int            i,rows = n + 2;
@@ -70,7 +70,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *mac
   }
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,buffer,"r",&fp);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *fd;

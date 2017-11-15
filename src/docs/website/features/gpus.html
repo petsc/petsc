@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Features: Nvidia GPU support</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1>Features: Nvidia GPU support</h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li>
+          <a href="../features/index.html">Features</a>
+          <ul>
+            <li><a href="details.html">Component Details</a></li>
+            <li><a href="diagram.html">Diagram</a></li>
+            <li><span class="current">GPUs</span></li>
+            <li><a href="threads.html">Theads</a></li>
+          </ul>
+        </li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <div id="main">
+
+      <p>
+        PETSc algebraic solvers now run on Nvidia GPU systems. This sometimes provides an
+        alternative high-performance, low-cost solution technique.
+      </p>
+
+      <p>
+        We recommend
+        working with <a href="../developers/index.html">petsc-dev</a> if you wish
+        to work witht his feature.
+      </p>
+
+      If you use the PETSc GPU code in your published work, please cite the following
+      paper:
+      <br>
+      <pre>
+        @article{minden2010preliminary,
+          title={Preliminary implementation of PETSc using GPUs},
+          author={Minden, V. and Smith, B.F. and Knepley, M.G.},
+          journal={Proceedings of the 2010 International Workshop of GPU Solutions to Multiscale Problems in Science and Engineering},
+          year={2010}
+        }
+      </pre>
+
+      <span class="warning">
+        WARNING: Using GPUs effectively is difficult! You must be dedicated and
+        willing to get into the guts of GPU usage if you are serious about using
+        GPUs.
+      </span>
+
+      <ul>
+        <li><a href="http://www.mcs.anl.gov/petsc/documentation/installation.html#CUDA">Installing PETSc to use the Nvidia GPUs</a></li>
+        <li><a href="gpus.pdf">How the GPU solvers are implemented in PETSc</a></li>
+        <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">Example that uses CUSP directly in the user function evaluation</a></li>
+        <li><a href="http://vimeo.com/18768859">Presentation on some aspects of GPU usage from PETSc</a></li>
+
+        <li>
+          Quick summary of usage:
+          <ul>
+            <li>
+              The VecType <code>VECSEQCUSP</code>, <code>VECMPICUSP</code>, or
+              <code>VECCUSP</code> may be used with <code>VecSetType()</code> or
+              -vec_type seqcusp,mpicusp, or cusp when <code>VecSetFromOptions()</code> is used.
+            </li>
+
+            <li>
+              The MatType <code>MATSEQAIJCUSP</code>, <code>MATMPIAIJCUSP</code>, or
+              <code>MATAIJCUSP</code> maybe used with MatSetType or -mat_type
+              seqaijcusp,mpiaijcusp, or aijcusp when <code>MatSetOptions()</code>
+              is used.
+            </li>
+
+            <li>
+              The MatType <code>MATSEQAIJCUSPARSE</code>, <code>MATMPIAIJCUSPARSE</code>, or
+              <code>MATAIJCUSPARSE</code> maybe used with MatSetType or -mat_type
+              seqaijcusparse,mpiaijcusparse, or aijcusparse when <code>MatSetOptions()</code>
+              is used.
+            </li>
+
+            <li>
+              If you are creating the vectors and matrices with a
+              DM, you can use -dm_vec_type cusp and -dm_mat_type cusp
+            </li>
+
+            <li>
+              It is useful to develop your code with the default
+              vectors and then run production runs with the command
+              line options to use the GPU since debugging on GPUs is difficult.
+            </li>
+
+            <li>
+              All of the Krylov methods except <code>KSPIBCGS</code> run on the
+              GPU. We also provide <code>PCBICGSTABCUSP</code>, but it does not
+              appear more efficient than <code>PCBICGSTAB</code>.
+            </li>
+
+            <li>
+              The only preconditioners to run directly on the GPU are <code>PCJACOBI</code>,
+              <code>PCSACUSP</code>, <code>PCSACUSPPOLY</code>, and <code>PCAINVCUSP</code>.
+              The <code>PCBJACOBI</code> and <code>PCASM</code> are just containers,
+              so if the subsolver runs on the GPU, they can also be considered to run on the GPU.
+            </li>
+          </ul>
+        </li>
+
+        <li>
+          Some GPU systems (for example many laptops) only run with single
+          precision; thus, PETSc must be built with the
+          <code>./configure option --with-precision=single</code>
+        </li>
+
+        <li>
+          We could use your help in further developing PETSc for GPUs; see
+          <a href="../developers/index.html">petsc-dev</a>.
+        </li>
+      </ul>
+      </ul>
+
+    </div>
+
+    <hr>
+  </body>
+</html>

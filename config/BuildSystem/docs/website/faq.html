@@ -1,0 +1,76 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>PETSc 3</title>
+</head>
+
+<body>
+
+<h1 align="center">ASE FAQ&nbsp;</h1>
+
+<ol>
+  <li>
+    <p align="left"><font color="#FF0000">Do you (or will you) support binary
+    distribution of components?</font><br>
+    This is very unlikely, since our experiments on Linux indicated that almost
+    any small change in the OS or support software (Python version, g++ version)
+    breaks binary compatibility (essentially the machine you build the component
+    on has to be virtually identical to the machine you run it on).&nbsp;<br>
+    <br>
+    Instead, we've adopted a source distribution model where the entire build
+    process (downloading, configure, compiling, registering, etc) is handled
+    cleanly by ASE</li>
+  <li>
+    <p align="left"><font color="#FF0000">Do you intend to support F77 as client
+    and server languages?<br>
+    </font>No, but we would assistant anyone interested in doing this. The <a href="http://www.llnl.gov/CASC/components">LLNL
+    Babel Team</a> does provide code generators for f77.</li>
+  <li>
+    <p align="left"><font color="#FF0000">Are you compatible with the <a href="http://www.llnl.gov/CASC/components">LLNL
+    Babel Team</a> SIDL code generator?<br>
+    </font>We are compatible at the source code level (see 1. regarding binary
+    compatibility). We are developing software tools to make it trivial to move
+    &quot;implementations&quot; between the Babel generated code and the ASE.</li>
+  <li>
+    <p align="left"><font color="#FF0000">How central to your plans is the use
+    of SIDL?<br>
+    </font>We are &quot;betting the farm on it&quot;<font color="#FF0000">. </font>We
+    are rewriting all of PETSc to use SIDL and plan to do all future software
+    development with SIDL.</li>
+  <li>
+    <p align="left"><font color="#FF0000">How come I have to &quot;buy
+    into&quot; this enormous infrastructure to use your software; I'd like to
+    take the one or two modules I need and no use the rest of the stuff?<br>
+    </font>You are free to use as little or as much of the functionality of the
+    libraries we provide as you like; for example, you can use our linear
+    solvers but not our nonlinear solvers, through the use of dynamic libraries
+    your application executable does not contain anything you do not use.<br>
+    <br>
+    However, it is not feasible to &quot;pull out&quot; of the libraries just
+    the source code you use, the dependencies are just too complex. You would
+    need to pull in all the error handling code, the profiling code, the dynamic
+    loading code and the infrastructure to make that code portable and to
+    compile it; at that point your application make environment will need to be
+    as complicated and sophisticated as the ASE. Hence it is far better to treat
+    the ASE components simply as libraries that you link against.&nbsp;&nbsp;</li>
+</ol>
+
+
+<hr>
+<p align="left">The ASE source code is maintained using the <a href="http://www.bitkeeper.com">BitKeeper</a>
+revision control system and hosted at <a href="http://www.bkbits.net">www.bkbits.net</a></p>
+<p align="left">The source for this page is at bk://sidl.bkbits.net/BuildSystem/docs/website/faq.html.
+This file is updated on the website using the following command
+in the&nbsp; bk://sidl.bkbits.net/BuildSystem/ repository:</p>
+
+<font color="#FF0000">make.py updateWebsite</font> <p align="left">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

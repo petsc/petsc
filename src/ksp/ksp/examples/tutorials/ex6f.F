@@ -22,11 +22,11 @@
 !     petscis.h     - index sets
 !
       program main
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 !  Variables:
 !
@@ -42,9 +42,9 @@
       PetscInt Istart,Iend
       PetscInt nsteps,one
       PetscErrorCode ierr
-      PetscTruth flg
+      PetscBool  flg
       PetscScalar  v
-      
+
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m      = 3
@@ -64,22 +64,23 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  The matrix is partitioned by contiguous chunks of rows across the
-!  processors.  Determine which rows of the matrix are locally owned. 
+!  processors.  Determine which rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-!  Set matrix elements. 
+!  Set matrix elements.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
@@ -149,11 +150,11 @@
 !
       subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 !
 !   solve1 - This routine is used for repeated linear system solves.
@@ -174,7 +175,7 @@
 ! Use common block to retain matrix between successive subroutine calls
       Mat              A2
       PetscMPIInt      rank
-      PetscTruth       pflag
+      PetscBool        pflag
       common /my_data/ A2,pflag,rank
 
       one = 1
@@ -186,6 +187,7 @@
      &       pflag,ierr)
         if (pflag) then
           if (rank .eq. 0) write(6,100)
+          call flush(6)
         endif
         call MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,A2,ierr)
 ! All other times: Set previous solution as initial guess for next solve.
@@ -202,6 +204,7 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       if (pflag) then
         if (rank .eq. 0) write(6,110)
+        call flush(6)
       endif
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 

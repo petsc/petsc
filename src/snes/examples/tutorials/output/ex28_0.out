@@ -1,0 +1,3 @@
+  0 SNES Function norm 20.0032 
+  1 SNES Function norm < 1.e-11
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

@@ -1,12 +1,12 @@
-#define PETSCKSP_DLL
 
 /*
       Interface KSP routines that the user calls.
 */
 
-#include "private/kspimpl.h"   /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petscdm.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeExtremeSingularValues"
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
@@ -20,13 +20,23 @@
    Output Parameters:
 .  emin, emax - extreme singular values
 
+   Options Database Keys:
+.  -ksp_compute_singularvalues - compute extreme singular values and print when KSPSolve completes.
+
    Notes:
-   One must call KSPSetComputeSingularValues() before calling KSPSetUp() 
+   One must call KSPSetComputeSingularValues() before calling KSPSetUp()
    (or use the option -ksp_compute_eigenvalues) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
    KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the extreme singular values at each iteration of the linear solve.
+
+   Estimates of the smallest singular value may be very inaccurate, especially if the Krylov method has not converged.
+   The largest singular value is usually accurate to within a few percent if the method has converged, but is still not
+   intended for eigenanalysis.
+
+   Disable restarts if using KSPGMRES, otherwise this estimate will only be using those iterations after the last
+   restart. See KSPGMRESSetRestart() for more details.
 
    Level: advanced
 
@@ -34,7 +44,7 @@
 
 .seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeEigenvalues()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
+PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   PetscErrorCode ierr;
 
@@ -42,7 +52,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidScalarPointer(emax,2);
   PetscValidScalarPointer(emin,3);
-  if (!ksp->calc_sings) SETERRQ(((PetscObject)ksp)->comm,4,"Singular values not requested before KSPSetUp()");
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
     ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
@@ -53,7 +63,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
@@ -63,7 +73,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
 
    Input Parameter:
 +  ksp - iterative context obtained from KSPCreate()
--  n - size of arrays r and c. The number of eigenvalues computed (neig) will, in 
+-  n - size of arrays r and c. The number of eigenvalues computed (neig) will, in
        general, be less than this.
 
    Output Parameters:
@@ -77,16 +87,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space
-   generated during the KSPSolve() ; for example, with 
-   CG it corresponds to the number of CG iterations, for GMRES it is the number 
+   generated during the KSPSolve() ; for example, with
+   CG it corresponds to the number of CG iterations, for GMRES it is the number
    of GMRES iterations SINCE the last restart. Any extra space in r[] and c[]
    will be ignored.
 
    KSPComputeEigenvalues() does not usually provide accurate estimates; it is
-   intended only for assistance in understanding the convergence of iterative 
-   methods, not for eigenanalysis. 
+   intended only for assistance in understanding the convergence of iterative
+   methods, not for eigenanalysis.
 
-   One must call KSPSetComputeEigenvalues() before calling KSPSetUp() 
+   One must call KSPSetComputeEigenvalues() before calling KSPSetUp()
    in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
@@ -99,16 +109,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
 
 .seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal *c,PetscInt *neig)
+PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidScalarPointer(r,2);
-  PetscValidScalarPointer(c,3);
-  PetscValidIntPointer(neig,4);
-  if (!ksp->calc_sings) SETERRQ(((PetscObject)ksp)->comm,4,"Eigenvalues not requested before KSPSetUp()");
+  PetscValidScalarPointer(r,3);
+  PetscValidScalarPointer(c,4);
+  PetscValidIntPointer(neig,5);
+  if (!ksp->calc_sings) SETERRQ(PetscObjectComm((PetscObject)ksp),4,"Eigenvalues not requested before KSPSetUp()");
 
   if (ksp->ops->computeeigenvalues) {
     ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
@@ -118,11 +128,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP ksp,PetscInt n,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUpOnBlocks"
 /*@
    KSPSetUpOnBlocks - Sets up the preconditioner for each block in
-   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
+   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
    methods.
 
    Collective on KSP
@@ -135,7 +145,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP ksp,PetscInt n,Petsc
    more precise profiling (via -log_summary) of the setup phase for these
    block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
    it will automatically be called from within KSPSolve().
-   
+
    Calling KSPSetUpOnBlocks() is the same as calling PCSetUpOnBlocks()
    on the PC context within the KSP context.
 
@@ -145,7 +155,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP ksp,PetscInt n,Petsc
 
 .seealso: PCSetUpOnBlocks(), KSPSetUp(), PCSetUp()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
+PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -156,7 +166,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the
@@ -173,14 +183,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
 
 .seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
+PetscErrorCode  KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscTruth     ir = PETSC_FALSE,ig = PETSC_FALSE;
-  Mat            A;
-  MatStructure   stflg;
-
-  /* PetscTruth     im = PETSC_FALSE; */
+  Mat            A,B;
+  MatStructure   stflg = SAME_NONZERO_PATTERN;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -188,92 +195,102 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if (!((PetscObject)ksp)->type_name){
+  if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
+  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
 
   if (ksp->dmActive && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
     if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-    ierr = DMGetMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);  
-    ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr); 
+    ierr = DMCreateMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr);
   }
 
   if (ksp->dmActive) {
-    ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
-    if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
+    DMKSP kdm;
+    ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
+
+    if (kdm->ops->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
+      /* only computes initial guess the first time through */
+      ierr = (*kdm->ops->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = DMHasFunction(ksp->dm,&ir);CHKERRQ(ierr);
-    if (ir && ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
+    if (kdm->ops->computerhs) {
+      ierr = (*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = KSPGetOperators(ksp,&A,&A,PETSC_NULL);CHKERRQ(ierr);
-      ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,A,&stflg);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr); 
+      if (kdm->ops->computeoperators) {
+        ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
+        ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
+      } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(dm,PETSC_FALSE);");
     }
   }
 
   if (ksp->setupstage == KSP_SETUP_NEWRHS) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
-  if (!ksp->setupstage) {
+  switch (ksp->setupstage) {
+  case KSP_SETUP_NEW:
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
+    break;
+  case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
+    ierr = KSPChebyshevSetNewMatrix(ksp);CHKERRQ(ierr);
+  } break;
+  default: break;
   }
 
   /* scale the matrix if requested */
   if (ksp->dscale) {
-    Mat mat,pmat;
+    Mat         mat,pmat;
+    PetscScalar *xx;
+    PetscInt    i,n;
+    PetscBool   zeroflag = PETSC_FALSE;
     if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-    ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
-    if (mat == pmat) {
-      PetscScalar  *xx;
-      PetscInt     i,n;
-      PetscTruth   zeroflag = PETSC_FALSE;
-
-      if (!ksp->diagonal) { /* allocate vector to hold diagonal */
-	ierr = MatGetVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
+    if (!ksp->diagonal) { /* allocate vector to hold diagonal */
+      ierr = MatGetVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
+    }
+    ierr = MatGetDiagonal(pmat,ksp->diagonal);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(ksp->diagonal,&xx);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      if (xx[i] != 0.0) xx[i] = 1.0/PetscSqrtReal(PetscAbsScalar(xx[i]));
+      else {
+        xx[i]    = 1.0;
+        zeroflag = PETSC_TRUE;
       }
-      ierr = MatGetDiagonal(mat,ksp->diagonal);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
-      ierr = VecGetArray(ksp->diagonal,&xx);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	if (xx[i] != 0.0) xx[i] = 1.0/sqrt(PetscAbsScalar(xx[i]));
-	else {
-	  xx[i]     = 1.0;
-	  zeroflag  = PETSC_TRUE;
-	}
-      }
-      ierr = VecRestoreArray(ksp->diagonal,&xx);CHKERRQ(ierr);
-      if (zeroflag) {
-	ierr = PetscInfo(ksp,"Zero detected in diagonal of matrix, using 1 at those locations\n");CHKERRQ(ierr);
-      }
-      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
-      ksp->dscalefix2 = PETSC_FALSE;
-    } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No support for diagonal scaling of linear system if preconditioner matrix not actual matrix");
+    }
+    ierr = VecRestoreArray(ksp->diagonal,&xx);CHKERRQ(ierr);
+    if (zeroflag) {
+      ierr = PetscInfo(ksp,"Zero detected in diagonal of matrix, using 1 at those locations\n");CHKERRQ(ierr);
+    }
+    ierr = MatDiagonalScale(pmat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+    if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
+    ksp->dscalefix2 = PETSC_FALSE;
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
-    PetscTruth test = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool test = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,NULL);CHKERRQ(ierr);
     if (test) {
       Mat mat;
-      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(ksp->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(ksp->nullsp,mat,NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupstage = KSP_SETUP_NEWRHS;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#include <petscdraw.h>
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve"
 /*@
    KSPSolve - Solves linear system.
@@ -290,19 +307,26 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and useing LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
-.  -ksp_view_binary - save matrix and right hand side that define linear system to the default binary viewer (can be
-                                read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_mat binary - save matrix to the default binary viewer
+.  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
+.  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
+.  -ksp_view_solution binary - save computed solution vector to the default binary viewer
+           (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
+.  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
 .  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
 
-   The operator is specified with PCSetOperators().
+   If one uses KSPSetDM() then x or b need not be passed. Use KSPGetSolution() to access the solution in this case.
 
-   Call KSPGetConvergedReason() to determine if the solver converged or failed and 
+   The operator is specified with KSPSetOperators().
+
+   Call KSPGetConvergedReason() to determine if the solver converged or failed and
    why. The number of iterations can be obtained from KSPGetIterationNumber().
-   
+
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
@@ -320,66 +344,57 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x) 
+PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  char           view[10];
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscViewer    viewer;
-  
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank;
+  PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
+  PetscViewer       viewer;
+  Mat               mat,premat;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,3);
 
-  if (b && x) {
-    if (x == b) {
-      ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
-      inXisinB = PETSC_TRUE;
-    }
-    ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-    if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
-    if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
+  if (x && x == b) {
+    if (!ksp->guess_zero) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
+    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+    inXisinB = PETSC_TRUE;
+  }
+  if (b) {
+    ierr         = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+    ierr         = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
     ksp->vec_rhs = b;
+  }
+  if (x) {
+    ierr         = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+    ierr         = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_sol = x;
   }
 
-  flag1 = flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_binary_pre",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag1 || flag2) {
-    Mat mat,premat;
-    PetscViewer viewer = PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm);
-    ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
-    if (flag1) {ierr = MatView(mat,viewer);CHKERRQ(ierr);}
-    if (flag2) {ierr = MatView(premat,viewer);CHKERRQ(ierr);}
-    ierr = VecView(ksp->vec_rhs,viewer);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
+  if (ksp->presolve) {
+    ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
-
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",view,10,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscStrcmp(view,"before",&viewed);CHKERRQ(ierr);
-    if (viewed){
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    }
-  }
-
   ksp->transpose_solve = PETSC_FALSE;
 
   if (ksp->guess) {
-    ierr = KSPFischerGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr            = KSPFischerGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
-  }  
+  }
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
@@ -389,10 +404,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
     /* second time in, but matrix was scaled back to original */
     if (ksp->dscalefix && ksp->dscalefix2) {
-      Mat mat;
+      Mat mat,pmat;
 
-      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(pmat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+      if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
     }
 
     /*  scale initial guess */
@@ -420,22 +436,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     PetscReal norm;
 
     ierr = VecNormAvailable(ksp->vec_sol,NORM_2,&flg,&norm);CHKERRQ(ierr);
-    if (flg && !norm) {
-      ksp->guess_zero = PETSC_TRUE;
-    }
+    if (flg && !norm) ksp->guess_zero = PETSC_TRUE;
   }
-  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   ksp->guess_zero = guess_zero;
 
-  if (!ksp->reason) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->printreason) {
-    PetscInt tab = ((PetscObject)ksp)->tablevel;
-    while (tab--) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"  ");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIAddTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIISubtractTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp)),((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
@@ -444,192 +458,194 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecPointwiseMult(ksp->vec_sol,ksp->vec_sol,ksp->diagonal);CHKERRQ(ierr);
     /* unscale right hand side and matrix */
     if (ksp->dscalefix) {
-      Mat mat;
+      Mat mat,pmat;
 
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
       ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
-      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
-      ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,&pmat,NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(pmat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
+      if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
+      ierr            = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
+  if (ksp->postsolve) {
+    ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
+  }
 
   if (ksp->guess) {
     ierr = KSPFischerGuessUpdate(ksp->guess,ksp->vec_sol);CHKERRQ(ierr);
-  }  
+  }
 
-  ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank);CHKERRQ(ierr);
+
+  ierr = PCGetOperators(ksp->pc,&mat,&premat,NULL);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,((PetscObject)ksp)->prefix,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(premat,((PetscObject)ksp)->prefix,"-ksp_view_pmat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,((PetscObject)ksp)->prefix,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag1 || flag2) {
-    PetscInt   nits,n,i,neig;
+  flag3 = PETSC_FALSE;
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,NULL);CHKERRQ(ierr);
+  if (flag1 || flag2 || flag3) {
+    PetscInt  nits,n,i,neig;
     PetscReal *r,*c;
-   
+
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
-    n = nits+2;
+    n    = nits+2;
 
     if (!nits) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
-      c = r + n;
+      c    = r + n;
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
-        ierr = PetscPrintf(((PetscObject)ksp)->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
-          if (c[i] >= 0.0) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
-          else             {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+          if (c[i] >= 0.0) {
+            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);
+          } else {
+            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);
+          }
         }
       }
       if (flag2 && !rank) {
         PetscDraw   draw;
         PetscDrawSP drawsp;
 
-        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+        if (!ksp->eigviewer) {
+          ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
         ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+        ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
           ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
         }
-        ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
-        ierr = PetscDrawSPDestroy(drawsp);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
+      }
+      if (flag3 && !rank) {
+        ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
       }
       ierr = PetscFree(r);CHKERRQ(ierr);
     }
   }
 
   flag1 = PETSC_FALSE;
-  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_singularvalues",&flag1,NULL);CHKERRQ(ierr);
   if (flag1) {
-    PetscInt   nits;
+    PetscInt nits;
 
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
     if (!nits) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Zero iterations in solver, cannot approximate any singular values\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any singular values\n");CHKERRQ(ierr);
     } else {
       PetscReal emax,emin;
 
       ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Iteratively computed extreme singular values: max %G min %G max/min %G\n",emax,emin,emax/emin);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed extreme singular values: max %G min %G max/min %G\n",emax,emin,emax/emin);CHKERRQ(ierr);
     }
   }
 
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,NULL);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt  n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
-    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
+    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
     if (flag1) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        if (c[i] >= 0.0) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
-        else             {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+        if (c[i] >= 0.0) {
+          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);
+        } else {
+          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);
+        }
       }
     }
     if (flag2 && !rank) {
       PetscDraw   draw;
       PetscDrawSP drawsp;
 
-      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      if (!ksp->eigviewer) {
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,400,400,&ksp->eigviewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+      ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
-      ierr = PetscDrawSPDestroy(drawsp);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
     }
     ierr = PetscFree2(r,c);CHKERRQ(ierr);
   }
 
-  flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_operator",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag2) {
-    Mat         A,B;
-    PetscViewer viewer;
-
-    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
-  }
-  flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
-    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit");CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_preconditioner_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag2) {
-    Mat B;
-    ierr = PCComputeExplicitOperator(ksp->pc,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  if (!viewed) {
-    ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg && !PetscPreLoadingOn) {
-      ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,filename,&viewer);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr); 
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
-  }
+
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    Mat         A;
-    Vec         t;
-    PetscReal   norm;
-    if (ksp->dscale && !ksp->dscalefix) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
+    Mat       A;
+    Vec       t;
+    PetscReal norm;
+    if (ksp->dscale && !ksp->dscalefix) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
     ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
-    ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
+    ierr = VecDuplicate(ksp->vec_rhs,&t);CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,A,ksp->vec_sol,t);CHKERRQ(ierr);
     ierr = VecAYPX(t, -1.0, ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = VecDestroy(t);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)ksp)->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
+    ierr = VecDestroy(&t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
+  ierr = VecViewFromOptions(ksp->vec_sol,((PetscObject)ksp)->prefix,"-ksp_view_solution");CHKERRQ(ierr);
+
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
+  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
+  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolveTranspose"
 /*@
-   KSPSolveTranspose - Solves the transpose of a linear system. Usually
-   accessed through KSPSolveTranspose().
+   KSPSolveTranspose - Solves the transpose of a linear system.
 
    Collective on KSP
 
@@ -638,9 +654,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 .  b - right hand side vector
 -  x - solution vector
 
-   Note:
-   Currently only supported by KSPType of KSPPREONLY. This routine is usally 
-   only used internally by the BiCG solver on the subblocks in BJacobi and ASM.
+   Notes: For complex numbers this solve the non-Hermitian transpose system.
+
+   Developer Notes: We need to implement a KSPSolveHermitianTranspose()
 
    Level: developer
 
@@ -649,10 +665,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
+
+PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscTruth     inXisinB=PETSC_FALSE;
+  PetscBool      inXisinB=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -664,31 +681,72 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   }
   ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
-  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
-  ksp->vec_rhs = b;
-  ksp->vec_sol = x;
+  ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
+
+  ksp->vec_rhs         = b;
+  ksp->vec_sol         = x;
   ksp->transpose_solve = PETSC_TRUE;
+
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
-  if (!ksp->reason) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  if (!ksp->reason) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->printreason) {
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     }
   }
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
+  if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset"
+/*@
+   KSPReset - Resets a KSP context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Level: beginner
+
+.keywords: KSP, destroy
+
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve()
+@*/
+PetscErrorCode  KSPReset(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp) PetscFunctionReturn(0);
+  if (ksp->ops->reset) {
+    ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
+  }
+  if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
+  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
+  ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);
+
+  ksp->setupstage = KSP_SETUP_NEW;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy"
 /*@
    KSPDestroy - Destroys KSP context.
@@ -704,38 +762,41 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
 .seealso: KSPCreate(), KSPSetUp(), KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
+PetscErrorCode  KSPDestroy(KSP *ksp)
 {
   PetscErrorCode ierr;
+  PC             pc;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (--((PetscObject)ksp)->refct > 0) PetscFunctionReturn(0);
+  if (!*ksp) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
+  if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*ksp);CHKERRQ(ierr);
+  /*
+   Avoid a cascading call to PCReset(ksp->pc) from the following call:
+   PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
+   refcount (and may be shared, e.g., by other ksps).
+   */
+  pc         = (*ksp)->pc;
+  (*ksp)->pc = NULL;
+  ierr       = KSPReset((*ksp));CHKERRQ(ierr);
+  (*ksp)->pc = pc;
+    if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
 
-  if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
-  if (ksp->ops->destroy) {
-    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
+  ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
+  ierr = PetscFree((*ksp)->res_hist_alloc);CHKERRQ(ierr);
+  if ((*ksp)->convergeddestroy) {
+    ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);
   }
-  if (ksp->guess) {
-    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
-  }  
-  ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
-  ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
-  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
-  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
-  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
-  if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
-  if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
-  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
-  if (ksp->convergeddestroy) {ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);}
+  ierr = KSPMonitorCancel((*ksp));CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ksp)->eigviewer);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetPCSide"
 /*@
     KSPSetPCSide - Sets the preconditioning side.
@@ -757,8 +818,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 .   -ksp_pc_side <right,left,symmetric>
 
     Notes:
-    Left preconditioning is used by default.  Symmetric preconditioning is
-    currently available only for the KSPQCG method. Note, however, that
+    Left preconditioning is used by default for most Krylov methods except KSPFGMRES which only supports right preconditioning.
+    Symmetric preconditioning is currently available only for the KSPQCG method. Note, however, that
     symmetric preconditioning can be emulated by using either right or left
     preconditioning and a pre or post processing step.
 
@@ -768,7 +829,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 
 .seealso: KSPGetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
+PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -777,7 +838,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetPCSide"
 /*@
     KSPGetPCSide - Gets the preconditioning side.
@@ -801,26 +862,29 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP ksp,PCSide side)
 
 .seealso: KSPSetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP ksp,PCSide *side) 
+PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(side,2);
+  ierr  = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *side = ksp->pc_side;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetTolerances"
 /*@
    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
-   iteration tolerances used by the default KSP convergence tests. 
+   iteration tolerances used by the default KSP convergence tests.
 
    Not Collective
 
    Input Parameter:
 .  ksp - the Krylov subspace context
-  
+
    Output Parameters:
 +  rtol - the relative convergence tolerance
 .  abstol - the absolute convergence tolerance
@@ -828,7 +892,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP ksp,PCSide *side)
 -  maxits - maximum number of iterations
 
    Notes:
-   The user can specify PETSC_NULL for any parameter that is not needed.
+   The user can specify NULL for any parameter that is not needed.
 
    Level: intermediate
 
@@ -837,22 +901,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP ksp,PCSide *side)
 
 .seealso: KSPSetTolerances()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,PetscInt *maxits)
+PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,PetscInt *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (abstol)   *abstol   = ksp->abstol;
-  if (rtol)   *rtol   = ksp->rtol;
-  if (dtol)   *dtol   = ksp->divtol;
+  if (abstol) *abstol = ksp->abstol;
+  if (rtol) *rtol = ksp->rtol;
+  if (dtol) *dtol = ksp->divtol;
   if (maxits) *maxits = ksp->max_it;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetTolerances"
 /*@
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
-   iteration tolerances used by the default KSP convergence testers. 
+   iteration tolerances used by the default KSP convergence testers.
 
    Logically Collective on KSP
 
@@ -860,7 +924,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP ksp,PetscReal *rtol,Petsc
 +  ksp - the Krylov subspace context
 .  rtol - the relative convergence tolerance
    (relative decrease in the residual norm)
-.  abstol - the absolute convergence tolerance 
+.  abstol - the absolute convergence tolerance
    (absolute size of the residual norm)
 .  dtol - the divergence tolerance
    (amount residual can increase before KSPDefaultConverged()
@@ -877,17 +941,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP ksp,PetscReal *rtol,Petsc
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
 
    See KSPDefaultConverged() for details on the use of these parameters
-   in the default convergence test.  See also KSPSetConvergenceTest() 
+   in the default convergence test.  See also KSPSetConvergenceTest()
    for setting user-defined stopping criteria.
 
    Level: intermediate
 
-.keywords: KSP, set, tolerance, absolute, relative, divergence, 
+.keywords: KSP, set, tolerance, absolute, relative, divergence,
            convergence, maximum, iterations
 
 .seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
+PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -896,17 +960,29 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
   PetscValidLogicalCollectiveReal(ksp,dtol,4);
   PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
-  if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
-  if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
-  if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
-  if (maxits != PETSC_DEFAULT) ksp->max_it = maxits;
+  if (rtol != PETSC_DEFAULT) {
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    ksp->rtol = rtol;
+  }
+  if (abstol != PETSC_DEFAULT) {
+    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",abstol);
+    ksp->abstol = abstol;
+  }
+  if (dtol != PETSC_DEFAULT) {
+    if (dtol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %G must be larger than 1.0",dtol);
+    ksp->divtol = dtol;
+  }
+  if (maxits != PETSC_DEFAULT) {
+    if (maxits < 0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxits);
+    ksp->max_it = maxits;
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetInitialGuessNonzero"
 /*@
-   KSPSetInitialGuessNonzero - Tells the iterative solver that the 
+   KSPSetInitialGuessNonzero - Tells the iterative solver that the
    initial guess is nonzero; otherwise KSP assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
@@ -928,16 +1004,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 
 .seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
+PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
-  ksp->guess_zero   = (PetscTruth)!(int)flg;
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->guess_zero = (PetscBool) !(int)flg;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetInitialGuessNonzero"
 /*@
    KSPGetInitialGuessNonzero - Determines whether the KSP solver is using
@@ -957,17 +1033,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth f
 
 .seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
+PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(flag,2);
   if (ksp->guess_zero) *flag = PETSC_FALSE;
-  else                 *flag = PETSC_TRUE;
+  else *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetErrorIfNotConverged"
 /*@
    KSPSetErrorIfNotConverged - Causes KSPSolve() to generate an error if the solver has not converged.
@@ -984,23 +1060,23 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *
    Level: intermediate
 
    Notes:
-    Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve() 
+    Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
 
 .keywords: KSP, set, initial guess, nonzero
 
 .seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPGetErrorIfNotConverged()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP ksp,PetscTruth flg)
+PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
   ksp->errorifnotconverged = flg;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetErrorIfNotConverged"
 /*@
    KSPGetErrorIfNotConverged - Will KSPSolve() generate an error if the solver does not converge?
@@ -1019,7 +1095,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP ksp,PetscTruth f
 
 .seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPSetErrorIfNotConverged()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP ksp,PetscTruth *flag)
+PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1028,7 +1104,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP ksp,PetscTruth *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetInitialGuessKnoll"
 /*@
    KSPSetInitialGuessKnoll - Tells the iterative solver to use PCApply(pc,b,..) to compute the initial guess (The Knoll trick)
@@ -1046,16 +1122,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP ksp,PetscTruth *
 
 .seealso: KSPGetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
+PetscErrorCode  KSPSetInitialGuessKnoll(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
-  ksp->guess_knoll   = flg;
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->guess_knoll = flg;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetInitialGuessKnoll"
 /*@
    KSPGetInitialGuessKnoll - Determines whether the KSP solver is using the Knoll trick (using PCApply(pc,b,...) to compute
@@ -1075,7 +1151,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg
 
 .seealso: KSPSetInitialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
+PetscErrorCode  KSPGetInitialGuessKnoll(KSP ksp,PetscBool  *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1084,11 +1160,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *fl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetComputeSingularValues"
 /*@
-   KSPGetComputeSingularValues - Gets the flag indicating whether the extreme singular 
-   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   KSPGetComputeSingularValues - Gets the flag indicating whether the extreme singular
+   values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
    Not Collective
@@ -1115,7 +1191,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *fl
 
 .seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth *flg)
+PetscErrorCode  KSPGetComputeSingularValues(KSP ksp,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1124,11 +1200,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetComputeSingularValues"
 /*@
-   KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
-   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   KSPSetComputeSingularValues - Sets a flag so that the extreme singular
+   values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
    Logically Collective on KSP
@@ -1153,20 +1229,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth
 
 .seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
+PetscErrorCode  KSPSetComputeSingularValues(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
-  ksp->calc_sings  = flg;
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->calc_sings = flg;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetComputeEigenvalues"
 /*@
    KSPGetComputeEigenvalues - Gets the flag indicating that the extreme eigenvalues
-   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
    Not Collective
@@ -1186,7 +1262,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth
 
 .seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP ksp,PetscTruth *flg)
+PetscErrorCode  KSPGetComputeEigenvalues(KSP ksp,PetscBool  *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1195,11 +1271,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP ksp,PetscTruth *f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetComputeEigenvalues"
 /*@
    KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
-   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
    Logically Collective on KSP
@@ -1217,16 +1293,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP ksp,PetscTruth *f
 
 .seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
+PetscErrorCode  KSPSetComputeEigenvalues(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,flg,2);
-  ksp->calc_sings  = flg;
+  PetscValidLogicalCollectiveBool(ksp,flg,2);
+  ksp->calc_sings = flg;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetRhs"
 /*@
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
@@ -1246,19 +1322,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP ksp,PetscTruth fl
 
 .seealso: KSPGetSolution(), KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP ksp,Vec *r)
-{   
+PetscErrorCode  KSPGetRhs(KSP ksp,Vec *r)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(r,2);
-  *r = ksp->vec_rhs; 
+  *r = ksp->vec_rhs;
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGetSolution" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGetSolution"
 /*@
-   KSPGetSolution - Gets the location of the solution for the 
+   KSPGetSolution - Gets the location of the solution for the
    linear system to be solved.  Note that this may not be where the solution
    is stored during the iterative process; see KSPBuildSolution().
 
@@ -1276,20 +1352,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP ksp,Vec *r)
 
 .seealso: KSPGetRhs(),  KSPBuildSolution(), KSPSolve()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSolution(KSP ksp,Vec *v)
+PetscErrorCode  KSPGetSolution(KSP ksp,Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1); 
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(v,2);
-  *v = ksp->vec_sol; 
+  *v = ksp->vec_sol;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetPC"
 /*@
-   KSPSetPC - Sets the preconditioner to be used to calculate the 
-   application of the preconditioner on a vector. 
+   KSPSetPC - Sets the preconditioner to be used to calculate the
+   application of the preconditioner on a vector.
 
    Collective on KSP
 
@@ -1307,7 +1383,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSolution(KSP ksp,Vec *v)
 
 .seealso: KSPGetPC()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
+PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
 {
   PetscErrorCode ierr;
 
@@ -1315,13 +1391,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   PetscCheckSameComm(ksp,1,pc,2);
-  ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
-  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
+  ierr    = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
+  ierr    = PCDestroy(&ksp->pc);CHKERRQ(ierr);
   ksp->pc = pc;
+  ierr    = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetPC"
 /*@
    KSPGetPC - Returns a pointer to the preconditioner context
@@ -1341,7 +1418,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
 
 .seealso: KSPSetPC()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
+PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
 {
   PetscErrorCode ierr;
 
@@ -1349,29 +1426,61 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(pc,2);
   if (!ksp->pc) {
-    ierr = PCCreate(((PetscObject)ksp)->comm,&ksp->pc);CHKERRQ(ierr);
+    ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&ksp->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
   }
-  *pc = ksp->pc; 
+  *pc = ksp->pc;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitor"
+/*@
+   KSPMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate()
+.  it - iteration number
+-  rnorm - relative norm of the residual
+
+   Notes:
+   This routine is called by the KSP implementations.
+   It does not typically need to be called by the user.
+
+   Level: developer
+
+.seealso: KSPMonitorSet()
+@*/
+PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
+{
+  PetscInt       i, n = ksp->numbermonitors;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    ierr = (*ksp->monitor[i])(ksp,it,rnorm,ksp->monitorcontext[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPMonitorSet"
 /*@C
-   KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor 
+   KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
    the residual/error etc.
-      
+
    Logically Collective on KSP
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
-.  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
+.  monitor - pointer to function (if this is NULL, it turns off monitoring
 .  mctx    - [optional] context for private data for the
-             monitor routine (use PETSC_NULL if no context is desired)
+             monitor routine (use NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
-          (may be PETSC_NULL)
+          (may be NULL)
 
    Calling Sequence of monitor:
 $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
@@ -1384,26 +1493,27 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
    Options Database Keys:
 +    -ksp_monitor        - sets KSPMonitorDefault()
 .    -ksp_monitor_true_residual    - sets KSPMonitorTrueResidualNorm()
-.    -ksp_monitor_draw    - sets line graph monitor,
-                           uses KSPMonitorLGCreate()
-.    -ksp_monitor_draw_true_residual   - sets line graph monitor,
-                           uses KSPMonitorLGCreate()
+.    -ksp_monitor_max    - sets KSPMonitorTrueResidualMaxNorm()
+.    -ksp_monitor_lg_residualnorm    - sets line graph monitor,
+                           uses KSPMonitorLGResidualNormCreate()
+.    -ksp_monitor_lg_true_residualnorm   - sets line graph monitor,
+                           uses KSPMonitorLGResidualNormCreate()
 .    -ksp_monitor_singular_value    - sets KSPMonitorSingularValue()
 -    -ksp_monitor_cancel - cancels all monitors that have
-                          been hardwired into a code by 
+                          been hardwired into a code by
                           calls to KSPMonitorSet(), but
                           does not cancel those set via
                           the options database.
 
-   Notes:  
-   The default is to do nothing.  To print the residual, or preconditioned 
-   residual if KSPSetNormType(ksp,KSP_NORM_PRECONDITIONED) was called, use 
-   KSPMonitorDefault() as the monitoring routine, with a null monitoring 
-   context. 
+   Notes:
+   The default is to do nothing.  To print the residual, or preconditioned
+   residual if KSPSetNormType(ksp,KSP_NORM_PRECONDITIONED) was called, use
+   KSPMonitorDefault() as the monitoring routine, with a null monitoring
+   context.
 
    Several different monitoring routines may be set by calling
-   KSPMonitorSet() multiple times; all will be called in the 
-   order in which they were set. 
+   KSPMonitorSet() multiple times; all will be called in the
+   order in which they were set.
 
    Fortran notes: Only a single monitor function can be set for each KSP object
 
@@ -1411,38 +1521,31 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorCancel()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorCancel()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
-  PetscInt i;
+  PetscInt       i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
+  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   for (i=0; i<ksp->numbermonitors;i++) {
-    if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) PetscFunctionReturn(0);
-
-    /* check if both default monitors that share common ASCII viewer */
-    if (monitor == ksp->monitor[i] && monitor == KSPMonitorDefault) {
-      if (mctx && ksp->monitorcontext[i]) {
-        PetscErrorCode          ierr;
-        PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;
-        PetscViewerASCIIMonitor viewer2 = (PetscViewerASCIIMonitor) ksp->monitorcontext[i];
-        if (viewer1->viewer == viewer2->viewer) {
-          ierr = (*monitordestroy)(mctx);CHKERRQ(ierr);
-          PetscFunctionReturn(0);
-        }
+    if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) {
+      if (monitordestroy) {
+        ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
       }
+      PetscFunctionReturn(0);
     }
   }
-  ksp->monitor[ksp->numbermonitors]           = monitor;
-  ksp->monitordestroy[ksp->numbermonitors]    = monitordestroy;
-  ksp->monitorcontext[ksp->numbermonitors++]  = (void*)mctx;
+  ksp->monitor[ksp->numbermonitors]          = monitor;
+  ksp->monitordestroy[ksp->numbermonitors]   = monitordestroy;
+  ksp->monitorcontext[ksp->numbermonitors++] = (void*)mctx;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPMonitorCancel"
 /*@
    KSPMonitorCancel - Clears all monitors for a KSP object.
@@ -1454,16 +1557,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor
 
    Options Database Key:
 .  -ksp_monitor_cancel - Cancels all monitors that have
-    been hardwired into a code by calls to KSPMonitorSet(), 
+    been hardwired into a code by calls to KSPMonitorSet(),
     but does not cancel those set via the options database.
 
    Level: intermediate
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorSet()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP ksp)
+PetscErrorCode  KSPMonitorCancel(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1472,17 +1575,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   for (i=0; i<ksp->numbermonitors; i++) {
     if (ksp->monitordestroy[i]) {
-      ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*ksp->monitordestroy[i])(&ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   ksp->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetMonitorContext"
 /*@C
-   KSPGetMonitorContext - Gets the monitoring context, as set by 
+   KSPGetMonitorContext - Gets the monitoring context, as set by
    KSPMonitorSet() for the FIRST monitor only.
 
    Not Collective
@@ -1497,9 +1600,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP ksp)
 
 .keywords: KSP, get, monitor, context
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1507,7 +1610,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetResidualHistory"
 /*@
    KSPSetResidualHistory - Sets the array used to hold the residual history.
@@ -1525,10 +1628,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
 
    Level: advanced
 
-   Notes: The array is NOT freed by PETSc so the user needs to keep track of 
+   Notes: The array is NOT freed by PETSc so the user needs to keep track of
            it and destroy once the KSP object is destroyed.
 
-   If 'na' is PETSC_DECIDE or PETSC_DEFAULT, or 'a' is PETSC_NULL, then a 
+   If 'a' is NULL then space is allocated for the history. If 'na' PETSC_DECIDE or PETSC_DEFAULT then a
    default array of length 10000 is allocated.
 
 .keywords: KSP, set, residual, history, norm
@@ -1536,7 +1639,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
 .seealso: KSPGetResidualHistory()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscTruth reset)
+PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBool reset)
 {
   PetscErrorCode ierr;
 
@@ -1545,23 +1648,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP ksp,PetscReal a[],Pe
 
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   if (na != PETSC_DECIDE && na != PETSC_DEFAULT && a) {
-    ksp->res_hist        = a;
-    ksp->res_hist_max    = na;
+    ksp->res_hist     = a;
+    ksp->res_hist_max = na;
   } else {
-    if (na != PETSC_DECIDE && na != PETSC_DEFAULT)
-      ksp->res_hist_max = na;
-    else
-      ksp->res_hist_max = 10000; /* like default ksp->max_it */
+    if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->res_hist_max = na;
+    else                                           ksp->res_hist_max = 10000; /* like default ksp->max_it */
     ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist_alloc);CHKERRQ(ierr);
+
     ksp->res_hist = ksp->res_hist_alloc;
   }
-  ksp->res_hist_len    = 0;
-  ksp->res_hist_reset  = reset;
-
+  ksp->res_hist_len   = 0;
+  ksp->res_hist_reset = reset;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetResidualHistory"
 /*@C
    KSPGetResidualHistory - Gets the array used to hold the residual history
@@ -1573,8 +1674,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP ksp,PetscReal a[],Pe
 .  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
-+  a   - pointer to array to hold history (or PETSC_NULL)
--  na  - number of used entries in a (or PETSC_NULL)
++  a   - pointer to array to hold history (or NULL)
+-  na  - number of used entries in a (or NULL)
 
    Level: advanced
 
@@ -1592,20 +1693,20 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 .seealso: KSPGetResidualHistory()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
+PetscErrorCode  KSPGetResidualHistory(KSP ksp,PetscReal *a[],PetscInt *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (a)  *a  = ksp->res_hist;
+  if (a) *a = ksp->res_hist;
   if (na) *na = ksp->res_hist_len;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetConvergenceTest"
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
-   convergence.  
+   convergence.
 
    Logically Collective on KSP
 
@@ -1629,11 +1730,11 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
    Must be called after the KSP type has been set so put this after
    a call to KSPSetType(), or KSPSetFromOptions().
 
-   The default convergence test, KSPDefaultConverged(), aborts if the 
+   The default convergence test, KSPDefaultConverged(), aborts if the
    residual grows to more than 10000 times the initial residual.
 
-   The default is a combination of relative and absolute tolerances.  
-   The residual value that is tested may be an approximation; routines 
+   The default is a combination of relative and absolute tolerances.
+   The residual value that is tested may be an approximation; routines
    that need exact values should compute them.
 
    In the default PETSc convergence test, the precise values of reason
@@ -1643,9 +1744,9 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .keywords: KSP, set, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
+.seealso: KSPDefaultConverged(), KSPGetConvergenceContext(), KSPSetTolerances()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
+PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
   PetscErrorCode ierr;
 
@@ -1660,11 +1761,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetConvergenceContext"
 /*@C
-   KSPGetConvergenceContext - Gets the convergence context set with 
-   KSPSetConvergenceTest().  
+   KSPGetConvergenceContext - Gets the convergence context set with
+   KSPSetConvergenceTest().
 
    Not Collective
 
@@ -1680,7 +1781,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (
 
 .seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
+PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1688,7 +1789,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution"
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
@@ -1699,25 +1800,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
    Input Parameter:
 .  ctx - iterative context obtained from KSPCreate()
 
-   Output Parameter: 
+   Output Parameter:
    Provide exactly one of
-+  v - location to stash solution.   
--  V - the solution is returned in this location. This vector is created 
++  v - location to stash solution.
+-  V - the solution is returned in this location. This vector is created
        internally. This vector should NOT be destroyed by the user with
        VecDestroy().
 
    Notes:
    This routine can be used in one of two ways
 .vb
-      KSPBuildSolution(ksp,PETSC_NULL,&V);
+      KSPBuildSolution(ksp,NULL,&V);
    or
-      KSPBuildSolution(ksp,v,PETSC_NULL); or KSPBuildSolution(ksp,v,&v);
+      KSPBuildSolution(ksp,v,NULL); or KSPBuildSolution(ksp,v,&v);
 .ve
    In the first case an internal vector is allocated to store the solution
    (the user cannot destroy this vector). In the second case the solution
-   is generated in the vector that the user provides. Note that for certain 
+   is generated in the vector that the user provides. Note that for certain
    methods, such as KSPCG, the second case requires a copy of the solution,
-   while in the first case the call is essentially free since it simply 
+   while in the first case the call is essentially free since it simply
    returns the vector where the solution already is stored. For some methods
    like GMRES this is a reasonably expensive operation and should only be
    used in truly needed.
@@ -1728,19 +1829,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
 
 .seealso: KSPGetSolution(), KSPBuildResidual()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP ksp,Vec v,Vec *V)
+PetscErrorCode  KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!V && !v) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONG,"Must provide either v or V");
+  if (!V && !v) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"Must provide either v or V");
   if (!V) V = &v;
   ierr = (*ksp->ops->buildsolution)(ksp,v,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildResidual"
 /*@C
    KSPBuildResidual - Builds the residual in a vector provided.
@@ -1757,7 +1858,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 -  V - the residual
 
    Notes:
-   Regardless of whether or not v is provided, the residual is 
+   Regardless of whether or not v is provided, the residual is
    returned in V.
 
    Level: advanced
@@ -1766,11 +1867,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
 .seealso: KSPBuildSolution()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
+PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
-  PetscTruth     flag = PETSC_FALSE;
-  Vec            w = v,tt = t;
+  PetscBool      flag = PETSC_FALSE;
+  Vec            w    = v,tt = t;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1783,11 +1884,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
     ierr = PetscLogObjectParent((PetscObject)ksp,tt);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
-  if (flag) {ierr = VecDestroy(tt);CHKERRQ(ierr);}
+  if (flag) {ierr = VecDestroy(&tt);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetDiagonalScale"
 /*@
    KSPSetDiagonalScale - Tells KSP to symmetrically diagonally scale the system
@@ -1800,21 +1901,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 -  scale - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-+   -ksp_diagonal_scale - 
--   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve 
++   -ksp_diagonal_scale -
+-   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
 
 
-    BE CAREFUL with this routine: it actually scales the matrix and right 
+    Notes: Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
+       where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
+
+    BE CAREFUL with this routine: it actually scales the matrix and right
     hand side that define the system. After the system is solved the matrix
-    and right hand side remain scaled.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
+    and right hand side remain scaled unless you use KSPSetDiagonalScaleFix()
 
     This should NOT be used within the SNES solves if you are using a line
     search.
- 
-    If you use this with the PCType Eisenstat preconditioner than you can 
+
+    If you use this with the PCType Eisenstat preconditioner than you can
     use the PCEisenstatNoDiagonalScaling() option, or -pc_eisenstat_no_diagonal_scaling
     to save some unneeded, redundant flops.
 
@@ -1824,16 +1925,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
+PetscErrorCode  KSPSetDiagonalScale(KSP ksp,PetscBool scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,scale,2);
+  PetscValidLogicalCollectiveBool(ksp,scale,2);
   ksp->dscale = scale;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetDiagonalScale"
 /*@
    KSPGetDiagonalScale - Checks if KSP solver scales the matrix and
@@ -1848,12 +1949,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 .  scale - PETSC_TRUE or PETSC_FALSE
 
    Notes:
-    BE CAREFUL with this routine: it actually scales the matrix and right 
+    BE CAREFUL with this routine: it actually scales the matrix and right
     hand side that define the system. After the system is solved the matrix
-    and right hand side remain scaled.
-
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
+    and right hand side remain scaled  unless you use KSPSetDiagonalScaleFix()
 
    Level: intermediate
 
@@ -1861,7 +1959,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 
 .seealso: KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
+PetscErrorCode  KSPGetDiagonalScale(KSP ksp,PetscBool  *scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -1870,7 +1968,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetDiagonalScaleFix"
 /*@
    KSPSetDiagonalScaleFix - Tells KSP to diagonally scale the system
@@ -1880,7 +1978,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 
    Input Parameter:
 +  ksp - the KSP context
--  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not 
+-  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not
          rescale (default)
 
    Notes:
@@ -1891,25 +1989,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
      to easily get back the original system to make sure the solution computed is
      accurate enough.
 
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
-
    Level: intermediate
 
 .keywords: KSP, set, options, prefix, database
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPGetDiagonalScaleFix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
+PetscErrorCode  KSPSetDiagonalScaleFix(KSP ksp,PetscBool fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidLogicalCollectiveTruth(ksp,fix,2);
+  PetscValidLogicalCollectiveBool(ksp,fix,2);
   ksp->dscalefix = fix;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetDiagonalScaleFix"
 /*@
    KSPGetDiagonalScaleFix - Determines if KSP diagonally scales the system
@@ -1921,7 +2016,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 .  ksp - the KSP context
 
    Output Parameter:
-.  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not 
+.  fix - PETSC_TRUE to scale back after the system solve, PETSC_FALSE to not
          rescale (default)
 
    Notes:
@@ -1932,20 +2027,125 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
      to easily get back the original system to make sure the solution computed is
      accurate enough.
 
-    This routine is only used if the matrix and preconditioner matrix are
-    the same thing.
-
    Level: intermediate
 
 .keywords: KSP, set, options, prefix, database
 
 .seealso: KSPGetDiagonalScale(), KSPSetDiagonalScale(), KSPSetDiagonalScaleFix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScaleFix(KSP ksp,PetscTruth *fix)
+PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(fix,2);
   *fix = ksp->dscalefix;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeOperators"
+/*@C
+   KSPSetComputeOperators - set routine to compute the linear operators
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the operators
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
+
++  ksp - the KSP context
+.  A - the linear operator
+.  B - preconditioning matrix
+.  mstruct - flag indicating structure, same as in KSPSetOperators(), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSetOperators(), DMKSPSetComputeOperators()
+@*/
+PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeOperators(dm,func,ctx);CHKERRQ(ierr);
+  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeRHS"
+/*@C
+   KSPSetComputeRHS - set routine to compute the right hand side of the linear system
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the right hand side
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Vec b,void *ctx)
+
++  ksp - the KSP context
+.  b - right hand side of linear system
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSolve(), DMKSPSetComputeRHS()
+@*/
+PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeRHS(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeInitialGuess"
+/*@C
+   KSPSetComputeInitialGuess - set routine to compute the initial guess of the linear system
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the initial guess
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Vec x,void *ctx)
+
++  ksp - the KSP context
+.  x - solution vector
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSolve(), DMKSPSetComputeInitialGuess()
+@*/
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeInitialGuess(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

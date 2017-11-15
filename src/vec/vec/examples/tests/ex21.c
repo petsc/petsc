@@ -2,7 +2,7 @@
 static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -14,8 +14,8 @@ int main(int argc,char **argv)
   Vec            x;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   /* create vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -35,9 +35,9 @@ int main(int argc,char **argv)
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %G index %D\n",value,idx);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+

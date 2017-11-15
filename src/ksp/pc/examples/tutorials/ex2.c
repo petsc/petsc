@@ -1,3 +1,4 @@
+static char help[] = "Test file for the PCFactorSetShiftType()\n";
 /*
  * Test file for the PCFactorSetShiftType() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
  * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
@@ -12,8 +13,7 @@
  *    the method will now successfully converge.
  */
 
-#include <stdlib.h>
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -24,16 +24,16 @@ int main(int argc,char **argv)
   Mat                A,M;
   Vec                X,B,D;
   MPI_Comm           comm;
-  PetscScalar        v; 
+  PetscScalar        v;
   KSPConvergedReason reason;
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-options_left",NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
-  
+
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
@@ -42,22 +42,23 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(comm,4,&B);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
   for (i=0; i<4; i++) {
-    v=3;
+    v    = 3;
     ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v=1;
+    v    = 1;
     ierr = VecSetValues(B,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  i=0; v=0;
+  i    =0; v=0;
   ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   for (i=0; i<3; i++) {
-    v=-2; j=i+1;
+    v    = -2; j=i+1;
     ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   i=0; j=3; v=2;
+
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -81,7 +82,7 @@ int main(int argc,char **argv)
    * The iterative method will break down unless you comment in the SetShift
    * line below, or use the -pc_factor_shift_positive_definite option.
    * Run the code twice: once as given to see the negative pivot and the
-   * divergence behaviour, then comment in the Shift line, or add the 
+   * divergence behaviour, then comment in the Shift line, or add the
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
@@ -120,11 +121,11 @@ int main(int argc,char **argv)
   }
   printf("\n");
 
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(B);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(D);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&D);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }

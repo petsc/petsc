@@ -3,7 +3,7 @@
 configure_options = [
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
-  '--with-gcov=1',
+  #'--with-gcov=1',
   '--download-mpich=1',
   ]
 

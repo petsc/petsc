@@ -1,12 +1,11 @@
-#define PETSCKSP_DLL
 
-#include "private/kspimpl.h"   /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPInitialResidual"
 /*@
-   KSPInitialResidual - Computes the residual. Either b - A*C*x with right
-     preconditioning or C*b - C*A*x with left preconditioning; that later
+   KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
+     preconditioning or C*(b - A*x) with left preconditioning; that later
      residual is often called the "preconditioned residual".
 
    Collective on KSP
@@ -37,7 +36,7 @@ $     b-Ax
 .seealso:  KSPMonitor()
 @*/
 
-PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
+PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
   MatStructure   pflag;
   Mat            Amat,Pmat;
@@ -55,7 +54,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
     ierr = VecAXPY(vt2,-1.0,vt1);CHKERRQ(ierr);
-    ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
+    ierr = (ksp->pc_side == PC_RIGHT) ? (VecCopy(vt2,vres)) : (KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
@@ -66,33 +65,31 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
       ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
-    }
+    } else SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPUnwindPreconditioner"
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
-     takes solution to the preconditioned problem and gets the solution to the 
+     takes solution to the preconditioned problem and gets the solution to the
      original problem from it.
 
    Collective on KSP
 
    Input Parameters:
 +  ksp  - iterative context
-.  vsoln - solution vector 
+.  vsoln - solution vector
 -  vt1   - temporary work vector
 
    Output Parameter:
-.  vsoln - contains solution on output  
+.  vsoln - contains solution on output
 
    Notes:
-   If preconditioning either symmetrically or on the right, this routine solves 
-   for the correction to the unpreconditioned problem.  If preconditioning on 
+   If preconditioning either symmetrically or on the right, this routine solves
+   for the correction to the unpreconditioned problem.  If preconditioning on
    the left, nothing is done.
 
    Level: advanced
@@ -101,7 +98,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
 
 .seealso: KSPSetPCSide()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
+PetscErrorCode  KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
   PetscErrorCode ierr;
 

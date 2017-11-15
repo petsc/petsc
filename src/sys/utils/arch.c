@@ -1,12 +1,11 @@
-#define PETSC_DLL
 
-#include "petscsys.h"         /*I  "petscsys.h"  I*/
+#include <petscsys.h>         /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
-     that is executing this routine. 
+     that is executing this routine.
 
      Not Collective
 
@@ -14,7 +13,7 @@
 .    slen - length of string buffer
 
      Output Parameter:
-.    str - string area to contain architecture name, should be at least 
+.    str - string area to contain architecture name, should be at least
            10 characters long. Name is truncated if string is not long enough.
 
      Level: developer
@@ -22,14 +21,22 @@
      Concepts: machine type
      Concepts: architecture
 
+   Fortran Version:
+   In Fortran this routine has the format
+
+$       character*(10) str
+$       call PetscGetArchType(str,ierr)
+
+.seealso: PetscGetUserName(),PetscGetHostName()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetArchType(char str[],size_t slen)
+PetscErrorCode  PetscGetArchType(char str[],size_t slen)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_ARCH)
   ierr = PetscStrncpy(str,PETSC_ARCH,slen-1);CHKERRQ(ierr);
+
   str[slen-1] = 0;
 #else
 #error "$PETSC_ARCH/include/petscconf.h is missing PETSC_ARCH"

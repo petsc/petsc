@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -7,10 +6,10 @@
     VecMDot() arguments within the code MUST remain in the order
     given for correct computation of inner products.
 */
-#include "../src/ksp/ksp/impls/gmres/gmresimpl.h"
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 /*@C
-     KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 
+     KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
                 using modified Gram-Schmidt.
 
      Collective on KSP
@@ -27,11 +26,11 @@
 .seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetOrthogonalization()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
+PetscErrorCode  KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
+  KSP_GMRES      *gmres = (KSP_GMRES*)(ksp->data);
   PetscErrorCode ierr;
   PetscInt       j;
   PetscScalar    *hh,*hes;
@@ -46,7 +45,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(K
     ierr   = VecDot(VEC_VV(it+1),VEC_VV(j),hh);CHKERRQ(ierr);
     *hes++ = *hh;
     /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
-    ierr   = VecAXPY(VEC_VV(it+1),-(*hh++),VEC_VV(j));CHKERRQ(ierr);
+    ierr = VecAXPY(VEC_VV(it+1),-(*hh++),VEC_VV(j));CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

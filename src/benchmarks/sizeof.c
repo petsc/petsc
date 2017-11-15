@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <petscsys.h>
 /*
         Prints the size of various C data types
 */

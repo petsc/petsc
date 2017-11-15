@@ -2,7 +2,7 @@
 #define included_ALE_SieveBuilder_hh
 
 #ifndef  included_ALE_ALE_hh
-#include <ALE.hh>
+#include <sieve/ALE.hh>
 #endif
 
 namespace ALE {
@@ -153,8 +153,8 @@ namespace ALE {
       if (dim > 3) {
         throw ALE::Exception("Cannot do hexes of dimension greater than three");
       } else if (dim > 2) {
-	const int faceSizeQuadHex = 9;
-	const int numFacesQuadHex = 6;
+        const int faceSizeQuadHex = 9;
+        const int numFacesQuadHex = 6;
         int nodes[54] = {
           3, 2, 1, 0,  10, 9, 8, 11,  24, // bottom
           4, 5, 6, 7,  12, 13, 14, 15,  25, // top
@@ -162,7 +162,7 @@ namespace ALE {
           1, 2, 6, 5,  9, 18, 13, 17,  21, // right
           2, 3, 7, 6,  10, 19, 14, 18,  23, // back
           3, 0, 4, 7,  11, 16, 15, 19,  20 // left
-	};
+        };
 
         for(int b = 0; b < numFacesQuadHex; b++) {
           typename sieve_type::point_type face;
@@ -178,8 +178,8 @@ namespace ALE {
           faces[dim].push_back(oPoint_type(face, o));
         }
       } else if (dim > 1) {
-	const int edgeSizeQuadHex = 3;
-	const int numEdgesQuadHex = 4;
+        const int edgeSizeQuadHex = 3;
+        const int numEdgesQuadHex = 4;
         int nodes[12] = {
           0, 1,  4, // bottom
           1, 2,  5, // right
@@ -209,8 +209,8 @@ namespace ALE {
       } else {
         if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
         typename PointArray::iterator bdEnd = bdVertices[dim].end();
-	for (typename PointArray::iterator bd_iter = bdVertices[dim].begin(); bd_iter != bdEnd; ++bd_iter)
-	  faces[dim].push_back(oPoint_type(*bd_iter, 0));
+        for (typename PointArray::iterator bd_iter = bdVertices[dim].begin(); bd_iter != bdEnd; ++bd_iter)
+          faces[dim].push_back(oPoint_type(*bd_iter, 0));
         //faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
       }
       if (debug > 1) {
@@ -288,111 +288,111 @@ namespace ALE {
         if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
       }
     };
-    static void buildQuadraticTetFaces(Obj<sieve_type> sieve, Obj<arrow_section_type> orientation, 
-				       int dim, 
-				       std::map<int, int*>& curElement, 
-				       std::map<int,PointArray>& bdVertices, 
-				       std::map<int,oPointArray>& faces, 
-				       typename sieve_type::point_type& cell, 
-				       int& cellOrientation) {
+    static void buildQuadraticTetFaces(Obj<sieve_type> sieve, Obj<arrow_section_type> orientation,
+                                       int dim,
+                                       std::map<int, int*>& curElement,
+                                       std::map<int,PointArray>& bdVertices,
+                                       std::map<int,oPointArray>& faces,
+                                       typename sieve_type::point_type& cell,
+                                       int& cellOrientation) {
       int debug = sieve->debug();
 
-      if (debug > 1) 
-	std::cout << "  Building tet faces for cell " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;
+      if (debug > 1)
+        std::cout << "  Building tet faces for cell " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;
 
       switch (dim) {
       case 1: {
-	break;
+        break;
       } // case 1
       case 2: {
-	assert(6 == bdVertices[dim].size());
+        assert(6 == bdVertices[dim].size());
 
-	// Edges on face
-	int color = 0;
-	int faceOrientation = 1;
+        // Edges on face
+        int color = 0;
+        int faceOrientation = 1;
 
-	// Bottom edge
-	typename sieve_type::point_type edge = bdVertices[dim][0];
-	MinimalArrow<typename sieve_type::point_type,typename sieve_type::point_type> arrow(edge, cell);
-	sieve->addArrow(edge, cell, color++);
-	orientation->addPoint(arrow);
-	if (bdVertices[dim][3] < bdVertices[dim][4])
-	  faceOrientation = 1;
-	else
-	  faceOrientation = -dim;
-	orientation->updatePoint(arrow, &faceOrientation);
-	if (debug > 1)
-	  std::cout << "    Adding bottom edge " << edge << " with orientation " << faceOrientation << std::endl;
+        // Bottom edge
+        typename sieve_type::point_type edge = bdVertices[dim][0];
+        MinimalArrow<typename sieve_type::point_type,typename sieve_type::point_type> arrow(edge, cell);
+        sieve->addArrow(edge, cell, color++);
+        orientation->addPoint(arrow);
+        if (bdVertices[dim][3] < bdVertices[dim][4])
+          faceOrientation = 1;
+        else
+          faceOrientation = -dim;
+        orientation->updatePoint(arrow, &faceOrientation);
+        if (debug > 1)
+          std::cout << "    Adding bottom edge " << edge << " with orientation " << faceOrientation << std::endl;
 
-	// Right edge
-	faceOrientation = 1;
-	edge = bdVertices[dim][1];
-	arrow.source = edge;
-	sieve->addArrow(edge, cell, color++);
-	orientation->addPoint(arrow);
-	if (bdVertices[dim][4] < bdVertices[dim][5])
-	  faceOrientation = 1;
-	else
-	  faceOrientation = -dim;
-	orientation->updatePoint(arrow, &faceOrientation);
-	if (debug > 1)
-	  std::cout << "    Adding right edge " << edge << " with orientation " << faceOrientation << std::endl;
-	
-	// Left edge
-	faceOrientation = 1;
-	edge = bdVertices[dim][2];
-	arrow.source = edge;
-	sieve->addArrow(edge, cell, color++);
-	orientation->addPoint(arrow);
-	if (bdVertices[dim][5] < bdVertices[dim][3])
-	  faceOrientation = 1;
-	else
-	  faceOrientation = -dim;
-	orientation->updatePoint(arrow, &faceOrientation);
-	if (debug > 1)
-	  std::cout << "    Adding left edge " << edge << " with orientation " << faceOrientation << std::endl;
-	
-	// Vertices on edges
+        // Right edge
+        faceOrientation = 1;
+        edge = bdVertices[dim][1];
+        arrow.source = edge;
+        sieve->addArrow(edge, cell, color++);
+        orientation->addPoint(arrow);
+        if (bdVertices[dim][4] < bdVertices[dim][5])
+          faceOrientation = 1;
+        else
+          faceOrientation = -dim;
+        orientation->updatePoint(arrow, &faceOrientation);
+        if (debug > 1)
+          std::cout << "    Adding right edge " << edge << " with orientation " << faceOrientation << std::endl;
+        
+        // Left edge
+        faceOrientation = 1;
+        edge = bdVertices[dim][2];
+        arrow.source = edge;
+        sieve->addArrow(edge, cell, color++);
+        orientation->addPoint(arrow);
+        if (bdVertices[dim][5] < bdVertices[dim][3])
+          faceOrientation = 1;
+        else
+          faceOrientation = -dim;
+        orientation->updatePoint(arrow, &faceOrientation);
+        if (debug > 1)
+          std::cout << "    Adding left edge " << edge << " with orientation " << faceOrientation << std::endl;
+        
+        // Vertices on edges
 
-	// Vertices on bottom edge
-	color = 0;
-	edge = bdVertices[dim][0];
-	typename sieve_type::point_type vertexA = bdVertices[dim][3];
-	typename sieve_type::point_type vertexB = bdVertices[dim][4];
-	sieve->addArrow(vertexA, edge, color++);
-	sieve->addArrow(vertexB, edge, color++);
-	if (debug > 1)
-	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
-	// Vertices on right edge
-	color = 0;
-	edge = bdVertices[dim][1];
-	vertexA = bdVertices[dim][4];
-	vertexB = bdVertices[dim][5];
-	sieve->addArrow(vertexA, edge, color++);
-	sieve->addArrow(vertexB, edge, color++);
-	if (debug > 1)
-	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
-	// Vertices on left edge
-	color = 0;
-	edge = bdVertices[dim][2];
-	vertexA = bdVertices[dim][5];
-	vertexB = bdVertices[dim][3];
-	sieve->addArrow(vertexA, edge, color++);
-	sieve->addArrow(vertexB, edge, color++);
-	if (debug > 1)
-	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
-	break;
+        // Vertices on bottom edge
+        color = 0;
+        edge = bdVertices[dim][0];
+        typename sieve_type::point_type vertexA = bdVertices[dim][3];
+        typename sieve_type::point_type vertexB = bdVertices[dim][4];
+        sieve->addArrow(vertexA, edge, color++);
+        sieve->addArrow(vertexB, edge, color++);
+        if (debug > 1)
+          std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
+        
+        // Vertices on right edge
+        color = 0;
+        edge = bdVertices[dim][1];
+        vertexA = bdVertices[dim][4];
+        vertexB = bdVertices[dim][5];
+        sieve->addArrow(vertexA, edge, color++);
+        sieve->addArrow(vertexB, edge, color++);
+        if (debug > 1)
+          std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
+        
+        // Vertices on left edge
+        color = 0;
+        edge = bdVertices[dim][2];
+        vertexA = bdVertices[dim][5];
+        vertexB = bdVertices[dim][3];
+        sieve->addArrow(vertexA, edge, color++);
+        sieve->addArrow(vertexB, edge, color++);
+        if (debug > 1)
+          std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
+        
+        break;
       } // case 2
       case 3: {
-	break;
+        break;
       } // case 3
       default:
-	std::cerr << "Unknown dimension " << dim << std::endl;
-	assert(0);
-	throw ALE::Exception("Unknown dimension");
+        std::cerr << "Unknown dimension " << dim << std::endl;
+        assert(0);
+        throw ALE::Exception("Unknown dimension");
       } // switch
 
     };
@@ -550,6 +550,9 @@ namespace ALE {
     //   (0, numCells) ... (0, numVertices): vertices
     // The other cells are numbered as they are requested
     static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL, int firstCell = 0) {
+      if (interpolate && orientation.isNull()) {
+        throw ALE::Exception("Cannot interpolate mesh without providing an orientation Section");
+      }
       ALE_LOG_EVENT_BEGIN;
       if (sieve->commRank() != 0) {
         ALE_LOG_EVENT_END;
@@ -679,12 +682,14 @@ namespace ALE {
         }
       }
     };
-    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const PetscReal coords[], int numCells = -1) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
-      const int numCells = bundle->heightStratum(0)->size();
-      const int debug    = bundle->debug();
+      const int                                       debug       = bundle->debug();
 
+      if (numCells < 0) {
+        numCells = bundle->heightStratum(0)->size();
+      }
       bundle->setupCoordinates(coordinates);
       coordinates->setFiberDimension(vertices, embedDim);
       bundle->allocate(coordinates);
@@ -777,20 +782,22 @@ namespace ALE {
       }
 
       if (newElement >= firstVertex+vertexOffset[sieve->commSize()] + (cellOffset[sieve->commRank()+1] + vertexOffset[sieve->commRank()+1])*(dim-1)) {
-	throw ALE::Exception("Namespace violation during intermediate element construction");
+        throw ALE::Exception("Namespace violation during intermediate element construction");
       }
       delete [] cellOffset;
       delete [] vertexOffset;
       ALE_LOG_EVENT_END;
     };
-    static void buildCoordinatesMultiple(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+    static void buildCoordinatesMultiple(const Obj<Bundle_>& bundle, const int embedDim, const double coords[], int numGlobalCells = -1) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
       const int numCells = bundle->heightStratum(0)->size(), numVertices = vertices->size();
       const int debug    = bundle->debug();
-      int       numGlobalCells, offset;
+      int       offset;
 
-      MPI_Allreduce((void *) &numCells, &numGlobalCells, 1, MPI_INT, MPI_SUM, bundle->comm());
+      if (numGlobalCells < 0) {
+        MPI_Allreduce((void *) &numCells, &numGlobalCells, 1, MPI_INT, MPI_SUM, bundle->comm());
+      }
       MPI_Scan((void *) &numVertices, &offset, 1, MPI_INT, MPI_SUM, bundle->comm());
       offset += numGlobalCells - numVertices;
       coordinates->setFiberDimension(vertices, embedDim);

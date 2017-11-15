@@ -1,8 +1,0 @@
-element = VectorElement("Lagrange", "tetrahedron", 2)
-
-u = TestFunction(element)
-v = TrialFunction(element)
-f = Function(element)
-
-a = dot(grad(v), grad(u))*dx
-L = dot(v, f)*dx

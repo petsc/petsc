@@ -1,0 +1,247 @@
+Creating new NumberingFactory
+cell 0 num boundary vertices 4
+cell 1 num boundary vertices 4
+cell 2 num boundary vertices 4
+cell 3 num boundary vertices 4
+Creating new real section: coordinates
+Adding coordinates for vertex 4
+Adding coordinates for vertex 5
+Adding coordinates for vertex 6
+Adding coordinates for vertex 7
+Adding coordinates for vertex 8
+Adding coordinates for vertex 9
+Adding coordinates for vertex 10
+Adding coordinates for vertex 11
+Adding coordinates for vertex 12
+Creating new int section: CellParentBlock
+Creating new int section: CellBlock_0000
+Creating new int section: Top_half
+Creating new int section: 1st_side_set
+Creating new int section: FaceSet_0002
+Creating new int section: FaceParentSet
+Creating new int section: Lower_edge
+Creating new int section: VertexSet_0005
+Creating new int section: VertexParentSet
+viewing Mesh 'Boundary Mesh'
+viewing a Sieve, comm = 1140850688, commRank = 0
+viewing Sieve :'mesh sieve'
+cap --> base:
+[0]: 5--(0)-->14
+[0]: 5--(0)-->24
+[0]: 6--(0)-->14
+[0]: 6--(0)-->15
+[0]: 7--(0)-->15
+[0]: 7--(0)-->17
+[0]: 8--(0)-->17
+[0]: 8--(0)-->18
+[0]: 9--(0)-->18
+[0]: 9--(0)-->20
+[0]: 10--(0)-->20
+[0]: 10--(0)-->21
+[0]: 11--(0)-->21
+[0]: 11--(0)-->23
+[0]: 12--(0)-->23
+[0]: 12--(0)-->24
+base --> cap:
+[0]: 14<--(0)--5
+[0]: 14<--(0)--6
+[0]: 15<--(0)--6
+[0]: 15<--(0)--7
+[0]: 17<--(0)--7
+[0]: 17<--(0)--8
+[0]: 18<--(0)--8
+[0]: 18<--(0)--9
+[0]: 20<--(0)--9
+[0]: 20<--(0)--10
+[0]: 21<--(0)--10
+[0]: 21<--(0)--11
+[0]: 23<--(0)--11
+[0]: 23<--(0)--12
+[0]: 24<--(0)--5
+[0]: 24<--(0)--12
+viewing Mesh 'Mesh'
+Max sizes cone: 4 support: 4
+viewing IFSieve 'mesh sieve'
+cap --> base:
+[0]: 4 ----> 13
+[0]: 4 ----> 16
+[0]: 4 ----> 19
+[0]: 4 ----> 22
+[0]: 5 ----> 14
+[0]: 5 ----> 13
+[0]: 5 ----> 24
+[0]: 6 ----> 15
+[0]: 6 ----> 14
+[0]: 7 ----> 16
+[0]: 7 ----> 17
+[0]: 7 ----> 15
+[0]: 8 ----> 18
+[0]: 8 ----> 17
+[0]: 9 ----> 19
+[0]: 9 ----> 20
+[0]: 9 ----> 18
+[0]: 10 ----> 21
+[0]: 10 ----> 20
+[0]: 11 ----> 22
+[0]: 11 ----> 23
+[0]: 11 ----> 21
+[0]: 12 ----> 24
+[0]: 12 ----> 23
+[0]: 13 ----> 0
+[0]: 13 ----> 3
+[0]: 14 ----> 0
+[0]: 15 ----> 0
+[0]: 16 ----> 0
+[0]: 16 ----> 1
+[0]: 17 ----> 1
+[0]: 18 ----> 1
+[0]: 19 ----> 2
+[0]: 19 ----> 1
+[0]: 20 ----> 2
+[0]: 21 ----> 2
+[0]: 22 ----> 2
+[0]: 22 ----> 3
+[0]: 23 ----> 3
+[0]: 24 ----> 3
+base <-- cap:
+[0]: 0<----13
+[0]: 0<----14
+[0]: 0<----15
+[0]: 0<----16
+[0]: 1<----17
+[0]: 1<----18
+[0]: 1<----19
+[0]: 1<----16
+[0]: 2<----19
+[0]: 2<----20
+[0]: 2<----21
+[0]: 2<----22
+[0]: 3<----23
+[0]: 3<----24
+[0]: 3<----13
+[0]: 3<----22
+[0]: 13<----4
+[0]: 13<----5
+[0]: 14<----5
+[0]: 14<----6
+[0]: 15<----6
+[0]: 15<----7
+[0]: 16<----7
+[0]: 16<----4
+[0]: 17<----7
+[0]: 17<----8
+[0]: 18<----8
+[0]: 18<----9
+[0]: 19<----9
+[0]: 19<----4
+[0]: 20<----9
+[0]: 20<----10
+[0]: 21<----10
+[0]: 21<----11
+[0]: 22<----11
+[0]: 22<----4
+[0]: 23<----11
+[0]: 23<----12
+[0]: 24<----12
+[0]: 24<----5
+Orientation:
+[0]: 0<----13: 1
+[0]: 0<----14: 1
+[0]: 0<----15: 1
+[0]: 0<----16: 1
+[0]: 1<----17: 1
+[0]: 1<----18: 1
+[0]: 1<----19: 1
+[0]: 1<----16: -2
+[0]: 2<----19: -2
+[0]: 2<----20: 1
+[0]: 2<----21: 1
+[0]: 2<----22: 1
+[0]: 3<----23: 1
+[0]: 3<----24: 1
+[0]: 3<----13: -2
+[0]: 3<----22: -2
+[0]: 13<----4: 0
+[0]: 13<----5: 0
+[0]: 14<----5: 0
+[0]: 14<----6: 0
+[0]: 15<----6: 0
+[0]: 15<----7: 0
+[0]: 16<----7: 0
+[0]: 16<----4: 0
+[0]: 17<----7: 0
+[0]: 17<----8: 0
+[0]: 18<----8: 0
+[0]: 18<----9: 0
+[0]: 19<----9: 0
+[0]: 19<----4: 0
+[0]: 20<----9: 0
+[0]: 20<----10: 0
+[0]: 21<----10: 0
+[0]: 21<----11: 0
+[0]: 22<----11: 0
+[0]: 22<----4: 0
+[0]: 23<----11: 0
+[0]: 23<----12: 0
+[0]: 24<----12: 0
+[0]: 24<----5: 0
+viewing GeneralSection 'coordinates'
+  Fields: 0
+[0]:   4 dim 2 offset 0   0 0
+[0]:   5 dim 2 offset 2   -0.5 0
+[0]:   6 dim 2 offset 4   -0.5 -0.5
+[0]:   7 dim 2 offset 6   0 -0.5
+[0]:   8 dim 2 offset 8   0.5 -0.5
+[0]:   9 dim 2 offset 10   0.5 0
+[0]:   10 dim 2 offset 12   0.5 0.5
+[0]:   11 dim 2 offset 14   0 0.5
+[0]:   12 dim 2 offset 16   -0.5 0.5
+viewing GeneralSection '1st_side_set'
+  Fields: 0
+[0]:   14 dim 1 offset 0   0
+[0]:   24 dim 1 offset 1   0
+viewing GeneralSection 'CellBlock_0000'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+[0]:   1 dim 1 offset 1   0
+viewing GeneralSection 'CellParentBlock'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+[0]:   1 dim 1 offset 1   0
+[0]:   2 dim 1 offset 2   1
+[0]:   3 dim 1 offset 3   1
+viewing GeneralSection 'FaceParentSet'
+  Fields: 0
+[0]:   14 dim 1 offset 0   0
+[0]:   21 dim 1 offset 1   1
+[0]:   23 dim 1 offset 2   1
+[0]:   24 dim 1 offset 3   0
+viewing GeneralSection 'FaceSet_0002'
+  Fields: 0
+[0]:   21 dim 1 offset 0   1
+[0]:   23 dim 1 offset 1   1
+viewing GeneralSection 'Lower_edge'
+  Fields: 0
+[0]:   6 dim 1 offset 0   0
+[0]:   7 dim 1 offset 1   0
+[0]:   8 dim 1 offset 2   0
+viewing GeneralSection 'Top_half'
+  Fields: 0
+[0]:   2 dim 1 offset 0   1
+[0]:   3 dim 1 offset 1   1
+viewing GeneralSection 'VertexParentSet'
+  Fields: 0
+[0]:   6 dim 1 offset 0   0
+[0]:   7 dim 1 offset 1   0
+[0]:   8 dim 2 offset 2   0 1
+[0]:   9 dim 1 offset 4   1
+[0]:   10 dim 1 offset 5   1
+viewing GeneralSection 'VertexSet_0005'
+  Fields: 0
+[0]:   8 dim 1 offset 0   1
+[0]:   9 dim 1 offset 1   1
+[0]:   10 dim 1 offset 2   1
+Mesh in 2 dimensions:
+  9 0-cells
+  12 1-cells
+  4 2-cells

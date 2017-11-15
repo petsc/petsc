@@ -4,5 +4,8 @@
       type TS
         PetscFortranAddr:: v
       end type TS
+      type TSAdapt
+        PetscFortranAddr:: v
+      end type TSAdapt
 #endif
 #endif

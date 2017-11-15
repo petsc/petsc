@@ -1,8 +1,8 @@
-#define PETSCMAT_DLL
 
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
-#include "petscsys.h"
+#include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /******************************************************************/
 /***********    GENQMD ..... QUOT MIN DEGREE ORDERING    **********/
@@ -42,146 +42,122 @@
 /******************************************************************/
 /*                                                                */
 /*                                                                */
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKgenqmd" 
-PetscErrorCode SPARSEPACKgenqmd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy, 
-	PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *
-	rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKgenqmd"
+PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,
+                                PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker,
+                                PetscInt *rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
 {
-    /* System generated locals */
-    PetscInt i__1;
+  /* System generated locals */
+  PetscInt i__1;
 
-    /* Local variables */
-    PetscInt ndeg, irch, node, nump1, j, inode;
-    EXTERN PetscErrorCode SPARSEPACKqmdqt(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-    PetscInt ip, np, mindeg, search;
-    EXTERN PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
-	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
-	   SPARSEPACKqmdupd(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, 
-	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
-    PetscInt nhdsze, nxnode, rchsze, thresh, num;
+  /* Local variables */
+  PetscInt ndeg, irch, node, nump1, j, inode;
+  PetscInt ip, np, mindeg, search;
+  PetscInt nhdsze, nxnode, rchsze, thresh, num;
 
 /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --qlink;
-    --qsize;
-    --nbrhd;
-    --rchset;
-    --marker;
-    --deg;
-    --invp;
-    --perm;
-    --adjncy;
-    --xadj;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --qlink;
+  --qsize;
+  --nbrhd;
+  --rchset;
+  --marker;
+  --deg;
+  --invp;
+  --perm;
+  --adjncy;
+  --xadj;
 
-    mindeg = *neqns;
-    *nofsub = 0;
-    i__1 = *neqns;
-    for (node = 1; node <= i__1; ++node) {
-	perm[node] = node;
-	invp[node] = node;
-	marker[node] = 0;
-	qsize[node] = 1;
-	qlink[node] = 0;
-	ndeg = xadj[node + 1] - xadj[node];
-	deg[node] = ndeg;
-	if (ndeg < mindeg) {
-	    mindeg = ndeg;
-	}
-    }
-    num = 0;
+  mindeg  = *neqns;
+  *nofsub = 0;
+  i__1    = *neqns;
+  for (node = 1; node <= i__1; ++node) {
+    perm[node]   = node;
+    invp[node]   = node;
+    marker[node] = 0;
+    qsize[node]  = 1;
+    qlink[node]  = 0;
+    ndeg         = xadj[node + 1] - xadj[node];
+    deg[node]    = ndeg;
+    if (ndeg < mindeg) mindeg = ndeg;
+  }
+  num = 0;
 /*       PERFORM THRESHOLD SEARCH TO GET A NODE OF MIN DEGREE.   */
 /*       VARIABLE SEARCH POINTS TO WHERE SEARCH SHOULD START.    */
 L200:
-    search = 1;
-    thresh = mindeg;
-    mindeg = *neqns;
+  search = 1;
+  thresh = mindeg;
+  mindeg = *neqns;
 L300:
-    nump1 = num + 1;
-    if (nump1 > search) {
-	search = nump1;
-    }
-    i__1 = *neqns;
-    for (j = search; j <= i__1; ++j) {
-	node = perm[j];
-	if (marker[node] < 0) {
-	    goto L400;
-	}
-	ndeg = deg[node];
-	if (ndeg <= thresh) {
-	    goto L500;
-	}
-	if (ndeg < mindeg) {
-	    mindeg = ndeg;
-	}
+  nump1 = num + 1;
+  if (nump1 > search) search = nump1;
+  i__1 = *neqns;
+  for (j = search; j <= i__1; ++j) {
+    node = perm[j];
+    if (marker[node] < 0) goto L400;
+    ndeg = deg[node];
+    if (ndeg <= thresh) goto L500;
+    if (ndeg < mindeg) mindeg = ndeg;
 L400:
-	;
-    }
-    goto L200;
+    ;
+  }
+  goto L200;
 /*          NODE HAS MINIMUM DEGREE. FIND ITS REACHABLE SETS BY    */
 /*          CALLING QMDRCH.                                        */
 L500:
-    search = j;
-    *nofsub += deg[node];
-    marker[node] = 1;
-    SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
-	    rchset[1], &nhdsze, &nbrhd[1]);
+  search       = j;
+  *nofsub     += deg[node];
+  marker[node] = 1;
+  SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
+                   rchset[1], &nhdsze, &nbrhd[1]);
 /*          ELIMINATE ALL NODES INDISTINGUISHABLE FROM NODE.       */
 /*          THEY ARE GIVEN BY NODE, QLINK(NODE), ....              */
-    nxnode = node;
+  nxnode = node;
 L600:
-    ++num;
-    np = invp[nxnode];
-    ip = perm[num];
-    perm[np] = ip;
-    invp[ip] = np;
-    perm[num] = nxnode;
-    invp[nxnode] = num;
-    deg[nxnode] = -1;
-    nxnode = qlink[nxnode];
-    if (nxnode > 0) {
-	goto L600;
-    }
-    if (rchsze <= 0) {
-	goto L800;
-    }
+  ++num;
+  np           = invp[nxnode];
+  ip           = perm[num];
+  perm[np]     = ip;
+  invp[ip]     = np;
+  perm[num]    = nxnode;
+  invp[nxnode] = num;
+  deg[nxnode]  = -1;
+  nxnode       = qlink[nxnode];
+  if (nxnode > 0) goto L600;
+  if (rchsze <= 0) goto L800;
+
 /*             UPDATE THE DEGREES OF THE NODES IN THE REACHABLE     */
 /*             SET AND IDENTIFY INDISTINGUISHABLE NODES.            */
-    SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
-	    qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
+  SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
+                   qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
+
 /*             RESET MARKER VALUE OF NODES IN REACH SET.            */
 /*             UPDATE THRESHOLD VALUE FOR CYCLIC SEARCH.            */
 /*             ALSO CALL QMDQT TO FORM NEW QUOTIENT GRAPH.          */
-    marker[node] = 0;
-    i__1 = rchsze;
-    for (irch = 1; irch <= i__1; ++irch) {
-	inode = rchset[irch];
-	if (marker[inode] < 0) {
-	    goto L700;
-	}
-	marker[inode] = 0;
-	ndeg = deg[inode];
-	if (ndeg < mindeg) {
-	    mindeg = ndeg;
-	}
-	if (ndeg > thresh) {
-	    goto L700;
-	}
-	mindeg = thresh;
-	thresh = ndeg;
-	search = invp[inode];
+  marker[node] = 0;
+  i__1         = rchsze;
+  for (irch = 1; irch <= i__1; ++irch) {
+    inode = rchset[irch];
+    if (marker[inode] < 0) goto L700;
+
+    marker[inode] = 0;
+    ndeg          = deg[inode];
+    if (ndeg < mindeg) mindeg = ndeg;
+    if (ndeg > thresh) goto L700;
+    mindeg = thresh;
+    thresh = ndeg;
+    search = invp[inode];
 L700:
-	;
-    }
-    if (nhdsze > 0) {
-	SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
-		nbrhd[1]);
-    }
+    ;
+  }
+  if (nhdsze > 0) {
+    SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
+                    nbrhd[1]);
+  }
 L800:
-    if (num < *neqns) {
-	goto L300;
-    }
-    PetscFunctionReturn(0);
+  if (num < *neqns) goto L300;
+  PetscFunctionReturn(0);
 }

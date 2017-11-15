@@ -1,10 +1,6 @@
 #ifndef included_ALE_Sections_hh
 #define included_ALE_Sections_hh
 
-#ifndef  included_ALE_Numbering_hh
-#include <Numbering.hh>
-#endif
-
 namespace ALE {
   template<typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
   class BaseSection : public ALE::ParallelObject {
@@ -29,7 +25,7 @@ namespace ALE {
     const chart_type& getChart() const {
       return this->_chart;
     };
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -71,7 +67,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -169,7 +165,7 @@ namespace ALE {
     //const chart_type& getChart() const {
     //  return this->_chart;
     //};
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -211,7 +207,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -305,6 +301,13 @@ namespace ALE {
     int getFiberDimension(const point_type& p) {
       return this->_atlas->restrictPoint(p)[0];
     };
+    int size() {
+      int s = 0;
+      for(int p = this->_sieve->getChart().min(); p < this->_sieve->getChart().max(); ++p) {
+        s += this->getFiberDimension(p);
+      }
+      return s;
+    };
   public: // Restriction and update
     const value_type *restrictPoint(const point_type& p) {
       this->_cV->clear();
@@ -338,7 +341,7 @@ namespace ALE {
     const chart_type& getChart() const {
       return this->_chart;
     };
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -383,7 +386,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -419,7 +422,7 @@ namespace ALE {
     //const chart_type& getChart() const {
     //  return this->_chart;
     //};
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {

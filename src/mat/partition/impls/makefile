@@ -1,7 +1,7 @@
 #
 ALL: lib
 
-DIRS   = chaco jostle party pmetis scotch
+DIRS   = chaco party pmetis scotch
 LOCDIR = src/mat/partition/impls/
 
 include ${PETSC_DIR}/conf/variables

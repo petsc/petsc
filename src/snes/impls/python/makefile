@@ -1,15 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonsnes.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = pythonsnes.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscsnes
-DIRS     = ftn-custom
+DIRS     =
 LOCDIR   = src/snes/impls/python/
 MANSEC   = SNES
 

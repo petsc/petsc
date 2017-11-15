@@ -1,8 +1,8 @@
 
-/*  
-    Private Krylov Context Structure (KSP) for LCD 
+/*
+    Private Krylov Context Structure (KSP) for LCD
 
-    This one is very simple. It contains a flag indicating the symmetry 
+    This one is very simple. It contains a flag indicating the symmetry
    structure of the matrix and work space for (optionally) computing
    eigenvalues.
 
@@ -14,7 +14,7 @@
 /*
         Defines the basic KSP object
 */
-#include "private/kspimpl.h"
+#include <petsc-private/kspimpl.h>
 
 typedef struct {
   PetscInt  restart;
@@ -22,6 +22,6 @@ typedef struct {
   PetscReal haptol;
   Vec       *P;
   Vec       *Q;
-}KSP_LCD;
+} KSP_LCD;
 
 #endif

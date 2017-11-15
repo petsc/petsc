@@ -6,26 +6,26 @@ static char help[] = "Tests MatMPIAIJSetPreallocationCSR()\n\n";
    Processors: 4
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            
-     petscviewer.h - viewers               
+     petscis.h     - index sets
+     petscviewer.h - viewers
 */
-#include "petscksp.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat             A;
-  PetscInt        *ia,*ja;
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
+  Mat            A;
+  PetscInt       *ia,*ja;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -53,11 +53,11 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,16,16);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocationCSR(A,ia,ja,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocationCSR(A,ia,ja,NULL);CHKERRQ(ierr);
   ierr = PetscFree(ia);CHKERRQ(ierr);
   ierr = PetscFree(ja);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -5,13 +5,14 @@ def RunTest():
 
     OptDB = PETSc.Options()
     N     = OptDB.getInt('N', 100)
-    draw  = OptDB.getTruth('draw', False)
+    draw  = OptDB.getBool('draw', False)
 
     A = PETSc.Mat()
     A.create(comm=PETSc.COMM_WORLD)
     A.setSizes([N,N])
     A.setType(PETSc.Mat.Type.PYTHON)
     A.setPythonContext(example1.Laplace1D())
+    A.setUp()
 
     x, b = A.getVecs()
     b.set(1)

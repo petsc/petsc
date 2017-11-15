@@ -1,4 +1,4 @@
-#requirespackage   'PETSC_HAVE_MATLAB_ENGINE'
+#requiresdefine   'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar    real
 #requiresprecision double
 
@@ -7,12 +7,10 @@ ALL: lib
 CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = aijmatlab.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  =
-OBJSC    = aijmatlab.o
-OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/matlab/
 

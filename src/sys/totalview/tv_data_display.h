@@ -1,4 +1,4 @@
-/* 
+/*
  * $Header: /home/tv/src/debugger/src/datadisp/tv_data_display.h,v 1.3 2010-04-21 15:32:50 tringali Exp $
  * $Locker:  $
 
@@ -29,36 +29,34 @@
  *
  */
 
-#ifndef TV_DATA_DISPLAY_H_INCLUDED
+#if !defined(TV_DATA_DISPLAY_H_INCLUDED)
 #define TV_DATA_DISPLAY_H_INCLUDED 1
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
 enum TV_format_result
-  {
-    TV_format_OK,           /* Type is known, and successfully converted */
-    TV_format_failed,       /* Type is known, but could not convert it */
-    TV_format_raw,          /* Just display it as a regular type for now */
-    TV_format_never         /* Don't know about this type, and please don't ask again */
-  };
+{
+  TV_format_OK,             /* Type is known, and successfully converted */
+  TV_format_failed,         /* Type is known, but could not convert it */
+  TV_format_raw,            /* Just display it as a regular type for now */
+  TV_format_never           /* Don't know about this type, and please don't ask again */
+};
 
 #define TV_ascii_string_type "$string"
 #define TV_int_type "$int"
 
-extern int TV_add_row(const char *field_name,
-                      const char *type_name,
-                      const void *value);
+extern int TV_add_row(const char *field_name,const char *type_name,const void *value);
 
-/* 
+/*
        0: Success
    EPERM: Called with no active callback to TV_display_type
   EINVAL: field_name or type_name has illegal characters
   ENOMEM: No more room left for display data
 */
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
 #endif
 

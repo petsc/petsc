@@ -1,32 +1,41 @@
-#define PETSCSNES_DLL
 
-#include "private/snesimpl.h"     /*I  "petscsnes.h"  I*/
+#include <petsc-private/snesimpl.h>     /*I  "petscsnes.h"  I*/
 
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES);
-#if !defined(PETSC_USE_COMPLEX)
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LSVI(SNES);
-#endif
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES);
 
-const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
-                                               "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
-                                               "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
-                                               "CONVERGED_PNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
-const char **SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
+const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
+                                              "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
+                                              "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
+                                              "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
+const char *const *SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
+
+const char *SNESNormTypes_Shifted[]    = {"DEFAULT","NONE","FUNCTION","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormType","SNES_NORM_",0};
+const char *const *const SNESNormTypes = SNESNormTypes_Shifted + 1;
 
 /*
-      This is used by SNESSetType() to make sure that at least one 
+      This is used by SNESSetType() to make sure that at least one
     SNESRegisterAll() is called. In general, if there is more than one
     DLL then SNESRegisterAll() may be called several times.
 */
-extern PetscTruth SNESRegisterAllCalled;
+extern PetscBool SNESRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESRegisterAll"
 /*@C
    SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.
@@ -39,21 +48,29 @@ extern PetscTruth SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char path[])
+PetscErrorCode  SNESRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegisterDynamic(SNESLS,     path,"SNESCreate_LS",     SNESCreate_LS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESTR,     path,"SNESCreate_TR",     SNESCreate_TR);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESTEST,   path,"SNESCreate_Test",   SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESPICARD, path,"SNESCreate_Picard", SNESCreate_Picard);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESKSPONLY,path,"SNESCreate_KSPONLY",SNESCreate_KSPONLY);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  ierr = SNESRegisterDynamic(SNESLSVI,   path,"SNESCreate_LSVI",   SNESCreate_LSVI);CHKERRQ(ierr);
-#endif
+  ierr = SNESRegister(SNESNEWTONLS,     SNESCreate_NEWTONLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNEWTONTR,     SNESCreate_NEWTONTR);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESTEST,         SNESCreate_Test);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNRICHARDSON,  SNESCreate_NRichardson);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESKSPONLY,      SNESCreate_KSPONLY);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESVINEWTONRSLS, SNESCreate_VINEWTONRSLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESVINEWTONSSLS, SNESCreate_VINEWTONSSLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNGMRES,       SNESCreate_NGMRES);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESQN,           SNESCreate_QN);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESSHELL,        SNESCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESGS,           SNESCreate_GS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNCG,          SNESCreate_NCG);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESFAS,          SNESCreate_FAS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESMS,           SNESCreate_MS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNASM,         SNESCreate_NASM);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESANDERSON,     SNESCreate_Anderson);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESASPIN,        SNESCreate_ASPIN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

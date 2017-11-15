@@ -1,12 +1,11 @@
-#define PETSCMAT_DLL
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatToSymmetricIJ_SeqAIJ"
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
-           to IJ format (ignore the "A" part) Allocates the space needed. Uses only 
+           to IJ format (ignore the "A" part) Allocates the space needed. Uses only
            the lower triangular part of the matrix.
 
     Description:
@@ -26,8 +25,8 @@
 
     Notes:
     Both ia and ja may be freed with PetscFree();
-    This routine is provided for ordering routines that require a 
-    symmetric structure.  It is required since those routines call 
+    This routine is provided for ordering routines that require a
+    symmetric structure.  It is required since those routines call
     SparsePak routines that expect a symmetric  matrix.
 */
 PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
@@ -48,17 +47,17 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
-       col = *j++ + shiftin;
-       if (col > row) { break;}
-       if (col != row) ia[row+1]++;
-       ia[col+1]++;
+      col = *j++ + shiftin;
+      if (col > row) break;
+      if (col != row) ia[row+1]++;
+      ia[col+1]++;
     }
   }
 
   /* shiftin ia[i] to point to next row */
   for (i=1; i<m+1; i++) {
     row       = ia[i-1];
-    ia[i]     += row;
+    ia[i]    += row;
     work[i-1] = row - shiftout;
   }
 
@@ -67,14 +66,14 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
   ierr = PetscMalloc(nz*sizeof(PetscInt),&ja);CHKERRQ(ierr);
   *jja = ja;
 
-  /* loop over lower triangular part putting into ja */ 
+  /* loop over lower triangular part putting into ja */
   for (row = 0; row < m; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
-      if (col > row) { break;}
-      if (col != row) {ja[work[col]++] = row + shiftout; }
+      if (col > row) break;
+      if (col != row) ja[work[col]++] = row + shiftout;
       ja[work[row]++] = col + shiftout;
     }
   }

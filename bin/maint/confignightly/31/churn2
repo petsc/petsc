@@ -1,8 +1,0 @@
-#! /bin/csh
-#
-set MACH=churn
-set USR=petsc
-set LOC=/sandbox/petsc/petsc31-2
-set CONF=arch-linux-cxx-sieve
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-release-3.1
-set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem-release-3.1

@@ -1,27 +1,22 @@
-#include "private/fortranimpl.h"
-#include "petscmat.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matcreateshell_                  MATCREATESHELL
-#define matshellgetcontext_              MATSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matcreateshell_                  matcreateshell
 #define matshellsetoperation_            matshellsetoperation
-#define matshellgetcontext_              matshellgetcontext
 #endif
-
-EXTERN_C_BEGIN
 
 /*
       The MatShell Matrix Vector product requires a C routine.
    This C routine then calls the corresponding Fortran routine that was
    set by the user.
 */
-void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void **ctx,Mat *mat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void *ctx,Mat *mat,PetscErrorCode *ierr)
 {
-  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,*M,*N,*ctx,mat);
-
+  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*m,*n,*M,*N,ctx,mat);
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
@@ -93,12 +88,33 @@ static PetscErrorCode ourdiagonalset(Mat mat,Vec x,InsertMode ins)
   return ierr;
 }
 
-void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+static PetscErrorCode ourview(Mat mat,PetscViewer v)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscViewer*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[8]))(&mat,&v,&ierr);
+  return ierr;
+}
+
+static PetscErrorCode oursor(Mat mat,Vec b,PetscReal omega,MatSORType flg,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,PetscReal*,MatSORType*,PetscReal*,PetscInt*,PetscInt*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[9]))(&mat,&b,&omega,&flg,&shift,&its,&lits,&x,&ierr);
+  return ierr;
+}
+
+static PetscErrorCode ourshift(Mat mat, PetscScalar a)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,PetscScalar*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[10]))(&mat,&a,&ierr);
+  return ierr;
+}
+
+PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   MPI_Comm comm;
 
   *ierr = PetscObjectGetComm((PetscObject)*mat,&comm);if (*ierr) return;
-  PetscObjectAllocateFortranPointers(*mat,8);
+  PetscObjectAllocateFortranPointers(*mat,11);
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)f;
@@ -123,6 +139,15 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   } else if (*op == MATOP_GET_VECS) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourgetvecs);
     ((PetscObject)*mat)->fortran_func_pointers[7] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_VIEW) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourview);
+    ((PetscObject)*mat)->fortran_func_pointers[8] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_SOR) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)oursor);
+    ((PetscObject)*mat)->fortran_func_pointers[9] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_SHIFT) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourshift);
+    ((PetscObject)*mat)->fortran_func_pointers[10] = (PetscVoidFunction)f;
   } else {
     PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL,
                "Cannot set that matrix operation");
@@ -130,10 +155,3 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   }
 }
 
-void PETSC_STDCALL matshellgetcontext_(Mat *mat,void **ctx,PetscErrorCode *ierr)
-{
-  *ierr = MatShellGetContext(*mat,ctx);
-}
-
-
-EXTERN_C_END

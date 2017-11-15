@@ -1,0 +1,39 @@
+Matrix of type: shell
+Matrix Object: 1 MPI processes
+  type: seqdense
+2.9678190300000000e+08 3.9288008100000000e+08 
+6.1374683500000000e+08 1.4173141580000000e+09 
+Vector Object: 1 MPI processes
+  type: seq
+3.92973e+19
+8.54197e+19
+Vector Object: 1 MPI processes
+  type: seq
+2.96782e+08
+1.41731e+09
+Matrix of type: seqaij
+Matrix Object: 1 MPI processes
+  type: seqdense
+2.9678190300000000e+08 3.9288008100000000e+08 
+6.1374683500000000e+08 1.4173141580000000e+09 
+Vector Object: 1 MPI processes
+  type: seq
+3.92973e+19
+8.54197e+19
+Vector Object: 1 MPI processes
+  type: seq
+2.96782e+08
+1.41731e+09
+Matrix of type: nest
+Matrix Object: 1 MPI processes
+  type: seqdense
+2.9678190300000000e+08 3.9288008100000000e+08 
+6.1374683500000000e+08 1.4173141580000000e+09 
+Vector Object: 1 MPI processes
+  type: seq
+3.92973e+19
+8.54197e+19
+Vector Object: 1 MPI processes
+  type: seq
+2.96782e+08
+1.41731e+09

@@ -6,7 +6,8 @@ class Configure(PETSc.package.NewPackage):
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpe/mpe2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
-    self.liblist   = [['libmpe.a']]
+    #self.liblist   = [['libmpe_f2cmpi.a','liblmpe.a','libmpe.a']] # log mpi events aswell? provide another configure opton? how?
+    self.liblist   = [[],['libmpe.a']]
     self.complex   = 1
     return
 
@@ -14,31 +15,34 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
-          
+
   def Install(self):
     import os
 
     args = ['--prefix='+self.installDir]
-    
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     self.framework.pushLanguage('C')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
+    args.append('MPI_CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('MPI_CC="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 
-    args.append('--disable-f77')
-    if self.mpi.include:
-      args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
-    if self.mpi.lib:
-      libdir = os.path.dirname(self.mpi.lib[0])
-      libs = []
-      for l in self.mpi.lib:
-        ll = os.path.basename(l)
-        libs.append('-l'+ll[3:-2])
-      libs = ' '.join(libs)
-      args.append('MPI_LIBS="'+'-L'+libdir+' '+libs+'"')
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      args.append('MPI_FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      args.append('F77="'+self.framework.getCompiler()+'"')
+      args.append('MPI_F77="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
+    else:
+      args.append('--disable-f77')
+
+    args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
+    args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
     args = ' '.join(args)
-    
+
     fd = file(os.path.join(self.packageDir,'mpe'), 'w')
     fd.write(args)
     fd.close()

@@ -1,19 +1,15 @@
-#define PETSC_DLL
+
 /*
       Code for manipulating files.
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
@@ -22,7 +18,7 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetHomeDirectory"
 /*@C
    PetscGetHomeDirectory - Returns home directory name.
@@ -44,7 +40,7 @@
 
    Concepts: home directory
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen)
+PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
   char           *d1 = 0;
@@ -55,24 +51,20 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETPWUID)
   pw = getpwuid(getuid());
-  if (pw)  {
-    d1 = pw->pw_dir;
-  }
+  if (pw) d1 = pw->pw_dir;
 #else
   d1 = getenv("HOME");
 #endif
   if (d1) {
     ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
-  } else if (maxlen > 0) {
-    dir[0] = 0;
-  }
+  } else if (maxlen > 0) dir[0] = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFixFilename"
 /*@C
-    PetscFixFilename - Fixes a file name so that it is correct for both Unix and 
+    PetscFixFilename - Fixes a file name so that it is correct for both Unix and
     Windows by using the correct / or \ to separate directories.
 
    Not Collective
@@ -88,7 +80,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen
    Notes:
    Call PetscFixFilename() just before calling fopen().
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFixFilename(const char filein[],char fileout[])
+PetscErrorCode  PetscFixFilename(const char filein[],char fileout[])
 {
   PetscErrorCode ierr;
   size_t         i,n;
@@ -102,6 +94,5 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFixFilename(const char filein[],char file
     else fileout[i] = filein[i];
   }
   fileout[n] = 0;
-
   PetscFunctionReturn(0);
 }

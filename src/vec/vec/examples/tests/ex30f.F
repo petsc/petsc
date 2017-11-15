@@ -1,13 +1,13 @@
 !
 !
-!  Tests parallel to parallel scatter where a to from index are 
+!  Tests parallel to parallel scatter where a to from index are
 !  duplicated
       program main
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
 
       PetscErrorCode ierr
       PetscInt  nlocal, n, row
@@ -28,7 +28,7 @@
          print *, 'Four processor test'
          stop
       end if
-      
+
       nlocal2 = 2*nlocal
       n2      = 2*n
       call VecCreateMPI(PETSC_COMM_WORLD,nlocal2,n2,v1,ierr)
@@ -79,25 +79,29 @@
       to(8)=7
 
       eight = 8
-      call ISCreateGeneral(PETSC_COMM_SELF,eight,from,fromis,ierr)
-      call ISCreateGeneral(PETSC_COMM_SELF,eight,to,tois,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,from,PETSC_COPY_VALUES,      &
+     &                     fromis,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,eight,to,PETSC_COPY_VALUES,        &
+     &                     tois,ierr)
       call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
       call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
       call ISDestroy(fromis,ierr)
       call ISDestroy(tois,ierr)
-      
+
       call VecScatterBegin(scat1,v1,v2,ADD_VALUES,SCATTER_FORWARD,ierr)
       call VecScatterEnd(scat1,v1,v2,ADD_VALUES,SCATTER_FORWARD,ierr)
-      
+
       call VecScatterBegin(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
       call VecScatterEnd(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
-      
-      if (rank.eq.0) print *, "V1"
+
+      call PetscObjectSetName(v1, "V1",ierr)
       call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      if (rank.eq.0) print *, "V2"
+
+      call PetscObjectSetName(v2, "V2",ierr)
       call VecView(v2,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
       if (rank.eq.0) then
-         print *, "V3"
+         call PetscObjectSetName(v3, "V3",ierr)
          call VecView(v3,PETSC_VIEWER_STDOUT_SELF,ierr)
       end if
 
@@ -108,8 +112,8 @@
       call VecDestroy(v3,ierr)
 
       call PetscFinalize(ierr)
-      
+
       end
- 
+
 
 

@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscpc.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscpc.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pchypresettype_            PCHYPRESETTYPE
@@ -9,10 +9,7 @@
 #define pchypregettype_            pchypregettype
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  pchypresettype_(PC *pc, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len) )
+PETSC_EXTERN void PETSC_STDCALL pchypresettype_(PC *pc, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
@@ -20,7 +17,7 @@ void PETSC_STDCALL  pchypresettype_(PC *pc, CHAR name PETSC_MIXED_LEN(len),Petsc
   FREECHAR(name,t);
 }
 
-void PETSC_STDCALL pchypregettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pchypregettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -30,4 +27,3 @@ void PETSC_STDCALL pchypregettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscEr
 
 }
 
-EXTERN_C_END

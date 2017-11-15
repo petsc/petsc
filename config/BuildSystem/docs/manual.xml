@@ -1,0 +1,712 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN">
+<book id="BuildSystemManual" lang="en">
+ 
+<bookinfo>
+<title>ASE BuildSystem Manual</title>
+<authorgroup>
+<author>
+<firstname>Matthew</firstname>
+<othername>G.</othername>
+<surname>Knepley</surname>
+</author>
+</authorgroup>
+<date>July, 2005</date>
+<releaseinfo>Release tag ???</releaseinfo>
+</bookinfo>
+ 
+<chapter id="Introduction">
+<title>Introduction</title>
+ 
+<para>The BuildSystem from ASE is intended to be a Python replacement for the GNU autotools. It actually encompasses
+somewhat more, as it supports integrated version control and automatic code generation. However, the most useful
+comparisons will come from <command>autoconf</command>, <command>make</command>, and <command>libtool</command>. The
+system is not designed to be monolithic. Thus each component may be used independently, meaning logging, configuration,
+and build are all separate modules which do not require each other. This allows a user to incremenetally adopt the most
+useful portions of the package.</para>
+ 
+</chapter>
+
+<chapter id="Configure">
+<title>Configure</title>
+
+<sect1 id="Configure-Design-Sketch">
+<title>Configure Design Sketch</title>
+
+<para>The system is based upon an autonomous unit, objects of class <classname>config.base.Configure</classname>, which
+are responsible for discovering configuration information for a particular package or purpose. The only interface which
+must be supported is the <methodname>configure</methodname> method, as shown below. Support for lower-level operations
+such as compiling and linking will be discussed in section ???.</para>
+
+<classsynopsis language="python">
+<ooclass>
+<classname>Configure</classname>
+</ooclass>
+<methodsynopsis>
+<void/><methodname>configure</methodname><methodparam><parameter>self</parameter></methodparam>
+</methodsynopsis>
+</classsynopsis>
+
+<para>This collection of configure objects is managed by a <classname>config.base.Framework</classname> object. As we
+will see in section ???, the framework manages all dependecies between modules and output of configure information. The
+framework is itself a subclass of <classname>config.base.Configure</classname> for which the
+<methodname>configure</methodname> method manages the entire configuration process. In order to associate a module with
+the given framework, it also provides the <methodname>require</methodname> method, discussed in section ???. Thus, the
+minimal framework interface is given by:</para>
+
+<classsynopsis language="python">
+<ooclass>
+<classname>Framework</classname>
+</ooclass>
+<ooclass>
+<classname>config.base.Configure</classname>
+</ooclass>
+<methodsynopsis>
+<void/><methodname>require</methodname>
+  <methodparam><parameter>self</parameter></methodparam>
+  <methodparam><parameter>moduleName</parameter></methodparam>
+  <methodparam><parameter>depChild</parameter></methodparam>
+  <methodparam><parameter>keywordArgs</parameter><initializer>{}</initializer></methodparam>
+</methodsynopsis>
+<methodsynopsis>
+<void/><methodname>configure</methodname><methodparam><parameter>self</parameter></methodparam>
+</methodsynopsis>
+</classsynopsis>
+
+<para>This design allows user modules to be seamlessly integrated into the framework without changing the paradigm, or
+even any of the original code. Modules can be specified on the command line, or left in special directories. Although it
+is common to derive from <classname>config.base.Configure</classname>, the only necessity is that the user provide a
+<methodname>configure</methodname> method for the framework to execute.</para>
+
+<para>The framework does provide the traditional output mechanisms from <command>autoconf</command>, namely
+<methodname>#define</methodname> statements and file substitutions, to which we add make variables and
+rules. However, the preferred interaction mechanism is to use member variables directly from the configure objects. This
+is illustrated in section ???</para>
+
+</sect1>
+
+<sect1 id="Running-configure">
+<title>Running configure</title>
+
+<para>The first step in running configure is to show the help:
+<screen>
+<prompt>bash$</prompt> <command>framework.py -help</command>
+<computeroutput>
+Python Configure Help
+   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)
+    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]
+----------------------------------------------------------------------------------------
+Script:
+  --help                : Print this help message                                         current: 1
+  --h                   : Print this help message                                         current: 0
+Framework:
+  --configModules       : A list of Python modules with a Configure class                 current: []
+  --ignoreCompileOutput : Ignore compiler output                                          current: 1
+  --ignoreLinkOutput    : Ignore linker output                                            current: 1
+  --ignoreWarnings      : Ignore compiler and linker warnings                             current: 0
+  --doCleanup           : Delete any configure generated files (turn off for debugging)   current: 1
+  --with-alternatives   : Provide a choice among alternative package installations        current: 0
+  --search-dirs         : A list of directories used to search for executables            current: []
+  --package-dirs        : A list of directories used to search for packages               current: []
+  --with-batch          : Machine uses a batch system to submit jobs                      current: 0
+</computeroutput>
+</screen>
+The options shown will depend upon the modules loaded with <option>-configModules</option>. For instance, we will
+normally load the compiler module, which reveals the host of optios controlling preprocessors, compilers, and linkers.
+<screen>
+<prompt>bash$</prompt> <command>framework.py -configModules=[config.compilers] -help</command>
+<computeroutput>
+Python Configure Help
+   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)
+    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]
+----------------------------------------------------------------------------------------
+Script:
+  --help                           : Print this help message                                               current: 1
+  --h                              : Print this help message                                               current: 0
+Framework:
+  --configModules                  : A list of Python modules with a Configure class                       current: []
+  --ignoreCompileOutput            : Ignore compiler output                                                current: 1
+  --ignoreLinkOutput               : Ignore linker output                                                  current: 1
+  --ignoreWarnings                 : Ignore compiler and linker warnings                                   current: 0
+  --doCleanup                      : Delete any configure generated files (turn off for debugging)         current: 1
+  --with-alternatives              : Provide a choice among alternative package installations              current: 0
+  --search-dirs                    : A list of directories used to search for executables                  current: []
+  --package-dirs                   : A list of directories used to search for packages                     current: []
+  --with-batch                     : Machine uses a batch system to submit jobs                            current: 0
+Compilers:
+  --with-cpp=&lt;prog&gt;                : Specify the C preprocessor
+  --with-cc=&lt;prog&gt;                 : Specify the C compiler
+  --with-cxx=&lt;prog&gt;                : Specify the C++ compiler
+  --with-fc=&lt;prog&gt;                 : Specify the Fortran compiler
+  --with-gnu-compilers=&lt;bool&gt;      : Try to use GNU compilers                                              current: 1
+  --with-vendor-compilers=&lt;vendor&gt; : Try to use vendor compilers (no argument all vendors, 0 no vendors)   current: 
+  --with-64-bit-pointers=&lt;bool&gt;    : Use 64 bit compilers and libraries                                    current: 0
+  --CPP=&lt;prog&gt;                     : Specify the C preprocessor
+  --CPPFLAGS=&lt;string&gt;              : Specify the C preprocessor options                                    current: 
+  --CXXPP=&lt;prog&gt;                   : Specify the C++ preprocessor
+  --CC=&lt;prog&gt;                      : Specify the C compiler
+  --CFLAGS=&lt;string&gt;                : Specify the C compiler options                                        current: 
+  --CXX=&lt;prog&gt;                     : Specify the C++ compiler
+  --CXXFLAGS=&lt;string&gt;              : Specify the C++ compiler options                                      current: 
+  --CXX_CXXFLAGS=&lt;string&gt;          : Specify the C++ compiler-only options                                 current: 
+  --FC=&lt;prog&gt;                      : Specify the Fortran compiler
+  --FFLAGS=&lt;string&gt;                : Specify the Fortran compiler options                                  current: 
+  --LD=&lt;prog&gt;                      : Specify the default linker
+  --CC_LD=&lt;prog&gt;                   : Specify the linker for C only
+  --CXX_LD=&lt;prog&gt;                  : Specify the linker for C++ only
+  --FC_LD=&lt;prog&gt;                   : Specify the linker for Fortran only
+  --LDFLAGS=&lt;string&gt;               : Specify the linker options                                            current: 
+  --with-ar                        : Specify the archiver
+  -AR                              : Specify the archiver flags
+  -AR_FLAGS                        : Specify the archiver flags
+  --with-ranlib                    : Specify ranlib
+  --with-shared-libraries                : Enable shared libraries                                               current: 1
+  --with-shared-ld=&lt;prog&gt;          : Specify the shared linker
+  --with-f90-header=&lt;file&gt;         : Specify the C header for the F90 interface, e.g. f90_intel.h
+  --with-f90-source=&lt;file&gt;         : Specify the C source for the F90 interface, e.g. f90_intel.c
+</computeroutput>
+</screen>
+The syntax for list and dictionary option values is identical to Python syntax. However, in some shells (like
+<command>csh</command>), brackets must be escaped, and braces will usually have to be enclosed in quotes.</para>
+
+<para>The modules indicated with <option>-configModules</option> are located using <envar>PYTHONPATH</envar>. Since
+specifying environment variables can be inconvenient and error prone, it is common to provide a driver which alters
+<varname>sys.path</varname>, as is done for PETSc. In fact, the PETSc driver
+<itemizedlist>
+  <listitem><para>Verifies <envar>PETSC_ARCH</envar></para></listitem>
+  <listitem><para>Checks for invalid Cygwin versions</para></listitem>
+  <listitem><para>Checks for RedHat 9, which has a threads bug</para></listitem>
+  <listitem><para>Augments <envar>PYTHONPATH</envar></para></listitem>
+  <listitem><para>Adds the default PETSc configure module</para></listitem>
+  <listitem><para>Persists the configuration in <filename>RDict.db</filename></para></listitem>
+  <listitem><para>Handles exceptions</para></listitem>
+</itemizedlist>
+</para>
+
+</sect1>
+
+<sect1 id="Adding-a-module">
+<title>Adding a module</title>
+
+<para>As we discussed in the introduction, all that is strictly necessary for a configure module, is to provide a class
+named <classname>Configure</classname> with a method <methodname>configure</methodname> taking no arguments. However,
+there are a variety of common operations, which will be illustrated in the sections below.</para>
+
+  <sect2 id="Using-other-modules">
+  <title>Using other modules</title>
+
+  <para>We will often want to use the methods or results of other configure modules in order to perform checks in our
+own. The framework provides a mechanism for retrieving the object for any given configure module. As an example,
+consider checking for the <methodname>ddot</methodname> function in the BLAS library. The relevant Python code would
+be
+<programlisting>
+import config.base
+
+class Configure(config.base.Configure):
+  def __init__(self, framework):
+    config.base.Configure.__init__(self, framework)
+    self.compilers = self.framework.require('config.compilers', self)
+    self.libraries = self.framework.require('config.libraries', self)
+    return
+
+  def configure(self):
+    return self.libraries.check('libblas.a', 'ddot', otherLibs = self.compilers.flibs,
+                                fortranMangle = 1)
+</programlisting>
+The <methodname>require</methodname> call will return the configure object from the given module, creating it if
+necessary. If the second argument is given, the framework will ensure that the returned configure object runs
+<emphasis>before</emphasis> the passed configure object. Notice that we can use the returned object either to call
+methods, like <methodname>check</methodname> from <classname>config.libraries</classname>, or use member variables, such
+as the list of Fortran compatibility libraries <methodname>flibs</methodname> from
+<classname>config.compilers</classname>.
+</para>
+
+<para>The underlying implementation in the framework uses a directed acyclic graph to indicate dependencies among
+modules. The vertices of this graph, configure objects, are topologically sorted and then executed. Moreover, child
+objects can be added to the framework without respecting the dependency structure, but this is discouraged.</para>
+
+  </sect2>
+
+  <sect2 id="Adding-a-test">
+  <title>Adding a test</title>
+
+  <para>A user could of course perform all tests in the object's <methodname>configure</methodname> method, but the base
+class provides useful logging support for this purpose. Consider again the BLAS example, which will now become,
+<programlisting>
+  def checkDot(self):
+    '''Verify that the ddot() function is contained in the BLAS library'''
+    return self.libraries.check('libblas.a', 'ddot', otherLibs = self.compilers.flibs,
+                                fortranMangle = 1)
+
+  def configure(self):
+    self.executeTest(self.checkDot)
+    return
+</programlisting>
+Passing our test module to the framework,
+<screen>
+<prompt>docs$</prompt> <command>PYTHONPATH=`pwd` ../config/framework.py --configModules=[examples.blasTest]</command>
+</screen>
+we produce the following log output in <filename>configure.log</filename>. Notice that it not only records the method and module, but the method doc string,
+all shell calls, and any output actions as well.</para>
+<screen>
+<computeroutput>
+================================================================================
+TEST checkDot from examples.blasTest(/PETSc3/sidl/BuildSystem/docs/examples/blasTest.py:10)
+TESTING: checkDot from examples.blasTest(/PETSc3/sidl/BuildSystem/docs/examples/blasTest.py:10)
+  Verify that the ddot() function is contained in the BLAS library
+      Checking for functions ['ddot'] in library ['libblas.a'] ['-lfrtbegin', '-lg2c', '-lm',
+       '-L/usr/lib/gcc-lib/i486-linux/3.3.5', '-L/usr/lib/gcc-lib/i486-linux/3.3.5/../../..',
+       '-lm', '-lgcc_s']
+sh: gcc -c -o conftest.o  -fPIC  conftest.c 
+Executing: gcc -c -o conftest.o  -fPIC  conftest.c 
+sh: 
+sh: gcc  -o conftest   -fPIC  conftest.o  -lblas -lfrtbegin -lg2c -lm
+  -L/usr/lib/gcc-lib/i486-linux/3.3.5 -L/usr/lib/gcc-lib/i486-linux/3.3.5/../../.. -lm -lgcc_s
+Executing: gcc  -o conftest   -fPIC  conftest.o  -lblas -lfrtbegin -lg2c -lm
+  -L/usr/lib/gcc-lib/i486-linux/3.3.5 -L/usr/lib/gcc-lib/i486-linux/3.3.5/../../.. -lm -lgcc_s
+sh: 
+Defined HAVE_LIBBLAS to 1 in config.libraries
+</computeroutput>
+</screen>
+
+  </sect2>
+
+  <sect2 id="Checking-for-headers">
+  <title>Checking for headers</title>
+
+  <para>Often, we would like to test for the presence of certain headers. This is done is a completely analogous way to
+the library case, using instead the <classname>config.headers</classname> module. Below, we test for the presence of the
+<command>curses</command> header.
+<programlisting>
+import config.base
+
+class Configure(config.base.Configure):
+  def __init__(self, framework):
+    config.base.Configure.__init__(self, framework)
+    self.headers = self.framework.require('config.headers, self)
+    return
+
+  def checkCurses(self):
+    'Verify that we have the curses header'
+    return self.headers.check('curses.h')
+
+  def configure(self):
+    self.executeTest(self.checkCurses)
+    return
+</programlisting>
+Running this test
+<screen>
+<prompt>docs$</prompt> <command>PYTHONPATH=`pwd` ../config/framework.py --configModules=[examples.cursesTest]</command>
+</screen>
+produces the following log output.</para>
+<screen>
+<computeroutput>
+================================================================================
+TEST checkCurses from examples.cursesTest(/PETSc3/sidl/BuildSystem/docs/examples/cursesTest.py:9)
+TESTING: checkCurses from examples.cursesTest(/PETSc3/sidl/BuildSystem/docs/examples/cursesTest.py:9)
+  Verify that we have the curses header
+Checking for header: curses.h
+sh: gcc -E   conftest.c 
+Executing: gcc -E   conftest.c 
+sh: # 1 "conftest.c"
+# 1 "&lt;built-in&gt;"
+# 1 "&lt;command line&gt;"
+# 1 "conftest.c"
+# 1 "confdefs.h" 1
+# 2 "conftest.c" 2
+# 1 "conffix.h" 1
+# 3 "conftest.c" 2
+# 1 "/usr/include/curses.h" 1 3 4
+# 58 "/usr/include/curses.h" 3 4
+# 1 "/usr/include/ncurses_dll.h" 1 3 4
+# 59 "/usr/include/curses.h" 2 3 4
+# 99 "/usr/include/curses.h" 3 4
+typedef unsigned long chtype;
+# 1 "/usr/include/stdio.h" 1 3 4
+# 28 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/features.h" 1 3 4
+# 295 "/usr/include/features.h" 3 4
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 296 "/usr/include/features.h" 2 3 4
+# 318 "/usr/include/features.h" 3 4
+#...
+... W* win,int* y, int* x, _Bool to_screen);
+extern _Bool mouse_trafo (int*, int*, _Bool);
+extern int mcprint (char *, int);
+extern int has_key (int);
+extern void _tracef (const char *, ...) ;
+extern void _tracedump (const char *, WINDOW *);
+extern char * _traceattr (attr_t);
+extern char * _traceattr2 (int, chtype);
+extern char * _nc_tracebits (void);
+extern char * _tracechar (int);
+extern char * _tracechtype (chtype);
+extern char * _tracechtype2 (int, chtype);
+# 1203 "/usr/include/curses.h" 3 4
+extern char * _tracemouse (const MEVENT *);
+extern void trace (const unsigned int);
+# 4 "conftest.c" 2
+
+Defined HAVE_CURSES_H to 1 in config.headers
+</computeroutput>
+</screen>
+
+<para>Alternatively, we could have specified that this header be included in the list of header files checked by default.</para>
+<programlisting>
+import config.base
+
+class Configure(config.base.Configure):
+  def __init__(self, framework):
+    config.base.Configure.__init__(self, framework)
+    self.headers = self.framework.require('config.headers, self)
+    self.headers.headers.append('curses.h')
+    return
+
+  def checkCurses(self):
+    'Verify that we have the curses header'
+    return self.headers.haveHeader('curses.h')
+
+  def configure(self):
+    self.executeTest(self.checkCurses)
+    return
+</programlisting>
+
+<para>In addition, the base class does include lower level support for preprocessing files. The
+<methodname>preprocess</methodname> method takes a code string as input and return a tuple of the
+<command>(stdout,stderr,error code)</command> for the run. The <methodname>outputPreprocess</methodname> method returns
+only the standard output, and <methodname>checkPreprocess</methodname> returns true if no error occurs.</para>
+
+  </sect2>
+
+  <sect2 id="Checking-for-libraries">
+  <title>Checking for libraries</title>
+
+  <para>We have already demonstrated a test for the existence of a function in a library. However the
+<methodname>check</methodname> method is much more general. It allows the specification of multiple libraries and
+multiple functions, as well as auxiliary libraries. For instance, to check for the <methodname>MPI_Init</methodname> and
+<methodname>MPI_Comm_create</methodname> functions in MPICH when the Fortran bindings are active, we would use:
+<programlisting>
+  self.libraries.check(['libmpich.so', 'libpmpich.so'], ['MPI_Init', 'MPI_Comm_create'],
+                       otherLibs = self.compilers.flibs)
+</programlisting>
+As in the BLAS example, we can also turn on Fortran name mangling. The caller may also supply a function prototype and
+calling sequence, which are necessary if the current language is C++.
+</para>
+
+<para>It is also necessary at some times to determine whether a given library is a shared object. This can be
+accomplished using the <methodname>checkShared</methodname> method, as we demonstrate with the MPICH library in a call
+taken from the MPI configure module in PETSc.
+<programlisting>
+  self.libraries.checkShared('#include &lt;mpi.h&gt;\n', 'MPI_Init', 'MPI_Initialized',
+                             'MPI_Finalize', checkLink = self.checkMPILink,
+                             libraries = self.lib)
+</programlisting>
+The theory for the check is that a shared object will have only one copy of any global variable. Thus functions such as
+<methodname>MPI_Initialized</methodname> will render consistent results across other libraries. The test begins by
+creating two dynamic libraries, both of which link the given library. Then an executable is constructed which loads the
+libraries in turn. The first library calls the initizlization functions, here <methodname>MPI_Init</methodname>, and the
+second library calls the initialization check function, here <methodname>MPI_Initialized</methodname>. The check
+function will return true if the given library is a shared object. This organization is shown in figure ???</para>
+<para>
+<inlinemediaobject>
+<imageobject><imagedata fileref="sharedLibraryCheck" format="EPS"/></imageobject>
+<imageobject><imagedata fileref="sharedLibraryCheck" format="JPG"/></imageobject>
+<!-- <textobject><phrase>A diagram of the link structure for the shared library test</phrase></textobject> -->
+</inlinemediaobject>
+</para>
+
+  <para>The lower level interface to compiling and linking in the base class mirrors that for preprocessing. The
+<methodname>outputCompile</methodname> and <methodname>checkCompile</methodname> methods function in the same way. The
+code is now broken up into four distinct sections. There are includes, the body of <methodname>main</methodname>, and a
+possible replacement for the beginning and end of the <methodname>main</methodname> declaration. The linking methods,
+<methodname>outputLink</methodname> and <methodname>checkLink</methodname>, are exactly analogous.</para>
+
+  <para>There are also some convenience methods provided to handle compiler and linker flags. The
+<methodname>checkCompilerFlag</methodname> and <methodname>checkLinkerFlag</methodname> try to determine whether a given
+flag is accepted by the processor, while <methodname>addCompilerFlag</methodname> and
+<methodname>addLinkerFlag</methodname> will do that check and add any valid flag to the list of default flags.</para>
+
+  </sect2>
+
+  <sect2 id="Checking-for-executables">
+  <title>Checking for executables</title>
+
+  <para>The <methodname>getExecutable</methodname> method is used to locate executable files. For instance, this code
+would allow us to locate the <command>valgrind</command> binary.
+<programlisting>
+  self.getExecutable('valgrind')
+</programlisting>
+If the program is found, a member variable of the same name will be set in the object to the program name, and a make
+macro defined to it as well. We can opt for these to contain the full path by using the <option>getFullPath</option>
+argument. In addition, we can change the name of the member variable and macro using the <option>resultName</option>
+argument.
+</para>
+
+<para>We also have control over the search path used. If we give no arguments, the default path from the environment is
+used. This can be overridden with a new path using the <option>path</option> argument, either as a Python list or a
+colon separated string. Furthermore, the default path can be added to this custom path using the
+<option>useDefaultPath</option> argument. For instance, this call
+<programlisting>
+  self.getExecutable('valgrind', path=['/opt/valgrind-1.0'], getFullPath=1,
+                     useDefaultPath=1, resultName='grinder')
+</programlisting>
+will check for <command>valgrind</command> first in <filename>/opt/valgrind-1.0</filename> and then along the default
+path. If found in the first location, it will set <varname>self.grinder</varname> to
+<filename>/opt/valgrind-1.0/valgrind</filename> as well as define <envar>GRINDER</envar> to the same value in makefiles.
+</para>
+
+  <para>As in the cases of preprocessing, compiling, and linking, the lower level operations are also exposed. The
+<methodname>checkRun</methodname> method takes in a code string and returns true if the executable runs without
+error. The <methodname>outputRun</methodname> method returns the output and status code. Both methods us the safe
+execution routine <methodname>config.base.Configure.executeShellCommand</methodname> which accepts a timeout. Moreover,
+there commands can run in the special batch mode described in section ???.</para>
+
+  </sect2>
+
+  <sect2 id="Output-results">
+  <title>Output results</title>
+
+  <para>The BuildSystem configure includes the traditional output methods employed by <command>autoconf</command> to
+enable communication with <command>make</command>. Individual configure modules use the
+<methodname>addDefine</methodname> method to add C <methodname>#define</methodname> statements to a configuration header
+and the <methodname>addSubstitution</methodname> to setup substitution rules for specified files. For instance, to
+activate the parmetis package, we might provide
+<programlisting>
+  self.addDefine('HAVE_PARMETIS', 1)
+</programlisting>
+and then for the make process
+<programlisting>
+  self.addSubstitution('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i)
+                                                     for i in self.include]))
+  self.addSubstitution('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l)
+                                                for l in self.lib]))
+</programlisting>
+</para>
+
+<para>The actual output of this data is controlled by the framework. The user specifies the header file using the
+<varname>header</varname> field of the framework, and then the file is created automatically during the configure
+process, but can be output at any time using the <methodname>outputHeader</methodname> method. Furthermore, the
+<methodname>addSubstitutionFile</methodname> method can be used to tag a file for substitution, and also specify a
+different file for the result of the substitution.</para>
+
+<para>In the <command>autoconf</command> approach, separating the the defines and substitutions for different packages
+becomes troublesome, and in some cases impossible to maintain. To help with this, we have introduced
+<emphasis>prefixes</emphasis> for the defines and substitutions. The are strings, unique to each module, which are
+prepended with an underscore to each identifier defined or substituted. These are set on a per object basis using the
+<varname>headerPrefix</varname> and <varname>substPrefix</varname> members. For instance, in our
+parmetis example, if we instead used the code
+<programlisting>
+  self.headerPrefix = 'MATT'
+  self.addDefine('HAVE_PARMETIS', 1)
+</programlisting>
+in our configuration header we would see
+<programlisting>
+  #ifndef MATT_HAVE_PARMETIS
+  #define MATT_HAVE_PARMETIS 1
+  #endif
+</programlisting>
+Note that the value of the prefix is used at output time, not at the time that the define or substitution is set.
+</para>
+
+<para>Another extension of the old-style output mechanisms adds more C structure to the interface. The
+<methodname>addTypedef</methodname> method allows a typedef from one typename to another, which in
+<command>autoconf</command> is handled by a define. Likewise <methodname>addPrototype</methodname> can add a missing
+function prototype to a header. Since these are C specific structures, they are output into a separate configuration
+header file, which is controlled by the <varname>cHeader</varname> member variable.</para>
+
+<para>Extending in a different direction, we allow makefile structures to be specified directly rather than through
+substitutions. Using <methodname>addMakeMacro</methodname>, we can add variable definitions to the configuration
+makefile, whereas <methodname>addMakeRule</methodname> allows the user to specify a make target, complete with
+dependencies and action. As an example, we will replace our parmetis example from above with the following code
+<programlisting>
+  self.addMakeMacro('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i)
+                                                  for i in self.include]))
+  self.addMakeMacro('PARMETIS_LIB, ' '.join([self.libraries.getLibArgument(l)
+                                             for l in self.lib]))
+  self.addMakeRule('.c.o', '', ['${CC} -c -o $@ -I${PARMETIS_INCLUDE} $&lt;'])
+  self.addMakeRule('myApp', '${.c=.o:SOURCE}', ['${CC} -o $@ $&lt; ${PARMETIS_LIB}'])
+</programlisting>
+which will produce
+<programlisting>
+  PARMETIS_INCLUDE = -I/home/knepley/petsc-dev/externalpackages/parmetis/build/Darwin-x86_64/include
+  PARMETIS_LIB = -L/home/knepley/petsc-dev/externalpackages/parmetis/build/Darwin-x86_64/lib -lparmetis -lmetis
+</programlisting>
+in the file specified by the <varname>makeMacroHeader</varname> member variable, and
+<programlisting>
+  myApp: ${.c=.o:SOURCE}
+        ${CC} -i $@ $&lt; ${PARMETIS_LIB}
+</programlisting>
+in the file specified by the <varname>makeRuleHeader</varname> member variable.</para>
+
+<para>The above output methods are all specified on a per configure object basis, however this may become confusing in a
+large project. All the prefixes and output filenames would have to be coordinated. A common strategy is to use the
+framework for coordination, putting all the output into the framework object itself. For instance, we might have
+<programlisting>
+  self.framework.addDefine('HAVE_PARMETIS', 1)
+</programlisting>
+which would allow the define to appear in the headre specified by the framework with the framework prefix.
+</para>
+
+  </sect2>
+
+</sect1>
+
+<sect1 id="Configuring-batch-systems">
+<title>Configuring batch systems</title>
+
+<para>It is not uncommon for large clusters or supercomputing centers to have a batch execution policy, making it
+difficult for configure to execute the few tests that depend on executing code, rather than compiling and linking it. To
+handle this case, we provide the <option>--with-batch</option> argument. The code to be run is collected in a single
+executable which the user must submit to the system. This executable produces a <emphasis>reconfigure</emphasis> script
+which may then be run to fully configure the system.</para>
+
+<para>When configure is run with the <option>--with-batch</option> option, the following message will appear.
+<screen>
+<prompt>petsc-dev$</prompt> <command>./config/configure.py --with-batch</command>
+</screen>
+produces the following log output.
+<screen>
+<computeroutput>
+=================================================================================
+    Since your compute nodes require use of a batch system or mpirun you must:   
+ 1) Submit ./conftest to your batch system (this will generate the file reconfigure)
+ 2) Run "python reconfigure" (to complete the configure process).                
+=================================================================================
+</computeroutput>
+</screen>
+The user must then execute the <filename>conftest</filename> binary, and then run the <command>python
+reconfigure</command> command.
+</para>
+
+<para>If a user defined test relies upon running code, he may make it suitable for a batch system. The
+<methodname>checkRun</methodname> method takes the <option>defaultArg</option> argument which names a configure option
+whose value may substitute for the outcome of the test, allowing a user to preempt the run. For instance, the
+<methodname>config.types.checkEndian</methodname> method contains the code
+<programlisting>
+  if self.checkRun('', body, defaultArg = 'isLittleEndian'):
+</programlisting>
+which means the <option>isLittleEndian</option> option can be given to replace the output of the run. However, this does
+the require the user to supply the missing option.</para>
+
+<para>To automate this process, the test should first check for batch mode. Using the
+<methodname>addBatchInclude</methodname> and <methodname>addBatchBody</methodname> methods, code can be included in the
+batch executable. We return to the endian test to illustrate this usage.
+<programlisting>
+  if not self.framework.argDB['with-batch']:
+    body = '''
+    /* Are we little or big endian?  From Harbison &amp; Steele. */
+    union
+    {
+      long l;
+      char c[sizeof(long)];
+    } u;
+    u.l = 1;
+    exit(u.c[sizeof(long) - 1] == 1);
+    '''
+    if self.checkRun('', body, defaultArg = 'isLittleEndian'):
+      endian = 'little'
+    else:
+      endian = 'big'
+  else:
+    self.framework.addBatchBody(
+      ['{',
+       '  union {long l; char c[sizeof(long)];} u;',
+       '  u.l = 1;',
+       '  fprintf(output, " \'--with-endian=%s\',\\n",\
+            (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+       '}'])
+    # Dummy value
+    endian = 'little'
+</programlisting>
+The batch body code should output configure options to the <varname>output</varname> file descriptor. These are
+collected for the new configure run in the <filename>reconfigure</filename> script.
+</para>
+
+</sect1>
+
+</chapter>
+
+<chapter id="Build">
+<title>Build</title>
+
+<para>The build operation now encompasses the configure, compile, link, install, and update operations.</para>
+
+<sect1 id="Running-make">
+<title>Running make</title>
+
+<para>All options for both configuration and build are given to <filename>make.py</filename>. Thus, the simplest build
+is merely
+<screen>
+<prompt>petsc-dev$</prompt> <command>./make.py</command>
+</screen>
+The help is also given by <option>-help</option>, but this time it will also include build switches.
+<screen>
+<prompt>petsc-dev$</prompt> <command>./make.py -help</command>
+<computeroutput>
+Script Help
+-----------
+Script:
+  --help                        : Print this help message                                           current: 1
+  --h                           : Print this help message                                           current: 0
+Make:
+  -forceConfigure               : Force a reconfiguration                                           current: 0
+  -ignoreCompileOutput          : Ignore compiler output                                            current: 1
+  -defaultRoot                  : Directory root for all packages                                   current: ../..
+  -prefix                       : Root for installation of libraries and binaries
+SIDLMake:
+  -bootstrap                    : Generate the boostrap client                                      current: 0
+  -outputSIDLFiles              : Write generated files to disk                                     current: 1
+  -excludeLanguages=&lt;languages&gt; : Do not load configurations from RDict for the given languages     current: []
+  -excludeBasenames=&lt;names&gt;     : Do not load configurations from RDict for these SIDL base names   current: []
+</computeroutput>
+</screen>
+</para>
+
+</sect1>
+
+<sect1 id="Makers">
+<title>Makers</title>
+
+<para>The build operation now encompasses configure, compile, and link operations, which are coordinated by objects of
+class <classname>maker.Maker</classname>. This object manages: 
+<itemizedlist>
+  <listitem><para>configuration,</para></listitem>
+  <listitem><para>build,</para></listitem>
+  <listitem><para>install, and</para></listitem>
+  <listitem><para>project dependencies</para></listitem>
+</itemizedlist>
+All options, no matter which component they are intended for, are given uniformly to <filename>make.py</filename>.
+</para>
+
+  <sect2 id="SIDLMaker">
+  <title>SIDLMaker</title>
+
+<para>This is a subclass which handles source generation from SIDL.</para>
+
+  </sect2>
+
+</sect1>
+
+<sect1 id="Builders">
+<title>Builders</title>
+
+<para>The build operation now encompasses the configure, compile, and link operations.</para>
+
+</sect1>
+
+<sect1 id="LanguageProcessors">
+<title>LanguageProcessors</title>
+
+<para>The build operation now encompasses the configure, compile, and link operations.</para>
+
+</sect1>
+
+<sect1 id="Interaction-with-Configure">
+<title>Interaction with Configure</title>
+
+<para>The pickled configure is loaded by Maker, and then the config.compile objects are jacked into the Builder.</para>
+
+</sect1>
+
+</chapter>
+
+</book>

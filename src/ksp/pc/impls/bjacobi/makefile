@@ -6,10 +6,8 @@ FFLAGS   =
 SOURCEC  = bjacobi.c
 SOURCEF  =
 SOURCEH  = bjacobi.h
-OBJSC    = bjacobi.o
-OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/bjacobi/
 

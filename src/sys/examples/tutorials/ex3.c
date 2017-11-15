@@ -15,10 +15,11 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
-#include "petscsys.h"
+#include <petscsys.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -26,13 +27,13 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   int            i,imax=10000,icount;
-#if defined (PETSC_USE_LOG)
-  PetscLogEvent  USER_EVENT;
+#if defined(PETSC_USE_LOG)
+  PetscLogEvent USER_EVENT;
 #endif
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
-  /* 
+  /*
      Create a new user-defined event.
       - Note that PetscLogEventRegister() returns to the user a unique
         integer event number, which should then be used for profiling
@@ -42,13 +43,14 @@ int main(int argc,char **argv)
   */
   ierr = PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+
   icount = 0;
   for (i=0; i<imax; i++) icount++;
   ierr = PetscLogFlops(imax);CHKERRQ(ierr);
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  /* 
+  /*
      We disable the logging of an event.
 
   */
@@ -57,7 +59,7 @@ int main(int argc,char **argv)
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  /* 
+  /*
      We next enable the logging of an event
   */
   ierr = PetscLogEventActivate(USER_EVENT);CHKERRQ(ierr);
@@ -68,4 +70,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

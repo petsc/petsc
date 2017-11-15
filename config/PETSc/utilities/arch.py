@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     desc = ['PETSc:']
     desc.append('  PETSC_ARCH: '+str(self.arch))
     return '\n'.join(desc)+'\n'
-  
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-PETSC_ARCH=<string>',     nargs.Arg(None, None, 'The configuration name'))
@@ -48,7 +48,8 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
           raise RuntimeError('PETSC_ARCH is the empty string in your environment. It must either be a valid string, or not be defined in the environment at all.')
         self.arch = os.environ['PETSC_ARCH']
       else:
-        self.arch = 'arch-' + self.framework.host_os
+        import sys
+        self.arch = 'arch-' + sys.platform.replace('cygwin','mswin')
         # use opt/debug, c/c++ tags.
         self.arch+= '-'+self.languages.clanguage.lower()
         if self.compilerFlags.debugging:
@@ -58,7 +59,6 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
     if self.arch.find('/') >= 0 or self.arch.find('\\') >= 0:
       raise RuntimeError('PETSC_ARCH should not contain path characters, but you have specified: '+str(self.arch))
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', '"'+self.arch+'"')
     return
 

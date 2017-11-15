@@ -1,15 +1,14 @@
-#define PETSCMAT_DLL
 
-#include "private/matimpl.h"               /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscClassId PETSCMAT_DLLEXPORT MAT_PARTITIONING_CLASSID;
+PetscClassId MAT_PARTITIONING_CLASSID;
 
 /*
    Simplest partitioning, keeps the current partitioning.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply_Current" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Current"
 static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -17,19 +16,21 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
+    const char *prefix;
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)part,&prefix);CHKERRQ(ierr);
+    SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor",prefix ? prefix : "");
   }
-  ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(part->adj,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(((PetscObject)part)->comm,m,rank,0,partitioning);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(part->adj,&m,NULL);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)part),m,rank,0,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply_Square" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Square"
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -37,14 +38,14 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)part)->comm,&size);CHKERRQ(ierr);
-  if (part->n != size) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Currently only supports one domain per processor");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
+  if (part->n != size) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
   p = (PetscInt)sqrt((double)part->n);
-  if (p*p != part->n) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
+  if (p*p != part->n) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
-  ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
-  n = (PetscInt)sqrt((double)N);
-  if (n*n != N) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_SUP,"Square partitioning requires square domain");
+  ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
+  n    = (PetscInt)sqrt((double)N);
+  if (n*n != N) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
   if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
@@ -52,16 +53,13 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
   }
-  ierr = ISCreateGeneral(((PetscObject)part)->comm,rend-rstart,color,partitioning);CHKERRQ(ierr);
-  ierr = PetscFree(color);CHKERRQ(ierr);
-
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),rend-rstart,color,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN  
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Current" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning part)
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Current"
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
@@ -69,12 +67,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning 
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN  
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Square" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning part)
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Square"
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;
@@ -82,54 +78,54 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning p
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 /* ===========================================================================================*/
 
-PetscFList MatPartitioningList = 0;
-PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatPartitioningList              = 0;
+PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegister" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
-{
-  PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegisterDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegister"
 /*@C
-   MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
+   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
-  Not Collective
+   Not Collective
 
-  Level: developer
+   Input Parameters:
++  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
+-  function - function pointer that creates the partitioning type
 
-.keywords: matrix, register, destroy
+   Level: developer
 
-.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterAll()
+   Sample usage:
+.vb
+   MatPartitioningRegister("my_part",MyPartCreate);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatPartitioningSetType(part,"my_part")
+   or at runtime via the option
+$     -mat_partitioning_type my_part
+
+.keywords: matrix, partitioning, register
+
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
+PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  ierr = PetscFListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningGetType"
 /*@C
-   MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
+   MatPartitioningGetType - Gets the Partitioning method type and name (as a string)
         from the partitioning context.
 
    Not collective
@@ -146,7 +142,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
+PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_CLASSID,1);
@@ -155,7 +151,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partiti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetNParts"
 /*@C
    MatPartitioningSetNParts - Set how many partitions need to be created;
@@ -176,15 +172,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partiti
 
 .seealso: MatPartitioningCreate(), MatPartitioningApply()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
+PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 {
   PetscFunctionBegin;
   part->n = n;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply"
 /*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
@@ -199,47 +195,47 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning part,
 
    Options Database Keys:
    To specify the partitioning through the options database, use one of
-   the following 
+   the following
 $    -mat_partitioning_type parmetis, -mat_partitioning current
    To see the partitioning result
 $    -mat_partitioning_view
 
    Level: beginner
 
-   The user can define additional partitionings; see MatPartitioningRegisterDynamic().
+   The user can define additional partitionings; see MatPartitioningRegister().
 
 .keywords: matrix, get, partitioning
 
-.seealso:  MatPartitioningRegisterDynamic(), MatPartitioningCreate(),
+.seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *partitioning)
+PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscTruth     flag = PETSC_FALSE;
+  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
-  if (!matp->adj->assembled) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!matp->ops->apply) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  if (!matp->adj->assembled) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factortype) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!matp->ops->apply) SETERRQ(PetscObjectComm((PetscObject)matp),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_partitioning_view",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)matp)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);
     ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
     ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetAdjacency"
 /*@
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
@@ -257,7 +253,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
 
 .seealso: MatPartitioningCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
+PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
@@ -266,7 +262,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning pa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy"
 /*@
    MatPartitioningDestroy - Destroys the partitioning context.
@@ -282,24 +278,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning pa
 
 .seealso: MatPartitioningCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
+PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  if (--((PetscObject)part)->refct > 0) PetscFunctionReturn(0);
+  if (!*part) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*part),MAT_PARTITIONING_CLASSID,1);
+  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
 
-  if (part->ops->destroy) {
-    ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
+  if ((*part)->ops->destroy) {
+    ierr = (*(*part)->ops->destroy)((*part));CHKERRQ(ierr);
   }
-  ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
-  ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+  ierr = PetscFree((*part)->vertex_weights);CHKERRQ(ierr);
+  ierr = PetscFree((*part)->part_weights);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetVertexWeights"
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
@@ -320,7 +317,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
+PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
 {
   PetscErrorCode ierr;
 
@@ -328,11 +325,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
 
   ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
+
   part->vertex_weights = (PetscInt*)weights;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetPartitionWeights"
 /*@C
    MatPartitioningSetPartitionWeights - Sets the weights for each partition.
@@ -358,7 +356,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetVertexWeights()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
+PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
 {
   PetscErrorCode ierr;
 
@@ -366,11 +364,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
 
   ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+
   part->part_weights = (PetscReal*)weights;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate"
 /*@
    MatPartitioningCreate - Creates a partitioning context.
@@ -378,7 +377,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
    Collective on MPI_Comm
 
    Input Parameter:
-.   comm - MPI communicator 
+.   comm - MPI communicator
 
    Output Parameter:
 .  newp - location to put the context
@@ -391,32 +390,32 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
           MatPartitioningSetAdjacency()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
+PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning part;
   PetscErrorCode  ierr;
   PetscMPIInt     size;
 
   PetscFunctionBegin;
-  *newp          = 0;
+  *newp = 0;
 
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,-1,"MatPartitioning",comm,MatPartitioningDestroy,
-                    MatPartitioningView);CHKERRQ(ierr);
-  part->vertex_weights = PETSC_NULL;
-  part->part_weights   = PETSC_NULL;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
+  part->vertex_weights = NULL;
+  part->part_weights   = NULL;
+
+  ierr    = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   part->n = (PetscInt)size;
 
   *newp = part;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView"
-/*@C 
+/*@C
    MatPartitioningView - Prints the partitioning data structure.
 
    Collective on MatPartitioning
@@ -432,8 +431,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open alternative visualization contexts with
 .     PetscViewerASCIIOpen() - output to a specified file
@@ -442,41 +441,35 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
+PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
-  PetscErrorCode            ierr;
-  PetscTruth                iascii;
-  const MatPartitioningType name;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)part)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(part,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer,"MatPartitioning Object");CHKERRQ(ierr);
     if (part->vertex_weights) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
   }
-
   if (part->ops->view) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*part->ops->view)(part,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
@@ -499,30 +492,32 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
+PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
-  PetscTruth match;
+  PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
   PetscValidCharPointer(type,2);
 
-  ierr = PetscTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
     ierr =  (*part->ops->destroy)(part);CHKERRQ(ierr);
-    part->data        = 0;
-    part->setupcalled = 0;
+
+    part->ops->destroy = NULL;
+    part->data         = 0;
+    part->setupcalled  = 0;
   }
 
-  ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
+  part->ops->destroy = (PetscErrorCode (*)(MatPartitioning)) 0;
+  part->ops->view    = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;
 
-  part->ops->destroy      = (PetscErrorCode (*)(MatPartitioning)) 0;
-  part->ops->view         = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
   ierr = PetscFree(((PetscObject)part)->type_name);CHKERRQ(ierr);
@@ -530,10 +525,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions"
 /*@
-   MatPartitioningSetFromOptions - Sets various partitioning options from the 
+   MatPartitioningSetFromOptions - Sets various partitioning options from the
         options database.
 
    Collective on MatPartitioning
@@ -550,38 +545,38 @@ $      (for instance, parmetis)
 
 .keywords: partitioning, set, method, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning part)
+PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
-  char       type[256];
-  const char *def;
+  PetscBool      flag;
+  char           type[256];
+  const char     *def;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)part)->comm,((PetscObject)part)->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
-    if (!((PetscObject)part)->type_name) {
+  ierr = PetscObjectOptionsBegin((PetscObject)part);CHKERRQ(ierr);
+  if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
-      def = MATPARTITIONINGPARMETIS;
+    def = MATPARTITIONINGPARMETIS;
 #else
-      def = MATPARTITIONINGCURRENT;
+    def = MATPARTITIONINGCURRENT;
 #endif
-    } else {
-      def = ((PetscObject)part)->type_name;
-    }
-    ierr = PetscOptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
-    }
-    /*
-      Set the type if it was never set.
-    */
-    if (!((PetscObject)part)->type_name) {
-      ierr = MatPartitioningSetType(part,def);CHKERRQ(ierr);
-    }
+  } else {
+    def = ((PetscObject)part)->type_name;
+  }
+  ierr = PetscOptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+  }
+  /*
+    Set the type if it was never set.
+  */
+  if (!((PetscObject)part)->type_name) {
+    ierr = MatPartitioningSetType(part,def);CHKERRQ(ierr);
+  }
 
-    if (part->ops->setfromoptions) {
-      ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
-    }
+  if (part->ops->setfromoptions) {
+    ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

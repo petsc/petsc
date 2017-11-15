@@ -26,9 +26,9 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscvec.h90"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscvec.h90>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -44,13 +44,13 @@
       PetscInt         n,ithree
       PetscErrorCode   ierr
       PetscMPIInt      rank
-      PetscTruth       flg
+      PetscBool        flg
       PetscScalar      one,two,three
       PetscScalar      dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0
@@ -185,7 +185,7 @@
       if (rank .eq. 0) write(6,210) v
  210  format ("VecPointwiseDivide ",1pe8.2)
 
-      
+
       dots(1) = one
       dots(2) = three
       dots(3) = two
@@ -203,26 +203,14 @@
       if (rank .eq. 0) write(6,220) v,v1,v2
  220  format ("VecMAXPY ",3(1pe8.2))
 
-
-!  Test whether vector has been corrupted (just to demonstrate this
-!  routine) not needed in most application codes.
-
-      call VecValid(x,flg,ierr)
-      if (.not. flg) then
-         if (rank .eq. 0) then
-            write(6,*) 'Corrupted vector!'
-         endif
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
-      endif
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecsF90(z,ithree,ierr)
+      call VecDestroyVecsF90(ithree,z,ierr)
       call PetscFinalize(ierr)
 
       end
- 
+

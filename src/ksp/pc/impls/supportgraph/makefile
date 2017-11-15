@@ -7,11 +7,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = supportgraph.c lowstretch.cpp
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = supportgraph.o lowstretch.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/supportgraph/
 

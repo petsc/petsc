@@ -1,0 +1,52 @@
+Vector Object:Test_Vec 3 MPI processes
+  type: mpi
+Process [0]
+0
+1
+2
+3
+4
+5
+6
+Process [1]
+100
+101
+102
+103
+104
+105
+106
+Process [2]
+200
+201
+202
+203
+204
+205
+writing vector in binary to vector.dat ...
+reading vector in binary from vector.dat ...
+Vector Object:Test_Vec 3 MPI processes
+  type: mpi
+Process [0]
+0
+1
+2
+3
+4
+5
+6
+Process [1]
+100
+101
+102
+103
+104
+105
+106
+Process [2]
+200
+201
+202
+203
+204
+205

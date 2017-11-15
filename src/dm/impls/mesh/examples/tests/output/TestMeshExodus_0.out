@@ -1,0 +1,292 @@
+Creating new NumberingFactory
+cell 0 num boundary vertices 3
+cell 1 num boundary vertices 3
+cell 2 num boundary vertices 3
+cell 3 num boundary vertices 3
+cell 4 num boundary vertices 3
+cell 5 num boundary vertices 3
+cell 6 num boundary vertices 3
+cell 7 num boundary vertices 3
+Creating new real section: coordinates
+Adding coordinates for vertex 8
+Adding coordinates for vertex 9
+Adding coordinates for vertex 10
+Adding coordinates for vertex 11
+Adding coordinates for vertex 12
+Adding coordinates for vertex 13
+Adding coordinates for vertex 14
+Adding coordinates for vertex 15
+Adding coordinates for vertex 16
+Creating new int section: CellParentBlock
+Creating new int section: CellBlock_0000
+Creating new int section: CellBlock_0001
+Creating new int section: FaceSet_0001
+Creating new int section: FaceParentSet
+Creating new int section: VertexSet_0001
+Creating new int section: VertexParentSet
+viewing Mesh 'Boundary Mesh'
+viewing a Sieve, comm = 1140850688, commRank = 0
+viewing Sieve :'mesh sieve'
+cap --> base:
+[0]: 9--(0)-->17
+[0]: 9--(0)-->30
+[0]: 10--(0)-->17
+[0]: 10--(0)-->20
+[0]: 11--(0)-->20
+[0]: 11--(0)-->24
+[0]: 12--(0)-->22
+[0]: 12--(0)-->24
+[0]: 13--(0)-->22
+[0]: 13--(0)-->26
+[0]: 14--(0)-->26
+[0]: 14--(0)-->28
+[0]: 15--(0)-->28
+[0]: 15--(0)-->32
+[0]: 16--(0)-->30
+[0]: 16--(0)-->32
+base --> cap:
+[0]: 17<--(0)--9
+[0]: 17<--(0)--10
+[0]: 20<--(0)--10
+[0]: 20<--(0)--11
+[0]: 22<--(0)--12
+[0]: 22<--(0)--13
+[0]: 24<--(0)--11
+[0]: 24<--(0)--12
+[0]: 26<--(0)--13
+[0]: 26<--(0)--14
+[0]: 28<--(0)--14
+[0]: 28<--(0)--15
+[0]: 30<--(0)--9
+[0]: 30<--(0)--16
+[0]: 32<--(0)--15
+[0]: 32<--(0)--16
+viewing Mesh 'Mesh'
+Max sizes cone: 3 support: 6
+viewing IFSieve 'mesh sieve'
+cap --> base:
+[0]: 8 ----> 18
+[0]: 8 ----> 19
+[0]: 8 ----> 21
+[0]: 8 ----> 27
+[0]: 8 ----> 29
+[0]: 8 ----> 25
+[0]: 9 ----> 17
+[0]: 9 ----> 19
+[0]: 9 ----> 30
+[0]: 9 ----> 31
+[0]: 10 ----> 20
+[0]: 10 ----> 17
+[0]: 10 ----> 18
+[0]: 11 ----> 23
+[0]: 11 ----> 24
+[0]: 11 ----> 20
+[0]: 11 ----> 21
+[0]: 12 ----> 22
+[0]: 12 ----> 24
+[0]: 13 ----> 25
+[0]: 13 ----> 26
+[0]: 13 ----> 22
+[0]: 13 ----> 23
+[0]: 14 ----> 28
+[0]: 14 ----> 26
+[0]: 14 ----> 27
+[0]: 15 ----> 31
+[0]: 15 ----> 32
+[0]: 15 ----> 28
+[0]: 15 ----> 29
+[0]: 16 ----> 30
+[0]: 16 ----> 32
+[0]: 17 ----> 0
+[0]: 18 ----> 0
+[0]: 18 ----> 1
+[0]: 19 ----> 7
+[0]: 19 ----> 0
+[0]: 20 ----> 1
+[0]: 21 ----> 1
+[0]: 21 ----> 3
+[0]: 22 ----> 2
+[0]: 23 ----> 2
+[0]: 23 ----> 3
+[0]: 24 ----> 2
+[0]: 25 ----> 3
+[0]: 25 ----> 4
+[0]: 26 ----> 4
+[0]: 27 ----> 4
+[0]: 27 ----> 5
+[0]: 28 ----> 5
+[0]: 29 ----> 5
+[0]: 29 ----> 7
+[0]: 30 ----> 6
+[0]: 31 ----> 6
+[0]: 31 ----> 7
+[0]: 32 ----> 6
+base <-- cap:
+[0]: 0<----17
+[0]: 0<----18
+[0]: 0<----19
+[0]: 1<----20
+[0]: 1<----21
+[0]: 1<----18
+[0]: 2<----22
+[0]: 2<----23
+[0]: 2<----24
+[0]: 3<----25
+[0]: 3<----21
+[0]: 3<----23
+[0]: 4<----26
+[0]: 4<----27
+[0]: 4<----25
+[0]: 5<----28
+[0]: 5<----29
+[0]: 5<----27
+[0]: 6<----30
+[0]: 6<----31
+[0]: 6<----32
+[0]: 7<----19
+[0]: 7<----29
+[0]: 7<----31
+[0]: 17<----9
+[0]: 17<----10
+[0]: 18<----8
+[0]: 18<----10
+[0]: 19<----8
+[0]: 19<----9
+[0]: 20<----10
+[0]: 20<----11
+[0]: 21<----8
+[0]: 21<----11
+[0]: 22<----12
+[0]: 22<----13
+[0]: 23<----11
+[0]: 23<----13
+[0]: 24<----11
+[0]: 24<----12
+[0]: 25<----13
+[0]: 25<----8
+[0]: 26<----13
+[0]: 26<----14
+[0]: 27<----8
+[0]: 27<----14
+[0]: 28<----14
+[0]: 28<----15
+[0]: 29<----8
+[0]: 29<----15
+[0]: 30<----16
+[0]: 30<----9
+[0]: 31<----15
+[0]: 31<----9
+[0]: 32<----15
+[0]: 32<----16
+Orientation:
+[0]: 0<----17: 1
+[0]: 0<----18: -2
+[0]: 0<----19: 1
+[0]: 1<----20: 1
+[0]: 1<----21: -2
+[0]: 1<----18: 1
+[0]: 2<----22: 1
+[0]: 2<----23: -2
+[0]: 2<----24: 1
+[0]: 3<----25: 1
+[0]: 3<----21: 1
+[0]: 3<----23: 1
+[0]: 4<----26: 1
+[0]: 4<----27: -2
+[0]: 4<----25: -2
+[0]: 5<----28: 1
+[0]: 5<----29: -2
+[0]: 5<----27: 1
+[0]: 6<----30: 1
+[0]: 6<----31: -2
+[0]: 6<----32: 1
+[0]: 7<----19: -2
+[0]: 7<----29: 1
+[0]: 7<----31: 1
+[0]: 17<----9: 0
+[0]: 17<----10: 0
+[0]: 18<----8: 0
+[0]: 18<----10: 0
+[0]: 19<----8: 0
+[0]: 19<----9: 0
+[0]: 20<----10: 0
+[0]: 20<----11: 0
+[0]: 21<----8: 0
+[0]: 21<----11: 0
+[0]: 22<----12: 0
+[0]: 22<----13: 0
+[0]: 23<----11: 0
+[0]: 23<----13: 0
+[0]: 24<----11: 0
+[0]: 24<----12: 0
+[0]: 25<----13: 0
+[0]: 25<----8: 0
+[0]: 26<----13: 0
+[0]: 26<----14: 0
+[0]: 27<----8: 0
+[0]: 27<----14: 0
+[0]: 28<----14: 0
+[0]: 28<----15: 0
+[0]: 29<----8: 0
+[0]: 29<----15: 0
+[0]: 30<----16: 0
+[0]: 30<----9: 0
+[0]: 31<----15: 0
+[0]: 31<----9: 0
+[0]: 32<----15: 0
+[0]: 32<----16: 0
+viewing GeneralSection 'coordinates'
+  Fields: 0
+[0]:   8 dim 2 offset 0   0 0
+[0]:   9 dim 2 offset 2   -0.5 0
+[0]:   10 dim 2 offset 4   -0.5 -0.5
+[0]:   11 dim 2 offset 6   0 -0.5
+[0]:   12 dim 2 offset 8   0.5 -0.5
+[0]:   13 dim 2 offset 10   0.5 0
+[0]:   14 dim 2 offset 12   0.5 0.5
+[0]:   15 dim 2 offset 14   0 0.5
+[0]:   16 dim 2 offset 16   -0.5 0.5
+viewing GeneralSection 'CellBlock_0000'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+[0]:   1 dim 1 offset 1   0
+[0]:   2 dim 1 offset 2   0
+[0]:   3 dim 1 offset 3   0
+viewing GeneralSection 'CellBlock_0001'
+  Fields: 0
+[0]:   4 dim 1 offset 0   1
+[0]:   5 dim 1 offset 1   1
+[0]:   6 dim 1 offset 2   1
+[0]:   7 dim 1 offset 3   1
+viewing GeneralSection 'CellParentBlock'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+[0]:   1 dim 1 offset 1   0
+[0]:   2 dim 1 offset 2   0
+[0]:   3 dim 1 offset 3   0
+[0]:   4 dim 1 offset 4   1
+[0]:   5 dim 1 offset 5   1
+[0]:   6 dim 1 offset 6   1
+[0]:   7 dim 1 offset 7   1
+viewing GeneralSection 'FaceParentSet'
+  Fields: 0
+[0]:   17 dim 1 offset 0   0
+[0]:   30 dim 1 offset 1   0
+viewing GeneralSection 'FaceSet_0001'
+  Fields: 0
+[0]:   17 dim 1 offset 0   0
+[0]:   30 dim 1 offset 1   0
+viewing GeneralSection 'VertexParentSet'
+  Fields: 0
+[0]:   12 dim 1 offset 0   0
+[0]:   13 dim 1 offset 1   0
+[0]:   14 dim 1 offset 2   0
+viewing GeneralSection 'VertexSet_0001'
+  Fields: 0
+[0]:   12 dim 1 offset 0   0
+[0]:   13 dim 1 offset 1   0
+[0]:   14 dim 1 offset 2   0
+Mesh in 2 dimensions:
+  9 0-cells
+  16 1-cells
+  8 2-cells

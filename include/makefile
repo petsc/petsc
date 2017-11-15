@@ -3,11 +3,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = petscsys.h 
-OBJSC    =
-OBJSF    =
+SOURCEH  = petscsys.h
 LIBBASE  = libpetscvec
-DIRS     = finclude private sieve
+DIRS     = finclude petsc-private sieve
 LOCDIR   = include/
 MANSEC   = Sys
 

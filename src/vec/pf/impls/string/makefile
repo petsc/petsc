@@ -1,13 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = cstring.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = cstring.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/pf/impls/string/
@@ -24,7 +22,7 @@ petscdlib.c:
 
 petscdlib:  petscdlib.c
 	-@${RM} libpetscdlib.a libpetscdlib.${SL_LINKER_SUFFIX}
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib.a SOURCEC=petscdlib.c libc
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib oshared
 #	-@${RM} petscdlib.c
 

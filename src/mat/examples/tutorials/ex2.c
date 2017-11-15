@@ -1,11 +1,11 @@
+static char help[] = "testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
 /*
  * Example code testing SeqDense matrices with an LDA (leading dimension
  * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatInsertValues, MatMult,
- * and MatMultTranspose.
+ * This example tests the functionality of MatInsertValues(), MatMult(),
+ * and MatMultTranspose().
  */
-#include <stdlib.h>
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
 
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,help);
 
   /*
    * Create matrix and three vectors: these are all normal
@@ -41,17 +41,17 @@ int main(int argc,char **argv)
   for (i=0; i<size; i++) {
     x[i] = one;
   }
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,x,&X);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&y);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,y,&Y);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,z,&Z);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 
@@ -90,10 +90,10 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size1,x,&X1);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size2,x+size1,&X2);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size1,z,&Z1);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size2,z+size1,&Z2);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size1,x,&X1);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size2,x+size1,&X2);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size1,z,&Z1);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size2,z+size1,&Z2);CHKERRQ(ierr);
 
   /*
    * Now multiple matrix times input in two ways;
@@ -106,22 +106,23 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test1; error norm=%e\n",nrm);
-  /*
-  printf("MatMult the usual way:\n"); VecView(Y,0);
-  printf("MatMult by subblock:\n"); VecView(Z,0);
-  */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%G\n",nrm);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult the usual way:\n");CHKERRQ(ierr);
+  ierr = VecView(Y,0);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult by subblock:\n");CHKERRQ(ierr);
+  ierr = VecView(Z,0);CHKERRQ(ierr);
 
   /*
    * Next test: change both matrices
    */
-  v = rand(); i=1; j=size-2;
+  v    = rand(); i=1; j=size-2;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  j -= size1;
+  j   -= size1;
   ierr = MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = rand(); i=j=size1+1;
+  v    = rand(); i=j=size1+1;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i=j=1;
+  i    =j=1;
   ierr = MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -137,7 +138,7 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test2; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%G\n",nrm);CHKERRQ(ierr);
 
   /*
    * Transpose product
@@ -149,31 +150,28 @@ int main(int argc,char **argv)
   ierr = MatMultTransposeAdd(A12,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test3; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%G\n",nrm);CHKERRQ(ierr);
 
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
   ierr = PetscFree(x);CHKERRQ(ierr);
   ierr = PetscFree(y);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(A11);CHKERRQ(ierr);
-  ierr = MatDestroy(A12);CHKERRQ(ierr);
-  ierr = MatDestroy(A21);CHKERRQ(ierr);
-  ierr = MatDestroy(A22);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A11);CHKERRQ(ierr);
+  ierr = MatDestroy(&A12);CHKERRQ(ierr);
+  ierr = MatDestroy(&A21);CHKERRQ(ierr);
+  ierr = MatDestroy(&A22);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(Z);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X1);CHKERRQ(ierr);
-  ierr = VecDestroy(X2);CHKERRQ(ierr);
-  ierr = VecDestroy(Z1);CHKERRQ(ierr);
-  ierr = VecDestroy(Z2);CHKERRQ(ierr);
+  ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  ierr = VecDestroy(&X2);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z2);CHKERRQ(ierr);
 
-
-  /*ierr = PetscLogPrintSummary(MPI_COMM_SELF,"ex2.log");CHKERRQ(ierr);*/
-  
   ierr = PetscFinalize();
   return 0;
 }

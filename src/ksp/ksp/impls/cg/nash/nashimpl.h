@@ -12,14 +12,14 @@
 /*     Journal on Numerical Analysis, 21, pages 553-572, 1984.               */
 /*****************************************************************************/
 
-#ifndef __NASH
+#if !defined(__NASH)
 #define __NASH
 
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;
   PetscReal o_fcn;
-  PetscInt dtype;
+  PetscInt  dtype;
 } KSP_NASH;
 
 #endif

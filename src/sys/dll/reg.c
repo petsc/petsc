@@ -1,41 +1,21 @@
-#define PETSC_DLL
+
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
-#include "petscsys.h"           /*I "petscsys.h" I*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListGetPathAndFunction"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
-{
-  PetscErrorCode ierr;
-  char           work[PETSC_MAX_PATH_LEN],*lfunction;
-
-  PetscFunctionBegin;
-  ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
-  ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
-  if (lfunction != work && lfunction && lfunction[1] != ':') {
-    lfunction[0] = 0;
-    ierr = PetscStrallocpy(work,path);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(lfunction+1,function);CHKERRQ(ierr);
-  } else {
-    *path = 0;
-    ierr = PetscStrallocpy(name,function);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+#include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
+#include <petscviewer.h>
 
 /*
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
-PetscDLLibrary DLLibrariesLoaded = 0;
+PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLoadDynamicLibrary"
-static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscTruth *found)
+static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -45,13 +25,13 @@ static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *nam
   ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
   if (*found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc");CHKERRQ(ierr);
     ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
     if (*found) {
-      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -59,26 +39,26 @@ static PetscErrorCode PETSCSYS_DLLEXPORT PetscLoadDynamicLibrary(const char *nam
 
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
-    PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
+    PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
-*/ 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
+*/
+PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  PetscTruth     found;
+  PetscBool      found;
 #endif
 
   PetscFunctionBegin;
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,"-dll_prepend",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
@@ -89,12 +69,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     The classes, from PetscDraw to PetscTS, are initialized the first
     time an XXCreate() is called.
   */
-  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
 #else
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
-#else 
+#else
   ierr = PetscLoadDynamicLibrary("sys",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
@@ -103,8 +83,6 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
-  ierr = PetscLoadDynamicLibrary("characteristic",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Characteristic dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
@@ -112,101 +90,93 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
 #endif
-
-  ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
-  ierr = PetscLoadDynamicLibrary("contrib",&found);CHKERRQ(ierr);
 #endif
 
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    ierr = PetscDLLibraryCCAAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
-*/ 
+*/
 PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dll_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) { ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr); }
-  ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
-  DLLibrariesLoaded = 0;
+  ierr = PetscOptionsGetBool(NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
+  if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
+  ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+
+  PetscDLLibrariesLoaded = 0;
   PetscFunctionReturn(0);
 }
 
+
+
 /* ------------------------------------------------------------------------------*/
-struct _n_PetscFList {
-  void        (*routine)(void);   /* the routine */
-  char        *path;              /* path of link library containing routine */
-  char        *name;              /* string to identify routine */
-  char        *rname;             /* routine name in dynamic library */
-  PetscFList  next;               /* next pointer */
-  PetscFList  next_list;          /* used to maintain list of all lists for freeing */
+struct _n_PetscFunctionList {
+  void              (*routine)(void);    /* the routine */
+  char              *name;               /* string to identify routine */
+  PetscFunctionList next;                /* next pointer */
+  PetscFunctionList next_list;           /* used to maintain list of all lists for freeing */
 };
 
 /*
-     Keep a linked list of PetscFLists so that we can destroy all the left-over ones.
+     Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones.
 */
-static PetscFList   dlallhead = 0;
+static PetscFunctionList dlallhead = 0;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListAdd"
-/*@C
-   PetscFListAddDynamic - Given a routine and a string id, saves that routine in the
+/*MC
+   PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
-     Not Collective
+   Synopsis:
+   #include "petscsys.h"
+   PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
+
+   Not Collective
 
    Input Parameters:
-+  fl    - pointer registry
-.  name  - string to identify routine
-.  rname - routine name in dynamic library
--  fnc   - function pointer (optional if using dynamic libraries)
++  flist - pointer registry
+.  name - string to identify routine
+-  fptr - function pointer
 
    Notes:
-   To remove a registered routine, pass in a PETSC_NULL rname and fnc().
+   To remove a registered routine, pass in a NULL fptr.
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
-   for that particular component (e.g., SNESRegisterDynamic()) instead of
-   calling PetscFListAddDynamic() directly.
+   for that particular component (e.g., SNESRegister()) instead of
+   calling PetscFunctionListAdd() directly.
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
-  occuring in pathname will be replaced with appropriate values.
+    Level: developer
 
-   Level: developer
-
-.seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
-          PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
+.seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
+          PCRegister(), TSRegister(), PetscFunctionList, PetscObjectComposeFunction()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListAdd_Private"
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
-  PetscFList     entry,ne;
-  PetscErrorCode ierr;
-  char           *fpath,*fname;
+  PetscFunctionList entry,ne;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-    entry->path    = fpath;
-    entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
-    *fl = entry;
+    *fl            = entry;
 
     /* add this new list to list of all lists */
     if (!dlallhead) {
@@ -221,26 +191,19 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[]
     /* search list to see if it is already there */
     ne = *fl;
     while (ne) {
-      PetscTruth founddup;
+      PetscBool founddup;
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
-        ierr = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-        ierr = PetscFree(ne->path);CHKERRQ(ierr);
-        ierr = PetscFree(ne->rname);CHKERRQ(ierr);
-        ne->path    = fpath;
-        ne->rname   = fname;
         ne->routine = fnc;
         PetscFunctionReturn(0);
       }
-      if (ne->next) ne = ne->next; else break;
+      if (ne->next) ne = ne->next;
+      else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-    entry->path    = fpath;
-    entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
     ne->next       = entry;
@@ -248,37 +211,33 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListDestroy"
 /*@
-    PetscFListDestroy - Destroys a list of registered routines.
+    PetscFunctionListDestroy - Destroys a list of registered routines.
 
     Input Parameter:
 .   fl  - pointer to list
 
     Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroy(PetscFList *fl)
+PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 {
-  PetscFList     next,entry,tmp = dlallhead;
-  PetscErrorCode ierr;
+  PetscFunctionList next,entry,tmp = dlallhead;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
-  if (!dlallhead) PetscFunctionReturn(0);
 
   /*
        Remove this entry from the master DL list (if it is in it)
   */
   if (dlallhead == *fl) {
-    if (dlallhead->next_list) {
-      dlallhead = dlallhead->next_list;
-    } else {
-      dlallhead = 0;
-    }
-  } else {
+    if (dlallhead->next_list) dlallhead = dlallhead->next_list;
+    else dlallhead = NULL;
+  } else if (tmp) {
     while (tmp->next_list != *fl) {
       tmp = tmp->next_list;
       if (!tmp->next_list) break;
@@ -289,11 +248,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroy(PetscFList *fl)
   /* free this list */
   entry = *fl;
   while (entry) {
-    next = entry->next;
-    ierr = PetscFree(entry->path);CHKERRQ(ierr);
-    ierr = PetscFree(entry->name);CHKERRQ(ierr);
-    ierr = PetscFree(entry->rname);CHKERRQ(ierr);
-    ierr = PetscFree(entry);CHKERRQ(ierr);
+    next  = entry->next;
+    ierr  = PetscFree(entry->name);CHKERRQ(ierr);
+    ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
   *fl = 0;
@@ -301,138 +258,71 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroy(PetscFList *fl)
 }
 
 /*
-   Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
+   Print any PetscFunctionLists that have not be destroyed
 */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListDestroyAll"
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDestroyAll(void)
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListPrintAll"
+PetscErrorCode  PetscFunctionListPrintAll(void)
 {
-  PetscFList     tmp2,tmp1 = dlallhead;
-  PetscErrorCode ierr;
+  PetscFunctionList tmp = dlallhead;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  while (tmp1) {
-    tmp2 = tmp1->next_list;
-    ierr = PetscFListDestroy(&tmp1);CHKERRQ(ierr);
-    tmp1 = tmp2;
+  if (tmp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following PetscFunctionLists were not destroyed\n");CHKERRQ(ierr);
   }
-  dlallhead = 0;
+  while (tmp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%s \n",tmp->name);CHKERRQ(ierr);
+    tmp = tmp->next_list;
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListFind"
-/*@C
-    PetscFListFind - Given a name, finds the matching routine.
+/*MC
+    PetscFunctionListFind - Find function registered under given name
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
     Input Parameters:
-+   fl   - pointer to list
-.   comm - processors looking for routine
--   name - name string
++   flist   - pointer to list
+-   name - name registered for the function
 
     Output Parameters:
-.   r - the routine
+.   fptr - the function pointer if name was found, else NULL
 
     Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
-@*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],void (**r)(void))
+.seealso: PetscFunctionListAdd(), PetscFunctionList, PetscObjectQueryFunction()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListFind_Private"
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,const char name[],void (**r)(void))
 {
-  PetscFList     entry = fl;
-  PetscErrorCode ierr;
-  char           *function,*path;
-  PetscTruth     flg,f1,f2,f3;
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  char           *newpath;
-#endif
- 
+  PetscFunctionList entry = fl;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
-  ierr = PetscFListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
-
-  /*
-        If path then append it to search libraries
-  */
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  if (path) {
-    ierr = PetscDLLibraryAppend(comm,&DLLibrariesLoaded,path);CHKERRQ(ierr);
-  }
-#endif
-
   while (entry) {
-    flg = PETSC_FALSE;
-    if (path && entry->path) {
-      ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
-      flg =  (PetscTruth) ((f1 && f2) || (f1 && f3));
-    } else if (!path) {
-      ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      flg =  (PetscTruth) (f1 || f2);
-    } else {
-      ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrcmp(function,entry->rname,&flg);CHKERRQ(ierr);
-      }
-    }
-
+    ierr = PetscStrcmp(name,entry->name,&flg);CHKERRQ(ierr);
     if (flg) {
-
-      if (entry->routine) {
-        *r   = entry->routine; 
-        ierr = PetscFree(path);CHKERRQ(ierr);
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      }
- 
-      if ((path && entry->path && f3) || (!path && f1)) { /* convert name of function (alias) to actual function name */
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
-      }
-
-      /* it is not yet in memory so load from dynamic library */
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-      newpath = path;
-      if (!path) newpath = entry->path;
-      ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
-      if (*r) {
-        entry->routine = *r;
-        ierr = PetscFree(path);CHKERRQ(ierr);
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      } else {
-        PetscErrorPrintf("Unable to find function. Search path:\n");
-        ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr);
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
-      }
-#endif
+      *r   = entry->routine;
+      PetscFunctionReturn(0);
     }
     entry = entry->next;
   }
-
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  /* Function never registered; try for it anyway */
-  ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  ierr = PetscFree(path);CHKERRQ(ierr);
-  if (*r) {
-    ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
-  }
-#endif
-  ierr = PetscFree(function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListView"
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListView"
 /*@
-   PetscFListView - prints out contents of an PetscFList
+   PetscFunctionListView - prints out contents of an PetscFunctionList
 
    Collective over MPI_Comm
 
@@ -442,40 +332,36 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,con
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFListPrintTypes(), PetscFList
+.seealso: PetscFunctionListAdd(), PetscFunctionListPrintTypes(), PetscFunctionList
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListView(PetscFList list,PetscViewer viewer)
+PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
-    if (list->path) {
-      ierr = PetscViewerASCIIPrintf(viewer," %s %s %s\n",list->path,list->name,list->rname);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerASCIIPrintf(viewer," %s\n",list->name);CHKERRQ(ierr);
     list = list->next;
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListGet"
-/*@
-   PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListGet"
+/*@C
+   PetscFunctionListGet - Gets an array the contains the entries in PetscFunctionList, this is used
          by help etc.
 
-   Collective over MPI_Comm
+   Not Collective
 
    Input Parameter:
 .  list   - list of types
@@ -490,36 +376,36 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListView(PetscFList list,PetscViewer vie
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *n)
+PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
-  PetscErrorCode ierr;
-  PetscInt       count = 0;
-  PetscFList     klist = list;
+  PetscErrorCode    ierr;
+  PetscInt          count = 0;
+  PetscFunctionList klist = list;
 
   PetscFunctionBegin;
   while (list) {
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc((count+1)*sizeof(char *),array);CHKERRQ(ierr);
+  ierr  = PetscMalloc((count+1)*sizeof(char*),array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;
-    klist = klist->next;
+    klist           = klist->next;
     count++;
   }
   (*array)[count] = 0;
-  *n = count+1;
+  *n              = count+1;
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListPrintTypes"
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListPrintTypes"
 /*@C
-   PetscFListPrintTypes - Prints the methods available.
+   PetscFunctionListPrintTypes - Prints the methods available.
 
    Collective over MPI_Comm
 
@@ -535,9 +421,9 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListGet(PetscFList list,char ***array,in
 
    Level: developer
 
-.seealso: PetscFListAddDynamic(), PetscFList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list,const char def[])
+PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
@@ -560,10 +446,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListDuplicate"
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListDuplicate"
 /*@
-    PetscFListDuplicate - Creates a new list from a given object list.
+    PetscFunctionListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -573,60 +459,18 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,co
 
     Level: developer
 
-.seealso: PetscFList, PetscFListAdd(), PetscFlistDestroy()
+.seealso: PetscFunctionList, PetscFunctionListAdd(), PetscFlistDestroy()
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListDuplicate(PetscFList fl,PetscFList *nl)
+PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionList *nl)
 {
   PetscErrorCode ierr;
-  char           path[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   while (fl) {
-    /* this is silly, rebuild the complete pathname */
-    if (fl->path) {
-      ierr = PetscStrcpy(path,fl->path);CHKERRQ(ierr);
-      ierr = PetscStrcat(path,":");CHKERRQ(ierr);
-      ierr = PetscStrcat(path,fl->name);CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
-    }       
-    ierr = PetscFListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(nl,fl->name,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListConcat"
-/*
-    PetscFListConcat - joins name of a libary, and the path where it is located
-    into a single string.
-
-    Input Parameters:
-.   path   - path to the library name.
-.   name   - name of the library
-
-    Output Parameters:
-.   fullname - the name that is the union of the path and the library name,
-               delimited by a semicolon, i.e., path:name
-
-    Notes:
-    If the path is NULL, assumes that the name, specified also includes
-    the path as path:name
-
-*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscFListConcat(const char path[],const char name[],char fullname[])
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  if (path) {
-    ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-    ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
-    ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrcpy(fullname,name);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}

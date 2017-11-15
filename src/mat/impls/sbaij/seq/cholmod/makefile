@@ -5,14 +5,12 @@
 ALL: lib
 
 CFLAGS	 = ${CHOLMOD_INCLUDE}
-FFLAGS	 = 
-CPPFLAGS = 
-FPPFLAGS = 
+FFLAGS	 =
+CPPFLAGS =
+FPPFLAGS =
 SOURCEC	 = sbaijcholmod.c
-SOURCEF	 = 
+SOURCEF	 =
 SOURCEH	 = cholmodimpl.h
-OBJSC	 = sbaijcholmod.o
-OBJSF	 = 
 LIBBASE	 = libpetscmat
 DIRS     =
 MANSEC	 = Mat

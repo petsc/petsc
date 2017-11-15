@@ -1,18 +1,17 @@
-#define PETSCMAT_DLL
 
 /* degr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
-#include "../src/mat/color/color.h"
+#include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKdegr" 
-PetscErrorCode MINPACKdegr(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKdegr"
+PetscErrorCode MINPACKdegr(PetscInt *n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2, i__3;
+  /* System generated locals */
+  PetscInt i__1, i__2, i__3;
 
-    /* Local variables */
-    PetscInt jcol, ic, ip, jp, ir;
+  /* Local variables */
+  PetscInt jcol, ic, ip, jp, ir;
 
 /*     subroutine degr */
 /*     Given the sparsity pattern of an m by n matrix A, */
@@ -53,56 +52,56 @@ PetscErrorCode MINPACKdegr(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscI
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --iwa;
-    --ndeg;
-    --ipntr;
-    --indcol;
-    --jpntr;
-    --indrow;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --iwa;
+  --ndeg;
+  --ipntr;
+  --indcol;
+  --jpntr;
+  --indrow;
 
-    /* Function Body */
-    i__1 = *n;
-    for (jp = 1; jp <= i__1; ++jp) {
-	ndeg[jp] = 0;
-	iwa[jp] = 0;
-    }
+  /* Function Body */
+  i__1 = *n;
+  for (jp = 1; jp <= i__1; ++jp) {
+    ndeg[jp] = 0;
+    iwa[jp]  = 0;
+  }
 
 /*     Compute the degree sequence by determining the contributions */
 /*     to the degrees from the current(jcol) column and further */
 /*     columns which have not yet been considered. */
 
-    i__1 = *n;
-    for (jcol = 2; jcol <= i__1; ++jcol) {
-	iwa[jcol] = *n;
+  i__1 = *n;
+  for (jcol = 2; jcol <= i__1; ++jcol) {
+    iwa[jcol] = *n;
 
 /*        Determine all positions (ir,jcol) which correspond */
 /*        to non-zeroes in the matrix. */
 
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
+    i__2 = jpntr[jcol + 1] - 1;
+    for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+      ir = indrow[jp];
 
 /*           For each row ir, determine all positions (ir,ic) */
 /*           which correspond to non-zeroes in the matrix. */
 
-	    i__3 = ipntr[ir + 1] - 1;
-	    for (ip = ipntr[ir]; ip <= i__3; ++ip) {
-		ic = indcol[ip];
+      i__3 = ipntr[ir + 1] - 1;
+      for (ip = ipntr[ir]; ip <= i__3; ++ip) {
+        ic = indcol[ip];
 
 /*              Array iwa marks columns which have contributed to */
 /*              the degree count of column jcol. Update the degree */
 /*              counts of these columns as well as column jcol. */
 
-		if (iwa[ic] < jcol) {
-		    iwa[ic] = jcol;
-		    ++ndeg[ic];
-		    ++ndeg[jcol];
-		}
-	    }
-	}
+        if (iwa[ic] < jcol) {
+          iwa[ic] = jcol;
+          ++ndeg[ic];
+          ++ndeg[jcol];
+        }
+      }
     }
-    PetscFunctionReturn(0);
+  }
+  PetscFunctionReturn(0);
 }
 

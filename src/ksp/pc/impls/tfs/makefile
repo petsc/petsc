@@ -1,16 +1,14 @@
 
-#requiresscalar real 
+#requiresscalar real
 
 ALL: lib
 
-CPPFLAGS = 
+CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = bitmask.c comm.c gs.c ivec.c  xxt.c xyt.c tfs.c
 SOURCEF  =
-SOURCEH  = tfs.h 
-OBJSC    = bitmask.o comm.o  gs.o ivec.o xxt.o xyt.o tfs.o
-OBJSF    =
+SOURCEH  = tfs.h
 LIBBASE  = libpetscksp
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/tfs/

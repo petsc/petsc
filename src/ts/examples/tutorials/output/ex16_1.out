@@ -1,0 +1,5 @@
+mu 1000, steps 500, ftime 0.5
+Vector Object: 1 MPI processes
+  type: seq
+1.99989
+-0.000666728

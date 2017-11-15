@@ -5,11 +5,9 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = fieldsplit.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = fieldsplit.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/fieldsplit/
 

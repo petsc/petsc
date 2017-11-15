@@ -1,0 +1,8 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type SectionReal
+        PetscFortranAddr:: v
+      end type SectionReal
+      type SectionInt
+        PetscFortranAddr:: v
+      end type SectionInt
+#endif

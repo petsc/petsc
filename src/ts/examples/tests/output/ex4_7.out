@@ -10,3 +10,4 @@ At t[0] =      0.00e+00 u=       1.00e+00 at the center
   PostStep, t: 0.9
   PostStep, t: 1
 At t[10] =      1.00e+00 u=       4.67e-03 at the center 
+  PostStep, t: 1.1

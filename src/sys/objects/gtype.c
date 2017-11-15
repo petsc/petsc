@@ -1,10 +1,10 @@
-#define PETSC_DLL
+
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include "petscsys.h"  /*I   "petscsys.h"    I*/
+#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetType"
 /*@C
    PetscObjectGetType - Gets the object type of any PetscObject.
@@ -13,7 +13,7 @@
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectGetType((PetscObject)mat,&type);
 
    Output Parameter:
@@ -23,7 +23,7 @@
 
    Concepts: object type
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char *type[])
+PetscErrorCode  PetscObjectGetType(PetscObject obj, const char *type[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -32,7 +32,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetType"
 /*@C
    PetscObjectSetType - Sets the object type of any PetscObject.
@@ -41,7 +41,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectGetType((PetscObject)mat,&type);
 -  type - the object type
 
@@ -51,7 +51,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectGetType(PetscObject obj, const char
 
    Concepts: object type
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscObjectSetType(PetscObject obj, const char type[])
+PetscErrorCode  PetscObjectSetType(PetscObject obj, const char type[])
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

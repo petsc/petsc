@@ -1,9 +1,8 @@
-#define PETSCKSP_DLL
 
-#include "../src/ksp/ksp/impls/gmres/gmresimpl.h"       /*I  "petscksp.h"  I*/
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetOrthogonalization" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetOrthogonalization"
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES and FGMRES.
 
@@ -23,8 +22,8 @@ $    i.e. the size of Krylov space minus one
 
    KSPGMRESModifiedGramSchmidtOrthogonalization()
 
-   KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if 
-     iterative refinement is used to increase stability. 
+   KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if
+     iterative refinement is used to increase stability.
 
 
    Options Database Keys:
@@ -39,21 +38,18 @@ $    i.e. the size of Krylov space minus one
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(), KSPGMRESSetOrthogonalization(),
           KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
+PetscErrorCode  KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,PetscInt));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetOrthogonalization_C",(KSP,PetscErrorCode (*)(KSP,PetscInt)),(ksp,fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESGetOrthogonalization" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetOrthogonalization"
 /*@C
    KSPGMRESGetOrthogonalization - Gets the orthogonalization routine used by GMRES and FGMRES.
 
@@ -75,8 +71,8 @@ $    i.e. the size of Krylov space minus one
 
    KSPGMRESModifiedGramSchmidtOrthogonalization()
 
-   KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if 
-     iterative refinement is used to increase stability. 
+   KSPGMRESClassicalGramSchmidtOrthogonalization() - Default. Use KSPGMRESSetCGSRefinementType() to determine if
+     iterative refinement is used to increase stability.
 
 
    Options Database Keys:
@@ -91,15 +87,12 @@ $    i.e. the size of Krylov space minus one
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetCGSRefinementType(), KSPGMRESSetOrthogonalization(),
           KSPGMRESModifiedGramSchmidtOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetCGSRefinementType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization(KSP ksp,PetscErrorCode (**fcn)(KSP,PetscInt))
+PetscErrorCode  KSPGMRESGetOrthogonalization(KSP ksp,PetscErrorCode (**fcn)(KSP,PetscInt))
 {
-  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (**)(KSP,PetscInt));
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
-  }
+  ierr = PetscUseMethod(ksp,"KSPGMRESGetOrthogonalization_C",(KSP,PetscErrorCode (**)(KSP,PetscInt)),(ksp,fcn));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

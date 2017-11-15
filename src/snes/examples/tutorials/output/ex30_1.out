@@ -1,0 +1,123 @@
+---------------------BEGIN ex30 PARAM REPORT-------------------
+Domain: 
+  Width = 320 km,         Depth = 304 km
+  Slab dip = 45 degrees,  Slab velocity = 5 cm/yr
+  Lid depth = 32.00 km,   Fault depth = 32.00 km
+
+Grid: 
+  [ni,nj] = 82, 78       [dx,dz] = 4, 4 km
+  jlid =   8              jfault =   8 
+  Pe = 662.347
+
+Rheology:                 Full Rheology 
+                          Viscosity range: 1e+24--0 Pa-sec 
+Boundary condition:       Stress-Free (normal & shear stress)
+Output Destination:       PETSc binary file "ex30_output"
+---------------------END ex30 PARAM REPORT---------------------
+Computing Variable Viscosity Solution
+ Continuation parameter = 0
+  0 SNES Function norm 28086.8 
+  1 SNES Function norm 1.94828 
+  2 SNES Function norm 0.0173303 
+  3 SNES Function norm 3.67235e-06 
+ SNES iterations: 3, Cumulative: 3
+ Continuation parameter = 0.30001
+  0 SNES Function norm 5564.02 
+  1 SNES Function norm 3810.26 
+  2 SNES Function norm 2504.13 
+  3 SNES Function norm 2279.12 
+  4 SNES Function norm 216.397 
+  5 SNES Function norm 0.326235 
+  6 SNES Function norm 2.27299e-05 
+ SNES iterations: 6, Cumulative: 9
+ Continuation parameter = 0.45002
+  0 SNES Function norm 1905.24 
+  1 SNES Function norm 1700.69 
+  2 SNES Function norm 1516.67 
+  3 SNES Function norm 1375.4 
+  4 SNES Function norm 1293.65 
+  5 SNES Function norm 1118.39 
+  6 SNES Function norm 711.501 
+  7 SNES Function norm 243.612 
+  8 SNES Function norm 3.09412 
+  9 SNES Function norm 0.0345724 
+ 10 SNES Function norm 1.76352e-06 
+ SNES iterations: 10, Cumulative: 19
+ Continuation parameter = 0.55003
+  0 SNES Function norm 1046.37 
+  1 SNES Function norm 395.135 
+  2 SNES Function norm 79.8703 
+  3 SNES Function norm 18.0694 
+  4 SNES Function norm 1.65168 
+  5 SNES Function norm 0.00906798 
+  6 SNES Function norm 0.000168055 
+  7 SNES Function norm 4.27589e-06 
+ SNES iterations: 7, Cumulative: 26
+ Continuation parameter = 0.70004
+  0 SNES Function norm 687.193 
+  1 SNES Function norm 222.921 
+  2 SNES Function norm 161.177 
+  3 SNES Function norm 114.827 
+  4 SNES Function norm 72.3412 
+  5 SNES Function norm 56.6929 
+  6 SNES Function norm 24.6862 
+  7 SNES Function norm 13.3781 
+  8 SNES Function norm 9.88165 
+  9 SNES Function norm 0.949332 
+ 10 SNES Function norm 0.0592231 
+ 11 SNES Function norm 0.000228511 
+ 12 SNES Function norm 3.97058e-07 
+ SNES iterations: 12, Cumulative: 38
+ Continuation parameter = 0.80005
+  0 SNES Function norm 149.725 
+  1 SNES Function norm 149.688 
+  2 SNES Function norm 49.8711 
+  3 SNES Function norm 26.8021 
+  4 SNES Function norm 15.7373 
+  5 SNES Function norm 9.2396 
+  6 SNES Function norm 8.54108 
+  7 SNES Function norm 6.96093 
+  8 SNES Function norm 3.2916 
+  9 SNES Function norm 1.04643 
+ 10 SNES Function norm 0.220863 
+ 11 SNES Function norm 0.005996 
+ 12 SNES Function norm 3.13196e-05 
+ 13 SNES Function norm 1.97313e-07 
+ SNES iterations: 13, Cumulative: 51
+ Continuation parameter = 0.90006
+  0 SNES Function norm 61.1129 
+  1 SNES Function norm 55.009 
+  2 SNES Function norm 49.5127 
+  3 SNES Function norm 44.5654 
+  4 SNES Function norm 40.1125 
+  5 SNES Function norm 36.1042 
+  6 SNES Function norm 32.4966 
+  7 SNES Function norm 29.2491 
+  8 SNES Function norm 26.3262 
+  9 SNES Function norm 23.2505 
+ 10 SNES Function norm 17.0395 
+ 11 SNES Function norm 0.844254 
+ 12 SNES Function norm 0.0827129 
+ 13 SNES Function norm 0.00172353 
+ 14 SNES Function norm 2.95467e-05 
+ 15 SNES Function norm 1.90938e-06 
+ SNES iterations: 15, Cumulative: 66
+ Continuation parameter = 1
+  0 SNES Function norm 34.3896 
+  1 SNES Function norm 19.824 
+  2 SNES Function norm 13.7809 
+  3 SNES Function norm 12.4428 
+  4 SNES Function norm 11.1739 
+  5 SNES Function norm 8.06824 
+  6 SNES Function norm 7.12954 
+  7 SNES Function norm 6.98621 
+  8 SNES Function norm 4.45678 
+  9 SNES Function norm 2.88873 
+ 10 SNES Function norm 1.93732 
+ 11 SNES Function norm 1.59754 
+ 12 SNES Function norm 0.297297 
+ 13 SNES Function norm 0.0519978 
+ 14 SNES Function norm 0.000895629 
+ 15 SNES Function norm 1.14973e-05 
+ 16 SNES Function norm 5.78844e-07 
+ SNES iterations: 16, Cumulative: 82

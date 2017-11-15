@@ -1,10 +1,9 @@
 
-#requirespackage   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ztscreatef.c  ztsf.c  ztsregf.c ztsfdf.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = ztscreatef.c  ztsf.c  ztsregf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

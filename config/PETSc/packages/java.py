@@ -18,4 +18,4 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB.has_key('javac'):
       self.addMakeMacro('JAVAC',self.framework.argDB['javac'])
     else:
-      self.getExecutable('javac',  getFullPath = 1)        
+      self.getExecutable('javac',  getFullPath = 1)

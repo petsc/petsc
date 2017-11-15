@@ -2,10 +2,10 @@
 #define included_ALE_Ordering_hh
 
 #ifndef  included_ALE_Partitioner_hh
-#include <Partitioner.hh>
+#include <sieve/Partitioner.hh>
 #endif
 
-PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);
+PETSC_EXTERN PetscErrorCode SPARSEPACKgenrcm(PetscInt const *neqns,PetscInt const *xadj,PetscInt const *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);
 
 namespace ALE {
   template<typename Alloc_ = malloc_allocator<int> >
@@ -40,13 +40,14 @@ namespace ALE {
       alloc_type().deallocate(mask, numVertices);
       for(int i = 0; i < numVertices*2; ++i) {alloc_type().destroy(xls+i);}
       alloc_type().deallocate(xls, numVertices*2);
+      Partitioner<>::destroyCSR(numVertices, start, adjacency);
       // Correct for Fortran numbering
       for(int i = 0; i < numVertices; ++i) --perm[i];
       // Construct closure
       permutation->setChart(mesh->getSieve()->getChart());
       invPermutation->setChart(mesh->getSieve()->getChart());
       createOrderingClosureV(mesh, pointPermutation, permutation, invPermutation);
-     };
+     }
 
     template<typename Mesh, typename Section>
     static void createOrderingClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPermutation, const Obj<Section>& permutation, const Obj<Section>& invPermutation, const int height = 0) {
@@ -55,7 +56,6 @@ namespace ALE {
       const typename Section::chart_type&   chart    = pointPermutation->getChart();
       typename Section::value_type          maxPoint = 0;
 
-      PETSc::Log::Event("PermutationClosure").begin();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
@@ -113,8 +113,7 @@ namespace ALE {
           }
         }
       }
-      PETSc::Log::Event("PermutationClosure").end();
-    };
+    }
 
     template<typename Section, typename Labeling>
     static void relabelSection(Section& section, Labeling& relabeling, Section& newSection) {
@@ -131,7 +130,7 @@ namespace ALE {
 
         newSection.updatePoint(newP, section.restrictPoint(p));
       }
-    };
+    }
   };
 }
 #endif /* included_ALE_Ordering_hh */

@@ -2,20 +2,20 @@
       program main
        implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscviewer.h"
-#include "finclude/petscis.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscviewer.h>
+#include <finclude/petscis.h>
 !
 !  This example is a modified Fortran version of ex6.c.  It tests the use of
 !  options prefixes in PETSc. Two linear problems are solved in this program.
 !  The first problem is read from a file. The second problem is constructed
 !  from the first, by eliminating some of the entries of the linear matrix 'A'.
 
-!  Each solve is distinguished by a unique prefix - 'a' for the first, 'b' 
+!  Each solve is distinguished by a unique prefix - 'a' for the first, 'b'
 !  for the second.  With the prefix the user can distinguish between the various
 !  options (command line, from .petscrc file, etc.) for each of the solvers.
 !  Input arguments are:
@@ -29,7 +29,7 @@
       Vec              x,b,u
       Mat              A
       KSP             ksp1,ksp2
-      character*(128)  f 
+      character*(128)  f
       PetscViewer      fd
       IS               isrow
       none  = -1.0
@@ -39,7 +39,7 @@
       izero = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      
+
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,            &
@@ -85,7 +85,8 @@
 
 ! Create system 2 by striping off some rows of the matrix
       call ISCreateStride(PETSC_COMM_SELF,ifive,izero,ione,isrow,ierr)
-      call MatZeroRowsIS(A,isrow,five,ierr)
+      call MatZeroRowsIS(A,isrow,five,PETSC_NULL_OBJECT,                   &
+     &                   PETSC_NULL_OBJECT,ierr)
 
 ! Solve system-2
       call KSPCreate(PETSC_COMM_WORLD,ksp2,ierr)

@@ -23,9 +23,15 @@
       PetscEnum INSERT_VALUES
       PetscEnum ADD_VALUES
       PetscEnum MAX_VALUES
+      PetscEnum INSERT_ALL_VALUES
+      PetscEnum ADD_ALL_VALUES
+      PetscEnum INSERT_BC_VALUES
+      PetscEnum ADD_BC_VALUES
 
       parameter (NOT_SET_VALUES=0,INSERT_VALUES=1,ADD_VALUES=2)
       parameter (MAX_VALUES=3)
+      parameter (INSERT_ALL_VALUES=4,ADD_ALL_VALUES=5)
+      parameter (INSERT_BC_VALUES=6,ADD_BC_VALUES=7)
 !
 !  Types of vector scatters
 !

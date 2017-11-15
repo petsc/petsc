@@ -7,6 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions         = []
     self.includes          = []
     self.liblist           = []
+    self.complex           = 1
     return
 
   def setupDependencies(self, framework):
@@ -37,7 +38,7 @@ class Configure(PETSc.package.NewPackage):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    
+
     return self.installDir
 
   def configureLibrary(self):
@@ -55,12 +56,12 @@ class Configure(PETSc.package.NewPackage):
           if os.path.realpath(i) == os.path.join(prefix,'Python'):
             self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
             return
-        raise RuntimeError('realpath of /usr/lib/libpython.dylib ('+os.path.realpath('/usr/lib/libpython.dylib')+') does not point to Python library path ('+os.path.join(prefix,'Python')+') for current Python;\n Are you not using the Apple python?')
+        raise RuntimeError('realpath of /usr/lib/libpython.dylib ('+os.path.realpath('/usr/lib/libpython.dylib')+') does not point to the expected Python library path ('+os.path.join(prefix,'Python')+') for current Python;\n')
       elif os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
         self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython.dylib')+'"')
       else:
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('petsc4py','')   
-      
+    self.addMakeRule('petsc4py','')
+

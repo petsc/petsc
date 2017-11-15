@@ -1,4 +1,4 @@
-#requirespackage   'PETSC_HAVE_MATLAB_ENGINE'
+#requiresdefine   'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar    real
 #requiresprecision double
 
@@ -8,9 +8,7 @@ CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = gcreatev.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = gcreatev.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/utils/matlab/

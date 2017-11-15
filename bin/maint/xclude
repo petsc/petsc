@@ -1,6 +1,12 @@
+petsc-dist/.git
+petsc-dist/.mailmap
+petsc-dist/.gitignore
+petsc-dist/.nagged
 petsc-dist/.hg
 petsc-dist/.hgignore
 petsc-dist/.hgtags
+petsc-dist/CMakeLists.txt
+petsc-dist/externalpackages
 petsc-dist/tmp
 petsc-dist/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
@@ -8,6 +14,7 @@ petsc-dist/config/BuildSystem/.hgignore
 petsc-dist/config/BuildSystem/.hgtags
 petsc-dist/docs/exampleconcepts
 petsc-dist/docs/manconcepts
+petsc-dist/src/tops
 petsc-dist/src/java
 petsc-dist/src/tops/images
 petsc-dist/src/tops/slides.ppt
@@ -67,6 +74,9 @@ petsc-dist/bmake/linux-mcs
 petsc-dist/bmake/prefefined/alpha_uni
 petsc-dist/bmake/predefined/linux_superludist
 petsc-dist/bmake/predefined/solaris_x86
+petsc-dist/src/contrib/remote
+petsc-dist/src/contrib/dvr
+petsc-dist/src/contrib/pc
 petsc-dist/src/contrib/pc
 petsc-dist/src/contrib/mixedrealcomplex
 petsc-dist/src/contrib/psparse
@@ -135,7 +145,6 @@ petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
 petsc-dist/config/BuildSystem/BitKeeper
 petsc-dist/config/BuildSystem/ChangeSet
-petsc-dist/src/contrib/blopex/driver_fiedler/DL-matrix.petsc
-petsc-dist/src/contrib/blopex/driver_fiedler/L-matrix.petsc
-petsc-dist/src/dm/mesh/examples/tutorials/illinois
-petsc-dist/src/dm/mesh/examples/tutorials/data
+petsc-dist/src/dm/impls/mesh/examples/tutorials/illinois
+petsc-dist/src/dm/impls/mesh/examples/tutorials/data
+petsc-dist/src/dm/ao/examples/tests/ex3d

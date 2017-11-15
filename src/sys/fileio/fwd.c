@@ -1,19 +1,15 @@
-#define PETSC_DLL
+
 /*
       Code for manipulating files.
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
@@ -25,7 +21,7 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetWorkingDirectory"
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
@@ -44,7 +40,7 @@
    Concepts: working directory
 
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
+PetscErrorCode  PetscGetWorkingDirectory(char path[],size_t len)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCWD)

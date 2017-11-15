@@ -1,0 +1,35 @@
+# Options for ex30
+# ----------------
+-ts_exact_final_time MATCHSTEP
+
+#-q 100000
+-Inertia 5.0
+-Pmax 2.1
+-PM_min 1.0
+-rho 0.0
+-t0 0.0
+-tmax 4.0
+-ymin -10
+-ymax 10
+-da_grid_x 210
+-da_grid_y 201
+
+-ts_adapt_dt_max 5
+
+-ts_monitor_draw_solution
+#-draw_bounds -.1,1.7
+-ts_monitor_draw_solution_show_time
+#-draw_contour_grid
+
+#-draw_save
+#-draw_save_movie
+
+-pc_type lu
+-snes_monitor
+-snes_atol 1.e-12
+
+-ts_type rosw
+-ts_final_time 10000
+-ts_max_steps 1000000
+
+-stencil_width 1

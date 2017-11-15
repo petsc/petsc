@@ -9,7 +9,7 @@ static char help[] = "Reads a PETSc matrix and vector from a file and solves a l
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -17,7 +17,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -30,20 +30,20 @@ int main(int argc,char **args)
   char           file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode ierr;
   PetscInt       its;
-  PetscTruth     flg;
+  PetscBool      flg;
   PetscReal      norm;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
 
 
-  /* 
+  /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
   */
@@ -58,35 +58,35 @@ int main(int argc,char **args)
   ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /* 
-       If the loaded matrix is larger than the vector (due to being padded 
+  /*
+       If the loaded matrix is larger than the vector (due to being padded
        to match the block size of the system), then create a new padded vector.
   */
-  { 
-      PetscInt     m,n,j,mvec,start,end,idx;
-      Vec          tmp;
-      PetscScalar *bold;
+  {
+    PetscInt    m,n,j,mvec,start,end,idx;
+    Vec         tmp;
+    PetscScalar *bold;
 
-      /* Create a new vector b by padding the old one */
-      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-      ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
-      ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-      for (j=0; j<mvec; j++) {
-        idx = start+j;
-        ierr  = VecSetValues(tmp,1,&idx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-      ierr = VecDestroy(b);CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
-      b = tmp;
+    /* Create a new vector b by padding the old one */
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
+    ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
+    for (j=0; j<mvec; j++) {
+      idx  = start+j;
+      ierr = VecSetValues(tmp,1,&idx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
     }
+    ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
+    b    = tmp;
+  }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
        Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
@@ -113,7 +113,7 @@ int main(int argc,char **args)
             This stage is not profiled separately.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Check error
   */
   ierr = MatMult(A,x,u);
@@ -121,17 +121,17 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %G\n",norm);CHKERRQ(ierr);
 
-  /* 
+  /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

@@ -1,4 +1,4 @@
-#include "private/fortranimpl.h"
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscobjectsetname_        PETSCOBJECTSETNAME
@@ -6,9 +6,7 @@
 #define petscobjectsetname_        petscobjectsetname
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
-                                       PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
 
@@ -17,4 +15,3 @@ void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LE
   FREECHAR(name,t1);
 }
 
-EXTERN_C_END

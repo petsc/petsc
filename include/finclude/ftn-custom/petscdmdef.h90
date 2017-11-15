@@ -1,0 +1,8 @@
+#if !defined(__PETSCDMDEF_H90)
+#define __PETSCDMDEF_H90
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type DM
+        PetscFortranAddr:: v
+      end type DM
+#endif
+#endif

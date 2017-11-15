@@ -1,6 +1,6 @@
 #if !defined(__PETSCISDEF_H90)
 #define __PETSCISDEF_H90
-#if defined(PETSC_USE_FORTRAN_DATATYPES) 
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
       type IS
         PetscFortranAddr:: v
       end type IS

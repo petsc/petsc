@@ -1,7 +1,7 @@
 !
 !
 !  This example demonstrates use of the SNES Fortran interface.
-!  
+!
 !  Note:  The program is modified from ex12f.F
 !         Used for testing MUMPS interface, and control when the Jacobian is rebuilt
 !
@@ -26,17 +26,17 @@
 
       module Petscmod
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscvec.h90"
-#include "finclude/petscmat.h"
-#include "finclude/petscmat.h90"
-#include "finclude/petscviewer.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscis.h"
-#include "finclude/petscda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscvec.h90>
+#include <finclude/petscmat.h>
+#include <finclude/petscmat.h90>
+#include <finclude/petscviewer.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscis.h>
+#include <finclude/petscdmda.h>
       end module Petscmod
 
       module Snesmonitormod
@@ -72,14 +72,14 @@
       PetscErrorCode :: ierr
 
 c      write(6,*) " "
-c      write(6,*) "    its ",its,snesmonitor%its,"lag", 
+c      write(6,*) "    its ",its,snesmonitor%its,"lag",
 c     &            snesmonitor%lag
 c      call flush(6)
-      if (mod(snesmonitor%its,snesmonitor%lag).eq.0) 
-     &      then 
-        call SNESSetLagJacobian(snes,1,ierr)  ! build jacobian 
-      else 
-        call SNESSetLagJacobian(snes,-1,ierr) ! do NOT build jacobian 
+      if (mod(snesmonitor%its,snesmonitor%lag).eq.0)
+     &      then
+        call SNESSetLagJacobian(snes,1,ierr)  ! build jacobian
+      else
+        call SNESSetLagJacobian(snes,-1,ierr) ! do NOT build jacobian
       endif
       snesmonitor%its = snesmonitor%its + 1
       end subroutine FormMonitor
@@ -99,7 +99,7 @@ c      call flush(6)
       PetscErrorCode ierr
       PetscInt N,start,end,nn,i
       PetscInt ii,its,i1,i0,i3
-      PetscTruth flg
+      PetscBool  flg
       SNES             snes
       PC               pc
       KSP              ksp
@@ -125,11 +125,11 @@ c      call flush(6)
       ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
-      call DACreateGlobalVector(ctx(1),x,ierr)
-      call DACreateLocalVector(ctx(1),ctx(3),ierr)
+      call DMCreateGlobalVector(ctx(1),x,ierr)
+      call DMCreateLocalVector(ctx(1),ctx(3),ierr)
 
       call PetscObjectSetName(x,'Approximate Solution',ierr)
       call VecDuplicate(x,r,ierr)
@@ -137,7 +137,7 @@ c      call flush(6)
       call VecDuplicate(x,U,ierr)
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
-      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
+      call MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,           &
      &     N,i3,PETSC_NULL_INTEGER,i0,PETSC_NULL_INTEGER,J,ierr)
 
       call MatGetType(J,matrixname,ierr)
@@ -168,7 +168,7 @@ c      call flush(6)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
       call SNESSetLagJacobian(snes,3,ierr)
 
-! Set linear solver defaults for this problem. 
+! Set linear solver defaults for this problem.
       call SNESGetKSP(snes,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
 #ifdef PETSC_HAVE_MUMPS
@@ -194,7 +194,7 @@ c      call flush(6)
 #ifdef PETSC_HAVE_MUMPS
 ! Get PCFactor to set MUMPS matrix ordering option
       call PCFactorGetMatrix(pc,F,ierr)
-      call MatSetMumpsIcntl(F,7,2,ierr) ! must be called before next SNESSetUp? -- not being used!!!
+      call MatMumpsSetIcntl(F,7,2,ierr) ! must be called before next SNESSetUp? -- not being used!!!
 #endif
 
 ! Solve nonlinear system
@@ -213,7 +213,7 @@ c      call flush(6)
       if (ctx(4) .eq. 0) then
         write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
@@ -224,12 +224,12 @@ c      call flush(6)
       call VecDestroy(ctx(2),ierr)
       call MatDestroy(J,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(ctx(1),ierr)
+      call DMDestroy(ctx(1),ierr)
       call PetscFinalize(ierr)
       end
 
 
-! --------------------  Evaluate Function F(x) --------------------- 
+! --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
       implicit none
@@ -241,21 +241,21 @@ c      call flush(6)
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 
       rank  = ctx(4)
       size  = ctx(5)
       h     = 1.d0/(ctx(6) - 1.d0)
-      call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
-      call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
       call VecGetLocalSize(ctx(3),n,ierr)
-      if (n .gt. 1000) then 
+      if (n .gt. 1000) then
         print*, 'Local work array not big enough'
         call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
       endif
@@ -271,22 +271,22 @@ c      call flush(6)
       d = h*h
 
 !
-!  Note that the array vxx() was obtained from a ghosted local vector 
-!  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
+!  Note that the array vxx() was obtained from a ghosted local vector
+!  ctx(3) while the array vff() was obtained from the non-ghosted parallel
 !  vector F. This is why there is a need for shift variable s. Since vff()
-!  does not have locations for the ghost variables we need to index in it 
-!  slightly different then indexing into vxx(). For example on processor 
-!  1 (the second processor) 
+!  does not have locations for the ghost variables we need to index in it
+!  slightly different then indexing into vxx(). For example on processor
+!  1 (the second processor)
 !
 !        xx(1)        xx(2)             xx(3)             .....
 !      ^^^^^^^        ^^^^^             ^^^^^
-!      ghost value   1st local value   2nd local value 
+!      ghost value   1st local value   2nd local value
 !
 !                      ff(1)             ff(2)
 !                     ^^^^^^^           ^^^^^^^
 !                    1st local value   2nd local value
 !
-       if (rank .eq. 0) then 
+       if (rank .eq. 0) then
         s = 0
         ff(1) = xx(1)
       else
@@ -309,24 +309,24 @@ c      call flush(6)
       return
       end
 
-! --------------------  Form initial approximation ----------------- 
+! --------------------  Form initial approximation -----------------
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
-      PetscScalar      five 
+      PetscScalar      five
 
       five = 5.d-1
       call VecSet(x,five,ierr)
       return
       end
 
-! --------------------  Evaluate Jacobian -------------------- 
+! --------------------  Evaluate Jacobian --------------------
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
 
@@ -337,7 +337,7 @@ c      call flush(6)
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      PetscTruth       flag
+      PetscBool        flag
       PetscInt         ii,istart,iend
       PetscInt         i,j,n,end,start,i1
       PetscErrorCode   ierr
@@ -362,15 +362,15 @@ c      call flush(6)
       n = end - start
 
       if (rank .eq. 0) then
-        A = 1.0 
+        A = 1.0
         call MatSetValues(jac,i1,start,i1,start,A,INSERT_VALUES,ierr)
         istart = 1
-      else 
+      else
         istart = 0
       endif
       if (rank .eq. size-1) then
         i = ctx(6)-1
-        A = 1.0 
+        A = 1.0
         call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1
       else
@@ -378,9 +378,9 @@ c      call flush(6)
       endif
       do 10 i=istart,iend-1
         ii = i + start
-        j = start + i - 1 
+        j = start + i - 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
-        j = start + i + 1 
+        j = start + i + 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr)

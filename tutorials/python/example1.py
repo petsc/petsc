@@ -22,7 +22,7 @@ class Laplace1D(object):
         M, N = A.getSize()
         assert M == N
 
-    def destroy(self):
+    def destroy(self, A):
         LOG('Laplace1D.destroy()')
 
     def view(self, A, vw):
@@ -70,7 +70,7 @@ class Jacobi(object):
         LOG('Jacobi.create()')
         self.diag = None
 
-    def destroy(self):
+    def destroy(self, pc):
         LOG('Jacobi.destroy()')
         if self.diag:
             self.diag.destroy()
@@ -102,7 +102,7 @@ class ConjGrad(object):
         LOG('ConjGrad.create()')
         self.work = []
 
-    def destroy(self):
+    def destroy(self, ksp):
         LOG('ConjGrad.destroy()')
         for vec in self.work:
             if vec:
@@ -142,7 +142,7 @@ def do_loop(ksp, r):
     rnorm = r.norm()
     ksp.setResidualNorm(rnorm)
     ksp.logConvergenceHistory(its, rnorm)
-    ksp.callMonitor(its, rnorm)
+    ksp.monitor(its, rnorm)
     reason = ksp.callConvergenceTest(its, rnorm)
     if not reason:
         ksp.setIterationNumber(its+1)

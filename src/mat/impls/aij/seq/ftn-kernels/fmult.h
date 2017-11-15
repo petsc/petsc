@@ -1,6 +1,6 @@
 
 #if !defined(__FMULT_H)
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmultaij_                FORTRANMULTAIJ
@@ -9,10 +9,10 @@
 #define fortranmultaij_                fortranmultaij
 #define fortranmulttransposeaddaij_    fortranmulttransposeaddaij
 #endif
-EXTERN_C_BEGIN
-EXTERN void fortranmultaij_(PetscInt*,const PetscScalar*,const PetscInt*,const PetscInt*,const MatScalar*,PetscScalar*);
-EXTERN void fortranmulttransposeaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
-EXTERN_C_END
+
+PETSC_EXTERN void fortranmultaij_(PetscInt*,const PetscScalar*,const PetscInt*,const PetscInt*,const MatScalar*,PetscScalar*);
+PETSC_EXTERN void fortranmulttransposeaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
+
 #endif
 #endif
 

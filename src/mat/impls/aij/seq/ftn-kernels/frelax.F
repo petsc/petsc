@@ -1,7 +1,7 @@
 !
 !    Fortran kernels for SOR relaxations
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,            &
      &           adiag,idiag,aa,b)
@@ -14,7 +14,7 @@
 
       PetscInt    i,j,jstart,jend
       PetscScalar sum
-!     
+!
 !     Forward Solve with zero initial guess
 !
       x(0) = omega*b(0)*idiag(0)
@@ -27,12 +27,12 @@
  30      continue
          x(i) = omega*sum*idiag(i)
  20   continue
-      
+
 !     return
       end
 !
 !-------------------------------------------------------------------
-!      
+!
       subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,           &
      &                                  adiag,idiag,aa,b)
       implicit none
@@ -52,15 +52,15 @@
          jend    = ai(i+1) - 1
          sum     = b(i)
          do 50 j=jstart,jend
-            sum = sum - aa(j)* x(aj(j)) 
+            sum = sum - aa(j)* x(aj(j))
  50      continue
          x(i)    = omega*sum*idiag(i)
  40   continue
       return
       end
-      
+
 !-------------------------------------------------------------------
-!      
+!
       subroutine FortranRelaxAIJForward(n,omega,x,ai,aj,adiag,aa,b)
       implicit none
       PetscScalar x(0:*),aa(0:*),b(0:*)
@@ -79,16 +79,16 @@
          jstart = ai(i)
          jend    = ai(i+1) - 1
          do 50 j=jstart,jend
-            sum = sum - aa(j)* x(aj(j)) 
+            sum = sum - aa(j)* x(aj(j))
  50      continue
          x(i)    = (1.0 - omega)*x(i) +                                 &
      &              omega*(sum + aa(adiag(i))*x(i))/ aa(adiag(i))
  40   continue
       return
       end
-      
+
 !-------------------------------------------------------------------
-!      
+!
       subroutine FortranRelaxAIJBackward(n,omega,x,ai,aj,adiag,aa,b)
       implicit none
       PetscScalar x(0:*),aa(0:*),b(0:*)
@@ -107,11 +107,11 @@
          jstart = ai(i)
          jend   = ai(i+1) - 1
          do 50 j=jstart,jend
-            sum = sum - aa(j)* x(aj(j)) 
+            sum = sum - aa(j)* x(aj(j))
  50      continue
          x(i)    = (1.0 - omega)*x(i) +                                 &
      &              omega*(sum + aa(adiag(i))*x(i)) / aa(adiag(i))
  40   continue
       return
       end
-      
+

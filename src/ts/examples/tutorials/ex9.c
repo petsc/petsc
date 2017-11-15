@@ -6,6 +6,9 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
   "                u_t       + (u^2/2)_x             = 0\n"
   "  traffic     - Traffic equation\n"
   "                u_t       + (u*(1-u))_x           = 0\n"
+  "  acoustics   - Acoustic wave propagation\n"
+  "                u_t       + (c*z*v)_x             = 0\n"
+  "                v_t       + (c/z*u)_x             = 0\n"
   "  isogas      - Isothermal gas dynamics\n"
   "                rho_t     + (rho*u)_x             = 0\n"
   "                (rho*u)_t + (rho*u^2 + c^2*rho)_x = 0\n"
@@ -30,32 +33,28 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 /* To get isfinite in math.h */
 #define _XOPEN_SOURCE 600
 
-#include <unistd.h>             /* usleep */
-#include "petscts.h"
-#include "petscda.h"
+#include <petscts.h>
+#include <petscdmda.h>
+#include <petscdraw.h>
 
-#include "../src/mat/blockinvert.h" /* For the Kernel_*_gets_* stuff for BAIJ */
+#include <petsc-private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 
-static inline PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
-static inline PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
-static inline PetscReal Sqr(PetscReal a) { return a*a; }
-static inline PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
-static inline PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
-static inline PetscReal MinMod2(PetscReal a,PetscReal b)
-{ return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
-static inline PetscReal MaxMod2(PetscReal a,PetscReal b)
-{ return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
-static inline PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c)
-{return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
+PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
+PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
+PETSC_STATIC_INLINE PetscReal Sqr(PetscReal a) { return a*a; }
+PETSC_STATIC_INLINE PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
+PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
+PETSC_STATIC_INLINE PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
+PETSC_STATIC_INLINE PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
+PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
 
-static inline PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax)
-{ PetscReal range = xmax-xmin; return xmin + fmod(range+fmod(a,range),range); }
+PETSC_STATIC_INLINE PetscReal RangeMod(PetscReal a,PetscReal xmin,PetscReal xmax) { PetscReal range = xmax-xmin; return xmin + fmod(range+fmod(a,range),range); }
 
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
 typedef struct _LimitInfo {
   PetscReal hx;
-  PetscInt m;
+  PetscInt  m;
 } *LimitInfo;
 static void Limit_Upwind(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 {
@@ -106,19 +105,19 @@ static void Limit_VanAlbadaTVD(LimitInfo info,const PetscScalar *jL,const PetscS
 { /* phi = (t + t^2) / (1 + t^2) */
   PetscInt i;
   for (i=0; i<info->m; i++) lmt[i] = (jL[i]*jR[i]<0) ? 0
-                        : (jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
+                                     : (jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
 }
 static void Limit_Koren(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt) /* differentiable */
 { /* phi = (t + 2*t^2) / (2 - t + 2*t^2) */
   PetscInt i;
   for (i=0; i<info->m; i++) lmt[i] = ((jL[i]*Sqr(jR[i]) + 2*Sqr(jL[i])*jR[i])
-                                / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
+                                      / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
 }
 static void Limit_KorenSym(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt) /* differentiable */
 { /* Symmetric version of above */
   PetscInt i;
   for (i=0; i<info->m; i++) lmt[i] = (1.5*(jL[i]*Sqr(jR[i]) + Sqr(jL[i])*jR[i])
-                                / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
+                                      / (2*Sqr(jL[i]) - jL[i]*jR[i] + 2*Sqr(jR[i]) + 1e-15));
 }
 static void Limit_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 { /* Eq 11 of Cada-Torrilhon 2009 */
@@ -127,10 +126,11 @@ static void Limit_Koren3(LimitInfo info,const PetscScalar *jL,const PetscScalar 
 }
 
 static PetscReal CadaTorrilhonPhiHatR_Eq13(PetscReal L,PetscReal R)
-{ return PetscMax(0,PetscMin((L+2*R)/3,
-                              PetscMax(-0.5*L,
-                                       PetscMin(2*L,
-                                                PetscMin((L+2*R)/3,1.6*R)))));
+{
+  return PetscMax(0,PetscMin((L+2*R)/3,
+                             PetscMax(-0.5*L,
+                                      PetscMin(2*L,
+                                               PetscMin((L+2*R)/3,1.6*R)))));
 }
 static void Limit_CadaTorrilhon2(LimitInfo info,const PetscScalar *jL,const PetscScalar *jR,PetscScalar *lmt)
 { /* Cada-Torrilhon 2009, Eq 13 */
@@ -167,16 +167,16 @@ static void Limit_CadaTorrilhon3R100(LimitInfo info,const PetscScalar *jL,const 
 typedef enum {FVBC_PERIODIC, FVBC_OUTFLOW} FVBCType;
 static const char *FVBCTypes[] = {"PERIODIC","OUTFLOW","FVBCType","FVBC_",0};
 typedef PetscErrorCode (*RiemannFunction)(void*,PetscInt,const PetscScalar*,const PetscScalar*,PetscScalar*,PetscReal*);
-typedef PetscErrorCode (*ReconstructFunction)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*ReconstructFunction)(void*,PetscInt,const PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*);
 
 typedef struct {
   PetscErrorCode (*sample)(void*,PetscInt,FVBCType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal*);
-  RiemannFunction riemann;
+  RiemannFunction     riemann;
   ReconstructFunction characteristic;
   PetscErrorCode (*destroy)(void*);
-  void *user;
+  void     *user;
   PetscInt dof;
-  char *fieldname[16];
+  char     *fieldname[16];
 } PhysicsCtx;
 
 typedef struct {
@@ -184,68 +184,69 @@ typedef struct {
   PhysicsCtx physics;
 
   MPI_Comm comm;
-  char prefix[256];
-  DA da;
+  char     prefix[256];
+
   /* Local work arrays */
   PetscScalar *R,*Rinv;         /* Characteristic basis, and it's inverse.  COLUMN-MAJOR */
   PetscScalar *cjmpLR;          /* Jumps at left and right edge of cell, in characteristic basis, len=2*dof */
   PetscScalar *cslope;          /* Limited slope, written in characteristic basis */
   PetscScalar *uLR;             /* Solution at left and right of interface, conservative variables, len=2*dof */
   PetscScalar *flux;            /* Flux across interface */
+  PetscReal   *speeds;          /* Speeds of each wave */
 
   PetscReal cfl_idt;            /* Max allowable value of 1/Delta t */
   PetscReal cfl;
   PetscReal xmin,xmax;
-  PetscInt initial;
-  PetscTruth exact;
-  FVBCType bctype;
+  PetscInt  initial;
+  PetscBool exact;
+  FVBCType  bctype;
 } FVCtx;
 
 
 /* Utility */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RiemannListAdd"
-PetscErrorCode RiemannListAdd(PetscFList *flist,const char *name,RiemannFunction rsolve)
+PetscErrorCode RiemannListAdd(PetscFunctionList *flist,const char *name,RiemannFunction rsolve)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFListAdd(flist,name,"",(void(*)(void))rsolve);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListAdd(flist,name,rsolve);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RiemannListFind"
-PetscErrorCode RiemannListFind(PetscFList flist,const char *name,RiemannFunction *rsolve)
+PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannFunction *rsolve)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,(void(**)(void))rsolve);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
   if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ReconstructListAdd"
-PetscErrorCode ReconstructListAdd(PetscFList *flist,const char *name,ReconstructFunction r)
+PetscErrorCode ReconstructListAdd(PetscFunctionList *flist,const char *name,ReconstructFunction r)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFListAdd(flist,name,"",(void(*)(void))r);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListAdd(flist,name,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ReconstructListFind"
-PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,ReconstructFunction *r)
+PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,ReconstructFunction *r)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,(void(**)(void))r);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
   if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
@@ -260,27 +261,26 @@ PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,Reconstruct
 
 /* First a few functions useful to several different physics */
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsCharacteristic_Conservative"  
-static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+#define __FUNCT__ "PhysicsCharacteristic_Conservative"
+static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   PetscInt i,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=0; i<m; i++) {
-    for (j=0; j<m; j++) {
-      Xi[i*m+j] = X[i*m+j] = (PetscScalar)(i==j);
-    }
+    for (j=0; j<m; j++) Xi[i*m+j] = X[i*m+j] = (PetscScalar)(i==j);
+    speeds[i] = PETSC_MAX_REAL; /* Indicates invalid */
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsDestroy_SimpleFree"  
+#define __FUNCT__ "PhysicsDestroy_SimpleFree"
 static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFree(vctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -293,30 +293,43 @@ typedef struct {
   PetscReal a;                  /* advective velocity */
 } AdvectCtx;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Advect"
 static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   AdvectCtx *ctx = (AdvectCtx*)vctx;
   PetscReal speed;
 
-  PetscFunctionBegin;
-  speed = ctx->a;
-  flux[0] = PetscMax(0,speed)*uL[0] + PetscMin(0,speed)*uR[0];
+  PetscFunctionBeginUser;
+  speed     = ctx->a;
+  flux[0]   = PetscMax(0,speed)*uL[0] + PetscMin(0,speed)*uR[0];
   *maxspeed = speed;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCharacteristic_Advect"
+static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
+{
+  AdvectCtx *ctx = (AdvectCtx*)vctx;
+
+  PetscFunctionBeginUser;
+  X[0]      = 1.;
+  Xi[0]     = 1.;
+  speeds[0] = ctx->a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Advect"
 static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
   AdvectCtx *ctx = (AdvectCtx*)vctx;
-  PetscReal a = ctx->a,x0;
+  PetscReal a    = ctx->a,x0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (bctype) {
-    case FVBC_OUTFLOW: x0 = x-a*t; break;
+    case FVBC_OUTFLOW:   x0 = x-a*t; break;
     case FVBC_PERIODIC: x0 = RangeMod(x-a*t,xmin,xmax); break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
   }
@@ -326,23 +339,25 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
     case 3: u[0] = sin(2*M_PI*x0); break;
     case 4: u[0] = PetscAbs(x0); break;
+    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(sin(2*M_PI*x0)); break;
+    case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 {
   PetscErrorCode ierr;
-  AdvectCtx *user;
+  AdvectCtx      *user;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Advect;
   ctx->physics.riemann        = PhysicsRiemann_Advect;
-  ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
+  ctx->physics.characteristic = PhysicsCharacteristic_Advect;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 1;
@@ -350,7 +365,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   user->a = 1;
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -364,12 +379,12 @@ typedef struct {
   PetscReal lxf_speed;
 } BurgersCtx;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Burgers"
 static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0: u[0] = (x < 0) ? 1 : -1; break;
@@ -393,17 +408,21 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
       u[0] = 0.7 + 0.3*sin(2*M_PI*((x-xmin)/(xmax-xmin)));
       break;
+    case 5:                     /* Pure shock solution */
+      if (x < 0.5*t) u[0] = 1;
+      else u[0] = 0;
+      break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Exact"
 static PetscErrorCode PhysicsRiemann_Burgers_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL[0] < uR[0]) {          /* rarefaction */
     flux[0] = (uL[0]*uR[0] < 0)
       ? 0                       /* sonic rarefaction */
@@ -415,69 +434,71 @@ static PetscErrorCode PhysicsRiemann_Burgers_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Roe"
 static PetscErrorCode PhysicsRiemann_Burgers_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   PetscReal speed;
 
-  PetscFunctionBegin;
-  speed = 0.5*(uL[0] + uR[0]);
+  PetscFunctionBeginUser;
+  speed   = 0.5*(uL[0] + uR[0]);
   flux[0] = 0.25*(PetscSqr(uL[0]) + PetscSqr(uR[0])) - 0.5*PetscAbs(speed)*(uR[0]-uL[0]);
   if (uL[0] <= 0 && 0 <= uR[0]) flux[0] = 0; /* Entropy fix for sonic rarefaction */
   *maxspeed = speed;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_LxF"
 static PetscErrorCode PhysicsRiemann_Burgers_LxF(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  PetscReal c;
+  PetscReal   c;
   PetscScalar fL,fR;
 
-  PetscFunctionBegin;
-  c = ((BurgersCtx*)vctx)->lxf_speed;
-  fL = 0.5*PetscSqr(uL[0]);
-  fR = 0.5*PetscSqr(uR[0]);
-  flux[0] = 0.5*(fL + fR) - 0.5*c*(uR[0] - uL[0]);
+  PetscFunctionBeginUser;
+  c         = ((BurgersCtx*)vctx)->lxf_speed;
+  fL        = 0.5*PetscSqr(uL[0]);
+  fR        = 0.5*PetscSqr(uR[0]);
+  flux[0]   = 0.5*(fL + fR) - 0.5*c*(uR[0] - uL[0]);
   *maxspeed = c;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Rusanov"
 static PetscErrorCode PhysicsRiemann_Burgers_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  PetscReal c;
+  PetscReal   c;
   PetscScalar fL,fR;
 
-  PetscFunctionBegin;
-  c = PetscMax(PetscAbs(uL[0]),PetscAbs(uR[0]));
-  fL = 0.5*PetscSqr(uL[0]);
-  fR = 0.5*PetscSqr(uR[0]);
-  flux[0] = 0.5*(fL + fR) - 0.5*c*(uR[0] - uL[0]);
+  PetscFunctionBeginUser;
+  c         = PetscMax(PetscAbs(uL[0]),PetscAbs(uR[0]));
+  fL        = 0.5*PetscSqr(uL[0]);
+  fR        = 0.5*PetscSqr(uR[0]);
+  flux[0]   = 0.5*(fL + fR) - 0.5*c*(uR[0] - uL[0]);
   *maxspeed = c;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Burgers"
 static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
 {
-  BurgersCtx *user;
-  PetscErrorCode ierr;
-  RiemannFunction r;
-  PetscFList rlist = 0;
-  char rname[256] = "exact";
+  BurgersCtx        *user;
+  PetscErrorCode    ierr;
+  RiemannFunction   r;
+  PetscFunctionList rlist      = 0;
+  char              rname[256] = "exact";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+
   ctx->physics.sample         = PhysicsSample_Burgers;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 1;
+
   ierr = PetscStrallocpy("u",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
   ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Burgers_Exact);CHKERRQ(ierr);
   ierr = RiemannListAdd(&rlist,"roe",    PhysicsRiemann_Burgers_Roe);CHKERRQ(ierr);
@@ -485,11 +506,11 @@ static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Burgers_Rusanov);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsList("-physics_burgers_riemann","Riemann solver","",rlist,rname,rname,sizeof rname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_burgers_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&r);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rlist);CHKERRQ(ierr);
   ctx->physics.riemann = r;
 
   /* *
@@ -509,15 +530,15 @@ typedef struct {
   PetscReal a;
 } TrafficCtx;
 
-static inline PetscScalar TrafficFlux(PetscScalar a,PetscScalar u) { return a*u*(1-u); }
+PETSC_STATIC_INLINE PetscScalar TrafficFlux(PetscScalar a,PetscScalar u) { return a*u*(1-u); }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Traffic"
 static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0:
@@ -536,13 +557,13 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Exact"
 static PetscErrorCode PhysicsRiemann_Traffic_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL[0] < uR[0]) {
     flux[0] = PetscMin(TrafficFlux(a,uL[0]),
                        TrafficFlux(a,uR[0]));
@@ -556,66 +577,67 @@ static PetscErrorCode PhysicsRiemann_Traffic_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Roe"
 static PetscErrorCode PhysicsRiemann_Traffic_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = a*(1 - (uL[0] + uR[0]));
   flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*PetscAbs(speed)*(uR[0]-uL[0]);
   *maxspeed = speed;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_LxF"
 static PetscErrorCode PhysicsRiemann_Traffic_LxF(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   TrafficCtx *phys = (TrafficCtx*)vctx;
-  PetscReal a = phys->a;
-  PetscReal speed;
+  PetscReal  a     = phys->a;
+  PetscReal  speed;
 
-  PetscFunctionBegin;
-  speed = a*(1 - (uL[0] + uR[0]));
-  flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*phys->lxf_speed*(uR[0]-uL[0]);
+  PetscFunctionBeginUser;
+  speed     = a*(1 - (uL[0] + uR[0]));
+  flux[0]   = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*phys->lxf_speed*(uR[0]-uL[0]);
   *maxspeed = speed;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Rusanov"
 static PetscErrorCode PhysicsRiemann_Traffic_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
   PetscReal speed;
 
-  PetscFunctionBegin;
-  speed = a*PetscMax(PetscAbs(1-2*uL[0]),PetscAbs(1-2*uR[0]));
-  flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*speed*(uR[0]-uL[0]);
+  PetscFunctionBeginUser;
+  speed     = a*PetscMax(PetscAbs(1-2*uL[0]),PetscAbs(1-2*uR[0]));
+  flux[0]   = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*speed*(uR[0]-uL[0]);
   *maxspeed = speed;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Traffic"
 static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
-  TrafficCtx *user;
-  RiemannFunction r;
-  PetscFList rlist = 0;
-  char rname[256] = "exact";
+  PetscErrorCode    ierr;
+  TrafficCtx        *user;
+  RiemannFunction   r;
+  PetscFunctionList rlist      = 0;
+  char              rname[256] = "exact";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Traffic;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 1;
+
   ierr = PetscStrallocpy("density",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
   user->a = 0.5;
   ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Traffic_Exact);CHKERRQ(ierr);
@@ -624,13 +646,14 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Traffic_Rusanov);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Traffic","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_traffic_a","Flux = a*u*(1-u)","",user->a,&user->a,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_traffic_riemann","Riemann solver","",rlist,rname,rname,sizeof rname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_traffic_a","Flux = a*u*(1-u)","",user->a,&user->a,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_traffic_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = RiemannListFind(rlist,rname,&r);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rlist);CHKERRQ(ierr);
+
   ctx->physics.riemann = r;
 
   /* *
@@ -638,12 +661,163 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   * max speed is 3*a for the basic initial conditions (-1 <= u <= 2)
   * */
   if (r == PhysicsRiemann_Traffic_LxF) user->lxf_speed = 3*user->a;
-
   PetscFunctionReturn(0);
 }
 
+/* --------------------------------- Linear Acoustics ----------------------------------- */
 
+/* Flux: u_t + (A u)_x
+ * z = sqrt(rho*bulk), c = sqrt(rho/bulk)
+ * Spectral decomposition: A = R * D * Rinv
+ * [    cz] = [-z   z] [-c    ] [-1/2z  1/2]
+ * [c/z   ] = [ 1   1] [     c] [ 1/2z  1/2]
+ *
+ * We decompose this into the left-traveling waves Al = R * D^- Rinv
+ * and the right-traveling waves Ar = R * D^+ * Rinv
+ * Multiplying out these expressions produces the following two matrices
+ */
 
+typedef struct {
+  PetscReal c;                  /* speed of sound: c = sqrt(bulk/rho) */
+  PetscReal z;                  /* impedence: z = sqrt(rho*bulk) */
+} AcousticsCtx;
+
+PETSC_STATIC_INLINE void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
+{
+  f[0] = ctx->c*ctx->z*u[1];
+  f[1] = ctx->c/ctx->z*u[0];
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCharacteristic_Acoustics"
+static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
+{
+  AcousticsCtx *phys = (AcousticsCtx*)vctx;
+  PetscReal    z     = phys->z,c = phys->c;
+
+  PetscFunctionBeginUser;
+  X[0*2+0]  = -z;
+  X[0*2+1]  = z;
+  X[1*2+0]  = 1;
+  X[1*2+1]  = 1;
+  Xi[0*2+0] = -1./(2*z);
+  Xi[0*2+1] = 1./2;
+  Xi[1*2+0] = 1./(2*z);
+  Xi[1*2+1] = 1./2;
+  speeds[0] = -c;
+  speeds[1] = c;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSample_Acoustics_Initial"
+static PetscErrorCode PhysicsSample_Acoustics_Initial(AcousticsCtx *phys,PetscInt initial,PetscReal xmin,PetscReal xmax,PetscReal x,PetscReal *u)
+{
+  PetscFunctionBeginUser;
+  switch (initial) {
+  case 0:
+    u[0] = (PetscAbs((x - xmin)/(xmax - xmin) - 0.2) < 0.1) ? 1 : 0.5;
+    u[1] = (PetscAbs((x - xmin)/(xmax - xmin) - 0.7) < 0.1) ? 1 : -0.5;
+    break;
+  case 1:
+    u[0] = cos(3 * 2*PETSC_PI*x/(xmax-xmin));
+    u[1] = exp(-PetscSqr(x - (xmax + xmin)/2) / (2*PetscSqr(0.2*(xmax - xmin)))) - 0.5;
+    break;
+  default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSample_Acoustics"
+static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
+{
+  AcousticsCtx   *phys = (AcousticsCtx*)vctx;
+  PetscReal      c     = phys->c;
+  PetscReal      x0a,x0b,u0a[2],u0b[2],tmp[2];
+  PetscReal      X[2][2],Xi[2][2],dummy[2];
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  switch (bctype) {
+  case FVBC_OUTFLOW:
+    x0a = x+c*t;
+    x0b = x-c*t;
+    break;
+  case FVBC_PERIODIC:
+    x0a = RangeMod(x+c*t,xmin,xmax);
+    x0b = RangeMod(x-c*t,xmin,xmax);
+    break;
+  default: SETERRQ(PETSC_COMM_SELF,1,"unknown BCType");
+  }
+  ierr   = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0a,u0a);CHKERRQ(ierr);
+  ierr   = PhysicsSample_Acoustics_Initial(phys,initial,xmin,xmax,x0b,u0b);CHKERRQ(ierr);
+  ierr   = PhysicsCharacteristic_Acoustics(vctx,2,u,&X[0][0],&Xi[0][0],dummy);CHKERRQ(ierr);
+  tmp[0] = Xi[0][0]*u0a[0] + Xi[0][1]*u0a[1];
+  tmp[1] = Xi[1][0]*u0b[0] + Xi[1][1]*u0b[1];
+  u[0]   = X[0][0]*tmp[0] + X[0][1]*tmp[1];
+  u[1]   = X[1][0]*tmp[0] + X[1][1]*tmp[1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsRiemann_Acoustics_Exact"
+static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
+{
+  AcousticsCtx *phys = (AcousticsCtx*)vctx;
+  PetscReal    c     = phys->c,z = phys->z;
+  PetscReal
+    Al[2][2] = {{-c/2     , c*z/2  },
+                {c/(2*z)  , -c/2   }}, /* Left traveling waves */
+    Ar[2][2] = {{c/2      , c*z/2  },
+                {c/(2*z)  , c/2    }}; /* Right traveling waves */
+
+  PetscFunctionBeginUser;
+  flux[0]   = Al[0][0]*uR[0] + Al[0][1]*uR[1] + Ar[0][0]*uL[0] + Ar[0][1]*uL[1];
+  flux[1]   = Al[1][0]*uR[0] + Al[1][1]*uR[1] + Ar[1][0]*uL[0] + Ar[1][1]*uL[1];
+  *maxspeed = c;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCreate_Acoustics"
+static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
+{
+  PetscErrorCode    ierr;
+  AcousticsCtx      *user;
+  PetscFunctionList rlist      = 0,rclist = 0;
+  char              rname[256] = "exact",rcname[256] = "characteristic";
+
+  PetscFunctionBeginUser;
+  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ctx->physics.sample         = PhysicsSample_Acoustics;
+  ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
+  ctx->physics.user           = user;
+  ctx->physics.dof            = 2;
+
+  ierr = PetscStrallocpy("u",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("v",&ctx->physics.fieldname[1]);CHKERRQ(ierr);
+
+  user->c = 1;
+  user->z = 1;
+
+  ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Acoustics_Exact);CHKERRQ(ierr);
+  ierr = ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_Acoustics);CHKERRQ(ierr);
+  ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for linear Acoustics","");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsReal("-physics_acoustics_c","c = sqrt(bulk/rho)","",user->c,&user->c,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_acoustics_z","z = sqrt(bulk*rho)","",user->z,&user->z,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_acoustics_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
+  ierr = ReconstructListFind(rclist,rcname,&ctx->physics.characteristic);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rclist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* --------------------------------- Isothermal Gas Dynamics ----------------------------------- */
 
@@ -651,18 +825,18 @@ typedef struct {
   PetscReal acoustic_speed;
 } IsoGasCtx;
 
-static inline void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
+PETSC_STATIC_INLINE void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = u[1];
   f[1] = PetscSqr(u[1])/u[0] + c*c*u[0];
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_IsoGas"
 static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solutions not implemented for t > 0");
   switch (initial) {
     case 0:
@@ -678,22 +852,22 @@ static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Roe"
 static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  IsoGasCtx *phys = (IsoGasCtx*)vctx;
-  PetscReal c = phys->acoustic_speed;
+  IsoGasCtx   *phys = (IsoGasCtx*)vctx;
+  PetscReal   c     = phys->acoustic_speed;
   PetscScalar ubar,du[2],a[2],fL[2],fR[2],lam[2],ustar[2],R[2][2];
-  PetscInt i;
+  PetscInt    i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ubar = (uL[1]/PetscSqrtScalar(uL[0]) + uR[1]/PetscSqrtScalar(uR[0])) / (PetscSqrtScalar(uL[0]) + PetscSqrtScalar(uR[0]));
   /* write fluxuations in characteristic basis */
   du[0] = uR[0] - uL[0];
   du[1] = uR[1] - uL[1];
-  a[0] = (1/(2*c)) * ((ubar + c)*du[0] - du[1]);
-  a[1] = (1/(2*c)) * ((-ubar + c)*du[0] + du[1]);
+  a[0]  = (1/(2*c)) * ((ubar + c)*du[0] - du[1]);
+  a[1]  = (1/(2*c)) * ((-ubar + c)*du[0] + du[1]);
   /* wave speeds */
   lam[0] = ubar - c;
   lam[1] = ubar + c;
@@ -724,17 +898,17 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Exact"
 static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  IsoGasCtx *phys = (IsoGasCtx*)vctx;
-  PetscReal c = phys->acoustic_speed;
+  IsoGasCtx   *phys = (IsoGasCtx*)vctx;
+  PetscReal   c     = phys->acoustic_speed;
   PetscScalar ustar[2];
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
   {
     /* Solve for star state */
@@ -767,7 +941,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
     }
     SETERRQ1(PETSC_COMM_SELF,1,"Newton iteration for star.rho diverged after %d iterations",i);
   }
-  converged:
+converged:
   if (L.u-c < 0 && 0 < star.u-c) { /* 1-wave is sonic rarefaction */
     PetscScalar ufan[2];
     ufan[0] = L.rho*PetscExpScalar(L.u/c - 1);
@@ -795,61 +969,67 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Rusanov"
 static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  IsoGasCtx *phys = (IsoGasCtx*)vctx;
-  PetscScalar c = phys->acoustic_speed,fL[2],fR[2],s;
+  IsoGasCtx   *phys             = (IsoGasCtx*)vctx;
+  PetscScalar c                 = phys->acoustic_speed,fL[2],fR[2],s;
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
   IsoGasFlux(c,uL,fL);
   IsoGasFlux(c,uR,fR);
-  s = PetscMax(PetscAbs(L.u),PetscAbs(R.u))+c;
-  flux[0] = 0.5*(fL[0] + fR[0]) + 0.5*s*(uL[0] - uR[0]);
-  flux[1] = 0.5*(fL[1] + fR[1]) + 0.5*s*(uL[1] - uR[1]);
+  s         = PetscMax(PetscAbs(L.u),PetscAbs(R.u))+c;
+  flux[0]   = 0.5*(fL[0] + fR[0]) + 0.5*s*(uL[0] - uR[0]);
+  flux[1]   = 0.5*(fL[1] + fR[1]) + 0.5*s*(uL[1] - uR[1]);
   *maxspeed = s;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_IsoGas"
-static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
-  IsoGasCtx *phys = (IsoGasCtx*)vctx;
-  PetscReal c = phys->acoustic_speed;
+  IsoGasCtx      *phys = (IsoGasCtx*)vctx;
+  PetscReal      c     = phys->acoustic_speed;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  X[0*2+0] = 1;
-  X[0*2+1] = u[1]/u[0] - c;
-  X[1*2+0] = 1;
-  X[1*2+1] = u[1]/u[0] + c;
+  PetscFunctionBeginUser;
+  speeds[0] = u[1]/u[0] - c;
+  speeds[1] = u[1]/u[0] + c;
+  X[0*2+0]  = 1;
+  X[0*2+1]  = speeds[0];
+  X[1*2+0]  = 1;
+  X[1*2+1]  = speeds[1];
+
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_IsoGas"
 static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
-  IsoGasCtx *user;
-  PetscFList rlist = 0,rclist = 0;
-  char rname[256] = "exact",rcname[256] = "characteristic";
+  PetscErrorCode    ierr;
+  IsoGasCtx         *user;
+  PetscFunctionList rlist = 0,rclist = 0;
+  char              rname[256] = "exact",rcname[256] = "characteristic";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_IsoGas;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 2;
+
   ierr = PetscStrallocpy("density",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
   ierr = PetscStrallocpy("momentum",&ctx->physics.fieldname[1]);CHKERRQ(ierr);
+
   user->acoustic_speed = 1;
+
   ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_IsoGas_Exact);CHKERRQ(ierr);
   ierr = RiemannListAdd(&rlist,"roe",    PhysicsRiemann_IsoGas_Roe);CHKERRQ(ierr);
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_IsoGas_Rusanov);CHKERRQ(ierr);
@@ -857,15 +1037,15 @@ static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
   ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for IsoGas","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_isogas_acoustic_speed","Acoustic speed","",user->acoustic_speed,&user->acoustic_speed,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_isogas_riemann","Riemann solver","",rlist,rname,rname,sizeof rname,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_isogas_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof rcname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_isogas_acoustic_speed","Acoustic speed","",user->acoustic_speed,&user->acoustic_speed,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_isogas_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_isogas_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
   ierr = ReconstructListFind(rclist,rcname,&ctx->physics.characteristic);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rlist);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rclist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rclist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -877,26 +1057,26 @@ typedef struct {
   PetscReal gravity;
 } ShallowCtx;
 
-static inline void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
+PETSC_STATIC_INLINE void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = u[1];
   f[1] = PetscSqr(u[1])/u[0] + 0.5*phys->gravity*PetscSqr(u[0]);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Shallow_Exact"
 static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   ShallowCtx *phys = (ShallowCtx*)vctx;
-  PetscScalar g = phys->gravity,ustar[2],cL,cR,c,cstar;
+  PetscScalar g    = phys->gravity,ustar[2],cL,cR,c,cstar;
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g*L.h);
   cR = PetscSqrtScalar(g*R.h);
-  c = PetscMax(cL,cR);
+  c  = PetscMax(cL,cR);
   {
     /* Solve for star state */
     const PetscInt maxits = 50;
@@ -912,7 +1092,6 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
         : 2*PetscSqrtScalar(g*h) - 2*PetscSqrtScalar(g*R.h);   /* rarefaction */
       res = R.u - L.u + fr + fl;
       if (!isfinite(res)) SETERRQ1(PETSC_COMM_SELF,1,"non-finite residual=%g",res);
-      //PetscPrintf(PETSC_COMM_WORLD,"h=%g, res[%d] = %g\n",h,i,res);
       if (PetscAbsScalar(res) < 1e-8 || (i > 0 && PetscAbsScalar(h-h0) < 1e-8)) {
         star.h = h;
         star.u = L.u - fl;
@@ -937,7 +1116,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
     }
     SETERRQ1(PETSC_COMM_SELF,1,"Newton iteration for star.h diverged after %d iterations",i);
   }
-  converged:
+converged:
   cstar = PetscSqrtScalar(g*star.h);
   if (L.u-cL < 0 && 0 < star.u-cstar) { /* 1-wave is sonic rarefaction */
     PetscScalar ufan[2];
@@ -966,78 +1145,84 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Shallow_Rusanov"
 static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
   ShallowCtx *phys = (ShallowCtx*)vctx;
-  PetscScalar g = phys->gravity,fL[2],fR[2],s;
+  PetscScalar g    = phys->gravity,fL[2],fR[2],s;
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
   ShallowFlux(phys,uL,fL);
   ShallowFlux(phys,uR,fR);
-  s = PetscMax(PetscAbs(L.u)+PetscSqrtScalar(g*L.h),PetscAbs(R.u)+PetscSqrtScalar(g*R.h));
-  flux[0] = 0.5*(fL[0] + fR[0]) + 0.5*s*(uL[0] - uR[0]);
-  flux[1] = 0.5*(fL[1] + fR[1]) + 0.5*s*(uL[1] - uR[1]);
+  s         = PetscMax(PetscAbs(L.u)+PetscSqrtScalar(g*L.h),PetscAbs(R.u)+PetscSqrtScalar(g*R.h));
+  flux[0]   = 0.5*(fL[0] + fR[0]) + 0.5*s*(uL[0] - uR[0]);
+  flux[1]   = 0.5*(fL[1] + fR[1]) + 0.5*s*(uL[1] - uR[1]);
   *maxspeed = s;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_Shallow"
-static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi)
+static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
-  ShallowCtx *phys = (ShallowCtx*)vctx;
-  PetscReal c;
+  ShallowCtx     *phys = (ShallowCtx*)vctx;
+  PetscReal      c;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  c = PetscSqrtScalar(u[0]*phys->gravity);
-  X[0*2+0] = 1;
-  X[0*2+1] = u[1]/u[0] - c;
-  X[1*2+0] = 1;
-  X[1*2+1] = u[1]/u[0] + c;
+  PetscFunctionBeginUser;
+  c         = PetscSqrtScalar(u[0]*phys->gravity);
+  speeds[0] = u[1]/u[0] - c;
+  speeds[1] = u[1]/u[0] + c;
+  X[0*2+0]  = 1;
+  X[0*2+1]  = speeds[0];
+  X[1*2+0]  = 1;
+  X[1*2+1]  = speeds[1];
+
   ierr = PetscMemcpy(Xi,X,4*sizeof(X[0]));CHKERRQ(ierr);
-  ierr = Kernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
+  ierr = PetscKernel_A_gets_inverse_A_2(Xi,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Shallow"
 static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
 {
-  PetscErrorCode ierr;
-  ShallowCtx *user;
-  PetscFList rlist = 0,rclist = 0;
-  char rname[256] = "exact",rcname[256] = "characteristic";
+  PetscErrorCode    ierr;
+  ShallowCtx        *user;
+  PetscFunctionList rlist = 0,rclist = 0;
+  char              rname[256] = "exact",rcname[256] = "characteristic";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   /* Shallow water and Isothermal Gas dynamics are similar so we reuse initial conditions for now */
   ctx->physics.sample         = PhysicsSample_IsoGas;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 2;
+
   ierr = PetscStrallocpy("density",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
   ierr = PetscStrallocpy("momentum",&ctx->physics.fieldname[1]);CHKERRQ(ierr);
+
   user->gravity = 1;
+
   ierr = RiemannListAdd(&rlist,"exact",  PhysicsRiemann_Shallow_Exact);CHKERRQ(ierr);
   ierr = RiemannListAdd(&rlist,"rusanov",PhysicsRiemann_Shallow_Rusanov);CHKERRQ(ierr);
   ierr = ReconstructListAdd(&rclist,"characteristic",PhysicsCharacteristic_Shallow);CHKERRQ(ierr);
   ierr = ReconstructListAdd(&rclist,"conservative",PhysicsCharacteristic_Conservative);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for Shallow","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_shallow_gravity","Gravity","",user->gravity,&user->gravity,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_shallow_riemann","Riemann solver","",rlist,rname,rname,sizeof rname,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics_shallow_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof rcname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-physics_shallow_gravity","Gravity","",user->gravity,&user->gravity,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_shallow_riemann","Riemann solver","",rlist,rname,rname,sizeof(rname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics_shallow_reconstruct","Reconstruction","",rclist,rcname,rcname,sizeof(rcname),NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = RiemannListFind(rlist,rname,&ctx->physics.riemann);CHKERRQ(ierr);
   ierr = ReconstructListFind(rclist,rcname,&ctx->physics.characteristic);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rlist);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&rclist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rlist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&rclist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1045,31 +1230,33 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FVRHSFunction"
 static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode  ierr;
-  PetscInt        i,j,k,Mx,dof,xs,xm;
-  PetscReal       hx,cfl_idt = 0;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,Mx,dof,xs,xm;
+  PetscReal      hx,cfl_idt = 0;
   PetscScalar    *x,*f,*slope;
-  Vec             Xloc;
+  Vec            Xloc;
+  DM             da;
 
-  PetscFunctionBegin;
-  ierr = DAGetLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
-  ierr = DAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
-  hx = (ctx->xmax - ctx->xmin)/Mx;
-  ierr = DAGlobalToLocalBegin(ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd  (ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  hx   = (ctx->xmax - ctx->xmin)/Mx;
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
-  ierr = DAVecGetArray(ctx->da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(ctx->da,F,&f);CHKERRQ(ierr);
-  ierr = DAGetArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(ctx->da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -1081,11 +1268,11 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   }
   for (i=xs-1; i<xs+xm+1; i++) {
     struct _LimitInfo info;
-    PetscScalar *cjmpL,*cjmpR;
+    PetscScalar       *cjmpL,*cjmpR;
     /* Determine the right eigenvectors R, where A = R \Lambda R^{-1} */
-    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv);CHKERRQ(ierr);
+    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     /* Evaluate jumps across interfaces (i-1, i) and (i, i+1), put in characteristic basis */
-    ierr = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
+    ierr  = PetscMemzero(ctx->cjmpLR,2*dof*sizeof(ctx->cjmpLR[0]));CHKERRQ(ierr);
     cjmpL = &ctx->cjmpLR[0];
     cjmpR = &ctx->cjmpLR[dof];
     for (j=0; j<dof; j++) {
@@ -1098,7 +1285,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       }
     }
     /* Apply limiter to the left and right characteristic jumps */
-    info.m = dof;
+    info.m  = dof;
     info.hx = hx;
     (*ctx->limit)(&info,cjmpL,cjmpR,ctx->cslope);
     for (j=0; j<dof; j++) ctx->cslope[j] /= hx; /* rescale to a slope */
@@ -1110,7 +1297,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   }
 
   for (i=xs; i<xs+xm+1; i++) {
-    PetscReal maxspeed;
+    PetscReal   maxspeed;
     PetscScalar *uL,*uR;
     uL = &ctx->uLR[0];
     uR = &ctx->uLR[dof];
@@ -1118,7 +1305,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       uL[j] = x[(i-1)*dof+j] + slope[(i-1)*dof+j]*hx/2;
       uR[j] = x[(i-0)*dof+j] - slope[(i-0)*dof+j]*hx/2;
     }
-    ierr = (*ctx->physics.riemann)(ctx->physics.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
+    ierr    = (*ctx->physics.riemann)(ctx->physics.user,dof,uL,uR,ctx->flux,&maxspeed);CHKERRQ(ierr);
     cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hx)); /* Max allowable value of 1/Delta t */
 
     if (i > xs) {
@@ -1129,12 +1316,12 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     }
   }
 
-  ierr = DAVecRestoreArray(ctx->da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(ctx->da,F,&f);CHKERRQ(ierr);
-  ierr = DARestoreArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPI_MAX,((PetscObject)ctx->da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt,tnow;
@@ -1143,245 +1330,302 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
         ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",tnow,dt,0.5/ctx->cfl_idt);CHKERRQ(ierr);
-      } else {
-        SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",dt,ctx->cfl/ctx->cfl_idt);
-      }
+      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",dt,ctx->cfl/ctx->cfl_idt);
     }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "SmallMatMultADB"
+static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScalar *A,const PetscReal *D,const PetscScalar *B)
+{
+  PetscInt i,j,k;
+
+  PetscFunctionBeginUser;
+  for (i=0; i<bs; i++) {
+    for (j=0; j<bs; j++) {
+      PetscScalar tmp = 0;
+      for (k=0; k<bs; k++) tmp += A[i*bs+k] * D[k] * B[k*bs+j];
+      C[i*bs+j] = tmp;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FVIJacobian"
+static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,void *vctx)
+{
+  FVCtx          *ctx = (FVCtx*)vctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,dof = ctx->physics.dof;
+  PetscScalar    *x,*J;
+  PetscReal      hx;
+  DM             da;
+  DMDALocalInfo  dainfo;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&dainfo);CHKERRQ(ierr);
+  hx   = (ctx->xmax - ctx->xmin)/dainfo.mx;
+  ierr = PetscMalloc(dof*dof*sizeof(PetscScalar),&J);CHKERRQ(ierr);
+  for (i=dainfo.xs; i<dainfo.xs+dainfo.xm; i++) {
+    ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
+    for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
+    ierr = SmallMatMultADB(J,dof,ctx->R,ctx->speeds,ctx->Rinv);CHKERRQ(ierr);
+    for (j=0; j<dof*dof; j++) J[j] = J[j]/hx + shift*(j/dof == j%dof);
+    ierr = MatSetValuesBlocked(*B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(J);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FVSample"
-static PetscErrorCode FVSample(FVCtx *ctx,PetscReal time,Vec U)
+static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
   PetscErrorCode ierr;
-  PetscScalar *u,*uj;
-  PetscInt i,j,k,dof,xs,xm,Mx;
+  PetscScalar    *u,*uj;
+  PetscInt       i,j,k,dof,xs,xm,Mx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
-  ierr = DAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ctx->da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(ctx->da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*sizeof uj[0],&uj);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*sizeof(uj[0]),&uj);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     const PetscReal h = (ctx->xmax-ctx->xmin)/Mx,xi = ctx->xmin+h/2+i*h;
-    const PetscInt N = 200;
+    const PetscInt  N = 200;
     /* Integrate over cell i using trapezoid rule with N points. */
     for (k=0; k<dof; k++) u[i*dof+k] = 0;
     for (j=0; j<N+1; j++) {
       PetscScalar xj = xi+h*(j-N/2)/(PetscReal)N;
       ierr = (*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
-      for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N)?0.5:1.0)*uj[k]/N;
+      for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
     }
   }
-  ierr = DAVecRestoreArray(ctx->da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   ierr = PetscFree(uj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SolutionStatsView"
-static PetscErrorCode SolutionStatsView(DA da,Vec X,PetscViewer viewer)
+static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscReal xmin,xmax;
-  PetscScalar sum,*x,tvsum,tvgsum;
-  PetscInt imin,imax,Mx,i,j,xs,xm,dof;
-  Vec Xloc;
-  PetscTruth iascii;
+  PetscReal      xmin,xmax;
+  PetscScalar    sum,*x,tvsum,tvgsum;
+  PetscInt       imin,imax,Mx,i,j,xs,xm,dof;
+  Vec            Xloc;
+  PetscBool      iascii;
 
-  PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
-    ierr = DAGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-    ierr = DAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-    ierr = DAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+    ierr  = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
+    ierr  = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    ierr  = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    ierr  = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+    ierr  = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+    ierr  = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
     tvsum = 0;
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 
     ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %d and %d, mean %8.5f, ||x||_TV %8.5f\n",xmin,xmax,imin,imax,sum/Mx,tvgsum/Mx);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SolutionErrorNorms"
-static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,PetscReal t,Vec X,PetscReal *nrm1,PetscReal *nrmsup)
+static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1,PetscReal *nrmsup)
 {
   PetscErrorCode ierr;
-  Vec Y;
-  PetscInt Mx;
+  Vec            Y;
+  PetscInt       Mx;
 
-  PetscFunctionBegin;
-  ierr = VecGetSize(X,&Mx);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = FVSample(ctx,t,Y);CHKERRQ(ierr);
-  ierr = VecAYPX(Y,-1,X);CHKERRQ(ierr);
-  ierr = VecNorm(Y,NORM_1,nrm1);CHKERRQ(ierr);
-  ierr = VecNorm(Y,NORM_INFINITY,nrmsup);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr   = VecGetSize(X,&Mx);CHKERRQ(ierr);
+  ierr   = VecDuplicate(X,&Y);CHKERRQ(ierr);
+  ierr   = FVSample(ctx,da,t,Y);CHKERRQ(ierr);
+  ierr   = VecAYPX(Y,-1,X);CHKERRQ(ierr);
+  ierr   = VecNorm(Y,NORM_1,nrm1);CHKERRQ(ierr);
+  ierr   = VecNorm(Y,NORM_INFINITY,nrmsup);CHKERRQ(ierr);
   *nrm1 /= Mx;
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
+  ierr   = VecDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
-  char lname[256] = "mc",physname[256] = "advect",final_fname[256] = "solution.m";
-  PetscFList limiters = 0,physics = 0;
-  MPI_Comm comm;
-  TS ts;
-  Vec X,X0;
-  FVCtx ctx;
-  PetscInt i,dof,xs,xm,Mx,draw = 0;
-  PetscTruth view_final = PETSC_FALSE;
-  PetscReal ptime;
-  PetscErrorCode ierr;
+  char              lname[256] = "mc",physname[256] = "advect",final_fname[256] = "solution.m";
+  PetscFunctionList limiters   = 0,physics = 0;
+  MPI_Comm          comm;
+  TS                ts;
+  DM                da;
+  Vec               X,X0,R;
+  Mat               B;
+  FVCtx             ctx;
+  PetscInt          i,dof,xs,xm,Mx,draw = 0;
+  PetscBool         view_final = PETSC_FALSE;
+  PetscReal         ptime;
+  PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = PetscMemzero(&ctx,sizeof(ctx));CHKERRQ(ierr);
 
   /* Register limiters to be available on the command line */
-  ierr = PetscFListAdd(&limiters,"upwind"          ,"",(void(*)(void))Limit_Upwind);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"lax-wendroff"    ,"",(void(*)(void))Limit_LaxWendroff);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"beam-warming"    ,"",(void(*)(void))Limit_BeamWarming);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"fromm"           ,"",(void(*)(void))Limit_Fromm);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"minmod"          ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"superbee"        ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"mc"              ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"vanleer"         ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"vanalbada"       ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"vanalbadatvd"    ,"",(void(*)(void))Limit_VanAlbadaTVD);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"koren"           ,"",(void(*)(void))Limit_Koren);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"korensym"        ,"",(void(*)(void))Limit_KorenSym);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"koren3"          ,"",(void(*)(void))Limit_Koren3);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon2" ,"",(void(*)(void))Limit_CadaTorrilhon2);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r0p1","",(void(*)(void))Limit_CadaTorrilhon3R0p1);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r1"  ,"",(void(*)(void))Limit_CadaTorrilhon3R1);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r10" ,"",(void(*)(void))Limit_CadaTorrilhon3R10);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&limiters,"cada-torrilhon3-r100","",(void(*)(void))Limit_CadaTorrilhon3R100);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"upwind"              ,Limit_Upwind);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"lax-wendroff"        ,Limit_LaxWendroff);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"beam-warming"        ,Limit_BeamWarming);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"fromm"               ,Limit_Fromm);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"minmod"              ,Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"superbee"            ,Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"mc"                  ,Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanleer"             ,Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanalbada"           ,Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanalbadatvd"        ,Limit_VanAlbadaTVD);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"koren"               ,Limit_Koren);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"korensym"            ,Limit_KorenSym);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"koren3"              ,Limit_Koren3);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon2"     ,Limit_CadaTorrilhon2);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r0p1",Limit_CadaTorrilhon3R0p1);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r1"  ,Limit_CadaTorrilhon3R1);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r10" ,Limit_CadaTorrilhon3R10);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r100",Limit_CadaTorrilhon3R100);CHKERRQ(ierr);
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFListAdd(&physics,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&physics,"burgers"         ,"",(void(*)(void))PhysicsCreate_Burgers);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&physics,"traffic"         ,"",(void(*)(void))PhysicsCreate_Traffic);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&physics,"isogas"          ,"",(void(*)(void))PhysicsCreate_IsoGas);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&physics,"shallow"         ,"",(void(*)(void))PhysicsCreate_Shallow);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"burgers"         ,PhysicsCreate_Burgers);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"traffic"         ,PhysicsCreate_Traffic);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"acoustics"       ,PhysicsCreate_Acoustics);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"isogas"          ,PhysicsCreate_IsoGas);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"shallow"         ,PhysicsCreate_Shallow);CHKERRQ(ierr);
 
-  ctx.cfl = 0.9; ctx.bctype = FVBC_PERIODIC;
-  ctx.xmin = 0; ctx.xmax = 1;
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Finite Volume solver options","");CHKERRQ(ierr);
+  ctx.comm = comm;
+  ctx.cfl  = 0.9; ctx.bctype = FVBC_PERIODIC;
+  ctx.xmin = -1; ctx.xmax = 1;
+  ierr     = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-physics","Name of physics (Riemann solver and characteristics) to use","",physics,physname,physname,sizeof(physname),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-view_final","Write final solution in ASCII Matlab format to given file name","",final_fname,final_fname,sizeof final_fname,&view_final);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,ctx.bctype,(PetscEnum*)&ctx.bctype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-limit","Name of flux limiter to use","",limiters,lname,lname,sizeof(lname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics","Name of physics (Riemann solver and characteristics) to use","",physics,physname,physname,sizeof(physname),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the limiter from the list of registered limiters */
-  ierr = PetscFListFind(limiters,comm,lname,(void(**)(void))&ctx.limit);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(limiters,lname,&ctx.limit);CHKERRQ(ierr);
   if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);CHKERRQ(ierr);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFListFind(physics,comm,physname,(void(**)(void))&r);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);CHKERRQ(ierr);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);
   }
 
-  /* Create a DA to manage the parallel grid */
-  ierr = DACreate1d(comm,DA_XPERIODIC,-50,ctx.physics.dof,2,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
-  /* Inform the DA of the field names provided by the physics. */
-  /* The names will be shown in the title bars when run with -ts_monitor_solution */
+  /* Create a DMDA to manage the parallel grid */
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,NULL,&da);CHKERRQ(ierr);
+  /* Inform the DMDA of the field names provided by the physics. */
+  /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i=0; i<ctx.physics.dof; i++) {
-    ierr = DASetFieldName(ctx.da,i,ctx.physics.fieldname[i]);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,i,ctx.physics.fieldname[i]);CHKERRQ(ierr);
   }
-  /* Allow customization of the DA at runtime, mostly to change problem size with -da_grid_x M */
-  ierr = DASetFromOptions(ctx.da);CHKERRQ(ierr);
-  ierr = DAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
   /* Set coordinates of cell centers */
-  ierr = DASetUniformCoordinates(ctx.da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0);CHKERRQ(ierr);
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
   ierr = PetscMalloc4(dof*dof,PetscScalar,&ctx.R,dof*dof,PetscScalar,&ctx.Rinv,2*dof,PetscScalar,&ctx.cjmpLR,1*dof,PetscScalar,&ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux,dof,PetscReal,&ctx.speeds);CHKERRQ(ierr);
 
   /* Create a vector to store the solution and to save the initial state */
-  ierr = DACreateGlobalVector(ctx.da,&X);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
+
+  ierr = DMCreateMatrix(da,NULL,&B);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,FVRHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,B,B,FVIJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,10);CHKERRQ(ierr);
 
   /* Compute initial conditions and starting time step */
-  ierr = FVSample(&ctx,0,X0);CHKERRQ(ierr);
+  ierr = FVSample(&ctx,da,0,X0);CHKERRQ(ierr);
   ierr = FVRHSFunction(ts,0,X0,X,(void*)&ctx);CHKERRQ(ierr); /* Initial function evaluation, only used to determine max speed */
   ierr = VecCopy(X0,X);CHKERRQ(ierr);                        /* The function value was not used so we set X=X0 again */
   ierr = TSSetInitialTimeStep(ts,0,ctx.cfl/ctx.cfl_idt);CHKERRQ(ierr);
 
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);  /* The TS will use X for the solution, starting with it's current value as initial condition */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
 
-  ierr = SolutionStatsView(ctx.da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   {
     PetscReal nrm1,nrmsup;
-    PetscInt steps;
+    PetscInt  steps;
 
-    ierr = TSStep(ts,&steps,&ptime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,X);CHKERRQ(ierr);
+    ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
+    ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %d\n",ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {
-      ierr = SolutionErrorNorms(&ctx,ptime,X,&nrm1,&nrmsup);CHKERRQ(ierr);
+      ierr = SolutionErrorNorms(&ctx,da,ptime,X,&nrm1,&nrmsup);CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %8.4e  ||x-x_e||_sup %8.4e\n",nrm1,nrmsup);CHKERRQ(ierr);
     }
   }
 
-  ierr = SolutionStatsView(ctx.da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (draw & 0x1) {ierr = VecView(X0,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
   if (draw & 0x2) {ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
   if (draw & 0x4) {
     Vec Y;
     ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-    ierr = FVSample(&ctx,ptime,Y);CHKERRQ(ierr);
+    ierr = FVSample(&ctx,da,ptime,Y);CHKERRQ(ierr);
     ierr = VecAYPX(Y,-1,X);CHKERRQ(ierr);
     ierr = VecView(Y,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-    ierr = VecDestroy(Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
   }
 
   if (view_final) {
@@ -1389,18 +1633,22 @@ int main(int argc,char *argv[])
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* Clean up */
   ierr = (*ctx.physics.destroy)(ctx.physics.user);CHKERRQ(ierr);
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(X0);CHKERRQ(ierr);
-  ierr = DADestroy(ctx.da);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = PetscFree3(ctx.uLR,ctx.flux,ctx.speeds);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&X0);CHKERRQ(ierr);
+  ierr = VecDestroy(&R);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&limiters);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&physics);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

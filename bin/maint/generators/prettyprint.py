@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -8,7 +8,7 @@
 #
 #  Crude as all hack!
 #
-#  Calling sequence: 
+#  Calling sequence:
 #      prettyprint.py
 ##
 import os
@@ -27,8 +27,8 @@ def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
   senums  = pickle.load(file)
-  structs = pickle.load(file)    
-  aliases = pickle.load(file)  
+  structs = pickle.load(file)
+  aliases = pickle.load(file)
   classes = pickle.load(file)
 
   print "----- Aliases --------"
@@ -46,7 +46,7 @@ def main(args):
     print i+" = "+"char*"
     for j in senums[i]:
       print "  "+j+" = "+senums[i][j]
-  print " "    
+  print " "
   print "----- structs --------"
   for i in structs:
     print i
@@ -60,12 +60,12 @@ def main(args):
       print "  "+j+"()"
       for k in classes[i][j]:
         print "    "+k
-  
-  
-    
+
+
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
   main(sys.argv[1:])
 

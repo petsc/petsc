@@ -1,0 +1,9 @@
+<HTML>
+<HEAD>
+<TITLE>DMMG Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+DMMG is a multigrid solver object. It uses DM object to manage mesh
+data structures at each multigrid level. See, for example DMMGCreate.
+<P>

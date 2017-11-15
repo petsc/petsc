@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   Defines symbolic transpose routines for SeqAIJ matrices.
@@ -13,21 +12,20 @@
 
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSymbolicTranspose_SeqAIJ"
-PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *Atj[]) 
+PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *Atj[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
   PetscInt       an=A->cmap->N,am=A->rmap->N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
-
   ierr = PetscInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
 
   /* Set up timers */
@@ -53,9 +51,9 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
-  for (i=0;i<am;i++) {
+  for (i=0; i<am; i++) {
     anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
+    for (j=0; j<anzj; j++) {
       atj[atfill[*aj]] = i;
       atfill[*aj++]   += 1;
     }
@@ -75,11 +73,11 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqAIJ"
-PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[]) 
+PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
   PetscInt       an=A->cmap->N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
@@ -111,7 +109,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   aj = aj + ai[rstart];
   for (i=rstart; i<rend; i++) {
     anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
+    for (j=0; j<anzj; j++) {
       atj[atfill[*aj]] = i-rstart;
       atfill[*aj++]   += 1;
     }
@@ -128,18 +126,17 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatTranspose_SeqAIJ_FAST"
-PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B) 
+PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
   Mat            At;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data,*at;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*at;
   PetscInt       an=A->cmap->N,am=A->rmap->N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
   MatScalar      *ata,*aa=a->a;
 
   PetscFunctionBegin;
-
   ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX || *B == A) {
@@ -162,7 +159,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     ati = sub_B->i;
     atj = sub_B->j;
     ata = sub_B->a;
-    At = *B;
+    At  = *B;
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
@@ -182,17 +179,18 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   /* Clean up temporary space and complete requests. */
   ierr = PetscFree(atfill);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
-    at   = (Mat_SeqAIJ *)(At->data);
+    ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At);CHKERRQ(ierr);
+
+    at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;
-    at->free_ij  = PETSC_TRUE;
+    at->free_ij = PETSC_TRUE;
     at->nonew   = 0;
   }
 
   if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = At;
   } else {
-    ierr = MatHeaderMerge(A,At);
+    ierr = MatHeaderMerge(A,At);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -207,9 +205,7 @@ PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,PetscInt *ati[],PetscInt
   PetscFunctionBegin;
   ierr = PetscInfo(A,"Restoring Symbolic Transpose.\n");CHKERRQ(ierr);
   ierr = PetscFree(*ati);CHKERRQ(ierr);
-  ati  = PETSC_NULL;
   ierr = PetscFree(*atj);CHKERRQ(ierr);
-  atj  = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

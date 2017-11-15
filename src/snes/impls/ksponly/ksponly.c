@@ -1,8 +1,7 @@
-#define PETSCSNES_DLL
 
-#include "private/snesimpl.h"
+#include <petsc-private/snesimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_KSPONLY"
 static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 {
@@ -28,6 +27,16 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
+  if (snes->numbermonitors) {
+    PetscReal fnorm;
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  }
+
+  /* Call general purpose update function */
+  if (snes->ops->update) {
+    ierr = (*snes->ops->update)(snes, 0);CHKERRQ(ierr);
+  }
 
   /* Solve J Y = F, where J is Jacobian matrix */
   ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
@@ -35,46 +44,43 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
   if (kspreason < 0 && ++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-    ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
+    ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-  } else {
-    snes->reason = SNES_CONVERGED_ITS;
-  }
-  ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+  } else snes->reason = SNES_CONVERGED_ITS;
+
+  ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
   snes->linear_its += lits;
-  ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+  ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
   snes->iter++;
 
   /* Take the computed step. */
   ierr = VecAXPY(X,-1.0,Y);CHKERRQ(ierr);
+  if (snes->numbermonitors) {
+    PetscReal fnorm;
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,1,fnorm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_KSPONLY"
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!snes->vec_sol_update) {
-    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
-  }
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_KSPONLY"
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->vec_sol_update) {
-    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
-    snes->vec_sol_update = PETSC_NULL;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -86,20 +92,24 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 M*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_KSPONLY"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_KSPONLY(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;
-  snes->ops->setup   = SNESSetUp_KSPONLY;
-  snes->ops->solve   = SNESSolve_KSPONLY;
-  snes->ops->destroy = SNESDestroy_KSPONLY;
+  snes->ops->setup          = SNESSetUp_KSPONLY;
+  snes->ops->solve          = SNESSolve_KSPONLY;
+  snes->ops->destroy        = SNESDestroy_KSPONLY;
+  snes->ops->setfromoptions = 0;
+  snes->ops->view           = 0;
+  snes->ops->reset          = 0;
+
+  snes->usesksp = PETSC_TRUE;
+  snes->usespc  = PETSC_FALSE;
 
   snes->data = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

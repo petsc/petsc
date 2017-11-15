@@ -4,11 +4,11 @@
       program main
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscviewer.h>
 
       PetscErrorCode ierr
       PetscInt i,one,twelve
@@ -22,6 +22,7 @@
       call MatCreate(PETSC_COMM_SELF,m,ierr)
       call MatSetSizes(m,twelve,twelve,twelve,twelve,ierr)
       call MatSetFromOptions(m,ierr)
+      call MatSetUp(m,ierr)
 
       value = 3.0
       i     = 4

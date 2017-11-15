@@ -14,14 +14,14 @@
 
 #define KSPType character*(80)
 #define KSPCGType PetscEnum
-#define KSPConvergedReason PetscEnum 
+#define KSPConvergedReason PetscEnum
 #define KSPNormType PetscEnum
 #define KSPGMRESCGSRefinementType PetscEnum
 !
 !  Various Krylov subspace methods
 !
 #define KSPRICHARDSON 'richardson'
-#define KSPCHEBYCHEV 'chebychev'
+#define KSPCHEBYSHEV 'chebyshev'
 #define KSPCG 'cg'
 #define KSPCGNE 'cgne'
 #define KSPNASH 'nash'
@@ -30,9 +30,13 @@
 #define KSPGMRES 'gmres'
 #define KSPFGMRES 'fgmres'
 #define KSPLGMRES 'lgmres'
+#define KSPDGMRES 'dgmres'
+#define KSPPGMRES 'pgmres'
 #define KSPTCQMR 'tcqmr'
 #define KSPBCGS 'bcgs'
 #define KSPIBCGS 'ibcgs'
+#define KSPFBCGS  'fbcgs'
+#define KSPFBCGSR 'fbcgsr'
 #define KSPBCGSL 'bcgsl'
 #define KSPCGS 'cgs'
 #define KSPTFQMR 'tfqmr'
@@ -45,4 +49,6 @@
 #define KSPSYMMLQ 'symmlq'
 #define KSPLCD 'lcd'
 #define KSPPYTHON 'python'
+#define KSPGCR 'gcr'
+#define KSPSPECEST 'specest'
 #endif

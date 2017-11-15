@@ -1,22 +1,22 @@
-#define PETSC_DLL
+
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
    of overhead in calling the comparision routines.
 
  */
-#include "petscsys.h"                /*I  "petscsys.h"  I*/
+#include <petscsys.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
-   
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortReal_Private"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
   PetscInt  i,last;
   PetscReal vl,tmp;
-  
+
   PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
@@ -36,7 +36,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortReal"
 /*@
    PetscSortReal - Sorts an array of doubles in place in increasing order.
@@ -53,7 +53,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
+PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 {
   PetscInt  j,k;
   PetscReal tmp,vk;
@@ -63,19 +63,17 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
     for (k=0; k<n; k++) {
       vk = v[k];
       for (j=k+1; j<n; j++) {
-	if (vk > v[j]) {
-	  SWAP(v[k],v[j],tmp);
-	  vk = v[k];
-	}
+        if (vk > v[j]) {
+          SWAP(v[k],v[j],tmp);
+          vk = v[k];
+        }
       }
     }
-  } else {
-    PetscSortReal_Private(v,n-1);
-  }
+  } else PetscSortReal_Private(v,n-1);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortSplit"
 /*@
    PetscSortSplit - Quick-sort split of an array of PetscScalars in place.
@@ -90,8 +88,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
 
    Output Parameters:
 +  a     - permuted array of values such that its elements satisfy:
-           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and 
-           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut 
+           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
+           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
 -  idx   - permuted index of array a
 
    Level: intermediate
@@ -100,7 +98,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
+PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
 {
   PetscInt    i,mid,last,itmp,j,first;
   PetscScalar d,tmp;
@@ -111,10 +109,10 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscS
   last  = n-1;
   if (ncut < first || ncut > last) PetscFunctionReturn(0);
 
-  while (1){
-    mid = first;
+  while (1) {
+    mid    = first;
     abskey = (d = a[mid],PetscAbsScalar(d));
-    i = last;
+    i      = last;
     for (j = first + 1; j <= i; ++j) {
       if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
         ++mid;
@@ -122,27 +120,23 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscS
         tmp = a[mid];  itmp = idx[mid];
         a[mid] = a[j]; idx[mid] = idx[j];
         a[j] = tmp;    idx[j] = itmp;
-      } 
+      }
     }
-    
+
     /* interchange */
     tmp = a[mid];      itmp = idx[mid];
     a[mid] = a[first]; idx[mid] = idx[first];
     a[first] = tmp;    idx[first] = itmp;
 
     /* test for while loop */
-    if (mid == ncut) {
-      break;
-    } else if (mid > ncut){
-      last = mid - 1;
-    } else {
-      first = mid + 1;
-    }
-  } 
+    if (mid == ncut) break;
+    else if (mid > ncut) last = mid - 1;
+    else first = mid + 1;
+  }
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortSplitReal"
 /*@
    PetscSortSplitReal - Quick-sort split of an array of PetscReals in place.
@@ -157,8 +151,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscS
 
    Output Parameters:
 +  a     - permuted array of real values such that its elements satisfy:
-           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and 
-           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut 
+           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
+           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
 -  idx   - permuted index of array a
 
    Level: intermediate
@@ -167,45 +161,41 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscS
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
+PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscInt idx[])
 {
-  PetscInt    i,mid,last,itmp,j,first;
-  PetscReal   d,tmp;
-  PetscReal   abskey;
+  PetscInt  i,mid,last,itmp,j,first;
+  PetscReal d,tmp;
+  PetscReal abskey;
 
   PetscFunctionBegin;
   first = 0;
   last  = n-1;
   if (ncut < first || ncut > last) PetscFunctionReturn(0);
 
-  while (1){
-    mid = first;
-    abskey = (d = a[mid],PetscAbsScalar(d));
-    i = last;
+  while (1) {
+    mid    = first;
+    abskey = (d = a[mid],PetscAbsReal(d));
+    i      = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
+      if ((d = a[j],PetscAbsReal(d)) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];
         a[mid] = a[j]; idx[mid] = idx[j];
         a[j] = tmp;    idx[j] = itmp;
-      } 
+      }
     }
-    
+
     /* interchange */
     tmp = a[mid];      itmp = idx[mid];
     a[mid] = a[first]; idx[mid] = idx[first];
     a[first] = tmp;    idx[first] = itmp;
 
     /* test for while loop */
-    if (mid == ncut) {
-      break;
-    } else if (mid > ncut){
-      last = mid - 1;
-    } else {
-      first = mid + 1;
-    }
-  } 
+    if (mid == ncut) break;
+    else if (mid > ncut) last = mid - 1;
+    else first = mid + 1;
+  }
   PetscFunctionReturn(0);
-} 
+}
 

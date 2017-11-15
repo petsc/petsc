@@ -4,5 +4,11 @@
       type Mat
         PetscFortranAddr:: v
       end type Mat
+      type MatNullSpace
+        PetscFortranAddr:: v
+      end type MatNullSpace
+      type MatFDColoring
+        PetscFortranAddr:: v
+      end type MatFDColoring
 #endif
 #endif

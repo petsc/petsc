@@ -1,15 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = normm.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = normm.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/normal/
 MANSEC   = Mat
 

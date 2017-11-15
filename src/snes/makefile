@@ -1,8 +1,8 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/private/snesimpl.h ../../include/petscsnes.h
-DIRS     = interface mf impls examples utils f90-mod
+SOURCEH  = ../../include/petsc-private/snesimpl.h ../../include/petscsnes.h
+DIRS     = interface mf impls examples utils f90-mod linesearch
 LOCDIR   = src/snes/
 MANSEC   = SNES
 

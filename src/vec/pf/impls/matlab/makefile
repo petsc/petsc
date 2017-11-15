@@ -1,17 +1,15 @@
 
-#requirespackage  'PETSC_HAVE_MATLAB_ENGINE'
-#requiresscalar real 
+#requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
+#requiresscalar real
 #requiresprecision  double
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = cmatlab.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = cmatlab.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/pf/impls/matlab/

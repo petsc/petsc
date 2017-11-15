@@ -31,7 +31,6 @@
 #define PETSC_ERR_ARG_INCOMP       75
 #define PETSC_ERR_ARG_NULL         85
 #define PETSC_ERR_ARG_UNKNOWN_TYPE 86
-#define PETSC_ERR_ARG_DOMAIN       87
 
 #define PETSC_ERR_FILE_OPEN        65
 #define PETSC_ERR_FILE_READ        66

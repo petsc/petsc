@@ -13,6 +13,7 @@
 #define MatFDColoring PetscFortranAddr
 #endif
 #define MatPartitioning PetscFortranAddr
+#define MatCoarsen PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
 #define MatSolverPackage character*(80)
@@ -21,8 +22,7 @@
 #define MPChacoGlobalType PetscEnum
 #define MPChacoLocalType PetscEnum
 #define MPChacoEigenType PetscEnum
-#define MPScotchGlobalType PetscEnum
-#define MPScotchLocalType PetscEnum
+#define MPPTScotchStragegyType PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatFactorType PetscEnum
 #define MatFactorShiftType PetscEnum
@@ -37,6 +37,7 @@
 #define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
+#define MatCoarsenType character*(80)
 #define MatCompositeType PetscEnum
 #define MatStencil PetscInt
 #define MatStencil_k 1
@@ -46,6 +47,8 @@
 
 #define MATPARTITIONING_CURRENT 'current'
 #define MATPARTITIONING_PARMETIS 'parmetis'
+
+#define MATCOARSEN_MIS 'mis'
 
 #define MATCOLORINGNATURAL 'natural'
 #define MATCOLORINGSL 'sl'
@@ -58,63 +61,92 @@
 #define MATORDERINGRCM 'rcm'
 #define MATORDERINGQMD 'qmd'
 #define MATORDERINGROWLENGTH 'rowlength'
-#define MATORDERINGDSC_ND 'dsc_nd'
-#define MATORDERINGDSC_MMD 'dsc_mmd'
-#define MATORDERINGDSC_MDF 'dsc_mdf'
-
 !
 !  Matrix types
 !
 #define MATSAME            'same'
+#define MATMAIJ            'maij'
 #define MATSEQMAIJ         'seqmaij'
 #define MATMPIMAIJ         'mpimaij'
-#define MATMAIJ            'maij'
 #define MATIS              'is'
+#define MATAIJ             'aij'
 #define MATSEQAIJ          'seqaij'
 #define MATMPIAIJ          'mpiaij'
-#define MATAIJ             'aij'
+#define MATAIJCRL          'aijcrl'
+#define MATSEQAIJCRL       'seqaijcrl'
+#define MATMPIAIJCRL       'mpiaijcrl'
+#define MATAIJCUSP         'aijcusp'
+#define MATSEQAIJCUSP      'seqaijcusp'
+#define MATMPIAIJCUSP      'mpiaijcusp'
+#define MATAIJCUSPARSE     'aijcusparse'
+#define MATSEQAIJCUSPARSE  'seqaijcusparse'
+#define MATMPIAIJCUSPARSE  'mpiaijcusparse'
+#define MATAIJPERM         'aijperm'
+#define MATSEQAIJPERM      'seqaijperm'
+#define MATMPIAIJPERM      'mpiaijperm'
 #define MATSHELL           'shell'
+#define MATDENSE           'dense'
 #define MATSEQDENSE        'seqdense'
 #define MATMPIDENSE        'mpidense'
-#define MATDENSE           'dense'
+#define MATELEMENTAL       'elemental'
+#define MATBAIJ            'baij'
 #define MATSEQBAIJ         'seqbaij'
 #define MATMPIBAIJ         'mpibaij'
-#define MATBAIJ            'baij'
 #define MATMPIADJ          'mpiadj'
+#define MATSBAIJ           'sbaij'
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
-#define MATSBAIJ           'sbaij'
+
+#define MATSEQBSTRM        'seqbstrm'
+#define MATMPIBSTRM        'mpibstrm'
+#define MATBSTRM           'bstrm'
+#define MATSEQSBSTRM       'seqsbstrm'
+#define MATMPISBSTRM       'mpisbstrm'
+#define MATSBSTRM          'sbstrm'
+
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
 #define MATNORMAL          'normal'
 #define MATLRC             'lrc'
-#define MATSEQAIJPERM      'seqaijperm'
-#define MATMPIAIJPERM      'mpiaijperm'
-#define MATAIJPERM         'aijperm'
-#define MATSEQAIJCRL       'seqaijcrl'
-#define MATMPIAIJCRL       'mpiaijcrl'
-#define MATAIJCRL          'aijcrl'
 #define MATSCATTER         'scatter'
 #define MATBLOCKMAT        'blockmat'
 #define MATCOMPOSITE       'composite'
-#define MATSEQFFTW         'seqfftw'
+#define MATFFT             'fft'
+#define MATFFTW            'fftw'
+#define MATSEQCUFFT        'seqcufft'
 #define MATTRANSPOSEMAT    'transpose'
 #define MATSCHURCOMPLEMENT 'schurcomplement'
 #define MATPYTHON          'python'
 #define MATHYPRESTRUCT     'hyprestruct'
 #define MATHYPRESSTRUCT    'hypresstruct'
+#define MATSUBMATRIX       'submatrix'
+#define MATLOCALREF        'localref'
+#define MATNEST            'nest'
 !
 ! MatSolverPackages
 !
-#define MATSOLVERSPOOLES      'spooles'
 #define MATSOLVERSUPERLU      'superlu'
 #define MATSOLVERSUPERLU_DIST 'superlu_dist'
 #define MATSOLVERUMFPACK      'umfpack'
+#define MATSOLVERCHOLMOD      'cholmod'
 #define MATSOLVERESSL         'essl'
 #define MATSOLVERLUSOL        'lusol'
 #define MATSOLVERMUMPS        'mumps'
-#define MATSOLVERDSCPACK      'dscpack'
+#define MATSOLVERPASTIX       'pastix'
 #define MATSOLVERMATLAB       'matlab'
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERBAS          'bas'
+#define MATSOLVERCUSPARSE     'cusparse'
+#define MATSOLVERBSTRM        'bstrm'
+#define MATSOLVERSBSTRM       'sbstrm'
+
+!
+! GPU Storage Formats for CUSP and CUSPARSE
+!
+#define MatCUSPARSEStorageFormat PetscEnum
+#define MatCUSPARSEFormatOperation PetscEnum
+
+#define MatCUSPStorageFormat PetscEnum
+#define MatCUSPFormatOperation PetscEnum
+
 #endif

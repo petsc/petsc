@@ -4,14 +4,15 @@
 %
 % Note that we use a modified version of report.sty, so that tables and
 % figures are numbered consecutively throughout the document (not by
-% chapters).  
+% chapters).
 %
 \documentclass[twoside,12pt]{../sty/report_petsc}
 
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage[all]{hypcap}
 \usepackage{color}
-\input pdfcolor.tex     
+\input pdfcolor.tex
 
 \usepackage[pdftex]{graphicx}
 
@@ -30,7 +31,7 @@
 
 \newcommand{\findex}[1]{\index{FUNCTION #1}}
 \newcommand{\sindex}[1]{\index{#1}}
- 
+
 % Defines the environment where design issues are discussed. In the manual
 % version of this report, these regions are ignored.
 \def\design{\medskip \noindent Design Issue:\begin{em}}
@@ -50,6 +51,10 @@
 \renewcommand{\cite}[1]{}
 \def\thesection {$\!\!\!\!$}
 
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\rhead{PETSc 3.4 \today}
+
 \begin{document}
 
 \begin{center}
@@ -57,11 +62,11 @@ $\!$
 \vspace{1.0cm}
 \thispagestyle{empty}
 
-{\huge \bf Introduction to PETSc}\\ 
+{\huge \bf Introduction to PETSc}\\
 \vspace{0.5cm}
 {\LARGE (Part I of the PETSc Users Manual)} \\
 \vspace{1.5cm}
-{\large \em Satish Balay\\Kris Buschelman\\Victor Eijkhout\\William Gropp\\Dinesh Kaushik\\Matt Knepley\\Lois Curfman McInnes\\Barry Smith\\Hong Zhang\\
+{\large \em Satish Balay\\Jed Brown\\Kris Buschelman\\Victor Eijkhout\\William Gropp\\Dinesh Kaushik\\Matt Knepley\\Lois Curfman McInnes\\Barry Smith\\Hong Zhang\\
 \medskip \medskip
 Mathematics and Computer Science Division\\
 Argonne National Laboratory\\
@@ -79,12 +84,12 @@ Argonne, IL 60439-4844\\
 Manual}, which elaborates on the use and design of PETSc. The
 manual and is available in its entirety via the World Wide Web at
 the PETSc home page, {\tt http://www.mcs.anl.gov/petsc}.
-When referencing PETSc, please do 
+When citing PETSc, please do
 not refer to this document. Instead reference the following: Satish
-Balay, Kris Buschelman, Victor Eijhout, William Gropp, Dinesh Kaushik, 
+Balay, Jed Brown, Kris Buschelman, Victor Eijhout, William Gropp, Dinesh Kaushik,
 Lois Curfman McInnes, Barry Smith and Hong Zhang.  {\em
-PETSc Users Manual}, Technical Report ANL-95/11 - Revision 3.1,
-Argonne National Laboratory, 2010.
+PETSc Users Manual}, Technical Report ANL-95/11 - Revision 3.4,
+Argonne National Laboratory, 2013.
 
 %
 % Acknowledgements for users manual
@@ -92,7 +97,7 @@ Argonne National Laboratory, 2010.
 \input{acknowl.tex}
 
 \newpage
-% Include only Part 1 of users manual 
+% Include only Part 1 of users manual
 \section{Introduction}
 \input{part1tmp.tex}
 

@@ -1,26 +1,143 @@
-#define PETSC_DLL
+
 /*
      Provides utility routines for split MPI communicator.
 */
-#include "petscsys.h"    /*I   "petscsys.h"    I*/
+#include <petscsys.h>    /*I   "petscsys.h"    I*/
+#include <petsc-private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
 
-extern PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm,PetscInt,PetscSubcomm*);
-extern PetscErrorCode PetscSubcommCreate_interlaced(MPI_Comm,PetscInt,PetscSubcomm*);
+const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSubcommDestroy"
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
+extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
+extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommSetNumber"
+/*@C
+  PetscSubcommSetNumber - Set total number of subcommunicators.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  psubcomm - PetscSubcomm context
+-  nsubcomm - the total number of subcommunicators in psubcomm
+
+   Level: advanced
+
+.keywords: communicator
+
+.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetType(),PetscSubcommSetTypeGeneral()
+@*/
+PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm=psubcomm->parent;
+  PetscMPIInt    rank,size;
+
+  PetscFunctionBegin;
+  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate() first");
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (nsubcomm < 1 || nsubcomm > size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %D cannot be < 1 or > input comm size %D",nsubcomm,size);
+
+  psubcomm->n = nsubcomm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommSetType"
+/*@C
+  PetscSubcommSetType - Set type of subcommunicators.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  psubcomm - PetscSubcomm context
+-  subcommtype - subcommunicator type, PETSC_SUBCOMM_CONTIGUOUS,PETSC_SUBCOMM_INTERLACED
+
+   Level: advanced
+
+.keywords: communicator
+
+.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetTypeGeneral()
+@*/
+PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subcommtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&psubcomm->dupparent);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&psubcomm->comm);CHKERRQ(ierr);
-  ierr = PetscFree(psubcomm);CHKERRQ(ierr);
+  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
+  if (psubcomm->n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %D is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
+
+  if (subcommtype == PETSC_SUBCOMM_CONTIGUOUS) {
+    ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
+  } else if (subcommtype == PETSC_SUBCOMM_INTERLACED) {
+    ierr = PetscSubcommCreate_interlaced(psubcomm);CHKERRQ(ierr);
+  } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",subcommtype);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommSetTypeGeneral"
+/*@C
+  PetscSubcommSetTypeGeneral - Set type of subcommunicators from user's specifications
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  psubcomm - PetscSubcomm context
+.  color   - control of subset assignment (nonnegative integer). Processes with the same color are in the same subcommunicator.
+.  subrank - rank in the subcommunicator
+-  duprank - rank in the dupparent (see PetscSubcomm)
+
+   Level: advanced
+
+.keywords: communicator, create
+
+.seealso: PetscSubcommCreate(),PetscSubcommDestroy(),PetscSubcommSetNumber(),PetscSubcommSetType()
+@*/
+PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt color,PetscMPIInt subrank,PetscMPIInt duprank)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       subcomm=0,dupcomm=0,comm=psubcomm->parent;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"PetscSubcomm is not created. Call PetscSubcommCreate()");
+  if (psubcomm->n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of subcommunicators %D is incorrect. Call PetscSubcommSetNumber()",psubcomm->n);
+
+  ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
+
+  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm
+     if duprank is not a valid number, then dupcomm is not created - not all applications require dupcomm! */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (duprank == PETSC_DECIDE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"duprank==PETSC_DECIDE is not supported yet");
+  else if (duprank >= 0 && duprank < size) {
+    ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
+  }
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+
+  psubcomm->color = color;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommDestroy"
+PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*psubcomm) PetscFunctionReturn(0);
+  ierr = PetscCommDestroy(&(*psubcomm)->dupparent);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&(*psubcomm)->comm);CHKERRQ(ierr);
+  ierr = PetscFree((*psubcomm));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSubcommCreate"
 /*@C
   PetscSubcommCreate - Create a PetscSubcomm context.
@@ -28,9 +145,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - MPI communicator
-.  nsubcomm - the number of subcommunicators to be created
--  subcommtype - subcommunicator type
+.  comm - MPI communicator
 
    Output Parameter:
 .  psubcomm - location to store the PetscSubcomm context
@@ -41,35 +156,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
 
 .seealso: PetscSubcommDestroy()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsubcomm,PetscSubcommType subcommtype,PetscSubcomm *psubcomm)
+PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size; 
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (nsubcomm < 1 || nsubcomm > size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %D cannot be < 1 or > input comm size %D",nsubcomm,size);
-  
-  if (subcommtype == PETSC_SUBCOMM_CONTIGUOUS){
-    ierr = PetscSubcommCreate_contiguous(comm,nsubcomm,psubcomm);CHKERRQ(ierr);
-  } else if (subcommtype == PETSC_SUBCOMM_INTERLACED){
-    ierr = PetscSubcommCreate_interlaced(comm,nsubcomm,psubcomm);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(comm,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",subcommtype);
-  }
+  ierr = PetscNew(struct _n_PetscSubcomm,psubcomm);CHKERRQ(ierr);
+
+  (*psubcomm)->parent = comm;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSubcommCreate_contiguous"
-PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm *psubcomm)
+PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*subsize,duprank=-1,subrank=-1;
-  PetscInt       np_subcomm,nleftover,i,color=-1,rankstart;
-  MPI_Comm       subcomm=0,dupcomm=0;
-  PetscSubcomm   psubcomm_tmp;
+  PetscInt       np_subcomm,nleftover,i,color=-1,rankstart,nsubcomm=psubcomm->n;
+  MPI_Comm       subcomm=0,dupcomm=0,comm=psubcomm->parent;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -77,55 +182,60 @@ PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm comm,PetscInt nsubcomm,Pet
 
   /* get size of each subcommunicator */
   ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
+
   np_subcomm = size/nsubcomm;
   nleftover  = size - nsubcomm*np_subcomm;
-  for (i=0; i<nsubcomm; i++){
+  for (i=0; i<nsubcomm; i++) {
     subsize[i] = np_subcomm;
     if (i<nleftover) subsize[i]++;
   }
 
   /* get color and subrank of this proc */
   rankstart = 0;
-  for (i=0; i<nsubcomm; i++){
-    if ( rank >= rankstart && rank < rankstart+subsize[i]) {
-      color   = i; 
+  for (i=0; i<nsubcomm; i++) {
+    if (rank >= rankstart && rank < rankstart+subsize[i]) {
+      color   = i;
       subrank = rank - rankstart;
       duprank = rank;
       break;
-    } else {
-      rankstart += subsize[i];
-    }
+    } else rankstart += subsize[i];
   }
   ierr = PetscFree(subsize);CHKERRQ(ierr);
 
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
- 
-  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
+
+  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
- 
-  ierr = PetscNew(struct _n_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
-  psubcomm_tmp->parent    = comm;
-  psubcomm_tmp->dupparent = dupcomm;
-  psubcomm_tmp->comm      = subcomm;
-  psubcomm_tmp->n         = nsubcomm;
-  psubcomm_tmp->color     = color;
-  *psubcomm = psubcomm_tmp;
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+
+  psubcomm->color = color;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSubcommCreate_interlaced"
 /*
    Note:
-   In PCREDUNDANT, to avoid data scattering from subcomm back to original comm, we create subcommunicators 
-   by iteratively taking a process into a subcommunicator. 
+   In PCREDUNDANT, to avoid data scattering from subcomm back to original comm, we create subcommunicators
+   by iteratively taking a process into a subcommunicator.
    Example: size=4, nsubcomm=(*psubcomm)->n=3
      comm=(*psubcomm)->parent:
       rank:     [0]  [1]  [2]  [3]
       color:     0    1    2    0
 
      subcomm=(*psubcomm)->comm:
-      subrank:  [0]  [0]  [0]  [1]    
+      subrank:  [0]  [0]  [0]  [1]
 
      dupcomm=(*psubcomm)->dupparent:
       duprank:  [0]  [2]  [3]  [1]
@@ -140,13 +250,12 @@ PetscErrorCode PetscSubcommCreate_contiguous(MPI_Comm comm,PetscInt nsubcomm,Pet
                     subcomm[0] subcomm[1]  subcomm[2]
 */
 
-PetscErrorCode PetscSubcommCreate_interlaced(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm *psubcomm)
+PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*subsize,duprank,subrank;
-  PetscInt       np_subcomm,nleftover,i,j,color;
-  MPI_Comm       subcomm=0,dupcomm=0;
-  PetscSubcomm   psubcomm_tmp;
+  PetscInt       np_subcomm,nleftover,i,j,color,nsubcomm=psubcomm->n;
+  MPI_Comm       subcomm=0,dupcomm=0,comm=psubcomm->parent;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -154,9 +263,10 @@ PetscErrorCode PetscSubcommCreate_interlaced(MPI_Comm comm,PetscInt nsubcomm,Pet
 
   /* get size of each subcommunicator */
   ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
+
   np_subcomm = size/nsubcomm;
   nleftover  = size - nsubcomm*np_subcomm;
-  for (i=0; i<nsubcomm; i++){
+  for (i=0; i<nsubcomm; i++) {
     subsize[i] = np_subcomm;
     if (i<nleftover) subsize[i]++;
   }
@@ -168,25 +278,31 @@ PetscErrorCode PetscSubcommCreate_interlaced(MPI_Comm comm,PetscInt nsubcomm,Pet
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
 
   j = 0; duprank = 0;
-  for (i=0; i<nsubcomm; i++){
-    if (j == color){
+  for (i=0; i<nsubcomm; i++) {
+    if (j == color) {
       duprank += subrank;
       break;
     }
     duprank += subsize[i]; j++;
   }
   ierr = PetscFree(subsize);CHKERRQ(ierr);
- 
-  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
+
+  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
- 
-  ierr = PetscNew(struct _n_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
-  psubcomm_tmp->parent    = comm;
-  psubcomm_tmp->dupparent = dupcomm;
-  psubcomm_tmp->comm      = subcomm;
-  psubcomm_tmp->n         = nsubcomm;
-  psubcomm_tmp->color     = color;
-  *psubcomm = psubcomm_tmp;
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(dupcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(subcomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+
+  psubcomm->color = color;
   PetscFunctionReturn(0);
 }
 

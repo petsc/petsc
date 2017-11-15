@@ -20,7 +20,7 @@ tokens = (
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
     'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL',
-    
+
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
     'LSHIFTEQUAL','RSHIFTEQUAL', 'ANDEQUAL', 'XOREQUAL', 'OREQUAL',
@@ -33,7 +33,7 @@ tokens = (
 
     # Conditional operator (?)
     'CONDOP',
-    
+
     # Delimeters ( ) [ ] { } , . ; :
     'LPAREN', 'RPAREN',
     'LBRACKET', 'RBRACKET',
@@ -59,7 +59,7 @@ tokens = (
 # Completely ignored characters
 t_ignore           = '\t\x0c'
 
-    
+
 # Operators
 t_SUBSECTION       = r'\\subsection\{'
 t_CAPTION          = r'\\caption\{'
@@ -161,7 +161,7 @@ def t_error(t):
     print "Illegal character %s" % repr(t.value[0])
     t.skip(1)
 #     return t
-    
+
 lexer = lex.lex(optimize=1)
 if __name__ == "__main__":
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     fd.close()
     try:
         isrelease       = re.compile(' PETSC_VERSION_RELEASE[ ]*([0-9]*)').search(buf).group(1)
-        majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(buf).group(1)    
+        majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(buf).group(1)
         minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(buf).group(1)
     except:
         raise RuntimeError('Unable to read version information from petscversion.h')
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         version = 'dev'
     else:
         version=str(majorversion)+'.'+str(minorversion)
-    
+
 #
 #  Read in mapping of names to manual pages
 #
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         fd = open(os.path.join(htmlmapfile))
     except:
         raise RuntimeError('Unable to open htmlmap-file: '+htmlmapfile+'\n')
-            
+
     lines = fd.readlines()
     fd.close()
     n = len(lines)
@@ -245,14 +245,14 @@ if __name__ == "__main__":
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
-		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
+		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}' and bracket:
 		bracket = bracket - 1;
 	    text = text+value
 
-    
+
 
 
 

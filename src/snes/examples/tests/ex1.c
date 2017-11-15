@@ -1,8 +1,5 @@
 
-/* Program usage:  ex4 [-help] [all PETSc options] */
-
-static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
-solve the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
+static char help[] = "Solves the nonlinear system, the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
 This example also illustrates the use of matrix coloring.  Runtime options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
@@ -18,22 +15,22 @@ T*/
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
     The parallel version of this code is snes/examples/tutorials/ex5.c
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that
    this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -43,20 +40,20 @@ T*/
      petscksp.h   - linear solvers
 */
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobian() and
    FormFunction().
 */
 typedef struct {
-      PetscReal   param;        /* test problem parameter */
-      PetscInt    mx;           /* Discretization in x-direction */
-      PetscInt    my;           /* Discretization in y-direction */
+  PetscReal param;              /* test problem parameter */
+  PetscInt  mx;                 /* Discretization in x-direction */
+  PetscInt  my;                 /* Discretization in y-direction */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -72,13 +69,13 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   PetscErrorCode ierr;
-  PetscInt       i,its,N,hist_its[50]; 
+  PetscInt       i,its,N,hist_its[50];
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
-  MatFDColoring  fdcoloring;           
-  PetscTruth     matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
+  MatFDColoring  fdcoloring;
+  PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -86,12 +83,12 @@ int main(int argc,char **argv)
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -107,7 +104,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.  Whenever the nonlinear
      solver needs to evaluate the nonlinear function, it will call this
      routine.
@@ -123,31 +120,31 @@ int main(int argc,char **argv)
 
   /*
      Create matrix. Here we only approximately preallocate storage space
-     for the Jacobian.  See the users manual for a discussion of better 
+     for the Jacobian.  See the users manual for a discussion of better
      techniques for preallocating matrix memory.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscTruth matrix_free_operator = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool matrix_free_operator = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J);CHKERRQ(ierr);
   }
 
   /*
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_fd_coloring",&fd_coloring,PETSC_NULL);CHKERRQ(ierr);
-  if (matrix_free && fd_coloring)  SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
+  ierr = PetscOptionsGetBool(NULL,"-snes_fd_coloring",&fd_coloring,NULL);CHKERRQ(ierr);
+  if (matrix_free && fd_coloring) SETERRQ(PETSC_COMM_SELF,1,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring   iscoloring;
     MatStructure str;
 
-    /* 
+    /*
       This initializes the nonzero structure of the Jacobian. This is artificial
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
@@ -155,25 +152,25 @@ int main(int argc,char **argv)
     ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRQ(ierr);
 
     /*
-       Color the matrix, i.e. determine groups of columns that share no common 
+       Color the matrix, i.e. determine groups of columns that share no common
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
     ierr = MatGetColoring(J,MATCOLORINGNATURAL,&iscoloring);CHKERRQ(ierr);
     /*
-       Create the data structure that SNESDefaultComputeJacobianColor() uses
+       Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
     */
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
     /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
     */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   }
-  /* 
+  /*
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine.  Whenever the nonlinear solver needs to compute the
      Jacobian matrix, it will call this routine.
@@ -183,7 +180,7 @@ int main(int argc,char **argv)
       - The user can override with:
          -snes_fd : default finite differencing approximation of Jacobian
          -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                    (unless user explicitly sets preconditioner) 
+                    (unless user explicitly sets preconditioner)
          -snes_mf_operator : form preconditioning matrix as set by the user,
                              but use matrix-free approx for Jacobian-vector
                              products within Newton-Krylov method
@@ -218,16 +215,16 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
 
-  /* 
+  /*
      Print the convergence history.  This is intended just to demonstrate
-     use of the data attained via SNESSetConvergenceHistory().  
+     use of the data attained via SNESSetConvergenceHistory().
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %G\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
@@ -240,14 +237,14 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
   if (fd_coloring) {
-    ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -255,7 +252,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -272,12 +269,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    *x;
 
-  mx	 = user->mx; 
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
 
-  hx    = 1.0 / (PetscReal)(mx-1);
-  hy    = 1.0 / (PetscReal)(my-1);
+  hx = 1.0 / (PetscReal)(mx-1);
+  hy = 1.0 / (PetscReal)(my-1);
 
   /*
      Get a pointer to vector data.
@@ -286,17 +283,17 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr  = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
-      row = i + j*mx;  
+      row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -309,7 +306,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -328,8 +325,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
   PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
-  mx	 = user->mx; 
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
   hx     = one / (PetscReal)(mx-1);
   hy     = one / (PetscReal)(my-1);
@@ -344,7 +341,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
-     Compute function 
+     Compute function
   */
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
@@ -353,13 +350,13 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      ub = x[row - mx];
-      ul = x[row - 1];
-      ut = x[row + mx];
-      ur = x[row + 1];
-      uxx = (-ur + two*u - ul)*hydhx;
-      uyy = (-ut + two*u - ub)*hxdhy;
+      u      = x[row];
+      ub     = x[row - mx];
+      ul     = x[row - 1];
+      ut     = x[row + mx];
+      ur     = x[row + 1];
+      uxx    = (-ur + two*u - ul)*hydhx;
+      uyy    = (-ut + two*u - ub)*hxdhy;
       f[row] = uxx + uyy - sc*lambda*PetscExpScalar(u);
     }
   }
@@ -369,7 +366,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  return 0; 
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -390,14 +387,14 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat            jac = *B;                /* Jacobian matrix */
+  Mat            jac   = *B;             /* Jacobian matrix */
   PetscInt       i,j,row,mx,my,col[5];
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
   PetscReal      hx,hy,hxdhy,hydhx;
 
-  mx	 = user->mx; 
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
   hx     = 1.0 / (PetscReal)(mx-1);
   hy     = 1.0 / (PetscReal)(my-1);
@@ -410,7 +407,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries of the Jacobian
   */
   for (j=0; j<my; j++) {
@@ -434,7 +431,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

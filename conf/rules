@@ -1,44 +1,68 @@
+# -*- mode: makefile -*-
 #
-#
-# Checks that PETSC_DIR variable is set and creates library directory
-# if it does not exist
-chkpetsc_dir:
+chk_petscdir:
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          echo "*********************W-a-r-n-i-n-g*************************" ; \
+          printf ${PETSC_TEXT_HILIGHT}"*********************W-a-r-n-i-n-g*************************\n" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make test";\
-          echo "******************************************************" ; \
+          echo "Ignore this if you are running make test             ";\
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
         fi
+
+chk_upgrade:
+	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
+
+chk_makej:
+	@parallel=false;\
+        mflags=`echo _${MFLAGS}_ | sed "s+ +_+g"`;\
+        mflags_j=`echo $${mflags} | sed "s+_-j_+DUMMY+g"`;\
+        mflags_j1=`echo $${mflags} | sed "s+_-j_1_+DUMMY+g"`;\
+        if [ "$${mflags_j}" != "$${mflags}" -a "$${mflags_j1}" = "$${mflags}" ]; then parallel=true; fi;\
+        makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
+        makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
+        if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
+        if [ "$${parallel}" = "true" ]; then \
+          printf ${PETSC_TEXT_HILIGHT}"********************* ERROR **********************\n" ; \
+          if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+             echo "PETSc compiles are automatically parallel, do not ";\
+             echo "provide the -j option to make                     ";\
+          else \
+             echo "Parallel build with 'make -j' is not supported    ";\
+             echo "for PETSc legacy builds. Run without -j <np>      ";\
+             echo "or ./configure PETSc with --download-cmake        ";\
+             echo "to enable parallel builds with PETSc              ";\
+          fi;\
+          printf "**************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
+          exit 1; fi;
 
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
-	  echo "******************************************************";  false; fi
+	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
+	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc "; \
+	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
 	@${MKDIR} ${LOC}/docs/manualpages
 
 chk_c2html:
 	@if [ ${C2HTML}foo = foo ] ; then \
-          echo "*********************** ERROR ************************" ; \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
           echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
-          echo "******************************************************";false; fi
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
 lssrc:
 	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
 	  ls ${SOURCEC} ${SOURCEH} | cat;\
 	 fi
 
-chklib_dir:
+chklib_dir: chk_makej
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
 
 # 3. Check if the shared libs are out of date
-chkopts: remote
+chkopts: chk_upgrade
 	@for LIBNAME in ${SHLIBS}; do \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
@@ -53,26 +77,42 @@ chkopts: remote
 	  if [ -w ${INSTALL_LIB_DIR} ]; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
 	  else \
-	    echo "*********************** ERROR ************************"; \
+	    printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n"; \
 	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
 	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
 	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	    echo "******************************************************"; \
+	    printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
 	    false; \
 	  fi; \
 	fi; \
 	done
 
+#
+# uses the cmake infrastructure to build/rebuild the libraries
+ccmake: chk_makej
+	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
+	@echo "=========================================="
+	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=${VERBOSE}
+	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
+        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
+        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
+	@echo "========================================="
+
+cmake: chk_makej
+	@${OMAKE} ccmake VERBOSE=1
+
 # Does nothing; needed for some rules that require actions.
 foo:
 
 # Builds library
-lib:  ${SOURCEC}
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
+lib:  ${SOURCE}
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chk_petscdir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
 	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
 	  else \
-            if [ "${OBJSC}" != "" ] ; then \
+            if [ "${SOURCECU}" != "" ] ; then \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
+            if [ "${SOURCEC}" != "" ] ; then \
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
 		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
@@ -95,19 +135,18 @@ libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
 
 libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
-	echo ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
-		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+                    ${PETSC_CUCOMPILE}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
+		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
 	    fi; \
           if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
-		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
+		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}; \
 		    ${RM} ${OBJSF}; \
 	    fi
 
@@ -130,26 +169,30 @@ modcopy:
 
 # Removes garbage files
 clean::
-	@-${RM} *.o *.lo *~ ex[0-9] ex[0-9][0-9] ex[0-9]f ex[0-9][0-9]f \
-	       ${CLEANFILES} ${TESTS} ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9]c ex[0-9][0-9]c ex[0-9]d ex5d \
-	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out \
-	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
+	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
+               ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
+               ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
+               ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9][0-9][0-9]f90 \
+               ex[0-9].exe ex[0-9][0-9].exe ex[0-9][0-9][0-9].exe \
+               ex[0-9]f.exe ex[0-9][0-9]f.exe ex[0-9][0-9][0-9]f.exe \
+               ex[0-9]f90.exe ex[0-9][0-9]f90.exe ex[0-9][0-9][0-9]f90.exe \
+	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out *.gcov.html \
+	       trashz \#*\# *.mex* *.stolen *.trace Log.* *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	       ex[0-9].exe ex[0-9][0-9].exe ex[0-9]f.exe ex[0-9][0-9]f.exe \
-	       *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ *.c*.c pageform.txt \
-               .adic* *.dep *.proj ctoatmp PETScArena* *.L *.anl main *.mod .mpi* \
+	        *.cp_ *.cp__ *.c*.c pageform.txt \
+               *.dep *.proj ctoatmp PETScArena* *.L *.anl *.mod .mpi* *.d \
 	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
-	@-${RM} -rf ${CLEANDIRS} AD_cache SunWS_cache
+	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
 
-cleanadic:
-	@-${RM} *.ad.*
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain
-#    #requirespackage 'PETSC_HAVE_XXX' 
-#    #requireslanguage CONLY (or CPP)
-#    #requiresscalar   real (or complex)
+#    #requirespackage  'PETSC_HAVE_XXX'
+#    #requiresfunction 'PETSC_XXX'
+#    #requiresdefine   'PETSC_XXX'
+#    #requireslanguage  CONLY (or CPP)
+#    #requiresscalar    real (or complex)
 #    #requiresprecision double (or single)
 #
 tree: ${ACTION}
@@ -160,14 +203,23 @@ tree: ${ACTION}
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
                 grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
-                  if [ "${PCONF}" != "" ]; then \
-                    echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
-                    if [ "$$?" = 1 ]; then \
-                      continue; \
-                    fi; \
-                  else \
-                    continue; \
-                  fi; \
+                  continue; \
+                fi; \
+              fi; \
+	      r=`grep -w requiresfunction $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+	      r=`grep -w requiresdefine $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
                 fi; \
               fi; \
               r=`grep -w requireslanguage $$dir/makefile`; \
@@ -195,18 +247,18 @@ tree: ${ACTION}
               continue; \
             fi; \
             (cd $$dir ; \
-            echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
+            if [ ${NO_PRINT_DIR}foo = foo ] ; then echo ${ACTION} in: `pwd`; fi; \
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
 	  done
+
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
-	@-if [ "${DIRS}" != "" ]; then \
-	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
+	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
 	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done ; fi
+	done
 
 #This target goes through all the dirs that contains a makefile
 alltree_makefile: ${ACTION}
@@ -216,7 +268,7 @@ alltree_makefile: ${ACTION}
 	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done
-# This target goes through all dirs specified by DIRS,EDIRS, and 
+# This target goes through all dirs specified by DIRS,EDIRS, and
 # excludes dirs specified by $XDIRS
 alltree: ${ACTION}
 	@-if [ "${DIRS} ${EDIRS}" != " " ]; then \
@@ -232,12 +284,6 @@ alltree: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
 
-getlinklibs:
-	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
-
-getincludedirs:
-	-@echo  ${PETSC_INCLUDE}
-
 getpetscflags:
 	-@echo  ${PETSCFLAGS}
 
@@ -247,8 +293,38 @@ getmpilinklibs:
 getmpiincludedirs:
 	-@echo  ${MPI_INCLUDE}
 
+# -----------------------------------------------------------------
 getmpiexec:
 	-@echo  ${MPIEXEC}
+
+getccompiler:
+	-@echo ${CC}
+
+getfortrancompiler:
+	-@echo ${FC}
+
+getcxxcompiler:
+	-@echo ${CXX}
+
+getlinklibs:
+	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
+
+getincludedirs:
+	-@echo  ${PETSC_CC_INCLUDES}
+
+getcflags:
+	-@echo ${CC_FLAGS}
+
+getfortranflags:
+	-@echo ${FC_FLAGS}
+
+getblaslapacklibs:
+	-@echo ${BLASLAPACK_LIB}
+
+getautoconfargs:
+	-@echo CC='"${CC}"' CXX='"${CXX}"'  FC='"${FC}"' CFLAGS='"${CC_FLAGS}"' CXXFLAGS='"${CC_FLAGS}"' FCFLAGS='"${FC_FLAGS}"' LIBS='"${C_SH_LIB_PATH} ${PETSC_TS_LIB}"'
+
+
 
 # --------------------------------------------------------------------
 #
@@ -271,7 +347,7 @@ getmpiexec:
 	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
 
 .tex.mtex:
-	PYTHONPATH=${PETSC_DIR}/bin/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/bin/maint/mapnameslatex.py > $*.mtex
+	PYTHONPATH=${PETSC_DIR}/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/bin/maint/mapnameslatex.py > $*.mtex
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
@@ -307,100 +383,31 @@ getmpiexec:
 	  fi; \
 	fi
 
-.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
+.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o:
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
-	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
-	${PETSC_MAKE_STOP_ON_ERROR}@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
-          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null;\
-          if [ "$$?" = 0 ]; then \
-            haveadic=1; \
-          else \
-            haveadic=0;\
-          fi; \
-        else \
-          haveadic=1; \
-        fi; \
-	if [ "$${haveadic}" = "1" ]; then \
-	   egrep "Process adiC" $< > /dev/null ; \
-              if [ "$$?" = 0 ]; then \
-                if [ ! -f $<.tmp1 ]; then \
-                  c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
-                  r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
-                  echo Running adiC on function $${r};\
-                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
-                  ${CP} $<.tmp1 $<.tmp2;\
-	          echo '#include "petscda.h"' > $*.ad.c ; \
-	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
-                  echo '#include "petscdmmg.h"' >> $*.ad.c ;\
-	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                  if [ "foo${ADIC_CC}" != "foo" ]; then \
-                    echo ${ADIC_CC}  -i ${PETSC_DIR}/conf/adic.init $<.tmp1; \
-	            ${ADIC_CC} -F -z -t -i ${PETSC_DIR}/conf/adic.init  $<.tmp1 ; \
-	            ${ADIC_CC} -F -z -t -h -i ${PETSC_DIR}/conf/adicmf.init   $<.tmp2 ; \
-                  else \
-                    echo "You need to run the ADIC server on $<.tmp1 and $<.tmp2, then rerun make";\
-                    exit;\
-                  fi;\
-                fi;\
-	        cat $<.ad.tmp1  >> $*.ad.c ;\
-	        egrep "main\(" $< > /dev/null ; \
-                if [ "$$?" = 0 ]; then \
-		      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
-	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
-                fi;\
-                echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
-                echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfDERIV_TYPE;"  >> $*.ad.c ;\
-                sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
-	        egrep "Process blockadiC" $< > /dev/null ; \
-                if [ "$$?" = 0 ]; then \
-                  c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
-                  r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
-                  echo Running adiC on function $${r};\
-                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
-                  echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                  echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                  ${ADIC_CC} -t -h -i ${PETSC_DIR}/conf/adicmfb.init   $<.tmp1 ; \
-                  echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfbDERIV_TYPE;"  >> $*.ad.c ;\
-	          sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
-                fi;\
-	        echo "#include \"$<\"" >> $*.ad.c ;\
-                ${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ;\
-	        echo ${PCC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	        ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-		 \
-              else \
-	        echo ${PETSC_COMPILE_SINGLE} $<; \
-	        ${PETSC_COMPILE_SINGLE} $<; \
-              fi; \
-        elif  [ -f $*.ad.c ]; then \
-          echo ${PCC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	  ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-        else \
-	  echo ${PETSC_COMPILE_SINGLE} $<; \
-	  ${PETSC_COMPILE_SINGLE} $<; \
-        fi
+	${PETSC_COMPILE_SINGLE} $<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
 
 #
 #   Compiles CUDA code
 .cu.o:
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"  $<
+	${PETSC_CUCOMPILE_SINGLE} $<
 
-.cu.a: 
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
+.cu.a:
+	${PETSC_CUCOMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
- 
-.c.a .cpp.a .cc.a .C.a: 
+
+.c.a .cpp.a .cc.a .C.a:
 	-${PETSC_COMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
@@ -409,10 +416,10 @@ getmpiexec:
 #
 #  These rules are for compiling the test examples.
 #
-.cpp.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm:
+.cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
-.cu.PETSc .c.PETSc:
+.cu.PETSc .c.PETSc .cxx.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "WARNING: TOC" | \
@@ -446,8 +453,10 @@ getmpiexec:
           grep -v "may result in errors or" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
-          echo "--------------Error detected during compile or link!-----------------------";\
-          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/faq.html";\
+          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
+          echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+          echo ${PWD} $* ;\
+          printf "*********************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
@@ -474,6 +483,7 @@ getmpiexec:
           grep -v "warning, duplicate dylib" | \
           grep -v "warning: duplicate dylib" | \
           grep -v "consider using mkstemp"  |\
+          grep -v "Nonconforming tab character"  |\
 	  grep -v "Unused external reference" | \
           grep -v "WARNING 134: weak definition of" | \
           grep -v 'continuing despite warning messages' | \
@@ -483,11 +493,13 @@ getmpiexec:
 	  grep -v "Unused dummy argument" | \
 	  grep -v "is being replaced by a real definition" | \
           grep -v "IPO Error: unresolved" | \
-          grep -v "warning multiple definitions of symbol _matgetarray_" | \
+          grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
-          echo "--------------Error detected during compile or link!-----------------------";\
-          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/faq.html";\
+          printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
+          echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+          echo ${PWD} $* ;\
+          printf "*********************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
 	  cat trashz ; fi; ${RM} trashz;
 
 #--------------------------------------------------------------------------------------
@@ -517,7 +529,7 @@ deleteshared:
 noshared:
 # ---------------------------------------------------------------------------------------
 #   Rules for the automatic generation of documentation, tutorials etc
-# See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile 
+# See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile
 #
 # Builds manual pages in HTML in two stages
 #   1.) manualpages_buildcite: builds the file manualpages.cit for hyperlinks
@@ -538,7 +550,7 @@ manualpages_buildcite: chk_manualpage_dir
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
+		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH} ${SOURCECU};  fi
 #
 #
 manualpages:
@@ -548,8 +560,8 @@ manualpages:
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
-		${SOURCEC} ${SOURCEH}; \
-		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi 
+		${SOURCEC} ${SOURCEH} ${SOURCECU}; \
+		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.
@@ -602,7 +614,7 @@ exampleconcepts:
 	  done; \
         fi
 #
-#   Goes through all manual pages removing the Concepts: field and adding the 
+#   Goes through all manual pages removing the Concepts: field and adding the
 # concepts to the manconcepts file
 #
 manconcepts:
@@ -629,7 +641,7 @@ getexlist:
 	-@${PETSC_DIR}/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
 	-@${RM} -f logfile.txt
 #
-#   Rules for generating html code from C and Fortran 
+#   Rules for generating html code from C and Fortran
 #	
 checkmakefilelist:
 	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
@@ -660,7 +672,7 @@ html: chk_c2html
               -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
               sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
               ${PETSC_DIR}/bin/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -672,8 +684,9 @@ html: chk_c2html
             if [ "${EXAMPLESC}" != "" ] ; then \
                for file in ${EXAMPLESC} foo ; do \
 		if [ -f $$file ]; then \
-                   cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                   cmess=`grep "static\( const\)\? char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
                    echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+                   ${PYTHON} ${PETSC_DIR}/bin/maint/latexinexamples.py $${file}.html;\
 		fi; \
                done ;\
             else \
@@ -693,60 +706,13 @@ html: chk_c2html
             echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
 	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
-	-@${RM} /tmp/$$USER.htmlmap tmp
+	-@${RM} /tmp/$$USER.htmlmap
 
 cleanhtml:
 	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html *.c.gcov.html
 
 # -------------------------------------------------------------------------------
 #
-#   Rule for generating ADIC derivatives from PETSc .c and .hfiles
-#
-adic:
-	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
-          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-@chmod -f go+rw *.ad.*
-
-adic2:
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
-          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
-          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
-          fi; done ; \
-        fi; fi
-	-@chmod -f go+rw *.ad.*
-
-adiclib:
-	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
-        fi; fi
-	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
-        fi; fi
-	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
-	-@${RM} *.ad.o
-
-adiclib2:
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
-        fi; fi
-	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
-        fi; fi
-	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
-	-@${RM} *.ad.o
 # ----------------------------------------------------------------------------------------
 # Coverage tests: what lines of source code are tested during running of test examples
 #
@@ -757,7 +723,7 @@ cleangcov:
 #
 #----------------------------------------------------------------------------------
 # Rules for finding errors in the source and errors in the coding style
-countfunctions: 
+countfunctions:
 	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
 	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
 	@-if [ "${SOURCEC}" != "" ]; then \
@@ -863,7 +829,13 @@ pull:
 push:
 	-@cd ${PETSC_DIR}; hg push
 	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
-
+hgver:
+	-@cd ${PETSC_DIR};\
+	   hg parent --template 'PETSc parent       : {node|short}\n'; \
+	   hg tip    --template 'PETSc tip          : {node|short}\n'
+	-@cd ${PETSC_DIR}/config/BuildSystem;\
+	   hg parent --template 'BuildSystem parent : {node|short}\n' ;\
+	   hg tip    --template 'BuildSystem tip    : {node|short}\n'	
 #
 sourcelist:
 	-@for i in ${SOURCEC}; do \
@@ -873,46 +845,7 @@ sourcelist:
 # Actions to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 
-# configure generated targets:
-shared_irix6: shared_irix
-
-shared_osf5: shared_alpha
-
-shared_solaris2: shared_solaris
-shared_solaris2_gnu: shared_solaris_gnu
-
-shared_freebsd8: shared_freebsd
-shared_freebsd7: shared_freebsd
-shared_freebsd6: shared_freebsd
-shared_freebsd5: shared_freebsd
-shared_freebsd4: shared_freebsd
-shared_freebsd3: shared_freebsd
-
-shared_kfreebsd5: shared_kfreebsd
-shared_kfreebsd6: shared_kfreebsd
-
-shared_kfreebsd: shared_linux
-
-shared_aix3:
-shared_aix4:
-shared_aix5:
-shared_aix6:
-
-shared_darwin6: 
-
-shared_hpux11: shared_hpux
-
-# rules for building different shared libraries
-shared_none:
-
-shared_linux_ibm:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-        ${CLINKER} -qmkshrobj -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
-
-shared_linux_intel:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
-
+# Obsolete rules, to be deleted
 shared_irix:
 	-@${PCC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
@@ -925,10 +858,6 @@ shared_freebsd:
 shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
-
-shared_linux:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}
 
 shared_solaris_gnu:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
@@ -945,44 +874,30 @@ shared_libtool:
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
-shared_darwin8: shared_darwin7
-shared_darwin9: shared_darwin7
-shared_darwin10: shared_darwin7
+# Supported rules for building different shared libraries
+shared_none:
 
-shared_darwin7: 
+shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PACKAGES_LIBS} ${EXTERNAL_LIB}  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
-        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="${EXTERNAL_LIB}  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
+	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}; \
+
+shared_darwin:
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
+        if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${JOSTLE_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${DSCPACK_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccharacteristic" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libtaopetsc" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libtaofortran" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltaopetsc -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.5; export MACOSX_DEPLOYMENT_TARGET; fi;\
+        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=`sw_vers -productVersion | cut -d . -f1,2`; export MACOSX_DEPLOYMENT_TARGET; fi;\
         ${LD_SHARED} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup ${DARWIN_COMMONS_USE_DYLIBS} -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS; \
-	if [ -f /usr/bin/dsymutil ]; then /usr/bin/dsymutil ${INSTALL_LIB_DIR}/$$LIBNAME.dylib > /dev/null; fi
-
-shared_cygwin:
-	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-       if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) $(PETSC_SYS_LIB_BASIC)"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} -L$(PETSC_LIB_DIR) ${PETSC_VEC_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_MAT_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetsccharacteristic" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_DM_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_KSP_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_TS_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_TS_LIB_BASIC}"  ; fi;\
-       if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_KSP_LIB_BASIC}"  ; fi;\
-       ${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o $$OTHERLIBS ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}
+	${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}
 
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp-petsc-shlib' in the library directory
@@ -1001,7 +916,7 @@ shared: shared_nomesg
 	    echo "Shared libraries disabled"; \
           fi
 
-shared_nomesg: 
+shared_nomesg: chk_makej
 	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
             cwd=`pwd`; \
@@ -1030,6 +945,20 @@ shared_nomesg:
 	    done; \
 	    echo "========================================="; \
 	  fi
+
+#
+#  Remove trailing blanks from source code
+rmtrailingblanks:
+	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF}; do \
+	  sed -i '' s"/[ ]*$$//"g $$i; \
+	done
+
+#
+#  Remove trailing blanks from source code
+uncrustify:
+	@for i in ${SOURCEC} ${SOURCEH} ${EXAMPLESC}; do \
+	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
+	done
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
 

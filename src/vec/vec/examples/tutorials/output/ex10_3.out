@@ -1,0 +1,56 @@
+Vector Object:Test_Vec 5 MPI processes
+  type: mpi
+Process [0]
+0
+1
+2
+3
+Process [1]
+100
+101
+102
+103
+Process [2]
+200
+201
+202
+203
+Process [3]
+300
+301
+302
+303
+Process [4]
+400
+401
+402
+403
+writing vector in binary to vector.dat ...
+reading vector in binary from vector.dat ...
+Vector Object:Test_Vec 5 MPI processes
+  type: mpi
+Process [0]
+0
+1
+2
+3
+Process [1]
+100
+101
+102
+103
+Process [2]
+200
+201
+202
+203
+Process [3]
+300
+301
+302
+303
+Process [4]
+400
+401
+402
+403

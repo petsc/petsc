@@ -4,7 +4,7 @@
 !
       program main
 
-#include "finclude/petscsys.h"
+#include <finclude/petscsys.h>
 
       PetscErrorCode ierr
 
@@ -22,7 +22,7 @@
 ! -----------------------------------------------------------------
 !
 !  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
-!  matrix storage.  Here MatGetArray() is used for direct access to the
+!  matrix storage.  Here MatDenseGetArray() is used for direct access to the
 !  array that stores the dense matrix.  The user declares an array (aa(1))
 !  and index variable (ia), which are then used together to manipulate
 !  the array contents.
@@ -33,9 +33,9 @@
 !
       subroutine Demo1()
 
-#include "finclude/petscsys.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscviewer.h>
 
       Mat         A
       PetscInt   n,m
@@ -57,14 +57,15 @@
       call MatCreate(PETSC_COMM_SELF,A,ierr)
       call MatSetSizes(A,m,n,m,n,ierr)
       call MatSetType(A,MATSEQDENSE,ierr)
+      call MatSetUp(A,ierr)
 
 !  Access array storage
-      call MatGetArray(A,aa,ia,ierr)
+      call MatDenseGetArray(A,aa,ia,ierr)
 
 !  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
 
-      call MatRestoreArray(A,aa,ia,ierr)
+      call MatDenseRestoreArray(A,aa,ia,ierr)
 
 !  Finalize matrix assembly
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
@@ -74,8 +75,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------
@@ -85,9 +86,9 @@
 !
       subroutine Demo2()
 
-#include "finclude/petscsys.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscviewer.h>
 
       PetscInt   n,m
       PetscErrorCode ierr
@@ -109,8 +110,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------

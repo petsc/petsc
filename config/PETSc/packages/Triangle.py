@@ -10,13 +10,14 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libtriangle.a']]
     self.needsMath = 1
     self.complex   = 1
+    self.double    = 0
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.make            = framework.require('PETSc.utilities.Make', self)
-    self.x11             = framework.require('PETSc.packages.X11', self)
+    self.make            = framework.require('config.programs', self)
+    self.x               = framework.require('PETSc.packages.X', self)
     self.deps = []
     return
 
@@ -50,11 +51,12 @@ class Configure(PETSc.package.NewPackage):
     g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
     g.write('TRIANGLELIB      = $(LIBDIR)/libtriangle.$(AR_LIB_SUFFIX)\n')
     g.write('SHLIB            = libtriangle\n')
-    
+
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
     cflags += ' '+self.headers.toString('.')
-        
+    cflags += ' -fPIC'
+
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
     self.setCompilers.popLanguage()
@@ -64,11 +66,11 @@ class Configure(PETSc.package.NewPackage):
 
       g.write('BUILDSHAREDLIB = yes\n')
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'gnu\n')
+        g.write('shared_arch: shared_'+sys.platform+'gnu\n')
       else:
-        g.write('shared_arch: shared_'+self.petscarch.hostOsBase+'\n')
+        g.write('shared_arch: shared_'+sys.platform+'\n')
         g.write('''
-triangle_shared: 
+triangle_shared:
 	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
 	    echo "Shared libraries disabled"; \\
 	  else \

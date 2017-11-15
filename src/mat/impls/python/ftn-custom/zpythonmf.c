@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscmat.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matpythonsettype_            MATPYTHONSETTYPE
@@ -7,10 +7,7 @@
 #define matpythonsettype_            matpythonsettype
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  matpythonsettype_(Mat *mat, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len) )
+PETSC_EXTERN void PETSC_STDCALL matpythonsettype_(Mat *mat, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
@@ -18,5 +15,3 @@ void PETSC_STDCALL  matpythonsettype_(Mat *mat, CHAR name PETSC_MIXED_LEN(len),P
   FREECHAR(name,t);
 }
 
-
-EXTERN_C_END

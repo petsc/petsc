@@ -32,21 +32,14 @@ def downloadPackage(url, filename, targetDirname):
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
 
-if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 3:
-  print '*** You must have Python2 version 2.3 or higher to run ./configure        *****'
+if not hasattr(sys, 'version_info') or not sys.version_info[0] == 2 or not sys.version_info[1] >= 4:
+  print '*** You must have Python2 version 2.4 or higher to run ./configure        *****'
   print '*          Python is easy to install for end users or sys-admin.              *'
   print '*                  http://www.python.org/download/                            *'
   print '*                                                                             *'
   print '*           You CANNOT configure PETSc without Python                         *'
-  print '*   http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html     *'
+  print '*   http://www.mcs.anl.gov/petsc/documentation/installation.html     *'
   print '*******************************************************************************'
-  sys.exit(4)
-
-if sys.platform == 'win32':
-  print '**** Windows python detected. ****'
-  print sys.version,'on',sys.platform
-  print ''
-  print '** You must use cygwin python, but not windows python with PETSc configure. ***'
   sys.exit(4)
 
 def check_for_option_mistakes(opts):
@@ -63,6 +56,16 @@ def check_for_option_mistakes(opts):
       optval = opt.split('=')[1]
       if optval == 'ifneeded':
         raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+  return
+
+def check_for_option_changed(opts):
+# Document changes in command line options here.
+  optMap = [('c-blas-lapack','f2cblaslapack')]
+  for opt in opts[1:]:
+    optname = opt.split('=')[0].strip('-')
+    for oldname,newname in optMap:
+      if optname.find(oldname) >=0:
+        raise ValueError('The option '+opt+' should probably be '+opt.replace(oldname,newname))
   return
 
 def check_petsc_arch(opts):
@@ -89,6 +92,32 @@ def chkwinf90():
       return 1
   return 0
 
+def chkdosfiles():
+  if not os.path.exists('/usr/bin/cygcheck.exe'): return
+  if os.path.exists('.hg'):
+    (status,output) = commands.getstatusoutput('hg showconfig paths.default')
+    if not status and output: return
+  if os.path.exists('.git'):
+    (status,output) = commands.getstatusoutput('git rev-parse')
+    if not status: return
+  # cygwin - but not a hg clone - so check files in bin dir
+  (status,output) = commands.getstatusoutput('file bin/*')
+  if status:
+    print '==============================================================================='
+    print ' *** Incomplete cygwin install? command "file" not found!                    **'
+    print '==============================================================================='
+    return
+  if output.find('with CRLF line terminators') >= 0:
+    print '==============================================================================='
+    print ' *** Scripts are in DOS mode. Was winzip used instead of tar? Converting.......'
+    print '==============================================================================='
+    (status,output) = commands.getstatusoutput('dos2unix bin/*')
+    if status:
+      print '==============================================================================='
+      print ' *** Incomplete cygwin install? command "dos2unix" not found!                **'
+      print '==============================================================================='
+  return
+
 def chkcygwinlink():
   if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwinf90():
       if '--ignore-cygwin-link' in sys.argv: return 0
@@ -112,24 +141,13 @@ def chkbrokencygwin():
       sys.exit(3)
   return 0
 
-def chkusingwindowspython():
-  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform != 'cygwin':
-    print '==============================================================================='
-    print ' *** Non-cygwin python detected. Please rerun ./configure **'
-    print ' *** with cygwin-python. ***'
-    print '==============================================================================='
-    sys.exit(3)
-  return 0
-
-def chkcygwinpythonver():
-  if os.path.exists('/usr/bin/cygcheck.exe'):
-    buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
-    if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
+def chkcygwinpython():
+  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform == 'cygwin' :
+    sys.argv.append('--useThreads=0')
+    extraLogs.append('''\
 ===============================================================================
-** Cygwin-python-2.4/2.5/2.6 detected. Threads do not work correctly with this
-** version. Disabling thread usage for this run of ./configure *******
+** Cygwin-python detected. Threads do not work correctly. ***
+** Disabling thread usage for this run of ./configure *******
 ===============================================================================''')
   return 0
 
@@ -142,7 +160,7 @@ def chkrhl9():
     except:
       # can't read file - assume dangerous RHL9
       buf = 'Shrike'
-    if buf.find('Shrike') > -1: 
+    if buf.find('Shrike') > -1:
       sys.argv.append('--useThreads=0')
       extraLogs.append('''\
 ==============================================================================
@@ -192,15 +210,25 @@ def move_configure_log(framework):
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
   return
 
-def petsc_configure(configure_options): 
+def petsc_configure(configure_options):
+  try:
+    petscdir = os.environ['PETSC_DIR']
+    sys.path.append(os.path.join(petscdir,'bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)
+  except:
+    pass
   print '==============================================================================='
   print '             Configuring PETSc to compile on your system                       '
-  print '==============================================================================='  
+  print '==============================================================================='
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
     sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
     check_for_option_mistakes(sys.argv)
+    check_for_option_changed(sys.argv)
   except (TypeError, ValueError), e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
@@ -241,24 +269,16 @@ def petsc_configure(configure_options):
   chkbrokencygwin()
   # Disable threads on RHL9
   chkrhl9()
-  # Make sure cygwin-python is used on windows
-  chkusingwindowspython()
-  # Threads don't work for cygwin & python-2.4, 2.5 etc..
-  chkcygwinpythonver()
+  # Threads don't work for cygwin & python...
+  chkcygwinpython()
   chkcygwinlink()
+  chkdosfiles()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
   bsDir     = os.path.join(configDir, 'BuildSystem')
   if not os.path.isdir(configDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
-  if not os.path.isdir(bsDir):
-    print '==============================================================================='
-    print '''++ Could not locate BuildSystem in %s.''' % configDir
-    print '''++ Downloading it from http://petsc.cs.iit.edu/petsc/BuildSystem'''
-    print '==============================================================================='
-    downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
-      
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
   import config.base
@@ -273,10 +293,6 @@ def petsc_configure(configure_options):
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
-    import PETSc.packages
-    for i in framework.packages:
-      if hasattr(i,'postProcess'):
-        i.postProcess()
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()
@@ -336,11 +352,18 @@ def petsc_configure(configure_options):
   if not framework is None:
     framework.logClear()
     if hasattr(framework, 'log'):
+      try:
+        framework.log.write('**** Configure header '+framework.compilerDefines+' ****\n')
+        framework.outputHeader(framework.log)
+        framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
+        framework.outputCHeader(framework.log)
+      except Exception, e:
+        framework.log.write('Problem writing headers to log: '+str(e))
       import traceback
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
-        framework.log.close()
+        if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except:
         pass
@@ -349,6 +372,7 @@ def petsc_configure(configure_options):
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
+  if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':
   petsc_configure([])

@@ -6,10 +6,8 @@ FFLAGS   =
 SOURCEC  = mpiadj.c
 SOURCEF  =
 SOURCEH  = mpiadj.h
-OBJSC    = mpiadj.o
-OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/adj/mpi/
 

@@ -29,12 +29,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -54,21 +54,22 @@
       KSP      ksp
       Vec      x,r
       Mat      J
+      SNESLineSearch linesearch
       PetscErrorCode  ierr
       PetscInt its,i2,i20
       PetscMPIInt size,rank
       PetscScalar   pfive
       double precision   tol
-      PetscTruth  setls
+      PetscBool   setls
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
       external FormFunction, FormJacobian, MyLineSearch
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Macros to make clearer the process of setting values in vectors and
 !  getting values from vectors.  These vectors are used in the routines
@@ -80,7 +81,7 @@
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -94,9 +95,9 @@
 
       i2  = 2
       i20 = 20
-! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
-! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
 
@@ -114,6 +115,7 @@
       call MatCreate(PETSC_COMM_SELF,J,ierr)
       call MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,i2,i2,ierr)
       call MatSetFromOptions(J,ierr)
+      call MatSetUp(J,ierr)
 
 !  Set function evaluation routine and vector
 
@@ -151,8 +153,10 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls) then
-        call SNESLineSearchSet(snes,MyLineSearch,                       &
-     &                         PETSC_NULL_OBJECT,ierr)
+        call SNESGetLineSearch(snes, linesearch, ierr)
+        call SNESLineSearchSetType(linesearch, "shell", ierr)
+        call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
+     &PETSC_NULL_OBJECT, ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -171,7 +175,7 @@
       if (rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i5)
+  100 format('Number of SNES iterations = ',i5)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -200,9 +204,9 @@
       subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -212,7 +216,7 @@
 !  Declarations for use with local arrays
 
       PetscScalar  lx_v(1),lf_v(1)
-      PetscOffset  lx_i,lf_i 
+      PetscOffset  lx_i,lf_i
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -257,11 +261,11 @@
       subroutine FormJacobian(snes,X,jac,B,flag,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
@@ -310,29 +314,34 @@
       end
 
 
-      subroutine MyLineSearch(snes,lctx,x,f,g,y,w,fnorm,ynorm,gnorm,     &
-     &                        flag,ierr)
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+      subroutine MyLineSearch(linesearch, lctx, ierr)
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
       SNES              snes
       integer           lctx
       Vec               x, f,g, y, w
-      double  precision fnorm,ynorm,gnorm
-      PetscTruth           flag
-      PetscErrorCode ierr
+      PetscReal         ynorm,gnorm,xnorm
+      PetscBool         flag
+      PetscErrorCode    ierr
 
       PetscScalar       mone
 
       mone = -1.0d0
-      flag = .false.
+      call SNESLineSearchGetSNES(linesearch, snes, ierr)
+      call SNESLineSearchGetVecs(linesearch, x, f, y, w, g, ierr)
       call VecNorm(y,NORM_2,ynorm,ierr)
-      call VecAYPX(y,mone,x,ierr)
-      call SNESComputeFunction(snes,y,g,ierr)
-      call VecNorm(g,NORM_2,gnorm,ierr)
-      return 
+      call VecAXPY(x,mone,y,ierr)
+      call SNESComputeFunction(snes,x,f,ierr)
+      call VecNorm(f,NORM_2,gnorm,ierr)
+      call VecNorm(x,NORM_2,xnorm,ierr)
+      call VecNorm(y,NORM_2,ynorm,ierr)
+      call SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,      &
+     & ierr)
+      flag = PETSC_FALSE
+      return
       end

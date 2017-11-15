@@ -1,17 +1,16 @@
-#define PETSCMAT_DLL
 
 /*
    This provides a matrix that applies a VecScatter to a vector.
 */
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
-#include "private/vecimpl.h"  
+#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
+#include <petsc-private/vecimpl.h>
 
 typedef struct {
   VecScatter scatter;
-} Mat_Scatter;      
+} Mat_Scatter;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScatterGetVecScatter"
 /*@
     MatScatterGetVecScatter - Returns the user-provided scatter set with MatScatterSetVecScatter()
@@ -30,19 +29,19 @@ typedef struct {
 
 .seealso: MatCreateScatter(), MatScatterSetVecScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
+PetscErrorCode  MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
 {
-  Mat_Scatter    *mscatter;
+  Mat_Scatter *mscatter;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(scatter,2); 
+  PetscValidPointer(scatter,2);
   mscatter = (Mat_Scatter*)mat->data;
   *scatter = mscatter->scatter;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Scatter"
 PetscErrorCode MatDestroy_Scatter(Mat mat)
 {
@@ -50,65 +49,65 @@ PetscErrorCode MatDestroy_Scatter(Mat mat)
   Mat_Scatter    *scatter = (Mat_Scatter*)mat->data;
 
   PetscFunctionBegin;
-  if (scatter->scatter) {ierr = VecScatterDestroy(scatter->scatter);CHKERRQ(ierr);}
-  ierr = PetscFree(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter->scatter);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Scatter"
 PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
 {
-  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;  
+  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_Scatter"
 PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
-  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;  
+  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
   ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Scatter"
 PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
 {
-  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;  
+  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   ierr = VecZeroEntries(y);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_Scatter"
 PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
-  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;  
+  Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!scatter->scatter) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  if (!scatter->scatter) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
   ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -116,103 +115,147 @@ PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 }
 
 static struct _MatOps MatOps_Values = {0,
-       0,
-       0,
-       MatMult_Scatter,
-/* 4*/ MatMultAdd_Scatter,
-       MatMultTranspose_Scatter,
-       MatMultTransposeAdd_Scatter,
-       0,
-       0,
-       0,
-/*10*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*15*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*20*/ 0,
-       0,
-       0,
-       0,
-/*24*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*29*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*34*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*39*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*44*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*49*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*54*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*59*/ 0,
-       MatDestroy_Scatter,
-       0,
-       0,
-       0,
-/*64*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*69*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*74*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*79*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*84*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*89*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*94*/ 0,
-       0,
-       0,
-       0};
+                                       0,
+                                       0,
+                                       MatMult_Scatter,
+                               /*  4*/ MatMultAdd_Scatter,
+                                       MatMultTranspose_Scatter,
+                                       MatMultTransposeAdd_Scatter,
+                                       0,
+                                       0,
+                                       0,
+                               /* 10*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 15*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 20*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 24*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 39*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 44*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 49*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 54*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 59*/ 0,
+                                       MatDestroy_Scatter,
+                                       0,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
+};
 
 /*MC
    MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a VecScatterBegin/End()
@@ -223,10 +266,9 @@ static struct _MatOps MatOps_Values = {0,
 
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_Scatter"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
   PetscErrorCode ierr;
@@ -237,20 +279,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
 
   A->data = (void*)b;
 
-  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_FALSE;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSCATTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateScatter"
 /*@C
    MatCreateScatter - Creates a new matrix based on a VecScatter
@@ -274,13 +313,12 @@ EXTERN_C_END
    corresponding result vector, y. Note that this is information is
    required for use of the matrix interface routines, even though
    the scatter matrix may not actually be physically partitioned.
-   For example,
 
 .keywords: matrix, scatter, create
 
 .seealso: MatScatterSetVecScatter(), MatScatterGetVecScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
+PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 {
   PetscErrorCode ierr;
 
@@ -289,10 +327,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm comm,VecScatter scat
   ierr = MatSetSizes(*A,scatter->to_n,scatter->from_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSCATTER);CHKERRQ(ierr);
   ierr = MatScatterSetVecScatter(*A,scatter);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScatterSetVecScatter"
 /*@
     MatScatterSetVecScatter - sets that scatter that the matrix is to apply as its linear operator
@@ -308,7 +347,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm comm,VecScatter scat
 
 .seealso: MatCreateScatter(), MATSCATTER
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter scatter)
+PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
 {
   Mat_Scatter    *mscatter = (Mat_Scatter*)mat->data;
   PetscErrorCode ierr;
@@ -321,7 +360,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);
 
   ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
-  if (mscatter->scatter) {ierr = VecScatterDestroy(mscatter->scatter);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&mscatter->scatter);CHKERRQ(ierr);
+
   mscatter->scatter = scatter;
   PetscFunctionReturn(0);
 }

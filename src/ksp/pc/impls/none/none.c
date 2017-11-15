@@ -1,11 +1,10 @@
-#define PETSCKSP_DLL
 
 /*
     Identity preconditioner, simply copies vector x to y.
 */
-#include "private/pcimpl.h"          /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>          /*I "petscpc.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_None"
 PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 {
@@ -18,7 +17,7 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 
 /*MC
      PCNONE - This is used when you wish to employ a nonpreconditioned
-             Krylov method. 
+             Krylov method.
 
    Level: beginner
 
@@ -29,10 +28,9 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_None"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;
@@ -43,7 +41,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_None(PC pc)
   pc->ops->applysymmetricleft  = PCApply_None;
   pc->ops->applysymmetricright = PCApply_None;
 
-  pc->data                     = 0;
+  pc->data = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

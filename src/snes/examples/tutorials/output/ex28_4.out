@@ -1,0 +1,93 @@
+  0 SNES Function norm 257 
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    0 KSP Residual norm 13.4762 
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    1 KSP Residual norm 2.16509 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 0.0357158 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 0.00142297 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 5.40427e-05 
+  1 SNES Function norm 0.040789 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 4.73377 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 2.21589 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    2 KSP Residual norm 1.34369 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    3 KSP Residual norm 0.790019 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    4 KSP Residual norm 0.344869 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    5 KSP Residual norm 0.124943 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    6 KSP Residual norm 0.0436094 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    7 KSP Residual norm 0.0153246 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    8 KSP Residual norm 0.00545328 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    9 KSP Residual norm 0.00197157 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   10 KSP Residual norm 0.000730319 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   11 KSP Residual norm 0.000281901 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   12 KSP Residual norm 0.000115566 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   13 KSP Residual norm 5.03854e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   14 KSP Residual norm 2.25107e-05 
+  2 SNES Function norm 0.0315934 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 0.521201 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 0.118587 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    2 KSP Residual norm 0.0157103 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    3 KSP Residual norm 0.00163487 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    4 KSP Residual norm 0.000225797 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    5 KSP Residual norm 5.43282e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    6 KSP Residual norm 6.56889e-06 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    7 KSP Residual norm 8.85074e-07 
+  3 SNES Function norm 0.00489896 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 0.0814429 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 0.0164312 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    2 KSP Residual norm 0.00206605 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    3 KSP Residual norm 0.000283267 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    4 KSP Residual norm 4.09094e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    5 KSP Residual norm 6.05484e-06 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    6 KSP Residual norm 8.81873e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    7 KSP Residual norm 1.2484e-07 
+  4 SNES Function norm 0.000141255 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    0 KSP Residual norm 0.0022495 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    1 KSP Residual norm 0.00021211 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    2 KSP Residual norm 4.07569e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    3 KSP Residual norm 5.08949e-06 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    4 KSP Residual norm 6.75137e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    5 KSP Residual norm 1.0296e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 5
+    6 KSP Residual norm 1.50336e-08 
+  5 SNES Function norm 2.05391e-07 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5

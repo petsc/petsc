@@ -4,20 +4,23 @@
 
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage[all]{hypcap}
 \usepackage{color}
-\input pdfcolor.tex     
+\input pdfcolor.tex
 
 \usepackage[pdftex]{graphicx}
 
 
 \usepackage{times}
+\usepackage{listings}
+\usepackage{tikz}
 %\usepackage{psfig}
 \usepackage{../sty/verbatim}
 \usepackage{../sty/tpage}
 \usepackage{../sty/here}
 \usepackage{../sty/anlhelper}
 \usepackage[hyphens,spaces,obeyspaces]{../sty/trl}
- 
+
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.0in}
 \setlength{\evensidemargin}{0.0in}
@@ -26,13 +29,16 @@
 
 \newcommand{\findex}[1]{\index{#1}}
 \newcommand{\sindex}[1]{\index{#1}}
+\newcommand{\A}{\mbox{\boldmath \(A\)}}
 \newcommand{\F}{\mbox{\boldmath \(F\)}}
+\newcommand{\J}{\mbox{\boldmath \(J\)}}
 \newcommand{\x}{\mbox{\boldmath \(x\)}}
+\newcommand{\bb}{\mbox{\boldmath \(b\)}}
 \newcommand{\rr}{\mbox{\boldmath \(r\)}}
 hyperbaseurl
 
 \makeindex
- 
+
 % Defines the environment where design issues are discussed. In the manual
 % version of this report, these regions are ignored.
 \def\design{\medskip \noindent Design Issue:\begin{em}}
@@ -50,7 +56,12 @@ hyperbaseurl
 % used in part1.tex.
 \def\shortintro{false}
 
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\rhead{PETSc 3.4 \today}
+
 \begin{document}
+
 %\pagestyle{empty}
 %\begin{figure*}[hbt]
 %\centerline{\includegraphics{titlepage1}}
@@ -68,16 +79,16 @@ hyperbaseurl
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
-\noindent {\huge{\it Revision 3.1}}
+\noindent {\huge{\it Revision 3.4}}
 
 \vspace*{1in}
 \noindent by \\
-S. Balay, K. Buschelman, V. Eijkhout, W. Gropp, D. Kaushik, \\
+S. Balay, J. Brown, K. Buschelman, V. Eijkhout, W. Gropp, D. Kaushik, \\
 M. Knepley, L. Curfman McInnes, B. Smith, and H. Zhang \\
 Mathematics and Computer Science Division, Argonne National Laboratory
 
 \vspace*{10pt}
-\noindent March 2010
+\noindent May 2013
 
 \vspace*{20pt}
 \noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
@@ -87,11 +98,12 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 
 \begin{figure*}[hbt]
 \centerline{\includegraphics{titlepage2}}
+\caption{}
 \end{figure*}
 
 
 \cleardoublepage
-\pagestyle{plain}
+%\pagestyle{plain}
 
 \vspace{1in}
 \date{\today}
@@ -149,6 +161,7 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 \pagestyle{empty}
 \begin{figure*}[hbt]
 \centerline{\includegraphics{endpage}}
+\caption{}
 \end{figure*}
 
 \end{document}

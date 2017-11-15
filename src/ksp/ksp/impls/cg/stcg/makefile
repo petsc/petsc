@@ -1,13 +1,11 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = stcg.c
 SOURCEF  =
 SOURCEH  = stcgimpl.h
-OBJSC    = stcg.o
-OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/stcg/

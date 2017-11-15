@@ -1,14 +1,12 @@
 
-#requirespackage 'PETSC_USING_F90'
+#requiresdefine 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zitfuncf90.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/interface/f90-custom/
 

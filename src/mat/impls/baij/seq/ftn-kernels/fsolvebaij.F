@@ -4,19 +4,24 @@
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
 ! with MatSolve_SeqBAIJ_4_NaturalOrdering()
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
 
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar   a(0:*)
-      PetscScalar x(0:*),b(0:*)
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscScalar x(0:*)
+      PetscScalar b(0:*)
+      PetscInt    n
+      PetscInt    ai(0:*)
+      PetscInt    aj(0:*)
+      PetscInt    adiag(0:*)
 
-      PetscInt    i,j,jstart,jend,idx,ax,jdx
+      PetscInt    i,j,jstart,jend
+      PetscInt    idx,ax,jdx
       PetscScalar s1,s2,s3,s4
       PetscScalar x1,x2,x3,x4
-!    
+!
 !     Forward Solve
 !
       PETSC_AssertAlignx(16,a(1))
@@ -25,7 +30,7 @@
       PETSC_AssertAlignx(16,ai(1))
       PETSC_AssertAlignx(16,aj(1))
       PETSC_AssertAlignx(16,adiag(1))
-         
+
          x(0) = b(0)
          x(1) = b(1)
          x(2) = b(2)
@@ -42,7 +47,7 @@
             s4     = b(idx+3)
             do 30 j=jstart,jend
               jdx   = 4*aj(j)
-            
+
               x1    = x(jdx)
               x2    = x(jdx+1)
               x3    = x(jdx+2)
@@ -59,7 +64,7 @@
             x(idx+3) = s4
  20      continue
 
-      
+
 !
 !     Backward solve the upper triangular
 !
@@ -92,7 +97,7 @@
  40      continue
       return
       end
-      
+
 !
 !   version that calls BLAS 2 operation for each row block
 !
@@ -105,7 +110,7 @@
       PetscInt i,j,jstart,jend,idx,ax,jdx,kdx
       MatScalar s(0:3)
       integer   align7
-!     
+!
 !     Forward Solve
 !
 
@@ -134,9 +139,9 @@
            write(6,*) 'Overflowing vector FortranSolveBAIJ4BLAS()'
          endif
          do 30 j=jstart,jend
-           
+
            jdx       = 4*aj(j)
-            
+
            w(kdx)    = x(jdx)
            w(kdx+1)  = x(jdx+1)
            w(kdx+2)  = x(jdx+2)
@@ -161,7 +166,7 @@
          x(idx+2) = s(2)
          x(idx+3) = s(3)
  20   continue
-      
+
 !
 !     Backward solve the upper triangular
 !
@@ -201,7 +206,7 @@
 
       return
       end
-      
+
 
 !
 !   version that does not call BLAS 2 operation for each row block
@@ -216,7 +221,7 @@
       PetscInt  jstart,jend,idx,ax,jdx,kdx,nn
       PetscScalar s(0:3)
 
-!     
+!
 !     Forward Solve
 !
 
@@ -244,9 +249,9 @@
            write(6,*) 'Overflowing vector FortranSolveBAIJ4()'
          endif
          do 30 j=jstart,jend
-           
+
            jdx       = 4*aj(j)
-            
+
            w(kdx)    = x(jdx)
            w(kdx+1)  = x(jdx+1)
            w(kdx+2)  = x(jdx+2)
@@ -275,7 +280,7 @@
          x(idx+2) = s(2)
          x(idx+3) = s(3)
  20   continue
-      
+
 !
 !     Backward solve the upper triangular
 !
@@ -319,4 +324,4 @@
 
       return
       end
-      
+

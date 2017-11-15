@@ -1,9 +1,9 @@
 
 static char help[] = "Newton's method to solve a many-variable system that comes from the 2 variable Rosenbrock function + trivial.\n\n";
 
-/* 
+/*
 
-./ex43 -snes_monitor_range -snes_max_it 1000 -snes_rtol 1.e-14 -n 10 -snes_converged_reason -sub_snes_monito -sub_snes_mf -sub_snes_converged_reason -sub_snes_rtol 1.e-10 -sub_snes_max_it 1000 -sub_snes_monitor 
+./ex43 -snes_monitor_range -snes_max_it 1000 -snes_rtol 1.e-14 -n 10 -snes_converged_reason -sub_snes_monito -sub_snes_mf -sub_snes_converged_reason -sub_snes_rtol 1.e-10 -sub_snes_max_it 1000 -sub_snes_monitor
 
   Accelerates Newton's method by solving a small problem defined by those elements with large residual plus one level of overlap
 
@@ -19,7 +19,7 @@ extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 
 typedef struct {
-  PetscInt   n,p;
+  PetscInt n,p;
 } Ctx;
 
 #undef __FUNCT__
@@ -31,18 +31,18 @@ int main(int argc,char **argv)
   Mat                 J;            /* Jacobian matrix */
   PetscErrorCode      ierr;
   PetscScalar         *xx;
-  PetscInt            i,max_snes_solves = 20,snes_steps_per_solve = 2 ,criteria_reduce = 1;
+  PetscInt            i,max_snes_solves = 20,snes_steps_per_solve = 2,criteria_reduce = 1;
   Ctx                 ctx;
   SNESConvergedReason reason;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.n = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&ctx.n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-n",&ctx.n,NULL);CHKERRQ(ierr);
   ctx.p = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&ctx.p,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-max_snes_solves",&max_snes_solves,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-snes_steps_per_solve",&snes_steps_per_solve,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-criteria_reduce",&criteria_reduce,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-p",&ctx.p,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-max_snes_solves",&max_snes_solves,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-snes_steps_per_solve",&snes_steps_per_solve,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-criteria_reduce",&criteria_reduce,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -66,13 +66,14 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2+ctx.p+ctx.n,2+ctx.p+ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.
   */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void*)&ctx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void*)&ctx);CHKERRQ(ierr);
@@ -85,12 +86,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  xx[0] = -1.2; 
-  for (i=1; i<ctx.p+2; i++) {
-    xx[i] = 1.0;
-  }
+  ierr  = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
+  xx[0] = -1.2;
+  for (i=1; i<ctx.p+2; i++) xx[i] = 1.0;
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   /*
@@ -102,13 +101,13 @@ int main(int argc,char **argv)
 
   ierr = SNESMonitorSet(snes,MonitorRange,0,0);CHKERRQ(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,snes_steps_per_solve,PETSC_DEFAULT);CHKERRQ(ierr);
-  for (i=0; i<max_snes_solves; i++) { 
-    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  for (i=0; i<max_snes_solves; i++) {
+    ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason && reason != SNES_DIVERGED_MAX_IT) break;
     if (CountGood > criteria_reduce) {
-      ierr = SolveSubproblem(snes);CHKERRQ(ierr);
-       CountGood = 0;
+      ierr      = SolveSubproblem(snes);CHKERRQ(ierr);
+      CountGood = 0;
     }
   }
 
@@ -117,15 +116,15 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -165,7 +164,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ictx)
 
   /* Restore vectors */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -203,16 +202,16 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
         the matrix at once.
   */
   ierr = MatSetValue(*B,0,0, 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1],ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue(*B,0,1,-400.0*xx[0] ,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,0,1,-400.0*xx[0],ADD_VALUES);CHKERRQ(ierr);
 
   for (i=1; i<ctx->p+1; i++) {
-    ierr = MatSetValue(*B,i,i-1, -400.0*xx[i-1] ,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i-1, -400.0*xx[i-1],ADD_VALUES);CHKERRQ(ierr);
     ierr = MatSetValue(*B,i,i, 2.0 + 1200.0*xx[i]*xx[i] - 400.0*xx[i+1] + 200.0,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,i+1,-400.0*xx[i] ,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i+1,-400.0*xx[i],ADD_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400.0*xx[ctx->p] ,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue(*B,ctx->p+1,ctx->p+1,200 ,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400.0*xx[ctx->p],ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,ctx->p+1,ctx->p+1,200,ADD_VALUES);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
 
@@ -227,12 +226,12 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*jac != *B){
+  if (*jac != *B) {
     ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }

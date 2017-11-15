@@ -5,15 +5,11 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = convert.c matstash.c axpy.c zerodiag.c \
            getcolv.c gcreate.c freespace.c compressedrow.c multequal.c \
-           ptap.c matstashspace.c
+           matstashspace.c pheap.c
 SOURCEF  =
-SOURCEH  = freespace.h
-OBJSC    = convert.o matstash.o axpy.o zerodiag.o \
-           getcolv.o gcreate.o freespace.o compressedrow.o multequal.o \
-           ptap.o matstashspace.o
-OBJSF    =
+SOURCEH  = freespace.h petscheap.h
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/utils/
 

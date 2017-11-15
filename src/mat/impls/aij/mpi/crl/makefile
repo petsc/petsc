@@ -1,14 +1,12 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = mcrl.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = mcrl.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/mpi/crl/
 

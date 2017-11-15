@@ -7,13 +7,14 @@ class Configure(PETSc.package.NewPackage):
     self.functions         = []
     self.includes          = []
     self.liblist           = []
+    self.complex           = 1
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.numpy           = framework.require('PETSc.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)    
+    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.petscconfigure  = framework.require('PETSc.Configure',self)
     return
 
@@ -37,7 +38,7 @@ class Configure(PETSc.package.NewPackage):
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    
+
     return self.installDir
 
   def configureLibrary(self):
@@ -46,5 +47,5 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('mpi4py','')   
+    self.addMakeRule('mpi4py','')
     self.addMakeRule('mpi4py_noinstall','')

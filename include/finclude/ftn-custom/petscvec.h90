@@ -1,9 +1,9 @@
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #include "finclude/ftn-custom/petscvecdef.h90"
 #endif
 #include "finclude/ftn-custom/petscvechide.h90"
 
-      Interface 
+      Interface
         Subroutine VecGetArrayF90(v,array,ierr)
           USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
@@ -12,7 +12,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine VecRestoreArrayF90(v,array,ierr)
           USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
@@ -21,9 +21,39 @@
         End Subroutine
       End Interface
 
+      Interface
+        Subroutine VecGetArrayReadF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecRestoreArrayReadF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine VecSetValuesSection(v,section,point,values,mode,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+          PETSCSECTION_HIDE section
+          PetscInt point
+          InsertMode mode
+        End Subroutine
+      End Interface
+
 ! -------------------------------------------------------------
 
-      Interface 
+      Interface
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
           USE_VEC_HIDE
           VEC_HIDE, pointer :: vs(:)
@@ -34,11 +64,11 @@
       End Interface
 !
 !  Question: should VecDestroyVecsF90() take the m argument since
-! the array of vectors already knows how long it is? Yes, to 
+! the array of vectors already knows how long it is? Yes, to
 ! match calling sequence for C/C++.
 !
-      Interface 
-        Subroutine VecDestroyVecsF90(vs,m,ierr)
+      Interface
+        Subroutine VecDestroyVecsF90(m,vs,ierr)
           USE_VEC_HIDE
           VEC_HIDE, pointer :: vs(:)
           PetscInt m

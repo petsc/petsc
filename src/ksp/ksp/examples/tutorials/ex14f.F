@@ -10,7 +10,7 @@
 !  possible, as it offers many advantages over coding nonlinear solvers independently.
 !
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
-!  domain, using distributed arrays (DAs) to partition the parallel grid.
+!  domain, using distributed arrays (DMDAs) to partition the parallel grid.
 !
 !  The command line options include:
 !  -par <parameter>, where <parameter> indicates the problem's nonlinearity
@@ -23,27 +23,27 @@
 !
 !/*T
 !   Concepts: KSP^writing a user-defined nonlinear solver
-!   Concepts: DA^using distributed arrays
+!   Concepts: DMDA^using distributed arrays
 !   Processors: n
 !T*/
 !  ------------------------------------------------------------------------
 !
 !    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !    the partial differential equation
-!  
+!
 !            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-!  
+!
 !    with boundary conditions
-!   
+!
 !             u = 0  for  x = 0, x = 1, y = 0, y = 1.
-!  
+!
 !    A finite difference approximation with the usual 5-point stencil
-!    is used to discretize the boundary value problem to obtain a nonlinear 
+!    is used to discretize the boundary value problem to obtain a nonlinear
 !    system of equations.
 !
 !    The SNES version of this problem is:  snes/examples/tutorials/ex5f.F
 !
-!  ------------------------------------------------------------------------- 
+!  -------------------------------------------------------------------------
 
       program main
       implicit none
@@ -57,22 +57,22 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscdmda.h>
 
       MPI_Comm comm
       Vec      X,Y,F,localX,localF
       Mat      J,B
-      DA       da
+      DM       da
       KSP      ksp
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
-      PetscTruth flg,nooutput,usemf
+      PetscBool  flg,nooutput,usemf
       common   /mycommon/ mx,my,B,localX,localF,da
 !
 !
@@ -80,7 +80,7 @@
 !
       external mymult
 
-!     --------------- Data to define nonlinear solver -------------- 
+!     --------------- Data to define nonlinear solver --------------
       double precision   rtol,ttol
       double precision   fnorm,ynorm,xnorm
       PetscInt            max_nonlin_its,one
@@ -114,31 +114,31 @@
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPCreate(comm,ksp,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create vector data structures
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  
-!  Create distributed array (DA) to manage parallel grid and vectors
-!  
+!
+!  Create distributed array (DMDA) to manage parallel grid and vectors
+!
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
-     &     my,Nx,Ny,one,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
-     &     da,ierr)
+      call DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,      &
+     &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
-!  
-!  Extract global and local vectors from DA then duplicate for remaining
+!
+!  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types
-!  
-       call DACreateGlobalVector(da,X,ierr)
-       call DACreateLocalVector(da,localX,ierr)
+!
+       call DMCreateGlobalVector(da,X,ierr)
+       call DMCreateLocalVector(da,localX,ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
        call VecDuplicate(localX,localF,ierr)
@@ -146,27 +146,27 @@
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create matrix data structure for Jacobian
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!  
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
 !     Note:  For the parallel case, vectors and matrices MUST be partitioned
-!     accordingly.  When using distributed arrays (DAs) to create vectors,
-!     the DAs determine the problem partitioning.  We must explicitly
+!     accordingly.  When using distributed arrays (DMDAs) to create vectors,
+!     the DMDAs determine the problem partitioning.  We must explicitly
 !     specify the local matrix dimensions upon its creation for compatibility
 !     with the vector distribution.
 !
 !     Note: Here we only approximately preallocate storage space for the
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
-!  
+!
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateMPIAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
+      call MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
      &     PETSC_NULL_INTEGER,B,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     if usemf is on then matrix vector product is done via matrix free
-!     approach. Note this is just an example, and not realistic because 
+!     approach. Note this is just an example, and not realistic because
 !     we still use the actual formed matrix, but in reality one would
-!     provide their own subroutine that would directly do the matrix 
+!     provide their own subroutine that would directly do the matrix
 !     vector product and not call MatMult()
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
@@ -175,23 +175,23 @@
       if (usemf) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
-      else 
-!        If not doing matrix free then matrix operator, J,  and matrix used 
+      else
+!        If not doing matrix free then matrix operator, J,  and matrix used
 !        to construct preconditioner, B, are the same
         J = B
       endif
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Customize linear solver set runtime options
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!  
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
 !     Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
-!  
+!
        call KSPSetFromOptions(ksp,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Evaluate initial guess
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
        call FormInitialGuess(X,ierr)
        call ComputeFunction(X,F,ierr)
@@ -203,7 +203,7 @@
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Solve nonlinear system with a user-defined method
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  This solver is a very simplistic inexact Newton method, with no
 !  no damping strategies or bells and whistles. The intent of this code
@@ -263,12 +263,12 @@
  20   continue
 
       write(6,100) i+1
- 100  format('Number of Newton iterations =',I2)
+ 100  format('Number of SNES iterations =',I2)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Free work space.  All PETSc objects should be destroyed when they
 !     are no longer needed.
-!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
        call MatDestroy(B,ierr)
        if (usemf) then
@@ -280,12 +280,12 @@
        call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
        call KSPDestroy(ksp,ierr)
-       call DADestroy(da,ierr)
+       call DMDestroy(da,ierr)
        call PetscFinalize(ierr)
        end
 
-! ------------------------------------------------------------------- 
-! 
+! -------------------------------------------------------------------
+!
 !   FormInitialGuess - Forms initial approximation.
 !
 !   Input Parameters:
@@ -293,7 +293,7 @@
 !
 !   Output Parameter:
 !   X - vector
-! 
+!
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
@@ -302,13 +302,13 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
       Vec       X,localX,localF
@@ -317,10 +317,10 @@
       PetscInt  ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
- 
+
       one    = 1.d0
       lambda = 6.d0
       hx     = one/(mx-1)
@@ -328,20 +328,20 @@
       temp1  = lambda/(lambda + one)
 
 !  Get a pointer to vector data.
-!    - VecGetArray() returns a pointer to the data array.  
+!    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
        call VecGetArray(localX,xx,idx,ierr)
 
-!  Get local grid boundaries (for 2-dimensional DA):
+!  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
 !    gxs, gys - starting grid indices (including ghost points)
 !    gxm, gym - widths of local grid (including ghost points)
 
-       call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
+       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
      &      PETSC_NULL_INTEGER,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
+       call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &      PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -352,7 +352,7 @@
           row = i - gxs + (j - gys)*gxm + 1
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
      &        j .eq. my-1) then
-            xx(idx+row) = 0.d0 
+            xx(idx+row) = 0.d0
             continue
           endif
           xx(idx+row) = temp1*sqrt(min((min(i,mx-i-1))*hx,temp))
@@ -365,12 +365,13 @@
 
 !     Insert values into global vector
 
-       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
-       return 
+       call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
+       call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
+       return
        end
 
-! ------------------------------------------------------------------- 
-! 
+! -------------------------------------------------------------------
+!
 !   ComputeFunction - Evaluates nonlinear function, F(x).
 !
 !   Input Parameters:
@@ -378,7 +379,7 @@
 !
 !   Output Parameter:
 !.  F - function vector
-! 
+!
       subroutine  ComputeFunction(X,F,ierr)
       implicit none
 
@@ -387,23 +388,23 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscdmda.h>
 
       Vec              X,F,localX,localF
       PetscInt         gys,gxm,gym
       PetscOffset      idx,idf
       PetscErrorCode ierr
-      PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs 
+      PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs
       double precision two,one,lambda,hx
       double precision hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
-      DA               da
+      DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,localF,da
 
@@ -413,17 +414,17 @@
 
       hx     = one/(mx-1)
       hy     = one/(my-1)
-      sc     = hx*hy*lambda 
-      hxdhy  = hx/hy  
+      sc     = hx*hy*lambda
+      hxdhy  = hx/hy
       hydhx  = hy/hx
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
-!  
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+!
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointers to vector data
 
@@ -432,9 +433,9 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
@@ -464,11 +465,12 @@
 
 !  Insert values into global vector
 
-       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
-       return 
+       call DMLocalToGlobalBegin(da,localF,INSERT_VALUES,F,ierr)
+       call DMLocalToGlobalEnd(da,localF,INSERT_VALUES,F,ierr)
+       return
        end
 
-! ------------------------------------------------------------------- 
+! -------------------------------------------------------------------
 !
 !   ComputeJacobian - Evaluates Jacobian matrix.
 !
@@ -480,9 +482,9 @@
 !   flag - flag indicating matrix structure
 !
 !   Notes:
-!   Due to grid point reordering with DAs, we must always work
+!   Due to grid point reordering with DMDAs, we must always work
 !   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping (via DAGetGlobalIndices()).
+!   global numbering with the 'ltog' mapping (via DMDAGetGlobalIndices()).
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
@@ -494,18 +496,18 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscdmda.h>
 
       Vec         X
       Mat         jac
       Vec         localX,localF
-      DA          da
+      DM          da
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
@@ -526,18 +528,18 @@
       two    = 2.d0
       hx     = one/(mx-1)
       hy     = one/(my-1)
-      sc     = hx*hy  
-      hxdhy  = hx/hy        
+      sc     = hx*hy
+      hxdhy  = hx/hy
       hydhx  = hy/hx
       lambda = 6.d0
 
 !  Scatter ghost points to local vector, using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can be
 !  done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
 
 !  Get pointer to vector data
 
@@ -545,28 +547,28 @@
 
 !  Get local grid boundaries
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
      &                        PETSC_NULL_INTEGER,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DMDAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
 !     contiguous chunks of rows across the processors. The 'grow'
-!     parameter computed below specifies the global row number 
+!     parameter computed below specifies the global row number
 !     corresponding to each local grid point.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Here, we set all entries for a particular row at once.
 
       do 10 j=ys,ys+ym-1
-        row = (j - gys)*gxm + xs - gxs 
+        row = (j - gys)*gxm + xs - gxs
         do 20 i=xs,xs+xm-1
           row = row + 1
           grow(1) = ltog(idltog+row)
@@ -578,13 +580,13 @@
           endif
           v(1)   = -hxdhy
           col(1) = ltog(idltog+row - gxm)
-          v(2)   = -hydhx 
+          v(2)   = -hydhx
           col(2) = ltog(idltog+row - 1)
           v(3)   = two*(hydhx + hxdhy) - sc*lambda*exp(xx(idx+row))
           col(3) = grow(1)
-          v(4)   = -hydhx 
+          v(4)   = -hydhx
           col(4) = ltog(idltog+row + 1)
-          v(5)   = -hxdhy 
+          v(5)   = -hxdhy
           col(5) = ltog(idltog+row + gxm)
           call MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,       &
      &                      ierr)
@@ -599,32 +601,32 @@
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArray(localX,xx,idx,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-      return 
+      return
       end
 
 
-! ------------------------------------------------------------------- 
-! 
-!   MyMult - user provided matrix multiply 
+! -------------------------------------------------------------------
+!
+!   MyMult - user provided matrix multiply
 !
 !   Input Parameters:
 !.  X - input vector
 !
 !   Output Parameter:
 !.  F - function vector
-! 
+!
       subroutine  MyMult(J,X,F,ierr)
       implicit none
       Mat     J,B
       Vec     X,F
       PetscErrorCode ierr
       PetscInt mx,my
-      DA      da
+      DM      da
       Vec     localX,localF
 
       common   /mycommon/ mx,my,B,localX,localF,da
 !
-!       Here we use the actual formed matrix B; users would 
+!       Here we use the actual formed matrix B; users would
 !     instead write their own matrix vector product routine
 !
       call MatMult(B,X,F,ierr)

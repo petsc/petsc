@@ -1,5 +1,6 @@
-#include "private/fortranimpl.h"
-#include "petscsys.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscsys.h>
+#include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscmallocdump_           PETSCMALLOCDUMP
@@ -15,9 +16,7 @@
 #define petscmemorysetgetmaximumusage_ petscmemorysetgetmaximumusage
 #endif
 
-EXTERN_C_BEGIN
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
@@ -34,29 +33,29 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-void PETSC_STDCALL  petscmallocdump_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDump(stdout);
 }
-void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDumpLog(stdout);
 }
 
-void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocValidate(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
 {
   *ierr = PetscMemorySetGetMaximumUsage();
 }
 
-void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   PetscViewer v;
-  char *msg, *tmp;
+  char        *msg, *tmp;
 
   FIXCHAR(message,len,msg);
   *ierr = PetscFixSlashN(msg,&tmp);if (*ierr) return;
@@ -65,4 +64,3 @@ void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MI
   FREECHAR(message,msg);
 }
 
-EXTERN_C_END

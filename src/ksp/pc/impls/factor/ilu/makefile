@@ -3,14 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = ilu.c
 SOURCEF  =
 SOURCEH  = ilu.h
-OBJSC    = ilu.o
-OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/factor/ilu/
 

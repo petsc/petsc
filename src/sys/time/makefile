@@ -1,13 +1,11 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = cputime.c fdate.c ptime.c
+SOURCEC	  = cputime.c fdate.c
 SOURCEF	  =
-SOURCEH	  =
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
+SOURCEH	  = ../../../include/petsctime.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = rs6000_time nt_time

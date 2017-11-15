@@ -1,0 +1,265 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "finclude/ftn-custom/petscdmmeshdef.h90"
+#endif
+
+#include "finclude/ftn-custom/petscdmhide.h90"
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(SECTIONREAL_HIDE)
+#define SECTIONREAL_HIDE type(SectionReal)
+#define SECTIONINT_HIDE type(SectionInt)
+#elif !defined(SECTIONREAL_HIDE)
+#define SECTIONREAL_HIDE SectionReal
+#define SECTIONINT_HIDE SectionInt
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(USE_DMMESH_HIDE)
+#  define USE_DMMESH_HIDE use petscdmmeshdef
+#elif !defined(USE_DMMESH_HIDE)
+#  define USE_DMMESH_HIDE
+#endif
+
+      Interface
+        Subroutine DMMeshGetCoordinatesF90(m,array,ierr)
+          USE_DMMESH_HIDE
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshRestoreCoordinatesF90(m,array,ierr)
+          USE_DMMESH_HIDE
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshGetElementsF90(m,array,ierr)
+          USE_DMMESH_HIDE
+          PetscInt, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshRestoreElementsF90(m,array,ierr)
+          USE_DMMESH_HIDE
+          PetscInt, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshGetConeF90(m,p,array,ierr)
+          USE_DMMESH_HIDE
+          PetscInt, pointer :: array(:)
+          PetscInt p
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshRestoreConeF90(m,p,array,ierr)
+          USE_DMMESH_HIDE
+          PetscInt, pointer :: array(:)
+          PetscInt p
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionGetArrayF90(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          CHARACTER*80 name
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionGetArray1DF90(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          CHARACTER*80 name
+          PetscReal, pointer :: array(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine BCSectionGetArrayF90(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          CHARACTER*80 name
+          PetscInt, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine BCSectionGetArray1DF90(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          CHARACTER*80 name
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine BCSectionRealGetArrayF90(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          CHARACTER*80 name
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine BCFUNCGetArrayF90(m,array,ierr)
+          USE_DMMESH_HIDE
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshGetLabelIds(m,name,array,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: array(:)
+          CHARACTER*80 name
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMMeshGetStratum(m,name,value,array,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: array(:)
+          PetscInt value
+          CHARACTER*80 name
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionRealRestrict(section,e,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          SECTIONREAL_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntRestrict(section,e,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          SECTIONINT_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionRealRestore(section,e,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          SECTIONREAL_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntRestore(section,e,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          SECTIONINT_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionRealRestrictClosure(section,m,e,n,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt n, e
+          SECTIONREAL_HIDE section
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntRestrictClosure(section,m,e,n,values,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt n, e
+          SECTIONINT_HIDE section
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionRealUpdate(section,e,values,mode,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          InsertMode mode
+          SECTIONREAL_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntUpdate(section,e,values,mode,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          InsertMode mode
+          SECTIONINT_HIDE section
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionRealUpdateClosure(section,m,e,values,mode,    &
+     &ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          InsertMode mode
+          SECTIONREAL_HIDE section
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine SectionIntUpdateClosure(section,m,e,values,mode,ierr)
+          USE_DMMESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          InsertMode mode
+          SECTIONINT_HIDE section
+          DM_HIDE m
+        End Subroutine
+      End Interface

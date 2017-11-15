@@ -53,6 +53,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
         self.dir = dir.replace('\n','')
       except RuntimeError:
         pass
+    self.version  = 'Unknown'
     versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
     versionInfo = []
     if os.path.exists(versionHeader):
@@ -63,37 +64,13 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
       f.close()
     else:
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+'. Could not locate '+versionHeader)
+    self.version = '.'.join([line.split(' ')[-1] for line in versionInfo[1:4]])
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', '"'+self.dir+'"')
     self.framework.argDB['search-dirs'].append(os.path.join(self.dir, 'bin', 'win32fe'))
-
-    import sys
-
-    auxDir      = os.path.join(self.dir,'config','configarch')
-    configSub   = os.path.join(auxDir, 'config.sub')
-    configGuess = os.path.join(auxDir, 'config.guess')
-    
-    try:
-      host   = config.base.Configure.executeShellCommand(self.programs.SHELL+' '+configGuess, log = self.framework.log)[0]
-      output = config.base.Configure.executeShellCommand(self.programs.SHELL+' '+configSub+' '+host, log = self.framework.log)[0]
-    except RuntimeError, e:
-      fd = open(configGuess)
-      data = fd.read()
-      fd.close()
-      if data.find('\r\n') >= 0:
-        raise RuntimeError('''It appears petsc.tar.gz is uncompressed on Windows (perhaps with Winzip)
-          and files copied over to Unix/Linux. Windows introduces LF characters which are
-          inappropriate on other systems. Please use gunzip/tar on the install machine.\n''')
-      raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
-    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
-    if not m:
-      raise RuntimeError('Unable to parse output of '+configSub+': '+output)
-    self.framework.host_cpu    = m.group('cpu')
-    self.framework.host_vendor = m.group('vendor')
-    self.framework.host_os     = m.group('os')
 
     return
 
@@ -106,26 +83,28 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
 
   def configureInstallationMethod(self):
     if os.path.exists(os.path.join(self.dir,'bin','maint')):
-      self.logPrint('This is a Mercurial clone')
+      self.logPrint('bin/maint exists. This appears to be a repository clone')
       self.isClone = 1
-      if os.path.exists(os.path.join(self.dir, '.hg')):
+      if os.path.exists(os.path.join(self.dir, '.git')):
+        if hasattr(self.sourceControl,'git'):
+          self.addDefine('VERSION_GIT','"'+os.popen("cd "+self.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%H").read()+'"')
+          self.addDefine('VERSION_DATE_GIT','"'+os.popen("cd "+self.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci").read()+'"')
+        else:
+          self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a Git clone - but git is not found in PATH********\n')
+      elif os.path.exists(os.path.join(self.dir, '.hg')):
         if hasattr(self.sourceControl,'hg'):
           self.addDefine('VERSION_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{node}'").read()+'"')
           self.addDefine('VERSION_DATE_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{date|date}'").read()+'"')
-          # Check version & date for buildsystem aswell
-          bs_dir = os.path.join(self.dir,'config','BuildSystem')
-          if os.path.exists(os.path.join(bs_dir,'.hg')):
-            self.addDefine('VERSION_BS_HG','"'+os.popen(self.sourceControl.hg +" -R"+bs_dir+" tip --template '{node}'").read()+'"')
-            self.addDefine('VERSION_BS_DATE_HG','"'+os.popen(self.sourceControl.hg + " -R"+bs_dir+" tip --template '{date|date}'").read()+'"')
         else:
           self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a mercurial clone - but hg is not found in PATH********\n')
       else:
-        self.logPrint('This Mercurial clone is obtained as a tarball as .hg dir does not exist!')
+        self.logPrint('This repository clone is obtained as a tarball as neither .hg nor .git dirs exist!')
     else:
-      self.logPrint('This is a tarball installation')
-      self.isClone = 0
-    if self.isClone and not os.path.exists(os.path.join(self.dir, 'bin', 'maint')):
-      raise RuntimeError('Your petsc-dev directory is broken, remove the entire directory and start all over again')
+      if os.path.exists(os.path.join(self.dir, '.git')) or os.path.exists(os.path.join(self.dir, '.hg')):
+        raise RuntimeError('Your petsc-dev directory is broken, remove the entire directory and start all over again')
+      else:
+        self.logPrint('This is a tarball installation')
+        self.isClone = 0
     return
 
   def configure(self):

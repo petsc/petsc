@@ -1,6 +1,5 @@
 
 #requirespackage   'PETSC_HAVE_MUMPS'
-#requiresprecision double
 
 ALL: lib
 
@@ -9,8 +8,6 @@ FFLAGS   =
 SOURCEC	 = mumps.c
 SOURCEF	 =
 SOURCEH	 =
-OBJSC	 = mumps.o
-OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat

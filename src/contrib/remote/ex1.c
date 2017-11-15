@@ -6,7 +6,7 @@ static char help[] = "Newton's method to solve a two-variable system, sequential
    Processors: 1
 T*/
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -15,9 +15,9 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -38,9 +38,9 @@ int main(int argc,char **argv)
   PetscInt       its;
   PetscMPIInt    size;
   PetscScalar    pfive = .5,*xx;
-  PetscTruth     flg;
+  PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -67,27 +67,27 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
-    /* 
+    /*
      Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,NULL);CHKERRQ(ierr);
 
-    /* 
+    /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
     */
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,NULL);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Set linear solver defaults for this problem. By extracting the
      KSP, KSP, and PC contexts from the SNES context, we can then
      directly call any KSP, KSP, and PC routines to set various options.
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
      These options will override those specified above as long as
@@ -112,9 +112,9 @@ int main(int argc,char **argv)
   if (!flg) {
     ierr = VecSet(x,pfive);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
     xx[0] = 2.0; xx[1] = 3.0;
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
   /*
      Note: The user should initialize the vector, x, with the initial guess
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
@@ -132,15 +132,15 @@ int main(int argc,char **argv)
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -184,7 +184,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
      Restore vectors
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
 
   return 0;
 }
@@ -220,9 +220,9 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
-  A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  A[0]  = 2.0*xx[0] + xx[1]; A[1] = xx[0];
+  A[2]  = xx[1]; A[3] = xx[0] + 2.0*xx[1];
+  ierr  = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*
@@ -268,7 +268,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
      Restore vectors
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
 
   return 0;
 }
@@ -291,9 +291,9 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
-  A[2] = 0.0;                     A[3] = 1.0;
-  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  A[0]  = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
+  A[2]  = 0.0;                     A[3] = 1.0;
+  ierr  = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*

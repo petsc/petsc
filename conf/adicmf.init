@@ -6,8 +6,8 @@
 	PetscLogFlops
 	CHKERRQ
         PetscFunctionReturn
-        DAVecGetArray
-        DAVecRestoreArray
+        DMDAVecGetArray
+        DMDAVecRestoreArray
 
 [NO_PREFIX_FUNCTIONS]
 
@@ -18,19 +18,18 @@
 	PetscViewer    = "typedef int PetscViewer;"
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
-	DA             = "typedef int DA;"
-	DMMG           = "typedef int DMMG;"
+	DM             = "typedef int DM;"
 	PC             = "typedef int PC;"
 	KSP           = "typedef int KSP;"
 	SNES           = "typedef int SNES;"
 	SNESConvergedReason           = "typedef int SNESConvergedReason;"
-	DAPeriodicType = "typedef int DAPeriodicType;"
-	DAStencilType  = "typedef int DAStencilType;"
+	DMDABoundaryType = "typedef int DMDABoundaryType;"
+	DAStencilType  = "typedef int DMDAStencilType;"
         ISColoring     = "typedef int ISColoring;"
-	PetscTruth     = "typedef int PetscTruth;"
+	PetscBool      = "typedef int PetscBool ;"
 	PetscReal      = "typedef double PetscReal;"
 	PetscScalar    = "typedef double PetscScalar;"
-        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
+        DMDALocalInfo    = "typedef struct {int dim,dof,sw;DMDABoundaryType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DM da;} DMDALocalInfo;"
         MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
         PassiveReal    = "typedef double PassiveReal;"
         PassiveScalar  = "typedef double PassiveScalar;"
@@ -39,17 +38,15 @@
         PETSC_COMM_WORLD = "static int PETSC_COMM_WORLD;"
         PETSC_COMM_SELF  = "static int PETSC_COMM_SELF;"
         CHKMEMQ          = "CHKMEMQ;"
-        DMComposite          = "typedef int DMComposite;"
 
 [DEFINES]
 	PetscAbsScalar = fabs
 	PetscExpScalar = exp
-        PetscFunctionBegin = 
+        PetscFunctionBegin =
 	PetscPowScalar = pow
 	PetscSqrtScalar = sqrt
         PETSC_TRUE         = 1
         PETSC_FALSE        = 0
-        PETSC_NULL         = 0
         PETSC_IGNORE       = -1
         PETSC_PI                 = 3.1415926535897932384626
 
@@ -57,9 +54,9 @@
 
 [INACTIVE_FUNCTIONS]
 	erf
-	HorizVelocity 
-	VertVelocity 
-	Pressure  
+	HorizVelocity
+	VertVelocity
+	Pressure
 	CalcJunk
         PetscExpScalarPassive
         WSlab
@@ -71,14 +68,13 @@
         PassiveReal
 	PassiveScalar
         PetscReal
-        PetscTruth
-        DALocalInfo
+        PetscBool
+        DMDALocalInfo
         MatStencil
         Mat
         Vec
         ISColoring
-        DA
-        DMMG
+        DM
         PC
         KSP
         SNES

@@ -1,19 +1,15 @@
-#define PETSCMAT_DLL
 
-#include "petscmat.h"
+#include <petscmat.h>
 
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Current(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Square(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegisterAll" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegisterAll"
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
@@ -22,8 +18,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatPartitioningRegisterDynamic() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatPartitioningRegister() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -34,30 +30,28 @@ EXTERN_C_END
 
 .keywords: matrix, Partitioning, register, all
 
-.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterDestroy()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterAll(const char path[])
+PetscErrorCode  MatPartitioningRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
-  ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
+
+  ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister("square",               MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGPARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CHACO)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCHACO,path,"MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_JOSTLE)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGJOSTLE,path,"MatPartitioningCreate_Jostle",MatPartitioningCreate_Jostle);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGCHACO,   MatPartitioningCreate_Chaco);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARTY)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGPARTY,path,"MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGPARTY,   MatPartitioningCreate_Party);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SCOTCH)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGSCOTCH,path,"MatPartitioningCreate_Scotch",MatPartitioningCreate_Scotch);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PTSCOTCH)
+  ierr = MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,MatPartitioningCreate_PTScotch);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

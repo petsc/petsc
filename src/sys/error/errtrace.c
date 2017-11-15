@@ -1,10 +1,9 @@
-#define PETSC_DLL
 
-#include "petscsys.h"        /*I "petscsys.h" I*/
-#include "petscconfiginfo.h"
+#include <petscsys.h>        /*I "petscsys.h" I*/
+#include <petscconfiginfo.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscIgnoreErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscIgnoreErrorHandler"
 /*@C
    PetscIgnoreErrorHandler - Ignores the error, allows program to continue as if error did not occure
 
@@ -24,8 +23,8 @@
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERRQ, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERRQ, which has
    the calling sequence
 $     SETERRQ(comm,number,p,mess)
 
@@ -37,10 +36,10 @@ $     SETERRQ(comm,number,p,mess)
    Concepts: error handler^traceback
    Concepts: traceback^generating
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -48,54 +47,50 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscIgnoreErrorHandler(MPI_Comm comm,int line
 
 /* ---------------------------------------------------------------------------------------*/
 
-static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
-static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
-static char version[256];
+static char      arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN],date[128];
+static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
+static char      version[256];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscErrorPrintfInitialize"
 /*
    Initializes arch, hostname, username,date so that system calls do NOT need
    to be made during the error handler.
 */
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfInitialize()
+PetscErrorCode  PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
-  PetscTruth     use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
+  PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
+  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
+  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_stdout",&use_stdout,PETSC_NULL);CHKERRQ(ierr);
-  if (use_stdout) {
-    PETSC_STDERR = PETSC_STDOUT;
-  }
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_none",&use_none,PETSC_NULL);CHKERRQ(ierr);
-  if (use_none) {
-    PetscErrorPrintf = PetscErrorPrintfNone;
-  }
+  ierr = PetscOptionsGetBool(NULL,"-error_output_stdout",&use_stdout,NULL);CHKERRQ(ierr);
+  if (use_stdout) PETSC_STDERR = PETSC_STDOUT;
+  ierr = PetscOptionsGetBool(NULL,"-error_output_none",&use_none,NULL);CHKERRQ(ierr);
+  if (use_none) PetscErrorPrintf = PetscErrorPrintfNone;
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfNone" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
+#undef __FUNCT__
+#define __FUNCT__ "PetscErrorPrintfNone"
+PetscErrorCode  PetscErrorPrintfNone(const char format[],...)
 {
   return 0;
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfDefault" 
-PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
+#undef __FUNCT__
+#define __FUNCT__ "PetscErrorPrintfDefault"
+PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 {
-  va_list           Argp;
-  static PetscTruth PetscErrorPrintfCalled = PETSC_FALSE;
+  va_list          Argp;
+  static PetscBool PetscErrorPrintfCalled = PETSC_FALSE;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -109,18 +104,19 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],..
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-      different processors, the messages are printed all jumbled up; to try to 
+      different processors, the messages are printed all jumbled up; to try to
       prevent this we have each processor wait based on their rank
     */
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     {
       PetscMPIInt rank;
-      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
+      if (PetscGlobalRank > 8) rank = 8;
+      else rank = PetscGlobalRank;
       PetscSleep((PetscReal)rank);
     }
 #endif
   }
-    
+
   PetscFPrintf(PETSC_COMM_SELF,PETSC_STDERR,"[%d]PETSC ERROR: ",PetscGlobalRank);
   va_start(Argp,format);
   (*PetscVFPrintf)(PETSC_STDERR,format,Argp);
@@ -128,8 +124,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],..
   return 0;
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscTraceBackErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscTraceBackErrorHandler"
 /*@C
 
    PetscTraceBackErrorHandler - Default error handler routine that generates
@@ -151,8 +147,8 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscErrorPrintfDefault(const char format[],..
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERRQ, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERRQ, which has
    the calling sequence
 $     SETERRQ(comm,number,n,mess)
 
@@ -164,57 +160,49 @@ $     SETERRQ(comm,number,n,mess)
    Concepts: error handler^traceback
    Concepts: traceback^generating
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
-  PetscLogDouble    mem,rss;
-  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
-  PetscMPIInt       rank = 0;
+  PetscLogDouble mem,rss;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
+  PetscMPIInt    rank = 0;
 
   PetscFunctionBegin;
-  if (comm != PETSC_COMM_SELF) {
-    MPI_Comm_rank(comm,&rank);
-  }
+  if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm,&rank);
+
   if (!rank) {
     if (p == PETSC_ERROR_INITIAL) {
       (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
       if (n == PETSC_ERR_MEM) {
-	(*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
-	(*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
-	(*PetscErrorPrintf)("destroying unneeded objects.\n");
-	PetscMallocGetCurrentUsage(&mem);
-	PetscMemoryGetCurrentUsage(&rss);
-	PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-	PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-	if (flg2) {
-	  PetscMallocDumpLog(stdout);
-	} else {
-	  (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
-	  if (flg1) {
-	    PetscMallocDump(stdout);
-	  } else {
-	    (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
-	  }
-	}
+        (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
+        (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
+        (*PetscErrorPrintf)("destroying unneeded objects.\n");
+        PetscMallocGetCurrentUsage(&mem);
+        PetscMemoryGetCurrentUsage(&rss);
+        PetscOptionsGetBool(NULL,"-malloc_dump",&flg1,NULL);
+        PetscOptionsGetBool(NULL,"-malloc_log",&flg2,NULL);
+        PetscOptionsHasName(NULL,"-malloc_log_threshold",&flg3);
+        if (flg2 || flg3) PetscMallocDumpLog(stdout);
+        else {
+          (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
+          if (flg1) PetscMallocDump(stdout);
+          else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
+        }
       } else {
         const char *text;
-        PetscErrorMessage(n,&text,PETSC_NULL);
+        PetscErrorMessage(n,&text,NULL);
         if (text) (*PetscErrorPrintf)("%s!\n",text);
       }
-      if (mess) {
-	(*PetscErrorPrintf)("%s!\n",mess);
-      }
+      if (mess) (*PetscErrorPrintf)("%s!\n",mess);
       (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
       (*PetscErrorPrintf)("%s\n",version);
       (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");
       (*PetscErrorPrintf)("See docs/faq.html for hints about trouble shooting.\n");
       (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
       (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
-      if (PetscErrorPrintfInitializeCalled) {
-	(*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-      }
+      if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
       (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
       (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);
       (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
@@ -230,90 +218,3 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandler(MPI_Comm comm,int l
   PetscFunctionReturn(n);
 }
 
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
-#undef __FUNCT__  
-#define __FUNCT__ "PetscTraceBackErrorHandlerCxx"
-/*@C
-
-   PetscTraceBackErrorHandlerCxx - Error handler routine that generate a traceback in a C++ stream.
-
-   Not Collective
-
-   Input Parameters:
-+  comm - communicator over which error occurred
-.  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNCT__)
-.  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
-.  n - the generic error number
-.  p - PETSC_ERROR_INITIAL or PETSC_ERROR_REPEAT
-.  mess - the error message
-+  ctx - error handling context, in this case the C++ stream.
-
-   Level: developer
-
-   Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERROR, which has 
-   the calling sequence
-$     SETERROR(number,n,mess)
-
-   Concepts: error handler^traceback
-   Concepts: traceback^generating
-
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
- @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscTraceBackErrorHandlerCxx(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p, const char *mess,void *ctx)
-{
-  std::ostringstream *msg = (std::ostringstream*) ctx;
-
-  if (p == PETSC_ERROR_INITIAL) {
-    PetscLogDouble mem, rss;
-    PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
-
-    (*msg) << "--------------------- Error Message ------------------------------------" << std::endl;
-    if (n == PETSC_ERR_MEM) {
-      (*msg) << "Out of memory. This could be due to allocating" << std::endl;
-      (*msg) << "too large an object or bleeding by not properly" << std::endl;
-      (*msg) << "destroying unneeded objects." << std::endl;
-      PetscMallocGetCurrentUsage(&mem);
-      PetscMemoryGetCurrentUsage(&rss);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-      PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-      if (flg2) {
-        //PetscMallocDumpLog(stdout);
-        (*msg) << "Option -malloc_log does not work in C++." << std::endl;
-      } else {
-        (*msg) << "Memory allocated " << mem << " Memory used by process " << rss << std::endl;
-        if (flg1) {
-          //PetscMallocDump(stdout);
-          (*msg) << "Option -malloc_dump does not work in C++." << std::endl;
-        } else {
-          (*msg) << "Try running with -malloc_dump or -malloc_log for info." << std::endl;
-        }
-      }
-    } else {
-      const char *text;
-
-      PetscErrorMessage(n,&text,PETSC_NULL);
-      if (text) {(*msg) << text << "!" << std::endl;}
-    }
-    if (mess) {(*msg) << mess << "!" << std::endl;}
-    (*msg) << "------------------------------------------------------------------------" << std::endl;
-    (*msg) << version << std::endl;
-    (*msg) << "See docs/changes/index.html for recent updates." << std::endl;
-    (*msg) << "See docs/faq.html for hints about trouble shooting." << std::endl;
-    (*msg) << "See docs/index.html for manual pages." << std::endl;
-    (*msg) << "------------------------------------------------------------------------" << std::endl;
-    if (PetscErrorPrintfInitializeCalled) {
-      (*msg) << pname << " on a " << arch << " named " << hostname << " by " << username << " " << date << std::endl;
-    }
-    (*msg) << "Libraries linked from " << PETSC_LIB_DIR << std::endl;
-    (*msg) << "Configure run at " << petscconfigureruntime << std::endl;
-    (*msg) << "Configure options " << petscconfigureoptions << std::endl;
-    (*msg) << "------------------------------------------------------------------------" << std::endl;
-  }
-  (*msg) << fun<<"() line " << line << " in " << dir << file << std::endl;
-  return 0;
-}
-#endif

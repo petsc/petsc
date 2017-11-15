@@ -1,6 +1,9 @@
-#include "private/fortranimpl.h"
-#include "private/matimpl.h"
-#include "petscts.h"
+#include <petsc-private/fortranimpl.h>
+#include <petsc-private/matimpl.h>
+
+/* Declare these pointer types instead of void* for clarity, but do not include petscts.h so that this code does have an actual reverse dependency. */
+typedef struct _p_TS *TS;
+typedef struct _p_SNES *SNES;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
@@ -28,8 +31,6 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDCo
   return ierr;
 }
 
-EXTERN_C_BEGIN
-
 /*
         MatFDColoringSetFunction sticks the Fortran function and its context into the MatFDColoring structure and passes the MatFDColoring object
     in as the function context. ourmafdcoloringfunctionsnes() and ourmatfdcoloringfunctionts()  then access the function and its context from the
@@ -39,21 +40,23 @@ EXTERN_C_BEGIN
 */
 
 
-void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (void*) f;
-  (*fd)->ftn_func_cntx = ctx;
+  (*fd)->ftn_func_cntx    = ctx;
+
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,*fd);
 }
 
-void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   (*fd)->ftn_func_pointer = (void*) f;
-  (*fd)->ftn_func_cntx = ctx;
+  (*fd)->ftn_func_cntx    = ctx;
+
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,*fd);
 }
 
-void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
@@ -61,5 +64,3 @@ void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErr
   *ierr = MatFDColoringView(*c,v);
 }
 
-
-EXTERN_C_END

@@ -1,0 +1,18 @@
+test_solve 
+x1 
+Vector Object: 1 MPI processes
+  type: seq
+  length=3
+x2 
+Vector Object: 1 MPI processes
+  type: seq
+  length=2
+test_solve_matgetvecs 
+x1 
+Vector Object: 1 MPI processes
+  type: seq
+  length=3
+x2 
+Vector Object: 1 MPI processes
+  type: seq
+  length=2

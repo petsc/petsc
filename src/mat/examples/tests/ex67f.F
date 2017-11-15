@@ -3,20 +3,22 @@
 !
       program main
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscis.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscis.h>
+#include <finclude/petscviewer.h>
 
       Mat      A,B
       PetscErrorCode  ierr
       PetscInt one,zero
-      PetscViewer   v    
+      PetscViewer   v
       IS       isrow
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
+     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & 'ns-real-int32-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
@@ -25,7 +27,8 @@
 
       one  = 1
       zero = 0
-      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,isrow,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,PETSC_COPY_VALUES,    &
+     &                     isrow,ierr)
 
       call MatGetSubmatrices(A,one,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)

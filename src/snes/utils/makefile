@@ -1,17 +1,15 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
-SOURCEC  = damg.c damgsnes.c
+SOURCEC  = dmsnes.c dmdasnes.c dmlocalsnes.c dmplexsnes.c
 SOURCEF  =
-SOURCEH  = ../../../include/petscdmmg.h
-OBJSC    = damg.o damgsnes.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscsnes
-MANSEC   = DMMG
-DIRS     = adutils sieve
-EDIRS    = 
+MANSEC   = SNES
+DIRS     = mesh
+EDIRS    =
 LOCDIR   = src/snes/utils/
 
 include ${PETSC_DIR}/conf/variables

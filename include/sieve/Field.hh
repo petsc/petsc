@@ -2,10 +2,10 @@
 #define included_ALE_Field_hh
 
 #ifndef  included_ALE_SieveAlgorithms_hh
-#include <SieveAlgorithms.hh>
+#include <sieve/SieveAlgorithms.hh>
 #endif
 
-extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
+extern "C" PetscMPIInt DMMesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 // Sieve need point_type
 // Section need point_type and value_type
@@ -220,7 +220,7 @@ namespace ALE {
     };
   public: // Sizes
     void clear() {
-      this->_chart.clear(); 
+      this->_chart.clear();
     };
     int getFiberDimension(const point_type& p) const {
       if (this->hasPoint(p)) return 1;
@@ -390,7 +390,7 @@ namespace ALE {
   public: // Sizes
     void clear() {
       this->_array.clear();
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];
@@ -778,7 +778,7 @@ namespace ALE {
   public: // Sizes
     void clear() {
       this->_array.clear();
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     };
     int getFiberDimension(const point_type& p) const {
       return fiberDim;
@@ -1038,7 +1038,7 @@ namespace ALE {
       this->_allocator.deallocate(this->_array, totalSize);
       ///delete [] this->_array;
       this->_array = NULL;
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -1382,6 +1382,7 @@ namespace ALE {
     // Fibration structures
     //   _spaces is a set of atlases which describe the layout of each in the storage of this section
     //   _bcs is the same as _bc, but for each field
+    std::vector<int >             _comps;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
@@ -1453,6 +1454,7 @@ namespace ALE {
       }
       return this->sizeWithBC();
     };
+    bool sharedStorage() const {return this->_sharedStorage;};
   public: // Verifiers
     bool hasPoint(const point_type& point) {
       return this->_atlas->hasPoint(point);
@@ -1498,7 +1500,7 @@ namespace ALE {
           this->updatePointBCFull(*p_iter, section->restrictPoint(*p_iter));
         }
       }
-      this->copyFibration(section);
+      this->copySpaces(section);
     }
     void defaultConstraintDof() {
       const chart_type& chart = this->getChart();
@@ -1530,8 +1532,8 @@ namespace ALE {
         ///delete [] this->_array;
       }
       this->_array = NULL;
-      this->_atlas->clear(); 
-      this->_bc->clear(); 
+      this->_atlas->clear();
+      this->_bc->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -1592,6 +1594,13 @@ namespace ALE {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
     void setIndexBC(const point_type& p, const typename index_type::index_type& index) {};
+    void getIndicesRaw(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1) {
+      this->getIndicesRaw(p, this->getIndex(p), indices, indx, orientation);
+    };
+    template<typename Order_>
+    void getIndicesRaw(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1) {
+      this->getIndicesRaw(p, order->getIndex(p), indices, indx, orientation);
+    }
     void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = true) {
       this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
@@ -1629,6 +1638,15 @@ namespace ALE {
         }
       }
     }
+    /*
+      p           - The Sieve point
+      start       - Offset for the set of indices on this point
+      indices     - Storage for the indices
+      indx        - Pointer to an offset into the indices argument (to allow composition of index sets)
+      orientation - A negative argument reverses the indices
+      freeOnly        - If false, include constrained dofs with negative indices, otherwise leave them out
+      skipConstraints - If true, when a constrained dof is encountered, increment the index (even though it is not placed in indices[])
+     */
     void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& cDim = this->getConstraintDimension(p);
 
@@ -1640,12 +1658,15 @@ namespace ALE {
           const typename bc_type::value_type *cDof = this->getConstraintDof(p);
           int                                 cInd = 0;
 
+          /* i is the returned index, k is the local dof number */
           for(int i = start, k = 0; k < dim; ++k) {
             if ((cInd < cDim) && (k == cDof[cInd])) {
+              /* Constrained dof */
               if (!freeOnly) indices[(*indx)++] = -(k+1);
               if (skipConstraints) ++i;
               ++cInd;
             } else {
+              /* Unconstrained dof */
               indices[(*indx)++] = i++;
             }
           }
@@ -1706,6 +1727,10 @@ namespace ALE {
       this->_sharedStorageSize = sharedStorageSize;
       this->_atlas             = this->_atlasNew;
       this->_atlasNew          = NULL;
+    };
+    // DANGEROUS
+    void setStorage(value_type *newArray) {
+      this->_array = newArray;
     };
     void addPoint(const point_type& point, const int dim) {
       if (dim == 0) return;
@@ -2204,12 +2229,14 @@ namespace ALE {
     int getNumSpaces() const {return this->_spaces.size();};
     const std::vector<Obj<atlas_type> >& getSpaces() {return this->_spaces;};
     const std::vector<Obj<bc_type> >& getBCs() {return this->_bcs;};
-    void addSpace() {
+    void addSpace(int comp = 1) {
       Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
       Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
+      this->_comps.push_back(comp);
       this->_spaces.push_back(space);
       this->_bcs.push_back(bc);
     };
+    int getSpaceComponents(const int space) {return this->_comps[space];};
     int getFiberDimension(const point_type& p, const int space) const {
       return this->_spaces[space]->restrictPoint(p)->prefix;
     };
@@ -2256,7 +2283,7 @@ namespace ALE {
       return size;
     };
     template<typename OtherSection>
-    void copyFibration(const Obj<OtherSection>& section) {
+    void copySpaces(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
       const std::vector<Obj<bc_type> >&    bcs    = section->getBCs();
 
@@ -2298,7 +2325,7 @@ namespace ALE {
 
       for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         const int cDim   = field->getConstraintDimension(*c_iter);
-        const int dof[1] = {0};
+        //const int dof[1] = {0};
 
         if (cDim) {
           field->setConstraintDof(*c_iter, this->getConstraintDof(*c_iter, space));
@@ -2524,9 +2551,9 @@ namespace ALE {
         this->_allocator.deallocate(this->_array, totalSize);
       }
       this->_array = NULL;
-      this->_atlas->clear(); 
-      this->_bc_atlas->clear(); 
-      this->_bc->clear(); 
+      this->_atlas->clear();
+      this->_bc_atlas->clear();
+      this->_bc->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -3274,7 +3301,7 @@ namespace ALE {
 
       if (tagKeyval == MPI_KEYVAL_INVALID) {
         tagvalp = (int *) malloc(sizeof(int));
-        MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);
+        MPI_Keyval_create(MPI_NULL_COPY_FN, DMMesh_DelTag, &tagKeyval, (void *) NULL);
         MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
         tagvalp[0] = 0;
       }
@@ -3362,7 +3389,7 @@ namespace ALE {
         const patch_type         rank    = p_iter->first;
         const Obj<section_type>& section = this->getSection(rank);
         const chart_type&        chart   = section->getChart();
-    
+
         for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
           section->setFiberDimension(*c_iter, *(sizer->getSection(rank)->restrictPoint(*c_iter)));
         }

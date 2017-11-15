@@ -2,7 +2,7 @@
 !    Fortran kernel for gemv() BLAS operation. This version supports
 !  matrix array stored in single precision but vectors in double
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine MSGemv(bs,ncols,A,x,y)
       implicit none
@@ -10,7 +10,7 @@
       MatScalar        A(bs,ncols)
       PetscScalar      x(ncols),y(bs)
 
-      PetscInt         i,j  
+      PetscInt         i,j
 
       do 5, j=1,bs
         y(j) = 0.0d0
@@ -22,10 +22,10 @@
  20     continue
  10   continue
 
-      return 
+      return
       end
 
-      
+
       subroutine MSGemvp(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
@@ -40,7 +40,7 @@
  20     continue
  10   continue
 
-      return 
+      return
       end
 
 
@@ -58,7 +58,7 @@
  20     continue
  10   continue
 
-      return 
+      return
       end
 
 
@@ -78,7 +78,7 @@
         y(i) = sum
  10   continue
 
-      return 
+      return
       end
 
       subroutine MSGemm(bs,A,B,C)
@@ -99,7 +99,7 @@
  20     continue
  10   continue
 
-      return 
+      return
       end
 
 
@@ -122,5 +122,5 @@
  20     continue
  10   continue
 
-      return 
+      return
       end

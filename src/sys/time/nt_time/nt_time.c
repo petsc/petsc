@@ -1,26 +1,23 @@
-#define PETSC_DLL
 
 #include <petscsys.h>
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
-EXTERN_C_BEGIN
-
-#undef __FUNCT__  
-#define __FUNCT__ "nt_time"
-PetscLogDouble PETSCSYS_DLLEXPORT nt_time(void)
+#undef __FUNCT__
+#define __FUNCT__ "PetscMicrosoftTime"
+PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void)
 {
-  static PetscTruth     flag = PETSC_TRUE;
-  PetscErrorCode ierr;
+  static PetscBool flag = PETSC_TRUE;
+  PetscErrorCode   ierr;
 
-  static LARGE_INTEGER  StartTime,PerfFreq,CurTime; 
+  static LARGE_INTEGER  StartTime,PerfFreq,CurTime;
   static PetscLogDouble SecInTick=0.0;
-  
-  DWORD                 dwStartHigh,dwCurHigh;
-  PetscLogDouble        dTime,dHigh;
-  PetscLogDouble        ptime;
-  
-  
+
+  DWORD          dwStartHigh,dwCurHigh;
+  PetscLogDouble dTime,dHigh;
+  PetscLogDouble ptime;
+
+
   PetscFunctionBegin;
   if (flag) {
     ierr = QueryPerformanceCounter(&StartTime);CHKERRQ(!ierr);
@@ -33,9 +30,9 @@ PetscLogDouble PETSCSYS_DLLEXPORT nt_time(void)
     SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
 #endif
     flag = PETSC_FALSE;
-  }		
-  
-  ierr        = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
+  }
+
+  ierr = QueryPerformanceCounter(&CurTime);CHKERRQ(!ierr);
 #if defined(PETSC_HAVE_LARGE_INTEGER_U)
   dwCurHigh   = (DWORD)CurTime.u.HighPart;
   dwStartHigh = (DWORD)StartTime.u.HighPart;
@@ -54,9 +51,7 @@ PetscLogDouble PETSCSYS_DLLEXPORT nt_time(void)
   dTime = dHigh*(double)FACTOR + (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
   */
   ptime = (double)SecInTick*dTime;
-
   PetscFunctionReturn(ptime);
 }
 
-EXTERN_C_END
 

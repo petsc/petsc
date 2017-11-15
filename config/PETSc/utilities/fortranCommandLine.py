@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     return
@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
   def configureFortranCommandLine(self):
     '''Check for the mechanism to retrieve command line arguments in Fortran'''
 
-    # These are for when the routines are called from Fortran 
+    # These are for when the routines are called from Fortran
     if hasattr(self.compilers, 'FC'):
       self.libraries.pushLanguage('FC')
       if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call get_command_argument(i,arg)'):
@@ -52,7 +52,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_PXFGETARG',1)
     elif self.functions.check('iargc_', libraries = self.compilers.flibs):
       self.addDefine('HAVE_BGL_IARGC',1)
-    elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
+    elif self.functions.check('GETARG@16', libraries = self.compilers.flibs):
       self.addDefine('USE_NARGS',1)
       self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
     elif self.functions.check('_gfortran_iargc', libraries = self.compilers.flibs):

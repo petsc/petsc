@@ -8,12 +8,8 @@
 !
       PetscEnum PC_LEFT
       PetscEnum PC_RIGHT
-      PetscEnum PC_SYMMETRIC 
+      PetscEnum PC_SYMMETRIC
       parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
-
-      PetscEnum USE_PRECONDITIONER_MATRIX
-      PetscEnum USE_TRUE_MATRIX
-      parameter (USE_PRECONDITIONER_MATRIX=0,USE_TRUE_MATRIX=1)
 
 !
 ! PCASMType
@@ -51,11 +47,74 @@
 ! PCFieldSplitSchurPreType
 !
       PetscEnum PC_FIELDSPLIT_SCHUR_PRE_SELF
-      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_DIAG
+      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_A11
       PetscEnum PC_FIELDSPLIT_SCHUR_PRE_USER
       parameter (PC_FIELDSPLIT_SCHUR_PRE_SELF=0)
-      parameter (PC_FIELDSPLIT_SCHUR_PRE_DIAG=1)
+      parameter (PC_FIELDSPLIT_SCHUR_PRE_A11=1)
       parameter (PC_FIELDSPLIT_SCHUR_PRE_USER=2)
+!
+! PCPARMSGlobalType
+!
+      PetscEnum PC_PARMS_GLOBAL_RAS
+      PetscEnum PC_PARMS_GLOBAL_SCHUR
+      PetscEnum PC_PARMS_GLOBAL_BJ
+      parameter (PC_PARMS_GLOBAL_RAS=0)
+      parameter (PC_PARMS_GLOBAL_SCHUR=1)
+      parameter (PC_PARMS_GLOBAL_BJ=2)
+!
+! PCPARMSLocalType
+!
+      PetscEnum PC_PARMS_LOCAL_ILU0
+      PetscEnum PC_PARMS_LOCAL_ILUK
+      PetscEnum PC_PARMS_LOCAL_ILUT
+      PetscEnum PC_PARMS_LOCAL_ARMS
+      parameter (PC_PARMS_LOCAL_ILU0=0)
+      parameter (PC_PARMS_LOCAL_ILUK=1)
+      parameter (PC_PARMS_LOCAL_ILUT=2)
+      parameter (PC_PARMS_LOCAL_ARMS=3)
+!
+! PCFieldSplitSchurFactType
+!
+      PetscEnum PC_FIELDSPLIT_SCHUR_FACT_DIAG
+      PetscEnum PC_FIELDSPLIT_SCHUR_FACT_LOWER
+      PetscEnum PC_FIELDSPLIT_SCHUR_FACT_UPPER
+      PetscEnum PC_FIELDSPLIT_SCHUR_FACT_FULL
+      parameter (PC_FIELDSPLIT_SCHUR_FACT_DIAG=0)
+      parameter (PC_FIELDSPLIT_SCHUR_FACT_LOWER=1)
+      parameter (PC_FIELDSPLIT_SCHUR_FACT_UPPER=2)
+      parameter (PC_FIELDSPLIT_SCHUR_FACT_FULL=3)
+
+!
+! CoarseProblemType
+!
+      PetscEnum SEQUENTIAL_BDDC
+      PetscEnum REPLICATED_BDDC
+      PetscEnum PARALLEL_BDDC
+      PetscEnum MULTILEVEL_BDDC
+      parameter (SEQUENTIAL_BDDC=0)
+      parameter (REPLICATED_BDDC=1)
+      parameter (PARALLEL_BDDC=2)
+      parameter (MULTILEVEL_BDDC=3)
+
+      PetscEnum PC_MG_MULTIPLICATIVE
+      PetscEnum PC_MG_ADDITIVE
+      PetscEnum PC_MG_FULL
+      PetscEnum PC_MG_KASKADE
+      PetscEnum PC_MG_CASCADE
+      parameter (PC_MG_MULTIPLICATIVE=0,PC_MG_ADDITIVE=1)
+      parameter (PC_MG_FULL=2,PC_MG_KASKADE=3)
+      parameter (PC_MG_CASCADE=3)
+
+! PCMGCycleType
+      PetscEnum PC_MG_CYCLE_V
+      PetscEnum PC_MG_CYCLE_W
+      parameter (PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2)
+
+      PetscEnum PC_EXOTIC_FACE
+      PetscEnum PC_EXOTIC_WIREBASKET
+      parameter (PC_EXOTIC_FACE=0,PC_EXOTIC_WIREBASKET=1)
+
+      external  PCMGRESIDUAL_DEFAULT
 !
 !  End of Fortran include file for the PC package in PETSc
 

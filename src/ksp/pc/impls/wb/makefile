@@ -5,12 +5,11 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = wb.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = wb.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
+SUBMANSEC= PCExotic
 LOCDIR   = src/ksp/pc/impls/wb/
 
 include ${PETSC_DIR}/conf/variables

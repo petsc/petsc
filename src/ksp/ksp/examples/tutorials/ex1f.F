@@ -22,7 +22,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
 !  each file needed for the various PETSc components within their
@@ -41,11 +41,11 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -61,19 +61,19 @@
 !     norm     - norm of error in solution
 !
       Vec              x,b,u
-      Mat              A 
+      Mat              A
       KSP              ksp
       PC               pc
       PetscReal        norm,tol
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
-      PetscTruth flg
+      PetscBool  flg
       PetscMPIInt size,rank
       PetscScalar      none,one,value(3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -92,10 +92,10 @@
       i3 = 3
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
 !         the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
@@ -103,6 +103,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers
@@ -144,9 +145,9 @@
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !          Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -179,9 +180,9 @@
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
@@ -189,9 +190,9 @@
 
       call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
 
@@ -203,7 +204,7 @@
       else
         write(6,200) its
       endif
- 100  format('Norm of error = ',e10.4,',  Iterations = ',i5)
+ 100  format('Norm of error = ',e11.4,',  Iterations = ',i5)
  200  format('Norm of error < 1.e-12,Iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they

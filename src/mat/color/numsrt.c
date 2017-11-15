@@ -1,17 +1,16 @@
-#define PETSCMAT_DLL
 /* numsrt.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
-#include "../src/mat/color/color.h"
+#include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKnumsrt" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKnumsrt"
 PetscErrorCode MINPACKnumsrt(PetscInt *n,PetscInt *nmax,PetscInt *num,PetscInt *mode,PetscInt *idex,PetscInt *last,PetscInt *next)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2;
+  /* System generated locals */
+  PetscInt i__1, i__2;
 
-    /* Local variables */
-    PetscInt jinc, i, j, k, l, jl, ju;
+  /* Local variables */
+  PetscInt jinc, i, j, k, l, jl, ju;
 
 /*     Given a sequence of integers, this subroutine groups */
 /*     together those indices with the same sequence value */
@@ -56,53 +55,48 @@ PetscErrorCode MINPACKnumsrt(PetscInt *n,PetscInt *nmax,PetscInt *num,PetscInt *
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
-    /* Parameter adjustments */
-    PetscFunctionBegin;
-    --next;
-    --idex;
-    --num;
+  /* Parameter adjustments */
+  PetscFunctionBegin;
+  --next;
+  --idex;
+  --num;
 
-    i__1 = *nmax;
-    for (i = 0; i <= i__1; ++i) {
-	last[i] = 0;
-    }
-    i__1 = *n;
-    for (k = 1; k <= i__1; ++k) {
-	l = num[k];
-	next[k] = last[l];
-	last[l] = k;
-    }
-    if (!*mode) {
-	PetscFunctionReturn(0);
-    }
+  i__1 = *nmax;
+  for (i = 0; i <= i__1; ++i) last[i] = 0;
+
+  i__1 = *n;
+  for (k = 1; k <= i__1; ++k) {
+    l       = num[k];
+    next[k] = last[l];
+    last[l] = k;
+  }
+  if (!*mode) PetscFunctionReturn(0);
 
 /*     Store the pointers to the sorted array in index. */
 
-    i = 1;
-    if (*mode > 0) {
-	jl = 0;
-	ju = *nmax;
-	jinc = 1;
-    } else {
-	jl = *nmax;
-	ju = 0;
-	jinc = -1;
-    }
-    i__1 = ju;
-    i__2 = jinc;
-    for (j = jl; i__2 < 0 ? j >= i__1 : j <= i__1; j += i__2) {
-	k = last[j];
+  i = 1;
+  if (*mode > 0) {
+    jl   = 0;
+    ju   = *nmax;
+    jinc = 1;
+  } else {
+    jl   = *nmax;
+    ju   = 0;
+    jinc = -1;
+  }
+  i__1 = ju;
+  i__2 = jinc;
+  for (j = jl; i__2 < 0 ? j >= i__1 : j <= i__1; j += i__2) {
+    k = last[j];
 L30:
-	if (!k) {
-	    goto L40;
-	}
-	idex[i] = k;
-	++i;
-	k = next[k];
-	goto L30;
+    if (!k) goto L40;
+    idex[i] = k;
+    ++i;
+    k = next[k];
+    goto L30;
 L40:
-	;
-    }
-    PetscFunctionReturn(0);
+    ;
+  }
+  PetscFunctionReturn(0);
 }
 

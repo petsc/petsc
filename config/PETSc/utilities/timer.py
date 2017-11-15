@@ -13,10 +13,10 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-timer=<default,mpi,ibm,dec,asci-red,nt>',  nargs.ArgString(None, None, 'Use high precision timer'))
+    help.addArgument('PETSc', '-with-timer=<default,mpi,ibm,microsoft>',  nargs.ArgString(None, None, 'Use high precision timer'))
     return
 
   def setupDependencies(self, framework):
@@ -33,7 +33,7 @@ class Configure(config.base.Configure):
       return 0
 
   def configureTimers(self):
-    '''Sets PETSC_HAVE_FAST_MPI_WTIME PETSC_USE_READ_REAL_TIME PETSC_USE_GETCLOCK PETSC_USE_DCLOCK PETSC_USE_NT_TIME.'''
+    '''Sets PETSC_HAVE_FAST_MPI_WTIME PETSC_USE_READ_REAL_TIME PETSC_USE_MICROSOFT_TIME.'''
     if 'with-timer' in self.framework.argDB:
       self.useTimer = self.framework.argDB['with-timer'].lower()
     elif self.isCrayMPI():
@@ -46,16 +46,12 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_FAST_MPI_WTIME', 1)
     elif self.useTimer == 'ibm':
       self.addDefine('USE_READ_REAL_TIME', 1)
-    elif self.useTimer == 'dec':
-      self.addDefine('USE_GETCLOCK', 1)
-    elif self.useTimer == 'asci-red':
-      self.addDefine('USE_DCLOCK', 1)
-    elif self.useTimer == 'nt':
-      self.addDefine('USE_NT_TIME', 1)
+    elif self.useTimer == 'microsoft':
+      self.addDefine('USE_MICROSOFT_TIME', 1)
     elif self.useTimer != 'default':
       raise RuntimeError('Unknown Timer type specified :'+self.framework.argDB['with-timer'])
     return
-  
+
   def configure(self):
     self.executeTest(self.configureTimers)
     return

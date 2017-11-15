@@ -1,0 +1,5 @@
+  0 SNES VI Function norm 9.462208808922e-02 Active lower constraints 7235/7417 upper constraints 0/0 Percent of total 0.768945 Percent of bounded 0
+    0 KSP Residual norm 2.68694 
+    1 KSP Residual norm 0.000633499 
+    2 KSP Residual norm 1.44908e-05 
+Nonlinear solve did not converge due to DIVERGED_LINE_SEARCH iterations 0

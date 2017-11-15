@@ -1,22 +1,21 @@
-#define PETSCVEC_DLL
 
 /*
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include "private/vecimpl.h"    /*I "petscvec.h" I*/
+#include <petsc-private/vecimpl.h>    /*I  "petscvec.h"   I*/
 
 /* Logging support */
-PetscClassId PETSCVEC_DLLEXPORT VEC_CLASSID;
-PetscLogEvent  VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
-PetscLogEvent  VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
-PetscLogEvent  VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent  VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
-PetscLogEvent  VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_Ops;
-PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
-PetscLogEvent  VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
+PetscClassId  VEC_CLASSID;
+PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
+PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
+PetscLogEvent VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
+PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
+PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
+PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
 
-EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
+extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__
 #define __FUNCT__ "VecStashGetInfo"
 /*@
@@ -39,9 +38,10 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
+PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = VecStashGetInfo_Private(&vec->stash,nstash,reallocs);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,Petsc
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMappingBlock(), VecSetValuesBlockedLocal()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
+PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
 
@@ -79,13 +79,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-    if (x->mapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
-    x->mapping = mapping;
+    ierr = PetscLayoutSetISLocalToGlobalMapping(x->map,mapping);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -113,7 +110,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
+PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
 
@@ -121,10 +118,67 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
-  x->bmapping = mapping;
+  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->map,mapping);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetLocalToGlobalMapping"
+/*@
+   VecGetLocalToGlobalMapping - Gets the local-to-global numbering set by VecSetLocalToGlobalMapping()
+
+   Not Collective
+
+   Input Parameter:
+.  X - the vector
+
+   Output Parameter:
+.  mapping - the mapping
+
+   Level: advanced
+
+   Concepts: vectors^local to global mapping
+   Concepts: local to global mapping^for vectors
+
+.seealso:  VecSetValuesLocal(), VecGetLocalToGlobalMappingBlock()
+@*/
+PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidType(X,1);
+  PetscValidPointer(mapping,2);
+  *mapping = X->map->mapping;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetLocalToGlobalMappingBlock"
+/*@
+   VecGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by VecSetLocalToGlobalMappingBlock()
+
+   Not Collective
+
+   Input Parameters:
+.  X - the vector
+
+   Output Parameters:
+.  mapping - the mapping
+
+   Level: advanced
+
+   Concepts: vectors^local to global mapping blocked
+   Concepts: local to global mapping^for vectors, blocked
+
+.seealso:  VecSetValuesBlockedLocal(), VecGetLocalToGlobalMapping()
+@*/
+PetscErrorCode VecGetLocalToGlobalMappingBlock(Vec X,ISLocalToGlobalMapping *mapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
+  PetscValidType(X,1);
+  PetscValidPointer(mapping,2);
+  *mapping = X->map->bmapping;
   PetscFunctionReturn(0);
 }
 
@@ -145,19 +199,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
 
 .seealso: VecAssemblyEnd(), VecSetValues()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
+PetscErrorCode  VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
 
-  ierr = PetscOptionsGetTruth(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
     ierr = VecStashView(vec,viewer);CHKERRQ(ierr);
   }
 
@@ -171,72 +225,40 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecView_Private"
+#define __FUNCT__ "VecViewFromOptions"
 /*
-  Processes command line options to determine if/how a matrix
-  is to be viewed. Called by VecAssemblyEnd().
+  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
 
-.seealso: MatView_Private()
+  Collective on Vec
 
+  Input Parameters:
++ vec   - the vector
+. prefix - prefix to use for viewing, or NULL to use prefix of 'vec'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Vec, view, options, database
+.seealso: MatViewFromOptions()
 */
-PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
+PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
 {
-  PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,"Vector Options","Vec");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-vec_view","Print vector to stdout","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
-      ierr = VecView(vec,viewer);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-vec_view_matlab","Print vector to stdout in a format Matlab can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = VecView(vec,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    }
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_MATLAB_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-#endif
-#if defined(PETSC_USE_SOCKET_VIEWER)
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-vec_view_socket","Send vector to socket (can be read from matlab)","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_SOCKET_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-#endif
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-vec_view_binary","Save vector to file in binary format","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_BINARY_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  /* These invoke PetscDrawGetDraw which invokes PetscOptionsBegin/End, */
-  /* hence they should not be inside the above PetscOptionsBegin/End block. */
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)vec)->prefix,"-vec_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(((PetscObject)vec)->prefix,"-vec_view_draw_lg",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm),PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
-    ierr = VecView(vec,PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = VecView(vec,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -254,18 +276,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
 
    Options Database Keys:
 +  -vec_view - Prints vector in ASCII format
-.  -vec_view_matlab - Prints vector in ASCII Matlab format to stdout
-.  -vec_view_matlab_file - Prints vector in Matlab format to matlaboutput.mat
-.  -vec_view_draw - Activates vector viewing using drawing tools
+.  -vec_view ::ascii_matlab - Prints vector in ASCII MATLAB format to stdout
+.  -vec_view matlab:filename - Prints vector in MATLAB format to matlaboutput.mat
+.  -vec_view draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
--  -vec_view_socket - Activates vector viewing using a socket
+-  -vec_view socket - Activates vector viewing using a socket
 
    Level: beginner
 
 .seealso: VecAssemblyBegin(), VecSetValues()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
+PetscErrorCode  VecAssemblyEnd(Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -277,7 +299,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  ierr = VecView_Private(vec);CHKERRQ(ierr);
+  if (vec->viewonassembly) {
+    ierr = PetscViewerPushFormat(vec->viewonassembly,vec->viewformatonassembly);CHKERRQ(ierr);
+    ierr = VecView(vec,vec->viewonassembly);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vec->viewonassembly);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +329,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
+PetscErrorCode  VecPointwiseMax(Vec w,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -347,7 +373,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
+PetscErrorCode  VecPointwiseMin(Vec w,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -389,7 +415,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMin(), VecPointwiseMax(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
+PetscErrorCode  VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -431,7 +457,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
 
 .seealso: VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
+PetscErrorCode  VecPointwiseDivide(Vec w,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -467,7 +493,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 .  newv - location to put new vector
 
    Notes:
-   VecDuplicate() does not copy the vector, but rather allocates storage
+   VecDuplicate() DOES NOT COPY the vector entries, but rather allocates storage
    for the new vector.  Use VecCopy() to copy a vector.
 
    Use VecDestroy() to free the space. Use VecDuplicateVecs() to get several
@@ -477,7 +503,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv)
+PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
 {
   PetscErrorCode ierr;
 
@@ -504,25 +530,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv)
 
 .seealso: VecDuplicate(), VecDestroyVecs()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
+PetscErrorCode  VecDestroy(Vec *v)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (--((PetscObject)v)->refct > 0) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
+  if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
+
+  ierr = PetscObjectAMSViewOff((PetscObject)*v);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
-  if (v->ops->destroy) {
-    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  if ((*v)->ops->destroy) {
+    ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
   }
   /* destroy the external/common part */
-  if (v->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->mapping);CHKERRQ(ierr);
-  }
-  if (v->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
-  }
-  ierr = PetscLayoutDestroy(v->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -554,7 +578,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
 
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
+PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 {
   PetscErrorCode ierr;
 
@@ -574,52 +598,29 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
    Collective on Vec
 
    Input Parameters:
-+  vv - pointer to array of vector pointers
++  vv - pointer to pointer to array of vector pointers
 -  m - the number of vectors previously obtained
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
-   See the Fortran chapter of the users manual and
-   petsc/src/vec/examples for details.
+   See the Fortran chapter of the users manual
 
    Level: intermediate
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsf90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec vv[],PetscInt m)
+PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(vv,1);
-  PetscValidHeaderSpecific(*vv,VEC_CLASSID,1);
-  PetscValidType(*vv,1);
-  ierr = (*(*vv)->ops->destroyvecs)(vv,m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "VecViewFromOptions"
-/*@
-  VecViewFromOptions - This function visualizes the vector based upon user options.
-
-  Collective on Vec
-
-  Input Parameters:
-. vec   - The vector
-. title - The title (currently ignored)
-
-  Level: intermediate
-
-.keywords: Vec, view, options, database
-.seealso: VecSetFromOptions(), VecView()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecView_Private(vec);CHKERRQ(ierr);
+  if (!*vv) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
+  PetscValidType(**vv,1);
+  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
+  *vv  = 0;
   PetscFunctionReturn(0);
 }
 
@@ -656,7 +657,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
 +    PETSC_VIEWER_DEFAULT - default, prints vector contents
-.    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
+.    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in MATLAB format
 .    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
@@ -678,28 +679,48 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
           PetscRealView(), PetscScalarView(), PetscIntView()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
+PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
+  PetscBool         iascii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(vec,1,viewer,2);
+  /* PetscCheckSameComm(vec,1,viewer,2); Viewing a SELF vec on a parallel viewer should be acceptable */
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscInt rows,bs;
+
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer,"Vector Object");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
+      if (bs != 1) {
+        ierr = PetscViewerASCIIPrintf(viewer,"length=%D, bs=%D\n",rows,bs);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"length=%D\n",rows);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+  }
   ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_USE_DEBUG)
-#include "../src/sys/totalview/tv_data_display.h"
+#include <../src/sys/totalview/tv_data_display.h>
 PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 {
   const PetscScalar *values;
@@ -709,7 +730,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 
   TV_add_row("Local rows", "int", &v->map->n);
   TV_add_row("Global rows", "int", &v->map->N);
-  TV_add_row("Typename", TV_ascii_string_type , ((PetscObject)v)->type_name);
+  TV_add_row("Typename", TV_ascii_string_type, ((PetscObject)v)->type_name);
   ierr = VecGetArrayRead((Vec)v,&values);CHKERRQ(ierr);
   ierr = PetscSNPrintf(type,32,"double[%d]",v->map->n);CHKERRQ(ierr);
   TV_add_row("values",type, values);
@@ -737,7 +758,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 
 .seealso: VecGetLocalSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec x,PetscInt *size)
+PetscErrorCode  VecGetSize(Vec x,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -770,7 +791,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec x,PetscInt *size)
 
 .seealso: VecGetSize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
+PetscErrorCode  VecGetLocalSize(Vec x,PetscInt *size)
 {
   PetscErrorCode ierr;
 
@@ -797,13 +818,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
 .  x - the vector
 
    Output Parameters:
-+  low - the first local element, pass in PETSC_NULL if not interested
--  high - one more than the last local element, pass in PETSC_NULL if not interested
++  low - the first local element, pass in NULL if not interested
+-  high - one more than the last local element, pass in NULL if not interested
 
    Note:
    The high argument is one more than the last element stored locally.
 
-   Fortran: PETSC_NULL_INTEGER should be used instead of PETSC_NULL
+   Fortran: NULL_INTEGER should be used instead of NULL
 
    Level: beginner
 
@@ -812,7 +833,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
 
 .seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
+PetscErrorCode  VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -853,7 +874,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
 
 .seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRange()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
+PetscErrorCode  VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
 {
   PetscErrorCode ierr;
 
@@ -882,13 +903,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
           to eliminate the global reduction in the VecAssemblyXXXX() if you know
           that you have only used VecSetValues() to set local elements
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
-          in ix in calls to VecSetValues or VecGetValues. These rows are simply
+          in ix in calls to VecSetValues() or VecGetValues(). These rows are simply
           ignored.
 
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op,PetscTruth flag)
+PetscErrorCode  VecSetOption(Vec x,VecOption op,PetscBool flag)
 {
   PetscErrorCode ierr;
 
@@ -921,7 +942,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroyVecs_Default"
-PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
+PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -929,7 +950,7 @@ PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
   PetscFunctionBegin;
   PetscValidPointer(v,1);
   if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
-  for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
+  for (i=0; i<m; i++) {ierr = VecDestroy(&v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -950,7 +971,7 @@ PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 .seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecPlaceArray()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
+PetscErrorCode  VecResetArray(Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -959,9 +980,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   PetscValidType(vec,1);
   if (vec->ops->resetarray) {
     ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot reset array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -972,26 +991,25 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with VecView().
 
-  Collective on PetscViewer 
+  Collective on PetscViewer
 
   Input Parameters:
 + newvec - the newly loaded vector, this needs to have been created with VecCreate() or
-           some related function before a call to VecLoad(). 
+           some related function before a call to VecLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
-
-  Basic Options Database Keys:
-+   -vec_type seq      - sequential type
-.   -vec_type mpi      - parallel type
 
    Level: intermediate
 
   Notes:
+  Defaults to the standard Seq or MPI Vec, if you want some other type of Vec call VecSetFromOptions()
+  before calling this.
+
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  If the type or size of newvec is not set before a call to VecLoad, PETSc 
-  sets the type and the local and global sizes.If type and/or 
+  If the type or size of newvec is not set before a call to VecLoad, PETSc
+  sets the type and the local and global sizes.If type and/or
   sizes are already set, then the same are used.
 
   IF using HDF5, you must assign the Vec the same name as was used in the Vec
@@ -1017,44 +1035,29 @@ and PetscBinaryWrite() to see how this may be done.
 
   Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
-@*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(Vec newvec, PetscViewer viewer)
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-  const char     *prefix;
-  PetscTruth     flg;
-  char           vtype[256];
-  const VecType  outtype=0;
+  PetscBool      isbinary,ishdf5;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscValidPointer(newvec,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-
-  if (((PetscObject)newvec)->type_name) outtype = ((PetscObject)newvec)->type_name;
-  /* Check if type if set  by checking the vec create function pointer*/
-  if (!outtype && !newvec->ops->create) {
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      outtype = vtype;
-    }
-    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    if (!outtype) {
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      outtype = (size > 1) ? VECMPI : VECSEQ;
-    }
-    ierr = VecSetType(newvec, outtype);CHKERRQ(ierr);
+  if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
+    ierr = VecSetType(newvec, VECSTANDARD);CHKERRQ(ierr);
   }
   ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "VecReciprocal"
@@ -1076,7 +1079,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(Vec newvec, PetscViewer viewer)
 .seealso: VecLog(), VecExp(), VecSqrtAbs()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
+PetscErrorCode  VecReciprocal(Vec vec)
 {
   PetscErrorCode ierr;
 
@@ -1092,7 +1095,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec vec)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOperation"
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
+PetscErrorCode  VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -1137,7 +1140,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
+PetscErrorCode  VecStashSetInitialSize(Vec vec,PetscInt size,PetscInt bsize)
 {
   PetscErrorCode ierr;
 
@@ -1163,9 +1166,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec vec,PetscInt size,P
    Concepts: vector^conjugate
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
+PetscErrorCode  VecConjugate(Vec x)
 {
-#ifdef PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1202,7 +1205,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs(), VecMaxPointwiseDivide()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
+PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -1233,7 +1236,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 
    Input Parameters:
 +  x  - the vector
--  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
+-  rctx - the random number context, formed by PetscRandomCreate(), or NULL and
           it will create one internally.
 
    Output Parameter:
@@ -1253,10 +1256,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
+PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
-  PetscRandom    randObj = PETSC_NULL;
+  PetscRandom    randObj = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -1265,7 +1268,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
 
   if (!rctx) {
-    MPI_Comm    comm;
+    MPI_Comm comm;
     ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
     ierr = PetscRandomCreate(comm,&randObj);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(randObj);CHKERRQ(ierr);
@@ -1276,9 +1279,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
 
-  if (randObj) {
-    ierr = PetscRandomDestroy(randObj);CHKERRQ(ierr);
-  }
+  ierr = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1295,12 +1296,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
 
   Level: beginner
 
+  Developer Note: This routine does not need to exist since the exact functionality is obtained with
+     VecSet(vec,0);  I guess someone added it to mirror the functionality of MatZeroEntries() but Mat is nothing
+     like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
+     this routine should not exist.
+
 .keywords: Vec, set, options, database
 .seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec vec)
+PetscErrorCode  VecZeroEntries(Vec vec)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = VecSet(vec,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1324,25 +1331,21 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec vec)
 */
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
-  PetscTruth     opt;
-  const VecType  defaultType;
+  PetscBool      opt;
+  VecType        defaultType;
   char           typeName[256];
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PetscObject)vec)->type_name) {
-    defaultType = ((PetscObject)vec)->type_name;
-  } else {
-    ierr = MPI_Comm_size(((PetscObject)vec)->comm, &size);CHKERRQ(ierr);
-    if (size > 1) {
-      defaultType = VECMPI;
-    } else {
-      defaultType = VECSEQ;
-    }
+  if (((PetscObject)vec)->type_name) defaultType = ((PetscObject)vec)->type_name;
+  else {
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec), &size);CHKERRQ(ierr);
+    if (size > 1) defaultType = VECMPI;
+    else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
@@ -1373,27 +1376,27 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 .keywords: Vec, set, options, database
 .seealso: VecCreate(), VecSetOptionsPrefix()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
+PetscErrorCode  VecSetFromOptions(Vec vec)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)vec)->comm, ((PetscObject)vec)->prefix, "Vector options", "Vec");CHKERRQ(ierr);
-    /* Handle vector type options */
-    ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
+  /* Handle vector type options */
+  ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecView",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
 
-    /* Handle specific vector options */
-    if (vec->ops->setfromoptions) {
-      ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
-    }
+  /* Handle specific vector options */
+  if (vec->ops->setfromoptions) {
+    ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
+  }
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  ierr = VecViewFromOptions(vec, ((PetscObject)vec)->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1417,13 +1420,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
 
 .seealso: VecGetSize(), PetscSplitOwnership()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
+PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID,1);
-  if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
+  if (N >= 0) PetscValidLogicalCollectiveInt(v,N,3);
+  if (N >= 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
   if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
@@ -1455,18 +1459,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
   Concepts: block size^vectors
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
+PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (bs <= 0) bs = 1;
   if (bs == v->map->bs) PetscFunctionReturn(0);
-  if (v->map->N != -1 && v->map->N % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map->N,bs);
-  if (v->map->n != -1 && v->map->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
-   Try setting blocksize before setting the vector type",v->map->n,bs);
-  PetscValidLogicalCollectiveInt(v,bs,2);  
-
-  v->map->bs   = bs;
+  PetscValidLogicalCollectiveInt(v,bs,2);
+  ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
@@ -1496,39 +1497,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
    Concepts: block^vector
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
+PetscErrorCode  VecGetBlockSize(Vec v,PetscInt *bs)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidIntPointer(bs,2);
-  *bs = v->map->bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecValid"
-/*@
-   VecValid - Checks whether a vector object is valid.
-
-   Not Collective
-
-   Input Parameter:
-.  v - the object to check
-
-   Output Parameter:
-.  flg - flag indicating vector status, either
-   PETSC_TRUE if vector is valid, or PETSC_FALSE otherwise.
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
-{
-  PetscFunctionBegin;
-  PetscValidIntPointer(flg,2);
-  if (!v)                                          *flg = PETSC_FALSE;
-  else if (((PetscObject)v)->classid != VEC_CLASSID) *flg = PETSC_FALSE;
-  else                                             *flg = PETSC_TRUE;
+  ierr = PetscLayoutGetBlockSize(v->map,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1554,7 +1530,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
 
 .seealso: VecSetFromOptions()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
+PetscErrorCode  VecSetOptionsPrefix(Vec v,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1586,7 +1562,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
 
 .seealso: VecGetOptionsPrefix()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix[])
+PetscErrorCode  VecAppendOptionsPrefix(Vec v,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1619,7 +1595,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix
 
 .seealso: VecAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[])
+PetscErrorCode  VecGetOptionsPrefix(Vec v,const char *prefix[])
 {
   PetscErrorCode ierr;
 
@@ -1649,7 +1625,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[]
 
 .seealso: VecCreate(), VecDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
+PetscErrorCode  VecSetUp(Vec v)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -1657,7 +1633,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   if (!((PetscObject)v)->type_name) {
-    ierr = MPI_Comm_size(((PetscObject)v)->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v), &size);CHKERRQ(ierr);
     if (size == 1) {
       ierr = VecSetType(v, VECSEQ);CHKERRQ(ierr);
     } else {
@@ -1694,9 +1670,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 
 .seealso: VecDuplicate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
+PetscErrorCode  VecCopy(Vec x,Vec y)
 {
-  PetscTruth     flgs[4];
+  PetscBool      flgs[4];
   PetscReal      norms[4] = {0.0,0.0,0.0,0.0};
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1708,26 +1684,59 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscValidType(y,2);
   if (x == y) PetscFunctionReturn(0);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", x->map->n, y->map->n);
 
-  ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
-
-
-  /*
-   * Update cached data
-  */
-  /* in general we consider this object touched */
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-
+#if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
   }
+#endif
+
+  ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
+#if defined(PETSC_USE_MIXED_PRECISION)
+  extern PetscErrorCode VecGetArray(Vec,double**);
+  extern PetscErrorCode VecRestoreArray(Vec,double**);
+  extern PetscErrorCode VecGetArray(Vec,float**);
+  extern PetscErrorCode VecRestoreArray(Vec,float**);
+  extern PetscErrorCode VecGetArrayRead(Vec,const double**);
+  extern PetscErrorCode VecRestoreArrayRead(Vec,const double**);
+  extern PetscErrorCode VecGetArrayRead(Vec,const float**);
+  extern PetscErrorCode VecRestoreArrayRead(Vec,const float**);
+  if ((((PetscObject)x)->precision == PETSC_PRECISION_SINGLE) && (((PetscObject)y)->precision == PETSC_PRECISION_DOUBLE)) {
+    PetscInt    i,n;
+    const float *xx;
+    double      *yy;
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) yy[i] = xx[i];
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  } else if ((((PetscObject)x)->precision == PETSC_PRECISION_DOUBLE) && (((PetscObject)y)->precision == PETSC_PRECISION_SINGLE)) {
+    PetscInt     i,n;
+    float        *yy;
+    const double *xx;
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) yy[i] = (float) xx[i];
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  } else {
+    ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
+  }
+#else
+  ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+#if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
     if (flgs[i]) {
       ierr = PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]);CHKERRQ(ierr);
     }
   }
+#endif
 
   ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1748,10 +1757,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
    Concepts: vector^swapping values
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
+PetscErrorCode  VecSwap(Vec x,Vec y)
 {
   PetscReal      normxs[4]={0.0,0.0,0.0,0.0},normys[4]={0.0,0.0,0.0,0.0};
-  PetscTruth     flgxs[4],flgys[4];
+  PetscBool      flgxs[4],flgys[4];
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -1767,13 +1776,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
-
-  /* See if we have cached norms;  increase state to remove previous cached values and reserve valid cached values */
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]);CHKERRQ(ierr);
     ierr = PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]);CHKERRQ(ierr);
   }
+  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   for (i=0; i<4; i++) {
@@ -1807,12 +1814,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
+PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,j;
-  PetscTruth     match;
+  PetscBool      match;
   VecStash       *s;
   PetscScalar    val;
 
@@ -1821,13 +1828,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(v,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&match);CHKERRQ(ierr);
   if (!match) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
-  s = &v->bstash;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRQ(ierr);
+  s    = &v->bstash;
 
   /* print block stash */
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1856,8 +1864,88 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsVec"
+PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man[],Vec v,PetscBool *set)
+{
+  PetscInt       i,N,rstart,rend;
+  PetscErrorCode ierr;
+  PetscScalar    *xx;
+  PetscReal      *xreal;
+  PetscBool      iset;
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetSize(v,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscReal),&xreal);CHKERRQ(ierr);
+  ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
+  if (iset) {
+    ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
+    ierr = VecRestoreArray(v,&xx);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(xreal);CHKERRQ(ierr);
+  if (set) *set = iset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetLayout"
+/*@
+   VecGetLayout - get PetscLayout describing vector layout
+
+   Not Collective
+
+   Input Arguments:
+.  x - the vector
+
+   Output Arguments:
+.  map - the layout
+
+   Level: developer
+
+.seealso: VecGetSizes(), VecGetOwnershipRange(), VecGetOwnershipRanges()
+@*/
+PetscErrorCode VecGetLayout(Vec x,PetscLayout *map)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  *map = x->map;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetLayout"
+/*@
+   VecSetLayout - set PetscLayout describing vector layout
+
+   Not Collective
+
+   Input Arguments:
++  x - the vector
+-  map - the layout
+
+   Notes:
+   It is normally only valid to replace the layout with a layout known to be equivalent.
+
+   Level: developer
+
+.seealso: VecGetLayout(), VecGetSizes(), VecGetOwnershipRange(), VecGetOwnershipRanges()
+@*/
+PetscErrorCode VecSetLayout(Vec x,PetscLayout map)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  ierr = PetscLayoutReference(map,&x->map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

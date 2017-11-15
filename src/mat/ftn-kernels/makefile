@@ -6,15 +6,13 @@
 # compare against C versions of the same kernels.
 
 ALL: lib
-#requirespackage   'PETSC_USE_FORTRAN_KERNELS'
+#requiresdefine   'PETSC_USE_FORTRAN_KERNELS'
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = sgemv.F
-SOURCEH  = 
-OBJSC    = 
-OBJSF    = sgemv.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
 LOCDIR   = src/mat/ftn-kernels/

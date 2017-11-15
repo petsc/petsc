@@ -1,12 +1,11 @@
-#define PETSCVEC_DLL
 
-#include "petscvec.h"        /*I "petscvec.h" I*/
+#include <petsc-private/vecimpl.h>        /*I "petscvec.h" I*/
+#include <petscdraw.h>
 
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecContourScale"
 /*@
-    VecContourScale - Prepares a vector of values to be plotted using 
+    VecContourScale - Prepares a vector of values to be plotted using
     the PetscDrawTriangle() contour plotter.
 
     Collective on Vec
@@ -21,7 +20,7 @@
 .seealso: PetscDrawTensorContour(),PetscDrawTensorContourPatch()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
+PetscErrorCode  VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   PetscScalar    *values;
   PetscErrorCode ierr;
@@ -31,18 +30,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec v,PetscReal vmin,PetscReal
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
 
-  if (PetscAbsReal(vmax - vmin) < 1.e-50) {
-     scale = 1.0;
-  } else {
-    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(vmax - vmin); 
-  }
+  if (PetscAbsReal(vmax - vmin) < 1.e-50) scale = 1.0;
+  else scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/(vmax - vmin);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    values[i] = (PetscReal)PETSC_DRAW_BASIC_COLORS + scale*(values[i] - vmin);
-  }
+  for (i=0; i<n; i++) values[i] = (PetscReal)PETSC_DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

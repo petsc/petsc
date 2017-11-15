@@ -4,12 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lu.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = lu.h
-OBJSC    = lu.o
-OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/factor/lu/
 

@@ -8,15 +8,18 @@ static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is
    Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
      petscviewer.h - viewers
 */
-#include "petscvec.h"
+#include <petscvec.h>
 
-PetscScalar func(PetscScalar a){return 2*a/(1+a*a);}
+PetscScalar func(PetscScalar a)
+{
+  return 2*a/(1+a*a);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -28,7 +31,7 @@ int main(int argc,char **argv)
   PetscScalar    dummy,result=0,h=1.0/numPoints,*xarray;
   Vec            x,xend;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 
@@ -38,21 +41,21 @@ int main(int argc,char **argv)
        The xend vector is a dummy vector to find the value of the
          elements at the endpoints for use in the trapezoid rule.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr = VecSet(x,result);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&xend);CHKERRQ(ierr);
-  result=0.5;
-  if (rank == 0){
-    i=0;
+  ierr   = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr   = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
+  ierr   = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr   = VecGetSize(x,&N);CHKERRQ(ierr);
+  ierr   = VecSet(x,result);CHKERRQ(ierr);
+  ierr   = VecDuplicate(x,&xend);CHKERRQ(ierr);
+  result = 0.5;
+  if (!rank) {
+    i    = 0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
-  } else if (rank == nproc){
-    i=N-1;
+  } else if (rank == nproc) {
+    i    = N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -69,8 +72,8 @@ int main(int argc,char **argv)
   */
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  k = 0;
-  for (i=rstart; i<rend; i++){
+  k    = 0;
+  for (i=rstart; i<rend; i++) {
     xarray[k] = i*h;
     xarray[k] = func(xarray[k]);
     k++;
@@ -81,21 +84,21 @@ int main(int argc,char **argv)
      Evaluates the integral.  First the sum of all the points is taken.
      That result is multiplied by the step size for the trapezoid rule.
      Then half the value at each endpoint is subtracted,
-	this is part of the composite trapezoid rule.
+     this is part of the composite trapezoid rule.
   */
-  ierr = VecSum(x,&result);CHKERRQ(ierr);
+  ierr   = VecSum(x,&result);CHKERRQ(ierr);
   result = result*h;
   ierr   = VecDot(x,xend,&dummy);CHKERRQ(ierr);
-  result = result-h*dummy;   
+  result = result-h*dummy;
 
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %A\n",result);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(xend);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %G\n",result);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&xend);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+

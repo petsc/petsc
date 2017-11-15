@@ -1,26 +1,25 @@
-/*
- * Test file for norm caching
- */
+static char help[] = "Tests for norm caching\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
+#include <petsc-private/petscimpl.h>  /* to gain access to the private PetscObjectStateIncrease() */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Vec            V,W;
-  PetscReal      nrm1,nrm2,nrm3,nrm4;
   MPI_Comm       comm;
   PetscScalar    one=1,e=2.7181;
+  PetscReal      nrm1,nrm2,nrm3,nrm4;
   PetscInt       ione=1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
-  
+
   ierr = VecCreateSeq(comm,10,&V);CHKERRQ(ierr);
-  ierr = VecSetRandom(V,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(V,NULL);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(V);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(V);CHKERRQ(ierr);
 
@@ -37,7 +36,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"cached: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
-  /* 
+  /*
    * Alter an element
    */
   ierr = VecSetValues(V,1,&ione,&one,INSERT_VALUES);CHKERRQ(ierr);
@@ -154,8 +153,8 @@ int main(int argc,char **argv)
   ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"swapped: F norm V=%e, F norm W=%e\n",nrm4,nrm3);CHKERRQ(ierr);
 
-  ierr = VecDestroy(V);CHKERRQ(ierr);
-  ierr = VecDestroy(W);CHKERRQ(ierr);
+  ierr = VecDestroy(&V);CHKERRQ(ierr);
+  ierr = VecDestroy(&W);CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);

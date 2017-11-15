@@ -74,7 +74,7 @@ public class amsoptions {
     /* Put the text area in a scroller. */
     JScrollPane scroll = new JScrollPane();
     scroll.getViewport().add(panel);
-    	
+
     frame.getContentPane().add(scroll,BorderLayout.CENTER);
 
     /* Create a Panel that  will contain two buttons. Default layout manager */
@@ -179,10 +179,10 @@ public class amsoptions {
     String Prefix = mem.get_field(flist[0]).getStringData()[0];
     if (Prefix != null) {
       if (Prefix.equals("Exit")) {
-	  /* Tell PETSc program we have received exit message */
-	  System.out.println("Received exit from program");
-	  mem.unlock();
-	  System.exit(0);
+          /* Tell PETSc program we have received exit message */
+          System.out.println("Received exit from program");
+          mem.unlock();
+          System.exit(0);
       }
       OptionsCategory = Prefix+":"+OptionsCategory;
     }
@@ -319,7 +319,7 @@ public class amsoptions {
         System.out.println("User changed Choice"+choice.getSelectedItem()+mem.get_field(choice.vName).getStringData()[0]);
         mem.get_field(choice.vLock).setData(true,0);
 
-        /* tell publisher that I changed a method so it can send me a new sreen of data */
+        /* tell publisher that I changed a method so it can send me a new screen of data */
         mem.get_field("ChangedMethod").setData(true,0);
         panel.removeAll();
         System.out.println("User selected choice");
@@ -366,20 +366,20 @@ public class amsoptions {
 
     protected class IntDocument extends PlainDocument {
       public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	char[] source = str.toCharArray();
-	char[] result = new char[source.length];
-	int j = 0;
-	for (int i = 0; i<result.length; i++) {
-	  if (Character.isDigit(source[i])) {
-	    result[j++] = source[i];
-	  } 
-	}
-	super.insertString(offs, new String(result,0,j),a);
+        char[] source = str.toCharArray();
+        char[] result = new char[source.length];
+        int j = 0;
+        for (int i = 0; i<result.length; i++) {
+          if (Character.isDigit(source[i])) {
+            result[j++] = source[i];
+          } 
+        }
+        super.insertString(offs, new String(result,0,j),a);
         if (vName != null) {
           System.out.println("User changed int"+vName+vLock+getValue());
-	  mem.get_field(vName).setData(getValue(),0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
+          mem.get_field(vName).setData(getValue(),0); 
+          mem.get_field(vLock).setData(true,0); 
+        }
       }
     }
   }
@@ -408,16 +408,16 @@ public class amsoptions {
 
     protected class DoubleDocument extends PlainDocument {
       public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	char[] source = str.toCharArray();
-	char[] result = new char[source.length];
-	int j = 0;
-	for (int i = 0; i<result.length; i++) {
-	  if (Character.isDigit(source[i]) || source[i] == 'E' ||
+        char[] source = str.toCharArray();
+        char[] result = new char[source.length];
+        int j = 0;
+        for (int i = 0; i<result.length; i++) {
+          if (Character.isDigit(source[i]) || source[i] == 'E' ||
               source[i] == '+' || source[i] == '-' || source[i] == '.') {
-	    result[j++] = source[i];
-	  } 
-	}
-	super.insertString(offs, new String(result,0,j),a);
+            result[j++] = source[i];
+          } 
+        }
+        super.insertString(offs, new String(result,0,j),a);
         if (vName != null) {
           double v;
           try {
@@ -427,9 +427,9 @@ public class amsoptions {
           } 
           System.out.println("User changed double"+vName+vLock+v);
 
-	  mem.get_field(vName).setData(v,0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
+          mem.get_field(vName).setData(v,0); 
+          mem.get_field(vLock).setData(true,0); 
+        }
       }
     }
   }
@@ -450,11 +450,11 @@ public class amsoptions {
 
     protected class DoubleDocument extends PlainDocument {
       public void insertString(int offs, String str,AttributeSet a) throws BadLocationException {
-	super.insertString(offs,str,a);
+        super.insertString(offs,str,a);
         if (vName != null) {
-	  mem.get_field(vName).setData(str,0); 
-	  mem.get_field(vLock).setData(true,0); 
-	}
+          mem.get_field(vName).setData(str,0); 
+          mem.get_field(vLock).setData(true,0); 
+        }
       }
     }
   }

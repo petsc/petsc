@@ -1,58 +1,58 @@
-/* 
+/*
    This should not be included in users code.
 
   Includes definition of structure for seqential vectors
 
-  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c 
+  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c
 */
 
-#ifndef __DVECIMPL 
+#if !defined(__DVECIMPL)
 #define __DVECIMPL
 
-#include "private/vecimpl.h"
+#include <petsc-private/vecimpl.h>
 
-typedef struct { 
+typedef struct {
   VECHEADER
 } Vec_Seq;
 
-EXTERN PetscErrorCode VecMDot_Seq(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecMTDot_Seq(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecMin_Seq(Vec,PetscInt*,PetscReal *);
-EXTERN PetscErrorCode VecSet_Seq(Vec,PetscScalar);
-EXTERN PetscErrorCode VecSetRandom_Seq(Vec,PetscRandom);
-EXTERN PetscErrorCode VecMAXPY_Seq(Vec,PetscInt,const PetscScalar *,Vec *);
-EXTERN PetscErrorCode VecAYPX_Seq(Vec,PetscScalar,Vec);
-EXTERN PetscErrorCode VecWAXPY_Seq(Vec,PetscScalar,Vec,Vec);
-EXTERN PetscErrorCode VecAXPBYPCZ_Seq(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMult_Seq(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMax_Seq(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMaxAbs_Seq(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMin_Seq(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseDivide_Seq(Vec,Vec,Vec);
-EXTERN PetscErrorCode VecMaxPointwiseDivide_Seq(Vec,Vec,PetscReal*);
-EXTERN PetscErrorCode VecGetArray_Seq(Vec,PetscScalar *[]);
-EXTERN PetscErrorCode VecRestoreArray_Seq(Vec,PetscScalar *[]);
-EXTERN PetscErrorCode VecPlaceArray_Seq(Vec,const PetscScalar *);
-EXTERN PetscErrorCode VecResetArray_Seq(Vec);
-EXTERN PetscErrorCode VecReplaceArray_Seq(Vec,const PetscScalar *);
-EXTERN PetscErrorCode VecGetSize_Seq(Vec,PetscInt *);
-EXTERN PetscErrorCode VecDot_Seq(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecTDot_Seq(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecScale_Seq(Vec,PetscScalar);
-EXTERN PetscErrorCode VecCopy_Seq(Vec,Vec);
-EXTERN PetscErrorCode VecSwap_Seq(Vec,Vec);
-EXTERN PetscErrorCode VecAXPY_Seq(Vec,PetscScalar,Vec);
-EXTERN PetscErrorCode VecAXPBY_Seq(Vec,PetscScalar,PetscScalar,Vec);
-EXTERN PetscErrorCode VecMax_Seq(Vec,PetscInt*,PetscReal *);
-EXTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec *);
-EXTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscTruth);
-EXTERN PetscErrorCode VecConjugate_Seq(Vec);
-EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
-EXTERN_C_END
-EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
-EXTERN PetscErrorCode VecDestroy_Seq(Vec);
-EXTERN PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
+PETSC_INTERN PetscErrorCode VecMDot_Seq(Vec,PetscInt,const Vec[],PetscScalar*);
+PETSC_INTERN PetscErrorCode VecMTDot_Seq(Vec,PetscInt,const Vec[],PetscScalar*);
+PETSC_INTERN PetscErrorCode VecMin_Seq(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecSet_Seq(Vec,PetscScalar);
+PETSC_INTERN PetscErrorCode VecMAXPY_Seq(Vec,PetscInt,const PetscScalar*,Vec*);
+PETSC_INTERN PetscErrorCode VecAYPX_Seq(Vec,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecWAXPY_Seq(Vec,PetscScalar,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecAXPBYPCZ_Seq(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecMaxPointwiseDivide_Seq(Vec,Vec,PetscReal*);
+PETSC_INTERN PetscErrorCode VecPlaceArray_Seq(Vec,const PetscScalar*);
+PETSC_INTERN PetscErrorCode VecResetArray_Seq(Vec);
+PETSC_INTERN PetscErrorCode VecReplaceArray_Seq(Vec,const PetscScalar*);
+PETSC_INTERN PetscErrorCode VecDot_Seq(Vec,Vec,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecTDot_Seq(Vec,Vec,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecScale_Seq(Vec,PetscScalar);
+PETSC_INTERN PetscErrorCode VecAXPY_Seq(Vec,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecAXPBY_Seq(Vec,PetscScalar,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecMax_Seq(Vec,PetscInt*,PetscReal*);
+PETSC_INTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
+PETSC_INTERN PetscErrorCode VecDestroy_Seq(Vec);
+PETSC_INTERN PetscErrorCode VecDuplicate_Seq(Vec,Vec*);
+PETSC_INTERN PetscErrorCode VecSetOption_Seq(Vec,VecOption,PetscBool);
+PETSC_INTERN PetscErrorCode VecGetValues_Seq(Vec,PetscInt,const PetscInt*,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecSetValues_Seq(Vec,PetscInt,const PetscInt*,const PetscScalar*,InsertMode);
+PETSC_INTERN PetscErrorCode VecSetValuesBlocked_Seq(Vec,PetscInt,const PetscInt*,const PetscScalar*,InsertMode);
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
+PETSC_INTERN PetscErrorCode VecGetSize_Seq(Vec,PetscInt*);
+PETSC_INTERN PetscErrorCode VecCopy_Seq(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecSwap_Seq(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecConjugate_Seq(Vec);
+PETSC_INTERN PetscErrorCode VecSetRandom_Seq(Vec,PetscRandom);
+PETSC_INTERN PetscErrorCode VecPointwiseMult_Seq(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPointwiseMax_Seq(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPointwiseMaxAbs_Seq(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPointwiseMin_Seq(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPointwiseDivide_Seq(Vec,Vec,Vec);
+
+PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
 
 #endif

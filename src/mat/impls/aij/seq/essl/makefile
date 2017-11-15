@@ -8,12 +8,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = essl.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  =
-OBJSC    = essl.o
-OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/essl/
 

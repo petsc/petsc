@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# 
+#
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
 # on the 'Level of Difficulty'
@@ -31,7 +31,7 @@ def maketranspose(data,ncol):
             newi          = row*ncol+col
             newdata[newi] = data[i]
       return newdata
-            
+
 # Now use the level info, and print a html formatted index
 # table. Can also provide a header file, whose contents are
 # first copied over.
@@ -78,7 +78,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                         fd.write('<B>' + 'No ' + level +' routines' + '</B>')
                         fd.write('</TD></TR>\n')
                         continue
-                  
+
             fd.write('<TR><TD WIDTH=250 COLSPAN="3">')
             #fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
             fd.write('<B>' + title + '</B>')
@@ -94,7 +94,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="../../index.html"><IMG SRC="../up.gif">Table of Contents</A>\n')
+      fd.write('<BR><A HREF="../../index.html">Table of Contents</A>\n')
       fd.close()
 
 # This routine takes in as input a dictionary, which contains the
@@ -182,7 +182,7 @@ def modifylevel(filename,secname):
       tmpbuf = re_loc.sub('.c.html#',tmpbuf)
       re_loc = re.compile('.h#')
       tmpbuf = re_loc.sub('.h.html#',tmpbuf)
-      
+
       re_loc = re.compile('</BODY></HTML>')
       outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
 
@@ -192,11 +192,11 @@ def modifylevel(filename,secname):
             fd = open(filename,'w')
       except:
             print 'Error! Cannot write to file:',filename
-            exit()            
+            exit()
       fd.write(outbuf)
       fd.close()
       return level
-      
+
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
 def createtable(dirname,levels,secname):
@@ -208,7 +208,7 @@ def createtable(dirname,levels,secname):
 
       table = []
       for level in levels: table.append([])
-      
+
       for filename in split(strip(buf),'\n'):
             level = modifylevel(filename,secname)
             #if not level: continue
@@ -271,8 +271,8 @@ def getallmandirs(dirs):
 # starts genrating index for all the manpages.
 def main():
       arg_len = len(argv)
-      
-      if arg_len < 3: 
+
+      if arg_len < 3:
             print 'Error! Insufficient arguments.'
             print 'Usage:', argv[0], 'PETSC_DIR','LOC'
             exit()
@@ -287,7 +287,7 @@ def main():
 
       levels = ['beginner','intermediate','advanced','developer','deprecated','none']
       titles = ['Beginner - Basic usage',
-                'Intermediate - Setting options for algorithms and data structures', 
+                'Intermediate - Setting options for algorithms and data structures',
                 'Advanced - Setting more advanced options and customization',
                 'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
                 'Deprecated - Functionality scheduled for removal in future versions',
@@ -306,9 +306,9 @@ def main():
       alphabet_dict = createdict(singlelist)
       outfilename   = LOC + '/docs/manualpages' + '/singleindex.html'
       printsingleindex (outfilename,alphabet_dict)
-      
+
 # The classes in this file can also
 # be used in other python-programs by using 'import'
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
       main()
-    
+

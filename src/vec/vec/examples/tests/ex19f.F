@@ -1,15 +1,15 @@
 !
 !
       program main
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 !
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.
 !
        PetscInt  n
        PetscErrorCode ierr
-       PetscTruth flg
+       PetscBool  flg
        PetscScalar      one,two,three,dot
        PetscReal        norm,rdot
        Vec              x,y,w
@@ -19,7 +19,7 @@
        two   = 2.0
        three = 3.0
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! Create a vector, then duplicate it
@@ -58,4 +58,4 @@
        call PetscFinalize(ierr)
        end
 
- 
+

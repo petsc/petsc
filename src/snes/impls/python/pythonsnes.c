@@ -1,4 +1,4 @@
-#include "private/snesimpl.h"          /*I "petscsnes.h" I*/
+#include <petsc-private/snesimpl.h>          /*I "petscsnes.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESPythonSetType"
@@ -20,15 +20,13 @@
 
 .seealso: SNESCreate(), SNESSetType(), SNESPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname[])
+PetscErrorCode  SNESPythonSetType(SNES snes,const char pyname[])
 {
-  PetscErrorCode (*f)(SNES, const char[]) = 0;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(snes,pyname);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(snes,"SNESPythonSetType_C",(SNES, const char[]),(snes,pyname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

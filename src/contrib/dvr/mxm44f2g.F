@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
 c
 c     unrolled loop routine written by paul fischer
 c
-#include "finclude/petscsys.h"      
+#include <finclude/petscsys.h>
       double precision a(n1,n2),b(n2,n3),c(n1,n3)
 C
       if (n2.le.8) then
@@ -644,11 +644,11 @@ c
       double precision s11, s12, s13, s14, s21, s22, s23, s24
       double precision s31, s32, s33, s34, s41, s42, s43, s44
 c
-c matrix multiply with a 4x4 pencil 
+c matrix multiply with a 4x4 pencil
 c
 
-      mresid = iand(m,3) 
-      nresid = iand(n,3) 
+      mresid = iand(m,3)
+      nresid = iand(n,3)
       m1 = m - mresid + 1
       n1 = n - nresid + 1
 
@@ -691,14 +691,14 @@ c
             s43 = s43 + a(i+3,l)*b(l,j+2)
             s44 = s44 + a(i+3,l)*b(l,j+3)
           enddo
-          c(i,j)     = s11 
-          c(i,j+1)   = s12 
+          c(i,j)     = s11
+          c(i,j+1)   = s12
           c(i,j+2)   = s13
           c(i,j+3)   = s14
 
-          c(i+1,j)   = s21 
-          c(i+2,j)   = s31 
-          c(i+3,j)   = s41 
+          c(i+1,j)   = s21
+          c(i+2,j)   = s31
+          c(i+3,j)   = s41
 
           c(i+1,j+1) = s22
           c(i+2,j+1) = s32
@@ -725,10 +725,10 @@ c
               s31 = s31 + a(i+2,l)*b(l,n)
               s41 = s41 + a(i+3,l)*b(l,n)
             enddo
-            c(i,n)     = s11 
-            c(i+1,n)   = s21 
-            c(i+2,n)   = s31 
-            c(i+3,n)   = s41 
+            c(i,n)     = s11
+            c(i+1,n)   = s21
+            c(i+2,n)   = s31
+            c(i+3,n)   = s41
           elseif (nresid .eq. 2) then
             s11 = 0.0d0
             s21 = 0.0d0
@@ -751,12 +751,12 @@ c
               s41 = s41 + a(i+3,l)*b(l,j)
               s42 = s42 + a(i+3,l)*b(l,j+1)
             enddo
-            c(i,j)     = s11 
+            c(i,j)     = s11
             c(i,j+1)   = s12
 
-            c(i+1,j)   = s21 
-            c(i+2,j)   = s31 
-            c(i+3,j)   = s41 
+            c(i+1,j)   = s21
+            c(i+2,j)   = s31
+            c(i+3,j)   = s41
 
             c(i+1,j+1) = s22
             c(i+2,j+1) = s32
@@ -791,11 +791,11 @@ c
               s42 = s42 + a(i+3,l)*b(l,j+1)
               s43 = s43 + a(i+3,l)*b(l,j+2)
             enddo
-            c(i,j)     = s11 
-            c(i+1,j)   = s21 
-            c(i+2,j)   = s31 
-            c(i+3,j)   = s41 
-            c(i,j+1)   = s12 
+            c(i,j)     = s11
+            c(i+1,j)   = s21
+            c(i+2,j)   = s31
+            c(i+3,j)   = s41
+            c(i,j+1)   = s12
             c(i+1,j+1) = s22
             c(i+2,j+1) = s32
             c(i+3,j+1) = s42
@@ -822,8 +822,8 @@ c
             s13 = s13 + a(m,l)*b(l,j+2)
             s14 = s14 + a(m,l)*b(l,j+3)
           enddo
-          c(m,j)     = s11 
-          c(m,j+1)   = s12 
+          c(m,j)     = s11
+          c(m,j+1)   = s12
           c(m,j+2)   = s13
           c(m,j+3)   = s14
         enddo
@@ -860,7 +860,7 @@ c
           c(m,n-1) = s12
           c(m,n) = s13
           return
-        endif          
+        endif
       elseif (mresid .eq. 2) then
         do j=1,n-nresid,4
           s11 = 0.0d0
@@ -882,12 +882,12 @@ c
             s23 = s23 + a(m,l)*b(l,j+2)
             s24 = s24 + a(m,l)*b(l,j+3)
           enddo
-          c(m-1,j)   = s11 
-          c(m-1,j+1) = s12 
+          c(m-1,j)   = s11
+          c(m-1,j+1) = s12
           c(m-1,j+2) = s13
           c(m-1,j+3) = s14
           c(m,j)     = s21
-          c(m,j+1)   = s22 
+          c(m,j+1)   = s22
           c(m,j+2)   = s23
           c(m,j+3)   = s24
         enddo
@@ -978,17 +978,17 @@ c
             s33 = s33 + a(m,l)*b(l,j+2)
             s34 = s34 + a(m,l)*b(l,j+3)
           enddo
-          c(m-2,j)   = s11 
-          c(m-2,j+1) = s12 
+          c(m-2,j)   = s11
+          c(m-2,j+1) = s12
           c(m-2,j+2) = s13
           c(m-2,j+3) = s14
 
-          c(m-1,j)   = s21 
+          c(m-1,j)   = s21
           c(m-1,j+1) = s22
           c(m-1,j+2) = s23
           c(m-1,j+3) = s24
 
-          c(m,j)     = s31 
+          c(m,j)     = s31
           c(m,j+1)   = s32
           c(m,j+2)   = s33
           c(m,j+3)   = s34
@@ -1071,7 +1071,7 @@ c-----------------------------------------------------------------------
       subroutine mxm44_2(a, m, b, k, c, n)
       double precision a(m,2), b(2,n), c(m,n)
 
-      nresid = iand(n,3) 
+      nresid = iand(n,3)
       n1 = n - nresid + 1
 
       do j=1,n-nresid,4

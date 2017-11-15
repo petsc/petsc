@@ -2,9 +2,9 @@
 
 #include <math.h>
 #include <queue>
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/subgraph.hpp"
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/subgraph.hpp>
 
 using namespace boost;
 
@@ -27,12 +27,12 @@ namespace boost {
 
 
 typedef property<vertex_parent_t, PetscInt, 
-		 property<vertex_children_t, std::vector<PetscInt>,
-			  property<vertex_depth_t, PetscScalar, 
-				   property<vertex_index_t, PetscInt> > > > VertexProperty;
+                 property<vertex_children_t, std::vector<PetscInt>,
+                          property<vertex_depth_t, PetscScalar, 
+                                   property<vertex_index_t, PetscInt> > > > VertexProperty;
 typedef property<edge_length_t, PetscScalar,
-		 property<edge_keep_t, PetscTruth, 
-			  property<edge_index_t, PetscInt> > >  EdgeProperty2;
+                 property<edge_keep_t, PetscBool, 
+                          property<edge_index_t, PetscInt> > >  EdgeProperty2;
 typedef property<edge_weight_t, PetscScalar, EdgeProperty2> EdgeProperty;
 // I wish I knew a better way to make a convenient edge property constructor
 #define EDGE_PROPERTY(WEIGHT,LENGTH,KEEP) EdgeProperty(WEIGHT,EdgeProperty2(LENGTH,KEEP))
@@ -71,8 +71,8 @@ struct ComponentPair {
   std::pair<PetscScalar,PetscScalar> rootCongestion;
 
   ComponentPair() {
-    first = PETSC_NULL;
-    second = PETSC_NULL;
+    first = NULL;
+    second = NULL;
   }
 
   int getIndex(Component *c) {
@@ -135,31 +135,31 @@ typedef std::priority_queue<PQNode> ShortestPathPriorityQueue;
   Function headers
 */
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *pre,
-				      PetscReal tol,PetscReal& maxCong);
-PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,
-					       PetscReal tol,PetscReal& maxCong);
+                                      PetscReal tol,PetscReal& maxCong);
+PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool augment,
+                                               PetscReal tol,PetscReal& maxCong);
 PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const PetscScalar alpha,PetscInt perm[]);
 PetscErrorCode StarDecomp(const Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
-			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
-			  std::vector<PetscInt>& x,std::vector<PetscInt>& y);
+                          PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
+                          std::vector<PetscInt>& x,std::vector<PetscInt>& y);
 PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& maxCong);
 PetscErrorCode DecomposeSpanningTree(Graph& g,const PetscInt root,
-				     const PetscScalar maxInternalStretch,
-				     const PetscScalar maxExternalWeight,
-				     std::vector<Component*>& componentList,
-				     std::vector<ComponentPair>& edgeComponentMap);
+                                     const PetscScalar maxInternalStretch,
+                                     const PetscScalar maxExternalWeight,
+                                     std::vector<Component*>& componentList,
+                                     std::vector<ComponentPair>& edgeComponentMap);
 PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
-				const PetscScalar maxInternalStretch,
-				const PetscScalar maxExternalWeight,
-				std::vector<Component*>& componentList,
-				std::vector<ComponentPair>& edgeComponentMap,
-				Component*& currComponent,
-				PetscScalar& currInternalStretch,
-				PetscScalar& currExternalWeight);
+                                const PetscScalar maxInternalStretch,
+                                const PetscScalar maxExternalWeight,
+                                std::vector<Component*>& componentList,
+                                std::vector<ComponentPair>& edgeComponentMap,
+                                Component*& currComponent,
+                                PetscScalar& currInternalStretch,
+                                PetscScalar& currExternalWeight);
 PetscErrorCode AddBridges(Graph& g,
-			  std::vector<Component*>& componentList,
-			  std::vector<ComponentPair>& edgeComponentMap,
-			  PetscScalar& maxCong);
+                          std::vector<Component*>& componentList,
+                          std::vector<ComponentPair>& edgeComponentMap,
+                          PetscScalar& maxCong);
 
 
 /* -------------------------------------------------------------------------- */
@@ -177,7 +177,7 @@ PetscErrorCode AddBridges(Graph& g,
 #undef __FUNCT__  
 #define __FUNCT__ "LowStretchSpanningTree"
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
-				      PetscReal tol,PetscReal& maxCong)
+                                      PetscReal tol,PetscReal& maxCong)
 {
   PetscErrorCode    ierr;
 
@@ -191,7 +191,7 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
 /*
    AugmentedLowStretchSpanningTree - Applies EEST algorithm to construct 
                                      low-stretch spanning tree preconditioner;
-				     then augments tree with additional edges
+                                     then augments tree with additional edges
                             
 
    Input Parameters:
@@ -203,8 +203,8 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
  */
 #undef __FUNCT__  
 #define __FUNCT__ "AugmentedLowStretchSpanningTree"
-PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth augment,
-					       PetscReal tol,PetscReal& maxCong)
+PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscBool augment,
+                                               PetscReal tol,PetscReal& maxCong)
 {
 #ifndef PETSC_USE_COMPLEX
   PetscInt          *idx;
@@ -223,14 +223,14 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
   PetscErrorCode    ierr;
   PetscFunctionBegin;
 
-  ierr = MatGetSize(mat,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,NULL,&n);CHKERRQ(ierr);
 
   Graph g(n);
 
   EdgeKeep edge_keep_g = get(edge_keep_t(),g);
 
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(((PetscObject) mat)->comm, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   ierr = PetscMalloc3(n,PetscScalar,&diag,n,PetscInt,&dnz,n,PetscInt,&onz);CHKERRQ(ierr);
   ierr = PetscMemzero(dnz, n * sizeof(PetscInt));CHKERRQ(ierr);
@@ -243,12 +243,12 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
       if (cols_c[k] == i) {
         diag[i] += vals_c[k];
       } else if (vals_c[k] != 0) {
-	absval = vals_c[k]>0?vals_c[k]:-vals_c[k];
-	diag[i] -= absval;
-	if (cols_c[k] > i && absval > tol) { 
-	  // we set edge_weight = absval; edge_length = 1.0/absval; edge_keep = PETSC_FALSE
-	  add_edge(i,cols_c[k],EDGE_PROPERTY(absval,1.0/absval,PETSC_FALSE),g);
-	}
+        absval = vals_c[k]>0?vals_c[k]:-vals_c[k];
+        diag[i] -= absval;
+        if (cols_c[k] > i && absval > tol) { 
+          // we set edge_weight = absval; edge_length = 1.0/absval; edge_keep = PETSC_FALSE
+          add_edge(i,cols_c[k],EDGE_PROPERTY(absval,1.0/absval,PETSC_FALSE),g);
+        }
       }
     }
     ierr = MatRestoreRow(mat,i,&ncols,&cols_c,&vals_c);CHKERRQ(ierr);
@@ -325,8 +325,8 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
   */
   ierr = MatLUFactor(*pre,rperm,cperm,&info);CHKERRQ(ierr);
-  ierr = ISDestroy(rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -421,14 +421,14 @@ PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const P
 #undef __FUNCT__  
 #define __FUNCT__ "LowStretchSpanningTreeHelper"
 PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
-			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
-			  std::vector<PetscInt>& x,std::vector<PetscInt>& y)
+                          PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
+                          std::vector<PetscInt>& x,std::vector<PetscInt>& y)
 {
 #ifndef PETSC_USE_COMPLEX
   PetscInt n,m,edgesLeft;
   //PetscErrorCode ierr;
   ShortestPathPriorityQueue pq;
-  PetscScalar radius;
+  PetscScalar radius = 0;
   PetscInt centerSize;
   std::vector<PetscInt> centerIdx;
   PQNode node;
@@ -436,7 +436,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   EdgeLength edge_length_g = get(edge_length_t(),g);
@@ -448,7 +448,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   std::vector<PetscInt> *succ = new std::vector<PetscInt>[n];
   std::vector<PetscInt>::iterator i;
   PetscScalar *dist = new PetscScalar[n];
-  std::vector<PetscTruth> taken(n,PETSC_FALSE);
+  std::vector<PetscBool> taken(n,PETSC_FALSE);
 
   /** form tree of shortest paths to root **/
   graph_traits<Graph>::out_edge_iterator e, e_end;  
@@ -464,10 +464,10 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       pred[node.vertex] = node.pred;
       dist[node.vertex] = node.dist;
       for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
-	PetscInt t = target(*e,g);
-	if (pred[t] == -1) {
-	  pq.push(PQNode(t,node.vertex,node.dist+get(edge_length_g,*e)));
-	}
+        PetscInt t = target(*e,g);
+        if (pred[t] == -1) {
+          pq.push(PQNode(t,node.vertex,node.dist+get(edge_length_g,*e)));
+        }
       }
       radius = node.dist;
     }
@@ -495,10 +495,10 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     centerSize++;
     for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
       if (taken[target(*e,g)]) {
-	boundary -= get(edge_weight_g,*e);
+        boundary -= get(edge_weight_g,*e);
       } else {
-	boundary += get(edge_weight_g,*e);
-	edgeCount++;
+        boundary += get(edge_weight_g,*e);
+        edgeCount++;
       }
     }
     for (i=succ[node.vertex].begin();i!=succ[node.vertex].end();i++) {
@@ -513,10 +513,10 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     centerSize++;
     for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
       if (taken[target(*e,g)]) {
-	boundary -= get(edge_weight_g,*e);
+        boundary -= get(edge_weight_g,*e);
       } else {
-	boundary += get(edge_weight_g,*e);
-	edgeCount++;
+        boundary += get(edge_weight_g,*e);
+        edgeCount++;
       }
     }
     for (i=succ[node.vertex].begin();i!=succ[node.vertex].end();i++) {
@@ -532,7 +532,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   std::queue<PetscInt> anchor_q;
   ShortestPathPriorityQueue cone_pq;
   std::vector<PetscInt> *cone_succ = new std::vector<PetscInt>[n];
-  std::vector<PetscTruth> cone_found(n,PETSC_FALSE);
+  std::vector<PetscBool> cone_found(n,PETSC_FALSE);
 
   /** form tree of shortest paths to an anchor **/
   while (!pq.empty()) {
@@ -542,7 +542,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
       PetscInt t = target(*e,g);
       if (!taken[t]) {
-	cone_pq.push(PQNode(t,node.vertex,get(edge_length_g,*e)));
+        cone_pq.push(PQNode(t,node.vertex,get(edge_length_g,*e)));
       }
     }
   }
@@ -552,10 +552,10 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       cone_succ[node.pred].push_back(node.vertex);
       cone_found[node.vertex] = PETSC_TRUE;
       for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
-	PetscInt t = target(*e,g);
-	if (!taken[t] && !cone_found[t]) {
-	  cone_pq.push(PQNode(t,node.vertex,node.dist+get(edge_length_g,*e)));
-	}
+        PetscInt t = target(*e,g);
+        if (!taken[t] && !cone_found[t]) {
+          cone_pq.push(PQNode(t,node.vertex,node.dist+get(edge_length_g,*e)));
+        }
       }
     }
   }
@@ -569,64 +569,64 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       std::vector<PetscInt> thisIdx;
       std::queue<PetscInt> q;
       ShortestPathPriorityQueue mycone_pq;
-      std::vector<PetscTruth> mycone_taken(n,PETSC_FALSE);
+      std::vector<PetscBool> mycone_taken(n,PETSC_FALSE);
       PetscInt initialInternalConeEdges = 0;
 
       boundary = 0;
       edgeCount = 0;
       q.push(anchor);
       while (!q.empty()) {
-	v = q.front();q.pop();
-	taken[v] = PETSC_TRUE;
-	mycone_taken[v] = PETSC_TRUE;
-	thisIdx.push_back(g.local_to_global(v));
-	thisSize++;
-	for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
-	  q.push(*i);
-	}
-	for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
-	  PetscInt t = target(*e,g);
-	  if (!taken[t]) {
-	    mycone_pq.push(PQNode(t,v,get(edge_length_g,*e)));
-	    boundary += get(edge_weight_g,*e);
-	    edgeCount++;
-	  } else if (mycone_taken[t]) {
-	    boundary -= get(edge_weight_g,*e);
-	    initialInternalConeEdges++;
-	  }
-	}
+        v = q.front();q.pop();
+        taken[v] = PETSC_TRUE;
+        mycone_taken[v] = PETSC_TRUE;
+        thisIdx.push_back(g.local_to_global(v));
+        thisSize++;
+        for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
+          q.push(*i);
+        }
+        for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
+          PetscInt t = target(*e,g);
+          if (!taken[t]) {
+            mycone_pq.push(PQNode(t,v,get(edge_length_g,*e)));
+            boundary += get(edge_weight_g,*e);
+            edgeCount++;
+          } else if (mycone_taken[t]) {
+            boundary -= get(edge_weight_g,*e);
+            initialInternalConeEdges++;
+          }
+        }
       }
       if (initialInternalConeEdges < edgesLeft) {
-	while (initialInternalConeEdges == 0 ?
-	       boundary > (edgeCount+1)*log((double)(edgesLeft+1))*2.0/(log(2.0)*epsilon*radius) : 
-	       boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
-	  {
-	    assert(!mycone_pq.empty());
-	    node = mycone_pq.top();mycone_pq.pop();
-	    if (!mycone_taken[node.vertex]) {
-	      q.push(node.vertex);
-	      while (!q.empty()) {
-		v = q.front();q.pop();
-		taken[v] = PETSC_TRUE;
-		mycone_taken[v] = PETSC_TRUE;
-		thisIdx.push_back(g.local_to_global(v));
-		thisSize++;
-		for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
-		  q.push(*i);
-		}
-		for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
-		  PetscInt t = target(*e,g);
-		  if (!taken[t]) {
-		    mycone_pq.push(PQNode(t,v,node.dist+get(edge_length_g,*e)));
-		    boundary += get(edge_weight_g,*e);
-		    edgeCount++;
-		  } else if (mycone_taken[t]) {
-		    boundary -= get(edge_weight_g,*e);
-		  }
-		}
-	      }
-	    }
-	  }
+        while (initialInternalConeEdges == 0 ?
+               boundary > (edgeCount+1)*log((double)(edgesLeft+1))*2.0/(log(2.0)*epsilon*radius) : 
+               boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
+          {
+            assert(!mycone_pq.empty());
+            node = mycone_pq.top();mycone_pq.pop();
+            if (!mycone_taken[node.vertex]) {
+              q.push(node.vertex);
+              while (!q.empty()) {
+                v = q.front();q.pop();
+                taken[v] = PETSC_TRUE;
+                mycone_taken[v] = PETSC_TRUE;
+                thisIdx.push_back(g.local_to_global(v));
+                thisSize++;
+                for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
+                  q.push(*i);
+                }
+                for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
+                  PetscInt t = target(*e,g);
+                  if (!taken[t]) {
+                    mycone_pq.push(PQNode(t,v,node.dist+get(edge_length_g,*e)));
+                    boundary += get(edge_weight_g,*e);
+                    edgeCount++;
+                  } else if (mycone_taken[t]) {
+                    boundary -= get(edge_weight_g,*e);
+                  }
+                }
+              }
+            }
+          }
       }
       edgesLeft -= edgeCount;
       size.push_back(thisSize);
@@ -659,7 +659,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       thisSize++;
       thisIdx.push_back(g.local_to_global(v));
       for (i=succ[v].begin();i!=succ[v].end();i++) {
-	q.push(*i);
+        q.push(*i);
       }
     }
     size.push_back(thisSize);
@@ -701,9 +701,9 @@ PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& max
   //PetscInt *component;  // maps each vertex to a vertex component
   //std::vector<PetscScalar>
   //  maxCongestion;       /* maps each edge component to an upper bound on the
-  //			    congestion through any of its edges */
+  //                            congestion through any of its edges */
 
-  const EdgeIndex edge_index_g = get(edge_index_t(),g);
+  //const EdgeIndex edge_index_g = get(edge_index_t(),g);
 
   PetscFunctionBegin;
 
@@ -711,7 +711,7 @@ PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& max
   std::vector<ComponentPair> edgeComponentMap(m);
 
   ierr = DecomposeSpanningTree(g,root,maxCong,maxCong,
-			       componentList,edgeComponentMap);CHKERRQ(ierr);
+                               componentList,edgeComponentMap);CHKERRQ(ierr);
   /*
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"COMPONENTS:\n");
   for (int i=0; i<componentList.size(); i++) {
@@ -723,7 +723,7 @@ PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& max
     graph_traits<Graph>::edge_iterator e, e_end;  
     for (tie(e,e_end)=edges(g); e!=e_end; e++) {
       if (edgeComponentMap[get(edge_index_g,*e)].getIndex(componentList[i]) != -1) {
-	ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"(%d,%d) ",source(*e,g),target(*e,g));
+        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"(%d,%d) ",source(*e,g),target(*e,g));
       }
     }
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"\n");
@@ -753,10 +753,10 @@ PetscErrorCode AugmentSpanningTree(Graph& g,const PetscInt root,PetscScalar& max
 #undef __FUNCT__  
 #define __FUNCT__ "DecomposeSpanningTree"
 PetscErrorCode DecomposeSpanningTree(Graph& g,const PetscInt root,
-				     const PetscScalar maxInternalStretch,
-				     const PetscScalar maxExternalWeight,
-				     std::vector<Component*>& componentList,
-				     std::vector<ComponentPair>& edgeComponentMap)
+                                     const PetscScalar maxInternalStretch,
+                                     const PetscScalar maxExternalWeight,
+                                     std::vector<Component*>& componentList,
+                                     std::vector<ComponentPair>& edgeComponentMap)
 {
   PetscErrorCode ierr;
 
@@ -768,11 +768,11 @@ PetscErrorCode DecomposeSpanningTree(Graph& g,const PetscInt root,
   //Component::next_id = 0;
   //Component::max_id = num_edges(g);
   ierr = DecomposeSubTree(g,root,
-			  maxInternalStretch,maxExternalWeight,
-			  componentList,edgeComponentMap,
-			  currComponent,
-			  currInternalStretch,
-			  currExternalWeight);CHKERRQ(ierr);
+                          maxInternalStretch,maxExternalWeight,
+                          componentList,edgeComponentMap,
+                          currComponent,
+                          currInternalStretch,
+                          currExternalWeight);CHKERRQ(ierr);
   
   componentList.push_back(currComponent);
 
@@ -783,19 +783,19 @@ PetscErrorCode DecomposeSpanningTree(Graph& g,const PetscInt root,
 #undef __FUNCT__  
 #define __FUNCT__ "DecomposeSubTree"
 PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
-				const PetscScalar maxInternalStretch,
-				const PetscScalar maxExternalWeight,
-				std::vector<Component*>& componentList,
-				std::vector<ComponentPair>& edgeComponentMap,
-				Component*& currComponent,
-				PetscScalar& currInternalStretch,
-				PetscScalar& currExternalWeight)
+                                const PetscScalar maxInternalStretch,
+                                const PetscScalar maxExternalWeight,
+                                std::vector<Component*>& componentList,
+                                std::vector<ComponentPair>& edgeComponentMap,
+                                Component*& currComponent,
+                                PetscScalar& currInternalStretch,
+                                PetscScalar& currExternalWeight)
 {
 #ifndef PETSC_USE_COMPLEX
   const EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
   const EdgeKeep edge_keep_g = get(edge_keep_t(),g);
-  const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
+  //const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
   const VertexChildren vertex_children_g = get(vertex_children_t(),g);
   const VertexDepth vertex_depth_g = get(vertex_depth_t(),g);
   const PetscScalar rootDepth = get(vertex_depth_g,root);
@@ -809,7 +809,7 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   currComponent = new Component();
   currComponent->vertices.push_back(root);
@@ -820,11 +820,11 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
     if (!get(edge_keep_g,*e)) {
       edgeIndex = get(edge_index_g,*e);
       
-      if (edgeComponentMap[edgeIndex].get(0) == PETSC_NULL) {
-	edgeComponentMap[edgeIndex].put(0,currComponent);
+      if (!edgeComponentMap[edgeIndex].get(0)) {
+        edgeComponentMap[edgeIndex].put(0,currComponent);
       } else {
-	assert(edgeComponentMap[edgeIndex].get(1) == PETSC_NULL);
-	edgeComponentMap[edgeIndex].put(1,currComponent);
+        if (edgeComponentMap[edgeIndex].get(1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"expected edgeComponentMap[edgeIndex].get(1) == NULL");
+        edgeComponentMap[edgeIndex].put(1,currComponent);
       }
     }
   }
@@ -836,36 +836,36 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
   for (i=children.begin();i!=children.end();i++) {
     PetscInt child = *i;
     ierr = DecomposeSubTree(g,child,maxInternalStretch,maxExternalWeight,
-			    componentList,edgeComponentMap,
-			    childComponent,
-			    childInternalStretch,childExternalWeight);CHKERRQ(ierr);
+                            componentList,edgeComponentMap,
+                            childComponent,
+                            childInternalStretch,childExternalWeight);CHKERRQ(ierr);
 
     newInternalStretch = currInternalStretch + childInternalStretch;
     newExternalWeight = currExternalWeight;
 
     for (j = childComponent->vertices.begin(), v = *j; 
-	 j != childComponent->vertices.end() && (newInternalStretch <= maxInternalStretch); 
-	 v = *(++j)) {
+         j != childComponent->vertices.end() && (newInternalStretch <= maxInternalStretch); 
+         v = *(++j)) {
       for (tie(e,e_end)=out_edges(v,g); 
-	   e!=e_end && (newInternalStretch <= maxInternalStretch); 
-	   e++) {
-	if (!get(edge_keep_g,*e)) {
-	  w = target(*e,g);
-	  edgeIndex = get(edge_index_g,*e);
-	  compIndex = edgeComponentMap[edgeIndex].getIndex(childComponent);
-	  
-	  if (compIndex != -1) {
-	    weight = get(edge_weight_g,*e);
-	    
-	    if (edgeComponentMap[edgeIndex].get(1-compIndex) == currComponent) {
-	      newExternalWeight -= weight;
-	      newInternalStretch += 
-		(get(vertex_depth_g,v) + get(vertex_depth_g,w) - 2*rootDepth) * weight;
-	    } else {
-	      newExternalWeight += weight;
-	    }
-	  }
-	}
+           e!=e_end && (newInternalStretch <= maxInternalStretch); 
+           e++) {
+        if (!get(edge_keep_g,*e)) {
+          w = target(*e,g);
+          edgeIndex = get(edge_index_g,*e);
+          compIndex = edgeComponentMap[edgeIndex].getIndex(childComponent);
+          
+          if (compIndex != -1) {
+            weight = get(edge_weight_g,*e);
+            
+            if (edgeComponentMap[edgeIndex].get(1-compIndex) == currComponent) {
+              newExternalWeight -= weight;
+              newInternalStretch += 
+                (get(vertex_depth_g,v) + get(vertex_depth_g,w) - 2*rootDepth) * weight;
+            } else {
+              newExternalWeight += weight;
+            }
+          }
+        }
       }
     }
 
@@ -876,20 +876,20 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
       currExternalWeight = newExternalWeight;
 
       for (j = childComponent->vertices.begin(), v = *j; 
-	   j != childComponent->vertices.end(); 
-	   v = *(++j)) {
-	currComponent->vertices.push_back(v);
-	for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
-	  if (!get(edge_keep_g,*e)) {
-	    edgeIndex = get(edge_index_g,*e);
-	    if (edgeComponentMap[edgeIndex].get(0) == childComponent) {
-	      edgeComponentMap[edgeIndex].put(0,currComponent);
-	    }
-	    if (edgeComponentMap[edgeIndex].get(1) == childComponent) {
-	      edgeComponentMap[edgeIndex].put(1,currComponent);
-	    }
-	  }
-	}
+           j != childComponent->vertices.end(); 
+           v = *(++j)) {
+        currComponent->vertices.push_back(v);
+        for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
+          if (!get(edge_keep_g,*e)) {
+            edgeIndex = get(edge_index_g,*e);
+            if (edgeComponentMap[edgeIndex].get(0) == childComponent) {
+              edgeComponentMap[edgeIndex].put(0,currComponent);
+            }
+            if (edgeComponentMap[edgeIndex].get(1) == childComponent) {
+              edgeComponentMap[edgeIndex].put(1,currComponent);
+            }
+          }
+        }
       }
       delete childComponent;
     } else {
@@ -902,24 +902,24 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
     edgeIndex = get(edge_index_g,*e);
     if (!get(edge_keep_g,*e)) {
       if (edgeComponentMap[edgeIndex].get(0) == origCurrComponent) {
-	compIndex = 0;
+        compIndex = 0;
       } else {
-	assert(edgeComponentMap[edgeIndex].get(1) == origCurrComponent);
-	compIndex = 1;
+        assert(edgeComponentMap[edgeIndex].get(1) == origCurrComponent);
+        compIndex = 1;
       }
       
       if (edgeComponentMap[edgeIndex].get(1-compIndex) != origCurrComponent) {
-	weight = get(edge_weight_g,*e);
-	if (currExternalWeight + weight <= maxExternalWeight) {
-	  currExternalWeight += weight;
-	} else {
-	  componentList.push_back(currComponent);
-	  currComponent = new Component();
-	  currComponent->vertices.push_back(root);
-	  currInternalStretch = 0;
-	  currExternalWeight = 0;
-	}
-	edgeComponentMap[edgeIndex].put(compIndex,currComponent);
+        weight = get(edge_weight_g,*e);
+        if (currExternalWeight + weight <= maxExternalWeight) {
+          currExternalWeight += weight;
+        } else {
+          componentList.push_back(currComponent);
+          currComponent = new Component();
+          currComponent->vertices.push_back(root);
+          currInternalStretch = 0;
+          currExternalWeight = 0;
+        }
+        edgeComponentMap[edgeIndex].put(compIndex,currComponent);
       }
     }
   }
@@ -931,19 +931,19 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
 #undef __FUNCT__  
 #define __FUNCT__ "AddBridges"
 PetscErrorCode AddBridges(Graph& g,
-			  std::vector<Component*>& componentList,
-			  std::vector<ComponentPair>& edgeComponentMap,
-			  PetscScalar& maxCong) {
+                          std::vector<Component*>& componentList,
+                          std::vector<ComponentPair>& edgeComponentMap,
+                          PetscScalar& maxCong) {
 
 #ifndef PETSC_USE_COMPLEX
   const PetscInt m = num_edges(g);
-  std::vector<PetscTruth> edgeSupported(m); // edgeSupported[i] if edge i's component pair has been bridged
+  std::vector<PetscBool> edgeSupported(m); // edgeSupported[i] if edge i's component pair has been bridged
   const EdgeLength edge_length_g = get(edge_length_t(),g);
   const EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
   const EdgeKeep edge_keep_g = get(edge_keep_t(),g);
   const VertexParent vertex_parent_g = get(vertex_parent_t(),g);
-  const VertexChildren vertex_children_g = get(vertex_children_t(),g);
+  // const VertexChildren vertex_children_g = get(vertex_children_t(),g);
   const VertexDepth vertex_depth_g = get(vertex_depth_t(),g);
   PetscInt edgeIndex, eeIndex;
   Component *comp1, *comp2;
@@ -955,7 +955,7 @@ PetscErrorCode AddBridges(Graph& g,
 
   PetscFunctionBegin;
 #ifdef PETSC_USE_COMPLEX
-  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
 #else
   realMaxCong = 0;
 
@@ -965,118 +965,118 @@ PetscErrorCode AddBridges(Graph& g,
       comp1 = edgeComponentMap[edgeIndex].get(0);
       comp2 = edgeComponentMap[edgeIndex].get(1);
       if ((comp1 != comp2) && !edgeSupported[edgeIndex]) {
-	comp1size = comp1->vertices.size();
-	comp2size = comp2->vertices.size();
-	std::map<PetscInt,PetscScalar> congestionBelow1,weightBelow1;
-	std::map<PetscInt,PetscScalar> congestionBelow2,weightBelow2;
-	for (i=0; i<comp1size; i++) {
-	  congestionBelow1[comp1->vertices[i]] = 0;
-	  weightBelow1[comp1->vertices[i]] = 0;
-	}
-	for (i=0; i<comp2size; i++) {
-	  congestionBelow2[comp2->vertices[i]] = 0;
-	  weightBelow2[comp2->vertices[i]] = 0;
-	}
+        comp1size = comp1->vertices.size();
+        comp2size = comp2->vertices.size();
+        std::map<PetscInt,PetscScalar> congestionBelow1,weightBelow1;
+        std::map<PetscInt,PetscScalar> congestionBelow2,weightBelow2;
+        for (i=0; i<comp1size; i++) {
+          congestionBelow1[comp1->vertices[i]] = 0;
+          weightBelow1[comp1->vertices[i]] = 0;
+        }
+        for (i=0; i<comp2size; i++) {
+          congestionBelow2[comp2->vertices[i]] = 0;
+          weightBelow2[comp2->vertices[i]] = 0;
+        }
 
-	for (i=comp1size-1; i>=0; i--) {
-	  v = comp1->vertices[i];
-	  for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
-	    if (!get(edge_keep_g,*ee)) {
-	      eeIndex = get(edge_index_g,*ee);
-	      if (edgeComponentMap[eeIndex].match(comp1,comp2) &&
-		  weightBelow2.count(target(*ee,g)) > 0) {
-		edgeSupported[eeIndex] = PETSC_TRUE;
-		weightBelow1[v] += get(edge_weight_g,*ee);
-	      }
-	    }
-	  }
-	  if (i>0) {
-	    parent = get(vertex_parent_g,v);
-	    weightBelow1[parent] += weightBelow1[v];
-	    congestionBelow1[parent] += 
-	      weightBelow1[v]*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
-	  }
-	}
-	for (i=1; i<comp1size; i++) {
-	  v = comp1->vertices[i];
-	  parent = get(vertex_parent_g,v);
-	  congestionBelow1[v] = congestionBelow1[parent] -
-	    (weightBelow1[comp1->vertices[0]] - 2*weightBelow1[v])*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
-	}
-	
-	for (i=comp2size-1; i>=0; i--) {
-	  v = comp2->vertices[i];
-	  for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
-	    if (!get(edge_keep_g,*ee)) {
-	      eeIndex = get(edge_index_g,*ee);
-	      if (edgeComponentMap[eeIndex].match(comp1,comp2) &&
-		  weightBelow1.count(target(*ee,g)) > 0) {
-		assert(edgeSupported[eeIndex] == PETSC_TRUE);
-		weightBelow2[v] += get(edge_weight_g,*ee);
-	      }
-	    }
-	  }
-	  if (i>0) {
-	    parent = get(vertex_parent_g,v);
-	    weightBelow2[parent] += weightBelow2[v];
-	    congestionBelow2[parent] += 
-	      weightBelow2[v]*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
-	  }
-	}
-	for (i=1; i<comp2size; i++) {
-	  v = comp2->vertices[i];
-	  parent = get(vertex_parent_g,v);
-	  congestionBelow2[v] = congestionBelow2[parent] -
-	    (weightBelow2[comp2->vertices[0]] - 2*weightBelow2[v])*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
-	}
-	/*
-	for (std::map<PetscInt,PetscScalar>::iterator it = congestionBelow1.begin();
-	     it != congestionBelow1.end();
-	     it++) {
-	  PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"congestionBelow1[%d]=%f\n",(*it).first,(*it).second);
-	}
-	for (std::map<PetscInt,PetscScalar>::iterator it = weightBelow1.begin();
-	     it != weightBelow1.end();
-	     it++) {
-	  PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"weightBelow1[%d]=%f\n",(*it).first,(*it).second);
-	}
-	for (std::map<PetscInt,PetscScalar>::iterator it = congestionBelow2.begin();
-	     it != congestionBelow2.end();
-	     it++) {
-	  PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"congestionBelow2[%d]=%f\n",(*it).first,(*it).second);
-	}
-	for (std::map<PetscInt,PetscScalar>::iterator it = weightBelow2.begin();
-	     it != weightBelow2.end();
-	     it++) {
-	  PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"weightBelow2[%d]=%f\n",(*it).first,(*it).second);
-	}
-	*/
-	assert(weightBelow1[comp1->vertices[0]] - weightBelow2[comp2->vertices[0]] < 1e-9 &&
-	       weightBelow1[comp1->vertices[0]] - weightBelow2[comp2->vertices[0]] > -1e-9);
+        for (i=comp1size-1; i>=0; i--) {
+          v = comp1->vertices[i];
+          for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
+            if (!get(edge_keep_g,*ee)) {
+              eeIndex = get(edge_index_g,*ee);
+              if (edgeComponentMap[eeIndex].match(comp1,comp2) &&
+                  weightBelow2.count(target(*ee,g)) > 0) {
+                edgeSupported[eeIndex] = PETSC_TRUE;
+                weightBelow1[v] += get(edge_weight_g,*ee);
+              }
+            }
+          }
+          if (i>0) {
+            parent = get(vertex_parent_g,v);
+            weightBelow1[parent] += weightBelow1[v];
+            congestionBelow1[parent] += 
+              weightBelow1[v]*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
+          }
+        }
+        for (i=1; i<comp1size; i++) {
+          v = comp1->vertices[i];
+          parent = get(vertex_parent_g,v);
+          congestionBelow1[v] = congestionBelow1[parent] -
+            (weightBelow1[comp1->vertices[0]] - 2*weightBelow1[v])*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
+        }
+        
+        for (i=comp2size-1; i>=0; i--) {
+          v = comp2->vertices[i];
+          for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
+            if (!get(edge_keep_g,*ee)) {
+              eeIndex = get(edge_index_g,*ee);
+              if (edgeComponentMap[eeIndex].match(comp1,comp2) &&
+                  weightBelow1.count(target(*ee,g)) > 0) {
+                assert(edgeSupported[eeIndex] == PETSC_TRUE);
+                weightBelow2[v] += get(edge_weight_g,*ee);
+              }
+            }
+          }
+          if (i>0) {
+            parent = get(vertex_parent_g,v);
+            weightBelow2[parent] += weightBelow2[v];
+            congestionBelow2[parent] += 
+              weightBelow2[v]*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
+          }
+        }
+        for (i=1; i<comp2size; i++) {
+          v = comp2->vertices[i];
+          parent = get(vertex_parent_g,v);
+          congestionBelow2[v] = congestionBelow2[parent] -
+            (weightBelow2[comp2->vertices[0]] - 2*weightBelow2[v])*(get(vertex_depth_g,v)-get(vertex_depth_g,parent));
+        }
+        /*
+        for (std::map<PetscInt,PetscScalar>::iterator it = congestionBelow1.begin();
+             it != congestionBelow1.end();
+             it++) {
+          PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"congestionBelow1[%d]=%f\n",(*it).first,(*it).second);
+        }
+        for (std::map<PetscInt,PetscScalar>::iterator it = weightBelow1.begin();
+             it != weightBelow1.end();
+             it++) {
+          PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"weightBelow1[%d]=%f\n",(*it).first,(*it).second);
+        }
+        for (std::map<PetscInt,PetscScalar>::iterator it = congestionBelow2.begin();
+             it != congestionBelow2.end();
+             it++) {
+          PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"congestionBelow2[%d]=%f\n",(*it).first,(*it).second);
+        }
+        for (std::map<PetscInt,PetscScalar>::iterator it = weightBelow2.begin();
+             it != weightBelow2.end();
+             it++) {
+          PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF,"weightBelow2[%d]=%f\n",(*it).first,(*it).second);
+        }
+        */
+        assert(weightBelow1[comp1->vertices[0]] - weightBelow2[comp2->vertices[0]] < 1e-9 &&
+               weightBelow1[comp1->vertices[0]] - weightBelow2[comp2->vertices[0]] > -1e-9);
 
-	Edge bestEdge;
-	PetscScalar bestCongestion = -1;
-	for (i=0; i<comp1size; i++) {
-	  v = comp1->vertices[i];
-	  for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
-	    if (!get(edge_keep_g,*ee)) {
-	      eeIndex = get(edge_index_g,*ee);
-	      if (edgeComponentMap[eeIndex].match(comp1,comp2)) {
-		w = target(*ee,g);
-		PetscScalar newCongestion = 
-		  weightBelow1[comp1->vertices[0]] * get(edge_length_g,*ee) +
-		  congestionBelow1[v] + congestionBelow2[w];
-		if (bestCongestion < 0 || newCongestion < bestCongestion) {
-		  bestEdge = *ee;
-		  bestCongestion = newCongestion;
-		}
-	      }
-	    }
-	  }
-	}
-	put(edge_keep_g,bestEdge,PETSC_TRUE);
-	if (bestCongestion > realMaxCong)
-	  realMaxCong = bestCongestion;
+        Edge bestEdge;
+        PetscScalar bestCongestion = -1;
+        for (i=0; i<comp1size; i++) {
+          v = comp1->vertices[i];
+          for (tie(ee,ee_end)=out_edges(v,g); ee!=ee_end; ee++) {
+            if (!get(edge_keep_g,*ee)) {
+              eeIndex = get(edge_index_g,*ee);
+              if (edgeComponentMap[eeIndex].match(comp1,comp2)) {
+                w = target(*ee,g);
+                PetscScalar newCongestion = 
+                  weightBelow1[comp1->vertices[0]] * get(edge_length_g,*ee) +
+                  congestionBelow1[v] + congestionBelow2[w];
+                if (bestCongestion < 0 || newCongestion < bestCongestion) {
+                  bestEdge = *ee;
+                  bestCongestion = newCongestion;
+                }
+              }
+            }
+          }
+        }
+        put(edge_keep_g,bestEdge,PETSC_TRUE);
+        if (bestCongestion > realMaxCong)
+          realMaxCong = bestCongestion;
       }
     }
   }

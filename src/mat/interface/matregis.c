@@ -1,64 +1,65 @@
-#define PETSCMAT_DLL
 
-#include "petscmat.h"  /*I "petscmat.h" I*/
+#include <petscmat.h>  /*I "petscmat.h" I*/
 
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBSTRM(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJPERM(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCRL(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DD(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat);
 
-#if defined PETSC_HAVE_CUDA
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJCUDA(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJCUDA(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJCUDA(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
+
+#if defined PETSC_HAVE_CUSP
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat);
 #endif
 
-#if defined PETSC_HAVE_MATIM
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IM(Mat);
+#if defined PETSC_HAVE_TXPETSCGPU
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
-EXTERN_C_END
-  
+
+#if defined PETSC_HAVE_FFTW
+PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
+#endif
+PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
+
 /*
-    This is used by MatSetType() to make sure that at least one 
+    This is used by MatSetType() to make sure that at least one
     MatRegisterAll() is called. In general, if there is more than one
     DLL, then MatRegisterAll() may be called several times.
 */
-EXTERN PetscTruth MatRegisterAllCalled;
+extern PetscBool MatRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterAll"
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
@@ -71,58 +72,78 @@ EXTERN PetscTruth MatRegisterAllCalled;
 
 .seealso:  MatRegisterDestroy()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
+PetscErrorCode  MatRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatRegisterDynamic(MATMFFD,           path,"MatCreate_MFFD",    MatCreate_MFFD);CHKERRQ(ierr);
+  ierr = MatRegister(MATMFFD,           MatCreate_MFFD);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATMPIMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMAIJ,           path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIMAIJ,        MatCreate_MAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQMAIJ,        MatCreate_MAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATMAIJ,           MatCreate_MAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATIS,             path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSHELL,          path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATCOMPOSITE,      path,"MatCreate_Composite",   MatCreate_Composite);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJ,            path,"MatCreate_AIJ",         MatCreate_AIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJ,         path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATIS,             MatCreate_IS);CHKERRQ(ierr);
+  ierr = MatRegister(MATSHELL,          MatCreate_Shell);CHKERRQ(ierr);
+  ierr = MatRegister(MATCOMPOSITE,      MatCreate_Composite);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATAIJPERM,        path,"MatCreate_AIJPERM",    MatCreate_AIJPERM);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJPERM,     path,"MatCreate_MPIAIJPERM", MatCreate_MPIAIJPERM);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJPERM,     path,"MatCreate_SeqAIJPERM", MatCreate_SeqAIJPERM);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATAIJ,MATSEQAIJ,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJ,         MatCreate_MPIAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJ,         MatCreate_SeqAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATAIJCRL,         path,"MatCreate_AIJCRL",     MatCreate_AIJCRL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJCRL,      path,"MatCreate_SeqAIJCRL",  MatCreate_SeqAIJCRL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJCRL,      path,"MatCreate_MPIAIJCRL",  MatCreate_MPIAIJCRL);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJPERM,     MatCreate_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATBAIJ,           path,"MatCreate_BAIJ",       MatCreate_BAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIBAIJ,        path,"MatCreate_MPIBAIJ",    MatCreate_MPIBAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQBAIJ,        path,"MatCreate_SeqBAIJ",    MatCreate_SeqBAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJCRL,      MatCreate_SeqAIJCRL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJCRL,      MatCreate_MPIAIJCRL);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATSBAIJ,          path,"MatCreate_SBAIJ",     MatCreate_SBAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPISBAIJ,       path,"MatCreate_MPISBAIJ",  MatCreate_MPISBAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQSBAIJ,       path,"MatCreate_SeqSBAIJ",  MatCreate_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATBAIJ,MATSEQBAIJ,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIBAIJ,        MatCreate_MPIBAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQBAIJ,        MatCreate_SeqBAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATDENSE,          path,"MatCreate_Dense",     MatCreate_Dense);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIDENSE,       path,"MatCreate_MPIDense",  MatCreate_MPIDense);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQDENSE,       path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPISBAIJ,       MatCreate_MPISBAIJ);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQSBAIJ,       MatCreate_SeqSBAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATBSTRM,MATSEQBSTRM,MATMPIBSTRM);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIBSTRM,       MatCreate_MPIBSTRM);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQBSTRM,       MatCreate_SeqBSTRM);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATDD,             path,"MatCreate_DD",   MatCreate_DD);CHKERRQ(ierr);
-#if defined PETSC_HAVE_MATIM
-  ierr = MatRegisterDynamic(MATIM,            path,"MatCreate_IM",   MatCreate_IM);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATSBSTRM,MATSEQSBSTRM,MATMPISBSTRM);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPISBSTRM,      MatCreate_MPISBSTRM);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQSBSTRM,      MatCreate_SeqSBSTRM);CHKERRQ(ierr);
+
+  ierr = MatRegisterBaseName(MATDENSE,MATSEQDENSE,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIDENSE,       MatCreate_MPIDense);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQDENSE,       MatCreate_SeqDense);CHKERRQ(ierr);
+
+  ierr = MatRegister(MATMPIADJ,         MatCreate_MPIAdj);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCATTER,        MatCreate_Scatter);CHKERRQ(ierr);
+  ierr = MatRegister(MATBLOCKMAT,       MatCreate_BlockMat);CHKERRQ(ierr);
+  ierr = MatRegister(MATNEST,           MatCreate_Nest);CHKERRQ(ierr);
+
+
+#if defined PETSC_HAVE_CUSP
+  ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJCUSP,     MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJCUSP,     MatCreate_MPIAIJCUSP);CHKERRQ(ierr);
 #endif
-#if defined PETSC_HAVE_CUDA
-  ierr = MatRegisterDynamic(MATSEQAIJCUDA,     path,"MatCreate_SeqAIJCUDA",      MatCreate_SeqAIJCUDA);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJCUDA,     path,"MatCreate_MPIAIJCUDA",      MatCreate_MPIAIJCUDA);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJCUDA,        path,"MatCreate_AIJCUDA",         MatCreate_AIJCUDA);CHKERRQ(ierr);
+
+#if defined PETSC_HAVE_TXPETSCGPU
+  ierr = MatRegisterBaseName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE);CHKERRQ(ierr);
+#endif
+
+#if defined PETSC_HAVE_FFTW
+  ierr = MatRegister(MATFFTW,           MatCreate_FFTW);CHKERRQ(ierr);
+#endif
+#if defined PETSC_HAVE_ELEMENTAL
+  ierr = MatRegister(MATELEMENTAL,      MatCreate_Elemental);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -9,7 +9,7 @@
 #
 #  Crude as all hack!
 #
-#  Calling sequence: 
+#  Calling sequence:
 #      getinterfaces *.h
 ##
 import os
@@ -46,7 +46,7 @@ def getenums(filename):
 	  struct = struct.replace("\\","")
   	  struct = struct.replace("\n","")
   	  struct = struct.replace(";","")
-  	  struct = struct.replace("typedef enum","")	  
+  	  struct = struct.replace("typedef enum","")	
           struct = regcomment.sub("",struct)
           struct = regblank.sub(" ",struct)
 
@@ -60,7 +60,7 @@ def getenums(filename):
           if struct.find("=") == -1:
             for i in range(len(values)):
               values[i] = values[i] + " = " + str(i)
-            
+
           ivalues = []
           for i in values:
             if i[0] == " ": i = i[1:]
@@ -112,7 +112,7 @@ def getstructs(filename):
   	  struct = struct.replace("\n","")
   	  struct = struct.replace("typedef struct {","")
           struct = regblank.sub(" ",struct)
-  	  struct = struct.replace("; ",";")	            
+  	  struct = struct.replace("; ",";")	
           struct = regcomment.sub("",struct)
 
           name = regname.search(struct)
@@ -138,7 +138,7 @@ def getclasses(filename):
   regclass    = re.compile('typedef struct _[pn]_[A-Za-z_]*[ ]*\*')
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
-  regsemi     = re.compile(';')  
+  regsemi     = re.compile(';')
   f = open(filename)
   line = f.readline()
   while line:
@@ -146,13 +146,13 @@ def getclasses(filename):
     if fl:
       struct = line
       struct = regclass.sub("",struct)
-      struct = regcomment.sub("",struct)      
+      struct = regcomment.sub("",struct)
       struct = regblank.sub("",struct)
-      struct = regsemi.sub("",struct)      
+      struct = regsemi.sub("",struct)
       struct = struct.replace("\n","")
       classes[struct] = {}
     line = f.readline()
-  
+
   f.close()
 
 def getfunctions(filename):
@@ -178,7 +178,7 @@ def getfunctions(filename):
       struct = line
       struct = regfun.sub("",struct)
       struct = regcomment.sub("",struct)
-      struct = struct.replace("unsigned ","u")      
+      struct = struct.replace("unsigned ","u")
       struct = regblank.sub("",struct)
       struct = struct.replace("\n","")
       struct = struct.replace("const","")
@@ -202,9 +202,9 @@ def getfunctions(filename):
               classes[i][name[len(i):]] = args
               break
 
-      
+
     line = f.readline()
-  
+
   f.close()
 #
 #  For now, hardwire aliases
@@ -212,12 +212,12 @@ def getfunctions(filename):
 def getaliases():
   aliases['ulong']              = 'unsigned long'
   aliases['ushort']             = 'unsigned short'
-  aliases['uchar']              = 'unsigned char'  
-  aliases['PetscInt']           = 'int'  
+  aliases['uchar']              = 'unsigned char'
+  aliases['PetscInt']           = 'int'
   aliases['PetscScalar']        = 'double'
-  aliases['PetscReal']          = 'double'  
+  aliases['PetscReal']          = 'double'
   aliases['MPI_Comm']           = 'int'
-  aliases['MPI_Request']        = 'int'  
+  aliases['MPI_Request']        = 'int'
   aliases['FILE']               = 'int'
   aliases['PetscMPIInt']        = 'int'
   aliases['PetscClassId']        = 'int'
@@ -227,7 +227,7 @@ def getaliases():
   aliases['PetscLogEvent']      = 'int'
   # for HDF5
   aliases['hid_t']              = 'int'
-  
+
 def main(args):
   for i in args:
     getenums(i)
@@ -244,8 +244,8 @@ def main(args):
   classes['PetscBinary'] = {}
   classes['PetscOptions'] = {}
   classes['PetscMalloc'] = {}
-  classes['PetscOpenMP'] = {}
-  classes['PetscToken'] = {}        
+  classes['PetscHMPI'] = {}
+  classes['PetscToken'] = {}
   for i in args:
     getclasses(i)
   for i in args:
@@ -253,15 +253,15 @@ def main(args):
   file = open('classes.data','w')
   pickle.dump(enums,file)
   pickle.dump(senums,file)
-  pickle.dump(structs,file)    
-  pickle.dump(aliases,file)    
+  pickle.dump(structs,file)
+  pickle.dump(aliases,file)
   pickle.dump(classes,file)
-  
-  
-    
+
+
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
   main(sys.argv[1:])
 

@@ -1,4 +1,4 @@
-#include "private/fortranimpl.h"
+#include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscbarrier_ PETSCBARRIER
@@ -6,9 +6,8 @@
 #define petscbarrier_ petscbarrier
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL   petscbarrier_(PetscObject *obj, int *ierr ){
+PETSC_EXTERN void PETSC_STDCALL petscbarrier_(PetscObject *obj, int *ierr)
+{
   CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscBarrier(*obj);
 }
-EXTERN_C_END

@@ -5,15 +5,13 @@ CFLAGS          =
 FFLAGS          =
 SOURCEC         = ex1.c
 SOURCEF         =
-SOURCEH         = 
-OBJSC           = ex1.o
-OBJSF           =
+SOURCEH         =
 EXECUTABLE      = ex1
-INPUTDATAFILES  =   
-OUTPUTDATAFILES = 
+INPUTDATAFILES  =
+OUTPUTDATAFILES =
 PETSCPORTABLE   = true
 
-DIRS     = 
+DIRS     =
 LOCDIR   = src/contrib/remote/
 
 include ${PETSC_DIR}/conf/variables

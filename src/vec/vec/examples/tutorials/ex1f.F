@@ -1,5 +1,4 @@
 !
-!   Program usage:  mpiexec ex1f [-help] [all PETSc options] 
 !
 !/*T
 !   Concepts: vectors^basic routines
@@ -24,8 +23,8 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +38,7 @@
       Vec              x,y,w,z(5)
       PetscReal        norm,v,v1,v2
       PetscInt           n,ithree
-      PetscTruth flg
+      PetscBool  flg
       PetscErrorCode ierr
       PetscMPIInt  rank
       PetscScalar  one,two,three
@@ -48,7 +47,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0
@@ -73,7 +72,7 @@
 !                         (available only on the SGI); otherwise,
 !                         is the same as VecCreateMPI()
 !
-!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one 
+!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one
 !                 to determine at runtime which version to use
 !                 with the options -vec_type mpi or -vec_type shared
 !
@@ -81,7 +80,6 @@
       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
       call VecGetType(x,name,ierr)
-      print*,name
 
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).
@@ -192,7 +190,7 @@
       if (rank .eq. 0) write(6,210) v
  210  format ('VecPointwiseDivide ',1pe8.2)
 
-      
+
       dots(1) = one
       dots(2) = three
       dots(3) = two
@@ -210,26 +208,14 @@
       if (rank .eq. 0) write(6,220) v,v1,v2
  220  format ('VecMAXPY ',3(1pe8.2))
 
-
-!  Test whether vector has been corrupted (just to demonstrate this
-!  routine) not needed in most application codes.
-
-      call VecValid(x,flg,ierr)
-      if (.not. flg) then
-         if (rank .eq. 0) then
-            write(6,*) 'Corrupted vector!'
-         endif
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
-      endif
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecs(z,ithree,ierr)
+      call VecDestroyVecs(ithree,z,ierr)
       call PetscFinalize(ierr)
 
       end
- 
+

@@ -1,15 +1,15 @@
 
-ALL: 
+ALL:
 
 CFLAGS	      =
-FFLAGS	      =	 
+FFLAGS	      =	
 CPPFLAGS      =
 FPPFLAGS      =
 LOCDIR        = src/benchmarks/
 EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
 		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c \
 		PetscGetCPUTime.c
-EXAMPLESF     = 
+EXAMPLESF     =
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
 		PetscGetCPUTime sizeof
@@ -19,57 +19,57 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
-PetscTime: PetscTime.o  chkopts 
+PetscTime: PetscTime.o  chkopts
 	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}
 	${RM} -f PetscTime.o
 
-PetscGetTime: PetscGetTime.o  chkopts 
+PetscGetTime: PetscGetTime.o  chkopts
 	-${CLINKER} -o PetscGetTime PetscGetTime.o ${PETSC_LIB}
 	${RM} -f PetscGetTime.o
 
-PetscGetCPUTime: PetscGetCPUTime.o  chkopts 
+PetscGetCPUTime: PetscGetCPUTime.o  chkopts
 	-${CLINKER} -o PetscGetCPUTime PetscGetCPUTime.o ${PETSC_LIB}
 	${RM} -f PetscGetCPUTime.o
 
-MPI_Wtime: MPI_Wtime.o  chkopts 
+MPI_Wtime: MPI_Wtime.o  chkopts
 	-${CLINKER} -o MPI_Wtime MPI_Wtime.o ${PETSC_LIB}
 	${RM} -f MPI_Wtime.o
 
-PLogEvent: PLogEvent.o  chkopts 
+PLogEvent: PLogEvent.o  chkopts
 	-${CLINKER} -o PLogEvent PLogEvent.o ${PETSC_LIB}
 	${RM} -f PLogEvent.o
 
-PetscMalloc: PetscMalloc.o  chkopts 
+PetscMalloc: PetscMalloc.o  chkopts
 	-${CLINKER} -o PetscMalloc PetscMalloc.o ${PETSC_LIB}
 	${RM} -f PetscMalloc.o
 
-PetscMemcpy: PetscMemcpy.o  chkopts 
+PetscMemcpy: PetscMemcpy.o  chkopts
 	-${CLINKER} -o PetscMemcpy PetscMemcpy.o ${PETSC_LIB}
 	${RM} -f PetscMemcpy.o
 
-PetscMemzero: PetscMemzero.o  chkopts 
+PetscMemzero: PetscMemzero.o  chkopts
 	-${CLINKER} -o PetscMemzero PetscMemzero.o ${PETSC_LIB}
 	${RM} -f PetscMemzero.o
 
-PetscMemcmp: PetscMemcmp.o  chkopts 
+PetscMemcmp: PetscMemcmp.o  chkopts
 	-${CLINKER} -o PetscMemcmp PetscMemcmp.o ${PETSC_LIB}
 	${RM} -f PetscMemcmp.o
 
-Index: Index.o  chkopts 
+Index: Index.o  chkopts
 	-${CLINKER} -o Index Index.o ${PETSC_LIB}
 	${RM} -f Index.o
 
-PetscVecNorm: PetscVecNorm.o  chkopts 
+PetscVecNorm: PetscVecNorm.o  chkopts
 	-${CLINKER} -o PetscVecNorm PetscVecNorm.o ${PETSC_LIB}
 	${RM} -f PetscVecNorm.o
 
-sizeof: sizeof.o  chkopts 
+sizeof: sizeof.o  chkopts
 	-${CLINKER} -o sizeof sizeof.o ${PETSC_LIB}
 	${RM} -f sizeof.o
 
 test: ${TESTS}
 
-runtest: 
+runtest:
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
 	-@${MPIEXEC} -n 1 ./PetscTime

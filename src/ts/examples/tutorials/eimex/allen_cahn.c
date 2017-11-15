@@ -1,0 +1,221 @@
+static char help[] ="Solves the time dependent Allen-Cahn equation with IMEX methods";
+
+/*
+ * allen_cahn.c
+ *
+ *  Created on: Jun 8, 2012
+ *      Author: Hong Zhang
+ */
+
+#include <petscts.h>
+
+/*
+ * application context
+ */
+typedef struct {
+  PetscReal   param;        /* parameter */
+  PetscReal   xleft,xright;  /* range in x-direction */
+  PetscInt    mx;           /* Discretization in x-direction */
+}AppCtx;
+
+
+static PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void *ctx);
+static PetscErrorCode FormInitialSolution(TS,Vec,void*);
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+
+int main(int argc, char **argv)
+{
+  TS                ts;
+  Vec               x; /*solution vector*/
+  Mat               A; /*Jacobian*/
+  PetscInt          steps,maxsteps,mx;
+  PetscErrorCode    ierr;
+  PetscReal         ftime;
+  AppCtx      user;       /* user-defined work context */
+
+  PetscInitialize(&argc,&argv,NULL,help);
+
+  /* Initialize user application context */
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Allen-Cahn equation","");
+  user.param = 9e-4;
+  user.xleft = -1.;
+  user.xright = 2.;
+  user.mx = 400;
+  ierr = PetscOptionsReal("-eps","parameter","",user.param,&user.param,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*
+   * ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
+   */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Create necessary matrix and vectors, solve same ODE on every process
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user.mx,user.mx);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Create time stepping solver context
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSEIMEX);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,FormIJacobian,&user);CHKERRQ(ierr);
+  ftime = 142;
+  maxsteps = 100000;
+  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Set initial conditions
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = FormInitialSolution(ts,x,&user);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&mx);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Solve nonlinear system
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"eps %G, steps %D, ftime %G\n",user.param,steps,ftime);CHKERRQ(ierr);
+  /*   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Free work space.
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunction"
+static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
+{
+  PetscErrorCode ierr;
+  AppCtx *user = (AppCtx*)ptr;
+  PetscScalar *x,*f;
+  PetscInt i,mx;
+  PetscReal hx,eps;
+
+  PetscFunctionBegin;
+  mx = user->mx;
+  eps = user->param;
+  hx = (user->xright-user->xleft)/(mx-1);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  f[0] = 2.*eps*(x[1]-x[0])/(hx*hx); /*boundary*/
+  for(i=1;i<mx-1;i++) {
+    f[i]= eps*(x[i+1]-2.*x[i]+x[i-1])/(hx*hx);
+  }
+  f[mx-1] = 2.*eps*(x[mx-2]- x[mx-1])/(hx*hx); /*boundary*/
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FormIFunction"
+static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
+{
+  PetscErrorCode ierr;
+  AppCtx *user = (AppCtx*)ptr;
+  PetscScalar *x,*xdot,*f;
+  PetscInt i,mx;
+
+  PetscFunctionBegin;
+  mx = user->mx;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+
+  for(i=0;i<mx;i++) {
+    f[i]= xdot[i] - x[i]*(1.-x[i]*x[i]);
+  }
+
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FormIJacobian"
+static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat *J,Mat *Jpre,MatStructure *flag,void *ctx)
+{
+  PetscErrorCode ierr;
+  AppCtx         *user = (AppCtx *)ctx;
+  PetscScalar    *x,v;
+  PetscInt       i,col;
+
+  ierr = VecGetArray(U,&x);CHKERRQ(ierr);
+  PetscFunctionBegin;
+
+  for(i=0; i < user->mx; i++) {
+    v = a - 1. + 3.*x[i]*x[i];
+    col = i;
+    ierr = MatSetValues(*J,1,&i,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*J != *Jpre) {
+    ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  *flag = SAME_NONZERO_PATTERN;
+  /*  MatView(*J,PETSC_VIEWER_STDOUT_WORLD);*/
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialSolution"
+static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
+{
+  AppCtx *user = (AppCtx*)ctx;
+  PetscInt       i;
+  PetscScalar    *x;
+  PetscReal      hx,x_map;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  hx = (user->xright-user->xleft)/(PetscReal)(user->mx-1);
+  ierr = VecGetArray(U,&x);CHKERRQ(ierr);
+  for(i=0;i<user->mx;i++) {
+    x_map = user->xleft + i*hx;
+    if(x_map >= 0.7065) {
+      x[i] = tanh((x_map-0.8)/(2.*sqrt(user->param)));
+    } else if(x_map >= 0.4865) {
+      x[i] = tanh((0.613-x_map)/(2.*sqrt(user->param)));
+    } else if(x_map >= 0.28) {
+      x[i] = tanh((x_map-0.36)/(2.*sqrt(user->param)));
+    } else if(x_map >= -0.7) {
+      x[i] = tanh((0.2-x_map)/(2.*sqrt(user->param)));
+    } else if(x_map >= -1) {
+      x[i] = tanh((x_map+0.9)/(2.*sqrt(user->param)));
+    }
+  }
+  ierr = VecRestoreArray(U,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

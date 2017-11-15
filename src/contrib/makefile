@@ -1,5 +1,5 @@
 
-DIRS     = fun3d blopex 
+DIRS     = fun3d
 LOCDIR   = src/contrib/
 
 include ${PETSC_DIR}/conf/variables

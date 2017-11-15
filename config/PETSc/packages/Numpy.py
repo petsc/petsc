@@ -4,14 +4,13 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/numpy-1.0.4.tar.gz']
-    self.downloadname     = 'numpy'
     self.includes         = ['']
     self.includedir       = ''
     self.libdir           = ''
     self.complex          = 0   # 0 means cannot use complex
     self.cxx              = 0   # 1 means requires C++
     self.fc               = 0   # 1 means requires fortran
-    self.double           = 1   # 1 means requires double precision 
+    self.double           = 1   # 1 means requires double precision
     self.requires32bitint = 1
     return
 
@@ -48,4 +47,4 @@ class Configure(PETSc.package.NewPackage):
       d = self.checkDownload(2)
       if d: return
       raise RuntimeError('Could not find numpy, either fix PYTHONPATH and rerun or use --download-numpy')
-    return 
+    return

@@ -1,13 +1,12 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cr.c 
-SOURCEF  = 
-OBJSC    = cr.o 
-OBJSF    =
+SOURCEC  = cr.c
+SOURCEF  =
 LIBBASE  = libpetscksp
+DIRS     = pipecr
 LOCDIR   = src/ksp/ksp/impls/cr/
 MANSEC   = KSP
 

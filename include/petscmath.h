@@ -1,8 +1,8 @@
 /*
-   
-      PETSc mathematics include file. Defines certain basic mathematical 
-    constants and functions for working with single and double precision
-    floating point numbers as well as complex and integers.
+
+      PETSc mathematics include file. Defines certain basic mathematical
+    constants and functions for working with single, double, and quad precision
+    floating point numbers as well as complex single and double.
 
     This file is included by petscsys.h and should not be used directly.
 
@@ -11,321 +11,220 @@
 #if !defined(__PETSCMATH_H)
 #define __PETSCMATH_H
 #include <math.h>
-PETSC_EXTERN_CXX_BEGIN
 
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_2SCALAR;
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
-   note that one cannot really mix the use of complex and real in the same 
+   note that one cannot mix the use of complex and real in the same
    PETSc program. All PETSc objects in one program are built around the object
-   PetscScalar which is either always a double or a complex.
+   PetscScalar which is either always a real or a complex.
 
 */
 
 #define PetscExpPassiveScalar(a) PetscExpScalar()
-
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_CLANGUAGE_CXX)
-/*
-   C++ support of complex numbers: Original support
-*/
-#include <complex>
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-/*
-    For d double and c single complex defines the following operations
-       d == c
-       c == d
-       d != c
-       c != d
-       d / c
-       c /d
-       d * c
-       c * d
-       d - c
-       c - d
-       d + c
-       c + d
-*/
-namespace std
-{
-  template<typename _Tp>
-    inline bool
-    operator==(const double& __x, const complex<_Tp>& __y)
-    { return __x == __y.real() && _Tp() == __y.imag(); }
-  template<typename _Tp>
-    inline bool
-    operator==(const complex<_Tp>& __x, const double& __y)
-    { return __x.real() == __y && __x.imag() == _Tp(); }
-  template<typename _Tp>
-    inline bool
-    operator!=(const complex<_Tp>& __x, const double& __y)
-    { return __x.real() != __y || __x.imag() != _Tp(); }
-  template<typename _Tp>
-    inline bool
-    operator!=(const double& __x, const complex<_Tp>& __y)
-    { return __x != __y.real() || _Tp() != __y.imag(); }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator/(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r /= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator/(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r /= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator*(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r *= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator*(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r *= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator-(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r -= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator-(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r -= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator+(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r += ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator+(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r += __y;
-      return __r;
-    }
+#if defined(PETSC_USE_REAL_SINGLE)
+#define MPIU_REAL   MPI_FLOAT
+typedef float PetscReal;
+#define PetscSqrtReal(a)    sqrt(a)
+#define PetscExpReal(a)     exp(a)
+#define PetscLogReal(a)     log(a)
+#define PetscSinReal(a)     sin(a)
+#define PetscCosReal(a)     cos(a)
+#define PetscPowReal(a,b)   pow(a,b)
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#define MPIU_REAL   MPI_DOUBLE
+typedef double PetscReal;
+#define PetscSqrtReal(a)    sqrt(a)
+#define PetscExpReal(a)     exp(a)
+#define PetscLogReal(a)     log(a)
+#define PetscSinReal(a)     sin(a)
+#define PetscCosReal(a)     cos(a)
+#define PetscPowReal(a,b)   pow(a,b)
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <quadmath.h>
+#if defined(__cplusplus)
 }
 #endif
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128 PetscAttrMPITypeTag(__float128);
+#define MPIU_REAL MPIU___FLOAT128
+typedef __float128 PetscReal;
+#define PetscSqrtReal(a)    sqrtq(a)
+#define PetscExpReal(a)     expq(a)
+#define PetscLogReal(a)     logq(a)
+#define PetscSinReal(a)     sinq(a)
+#define PetscCosReal(a)     cosq(a)
+#define PetscPowReal(a,b)   powq(a,b)
+#endif /* PETSC_USE_REAL_* */
 
-
-
-#define PetscRealPart(a)      (a).real()
-#define PetscImaginaryPart(a) (a).imag()
-#define PetscAbsScalar(a)     std::abs(a)
-#define PetscConj(a)          std::conj(a)
-#define PetscSqrtScalar(a)    std::sqrt(a)
-#define PetscPowScalar(a,b)   std::pow(a,b)
-#define PetscExpScalar(a)     std::exp(a)
-#define PetscLogScalar(a)     std::log(a)
-#define PetscSinScalar(a)     std::sin(a)
-#define PetscCosScalar(a)     std::cos(a)
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-typedef std::complex<float> PetscScalar;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-typedef std::complex<long double> PetscScalar;
-#elif defined(PETSC_USE_SCALAR_INT)
-typedef std::complex<int> PetscScalar;
+/*
+    Complex number definitions
+ */
+#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
+/* C++ support of complex number */
+#if defined(PETSC_HAVE_CUSP)
+#define complexlib cusp
+#include <cusp/complex.h>
 #else
-typedef std::complex<double> PetscScalar;
+#define complexlib std
+#include <complex>
 #endif
-#else
+
+#define PetscRealPartComplex(a)      (a).real()
+#define PetscImaginaryPartComplex(a) (a).imag()
+#define PetscAbsComplex(a)           complexlib::abs(a)
+#define PetscConjComplex(a)          complexlib::conj(a)
+#define PetscSqrtComplex(a)          complexlib::sqrt(a)
+#define PetscPowComplex(a,b)         complexlib::pow(a,b)
+#define PetscExpComplex(a)           complexlib::exp(a)
+#define PetscLogComplex(a)           complexlib::log(a)
+#define PetscSinComplex(a)           complexlib::sin(a)
+#define PetscCosComplex(a)           complexlib::cos(a)
+
+#if defined(PETSC_USE_REAL_SINGLE)
+typedef complexlib::complex<float> PetscComplex;
+#elif defined(PETSC_USE_REAL_DOUBLE)
+typedef complexlib::complex<double> PetscComplex;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
+#endif  /* PETSC_USE_REAL_ */
+#endif  /* PETSC_USE_COMPLEX && PETSC_DESIRE_COMPLEX */
+
+#elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+/* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
+/* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
 
-/* 
-   C support of complex numbers: Warning it needs a 
-   C90 compliant compiler to work...
+#if defined(PETSC_USE_REAL_SINGLE)
+typedef float _Complex PetscComplex;
+
+#define PetscRealPartComplex(a)      crealf(a)
+#define PetscImaginaryPartComplex(a) cimagf(a)
+#define PetscAbsComplex(a)           cabsf(a)
+#define PetscConjComplex(a)          conjf(a)
+#define PetscSqrtComplex(a)          csqrtf(a)
+#define PetscPowComplex(a,b)         cpowf(a,b)
+#define PetscExpComplex(a)           cexpf(a)
+#define PetscLogComplex(a)           clogf(a)
+#define PetscSinComplex(a)           csinf(a)
+#define PetscCosComplex(a)           ccosf(a)
+
+#elif defined(PETSC_USE_REAL_DOUBLE)
+typedef double _Complex PetscComplex;
+
+#define PetscRealPartComplex(a)      creal(a)
+#define PetscImaginaryPartComplex(a) cimag(a)
+#define PetscAbsComplex(a)           cabs(a)
+#define PetscConjComplex(a)          conj(a)
+#define PetscSqrtComplex(a)          csqrt(a)
+#define PetscPowComplex(a,b)         cpow(a,b)
+#define PetscExpComplex(a)           cexp(a)
+#define PetscLogComplex(a)           clog(a)
+#define PetscSinComplex(a)           csin(a)
+#define PetscCosComplex(a)           ccos(a)
+
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef __complex128 PetscComplex;
+PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
+
+#define PetscRealPartComplex(a)      crealq(a)
+#define PetscImaginaryPartComplex(a) cimagq(a)
+#define PetscAbsComplex(a)           cabsq(a)
+#define PetscConjComplex(a)          conjq(a)
+#define PetscSqrtComplex(a)          csqrtq(a)
+#define PetscPowComplex(a,b)         cpowq(a,b)
+#define PetscExpComplex(a)           cexpq(a)
+#define PetscLogComplex(a)           clogq(a)
+#define PetscSinComplex(a)           csinq(a)
+#define PetscCosComplex(a)           ccosq(a)
+#endif /* PETSC_USE_REAL_* */
+#elif defined(PETSC_USE_COMPLEX)
+#error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
+#endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif /* (PETSC_CLANGUAGE_CXX && PETSC_HAVE_CXX_COMPLEX) else-if (PETSC_CLANGUAGE_C && PETSC_HAVE_C99_COMPLEX) */
+
+#if defined(PETSC_HAVE_COMPLEX)
+#if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+#define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
+#define MPIU_C_COMPLEX MPI_C_COMPLEX
+#else
+# if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+  typedef complexlib::complex<double> petsc_mpiu_c_double_complex;
+  typedef complexlib::complex<float> petsc_mpiu_c_complex;
+# elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+  typedef double _Complex petsc_mpiu_c_double_complex;
+  typedef float _Complex petsc_mpiu_c_complex;
+# else
+  typedef struct {double real,imag;} petsc_mpiu_c_double_complex;
+  typedef struct {float real,imag;} petsc_mpiu_c_complex;
+# endif
+PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_double_complex);
+PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(petsc_mpiu_c_complex);
+#endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
+#endif /* PETSC_HAVE_COMPLEX */
+
+#if defined(PETSC_HAVE_COMPLEX)
+#  if defined(PETSC_USE_REAL_SINGLE)
+#    define MPIU_COMPLEX MPIU_C_COMPLEX
+#  elif defined(PETSC_USE_REAL_DOUBLE)
+#    define MPIU_COMPLEX MPIU_C_DOUBLE_COMPLEX
+#  elif defined(PETSC_USE_REAL___FLOAT128)
+#    define MPIU_COMPLEX MPIU___COMPLEX128
+#  endif /* PETSC_USE_REAL_* */
+#endif
+
+#if defined(PETSC_USE_COMPLEX)
+typedef PetscComplex PetscScalar;
+#define PetscRealPart(a)      PetscRealPartComplex(a)
+#define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
+#define PetscAbsScalar(a)     PetscAbsComplex(a)
+#define PetscConj(a)          PetscConjComplex(a)
+#define PetscSqrtScalar(a)    PetscSqrtComplex(a)
+#define PetscPowScalar(a,b)   PetscPowComplex(a,b)
+#define PetscExpScalar(a)     PetscExpComplex(a)
+#define PetscLogScalar(a)     PetscLogComplex(a)
+#define PetscSinScalar(a)     PetscSinComplex(a)
+#define PetscCosScalar(a)     PetscCosComplex(a)
+
+#define MPIU_SCALAR MPIU_COMPLEX
+
+/*
+    real number definitions
  */
+#else /* PETSC_USE_COMPLEX */
+typedef PetscReal PetscScalar;
+#define MPIU_SCALAR MPIU_REAL
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
-typedef float complex PetscScalar;
+#define PetscRealPart(a)      (a)
+#define PetscImaginaryPart(a) ((PetscReal)0.)
+PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a : a;}
+#define PetscConj(a)          (a)
+#if !defined(PETSC_USE_REAL___FLOAT128)
+#define PetscSqrtScalar(a)    sqrt(a)
+#define PetscPowScalar(a,b)   pow(a,b)
+#define PetscExpScalar(a)     exp(a)
+#define PetscLogScalar(a)     log(a)
+#define PetscSinScalar(a)     sin(a)
+#define PetscCosScalar(a)     cos(a)
+#else /* PETSC_USE_REAL___FLOAT128 */
+#define PetscSqrtScalar(a)    sqrtq(a)
+#define PetscPowScalar(a,b)   powq(a,b)
+#define PetscExpScalar(a)     expq(a)
+#define PetscLogScalar(a)     logq(a)
+#define PetscSinScalar(a)     sinq(a)
+#define PetscCosScalar(a)     cosq(a)
+#endif /* PETSC_USE_REAL___FLOAT128 */
 
-#define PetscRealPart(a)      crealf(a)
-#define PetscImaginaryPart(a) cimagf(a)
-#define PetscAbsScalar(a)     cabsf(a)
-#define PetscConj(a)          conjf(a)
-#define PetscSqrtScalar(a)    csqrtf(a)
-#define PetscPowScalar(a,b)   cpowf(a,b)
-#define PetscExpScalar(a)     cexpf(a)
-#define PetscLogScalar(a)     clogf(a)
-#define PetscSinScalar(a)     csinf(a)
-#define PetscCosScalar(a)     ccosf(a)
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-typedef long double complex PetscScalar;
-
-#define PetscRealPart(a)      creall(a)
-#define PetscImaginaryPart(a) cimagl(a)
-#define PetscAbsScalar(a)     cabsl(a)
-#define PetscConj(a)          conjl(a)
-#define PetscSqrtScalar(a)    csqrtl(a)
-#define PetscPowScalar(a,b)   cpowl(a,b)
-#define PetscExpScalar(a)     cexpl(a)
-#define PetscLogScalar(a)     clogl(a)
-#define PetscSinScalar(a)     csinl(a)
-#define PetscCosScalar(a)     ccosl(a)
-
-#else
-typedef double complex PetscScalar;
-
-#define PetscRealPart(a)      creal(a)
-#define PetscImaginaryPart(a) cimag(a)
-#define PetscAbsScalar(a)     cabs(a)
-#define PetscConj(a)          conj(a)
-#define PetscSqrtScalar(a)    csqrt(a)
-#define PetscPowScalar(a,b)   cpow(a,b)
-#define PetscExpScalar(a)     cexp(a)
-#define PetscLogScalar(a)     clog(a)
-#define PetscSinScalar(a)     csin(a)
-#define PetscCosScalar(a)     ccos(a)
-#endif
-#endif
-
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_DOUBLE_COMPLEX;
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPI_C_COMPLEX;
-#endif
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-#define MPIU_SCALAR         MPI_C_COMPLEX
-#else
-#define MPIU_SCALAR         MPI_C_DOUBLE_COMPLEX
-#endif
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
-#define MPIU_MATSCALAR        ??Notdone
-#else
-#define MPIU_MATSCALAR      MPI_C_DOUBLE_COMPLEX
-#endif
-
-
-/* Compiling for real numbers only */
-#else
-#  if defined(PETSC_USE_SCALAR_SINGLE)
-#    define MPIU_SCALAR           MPI_FLOAT
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#    define MPIU_SCALAR           MPI_LONG_DOUBLE
-#  elif defined(PETSC_USE_SCALAR_INT)
-#    define MPIU_SCALAR           MPI_INT
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#    define MPIU_SCALAR           MPIU_QD_DD
-#  else
-#    define MPIU_SCALAR           MPI_DOUBLE
-#  endif
-#  if defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
-#    define MPIU_MATSCALAR        MPI_FLOAT
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
-#  elif defined(PETSC_USE_SCALAR_INT)
-#    define MPIU_MATSCALAR        MPI_INT
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#    define MPIU_MATSCALAR        MPIU_QD_DD
-#  else
-#    define MPIU_MATSCALAR        MPI_DOUBLE
-#  endif
-#  define PetscRealPart(a)      (a)
-#  define PetscImaginaryPart(a) (0.)
-#  define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
-#  define PetscConj(a)          (a)
-#  define PetscSqrtScalar(a)    sqrt(a)
-#  define PetscPowScalar(a,b)   pow(a,b)
-#  define PetscExpScalar(a)     exp(a)
-#  define PetscLogScalar(a)     log(a)
-#  define PetscSinScalar(a)     sin(a)
-#  define PetscCosScalar(a)     cos(a)
-
-#  if defined(PETSC_USE_SCALAR_SINGLE)
-  typedef float PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-  typedef long double PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_INT)
-  typedef int PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_QD_DD)
-#  include "qd/dd_real.h"
-  typedef dd_real PetscScalar;
-#  else
-  typedef double PetscScalar;
-#  endif
-#endif
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-#  define MPIU_REAL   MPI_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#  define MPIU_REAL   MPI_LONG_DOUBLE
-#elif defined(PETSC_USE_SCALAR_INT)
-#  define MPIU_REAL   MPI_INT
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#  define MPIU_REAL   MPIU_QD_DD
-#else
-#  define MPIU_REAL   MPI_DOUBLE
-#endif
-
-#if defined(PETSC_USE_SCALAR_QD_DD)
-extern  MPI_Datatype PETSCSYS_DLLEXPORT MPIU_QD_DD;
-#endif
+#endif /* PETSC_USE_COMPLEX */
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
-/*
-       Allows compiling PETSc so that matrix values are stored in 
-   single precision but all other objects still use double
-   precision. This does not work for complex numbers in that case
-   it remains double
-
-          EXPERIMENTAL! NOT YET COMPLETELY WORKING
-*/
-
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
-typedef float MatScalar;
-#else
-typedef PetscScalar MatScalar;
-#endif
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-  typedef float PetscReal;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-  typedef long double PetscReal;
-#elif defined(PETSC_USE_SCALAR_INT)
-  typedef int PetscReal;
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-  typedef dd_real PetscReal;
-#else 
-  typedef double PetscReal;
-#endif
-
-#if defined(PETSC_USE_COMPLEX)
-typedef PetscReal MatReal;
-#elif defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
-typedef float MatReal;
-#else
-typedef PetscReal MatReal;
-#endif
-
 
 /* --------------------------------------------------------------------------*/
 
@@ -333,15 +232,18 @@ typedef PetscReal MatReal;
    Certain objects may be created using either single or double precision.
    This is currently not used.
 */
-typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE, PETSC_SCALAR_QD_DD } PetscScalarPrecision;
+typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
 
+#if defined(PETSC_HAVE_COMPLEX)
 /* PETSC_i is the imaginary number, i */
-extern  PetscScalar PETSCSYS_DLLEXPORT PETSC_i;
+PETSC_EXTERN PetscComplex PETSC_i;
+#endif
 
 /*MC
    PetscMin - Returns minimum of two numbers
 
    Synopsis:
+   #include "petscmath.h"
    type PetscMin(type v1,type v2)
 
    Not Collective
@@ -350,13 +252,13 @@ extern  PetscScalar PETSCSYS_DLLEXPORT PETSC_i;
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-   
+
    Notes: type can be integer or floating point value
 
    Level: beginner
 
 
-.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
 M*/
 #define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
@@ -365,6 +267,7 @@ M*/
    PetscMax - Returns maxium of two numbers
 
    Synopsis:
+   #include "petscmath.h"
    type max PetscMax(type v1,type v2)
 
    Not Collective
@@ -377,15 +280,39 @@ M*/
 
    Level: beginner
 
-.seealso: PetscMin(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+.seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
 M*/
 #define PetscMax(a,b)   (((a)<(b)) ?  (b) : (a))
 
 /*MC
+   PetscClipInterval - Returns a number clipped to be within an interval
+
+   Synopsis:
+   #include "petscmath.h"
+   type clip PetscClipInterval(type x,type a,type b)
+
+   Not Collective
+
+   Input Parameter:
++  x - value to use if within interval (a,b)
+.  a - lower end of interval
+-  b - upper end of interval
+
+   Notes: type can be integer or floating point value
+
+   Level: beginner
+
+.seealso: PetscMin(), PetscMax(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
+
+M*/
+#define PetscClipInterval(x,a,b)   (PetscMax((a),PetscMin((x),(b))))
+
+/*MC
    PetscAbsInt - Returns the absolute value of an integer
 
    Synopsis:
+   #include "petscmath.h"
    int abs PetscAbsInt(int v1)
 
    Not Collective
@@ -404,12 +331,13 @@ M*/
    PetscAbsReal - Returns the absolute value of an real number
 
    Synopsis:
+   #include "petscmath.h"
    Real abs PetscAbsReal(PetscReal v1)
 
    Not Collective
 
    Input Parameter:
-.   v1 - the double 
+.   v1 - the double
 
 
    Level: beginner
@@ -423,6 +351,7 @@ M*/
    PetscSqr - Returns the square of a number
 
    Synopsis:
+   #include "petscmath.h"
    type sqr PetscSqr(type v1)
 
    Not Collective
@@ -441,90 +370,85 @@ M*/
 
 /* ----------------------------------------------------------------------------*/
 /*
-     Basic constants - These should be done much better
+     Basic constants
 */
-#define PETSC_PI                 3.14159265358979323846264
-#define PETSC_DEGREES_TO_RADIANS 0.01745329251994
+#if defined(PETSC_USE_REAL___FLOAT128)
+#define PETSC_PI                 M_PIq
+#elif defined(M_PI)
+#define PETSC_PI                 M_PI
+#else
+#define PETSC_PI                 3.14159265358979323846264338327950288419716939937510582
+#endif
+
+#if !defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_MAX_INT            2147483647
-#define PETSC_MIN_INT            -2147483647
+#define PETSC_MIN_INT            (-PETSC_MAX_INT - 1)
+#else
+#define PETSC_MAX_INT            9223372036854775807L
+#define PETSC_MIN_INT            (-PETSC_MAX_INT - 1)
+#endif
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
-#  define PETSC_MAX                     1.e30
-#  define PETSC_MIN                    -1.e30
-#  define PETSC_MACHINE_EPSILON         1.e-7
-#  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
+#if defined(PETSC_USE_REAL_SINGLE)
+#  define PETSC_MAX_REAL                3.40282346638528860e+38F
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
+#  define PETSC_MACHINE_EPSILON         1.19209290e-07F
+#  define PETSC_SQRT_MACHINE_EPSILON    3.45266983e-04F
 #  define PETSC_SMALL                   1.e-5
-#elif defined(PETSC_USE_SCALAR_INT)
-#  define PETSC_MAX                     PETSC_MAX_INT
-#  define PETSC_MIN                     PETSC_MIN_INT
-#  define PETSC_MACHINE_EPSILON         1
-#  define PETSC_SQRT_MACHINE_EPSILON    1
-#  define PETSC_SMALL                   0
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#  define PETSC_MAX                     1.e300
-#  define PETSC_MIN                    -1.e300 
-#  define PETSC_MACHINE_EPSILON         1.e-30
-#  define PETSC_SQRT_MACHINE_EPSILON    1.e-15
-#  define PETSC_SMALL                   1.e-25
-#else
-#  define PETSC_MAX                     1.e300
-#  define PETSC_MIN                    -1.e300
-#  define PETSC_MACHINE_EPSILON         1.e-14
-#  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#  define PETSC_MAX_REAL                1.7976931348623157e+308
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
+#  define PETSC_MACHINE_EPSILON         2.2204460492503131e-16
+#  define PETSC_SQRT_MACHINE_EPSILON    1.490116119384766e-08
 #  define PETSC_SMALL                   1.e-10
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#  define PETSC_MAX_REAL                FLT128_MAX
+#  define PETSC_MIN_REAL                -FLT128_MAX
+#  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
+#  define PETSC_SMALL                   1.e-20
 #endif
 
-#if defined PETSC_HAVE_ADIC
-/* Use MPI_Allreduce when ADIC is not available. */
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCSYS_DLLEXPORT PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
-#endif
-
-/*MC
-      PetscIsInfOrNan - Returns 1 if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
-
-    Input Parameter:
-.     a - the double
-
-
-     Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
-      Otherwises uses ( (a - a) != 0.0), note that some optimizing compiles compile
-      out this form, thus removing the check.
-
-     Level: beginner
-
-M*/
-#if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-#define PetscIsInfOrNanScalar(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
-#define PetscIsInfOrNanReal(a) (isinf(a) || isnan(a))
-#elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
-#if defined(PETSC_HAVE_FLOAT_H)
-#include "float.h"  /* windows defines _finite() in float.h */
-#endif
-#if defined(PETSC_HAVE_IEEEFP_H)
-#include "ieeefp.h"  /* Solaris prototypes these here */
-#endif
-#define PetscIsInfOrNanScalar(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
-#define PetscIsInfOrNanReal(a) (!_finite(a) || _isnan(a))
-#else
-#define PetscIsInfOrNanScalar(a) ((a - a) != 0.0)
-#define PetscIsInfOrNanReal(a) ((a - a) != 0.0)
-#endif
-
+PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
+PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
-/*
-    PetscLogDouble variables are used to contain double precision numbers
-  that are not used in the numerical computations, but rather in logging,
-  timing etc.
-*/
-typedef double PetscLogDouble;
-#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
-
 #define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar
 
+/*
+    These macros are currently hardwired to match the regular data types, so there is no support for a different
+    MatScalar from PetscScalar. We left the MatScalar in the source just in case we use it again.
+ */
+#define MPIU_MATSCALAR MPIU_SCALAR
+typedef PetscScalar MatScalar;
+typedef PetscReal MatReal;
 
-PETSC_EXTERN_CXX_END
+struct petsc_mpiu_2scalar {PetscScalar a,b;};
+PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2scalar);
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+struct petsc_mpiu_2int {PetscInt a,b;};
+PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct petsc_mpiu_2int);
+#else
+#define MPIU_2INT MPI_2INT
+#endif
+
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
+  PetscInt result = 1;
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
+  PetscReal result = 1;
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
 #endif

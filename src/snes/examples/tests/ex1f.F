@@ -13,18 +13,18 @@
 !T*/
 !
 !  --------------------------------------------------------------------------
-! 
+!
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
-!  
+!
 !          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-! 
+!
 !  with boundary conditions
-!  
+!
 !           u = 0  for  x = 0, x = 1, y = 0, y = 1.
-! 
+!
 !  A finite difference approximation with the usual 5-point stencil
-!  is used to discretize the boundary value problem to obtain a nonlinear 
+!  is used to discretize the boundary value problem to obtain a nonlinear
 !  system of equations.
 !
 !  The parallel version of this code is snes/examples/tutorials/ex5f.F
@@ -34,9 +34,9 @@
       program main
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  The following include statements are generally used in SNES Fortran
 !  programs:
@@ -53,18 +53,18 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscis.h"
-#include "finclude/petscdraw.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscis.h>
+#include <finclude/petscdraw.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 !
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
 !     snes        - nonlinear solver
@@ -79,7 +79,7 @@
       Vec                x,r
       PetscDraw               draw
       Mat                J
-      PetscTruth matrix_free,flg,fd_coloring
+      PetscBool  matrix_free,flg,fd_coloring
       PetscErrorCode ierr
       PetscInt   its,N, mx,my,i5
       PetscMPIInt size,rank
@@ -87,7 +87,7 @@
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
       MatStructure       str
- 
+
       PetscScalar        lx_v(0:1)
       PetscOffset        lx_i
 
@@ -100,9 +100,9 @@
 
       external FormFunction,FormInitialGuess,FormJacobian
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -140,7 +140,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call VecCreate(PETSC_COMM_WORLD,x,ierr)
       call VecSetSizes(x,PETSC_DECIDE,N,ierr)
@@ -161,7 +161,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create matrix. Here we only approximately preallocate storage space
-!  for the Jacobian.  See the users manual for a discussion of better 
+!  for the Jacobian.  See the users manual for a discussion of better
 !  techniques for preallocating matrix memory.
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
@@ -179,21 +179,21 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_fd_coloring',     &
      &                    fd_coloring,ierr)
       if (fd_coloring) then
-             
-! 
+
+!
 !      This initializes the nonzero structure of the Jacobian. This is artificial
 !      because clearly if we had a routine to compute the Jacobian we won't need
 !      to use finite differences.
 !
         call FormJacobian(snes,x,J,J,str,0,ierr)
 !
-!       Color the matrix, i.e. determine groups of columns that share no common 
+!       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
         call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
-    
+
 !
-!       Create the data structure that SNESDefaultComputeJacobianColor() uses
+!       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
@@ -201,10 +201,10 @@
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
 !
-!        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+!        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
 !
-        call SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,    &
+        call SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,    &
      &                     fdcoloring,ierr)
         call ISColoringDestroy(iscoloring,ierr)
 
@@ -219,7 +219,7 @@
 !   - The user can override with:
 !      -snes_fd : default finite differencing approximation of Jacobian
 !      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-!                 (unless user explicitly sets preconditioner) 
+!                 (unless user explicitly sets preconditioner)
 !      -snes_mf_operator : form preconditioning matrix as set by the user,
 !                          but use matrix-free approx for Jacobian-vector
 !                          products within Newton-Krylov method
@@ -246,20 +246,18 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr) 
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
       endif
-  100 format('Number of Newton iterations = ',i1)
+  100 format('Number of SNES iterations = ',i1)
 
 !  PetscDraw contour plot of solution
 
-!      call PetscDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
-!                   300,0,300,300,draw,ierr)
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,          &
      &     'Solution',300,0,300,300,draw,ierr)
-      call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
+      call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
       call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
@@ -290,11 +288,11 @@
 !
 !  Output Parameters:
 !  X - vector
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationInitialGuess", where the actual computations are 
+!  "ApplicationInitialGuess", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -303,10 +301,10 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec           X
@@ -328,7 +326,7 @@
 
       call VecGetArray(X,lx_v,lx_i,ierr)
 
-!  Compute initial guess 
+!  Compute initial guess
 
       call ApplicationInitialGuess(lx_v(lx_i),ierr)
 
@@ -336,7 +334,7 @@
 
       call VecRestoreArray(X,lx_v,lx_i,ierr)
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -349,7 +347,7 @@
 !
 !  Output Parameters:
 !  f - local vector data, f(x)
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -386,13 +384,13 @@
      &             .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *                                          & 
+              x(i,j) = temp1 *                                          &
      &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
             endif
  10      continue
  20   continue
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -410,7 +408,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationFunction", where the actual computations are 
+!  "ApplicationFunction", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -419,9 +417,9 @@
       subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES              snes
@@ -436,7 +434,7 @@
 
 !  Declarations for use with local arrays:
       PetscScalar       lx_v(0:1),lf_v(0:1)
-      PetscOffset       lx_i,lf_i 
+      PetscOffset       lx_i,lf_i
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -449,7 +447,7 @@
       call VecGetArray(X,lx_v,lx_i,ierr)
       call VecGetArray(F,lf_v,lf_i,ierr)
 
-!  Compute function 
+!  Compute function
 
       call ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr)
 
@@ -460,7 +458,7 @@
 
       call PetscLogFlops(11.0d0*mx*my,ierr)
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -473,7 +471,7 @@
 !
 !  Output Parameters:
 !  f    - local vector data, f(x)
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -506,7 +504,7 @@
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
-!  Compute function 
+!  Compute function
 
       do 20 j=1,my
          do 10 i=1,mx
@@ -514,7 +512,7 @@
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
-               u = x(i,j) 
+               u = x(i,j)
                uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
@@ -543,7 +541,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationJacobian", where the actual computations are 
+!  "ApplicationJacobian", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -552,11 +550,11 @@
       subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES          snes
@@ -624,7 +622,7 @@
 !  Output Parameters:
 !  jac      - Jacobian matrix
 !  jac_prec - optionally different preconditioning matrix (not used here)
-!  ierr     - error code 
+!  ierr     - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -632,11 +630,11 @@
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
 !  Common blocks:
       PetscReal    lambda

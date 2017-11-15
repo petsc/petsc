@@ -4,12 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = basfactor.c spbas.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = spbas.h spbas_cholesky.h
-OBJSC    = basfactor.o spbas.o
-OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/bas/
 

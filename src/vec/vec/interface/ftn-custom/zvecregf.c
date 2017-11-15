@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscvec.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscvec.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsettype_               VECSETTYPE
 #define vecgettype_               VECGETTYPE
@@ -8,9 +8,7 @@
 #define vecgettype_               vecgettype
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -19,7 +17,7 @@ void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),PetscE
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -27,5 +25,3 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscError
   *ierr = PetscStrncpy(name,tname,len);
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
-
-EXTERN_C_END

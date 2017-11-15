@@ -1,17 +1,12 @@
-#define PETSC_DLL
 
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
@@ -20,7 +15,7 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetRelativePath"
 /*@C
    PetscGetRelativePath - Given a filename, returns the relative path (removes
@@ -40,7 +35,7 @@
 
 .seealso: PetscGetFullPath()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
+PetscErrorCode  PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
 {
   char           *p;
   PetscErrorCode ierr;

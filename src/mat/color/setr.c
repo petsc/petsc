@@ -1,18 +1,17 @@
-#define PETSCMAT_DLL
 
 /* setr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
-#include "../src/mat/color/color.h"
+#include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKsetr" 
-PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpntr,PetscInt* indcol, PetscInt*ipntr,PetscInt* iwa)
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKsetr"
+PetscErrorCode MINPACKsetr(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol, PetscInt *ipntr,PetscInt * iwa)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2;
+  /* System generated locals */
+  PetscInt i__1, i__2;
 
-    /* Local variables */
-    PetscInt jcol, jp, ir;
+  /* Local variables */
+  PetscInt jcol, jp, ir;
 
 /*     Given a column-oriented definition of the sparsity pattern */
 /*     of an m by n matrix A, this subroutine determines a */
@@ -47,46 +46,44 @@ PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpn
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
-    /*     Store in array iwa the counts of non-zeroes in the rows. */
+  /*     Store in array iwa the counts of non-zeroes in the rows. */
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --iwa;
-    --ipntr;
-    --indcol;
-    --jpntr;
-    --indrow;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --iwa;
+  --ipntr;
+  --indcol;
+  --jpntr;
+  --indrow;
 
-    /* Function Body */
-    i__1 = *m;
-    for (ir = 1; ir <= i__1; ++ir) {
-	iwa[ir] = 0;
+  /* Function Body */
+  i__1 = *m;
+  for (ir = 1; ir <= i__1; ++ir) iwa[ir] = 0;
+
+  i__1 = jpntr[*n + 1] - 1;
+  for (jp = 1; jp <= i__1; ++jp) ++iwa[indrow[jp]];
+
+  /*     Set pointers to the start of the rows in indcol. */
+
+  ipntr[1] = 1;
+  i__1     = *m;
+
+  for (ir = 1; ir <= i__1; ++ir) {
+    ipntr[ir + 1] = ipntr[ir] + iwa[ir];
+    iwa[ir]       = ipntr[ir];
+  }
+
+  /*     Fill indcol. */
+
+  i__1 = *n;
+  for (jcol = 1; jcol <= i__1; ++jcol) {
+    i__2 = jpntr[jcol + 1] - 1;
+    for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+      ir              = indrow[jp];
+      indcol[iwa[ir]] = jcol;
+      ++iwa[ir];
     }
-    i__1 = jpntr[*n + 1] - 1;
-    for (jp = 1; jp <= i__1; ++jp) {
-	++iwa[indrow[jp]];
-    }
-
-    /*     Set pointers to the start of the rows in indcol. */
-
-    ipntr[1] = 1;
-    i__1 = *m;
-    for (ir = 1; ir <= i__1; ++ir) {
-	ipntr[ir + 1] = ipntr[ir] + iwa[ir];
-	iwa[ir] = ipntr[ir];
-    }
-
-    /*     Fill indcol. */
-
-    i__1 = *n;
-    for (jcol = 1; jcol <= i__1; ++jcol) {
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
-	    indcol[iwa[ir]] = jcol;
-	    ++iwa[ir];
-	}
-    }
-    PetscFunctionReturn(0);
+  }
+  PetscFunctionReturn(0);
 }
 

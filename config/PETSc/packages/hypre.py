@@ -3,17 +3,23 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.6.0b.tar.gz']
+    self.download     = ['https://computation.llnl.gov/casc/hypre/download/hypre-2.9.1a.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.9.1a.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
     self.license   = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
+    # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
+    self.worksonWindows   = 1
+    self.downloadonWindows= 0
+    self.requires32bitint = 0
+
     return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]  
+    self.deps       = [self.mpi,self.blasLapack]
     return
 
   def generateLibList(self,dir):
@@ -23,12 +29,13 @@ class Configure(PETSc.package.NewPackage):
     if self.languages.clanguage == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
     return alllibs
-        
+
   def Install(self):
     import os
 
     self.framework.pushLanguage('C')
     args = ['--prefix='+self.installDir]
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
@@ -67,11 +74,23 @@ class Configure(PETSc.package.NewPackage):
     args.append('--with-lapack-lib-dir=')
     args.append('--with-blas=yes')
     args.append('--with-lapack=yes')
-    
+
+    # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
+    if self.blasLapack.mangling == 'underscore':
+      mang = 'one-underscore'
+    elif self.blasLapack.mangling == 'caps':
+      mang = 'caps-no-underscores'
+    else:
+      mang = 'no-underscores'
+    args.append('--with-fmangle-blas='+mang)
+    args.append('--with-fmangle-lapack='+mang)
+
     args.append('--without-babel')
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
+    if self.libraryOptions.integerSize == 64:
+      args.append('--enable-bigint')
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'hypre'), 'w')
     fd.write(args)
@@ -80,12 +99,12 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('hypre'):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make distclean && ./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && touch config/Makefile.config && make distclean && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && HYPRE_INSTALL_DIR='+self.installDir+' && export HYPRE_INSTALL_DIR && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       try:

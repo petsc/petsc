@@ -14,19 +14,19 @@
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-# 
+#
 # See the file COPYING for a complete copy of the LGPL.
 #
-# 
+#
 # This module automatically constructs a lexical analysis module from regular
 # expression rules defined in a user-defined module.  The idea is essentially the same
 # as that used in John Aycock's Spark framework, but the implementation works
@@ -105,9 +105,9 @@ attributes:
                name of the rule without the leading t_
     t.value  = The value of the lexeme.
     t.lineno = The value of the line number where the token was encountered
-    
+
 For example, the t_NUMBER() rule above might be called with the following:
-    
+
     t.type  = 'NUMBER'
     t.value = '42'
     t.lineno = 3
@@ -185,7 +185,7 @@ Assuming that the module 'lexer' has initialized plex as shown
 above, parsing modules can safely import 'plex' without having
 to import the rule file or any additional imformation about the
 scanner you have defined.
-"""    
+"""
 
 # -----------------------------------------------------------------------------
 
@@ -235,7 +235,7 @@ class Lexer:
         self.token = self.errtoken
 
         self.hack = LexToken()
-        
+
     # ------------------------------------------------------------
     # input() - Push a new string into the lexer
     # ------------------------------------------------------------
@@ -257,7 +257,7 @@ class Lexer:
     # ------------------------------------------------------------
     def errtoken(self):
         raise RuntimeError, "No input string given with input()"
-    
+
     # ------------------------------------------------------------
     # token() - Return the next token from the Lexer
     #
@@ -290,16 +290,16 @@ class Lexer:
                 if not func:
                     self.lexpos = lexpos
                     return tok
-                
+
                 # If token is processed by a function, call it
                 self.lexpos = lexpos
                 tok.lexer = self
                 newtok = func(tok)
                 self.lineno = tok.lineno     # Update line number
-                
+
                 # Every function must return a token, if nothing, we just move to next token
                 if not newtok: continue
-                
+
                 # Verify type of the token.  If not in the token map, raise an error
                 if not self.optimize:
                     if not self.lextokens.has_key(newtok.type):
@@ -334,7 +334,7 @@ class Lexer:
         self.lexpos = lexpos + 1
         return None
 
-        
+
 # -----------------------------------------------------------------------------
 # validate_file()
 #
@@ -375,7 +375,7 @@ def validate_file(filename):
         linen += 1
     return noerror
 
-        
+
 # -----------------------------------------------------------------------------
 # lex(module)
 #
@@ -389,13 +389,13 @@ def lex(module=None,debug=0,optimize=0):
     lexer = Lexer()
     lexer.debug = debug
     lexer.optimize = optimize
-    
+
     if module:
         if not isinstance(module, types.ModuleType):
             raise ValueError,"Expected a module"
-        
+
         ldict = module.__dict__
-        
+
     else:
         # No module given.  We might be able to get information from the caller.
         try:
@@ -405,7 +405,7 @@ def lex(module=None,debug=0,optimize=0):
             f = t.tb_frame
             f = f.f_back           # Walk out to our calling function
             ldict = f.f_globals    # Grab its globals dictionary
-        
+
     # Get the tokens map
     tokens = ldict.get("tokens",None)
     if not tokens:
@@ -422,7 +422,7 @@ def lex(module=None,debug=0,optimize=0):
             for c in s:
                 if not (c.isalnum() or c == '_'): return 0
             return 1
-        
+
         for n in tokens:
             if not is_identifier(n):
                 print "lex: Bad token name '%s'" % n
@@ -432,7 +432,7 @@ def lex(module=None,debug=0,optimize=0):
             lexer.lextokens[n] = None
     else:
         for n in tokens: lexer.lextokens[n] = None
-        
+
 
     if debug:
         print "lex: tokens = '%s'" % lexer.lextokens.keys()
@@ -451,20 +451,20 @@ def lex(module=None,debug=0,optimize=0):
         else:
             print "lex: %s not defined as a function or string" % f
             error = 1
-            
+
     # Sort the functions by line number
     fsymbols.sort(lambda x,y: cmp(x.func_code.co_firstlineno,y.func_code.co_firstlineno))
 
     # Sort the strings by regular expression length
     ssymbols.sort(lambda x,y: (len(x[1]) < len(y[1])) - (len(x[1]) > len(y[1])))
-    
+
     # Check for non-empty symbols
     if len(fsymbols) == 0 and len(ssymbols) == 0:
         raise SyntaxError,"lex: no rules of the form t_rulename are defined."
 
     # Add all of the rules defined with actions first
     for f in fsymbols:
-        
+
         line = f.func_code.co_firstlineno
         file = f.func_code.co_filename
         files[file] = None
@@ -484,7 +484,7 @@ def lex(module=None,debug=0,optimize=0):
                 print "%s:%d. Rule '%s' must be defined as a string." % (file,line,f.__name__)
                 error = 1
                 continue
-        
+
         if f.__name__ == 't_error':
             lexer.lexerrorf = f
             continue
@@ -503,7 +503,7 @@ def lex(module=None,debug=0,optimize=0):
 
             # Okay. The regular expression seemed okay.  Let's append it to the master regular
             # expression we're building
-  
+
             if (regex): regex += "|"
             regex += "(?P<%s>%s)" % (f.__name__,f.__doc__)
         else:
@@ -515,13 +515,13 @@ def lex(module=None,debug=0,optimize=0):
         if name == 't_ignore':
             lexer.lexignore = r
             continue
-        
+
         if not optimize:
             if name == 't_error':
                 raise SyntaxError,"lex: Rule 't_error' must be defined as a function"
                 error = 1
                 continue
-        
+
             if not lexer.lextokens.has_key(name[2:]):
                 print "lex: Rule '%s' defined for an unspecified token %s." % (name,name[2:])
                 error = 1
@@ -534,7 +534,7 @@ def lex(module=None,debug=0,optimize=0):
                 continue
             if debug:
                 print "lex: Adding rule %s -> '%s'" % (name,r)
-                
+
         if regex: regex += "|"
         regex += "(?P<%s>%s)" % (name,r)
 
@@ -567,12 +567,12 @@ def lex(module=None,debug=0,optimize=0):
         print "lex: Warning. no t_error rule is defined."
 
     if not lexer.lexignore: lexer.lexignore = ""
-    
+
     # Create global versions of the token() and input() functions
     global token, input
     token = lexer.token
     input = lexer.input
-    
+
     return lexer
 
 # -----------------------------------------------------------------------------
@@ -601,12 +601,12 @@ def runmain(lexer=None,data=None):
         _token = lexer.token
     else:
         _token = token
-        
+
     while 1:
         tok = _token()
         if not tok: break
         print "(%s,'%s',%d)" % (tok.type, tok.value, tok.lineno)
-        
-    
+
+
 
 

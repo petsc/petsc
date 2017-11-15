@@ -1,9 +1,8 @@
-#define PETSCKSP_DLL
 
-/*  -------------------------------------------------------------------- 
+/*  --------------------------------------------------------------------
 
      This file implements a SupportGraph preconditioner in PETSc as part of PC.
-     You can use this as a starting point for implementing your own 
+     You can use this as a starting point for implementing your own
      preconditioner that is not provided with PETSc. (You might also consider
      just using PCSHELL)
 
@@ -15,9 +14,9 @@
      where the suffix "_XXX" denotes a particular implementation, in
      this case we use _SupportGraph (e.g., PCCreate_SupportGraph, PCApply_SupportGraph).
      These routines are actually called via the common user interface
-     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(), 
-     so the application code interface remains identical for all 
-     preconditioners.  
+     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(),
+     so the application code interface remains identical for all
+     preconditioners.
 
      Another key routine is:
           PCSetUp_XXX()           - Prepares for the use of a preconditioner
@@ -34,67 +33,65 @@
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the
      above description applies to these categories also.  One exception is
-     that the analogues of PCApply() for these components are KSPSolve(), 
+     that the analogues of PCApply() for these components are KSPSolve(),
      SNESSolve(), and TSSolve().
 
      Additional optional functionality unique to preconditioners is left and
-     right symmetric preconditioner application via PCApplySymmetricLeft() 
-     and PCApplySymmetricRight().  The SupportGraph implementation is 
+     right symmetric preconditioner application via PCApplySymmetricLeft()
+     and PCApplySymmetricRight().  The SupportGraph implementation is
      PCApplySymmetricLeftOrRight_SupportGraph().
 
     -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the SupportGraph preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
      adjacency_list.hpp
 */
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 
-/* 
-   Private context (data structure) for the SupportGraph preconditioner.  
+/*
+   Private context (data structure) for the SupportGraph preconditioner.
 */
 typedef struct {
-  Mat        pre;      /* Cholesky factored preconditioner matrix */
-  PetscTruth augment;  /* whether to augment the spanning tree */
-  PetscReal  maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
-  PetscReal  tol;      /* throw out entries smaller than this */
+  Mat       pre;       /* Cholesky factored preconditioner matrix */
+  PetscBool augment;   /* whether to augment the spanning tree */
+  PetscReal maxCong;   /* create subgraph with at most this much congestion (only used with augment) */
+  PetscReal tol;       /* throw out entries smaller than this */
 } PC_SupportGraph;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_SupportGraph"
 static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
 {
   PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      iascii;
+  PetscBool       iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: maxCong = %f\n",sg->maxCong);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: tol = %f\n",sg->tol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Factored Matrix:\n");CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);  
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = MatView(sg->pre, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);  
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCSupportGraph",((PetscObject)viewer)->type_name);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,PetscReal tol,PetscReal& maxCong);
+extern PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscBool augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SupportGraph - Prepares for the use of the SupportGraph preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -105,23 +102,25 @@ EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTrut
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_SupportGraph"
 static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 {
-  PC_SupportGraph  *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode   ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscBool       isSym;
+  PetscErrorCode  ierr;
   /*
   Vec            diag;
   PetscInt       n,i;
   PetscScalar    *x;
-  PetscTruth     zeroflag = PETSC_FALSE;
+  PetscBool      zeroflag = PETSC_FALSE;
   */
 
   PetscFunctionBegin;
-  if(!pc->setupcalled) {
-    if (!MatIsSymmetric(pc->pmat, 1.0e-9)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
-    // note that maxCong is being updated
+  if (!pc->setupcalled) {
+    ierr = MatIsSymmetric(pc->pmat, 1.0e-9, &isSym);CHKERRQ(ierr);
+    if (!isSym) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
+    /* note that maxCong is being updated */
     ierr = AugmentedLowStretchSpanningTree(pc->pmat, &sg->pre, sg->augment, sg->tol, sg->maxCong);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -141,12 +140,12 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_SupportGraph"
 static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 {
-  PC_SupportGraph      *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MatSolve(sg->pre,x,y);CHKERRQ(ierr);
@@ -162,43 +161,42 @@ static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_SupportGraph"
 static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 {
-  PC_SupportGraph      *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (sg->pre)     {ierr = MatDestroy(sg->pre);CHKERRQ(ierr);}
-
+  ierr = MatDestroy(&sg->pre);CHKERRQ(ierr);
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(sg);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SupportGraph"
 static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 {
   PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SupportGraph options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_SupportGraph - Creates a SupportGraph preconditioner context, PC_SupportGraph, 
-   and sets this as the private data within the generic preconditioning 
+   PCCreate_SupportGraph - Creates a SupportGraph preconditioner context, PC_SupportGraph,
+   and sets this as the private data within the generic preconditioning
    context, PC, that was created within PCCreate().
 
    Input Parameter:
@@ -222,27 +220,26 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_SupportGraph"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SupportGraph(PC pc)
 {
-  PC_SupportGraph      *sg;
-  PetscErrorCode ierr;
+  PC_SupportGraph *sg;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
-  pc->data  = (void*)sg;
+  ierr     = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
+  pc->data = (void*)sg;
 
-  sg->pre = 0;
+  sg->pre     = 0;
   sg->augment = PETSC_TRUE;
   sg->maxCong = 3.0;
-  sg->tol = 0;
-  
+  sg->tol     = 0;
+
 
   /*
       Set the pointers for the functions that are provided above.
@@ -262,4 +259,3 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

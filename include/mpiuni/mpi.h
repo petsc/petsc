@@ -1,6 +1,6 @@
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
- 
+
    NOT ALL THE MPI CALLS ARE IMPLEMENTED CORRECTLY! Only those needed in PETSc.
 
    For example,
@@ -60,7 +60,7 @@
   case, a proper implementation of MPI might as well be used. This is
   the reason the send to self is not implemented in MPIUNI, and never
   will be.
-  
+
   Proper implementations of MPI [for eg: MPICH & OpenMPI] are
   available for most machines. When these packages are available, Its
   generally preferable to use one of them instead of MPIUNI - even if
@@ -119,8 +119,8 @@ from generating warning messages about unused variables while compiling PETSc.
 */
 extern void *MPIUNI_TMP;
 
-#define MPI_COMM_WORLD       1
-#define MPI_COMM_SELF        MPI_COMM_WORLD
+#define MPI_COMM_SELF        1
+#define MPI_COMM_WORLD       2
 #define MPI_COMM_NULL        0
 #define MPI_SUCCESS          0
 #define MPI_IDENT            0
@@ -135,6 +135,10 @@ extern void *MPIUNI_TMP;
 #define MPI_TAG_UB           0
 #define MPI_ERRORS_RETURN    0
 #define MPI_UNDEFINED      (-32766)
+#define MPI_ERRORS_ARE_FATAL (-32765)
+#define MPI_MAXLOC           5
+#define MPI_MINLOC           6
+
 
 /* External types */
 typedef int    MPI_Comm;
@@ -147,7 +151,6 @@ typedef int    MPI_File;
 typedef int    MPI_Info;
 typedef int    MPI_Offset;
 
-extern int MPIUNI_Memcpy(void*,const void*,int);
 
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
@@ -165,13 +168,24 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 #define MPI_UNSIGNED         sizeof(unsigned)
 #define MPI_UNSIGNED_CHAR    sizeof(unsigned char)
 #define MPI_UNSIGNED_LONG    sizeof(unsigned long)
+#define MPI_UNSIGNED_LONG_LONG sizeof(unsigned long long)
 #define MPI_COMPLEX          2*sizeof(float)
+#define MPI_C_COMPLEX        2*sizeof(float)
 #define MPI_C_DOUBLE_COMPLEX 2*sizeof(double)
 #define MPI_FLOAT_INT        (sizeof(float) + sizeof(int))
 #define MPI_DOUBLE_INT       (sizeof(double) + sizeof(int))
 #define MPI_LONG_INT         (sizeof(long) + sizeof(int))
 #define MPI_SHORT_INT        (sizeof(short) + sizeof(int))
 #define MPI_2INT             (2* sizeof(int))
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+extern MPI_Datatype MPIU___FLOAT128;
+#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : datatype)
+#else
+#define MPI_sizeof(datatype) (datatype)
+#endif
+extern int MPIUNI_Memcpy(void*,const void*,int);
+
 
 #define MPI_REQUEST_NULL     ((MPI_Request)0)
 #define MPI_GROUP_NULL       ((MPI_Group)0)
@@ -186,11 +200,13 @@ typedef int MPI_Op;
 #define MPI_SUM           0
 #define MPI_MAX           0
 #define MPI_MIN           0
+#define MPI_REPLACE       0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
 #define MPI_PACKED        0
 #define MPI_MAX_ERROR_STRING 2056
 #define MPI_STATUS_IGNORE (MPI_Status *)1
+#define MPI_STATUSES_IGNORE (MPI_Status *)1
 #define MPI_ORDER_FORTRAN        57
 #define MPI_IN_PLACE      (void *) -1
 
@@ -199,14 +215,14 @@ typedef int MPI_Op;
 */
 typedef int   (MPI_Copy_function)(MPI_Comm,int,void *,void *,void *,int *);
 typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
-typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *); 
+typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
   own MPIUni we map the following function names to a unique PETSc name. Those functions
   are defined in mpi.c and put into the libpetscsys.a or libpetsc.a library.
 
-  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the 
+  Note that this does not work for the MPIUni Fortran symbols which are explicitly in the
   PETSc libraries unless the flag MPIUNI_AVOID_MPI_NAMESPACE is set.
 */
 #define MPI_Abort         Petsc_MPI_Abort
@@ -222,6 +238,14 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
+#define MPI_Comm_size     Petsc_MPI_Comm_size
+#define MPI_Comm_rank     Petsc_MPI_Comm_rank
+
+/* identical C bindings */
+#define MPI_Comm_create_keyval Petsc_MPI_Keyval_create
+#define MPI_Comm_free_keyval   Petsc_MPI_Keyval_free
+#define MPI_Comm_get_attr      Petsc_MPI_Attr_get
+#define MPI_Comm_set_attr      Petsc_MPI_Attr_put
 
 extern int    MPI_Abort(MPI_Comm,int);
 extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
@@ -236,11 +260,12 @@ extern int    MPI_Init(int *, char ***);
 extern int    MPI_Finalize(void);
 extern int    MPI_Initialized(int*);
 extern int    MPI_Finalized(int*);
-
+extern int    MPI_Comm_size(MPI_Comm,int*);
+extern int    MPI_Comm_rank(MPI_Comm,int*);
 
 #define MPI_Aint MPIUNI_INTPTR
-/* 
-    Routines we have replace with macros that do nothing 
+/*
+    Routines we have replace with macros that do nothing
     Some return error codes others return success
 */
 
@@ -362,7 +387,7 @@ extern int    MPI_Finalized(int*);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (a),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (b),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (c),\
-      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (d),\
+      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (d),(*c = 0), \
       MPI_SUCCESS)
 #define MPI_Testany(a,b,c,d,e) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (a),\
@@ -478,7 +503,7 @@ extern int    MPI_Finalized(int*);
      dest,sendtag,recvbuf,recvcount,\
      recvtype,source,recvtag,\
      comm,status) \
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount) * (sendtype))
+  MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount) * MPI_sizeof(sendtype))
 #define MPI_Sendrecv_replace(buf,count, datatype,dest,sendtag,\
      source,recvtag,comm,status) MPI_SUCCESS
 #define MPI_Type_contiguous(count, oldtype,newtype) \
@@ -493,7 +518,13 @@ extern int    MPI_Finalized(int*);
      newtype) MPI_SUCCESS
 #define MPI_Type_struct(count,array_of_blocklengths,\
      array_of_displacements,\
-     array_of_types, newtype) MPI_SUCCESS
+     array_of_types, newtype) \
+     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_blocklengths),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_displacements),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_types),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype),\
+      MPI_SUCCESS)
 #define MPI_Address(location,address) \
      (*(address) = (MPIUNI_INTPTR)(char *)(location),MPI_SUCCESS)
 #define MPI_Type_extent(datatype,extent) *(extent) = datatype
@@ -531,7 +562,7 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (root),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)),\
      MPI_SUCCESS)
 #define MPI_Gatherv(sendbuf,sendcount, sendtype,\
      recvbuf,recvcounts,displs,\
@@ -541,7 +572,7 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (root),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)),\
      MPI_SUCCESS)
 #define MPI_Scatter(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,\
@@ -557,7 +588,7 @@ extern int    MPI_Finalized(int*);
 #define MPI_Scatterv(sendbuf,sendcounts,displs,\
      sendtype, recvbuf,recvcount,\
      recvtype,root,comm) \
-     (MPIUNI_Memcpy(recvbuf,sendbuf,(recvcount)*(recvtype)),\
+     (MPIUNI_Memcpy(recvbuf,sendbuf,(recvcount)*MPI_sizeof(recvtype)),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (sendcounts),\
@@ -569,7 +600,7 @@ extern int    MPI_Finalized(int*);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvcount),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)),\
      MPI_SUCCESS)
 #define MPI_Allgatherv(sendbuf,sendcount, sendtype,\
      recvbuf,recvcounts,displs,recvtype,comm) \
@@ -577,14 +608,14 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     (sendbuf != MPI_IN_PLACE) ?  MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)* (sendtype)) : 0, \
+     MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)*MPI_sizeof(sendtype)), \
      MPI_SUCCESS)
 #define MPI_Alltoall(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvcount),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+      MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)*MPI_sizeof(sendtype)),\
       MPI_SUCCESS)
 #define MPI_Alltoallv(sendbuf,sendcounts,sdispls,\
      sendtype, recvbuf,recvcounts,\
@@ -594,21 +625,25 @@ extern int    MPI_Finalized(int*);
      rdispls, recvtypes,comm) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Reduce(sendbuf, recvbuf,count,\
      datatype,op,root,comm) \
-     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
+     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)),\
+      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
-     ((sendbuf != MPI_IN_PLACE) ? MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)) : 0, \
+    (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)), \
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
 #define MPI_Scan(sendbuf, recvbuf,count,datatype,op,comm) \
-     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
+     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*MPI_sizeof(datatype)),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
+#define MPI_Exscan(sendbuf, recvbuf,count,datatype,op,comm) MPI_SUCCESS
 #define MPI_Reduce_scatter(sendbuf, recvbuf,recvcounts,\
      datatype,op,comm) \
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Group_size(group,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Group_rank(group,rank) (*(rank)=0,MPI_SUCCESS)
-#define MPI_Group_translate_ranks (group1,n,ranks1,\
-     group2,ranks2) MPI_Abort(MPI_COMM_WORLD,0)
+#define MPI_Group_translate_ranks(group1,n,ranks1,group2,ranks2) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group1),                 \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group2),                 \
+   MPIUNI_Memcpy((ranks2),(ranks1),(n) * sizeof(int)),           \
+   MPI_SUCCESS)
 #define MPI_Group_compare(group1,group2,result) \
      (*(result)=1,MPI_SUCCESS)
 #define MPI_Group_union(group1,group2,newgroup) MPI_SUCCESS
@@ -620,25 +655,15 @@ extern int    MPI_Finalized(int*);
 #define MPI_Group_free(group) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group),\
      MPI_SUCCESS)
-#define MPI_Comm_size(comm,size) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     *(size)=1,\
-     MPI_SUCCESS)
-#define MPI_Comm_rank(comm,rank) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     *(rank)=0,\
-     MPI_SUCCESS)
 #define MPI_Comm_compare(comm1,comm2,result) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm1),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm2),\
      *(result)=MPI_IDENT,\
      MPI_SUCCESS)
 #define MPI_Comm_split(comm,color,key,newcomm) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (color),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (key),\
-     *(newcomm)=MPI_IDENT,\
-     MPI_SUCCESS)
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (color),\
+  MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (key),\
+   MPI_Comm_dup(comm,newcomm))
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_group(comm,group) MPI_SUCCESS
@@ -670,9 +695,7 @@ extern int    MPI_Finalized(int*);
 #define MPI_Graph_map(comm,a,b,c,d) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Get_processor_name(name,result_len) \
      (MPIUNI_Memcpy(name,"localhost",9*sizeof(char)),name[10] = 0,*(result_len) = 10)
-#define MPI_Errhandler_create(function,errhandler) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (errhandler),\
-     MPI_SUCCESS)
+#define MPI_Errhandler_create(function,errhandler) (*(errhandler) = (MPI_Errhandler) 0, MPI_SUCCESS)
 #define MPI_Errhandler_set(comm,errhandler) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (errhandler),\

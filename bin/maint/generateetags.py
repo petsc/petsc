@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #!/bin/env python
 #
-#    Generates etag files for PETSc
+#    Generates etag and ctag (use -noctags to skip generation of ctags) files for PETSc
 #    Adds file names to list of tags in a TAGS file
 #    Also removes the #define somefunction_ somefunction from the tags list
 #
 #
-# 
+#
 #   Walks through the PETSc tree generating the TAGS file
 #
 import os
@@ -18,7 +18,7 @@ import commands
 
 #
 #  Copies structs from filename to filename.tmp
-    
+
 def addFileNameTags(filename):
   removedefines = 0
   f = open(filename)
@@ -47,17 +47,20 @@ def createTags(etagfile,ctagfile,dirname,files):
   if status:
     raise RuntimeError("Error running etags "+output)
 
-  # run ctags in root directory because ctags need path of each file from root directory
-  files= []
-  gfiles = glob.glob(os.path.join(dirname,'*'))
-  for file in gfiles:
-    if file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
-      files.append(file)
-  if files:
-    (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
+  # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
+  if ctagfile:
+    (status,output) = commands.getstatusoutput('cd '+dirname+';ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(files))
     if status:
-      raise RuntimeError("Error running ctags "+output)
-  return
+       files= []
+       gfiles = glob.glob(os.path.join(dirname,'*'))
+       for file in gfiles:
+         if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+           files.append(os.path.realpath(os.path.realpath(file)))
+       if files:
+         (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
+         if status:
+            raise RuntimeError("Error running ctags "+output)
+    return
 
 def endsWithSuffix(file,suffixes):
   # returns 1 if any of the suffixes match - else return 0
@@ -79,9 +82,9 @@ def processDir(tagfiles,dirname,names):
   etagfile = tagfiles[0]
   ctagfile = tagfiles[1]
   newls = []
-  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib']
+  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
   hsfx = ['.html']
-  bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html']
+  bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
   for l in names:
     if endsWithSuffix(l,gsfx):
       newls.append(l)
@@ -95,7 +98,7 @@ def processDir(tagfiles,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
+  for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -117,7 +120,7 @@ def processFiles(dirname,etagfile,ctagfile):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['conf/*','bin/*','bin/maint/*','bin/maint/confignightly/*']
+  lists=['conf/*','src/docs/website/documentation/changes/dev.html']
 
   for glist in lists:
     gfiles = glob.glob(glist)
@@ -127,24 +130,26 @@ def processFiles(dirname,etagfile,ctagfile):
   if files: createTags(etagfile,ctagfile,dirname,files)
   return
 
-def main():
+def main(ctags):
   try: os.unlink('TAGS')
   except: pass
-  try: os.unlink('CTAGS')
-  except: pass
   etagfile = os.path.join(os.getcwd(),'ETAGS')
-  ctagfile = os.path.join(os.getcwd(),'ECTAGS')  
+  if ctags:
+    try: os.unlink('CTAGS')
+    except: pass
+    ctagfile = os.path.join(os.getcwd(),'CTAGS')
+  else:
+    ctagfile = None
   os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
   processFiles(os.getcwd(),etagfile,ctagfile)
   addFileNameTags(etagfile)
-  (status,output) = commands.getstatusoutput('sort ECTAGS > CTAGS')
   try: os.unlink('ETAGS')
-  except: pass
-  try: os.unlink('ECTAGS')
   except: pass
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
-    main()
+if __name__ ==  '__main__':
+    if (len(sys.argv) > 1 and sys.argv[1] == "-noctags"): ctags = 0
+    else: ctags = 1
+    main(ctags)
 

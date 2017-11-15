@@ -1,4 +1,4 @@
-#ifndef CHOLMODIMPL_H_
+#if !defined(CHOLMODIMPL_H_)
 #define CHOLMODIMPL_H_
 
 #include <petscsys.h>
@@ -45,17 +45,17 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  PetscErrorCode (*Wrap)(Mat,PetscTruth,cholmod_sparse*,PetscTruth*);
+  PetscErrorCode (*Wrap)(Mat,PetscBool,cholmod_sparse*,PetscBool*);
   PetscErrorCode (*Destroy)(Mat);
   cholmod_sparse *matrix;
   cholmod_factor *factor;
   cholmod_common *common;
-  PetscTruth     pack;
+  PetscBool      pack;
 } Mat_CHOLMOD;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT CholmodStart(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatView_CHOLMOD(Mat,PetscViewer);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_CHOLMOD(Mat,Mat,IS,const MatFactorInfo*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_CHOLMOD(Mat);
+PETSC_INTERN PetscErrorCode CholmodStart(Mat);
+PETSC_INTERN PetscErrorCode MatView_CHOLMOD(Mat,PetscViewer);
+PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_CHOLMOD(Mat,Mat,IS,const MatFactorInfo*);
+PETSC_INTERN PetscErrorCode MatDestroy_CHOLMOD(Mat);
 
 #endif /* CHOLMODIMPL_H_ */

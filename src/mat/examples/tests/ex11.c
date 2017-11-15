@@ -1,25 +1,26 @@
 
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 5,n = 5,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v,five = 5.0;
   IS             isrow;
-  PetscTruth     keepnonzeropattern;
+  PetscBool      keepnonzeropattern;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;
@@ -35,17 +36,17 @@ int main(int argc,char **args)
 
   ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
   if (keepnonzeropattern) {
     ierr = MatSetOption(C,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = MatZeroRowsIS(C,isrow,five);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(C,isrow,five,0,0);CHKERRQ(ierr);
 
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

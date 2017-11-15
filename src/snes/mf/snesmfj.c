@@ -1,10 +1,10 @@
-#define PETSCSNES_DLL
 
-#include "private/snesimpl.h"  /*I  "petscsnes.h" I*/
-#include "../src/mat/impls/mffd/mffdimpl.h"
-#include "private/matimpl.h"
+#include <petsc-private/snesimpl.h>  /*I  "petscsnes.h" I*/
+#include <petscdm.h>                 /*I  "petscdm.h"   I*/
+#include <../src/mat/impls/mffd/mffdimpl.h>
+#include <petsc-private/matimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDComputeJacobian"
 /*@C
    MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
@@ -23,13 +23,14 @@
 
    Level: developer
 
-   Warning: 
-      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+   Warning:
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
     the x from the SNES object and MatMFFDSetBase() must from that point on be used to
     change the base vector x.
 
    Notes:
-     This can be passed into SNESSetJacobian() when using a completely matrix-free solver,
+     This can be passed into SNESSetJacobian() as the Jacobian evaluation function argument
+     when using a completely matrix-free solver,
      that is the B matrix is also the same matrix operator. This is used when you select
      -snes_mf but rarely used directly by users. (All this routine does is call MatAssemblyBegin/End() on
      the Mat jac.
@@ -38,27 +39,30 @@
           MatMFFDSetHHistory(), MatMFFDSetFunctionError(), MatCreateMFFD(), SNESSetJacobian()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
-#undef __FUNCT__  
+PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
+PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
+
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SNESMF"
 /*
-   MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the 
+   MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the
     base from the SNES context
 
 */
 PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 {
   PetscErrorCode ierr;
-  MatMFFD        j = (MatMFFD)J->data;
+  MatMFFD        j    = (MatMFFD)J->data;
   SNES           snes = (SNES)j->funcctx;
   Vec            u,f;
 
@@ -66,31 +70,29 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
 
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase(J,u,f);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-extern PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 /*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_SNESMF"
-PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
+PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMFFDSetBase_MFFD(J,U,F);CHKERRQ(ierr);
+
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateSNESMF"
 /*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
@@ -108,8 +110,8 @@ EXTERN_C_END
 
    Level: advanced
 
-   Warning: 
-      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+   Warning:
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
     the x from the SNES object and MatMFFDSetBase() must from that point on be used to
     change the base vector x.
 
@@ -119,23 +121,31 @@ EXTERN_C_END
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
-          MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
- 
+          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
+
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Mat *J)
+PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       n,N;
 
   PetscFunctionBegin;
-  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
-  
-  ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
-  ierr = MatCreateMFFD(((PetscObject)snes)->comm,n,n,N,N,J);CHKERRQ(ierr);
+  if (snes->vec_func) {
+    ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
+    ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
+  } else if (snes->dm) {
+    Vec tmp;
+    ierr = DMGetGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tmp,&n);CHKERRQ(ierr);
+    ierr = VecGetSize(tmp,&N);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
+  ierr = MatCreateMFFD(PetscObjectComm((PetscObject)snes),n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)*J,"MatMFFDSetBase_C",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

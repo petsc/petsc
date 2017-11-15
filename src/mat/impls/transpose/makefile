@@ -1,15 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = transm.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = transm.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 LOCDIR   = src/mat/impls/transpose/
 MANSEC   = Mat
 

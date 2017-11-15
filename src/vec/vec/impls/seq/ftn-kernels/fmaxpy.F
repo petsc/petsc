@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
 
       Subroutine FortranMAXPY4(x, a0, a1, a2, a3, y0, y1, y2, y3, n)
@@ -48,7 +48,7 @@
       PETSC_AssertAlignx(16,y0(1))
       PETSC_AssertAlignx(16,y1(1))
       do i=1,n
-          x(i)  = x(i) + a0*y0(i) + a1*y1(i) 
+          x(i)  = x(i) + a0*y0(i) + a1*y1(i)
       enddo
       return
       end

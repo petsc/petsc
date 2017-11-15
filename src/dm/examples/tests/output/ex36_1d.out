@@ -1,0 +1,6 @@
+10=>20, interp err = 0.0000e+00
+20=>40, interp err = 0.0000e+00
+40=>80, interp err = 0.0000e+00
+80=>160, interp err = 0.0000e+00
+160=>320, interp err = 0.0000e+00
+320=>640, interp err = 0.0000e+00

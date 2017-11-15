@@ -1,11 +1,8 @@
-#define PETSC_DLL
+
 /*
       Code for manipulating files.
 */
-#include "petscsys.h"
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
+#include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
@@ -22,7 +19,7 @@
 #include <netdb.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
@@ -43,25 +40,30 @@
     Concepts: machine name
     Concepts: host name
 
-.seealso: PetscGetUserName()
+   Fortran Version:
+   In Fortran this routine has the format
+
+$       character*(64) name
+$       call PetscGetHostName(name,ierr)
+
+.seealso: PetscGetUserName(),PetscGetArchType()
 @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
+PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 {
   char           *domain;
   PetscErrorCode ierr;
-  PetscTruth     flag;
 #if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
   struct utsname utname;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
- {
+  {
     size_t nnlen = nlen;
     GetComputerName((LPTSTR)name,(LPDWORD)(&nnlen));
- }
+  }
 #elif defined(PETSC_HAVE_UNAME)
-  uname(&utname); 
+  uname(&utname);
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_GETHOSTNAME)
   gethostname(name,nlen);
@@ -74,7 +76,7 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
   /* See if this name includes the domain */
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
-    size_t  l,ll;
+    size_t l,ll;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen-1) PetscFunctionReturn(0);
     name[l++] = '.';
@@ -86,22 +88,12 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
     /* check if domain name is not a dnsdomainname and nuke it */
     ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);
     if (ll > 4) {
-      ierr = PetscStrcmp(name + ll - 4,".edu",&flag);CHKERRQ(ierr);
-      if (!flag) {
-        ierr = PetscStrcmp(name + ll - 4,".com",&flag);CHKERRQ(ierr);
-        if (!flag) {
-          ierr = PetscStrcmp(name + ll - 4,".net",&flag);CHKERRQ(ierr);
-          if (!flag) {
-            ierr = PetscStrcmp(name + ll - 4,".org",&flag);CHKERRQ(ierr);
-            if (!flag) {
-              ierr = PetscStrcmp(name + ll - 4,".mil",&flag);CHKERRQ(ierr);
-              if (!flag) {
-                ierr = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
-                name[l-1] = 0;
-              }
-            }
-          }
-        }
+      const char *suffixes[] = {".edu",".com",".net",".org",".mil",0};
+      PetscInt   index;
+      ierr = PetscStrendswithwhich(name,suffixes,&index);CHKERRQ(ierr);
+      if (!suffixes[index]) {
+        ierr      = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
+        name[l-1] = 0;
       }
     }
   }

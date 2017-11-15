@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ/CRL format
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
       implicit none
@@ -22,6 +22,6 @@
  20     continue
  10   continue
 
-      return 
+      return
       end
 

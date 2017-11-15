@@ -1,10 +1,9 @@
 
-#requirespackage   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zpythonkf.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = zpythonkspf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

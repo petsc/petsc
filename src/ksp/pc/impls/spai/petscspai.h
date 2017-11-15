@@ -3,18 +3,17 @@
      Include file for the SPAI interface to PETSc. You should include
   this file if you wish to set SPAI options directly from your program.
 */
-#ifndef __SPAI_PACKAGE
+#if !defined(__SPAI_PACKAGE)
 #define __SPAI_PACKAGE
-#include "petscpc.h"
+#include <petscpc.h>
 
-extern int PETSCKSP_DLLEXPORT MatDumpSPAI(Mat,FILE *);
-extern int PETSCKSP_DLLEXPORT VecDumpSPAI(Vec,FILE *);
+PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat,FILE*);
+PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec,FILE*);
 
-extern int PETSCKSP_DLLEXPORT PCSPAISetEpsilon(PC,double);
-extern int PETSCKSP_DLLEXPORT PCSPAISetNBSteps(PC,int);
-extern int PETSCKSP_DLLEXPORT PCSPAISetMaxAPI(PC,int);
-extern int PETSCKSP_DLLEXPORT PCSPAISetMaxNew(PC,int);
-extern int PETSCKSP_DLLEXPORT PCSPAISetCacheSize(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
+PETSC_EXTERN PetscErrorCode PCSPAISetNBSteps(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetMaxNew(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetCacheSize(PC,int);
 
 #endif
 

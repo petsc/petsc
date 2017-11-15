@@ -1,0 +1,27 @@
+This folder contains the implementation of the deflated GMRES as a KSP type in the PETSc package.
+This package is compliant with PETSc release 3.1 patch 5 (petsc-3.1-p5)
+
+To compile it :
+1. Compile the library libdgmres.a, edit makefile.in and use Makefile.appli
+2. In your application, register the new KSP
+    /* in header files */
+    #define KSPDGMRES "dgmres"
+    EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_DGMRES(KSP);  
+    /* Inside the code and before  a call to KSPCreate  */
+    KSPRegister(KSPDGMRES, KSPCreate_DGMRES);
+
+To use it : 
+Use this KSP just as the basic  GMRES KSP with the common options plus the following ones :
+    -ksp_type dgmres or KSPSetType(ksp, KSPDGMRES);
+    -ksp_dgmres_eigen <k>: Number of eigenvalues to deflate
+    -ksp_dgmres_max_eigen <kmax>: Maximum Number of eigenvalues to deflate
+    -ksp_dgmres_smv <smv> : relaxation parameter in the adaptive strategy
+    -ksp_dgmres_force <0 or 1> : Use this option to force the use of deflation during the restart, (<1> = the adaptive strategy is not used)
+    Any option from GMRES holds; -ksp_gmres_restart <m>, -ksp_max_it <itmax>, -ksp_rtol  <rtol> ...
+    Any preconditioner available for GMRES -pc_type <pc>
+  
+  LIMITS : 
+1. The current version shows many fluctuations in the residual history with the left preconditioning, so you should
+consider using a right preconditioning with the option -ksp_right_pc
+2. This version does not support complex arithmetics
+3. It is not compliant when a scaling is done during the appication of the preconditioner

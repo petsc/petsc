@@ -56,7 +56,7 @@ def main():
   # - run with configure_options
   # - for each test_options & common_test_options - keep adding to the current set and run
   # - construct a different PETSC_ARCH for each test
-    
+
   import configure
   test_no = 1
   for opt in [''] + conftest.test_options + common_test_options:
@@ -70,4 +70,4 @@ def main():
 #######################################################################
 if __name__ ==  '__main__':
   main()
-        
+

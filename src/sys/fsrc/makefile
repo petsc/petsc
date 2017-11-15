@@ -1,4 +1,4 @@
-#requirespackage   'PETSC_HAVE_FORTRAN'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 
@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  = somefort.F
 SOURCEH  =
-OBJSC    =
-OBJSF    = somefort.o
 LIBBASE  = libpetscsys
 MANSEC   = Sys
 LOCDIR   = src/sys/fsrc/

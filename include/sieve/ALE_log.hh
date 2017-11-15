@@ -21,7 +21,7 @@ namespace ALE {
   LogEvent  LogEventRegister(const char* event_name);
   void      LogEventBegin(LogEvent e);
   void      LogEventEnd(LogEvent e);
-  
+
 
 
 } // namespace ALE
@@ -34,8 +34,8 @@ namespace ALE {
 // In particular, returns from inside the block bracketed by the macros will break the stage stack.
 //    ALE_LOG_STAGE_START and ALE_LOG_STAGE_FINISH mirror the corresponding BEGIN and END macros, except that they do not contain
 // opening and closing braces and can be used more freely throughout the code
-//    ALE_LOG_EVENT_START and ALE_LOG_EVENT_FINISH can likewise be used throughout the code to start and stop logging of an event 
-// associate with the function __FUNCT__.  The difference between function stages and events is implementation-dependent 
+//    ALE_LOG_EVENT_START and ALE_LOG_EVENT_FINISH can likewise be used throughout the code to start and stop logging of an event
+// associate with the function __FUNCT__.  The difference between function stages and events is implementation-dependent
 // (currently PETSc logging).
 
 #if (defined ALE_USE_LOGGING) && (defined ALE_LOGGING_USE_STAGES)
@@ -44,16 +44,16 @@ namespace ALE {
   {                                                         \
     ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__); \
     ALE::LogStagePush(stage);                               \
-  }                                                     
+  }
 
 #define ALE_LOG_STAGE_FINISH                                \
   {                                                         \
     ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__); \
     ALE::LogStagePop(stage);                                \
-  }                                                     
+  }
 
 #define ALE_LOG_STAGE_BEGIN    ALE_LOG_STAGE_START  {
-#define ALE_LOG_STAGE_END      } ALE_LOG_STAGE_FINISH 
+#define ALE_LOG_STAGE_END      } ALE_LOG_STAGE_FINISH
 
 #else
 
@@ -70,13 +70,13 @@ namespace ALE {
   {                                                         \
     ALE::LogEvent event = ALE::LogEventRegister(__FUNCT__); \
     ALE::LogEventBegin(event);                              \
-  }                                                                        
+  }
 
 #define ALE_LOG_EVENT_END                                   \
   {                                                         \
     ALE::LogEvent event = ALE::LogEventRegister(__FUNCT__); \
     ALE::LogEventEnd(event);                                \
-  }                                                         
+  }
 
 #else
 

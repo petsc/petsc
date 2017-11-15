@@ -3,49 +3,57 @@
 */
 #ifndef __PETSCKSP_H
 #define __PETSCKSP_H
-#include "petscpc.h"
-PETSC_EXTERN_CXX_BEGIN
+#include <petscpc.h>
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
-     KSP - Abstract PETSc object that manages all Krylov methods
+     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the 
+         linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
 
    Level: beginner
 
   Concepts: Krylov methods
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP
+        Notes: When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
+       KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy()
 S*/
 typedef struct _p_KSP*     KSP;
 
-/*E
-    KSPType - String with the name of a PETSc Krylov method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mykspcreate()
+/*J
+    KSPType - String with the name of a PETSc Krylov method.
 
    Level: beginner
 
-.seealso: KSPSetType(), KSP
-E*/
-#define KSPType char*
+.seealso: KSPSetType(), KSP, KSPRegister(), KSPCreate(), KSPSetFromOptions()
+J*/
+typedef const char* KSPType;
 #define KSPRICHARDSON "richardson"
-#define KSPCHEBYCHEV  "chebychev"
+#define KSPCHEBYSHEV  "chebyshev"
 #define KSPCG         "cg"
+#define KSPGROPPCG    "groppcg"
+#define KSPPIPECG     "pipecg"
 #define   KSPCGNE       "cgne"
 #define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
 #define KSPGMRES      "gmres"
-#define   KSPFGMRES     "fgmres" 
+#define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
+#define   KSPDGMRES     "dgmres"
+#define   KSPPGMRES     "pgmres"
 #define KSPTCQMR      "tcqmr"
 #define KSPBCGS       "bcgs"
-#define KSPIBCGS        "ibcgs"
-#define KSPBCGSL        "bcgsl"
+#define   KSPIBCGS      "ibcgs"
+#define   KSPFBCGS      "fbcgs"
+#define   KSPFBCGSR     "fbcgsr"
+#define   KSPBCGSL      "bcgsl"
 #define KSPCGS        "cgs"
 #define KSPTFQMR      "tfqmr"
 #define KSPCR         "cr"
+#define KSPPIPECR     "pipecr"
 #define KSPLSQR       "lsqr"
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
@@ -54,154 +62,121 @@ E*/
 #define KSPSYMMLQ     "symmlq"
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
-#define KSPBROYDEN    "broyden"
 #define KSPGCR        "gcr"
-#define KSPNGMRES     "ngmres"
+#define KSPSPECEST    "specest"
 
 /* Logging support */
-extern PetscClassId PETSCKSP_DLLEXPORT KSP_CLASSID;
+PETSC_EXTERN PetscClassId KSP_CLASSID;
+PETSC_EXTERN PetscClassId DMKSP_CLASSID;
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm,KSP *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP,const KSPType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP,Vec,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP,Vec,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate(MPI_Comm,KSP *);
+PETSC_EXTERN PetscErrorCode KSPSetType(KSP,KSPType);
+PETSC_EXTERN PetscErrorCode KSPSetUp(KSP);
+PETSC_EXTERN PetscErrorCode KSPSetUpOnBlocks(KSP);
+PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
+PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
+PETSC_EXTERN PetscErrorCode KSPReset(KSP);
+PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 
-extern PetscFList KSPList;
-extern PetscTruth KSPRegisterAllCalled;
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscFunctionList KSPList;
+PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
-/*MC
-   KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
+PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
+PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);
+PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP,PCSide*);
+PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetInitialGuessNonzero(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetInitialGuessNonzero(KSP,PetscBool  *);
+PETSC_EXTERN PetscErrorCode KSPSetInitialGuessKnoll(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPSetErrorIfNotConverged(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetErrorIfNotConverged(KSP,PetscBool  *);
+PETSC_EXTERN PetscErrorCode KSPGetComputeEigenvalues(KSP,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeEigenvalues(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetComputeSingularValues(KSP,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeSingularValues(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetRhs(KSP,Vec *);
+PETSC_EXTERN PetscErrorCode KSPGetSolution(KSP,Vec *);
+PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
+PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
+PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 
-   Synopsis:
-   PetscErrorCode KSPRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(KSP))
+PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
 
-   Not Collective
+PETSC_EXTERN PetscErrorCode KSPSetPC(KSP,PC);
+PETSC_EXTERN PetscErrorCode KSPGetPC(KSP,PC*);
 
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
+PETSC_EXTERN PetscErrorCode KSPMonitor(KSP,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode KSPMonitorCancel(KSP);
+PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP,void **);
+PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP,PetscReal*[],PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscBool );
 
-   Notes:
-   KSPRegisterDynamic() may be called multiple times to add several user-defined solvers.
+PETSC_EXTERN PetscErrorCode KSPBuildSolutionDefault(KSP,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode KSPBuildResidualDefault(KSP,Vec,Vec,Vec *);
+PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
+PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP,PetscInt);
 
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
+PETSC_EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
+PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetCoarseSolve(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCGalerkinGetKSP(PC,KSP *);
 
-   Sample usage:
-.vb
-   KSPRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MySolverCreate",MySolverCreate);
-.ve
+PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec *);
+PETSC_EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
-   Then, your solver can be chosen with the procedural interface via
-$     KSPSetType(ksp,"my_solver")
-   or at runtime via the option
-$     -ksp_type my_solver
+PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
+PETSC_EXTERN PetscErrorCode KSPChebyshevSetNewMatrix(KSP);
+PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);
 
-   Level: advanced
+PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPGMRESSetHapTol(KSP,PetscReal);
 
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
-          replaced with appropriate values.
-         If your function is not being put into a shared library then use KSPRegister() instead
+PETSC_EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP);
+PETSC_EXTERN PetscErrorCode KSPGMRESSetOrthogonalization(KSP,PetscErrorCode (*)(KSP,PetscInt));
+PETSC_EXTERN PetscErrorCode KSPGMRESGetOrthogonalization(KSP,PetscErrorCode (**)(KSP,PetscInt));
+PETSC_EXTERN PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,PetscInt);
 
-.keywords: KSP, register
+PETSC_EXTERN PetscErrorCode KSPLGMRESSetAugDim(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPLGMRESSetConstant(KSP);
 
-.seealso: KSPRegisterAll(), KSPRegisterDestroy()
-
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,0)
-#else
-#define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,d)
-#endif
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP,const KSPType *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPCSide(KSP,PCSide);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPCSide(KSP,PCSide*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP,PetscTruth *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetErrorIfNotConverged(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetErrorIfNotConverged(KSP,PetscTruth *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP,Vec *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSolution(KSP,Vec *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP,PetscReal*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP,PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP,MatNullSpace);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNullSpace(KSP,MatNullSpace*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP,PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP,PC*);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP,void **);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP,PetscReal*[],PetscInt *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscTruth);
-
-/* not sure where to put this */
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC,KSP*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC,KSP *);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP,Vec,Vec *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP,Vec,Vec,Vec *);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetScale(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPRichardsonSetSelfScale(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP, PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetRestart(KSP, PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP,PetscReal);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization(KSP,PetscErrorCode (*)(KSP,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetOrthogonalization(KSP,PetscErrorCode (**)(KSP,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,PetscInt);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
-
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetRestart(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRGetRestart(KSP,PetscInt*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
+PETSC_EXTERN PetscErrorCode KSPGCRSetRestart(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGCRGetRestart(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
    Level: advanced
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(), 
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
-extern const char *KSPGMRESCGSRefinementTypes[];
+PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 /*MC
     KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
 
@@ -215,13 +190,13 @@ extern const char *KSPGMRESCGSRefinementTypes[];
 M*/
 
 /*MC
-    KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of 
+    KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of
           iterative refinement if an estimate of the orthogonality of the resulting vectors indicates
           poor orthogonality.
 
    Level: advanced
 
-   Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to 
+   Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to
      estimate the orthogonality but is more stable.
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
@@ -244,54 +219,67 @@ M*/
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESGetCGSRefinementType(KSP,KSPGMRESCGSRefinementType*);
+PETSC_EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
+PETSC_EXTERN PetscErrorCode KSPGMRESGetCGSRefinementType(KSP,KSPGMRESCGSRefinementType*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCNoChange(KSP,PetscInt,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCKSP(KSP,PetscInt,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
+PETSC_EXTERN PetscErrorCode KSPFGMRESModifyPCNoChange(KSP,PetscInt,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPFGMRESModifyPCKSP(KSP,PetscInt,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPFGMRESSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscInt,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGSetTrustRegionRadius(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP,PetscReal*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetTrialStepNorm(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPQCGSetTrustRegionRadius(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPQCGGetQuadratic(KSP,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPQCGGetTrialStepNorm(KSP,PetscReal*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetXRes(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetPol(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetEll(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP,PetscBool);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
+PETSC_EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultLSQR(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPLSQRMonitorDefault(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorRange(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy);
+PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorAMS(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorAMSCreate(KSP,const char*,void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorAMSDestroy(void**);
+PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP,Vec,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultBuildSolution(KSP,Vec,Vec*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
+PETSC_EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP,Mat,Mat,MatStructure);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP,PetscTruth*,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP,const char[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP,const char[]);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP,const char*[]);
+PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode KSPGetOperatorsSet(KSP,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
+PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
+PETSC_EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP,const char*[]);
+PETSC_EXTERN PetscErrorCode KSPSetTabLevel(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGetTabLevel(KSP,PetscInt*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScale(KSP,PetscTruth*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScaleFix(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScaleFix(KSP,PetscTruth*);
+PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetDiagonalScale(KSP,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPSetDiagonalScaleFix(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP,PetscViewer);
+PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
+PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec(KSP,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
+#define KSP_FILE_CLASSID 1211223
+
+PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
+
+PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
 
 /*E
     KSPNormType - Norm that is passed in the Krylov convergence
@@ -302,15 +290,17 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match finclude/petscksp.h 
+   Notes: this must match finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
 E*/
-typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
-extern const char *KSPNormTypes[];
+typedef enum {KSP_NORM_DEFAULT = -1,KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
+#define KSP_NORM_MAX (KSP_NORM_NATURAL + 1)
+PETSC_EXTERN const char *const*const KSPNormTypes;
+
 /*MC
-    KSP_NORM_NO - Do not compute a norm during the Krylov process. This will 
+    KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
 
@@ -322,46 +312,47 @@ extern const char *KSPNormTypes[];
 M*/
 
 /*MC
-    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the 
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the 
+    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
+    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
        convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NONE, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP,KSPNormType*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscTruth);
+PETSC_EXTERN PetscErrorCode KSPSetNormType(KSP,KSPNormType);
+PETSC_EXTERN PetscErrorCode KSPGetNormType(KSP,KSPNormType*);
+PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType,PCSide,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 /*E
-    KSPConvergedReason - reason a Krylov method was said to 
+    KSPConvergedReason - reason a Krylov method was said to
          have converged or diverged
 
    Level: beginner
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match finclude/petscksp.h 
+   Developer notes: this must match finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -386,11 +377,11 @@ typedef enum {/* converged */
               KSP_DIVERGED_BREAKDOWN_BICG      = -6,
               KSP_DIVERGED_NONSYMMETRIC        = -7,
               KSP_DIVERGED_INDEFINITE_PC       = -8,
-              KSP_DIVERGED_NAN                 = -9,
+              KSP_DIVERGED_NANORINF            = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
- 
+
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
-extern const char **KSPConvergedReasons;
+PETSC_EXTERN const char *const*KSPConvergedReasons;
 
 /*MC
      KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)
@@ -436,7 +427,7 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was 
+     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was
       reached
 
    Level: beginner
@@ -446,8 +437,8 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
-           the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of
+           the preconditioner is applied. Also used when the KSPSkipConverged() convergence
            test routine is set in KSP.
 
 
@@ -460,7 +451,8 @@ M*/
 
 /*MC
      KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
-          method could not continue to enlarge the Krylov space.
+          method could not continue to enlarge the Krylov space. Could be due to a singlular matrix or
+          preconditioner.
 
    Level: beginner
 
@@ -497,7 +489,7 @@ M*/
 
    Level: beginner
 
-     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force 
+     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force
   the PCICC preconditioner to generate a positive definite preconditioner
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
@@ -514,18 +506,18 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP,void **);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP,KSPConvergedReason *);
+PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
+PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void **);
+PETSC_EXTERN PetscErrorCode KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPDefaultConvergedDestroy(void *);
+PETSC_EXTERN PetscErrorCode KSPDefaultConvergedCreate(void **);
+PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUMIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP,Mat *);
+PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat *);
 
 /*E
     KSPCGType - Determines what type of CG to use
@@ -535,66 +527,77 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP,Mat *);
 .seealso: KSPCGSetType()
 E*/
 typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
-extern const char *KSPCGTypes[];
+PETSC_EXTERN const char *const KSPCGTypes[];
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGUseSingleReduction(KSP,PetscTruth);
+PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP,KSPCGType);
+PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP,PetscBool );
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP,PetscReal *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPNASHSetRadius(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPNASHGetNormD(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPNASHGetObjFcn(KSP,PetscReal *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP,PetscReal *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPSTCGSetRadius(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPSTCGGetNormD(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPSTCGGetObjFcn(KSP,PetscReal *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP,PetscReal *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP,PetscReal *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP,PetscReal *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPGLTRSetRadius(KSP,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetNormD(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetObjFcn(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP,PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPGLTRGetLambda(KSP,PetscReal *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);
+PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC,KSP);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);
+PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);
+PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGDestroy(PetscDrawLG);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGRangeDestroy(PetscDrawLG);
+#include <petscdrawtypes.h>
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 
 /* see src/ksp/ksp/interface/iguess.c */
-typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscTruth monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
+typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscBool  monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessReset(KSPFischerGuess);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate(KSPFischerGuess,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess(KSPFischerGuess,Vec,Vec);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessSetFromOptions(KSPFischerGuess);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessDestroy(KSPFischerGuess*);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessReset(KSPFischerGuess);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessUpdate(KSPFischerGuess,Vec);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessFormGuess(KSPFischerGuess,Vec,Vec);
+PETSC_EXTERN PetscErrorCode KSPFischerGuessSetFromOptions(KSPFischerGuess);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP,KSPFischerGuess);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP,KSPFischerGuess*);
+PETSC_EXTERN PetscErrorCode KSPSetUseFischerGuess(KSP,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetFischerGuess(KSP,KSPFischerGuess);
+PETSC_EXTERN PetscErrorCode KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat,KSP*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
+PETSC_EXTERN PetscErrorCode MatSchurComplementSet(Mat,Mat,Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDM(KSP,DM);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDMActive(KSP,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDM(KSP,DM*);
+PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
+PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetDM(KSP,DM*);
+PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP,void*);
+PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP,void*);
+PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP,PetscErrorCode (*func)(KSP,Vec,void*),void *);
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP,PetscErrorCode(*)(KSP,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 
-PETSC_EXTERN_CXX_END
 #endif

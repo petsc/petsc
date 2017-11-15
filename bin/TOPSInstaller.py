@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 TOPS software installer. This is written using the EasyGui.py python module
-which is, for simplicity, included in this file 
+which is, for simplicity, included in this file
 
 EasyGui provides an easy-to-use interface for simple GUI interaction
 with a user.  It does not require the programmer to know anything about
@@ -302,7 +302,7 @@ def multenterbox(message="Fill in values for the fields."
 
 	----------------------------------------------------------------------
 	"""
-        if not argListOfFieldNames: 
+        if not argListOfFieldNames:
                 argListOfFieldNames = ['']
                 for i in range(0,len(argListOfFieldValues)+2):
                        argListOfFieldNames.append('')
@@ -1265,7 +1265,7 @@ if __name__ == '__main__':
         message2 = """The DOE Mathematics SciDAC TOPS ISIC develops software for the
 scalable solution of optimizations, eigenvalues and algebraic systems. More
 information on TOPS may be found at http://www.tops-scidac.org. \n\n
-The software installed is covered by a variety of licenses, please refer to 
+The software installed is covered by a variety of licenses, please refer to
 each package's license information before redistributing it. This installer
 can also install additional packages that are used by the TOPS packages."""
 
@@ -1284,7 +1284,7 @@ can also install additional packages that are used by the TOPS packages."""
              if f > 0: i = i[0:f]
              args.append('--download-'+i+'=1')
 
-        packages = ["Spooles (parallel sparse direct solvers)","  DSCPack","  MUMPS","Parmetis (parallel partitioning)","  Chaco","  Jostle","  Party","  Scotch","Prometheus (parallel preconditioner)","  ml","  SPAI","Matlab"]
+        packages = ["  MUMPS","Parmetis (parallel partitioning)","  Chaco","  Party","  PTScotch","  ml","  SPAI","Matlab"]
         reply = multchoicebox("Pick the other packages to install.\n\nAgain, only select the packages you truly need.",title, packages)
         for i in reply:
              i = i.lower().replace(' ','')
@@ -1300,9 +1300,9 @@ can also install additional packages that are used by the TOPS packages."""
         else: args.append('--with-fc=0')
 
         reply = ynbox('Compile libraries so they may be used from Python?',title)
-        if reply: 
+        if reply:
              args.append( '--with-python=1')
-             
+
         reply = indexbox('Compilers to use?',title,['Any','GNU','non-GNU',"I'll indicate the compilers"])
         if reply == 1: args.append( '--with-vendor-compilers=0')
         elif reply == 2: args.append('--with-gnu-compilers=0')
@@ -1320,9 +1320,9 @@ can also install additional packages that are used by the TOPS packages."""
         if not reply: args.append('--with-debugging=0')
 
         reply = indexbox('Which version of BLAS and LAPACK do you wish to use?',title,['Have installer locate it', 'Install it',"I'll indicate its location"])
-        if reply == 1: 
+        if reply == 1:
              if '--with-fortran=1' in args: args.append('--download-f-blas-lapack')
-             else: args.append('--download-c-blas-lapack')
+             else: args.append('--download-f2cblaslapack')
         elif reply == 2:
            reply = diropenbox("Directory of BLAS and LAPACK libraries","Directory of BLAS and LAPACK libraries")
            if not reply: sys.exit()
@@ -1331,14 +1331,14 @@ can also install additional packages that are used by the TOPS packages."""
         reply = indexbox('Which version of MPI do you wish to use?',title,['Have installer locate it', 'Install MPICH-2','Install OpenMPI','None',"I'll indicate its location"])
         if reply == 3: args.append( '--with-mpi=0')
         elif reply == 1: args.append('--download-mpich=1')
-        elif reply == 2: args.append('--download-openmpi=1')        
+        elif reply == 2: args.append('--download-openmpi=1')
         elif reply == 4:
            reply = diropenbox("Directory of MPI installation","Directory of MPI installation")
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
         reply = buttonbox('Install TOPS Solver Components?',title,['Yes','No'],message2="You must have CCAFE and BABEL\n already installed to use them.")
-        if reply == 'Yes': 
+        if reply == 'Yes':
            reply = diropenbox("Directory of Babel","Directory of Babel")
            if not reply: sys.exit()
            args.append('--with-babel-dir='+reply)

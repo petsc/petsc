@@ -1,13 +1,11 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cheby.c 
+SOURCEC  = cheby.c
 SOURCEF  =
-SOURCEH  = chebychevimpl.h
-OBJSC    = cheby.o 
-OBJSF    =
+SOURCEH  = chebyshevimpl.h
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cheby/

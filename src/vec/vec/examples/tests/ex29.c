@@ -1,8 +1,8 @@
 
-static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
+static char help[] = "Tests VecSetValues() and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -14,11 +14,11 @@ int main(int argc,char **argv)
   PetscScalar    val,*vals,zero=0.0;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  bs = size;
+  bs   = size;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n*bs);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
@@ -37,9 +37,7 @@ int main(int argc,char **argv)
   ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    for (j=0; j<bs; j++) {
-      vals[j] = (i*bs+j)*1.0;
-    }
+    for (j=0; j<bs; j++) vals[j] = (i*bs+j)*1.0;
     ierr = VecSetValuesBlocked(x,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -48,9 +46,9 @@ int main(int argc,char **argv)
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
- 
+

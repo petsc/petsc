@@ -1,15 +1,14 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = bcgs.c
 SOURCEF  =
-OBJSC    = bcgs.o
-OBJSF    =
 LIBBASE  = libpetscksp
-LOCDIR   = src/ksp/ksp/impls/bcgs/
+DIRS     = fbcgs fbcgsr
 MANSEC   = KSP
+LOCDIR   = src/ksp/ksp/impls/bcgs/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

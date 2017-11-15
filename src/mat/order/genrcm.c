@@ -1,8 +1,8 @@
-#define PETSCMAT_DLL
 
 /* genrcm.f -- translated by f2c (version 19931217).*/
 
-#include "petscsys.h"
+#include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /*****************************************************************/
 /*****************************************************************/
@@ -34,53 +34,45 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FNROOT, RCM.*/
 /*****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKgenrcm" 
-PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls)
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKgenrcm"
+PetscErrorCode SPARSEPACKgenrcm(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls)
 {
-    /* System generated locals */
-    PetscInt i__1;
+  /* System generated locals */
+  PetscInt i__1;
 
-    /* Local variables */
-    PetscInt nlvl,root,i,ccsize;
-    EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *),
-               SPARSEPACKrcm(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
-    PetscInt num;
+  /* Local variables */
+  PetscInt nlvl,root,i,ccsize;
+  PetscInt num;
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --xls;
-    --mask;
-    --perm;
-    --adjncy;
-    --xadj;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --xls;
+  --mask;
+  --perm;
+  --adjncy;
+  --xadj;
 
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
-	mask[i] = 1;
-    }
-    num = 1;
-    i__1 = *neqns;
-    for (i = 1; i <= i__1; ++i) {
+  i__1 = *neqns;
+  for (i = 1; i <= i__1; ++i) mask[i] = 1;
+  num  = 1;
+  i__1 = *neqns;
+  for (i = 1; i <= i__1; ++i) {
 /*          FOR EACH MASKED CONNECTED COMPONENT ...*/
-	if (!mask[i]) {
-	    goto L200;
-	}
-	root = i;
+    if (!mask[i]) goto L200;
+    root = i;
 /*             FIRST FIND A PSEUDO-PERIPHERAL NODE ROOT.*/
 /*             NOTE THAT THE LEVEL STRUCTURE FOUND BY*/
 /*             FNROOT IS STORED STARTING AT PERM(NUM).*/
 /*             THEN RCM IS CALLED TO ORDER THE COMPONENT*/
 /*             USING ROOT AS THE STARTING NODE.*/
-	SPARSEPACKfnroot(&root,&xadj[1],&adjncy[1],&mask[1],&nlvl,&xls[1],&perm[num]);
-	SPARSEPACKrcm(&root,&xadj[1],&adjncy[1],&mask[1],&perm[num],&ccsize,&xls[1]);
-	num += ccsize;
-	if (num > *neqns) {
-	    PetscFunctionReturn(0);
-	}
+    SPARSEPACKfnroot(&root,&xadj[1],&adjncy[1],&mask[1],&nlvl,&xls[1],&perm[num]);
+    SPARSEPACKrcm(&root,&xadj[1],&adjncy[1],&mask[1],&perm[num],&ccsize,&xls[1]);
+    num += ccsize;
+    if (num > *neqns) PetscFunctionReturn(0);
 L200:
-	;
-    }
-    PetscFunctionReturn(0);
+    ;
+  }
+  PetscFunctionReturn(0);
 }
 

@@ -2,7 +2,7 @@
 #define included_ALE_Generator_hh
 
 #ifndef  included_ALE_Distribution_hh
-#include <Distribution.hh>
+#include <sieve/Distribution.hh>
 #endif
 
 #ifdef PETSC_HAVE_TRIANGLE
@@ -30,9 +30,9 @@ namespace ALE {
         template<typename Point>
         void visitPoint(const Point& point) {
           this->segmentlist[this->idx*dim + (this->v++)] = this->vNumbering.getIndex(point);
-        };
+        }
         template<typename Arrow>
-        void visitArrow(const Arrow& arrow) {};
+        void visitArrow(const Arrow& arrow) {}
         void setIndex(const int idx) {this->idx = idx; this->v = 0;};
       };
     public:
@@ -82,7 +82,7 @@ namespace ALE {
         const bool                   createConvexHull = false;
         struct triangulateio in;
         struct triangulateio out;
-        PetscErrorCode       ierr;
+        PetscErrorCode ierr;
 
         initInput(&in);
         initOutput(&out);
@@ -95,8 +95,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -114,14 +114,14 @@ namespace ALE {
         if (in.numberofsegments > 0) {
           const typename Mesh::label_sequence::iterator eEnd = edges->end();
 
-          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != eEnd; ++e_iter) {
             const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = sieve->cone(*e_iter);
             const typename Mesh::sieve_type::traits::coneSequence::iterator cEnd = cone->end();
             const int                                                       idx  = eNumbering->getIndex(*e_iter);
             int                                                             v    = 0;
-        
+
             for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
               in.segmentlist[idx*dim + (v++)] = vNumbering->getIndex(*c_iter);
             }
@@ -132,7 +132,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -151,11 +151,11 @@ namespace ALE {
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
 
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.holelist)          {ierr = PetscFree(in.holelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -193,7 +193,9 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_Triangle"
-      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         int                                   dim   = 2;
         const Obj<Mesh>                       mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
@@ -213,8 +215,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                           idx   = vNumbering->getIndex(*v_iter);
@@ -232,8 +234,8 @@ namespace ALE {
         if (in.numberofsegments > 0) {
           const typename Mesh::label_sequence::iterator eEnd = edges->end();
 
-          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
           SegmentVisitor sV(dim, in.segmentlist, *vNumbering);
           for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != eEnd; ++e_iter) {
             const int idx = eNumbering->getIndex(*e_iter);
@@ -247,7 +249,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -265,29 +267,44 @@ namespace ALE {
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.holelist)          {ierr = PetscFree(in.holelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(boundary->comm(), dim, boundary->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(boundary->comm(), dim, boundary->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
         int    *cells       = out.trianglelist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         mesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         mesh->stratify();
-        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
+        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering,
+        m->getArrowSection("orientation").ptr());
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
 
         if (mesh->commRank() == 0) {
@@ -318,7 +335,11 @@ namespace ALE {
 #endif
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              if (renumber) {
+                mesh->setValue(newMarkers, renumbering[v+out.numberoftriangles], out.pointmarkerlist[v]);
+              } else {
+                mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              }
             }
           }
           if (interpolate) {
@@ -363,8 +384,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -384,7 +405,7 @@ namespace ALE {
         if (in.numberoftriangles > 0) {
           const typename Mesh::label_sequence::iterator fEnd = faces->end();
 
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (serialMesh->depth() == 1) {
             for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = serialSieve->cone(*f_iter);
@@ -421,12 +442,12 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = serialMesh->getValue(markers, *e_iter);
 
@@ -439,7 +460,7 @@ namespace ALE {
                 }
                 in.segmentmarkerlist[s++] = edgeMarker;
               }
-            } 
+            }
           }
 #else
           const Obj<typename Mesh::label_type::baseSequence>& boundary = markers->base();
@@ -455,8 +476,8 @@ namespace ALE {
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_type::baseSequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
               for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
                 if (*b_iter == *e_iter) {
@@ -476,18 +497,18 @@ namespace ALE {
 
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRXX(ierr);
         }
         if (serialMesh->commRank() == 0) {
           std::string args("pqezQra");
 
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(serialMesh->comm(), serialMesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -549,7 +570,9 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         typedef typename Mesh::point_type point_type;
         const int                             dim     = mesh->getDimension();
         const Obj<Mesh>                       refMesh = new Mesh(mesh->comm(), dim, mesh->debug());
@@ -569,8 +592,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                           idx   = vNumbering->getIndex(*v_iter);
@@ -588,7 +611,7 @@ namespace ALE {
         in.numberoftriangles = faces->size();
         in.trianglearealist  = (double *) maxVolumes;
         if (in.numberoftriangles > 0) {
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (mesh->depth() == 1) {
             ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(3);
             const typename Mesh::label_sequence::iterator fEnd = faces->end();
@@ -633,13 +656,13 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(2);
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = mesh->getValue(markers, *e_iter);
 
@@ -655,14 +678,14 @@ namespace ALE {
                 in.segmentmarkerlist[s++] = edgeMarker;
                 pV.clear();
               }
-            } 
+            }
           }
         }
         const typename Mesh::holes_type& holes = mesh->getHoles();
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -674,35 +697,53 @@ namespace ALE {
 
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(mesh->comm(), dim, mesh->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
         int    *cells       = out.trianglelist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         refMesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         refMesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
 
         if (refMesh->commRank() == 0) {
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              if (renumber) {
+                refMesh->setValue(newMarkers, renumbering[v+out.numberoftriangles], out.pointmarkerlist[v]);
+              } else {
+                refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              }
             }
           }
           if (interpolate) {
@@ -726,10 +767,10 @@ namespace ALE {
 #endif
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool renumber = false) {
         throw ALE::Exception("Not yet implemented");
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
 #if 0
         Obj<Mesh> serialMesh;
         if (mesh->commSize() > 1) {
@@ -744,7 +785,7 @@ namespace ALE {
         for(int c = 0; c < numCells; c++) {
           serialMaxVolumes[c] = maxVolume;
         }
-        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate);
+        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate, forceSerial, renumber);
         delete [] serialMaxVolumes;
         return refMesh;
       };
@@ -765,8 +806,8 @@ namespace ALE {
 
         in.numberofpoints = vertices->size();
         if (in.numberofpoints > 0) {
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -784,7 +825,7 @@ namespace ALE {
         in.numberoftriangles = faces->size();
         in.trianglearealist  = (double *) maxVolumes;
         if (in.numberoftriangles > 0) {
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (mesh->depth() == 1) {
             for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*f_iter);
@@ -817,12 +858,12 @@ namespace ALE {
               in.numberofsegments++;
             }
           }
-          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          //std::cout << "Number of segments: " << in.numberofsegments << std::endl;
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = mesh->getValue(markers, *e_iter);
 
@@ -835,22 +876,22 @@ namespace ALE {
                 }
                 in.segmentmarkerlist[s++] = edgeMarker;
               }
-            } 
+            }
           }
         }
 
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRXX(ierr);
         }
         std::string args("pqezQra");
 
         triangulate((char *) args.c_str(), &in, &out, NULL);
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -894,19 +935,19 @@ namespace ALE {
         const Obj<typename Mesh::sieve_type> refSieve = refMesh->getSieve();
         delete [] localMaxVolumes;
 #if 0
-	typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;
-	// This is where we enforce consistency over the overlap
-	//   We need somehow to update the overlap to account for the new stuff
-	//   
-	//   1) Since we are refining only, the vertices are invariant
-	//   2) We need to make another label for the interprocess boundaries so
-	//      that Triangle will respect them
-	//   3) We then throw all that label into the new overlap
-	//
-	// Alternative: Figure out explicitly which segments were refined, and then
-	//   communicated the refinement over the old overlap. Use this info to locally
-	//   construct the new overlap and flip to get a decent mesh
-	sieveCompletion::scatterCones(refSieve, refSieve, reMesh->getDistSendOverlap(), refMesh->getDistRecvOverlap(), refMesh);
+        typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;
+        // This is where we enforce consistency over the overlap
+        //   We need somehow to update the overlap to account for the new stuff
+        //
+        //   1) Since we are refining only, the vertices are invariant
+        //   2) We need to make another label for the interprocess boundaries so
+        //      that Triangle will respect them
+        //   3) We then throw all that label into the new overlap
+        //
+        // Alternative: Figure out explicitly which segments were refined, and then
+        //   communicated the refinement over the old overlap. Use this info to locally
+        //   construct the new overlap and flip to get a decent mesh
+        sieveCompletion::scatterCones(refSieve, refSieve, reMesh->getDistSendOverlap(), refMesh->getDistRecvOverlap(), refMesh);
 #endif
         return refMesh;
       };
@@ -923,7 +964,7 @@ namespace ALE {
         const int         dim   = 3;
         Obj<Mesh>         mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const PetscMPIInt rank  = mesh->commRank();
-        bool        createConvexHull = false;
+        bool              createConvexHull = false;
         ::tetgenio        in;
         ::tetgenio        out;
 
@@ -947,8 +988,8 @@ namespace ALE {
             in.pointmarkerlist[idx] = boundary->getValue(markers, *v_iter);
           }
         }
-  
-	if (boundary->depth() != 0) {  //our boundary mesh COULD be just a pointset; in which case depth = height = 0;
+
+        if (boundary->depth() != 0) {  //our boundary mesh COULD be just a pointset; in which case depth = height = 0;
           const Obj<typename Mesh::label_sequence>& facets     = boundary->depthStratum(boundary->depth());
           //PetscPrintf(boundary->comm(), "%d facets on the boundary\n", facets->size());
           const Obj<typename Mesh::numbering_type>& fNumbering = boundary->getFactory()->getLocalNumbering(boundary, boundary->depth());
@@ -960,12 +1001,12 @@ namespace ALE {
             for(typename Mesh::label_sequence::iterator f_iter = facets->begin(); f_iter != facets->end(); ++f_iter) {
               const Obj<typename sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(boundary, *f_iter, boundary->depth());
               const int                             idx  = fNumbering->getIndex(*f_iter);
-  
+
               in.facetlist[idx].numberofpolygons = 1;
               in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
               in.facetlist[idx].numberofholes    = 0;
               in.facetlist[idx].holelist         = NULL;
-  
+
               tetgenio::polygon *poly = in.facetlist[idx].polygonlist;
               int                c    = 0;
 
@@ -973,11 +1014,11 @@ namespace ALE {
               poly->vertexlist       = new int[poly->numberofvertices];
               for(typename sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 const int vIdx = vNumbering->getIndex(*c_iter);
-  
+
                 poly->vertexlist[c++] = vIdx;
               }
               in.facetmarkerlist[idx] = boundary->getValue(markers, *f_iter);
-            } 
+            }
           }
         }else {
           createConvexHull = true;
@@ -990,7 +1031,7 @@ namespace ALE {
           //constrained operation
           if (constrained) {
             args = "pezQ";
-            if (createConvexHull) { 
+            if (createConvexHull) {
               args = "ezQ";
               //PetscPrintf(boundary->comm(), "createConvexHull\n");
             }
@@ -1027,7 +1068,7 @@ namespace ALE {
         mesh->stratify();
         ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
-  
+
         for(int v = 0; v < out.numberofpoints; v++) {
           if (out.pointmarkerlist[v]) {
             mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
@@ -1084,7 +1125,9 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_TetGen"
-      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+      static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         const int                             dim   = 3;
         Obj<Mesh>                             mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
@@ -1115,7 +1158,7 @@ namespace ALE {
             in.pointmarkerlist[idx] = boundary->getValue(markers, *v_iter);
           }
         }
-  
+
         // Our boundary mesh COULD be just a pointset; in which case depth = height = 0;
         if (boundary->depth() != 0) {
           const Obj<typename Mesh::label_sequence>& facets     = boundary->depthStratum(boundary->depth());
@@ -1131,12 +1174,12 @@ namespace ALE {
             for(typename Mesh::label_sequence::iterator f_iter = facets->begin(); f_iter != fEnd; ++f_iter) {
               ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*sieve, *f_iter, ncV);
               const int idx  = fNumbering->getIndex(*f_iter);
-  
+
               in.facetlist[idx].numberofpolygons = 1;
               in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
               in.facetlist[idx].numberofholes    = 0;
               in.facetlist[idx].holelist         = NULL;
-  
+
               tetgenio::polygon               *poly = in.facetlist[idx].polygonlist;
               const size_t                     n    = ncV.getSize();
               const typename Mesh::point_type *cone = ncV.getPoints();
@@ -1148,7 +1191,7 @@ namespace ALE {
               }
               in.facetmarkerlist[idx] = boundary->getValue(markers, *f_iter);
               ncV.clear();
-            } 
+            }
           }
         } else {
           createConvexHull = true;
@@ -1157,7 +1200,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -1170,7 +1213,7 @@ namespace ALE {
           // Constrained operation
           if (constrained) {
             args = "pezQ";
-            if (createConvexHull) { 
+            if (createConvexHull) {
               args = "ezQ";
             }
           }
@@ -1186,13 +1229,14 @@ namespace ALE {
           ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(mesh->comm(), dim, mesh->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 4;
         int     numCells    = out.numberoftetrahedra;
         int    *cells       = out.tetrahedronlist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
         if (!interpolate) {
           // TetGen reports tetrahedra with the opposite orientation from what we expect
@@ -1202,23 +1246,41 @@ namespace ALE {
             cells[c*4+1] = tmp;
           }
         }
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         mesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         mesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
-  
+
         for(int v = 0; v < out.numberofpoints; v++) {
           if (out.pointmarkerlist[v]) {
-            mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            if (renumber) {
+              mesh->setValue(newMarkers, renumbering[v+out.numberoftetrahedra], out.pointmarkerlist[v]);
+            } else {
+              mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            }
           }
         }
         if (interpolate) {
+          // This does not work anymore (edgemarkerlist is always empty). I tried -ee and it gave bogus results
           if (out.edgemarkerlist) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
@@ -1226,7 +1288,11 @@ namespace ALE {
                 typename Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
                 Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(endpointA, endpointB, 1);
 
-                mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                if (renumber) {
+                  mesh->setValue(newMarkers, renumbering[*edge->begin()], out.edgemarkerlist[e]);
+                } else {
+                  mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                }
               }
             }
           }
@@ -1242,21 +1308,23 @@ namespace ALE {
 //             }
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
-                typename Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
-                typename Mesh::point_type cornerB(out.trifacelist[f*3+1]+out.numberoftetrahedra);
-                typename Mesh::point_type cornerC(out.trifacelist[f*3+2]+out.numberoftetrahedra);
+                typename Mesh::point_type cornerA = out.trifacelist[f*3+0]+out.numberoftetrahedra;
+                typename Mesh::point_type cornerB = out.trifacelist[f*3+1]+out.numberoftetrahedra;
+                typename Mesh::point_type cornerC = out.trifacelist[f*3+2]+out.numberoftetrahedra;
                 Obj<typename Mesh::sieve_type::supportSet> corners = typename Mesh::sieve_type::supportSet();
                 Obj<typename Mesh::sieve_type::supportSet> edges   = typename Mesh::sieve_type::supportSet();
                 corners->clear();corners->insert(cornerA);corners->insert(cornerB);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeA = *newS->nJoin1(corners)->begin();
                 corners->clear();corners->insert(cornerB);corners->insert(cornerC);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeB = *newS->nJoin1(corners)->begin();
                 corners->clear();corners->insert(cornerC);corners->insert(cornerA);
-                edges->insert(*newS->nJoin1(corners)->begin());
+                typename Mesh::point_type edgeC = *newS->nJoin1(corners)->begin();
+                edges->insert(edgeA); edges->insert(edgeB); edges->insert(edgeC);
                 ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(30);
-                const typename Mesh::point_type           face       = *newS->nJoin1(edges)->begin();
-                const int                                 faceMarker = out.trifacemarkerlist[f];
+                typename Mesh::point_type face       = *newS->nJoin1(edges)->begin();
+                const int                 faceMarker = out.trifacemarkerlist[f];
 
+                if (renumber) {face = renumbering[face];}
                 ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*newSieve, face, pV);
                 const size_t                     n    = pV.getSize();
                 const typename Mesh::point_type *cone = pV.getPoints();
@@ -1449,7 +1517,9 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
+        typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+        typedef typename Mesh::real_section_type::value_type real;
         typedef typename Mesh::point_type point_type;
         const int                             dim     = mesh->getDimension();
         const int                             depth   = mesh->depth();
@@ -1560,7 +1630,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -1574,13 +1644,14 @@ namespace ALE {
         }
         in.tetrahedronvolumelist = NULL;
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(refMesh->comm(), refMesh->debug());
-        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
-        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        const Obj<FlexMesh>                  m        = new FlexMesh(mesh->comm(), dim, mesh->debug());
+        const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
         int     numCorners  = 4;
         int     numCells    = out.numberoftetrahedra;
         int    *newCells    = out.tetrahedronlist;
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
+        real   *coordsR;
 
         if (!interpolate) {
           for(int c = 0; c < numCells; ++c) {
@@ -1589,23 +1660,41 @@ namespace ALE {
             newCells[c*4+1] = tmp;
           }
         }
-        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, newCells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        ALE::SieveBuilder<FlexMesh>::buildTopology(newS, dim, numCells, newCells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
         m->setSieve(newS);
         m->stratify();
         refMesh->setSieve(newSieve);
         std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
-        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, renumber);
         refMesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
-        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        {
+          if (sizeof(double) == sizeof(real)) {
+            coordsR = (real *) coords;
+          } else {
+            coordsR = new real[numVertices*dim];
+            for(int i = 0; i < numVertices*dim; ++i) coordsR[i] = coords[i];
+          }
+        }
+        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coordsR);
+        {
+          if (sizeof(double) != sizeof(real)) {
+            delete [] coordsR;
+          }
+        }
         const Obj<typename Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
 
         for(int v = 0; v < out.numberofpoints; v++) {
           if (out.pointmarkerlist[v]) {
-            refMesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            if (renumber) {
+              refMesh->setValue(newMarkers, renumbering[v+out.numberoftetrahedra], out.pointmarkerlist[v]);
+            } else {
+              refMesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
+            }
           }
         }
         if (interpolate) {
+          // This does not work anymore (edgemarkerlist is always empty). I tried -ee and it gave bogus results
           if (out.edgemarkerlist) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
@@ -1613,7 +1702,11 @@ namespace ALE {
                 typename Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
                 Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(endpointA, endpointB, 1);
 
-                refMesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                if (renumber) {
+                  refMesh->setValue(newMarkers, renumbering[*edge->begin()], out.edgemarkerlist[e]);
+                } else {
+                  refMesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
+                }
               }
             }
           }
@@ -1632,9 +1725,10 @@ namespace ALE {
                 corners->clear();corners->insert(cornerC);corners->insert(cornerA);
                 edges->insert(*newS->nJoin1(corners)->begin());
                 ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(30);
-                const typename Mesh::point_type          face       = *newS->nJoin1(edges)->begin();
-                const int                                faceMarker = out.trifacemarkerlist[f];
+                typename Mesh::point_type face       = *newS->nJoin1(edges)->begin();
+                const int                 faceMarker = out.trifacemarkerlist[f];
 
+                if (renumber) {face = renumbering[face];}
                 ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*newSieve, face, pV);
                 const size_t                     n    = pV.getSize();
                 const typename Mesh::point_type *cone = pV.getPoints();
@@ -1647,24 +1741,19 @@ namespace ALE {
             }
           }
         }
-#if 0
-        if (refMesh->commSize() > 1) {
-          return ALE::Distribution<Mesh>::distributeMesh(refMesh);
-        }
-#endif
         return refMesh;
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         throw ALE::Exception("Not yet implemented");
       };
-      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
         const int numCells         = mesh->heightStratum(0)->size();
         double   *serialMaxVolumes = new double[numCells];
 
         for(int c = 0; c < numCells; c++) {
           serialMaxVolumes[c] = maxVolume;
         }
-        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate);
+        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate, forceSerial, renumber);
         delete [] serialMaxVolumes;
         return refMesh;
       };
@@ -1692,18 +1781,18 @@ namespace ALE {
       }
       return NULL;
     };
-    static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
+    static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false, const bool renumber = false) {
       int dim = boundary->getDimension();
 
       if (dim == 1) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained);
+        return ALE::Triangle::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained, renumber);
 #else
         throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 2) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained);
+        return ALE::TetGen::Generator<Mesh>::generateMeshV(boundary, interpolate, constrained, renumber);
 #else
         throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
@@ -1746,36 +1835,36 @@ namespace ALE {
       }
       return NULL;
     };
-    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false, const bool renumber = false) {
       int dim = mesh->getDimension();
 
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
+        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
+        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
       }
       return NULL;
     };
-    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
+    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false, const bool renumber = false) {
       int dim = mesh->getDimension();
 
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial);
+        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate);
+        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolume, interpolate, forceSerial, renumber);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif

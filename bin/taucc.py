@@ -4,7 +4,7 @@
 # Usage:
 #  taucc -cc=g++ -pdt_parse=/../cxxparse -tau_lib_dir=/.../lib COMPILE_OPTIONS
 #
-#  Options: 
+#  Options:
 #           -cc              : C/C++ compiler
 #           -pdt_parse       : pdtoolkit parser for C++
 #           -tau_lib_dir     : TAU library dir
@@ -58,14 +58,14 @@ tauflags:
   tau_mpi_libs=''
   for line in output.splitlines():
     if line.find('TAU_INSTRUMENT0R:') >= 0:  tau_instr = line.replace('TAU_INSTRUMENT0R:','')
-    elif line.find('TAU_DEFS:') >= 0:  tau_defs = line.replace('TAU_DEFS:',' ')    
+    elif line.find('TAU_DEFS:') >= 0:  tau_defs = line.replace('TAU_DEFS:',' ')
     elif line.find('TAU_INCLUDE:') >= 0: tau_include = line.replace('TAU_INCLUDE:',' ')
     elif line.find('TAU_LIBS:') >= 0: tau_libs = line.replace('TAU_LIBS:',' ')
     elif line.find('TAU_MPI_INC:') >= 0: tau_mpi_inc = line.replace('TAU_MPI_INC:',' ')
     elif line.find('TAU_MPI_LIBS:') >= 0: tau_mpi_libs = line.replace('TAU_MPI_LIBS:',' ')
     elif line.find('TAU_CXXLIBS:') >= 0: tau_cxxlibs = line.replace('TAU_CXXLIBS:',' ')
   return tau_instr,tau_defs,tau_include,tau_libs,tau_mpi_inc,tau_mpi_libs,tau_cxxlibs
-  
+
 def main():
 
   sourcefiles=[]
@@ -79,7 +79,7 @@ def main():
   verbose=0
   compileonly=0
   leave_tmp = 0
-  
+
   for arg in sys.argv[1:]:
     filename,ext = os.path.splitext(arg)
     argsplit =  arg.split('=')
@@ -107,7 +107,7 @@ def main():
       libfiles.append(arg)
     elif arg == '-v' or arg == '-verbose':
         verbose  = 1
-        arglist += ' '+arg        
+        arglist += ' '+arg
     else:
       # Now make sure quotes are escaped properly
       # Group the rest of the arguments into a different list

@@ -1,4 +1,6 @@
 reading data in binary from input.dat, sz =10 ...
+Vector Object: 1 MPI processes
+  type: seq
 0
 10
 20

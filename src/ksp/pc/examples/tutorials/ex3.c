@@ -1,130 +1,147 @@
-/*
- * Test file for the PCFactorSetShiftType() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
- * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
- * of a positive definite matrix for which ILU(0) will give a negative pivot.
- * This means that the CG method will break down; the Manteuffel shift
- * [Math. Comp. 1980] repairs this.
- *
- * Run the executable twice:
- * 1/ without options: the iterative method diverges because of an
- *    indefinite preconditioner
- * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftType() line below):
- *    the method will now successfully converge.
- *
- * Modified from ex1.c by malte.foerster@scai.fraunhofer.de [petsc-maint #42323]
- * such that the matrix A has inode structure.
- */
 
-#include "petscksp.h"
+static char help[] = "Test PC redistribute on matrix with imbalance load. \n\
+                      Modified from src/ksp/ksp/examples/tutorials/ex2.c.\n\
+Input parameters include:\n\
+  -random_exact_sol : use a random exact solution vector\n\
+  -view_exact_sol   : write exact solution vector to stdout\n\
+  -n <mesh_n>       : number of mesh points in y-direction\n\n";
+/*
+Example: 
+  mpiexec -n 8 ./ex3 -n 10000 -ksp_type cg -pc_type bjacobi -sub_pc_type icc -ksp_rtol 1.e-8 -log_summary 
+  mpiexec -n 8 ./ex3 -n 10000 -ksp_type preonly -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc -redistribute_ksp_rtol 1.e-8 -log_summary 
+*/
+
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv)
+int main(int argc,char **args)
 {
-  KSP                solver; 
-  PC                 prec; 
-  Mat                A,M;
-  Vec                X,B,D;
-  MPI_Comm           comm;
-  PetscScalar        v; 
-  KSPConvergedReason reason;
-  PetscInt           i,j,its;
-  PetscErrorCode     ierr;
-  PetscInt           nnu=1000;
-  
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
-  //ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
-  comm = MPI_COMM_SELF;
-  
- 
-  /*
-   * Construct the Kershaw matrix
-   * and a suitable rhs / initial guess
-   */
-  ierr = MatCreateSeqAIJ(comm,nnu,nnu,20,0,&A);CHKERRQ(ierr);
-  ierr = VecCreateSeq(comm,nnu,&B);CHKERRQ(ierr);
-  ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
-  for (i=0; i<nnu; i++) {
-    v=3;
-    ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v=1;
-    ierr = VecSetValues(B,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+  Vec            x,b,u;    /* approx solution, RHS, exact solution */
+  Mat            A;        /* linear system matrix */
+  KSP            ksp;      /* linear solver context */
+  PetscRandom    rctx;     /* random number generator context */
+  PetscReal      norm;     /* norm of solution error */
+  PetscInt       i,j,Ii,J,Istart,Iend,m,n = 7,its,nloc,matdistribute=0;
+  PetscErrorCode ierr;
+  PetscBool      flg = PETSC_FALSE;
+  PetscScalar    v;
+  PetscMPIInt    rank,size;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage stage;
+#endif
+
+  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (size < 2) SETERRQ(PETSC_COMM_WORLD,1,"This example requires at least 2 MPI processes!");
+
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-matdistribute",&matdistribute,NULL);CHKERRQ(ierr);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+         Compute the matrix and right-hand-side vector that define
+         the linear system, Ax = b.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  switch(matdistribute) {
+  case 1: /* very imbalanced process load for matrix A */
+    m    = (1+size)*size;
+    nloc = (rank+1)*n;
+    if (rank == size-1) { /* proc[size-1] stores all remaining rows */
+      nloc = m*n;
+      for (i=0; i<size-1; i++){
+        nloc -= (i+1)*n;
+      }
+    }
+    break;
+  default: /* proc[0] and proc[1] load much smaller row blocks, the rest processes have same loads */
+    if (rank == 0 || rank == 1) {
+      nloc = n;
+    } else {
+      nloc = 10*n; /* 10x larger load */
+    }
+    m = 2 + (size-2)*10;
+    break;
   }
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  i=0; v=0;
-  ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  nloc = Iend-Istart;
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] A Istart,Iend: %D %D; nloc %D\n",rank,Istart,Iend,nloc);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  for (i=0; i<nnu-1; i+=1) {
-    v=-2; j=i+1; 
-    ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    if (i>4) i++;
+  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
-
-  i=0; j=3; v=2;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(B);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(B);CHKERRQ(ierr);
-  //printf("\nThe Kershaw matrix:\n\n"); MatView(A,0);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  /*
-   * A Conjugate Gradient method
-   * with ILU(0) preconditioning
-   */
-  ierr = KSPCreate(comm,&solver);CHKERRQ(ierr);
-  ierr = KSPSetOperators(solver,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
-  ierr = KSPSetType(solver,KSPCG);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(solver,PETSC_TRUE);CHKERRQ(ierr);
+  /* Create parallel vectors. */
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,nloc,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
-  /*
-   * ILU preconditioner;
-   * this will break down unless you add the Shift line,
-   * or use the -pc_factor_shift_type POSITIVE_DEFINITE option */
-  ierr = KSPGetPC(solver,&prec);CHKERRQ(ierr);
-  ierr = PCSetType(prec,PCILU);CHKERRQ(ierr);
-  /* ierr = PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr); */
-
-  ierr = KSPSetFromOptions(solver);CHKERRQ(ierr);
-  ierr = KSPSetUp(solver);CHKERRQ(ierr);
-
-  /*
-   * Now that the factorisation is done, show the pivots;
-   * note that the last one is negative. This in itself is not an error,
-   * but it will make the iterative method diverge.
-   */
-  ierr = PCFactorGetMatrix(prec,&M);CHKERRQ(ierr);
-  ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  printf("\nPivots:\n\n"); VecView(D,0);
-
-  /*
-   * Solve the system;
-   * without the shift this will diverge with
-   * an indefinite preconditioner
-   */
-  ierr = KSPSolve(solver,B,X);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(solver,&reason);CHKERRQ(ierr);
-  if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    printf("\nDivergence because of indefinite preconditioner;\n");
-    printf("Run the executable again but with '-pc_factor_shift_type POSITIVE_DEFINITE' option.\n");
-  } else if (reason<0) {
-    printf("\nOther kind of divergence: %s this should not happen.\n",KSPConvergedReasons[reason]);
+  /* Set exact solution; then compute right-hand-side vector. */
+  ierr = PetscOptionsGetBool(NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   } else {
-    ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
-    printf("\nConvergence in %d iterations.\n",(int)its);
+    ierr = VecSet(u,1.0);CHKERRQ(ierr);
   }
-  printf("\n");
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(B);CHKERRQ(ierr);
-  ierr = VecDestroy(D);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = KSPDestroy(solver);CHKERRQ(ierr);
-  PetscFinalize();
+  /* View the exact solution vector if desired */
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                Create the linear solver and set various options
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
+                          PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      Solve the linear system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                      Check solution and clean up
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
+                     norm,its);CHKERRQ(ierr);
+
+  /* Free work space. */
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscFinalize();
   return 0;
 }

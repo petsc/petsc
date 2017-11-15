@@ -7,8 +7,8 @@ function bag = PetscBagRead(fd)
 
 [name_len help_len] = ParsePetscBagDotH;
 
-bagsizecount = read(fd,2,'int32');
-count        = bagsizecount(2);
+bagsize = read(fd,1,'int32');  %  no longer used after petsc-3.2 just here for backward compatibility of the binary files
+count = read(fd,1,'int32');
 
 bag.bag_name      = deblank(char(read(fd,name_len,'uchar')'));
 bag.help.bag_help = deblank(char(read(fd,help_len,'uchar')'));
@@ -21,9 +21,9 @@ for lcv = 1:count
   msize = read(fd,1,'int32');
 
   if dtype == 0     % integer
-    val = read(fd,1,'int32');
+    val = read(fd,msize,'int32');
   elseif dtype == 1 % double
-    val = read(fd,1,'double');
+    val = read(fd,msize,'double');
   elseif dtype == 6 % char
     val = deblank(char(read(fd,msize,'uchar')'));
   elseif dtype == 9 % truth
@@ -55,7 +55,7 @@ return
    
 function [n, h] = ParsePetscBagDotH
    
-   petscbagh = [GetPetscDir,'/src/sys/bag/bagimpl.h'];
+   petscbagh = [GetPetscDir,'/include/petsc-private/bagimpl.h'];
    fid = fopen(petscbagh,'rt');
    if (fid<0)
       errstr = sprintf('Could not open %s.',petscbagh);

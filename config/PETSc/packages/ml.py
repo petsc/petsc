@@ -3,7 +3,9 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2.tar.gz']
+    self.gitcommit = 'a7394f847c8953e1d3bdf35ba8569134b769b4a6'
+    self.giturls   = ['https://bitbucket.org/petsc/pkg-ml.git']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-win.tar.gz']
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
     self.liblist   = [['libml.a']]
@@ -17,7 +19,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]  
+    self.deps       = [self.mpi,self.blasLapack]
     return
 
   def generateLibList(self,dir):
@@ -33,19 +35,20 @@ class Configure(PETSc.package.NewPackage):
     if self.languages.clanguage == 'C':
       alllibs.extend(self.compilers.cxxlibs)
     return [alllibs]
-        
+
   def Install(self):
     import os
 
     args = ['--prefix='+self.installDir]
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     args.append('--disable-ml-epetra')
     args.append('--disable-ml-aztecoo')
     args.append('--disable-ml-examples')
     args.append('--disable-tests')
-    
+
     self.framework.pushLanguage('C')
     args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
@@ -60,13 +63,13 @@ class Configure(PETSc.package.NewPackage):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
+      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')
 
     # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS
-    args.append('--enable-mpi') 
+    args.append('--enable-mpi')
     args.append('--with-mpi-libs="'+self.libraries.toString(self.mpi.lib)+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args = ' '.join(args)
@@ -83,11 +86,11 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on ML: '+str(e))
       try:
         self.logPrintBox('Compiling ml; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ML_INSTALL_DIR='+self.installDir+' && export ML_INSTALL_DIR && make clean && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
       try:
-        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
+        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,self.libdir,'lib*.a'), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
 
@@ -100,5 +103,8 @@ class Configure(PETSc.package.NewPackage):
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      if not self.blasLapack.checkForRoutine('dsteqr'):
+        raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
+      self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
       self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
     return

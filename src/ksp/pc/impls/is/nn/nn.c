@@ -1,11 +1,10 @@
-#define PETSCKSP_DLL
 
-#include "../src/ksp/pc/impls/is/nn/nn.h"
+#include <../src/ksp/pc/impls/is/nn/nn.h>
 
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_NN - Prepares for the use of the NN preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -16,19 +15,19 @@
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_NN"
 static PetscErrorCode PCSetUp_NN(PC pc)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
     /* Create the coarse matrix. */
     ierr = PCNNCreateCoarseMatrix(pc);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -45,14 +44,14 @@ static PetscErrorCode PCSetUp_NN(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_NN"
 static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
   PetscErrorCode ierr;
   PetscScalar    m_one = -1.0;
-  Vec            w = pcis->vec1_global;
+  Vec            w     = pcis->vec1_global;
 
   PetscFunctionBegin;
   /*
@@ -63,7 +62,7 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
   ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = KSPSolve(pcis->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
-  
+
   /*
     Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
     Storing the result in the interface portion of the global vector w.
@@ -112,7 +111,7 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_NN"
 static PetscErrorCode PCDestroy_NN(PC pc)
 {
@@ -122,10 +121,10 @@ static PetscErrorCode PCDestroy_NN(PC pc)
   PetscFunctionBegin;
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
 
-  if (pcnn->coarse_mat)  {ierr = MatDestroy(pcnn->coarse_mat);CHKERRQ(ierr);}
-  if (pcnn->coarse_x)    {ierr = VecDestroy(pcnn->coarse_x);CHKERRQ(ierr);}
-  if (pcnn->coarse_b)    {ierr = VecDestroy(pcnn->coarse_b);CHKERRQ(ierr);}
-  if (pcnn->ksp_coarse) {ierr = KSPDestroy(pcnn->ksp_coarse);CHKERRQ(ierr);}
+  ierr = MatDestroy(&pcnn->coarse_mat);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcnn->coarse_x);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcnn->coarse_b);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcnn->ksp_coarse);CHKERRQ(ierr);
   if (pcnn->DZ_IN) {
     ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);
     ierr = PetscFree(pcnn->DZ_IN);CHKERRQ(ierr);
@@ -134,7 +133,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(pcnn);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,11 +150,11 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 .    -pc_is_remove_nullspace_fixed -
 .    -pc_is_set_damping_factor_floating <fact> -
 .    -pc_is_not_damp_floating -
-+    -pc_is_not_remove_nullspace_floating - 
++    -pc_is_not_remove_nullspace_floating -
 
    Level: intermediate
 
-   Notes: The matrix used with this preconditioner must be of type MATIS 
+   Notes: The matrix used with this preconditioner must be of type MATIS
 
           Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
           degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
@@ -169,10 +168,10 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
 M*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_NN"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
   PC_NN          *pcnn;
@@ -182,15 +181,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
-  pc->data  = (void*)pcnn;
+  ierr     = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
+  pc->data = (void*)pcnn;
 
-  ierr = PCISCreate(pc);CHKERRQ(ierr);
-  pcnn->coarse_mat  = 0;
-  pcnn->coarse_x    = 0;
-  pcnn->coarse_b    = 0;
+  ierr             = PCISCreate(pc);CHKERRQ(ierr);
+  pcnn->coarse_mat = 0;
+  pcnn->coarse_x   = 0;
+  pcnn->coarse_b   = 0;
   pcnn->ksp_coarse = 0;
-  pcnn->DZ_IN       = 0;
+  pcnn->DZ_IN      = 0;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -209,31 +208,29 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCNNCreateCoarseMatrix - 
+   PCNNCreateCoarseMatrix -
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCNNCreateCoarseMatrix"
-PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
+PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 {
   MPI_Request    *send_request, *recv_request;
   PetscErrorCode ierr;
   PetscInt       i, j, k;
-  PetscScalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
-  PetscScalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
+  PetscScalar    *mat;     /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
+  PetscScalar    **DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
   /* aliasing some names */
-  PC_IS*         pcis     = (PC_IS*)(pc->data);
-  PC_NN*         pcnn     = (PC_NN*)pc->data;
-  PetscInt       n_neigh  = pcis->n_neigh;
-  PetscInt*      neigh    = pcis->neigh;
-  PetscInt*      n_shared = pcis->n_shared;
-  PetscInt**     shared   = pcis->shared;  
-  PetscScalar**  DZ_IN;   /* Must be initialized after memory allocation. */
+  PC_IS       *pcis     = (PC_IS*)(pc->data);
+  PC_NN       *pcnn     = (PC_NN*)pc->data;
+  PetscInt    n_neigh   = pcis->n_neigh;
+  PetscInt    *neigh    = pcis->neigh;
+  PetscInt    *n_shared = pcis->n_shared;
+  PetscInt    **shared  = pcis->shared;
+  PetscScalar **DZ_IN;   /* Must be initialized after memory allocation. */
 
   PetscFunctionBegin;
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
@@ -247,9 +244,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&pcnn->DZ_IN);CHKERRQ(ierr);
     DZ_IN = pcnn->DZ_IN;
     ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&DZ_OUT);CHKERRQ(ierr);
-    for (i=0; i<n_neigh; i++) {
-      size_of_Z += n_shared[i];
-    }
+    for (i=0; i<n_neigh; i++) size_of_Z += n_shared[i];
     ierr = PetscMalloc ((size_of_Z+1)*sizeof(PetscScalar),&DZ_IN[0]);CHKERRQ(ierr);
     ierr = PetscMalloc ((size_of_Z+1)*sizeof(PetscScalar),&DZ_OUT[0]);CHKERRQ(ierr);
   }
@@ -261,7 +256,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Set the values of DZ_OUT, in order to send this info to the neighbours */
   /* First, set the auxiliary array pcis->work_N. */
   ierr = PCISScatterArrayNToVecB(pcis->work_N,pcis->D,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
-  for (i=1; i<n_neigh; i++){
+  for (i=1; i<n_neigh; i++) {
     for (j=0; j<n_shared[i]; j++) {
       DZ_OUT[i][j] = pcis->work_N[shared[i][j]];
     }
@@ -272,19 +267,17 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* We make them longer to have request[i] corresponding to neigh[i].          */
   {
     PetscMPIInt tag;
-    ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    ierr = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
+    ierr         = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
+    ierr         = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
     for (i=1; i<n_neigh; i++) {
-      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(send_request[i]));CHKERRQ(ierr);
-      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(recv_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRQ(ierr);
     }
   }
 
   /* Set DZ_IN[0][] (recall that neigh[0]==rank, always) */
-  for(j=0; j<n_shared[0]; j++) {
-    DZ_IN[0][j] = pcis->work_N[shared[0][j]];
-  }
+  for (j=0; j<n_shared[0]; j++) DZ_IN[0][j] = pcis->work_N[shared[0][j]];
 
   /* Start computing with local D*Z while communication goes on.    */
   /* Apply Schur complement. The result is "stored" in vec (more    */
@@ -299,9 +292,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     PetscMPIInt ind=0;
     if (i>0) { ierr = MPI_Waitany(n_neigh-1,recv_request+1,&ind,&stat);CHKERRQ(ierr); ind++;}
     mat[ind*n_neigh+0] = 0.0;
-    for (k=0; k<n_shared[ind]; k++) {
-      mat[ind*n_neigh+0] += DZ_IN[ind][k] * pcis->work_N[shared[ind][k]];
-    }
+    for (k=0; k<n_shared[ind]; k++) mat[ind*n_neigh+0] += DZ_IN[ind][k] * pcis->work_N[shared[ind][k]];
   }
 
   /* Compute the remaining of the columns */
@@ -310,9 +301,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
                                  pcis->vec2_B,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
     for (i=0; i<n_neigh; i++) {
       mat[i*n_neigh+j] = 0.0;
-      for (k=0; k<n_shared[i]; k++) {
-	mat[i*n_neigh+j] += DZ_IN[i][k] * pcis->work_N[shared[i][k]];
-      }
+      for (k=0; k<n_shared[i]; k++) mat[i*n_neigh+j] += DZ_IN[i][k] * pcis->work_N[shared[i][k]];
     }
   }
 
@@ -329,22 +318,22 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   /* Free the memory for DZ_OUT */
   if (DZ_OUT) {
-    ierr = PetscFree(DZ_OUT[0]);CHKERRQ(ierr); 
+    ierr = PetscFree(DZ_OUT[0]);CHKERRQ(ierr);
     ierr = PetscFree(DZ_OUT);CHKERRQ(ierr);
   }
 
   {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
     /* Create the global coarse vectors (rhs and solution). */
-    ierr = VecCreateMPI(((PetscObject)pc)->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)pc),1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
     /* Create and set the global coarse AIJ matrix. */
-    ierr = MatCreate(((PetscObject)pc)->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)pc),&(pcnn->coarse_mat));CHKERRQ(ierr);
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,1,NULL);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -352,28 +341,31 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   {
     PetscMPIInt rank;
-    PetscScalar one = 1.0; 
-    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
+    PetscScalar one = 1.0;
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
-      ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,0,NULL,one,0,0);CHKERRQ(ierr);
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
       PetscInt row = (PetscInt) rank;
-      ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one,0,0);CHKERRQ(ierr);
     }
   }
 
   /* Create the coarse linear solver context */
   {
     PC  pc_ctx, inner_pc;
-    ierr = KSPCreate(((PetscObject)pc)->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
+    KSP inner_ksp;
+
+    ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcnn->ksp_coarse,(PetscObject)pc,2);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
-    ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
-    ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);               
-    ierr = PCRedundantGetPC(pc_ctx,&inner_pc);CHKERRQ(ierr);           
-    ierr = PCSetType(inner_pc,PCLU);CHKERRQ(ierr);                     
+    ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);
+    ierr = KSPSetType(pcnn->ksp_coarse,KSPPREONLY);CHKERRQ(ierr);
+    ierr = PCRedundantGetKSP(pc_ctx,&inner_ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);
+    ierr = PCSetType(inner_pc,PCLU);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"nn_coarse_");CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcnn->ksp_coarse);CHKERRQ(ierr);
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
@@ -385,14 +377,14 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
-    PetscTruth flg = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_nn_save_coarse_matrix",&flg,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool flg = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-pc_nn_save_coarse_matrix",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
       ierr = MatView(pcnn->coarse_mat,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
   }
 
@@ -405,7 +397,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCNNApplySchurToChunk - 
+   PCNNApplySchurToChunk -
 
    Input parameters:
 .  pcnn
@@ -421,9 +413,9 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 .  vec2_D  - garbage (used as work space)
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCNNApplySchurToChunk"
-PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -431,7 +423,7 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt* idx, PetscScal
 
   PetscFunctionBegin;
   ierr = PetscMemzero((void*)array_N, pcis->n*sizeof(PetscScalar));CHKERRQ(ierr);
-  for (i=0; i<n; i++) { array_N[idx[i]] = chunk[i]; }
+  for (i=0; i<n; i++) array_N[idx[i]] = chunk[i];
   ierr = PCISScatterArrayNToVecB(array_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = PCISApplySchur(pc,vec2_B,vec1_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(array_N,vec1_B,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
@@ -440,7 +432,7 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt* idx, PetscScal
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCNNApplyInterfacePreconditioner - Apply the interface preconditioner, i.e., 
+   PCNNApplyInterfacePreconditioner - Apply the interface preconditioner, i.e.,
                                       the preconditioner for the Schur complement.
 
    Input parameter:
@@ -462,19 +454,18 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt* idx, PetscScal
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCNNApplyInterfacePreconditioner"
-PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
-                                      Vec vec2_D, Vec vec1_N, Vec vec2_N)
+PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar *work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
-  PC_IS*         pcis = (PC_IS*)(pc->data);
+  PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
   /*
     First balancing step.
   */
   {
-    PetscTruth flg = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_nn_turn_off_first_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool flg = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-pc_nn_turn_off_first_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -483,7 +474,7 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
   }
 
   /*
-    Extract the local interface part of z and scale it by D 
+    Extract the local interface part of z and scale it by D
   */
   ierr = VecScatterBegin(pcis->global_to_B,z,vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,z,vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -496,8 +487,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
     Second balancing step.
   */
   {
-    PetscTruth flg = PETSC_FALSE;
-    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_turn_off_second_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool flg = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-pc_turn_off_second_balancing",&flg,NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -533,22 +524,21 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
 .  work_N - Array of all local nodes (interior and interface). Workspace.
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCNNBalancing"
-PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
-                   Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
+PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
   PetscErrorCode ierr;
   PetscInt       k;
   PetscScalar    value;
-  PetscScalar*   lambda;
-  PC_NN*         pcnn     = (PC_NN*)(pc->data);
-  PC_IS*         pcis     = (PC_IS*)(pc->data);
+  PetscScalar    *lambda;
+  PC_NN          *pcnn = (PC_NN*)(pc->data);
+  PC_IS          *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
-  if (u) { 
-    if (!vec3_B) { vec3_B = u; }
+  if (u) {
+    if (!vec3_B) vec3_B = u;
     ierr = VecPointwiseMult(vec1_B,pcis->D,u);CHKERRQ(ierr);
     ierr = VecSet(z,0.0);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -566,23 +556,23 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   ierr = VecScatterBegin(pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(work_N,vec2_B,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
-  for (k=0, value=0.0; k<pcis->n_shared[0]; k++) { value += pcnn->DZ_IN[0][k] * work_N[pcis->shared[0][k]]; }
+  for (k=0, value=0.0; k<pcis->n_shared[0]; k++) value += pcnn->DZ_IN[0][k] * work_N[pcis->shared[0][k]];
   value *= pcnn->factor_coarse_rhs;  /* This factor is set in CreateCoarseMatrix(). */
   {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
     ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
-       Since we are only inserting local values (one value actually) we don't need to do the 
+       Since we are only inserting local values (one value actually) we don't need to do the
        reduction that tells us there is no data that needs to be moved. Hence we comment out these
-       ierr = VecAssemblyBegin(pcnn->coarse_b);CHKERRQ(ierr); 
+       ierr = VecAssemblyBegin(pcnn->coarse_b);CHKERRQ(ierr);
        ierr = VecAssemblyEnd  (pcnn->coarse_b);CHKERRQ(ierr);
     */
   }
   ierr = KSPSolve(pcnn->ksp_coarse,pcnn->coarse_b,pcnn->coarse_x);CHKERRQ(ierr);
   if (!u) { ierr = VecScale(pcnn->coarse_x,-1.0);CHKERRQ(ierr); }
   ierr = VecGetArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
-  for (k=0; k<pcis->n_shared[0]; k++) { work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k]; }
+  for (k=0; k<pcis->n_shared[0]; k++) work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k];
   ierr = VecRestoreArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(work_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = VecSet(z,0.0);CHKERRQ(ierr);
@@ -613,7 +603,7 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
 
 
 /* --------------------------------------------------------------------------
-   Historical note 01 
+   Historical note 01
    -------------------------------------------------------------------------- */
 /*
    We considered the possibility of an alternative D_i that would still
@@ -632,7 +622,7 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
 
 
 /* --------------------------------------------------------------------------
-   Historical note 02 
+   Historical note 02
    -------------------------------------------------------------------------- */
 /*
    We tried an alternative coarse problem, that would eliminate exactly a

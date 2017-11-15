@@ -1,5 +1,5 @@
 import PETSc.package
-    
+
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
@@ -9,13 +9,13 @@ class Configure(PETSc.package.NewPackage):
     self.requires32bitint  = 0
     self.worksonWindows    = 1
     self.downloadonWindows = 1
-    
+
   def Install(self):
     import os
     if self.framework.argDB['with-batch']:
        args = ['--prefix='+self.installDir]
     else:
-       args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']          
+       args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'c2html.args'), 'w')
     fd.write(args)
@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
       # check if flex or lex are in PATH
       self.getExecutable('flex')
       self.getExecutable('lex')
-      if not hasattr(self, 'flex') or not hasattr(self, 'lex'):
+      if not hasattr(self, 'flex') and not hasattr(self, 'lex'):
         raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\n\
  Or disable c2html with --with-c2html=0')
       try:
@@ -46,7 +46,7 @@ class Configure(PETSc.package.NewPackage):
 
   def alternateConfigureLibrary(self):
     self.checkDownload(1)
-    
+
   def configure(self):
     '''Determine whether the c2html exist or not'''
 
@@ -58,13 +58,13 @@ class Configure(PETSc.package.NewPackage):
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.getExecutable('c2html', getFullPath = 1)
-      
+
       if hasattr(self, 'c2html'):
         self.addMakeMacro('C2HTML ', self.c2html)
         self.framework.logPrint('Found c2html, will not install c2html')
       else:
         self.framework.logPrint('Installing c2html')
-        if not self.framework.argDB.has_key('download-c2html') or not self.framework.argDB['download-c2html']: self.framework.argDB['download-c2html'] = 1
+        if not self.framework.argDB.get('download-c2html'): self.framework.argDB['download-c2html'] = 1
         PETSc.package.NewPackage.configure(self)
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")

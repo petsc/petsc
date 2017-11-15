@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../../include/private/kspimpl.h ../../../include/petscksp.h
+SOURCEH  = ../../../include/petsc-private/kspimpl.h ../../../include/petscksp.h
 DIRS     = interface impls examples utils
 LOCDIR   = src/ksp/ksp/
 MANSEC   = KSP

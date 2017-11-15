@@ -21,13 +21,13 @@ T*/
 
 /*
 
-     Programming model: Combination of 
+     Programming model: Combination of
         1) MPI message passing for PETSc routines
         2) automatic loop parallism (using shared memory) for user
            provided function.
 
        While the user function is being evaluated all MPI processes except process
-     0 blocks. Process zero spawns nt threads to evaluate the user function. Once 
+     0 blocks. Process zero spawns nt threads to evaluate the user function. Once
      the user function is complete, the worker threads are suspended and all the MPI processes
      continue.
 
@@ -39,27 +39,27 @@ T*/
 
        Environmental variable:
 
-         setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should 
+         setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should
                                       use to evaluate user provided function
 
-       Note: The number of MPI processes (set with the mpiexec option -np) can 
-       be set completely independently from the number of threads process 0 
+       Note: The number of MPI processes (set with the mpiexec option -np) can
+       be set completely independently from the number of threads process 0
        uses to evaluate the function (though usually one would make them the same).
 */
-       
+
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
     The uniprocessor version of this code is snes/examples/tutorials/ex4.c
@@ -67,7 +67,7 @@ T*/
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -76,19 +76,19 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines   FormFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   int         mx,my;          /* discretization in x, y directions */
-   int         rank;           /* processor rank */
+  PetscReal param;             /* test problem parameter */
+  int       mx,my;             /* discretization in x, y directions */
+  int       rank;              /* processor rank */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
@@ -96,10 +96,10 @@ extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-/* 
+/*
     The main program is written in C while the user provided function
- is given in both Fortran and C. The main program could also be written 
- in Fortran; the ONE PROBLEM is that VecGetArray() cannot be called from 
+ is given in both Fortran and C. The main program could also be written
+ in Fortran; the ONE PROBLEM is that VecGetArray() cannot be called from
  Fortran on the SGI machines; thus the routine FormFunctionFortran() must
  be written in C.
 */
@@ -112,22 +112,22 @@ int main(int argc,char **argv)
   int            N,ierr,rstart,rend,*colors,i,ii,ri,rj;
   PetscErrorCode (*fnc)(SNES,Vec,Vec,void*);
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  MatFDColoring  fdcoloring;           
+  MatFDColoring  fdcoloring;
   ISColoring     iscoloring;
   Mat            J;
   PetscScalar    zero = 0.0;
-  PetscTruth     flg;
+  PetscBool      flg;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
 
@@ -143,57 +143,52 @@ int main(int argc,char **argv)
 
   /*
       The routine VecCreateShared() creates a parallel vector with each processor
-    assigned its own segment, BUT, in addition, the first processor has access to the 
+    assigned its own segment, BUT, in addition, the first processor has access to the
     entire array. This is to allow the users function to be based on loop level
     parallelism rather than MPI.
   */
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
-  if (flg) {
-    fnc = FormFunctionFortran;
-  } else {
-    fnc = FormFunction;
-  }
+  ierr = PetscOptionsHasName(NULL,"-use_fortran_function",&flg);CHKERRQ(ierr);
+  if (flg) fnc = FormFunctionFortran;
+  else     fnc = FormFunction;
 
-  /* 
+  /*
      Set function evaluation routine and vector
   */
   ierr = SNESSetFunction(snes,r,fnc,&user);CHKERRQ(ierr);
 
   /*
        Currently when using VecCreateShared() and using loop level parallelism
-    to automatically parallelise the user function it makes no sense for the 
+    to automatically parallelise the user function it makes no sense for the
     Jacobian to be computed via loop level parallelism, because all the threads
     would be simultaneously calling MatSetValues() causing a bottle-neck.
 
     Thus this example uses the PETSc Jacobian calculations via finite differencing
     to approximate the Jacobian
-  */ 
+  */
 
   /*
 
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
-  }
-  ierr   = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
+
+  ierr = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /*
-     Create and set the nonzero pattern for the Jacobian: This is not done 
-     particularly efficiently. One should process the boundary nodes separately and 
+     Create and set the nonzero pattern for the Jacobian: This is not done
+     particularly efficiently. One should process the boundary nodes separately and
      then use a simple loop for the interior nodes.
-       Note that for this code we use the "natural" number of the nodes on the 
-     grid (since that is what is good for the user provided function). In the 
-     DA examples we must use the DA numbering where each processor is assigned a
+       Note that for this code we use the "natural" number of the nodes on the
+     grid (since that is what is good for the user provided function). In the
+     DMDA examples we must use the DMDA numbering where each processor is assigned a
      chunk of data.
   */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,
-                         N,5,0,0,0,&J);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,N,5,0,0,0,&J);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     rj = i % user.mx;         /* column in grid */
     ri = i / user.mx;         /* row in grid */
@@ -219,18 +214,18 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
-       Create the data structure that SNESDefaultComputeJacobianColor() uses
+       Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
   */
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fnc,&user);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
   /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
   */
-  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,17 +247,17 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);      
-  ierr = SNESDestroy(snes);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -271,7 +266,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -283,28 +278,29 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int          i,j,row,mx,my,ierr;
-  PetscReal    one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  *x;
+  int         i,j,row,mx,my,ierr;
+  PetscReal   one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar *x;
 
   /*
-      Process 0 has to wait for all other processes to get here 
+      Process 0 has to wait for all other processes to get here
    before proceeding to write in the shared vector
   */
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   if (user->rank) {
-     /*
-        All the non-busy processors have to wait here for process 0 to finish
-        evaluating the function; otherwise they will start using the vector values
-        before they have been computed
-     */
-     ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
-     return 0;
+    /*
+       All the non-busy processors have to wait here for process 0 to finish
+       evaluating the function; otherwise they will start using the vector values
+       before they have been computed
+    */
+    ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
+    return 0;
   }
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
+  mx = user->mx;               my = user->my;        lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+
   temp1 = lambda/(lambda + one);
 
   /*
@@ -325,12 +321,12 @@ int FormInitialGuess(AppCtx *user,Vec X)
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
-      row = i + j*mx; 
+      row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -341,11 +337,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
 
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
   return 0;
-} 
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -358,25 +354,25 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx       *user = (AppCtx*)ptr;
-  int          ierr,i,j,row,mx,my;
-  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,uxx,uyy,*x,*f;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr,i,j,row,mx,my;
+  PetscReal   two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar u,uxx,uyy,*x,*f;
 
   /*
-      Process 0 has to wait for all other processes to get here 
+      Process 0 has to wait for all other processes to get here
    before proceeding to write in the shared vector
   */
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
 
   if (user->rank) {
-     /*
-        All the non-busy processors have to wait here for process 0 to finish
-        evaluating the function; otherwise they will start using the vector values
-        before they have been computed
-     */
-     ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
-     return 0;
+    /*
+       All the non-busy processors have to wait here for process 0 to finish
+       evaluating the function; otherwise they will start using the vector values
+       before they have been computed
+    */
+    ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
+    return 0;
   }
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -390,7 +386,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
-      The next line tells the SGI compiler that x and f contain no overlapping 
+      The next line tells the SGI compiler that x and f contain no overlapping
     regions and thus it can use addition optimizations.
   */
 #pragma arl(4)
@@ -406,10 +402,10 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
-      } 
-      u = x[row];
-      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-mx] - x[row+mx])*hxdhy;
+      }
+      u      = x[row];
+      uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy    = (two*u - x[row-mx] - x[row+mx])*hxdhy;
       f[row] = uxx + uyy - sc*exp(u);
     }
   }
@@ -422,8 +418,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   ierr = PetscLogFlops(11.0*(mx-2)*(my-2))CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)X);CHKERRQ(ierr);
-  return 0; 
-} 
+  return 0;
+}
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define applicationfunctionfortran_ APPLICATIONFUNCTIONFORTRAN
@@ -434,18 +430,18 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionFortran"
-/* 
+/*
    FormFunctionFortran - Evaluates nonlinear function, F(x) in Fortran.
 
 */
 int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr;
-  PetscScalar  *x,*f;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         ierr;
+  PetscScalar *x,*f;
 
   /*
-      Process 0 has to wait for all other processes to get here 
+      Process 0 has to wait for all other processes to get here
    before proceeding to write in the shared vector
   */
   ierr = PetscBarrier((PetscObject)snes);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscts.h"
+#include <petsc-private/fortranimpl.h>
+#include <petscts.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tssettype_                           TSSETTYPE
@@ -9,8 +9,7 @@
 #define tsgettype_                           tsgettype
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -19,7 +18,7 @@ void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCo
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -28,5 +27,3 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-
-EXTERN_C_END

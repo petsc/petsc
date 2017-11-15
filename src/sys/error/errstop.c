@@ -1,9 +1,8 @@
-#define PETSC_DLL
 
-#include "petscsys.h"           /*I "petscsys.h" I*/
+#include <petscsys.h>           /*I "petscsys.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscMPIAbortErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMPIAbortErrorHandler"
 /*@C
    PetscMPIAbortErrorHandler - Calls MPI_abort() and exits.
 
@@ -23,8 +22,8 @@
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERRQ, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERRQ, which has
    the calling sequence
 $     SETERRQ(comm,n,p,mess)
 
@@ -35,12 +34,12 @@ $     SETERRQ(comm,n,p,mess)
 
    Concepts: error handler^stopping
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
-  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
   PetscLogDouble mem,rss;
 
   PetscFunctionBegin;
@@ -52,27 +51,22 @@ PetscErrorCode PETSCSYS_DLLEXPORT PetscMPIAbortErrorHandler(MPI_Comm comm,int li
     (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
     (*PetscErrorPrintf)("destroying unneeded objects.\n");
     PetscMallocGetCurrentUsage(&mem); PetscMemoryGetCurrentUsage(&rss);
-    PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
-    PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-    if (flg2) {
-      PetscMallocDumpLog(stdout);
-    } else {
-      (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
-      if (flg1) {
-        PetscMallocDump(stdout);
-      }  else {
-        (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
-      }
+    PetscOptionsGetBool(NULL,"-malloc_dump",&flg1,NULL);
+    PetscOptionsGetBool(NULL,"-malloc_log",&flg2,NULL);
+    PetscOptionsHasName(NULL,"-malloc_log_threshold",&flg3);
+    if (flg2 || flg3) PetscMallocDumpLog(stdout);
+    else {
+      (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
+      if (flg1) PetscMallocDump(stdout);
+      else (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
     }
   } else if (n == PETSC_ERR_SUP) {
     (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
     (*PetscErrorPrintf)("No support for this operation for this object type!\n");
     (*PetscErrorPrintf)("%s\n",mess);
-  } else if (n == PETSC_ERR_SIG) {
-    (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
-  } else {
-    (*PetscErrorPrintf)("%s() line %d in %s%s\n    %s\n",fun,line,dir,file,mess);
-  }
+  } else if (n == PETSC_ERR_SIG) (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
+  else (*PetscErrorPrintf)("%s() line %d in %s%s\n    %s\n",fun,line,dir,file,mess);
+
   MPI_Abort(PETSC_COMM_WORLD,n);
   PetscFunctionReturn(0);
 }

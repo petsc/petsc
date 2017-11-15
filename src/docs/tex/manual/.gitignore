@@ -1,0 +1,13 @@
+anchors
+*.aux
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+*.out
+*.toc
+/tmp
+developerstmp.tex
+manual1.tex
+intro.pdf

@@ -1,25 +1,24 @@
-#define PETSCMAT_DLL
 
-#include "private/matimpl.h"          /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
 
 typedef struct {
-  Mat         A;  
+  Mat         A;
   Vec         w,left,right,leftwork,rightwork;
   PetscScalar scale;
 } Mat_Normal;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_Normal"
 PetscErrorCode MatScale_Normal(Mat inA,PetscScalar scale)
 {
-  Mat_Normal     *a = (Mat_Normal*)inA->data;
+  Mat_Normal *a = (Mat_Normal*)inA->data;
 
   PetscFunctionBegin;
   a->scale *= scale;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScale_Normal"
 PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
 {
@@ -46,7 +45,7 @@ PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Normal"
 PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 {
@@ -71,16 +70,16 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
   ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__   
-#define __FUNCT__ "MatMultAdd_Normal" 
-PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3) 
-{ 
-  Mat_Normal     *Na = (Mat_Normal*)N->data; 
-  PetscErrorCode ierr; 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultAdd_Normal"
+PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
+{
+  Mat_Normal     *Na = (Mat_Normal*)N->data;
+  PetscErrorCode ierr;
   Vec            in;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   in = v1;
   if (Na->right) {
     if (!Na->rightwork) {
@@ -89,19 +88,19 @@ PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
     ierr = VecPointwiseMult(Na->rightwork,Na->right,in);CHKERRQ(ierr);
     in   = Na->rightwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr); 
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
   ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
   if (Na->left) {
-    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr); 
+    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr);
     ierr = VecPointwiseMult(v3,Na->left,v3);CHKERRQ(ierr);
     ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   } else {
-    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Normal"
 PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
 {
@@ -127,15 +126,15 @@ PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__   
-#define __FUNCT__ "MatMultTransposeAdd_Normal" 
-PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3) 
-{ 
-  Mat_Normal     *Na = (Mat_Normal*)N->data; 
-  PetscErrorCode ierr; 
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeAdd_Normal"
+PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
+{
+  Mat_Normal     *Na = (Mat_Normal*)N->data;
+  PetscErrorCode ierr;
   Vec            in;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   in = v1;
   if (Na->left) {
     if (!Na->leftwork) {
@@ -144,19 +143,19 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
     ierr = VecPointwiseMult(Na->leftwork,Na->left,in);CHKERRQ(ierr);
     in   = Na->leftwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr); 
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
   ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
   if (Na->right) {
-    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr); 
+    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr);
     ierr = VecPointwiseMult(v3,Na->right,v3);CHKERRQ(ierr);
     ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   } else {
-    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Normal"
 PetscErrorCode MatDestroy_Normal(Mat N)
 {
@@ -164,25 +163,25 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
-  if (Na->w) { ierr = VecDestroy(Na->w);CHKERRQ(ierr); }
-  if (Na->left) { ierr = VecDestroy(Na->left);CHKERRQ(ierr); }
-  if (Na->right) { ierr = VecDestroy(Na->right);CHKERRQ(ierr); }
-  if (Na->leftwork) { ierr = VecDestroy(Na->leftwork);CHKERRQ(ierr); }
-  if (Na->rightwork) { ierr = VecDestroy(Na->rightwork);CHKERRQ(ierr); }
-  ierr = PetscFree(Na);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->w);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->leftwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->rightwork);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 /*
       Slow, nonscalable version
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_Normal"
 PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
-  Mat               A = Na->A;
+  Mat               A   = Na->A;
   PetscErrorCode    ierr;
   PetscInt          i,j,rstart,rend,nnz;
   const PetscInt    *cols;
@@ -200,18 +199,18 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPI_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
-  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscFree2(diag,work);CHKERRQ(ierr);
-  ierr = VecScale(v,Na->scale);CHKERRQ(ierr);
+  ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
+  ierr   = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = VecRestoreArray(v,&values);CHKERRQ(ierr);
+  ierr   = PetscFree2(diag,work);CHKERRQ(ierr);
+  ierr   = VecScale(v,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateNormal"
 /*@
       MatCreateNormal - Creates a new matrix object that behaves like A'*A.
@@ -230,30 +229,31 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
           object performs the matrix-vector product by first multiplying by
           A and then A'
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
+PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;
-  Mat_Normal     *Na;  
+  Mat_Normal     *Na;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
-  
-  ierr      = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
-  (*N)->data = (void*) Na;
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  Na->A     = A;
-  Na->scale = 1.0;
 
-  ierr    = VecCreateMPI(((PetscObject)A)->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
+  (*N)->data = (void*) Na;
+  ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  Na->A      = A;
+  Na->scale  = 1.0;
+
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+
   (*N)->ops->destroy          = MatDestroy_Normal;
   (*N)->ops->mult             = MatMult_Normal;
   (*N)->ops->multtranspose    = MatMultTranspose_Normal;
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Normal;
-  (*N)->ops->multadd          = MatMultAdd_Normal; 
+  (*N)->ops->multadd          = MatMultAdd_Normal;
   (*N)->ops->getdiagonal      = MatGetDiagonal_Normal;
   (*N)->ops->scale            = MatScale_Normal;
   (*N)->ops->diagonalscale    = MatDiagonalScale_Normal;

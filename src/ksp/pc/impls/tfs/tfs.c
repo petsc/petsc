@@ -1,44 +1,37 @@
-#define PETSCKSP_DLL
-/* 
+/*
         Provides an interface to the Tufo-Fischer parallel direct solver
 */
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/ksp/pc/impls/tfs/tfs.h"
+#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <../src/ksp/pc/impls/tfs/tfs.h>
 
 typedef struct {
   xxt_ADT  xxt;
-  xyt_ADT  xyt;                                                                                                                                                                       
+  xyt_ADT  xyt;
   Vec      b,xd,xo;
   PetscInt nd;
 } PC_TFS;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_TFS"
 PetscErrorCode PCDestroy_TFS(PC pc)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* free the XXT datastructures */
   if (tfs->xxt) {
-    ierr = XXT_free(tfs->xxt);CHKERRQ(ierr); 
+    ierr = XXT_free(tfs->xxt);CHKERRQ(ierr);
   }
   if (tfs->xyt) {
     ierr = XYT_free(tfs->xyt);CHKERRQ(ierr);
   }
-  if (tfs->b) {
-  ierr = VecDestroy(tfs->b);CHKERRQ(ierr);
-  }
-  if (tfs->xd) {
-  ierr = VecDestroy(tfs->xd);CHKERRQ(ierr);
-  }
-  if (tfs->xo) {
-  ierr = VecDestroy(tfs->xo);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(tfs);CHKERRQ(ierr);
+  ierr = VecDestroy(&tfs->b);CHKERRQ(ierr);
+  ierr = VecDestroy(&tfs->xd);CHKERRQ(ierr);
+  ierr = VecDestroy(&tfs->xo);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -46,7 +39,7 @@ PetscErrorCode PCDestroy_TFS(PC pc)
 #define __FUNCT__ "PCApply_TFS_XXT"
 static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscScalar    *xx,*yy;
   PetscErrorCode ierr;
 
@@ -63,7 +56,7 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_TFS_XYT"
 static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 {
-  PC_TFS *tfs = (PC_TFS*)pc->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
   PetscScalar    *xx,*yy;
   PetscErrorCode ierr;
 
@@ -76,15 +69,15 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "LocalMult_TFS"
-static PetscErrorCode LocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
+#undef __FUNCT__
+#define __FUNCT__ "PCTFSLocalMult_TFS"
+static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
 {
-  PC_TFS        *tfs = (PC_TFS*)pc->data;
-  Mat           A = pc->pmat;
-  Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data; 
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
+  Mat            A    = pc->pmat;
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecPlaceArray(tfs->b,xout);CHKERRQ(ierr);
   ierr = VecPlaceArray(tfs->xd,xin);CHKERRQ(ierr);
@@ -101,36 +94,33 @@ static PetscErrorCode LocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
 #define __FUNCT__ "PCSetUp_TFS"
 static PetscErrorCode PCSetUp_TFS(PC pc)
 {
-  PC_TFS        *tfs = (PC_TFS*)pc->data;
-  Mat            A = pc->pmat;
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PC_TFS         *tfs = (PC_TFS*)pc->data;
+  Mat            A    = pc->pmat;
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt      *localtoglobal,ncol,i;
-  PetscTruth     ismpiaij;
+  PetscInt       *localtoglobal,ncol,i;
+  PetscBool      ismpiaij;
 
   /*
-  PetscTruth     issymmetric;
+  PetscBool      issymmetric;
   Petsc Real tol = 0.0;
   */
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-  if (!ismpiaij) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
+  if (A->cmap->N != A->rmap->N) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"matrix must be square");
+  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  if (!ismpiaij) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
 
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
   ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
-  for (i=0; i<a->A->cmap->n; i++) {
-    localtoglobal[i] = A->cmap->rstart + i + 1;
-  }
-  for (i=0; i<a->B->cmap->n; i++) {
-    localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
-  }
+  for (i=0; i<a->A->cmap->n; i++) localtoglobal[i] = A->cmap->rstart + i + 1;
+  for (i=0; i<a->B->cmap->n; i++) localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
+
   /* generate the vectors needed for the local solves */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->rmap->n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->cmap->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->rmap->n,NULL,&tfs->b);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->A->cmap->n,NULL,&tfs->xd);CHKERRQ(ierr);
+  ierr    = VecCreateSeqWithArray(PETSC_COMM_SELF,1,a->B->cmap->n,NULL,&tfs->xo);CHKERRQ(ierr);
   tfs->nd = a->A->cmap->n;
 
 
@@ -139,11 +129,11 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
-    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt       = XYT_new();
-    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap->n,ncol,(PetscErrorCode (*)(void*,PetscScalar*,PetscScalar*))PCTFSLocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XYT;
   }
 
@@ -151,14 +141,14 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_TFS"
 static PetscErrorCode PCSetFromOptions_TFS(PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_TFS"
 static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 {
@@ -166,11 +156,10 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_TFS"
 /*MC
-     PCTFS - A parallel direct solver intended for problems with very few unknowns (like the 
+     PCTFS - A parallel direct solver intended for problems with very few unknowns (like the
          coarse grid in multigrid).
 
    Implemented by  Henry M. Tufo III and Paul Fischer
@@ -179,14 +168,19 @@ EXTERN_C_BEGIN
 
    Notes: Only implemented for the MPIAIJ matrices
 
+          Only works on a solver object that lives on all of PETSC_COMM_WORLD!
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;
+  PetscMPIInt    cmp;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_compare(PETSC_COMM_WORLD,PetscObjectComm((PetscObject)pc),&cmp);CHKERRQ(ierr);
+  if (cmp != MPI_IDENT && cmp != MPI_CONGRUENT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"TFS only works with PETSC_COMM_WORLD objects");
   ierr = PetscNewLog(pc,PC_TFS,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = 0;
@@ -208,5 +202,4 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
   pc->data                     = (void*)tfs;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

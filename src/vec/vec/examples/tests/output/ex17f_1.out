@@ -1,3 +1,4 @@
+  type: mpi
 Process [0]
 0
 1
@@ -16,6 +17,7 @@ Process [2]
 22
 23
 24
+  type: seq
 0
 1
 2

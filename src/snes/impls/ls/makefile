@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ls.c lsparams.c
+SOURCEC  = ls.c
 SOURCEF  =
 SOURCEH  = lsimpl.h
-OBJSC    = ls.o lsparams.o
-OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/impls/ls/

@@ -1,4 +1,4 @@
-#include "private/tsimpl.h"          /*I "petscts.h" I*/
+#include <petsc-private/tsimpl.h>          /*I "petscts.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPythonSetType"
@@ -20,15 +20,13 @@
 
 .seealso: TSCreate(), TSSetType(), TSPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
+PetscErrorCode  TSPythonSetType(TS ts,const char pyname[])
 {
-  PetscErrorCode (*f)(TS, const char[]) = 0;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
-  if (f) {ierr = (*f)(ts,pyname);CHKERRQ(ierr);}
+  ierr = PetscTryMethod(ts,"TSPythonSetType_C",(TS, const char[]),(ts,pyname));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

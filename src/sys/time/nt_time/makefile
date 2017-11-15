@@ -1,13 +1,11 @@
-#requirespackage 'PETSC_USE_NT_TIME'
-ALL: lib 
+#requiresfunction 'PETSC_USE_MICROSOFT_TIME'
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 SOURCEC	  = nt_time.c
 SOURCEF	  =
 SOURCEH	  =
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =

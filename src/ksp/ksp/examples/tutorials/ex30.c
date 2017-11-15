@@ -1,26 +1,21 @@
-/*
- * Example code testing SeqDense matrices with an LDA (leading dimension
- * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatSolve.
- */
-#include <stdlib.h>
-#include "petscmat.h"
-#include "petscksp.h"
+static char help[] = " * Example code testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
+
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP         solver; 
-  PC          pc;
-  Mat         A,B;
-  Vec         X,Y,Z;
-  MatScalar   *a;
-  PetscScalar *b,*x,*y,*z;
-  PetscReal   nrm;
+  KSP            solver;
+  PC             pc;
+  Mat            A,B;
+  Vec            X,Y,Z;
+  MatScalar      *a;
+  PetscScalar    *b,*x,*y,*z;
+  PetscReal      nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,help);
   /* Create matrix and three vectors: these are all normal */
   ierr = PetscMalloc(lda*size*sizeof(PetscScalar),&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
@@ -31,15 +26,15 @@ int main(int argc,char **argv)
   ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
 
-  ierr = MatGetArray(A,&a);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(A,&a);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
       a[i+j*size] = b[i+j*lda];
     }
   }
-  ierr = MatRestoreArray(A,&a);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A,&a);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -52,20 +47,18 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&x);CHKERRQ(ierr);
-  for (i=0; i<size; i++) {
-    x[i] = 1.0;
-  }
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,x,&X);CHKERRQ(ierr);
+  for (i=0; i<size; i++) x[i] = 1.0;
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&y);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,y,&Y);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,z,&Z);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 
@@ -89,12 +82,12 @@ int main(int argc,char **argv)
   ierr = PetscFree(x);CHKERRQ(ierr);
   ierr = PetscFree(y);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(Z);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = KSPDestroy(solver);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = KSPDestroy(&solver);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

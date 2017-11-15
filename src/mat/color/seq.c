@@ -1,19 +1,17 @@
-#define PETSCMAT_DLL
 
 /* seq.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
-#include "../src/mat/color/color.h"
+#include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKseq" 
-PetscErrorCode MINPACKseq(PetscInt *n,PetscInt *indrow,PetscInt *jpntr,PetscInt *indcol,PetscInt *ipntr,PetscInt *list,PetscInt *ngrp,
-                          PetscInt *maxgrp,PetscInt *iwa)
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKseq"
+PetscErrorCode MINPACKseq(PetscInt *n,const PetscInt *indrow,const PetscInt *jpntr,const PetscInt *indcol,const PetscInt *ipntr,PetscInt *list,PetscInt *ngrp,PetscInt *maxgrp,PetscInt *iwa)
 {
-    /* System generated locals */
-    PetscInt i__1, i__2, i__3;
+  /* System generated locals */
+  PetscInt i__1, i__2, i__3;
 
-    /* Local variables */
-    PetscInt jcol, j, ic, ip, jp, ir;
+  /* Local variables */
+  PetscInt jcol, j, ic, ip, jp, ir;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines a consistent partition of the */
@@ -65,68 +63,65 @@ PetscErrorCode MINPACKseq(PetscInt *n,PetscInt *indrow,PetscInt *jpntr,PetscInt 
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
 
-    PetscFunctionBegin;
-    /* Parameter adjustments */
-    --iwa;
-    --ngrp;
-    --list;
-    --ipntr;
-    --indcol;
-    --jpntr;
-    --indrow;
+  PetscFunctionBegin;
+  /* Parameter adjustments */
+  --iwa;
+  --ngrp;
+  --list;
+  --ipntr;
+  --indcol;
+  --jpntr;
+  --indrow;
 
-    /* Function Body */
-    *maxgrp = 0;
-    i__1 = *n;
-    for (jp = 1; jp <= i__1; ++jp) {
-	ngrp[jp] = *n;
-	iwa[jp] = 0;
+  /* Function Body */
+  *maxgrp = 0;
+  i__1    = *n;
+  for (jp = 1; jp <= i__1; ++jp) {
+    ngrp[jp] = *n;
+    iwa[jp]  = 0;
+  }
+
+  /*     Beginning of iteration loop. */
+
+  i__1 = *n;
+  for (j = 1; j <= i__1; ++j) {
+    jcol = list[j];
+
+    /*        Find all columns adjacent to column jcol. */
+
+    /*        Determine all positions (ir,jcol) which correspond */
+    /*        to non-zeroes in the matrix. */
+
+    i__2 = jpntr[jcol + 1] - 1;
+    for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
+      ir = indrow[jp];
+
+      /*           For each row ir, determine all positions (ir,ic) */
+      /*           which correspond to non-zeroes in the matrix. */
+
+      i__3 = ipntr[ir + 1] - 1;
+      for (ip = ipntr[ir]; ip <= i__3; ++ip) {
+        ic = indcol[ip];
+
+        /*              Array iwa marks the group numbers of the */
+        /*              columns which are adjacent to column jcol. */
+
+        iwa[ngrp[ic]] = j;
+      }
     }
 
-    /*     Beginning of iteration loop. */
+    /*        Assign the smallest un-marked group number to jcol. */
 
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	jcol = list[j];
-
-        /*        Find all columns adjacent to column jcol. */
-
-        /*        Determine all positions (ir,jcol) which correspond */
-        /*        to non-zeroes in the matrix. */
-
-	i__2 = jpntr[jcol + 1] - 1;
-	for (jp = jpntr[jcol]; jp <= i__2; ++jp) {
-	    ir = indrow[jp];
-
-            /*           For each row ir, determine all positions (ir,ic) */
-            /*           which correspond to non-zeroes in the matrix. */
-
-	    i__3 = ipntr[ir + 1] - 1;
-	    for (ip = ipntr[ir]; ip <= i__3; ++ip) {
-		ic = indcol[ip];
-
-                /*              Array iwa marks the group numbers of the */
-                /*              columns which are adjacent to column jcol. */
-
-		iwa[ngrp[ic]] = j;
-	    }
-	}
-
-        /*        Assign the smallest un-marked group number to jcol. */
-
-	i__2 = *maxgrp;
-	for (jp = 1; jp <= i__2; ++jp) {
-	    if (iwa[jp] != j) {
-		goto L50;
-	    }
-	}
-	++(*maxgrp);
+    i__2 = *maxgrp;
+    for (jp = 1; jp <= i__2; ++jp) {
+      if (iwa[jp] != j) goto L50;
+    }
+    ++(*maxgrp);
 L50:
-	ngrp[jcol] = jp;
-    }
+    ngrp[jcol] = jp;
+  }
 
-    /*        End of iteration loop. */
-
-    PetscFunctionReturn(0);
+  /*        End of iteration loop. */
+  PetscFunctionReturn(0);
 }
 

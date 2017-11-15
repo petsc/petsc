@@ -1,6 +1,5 @@
-#define PETSCMAT_DLL
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
+#include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
@@ -8,7 +7,7 @@ struct _Mat_CompositeLink {
   Vec               work;
   Mat_CompositeLink next,prev;
 };
-  
+
 typedef struct {
   MatCompositeType  type;
   Mat_CompositeLink head,tail;
@@ -18,40 +17,39 @@ typedef struct {
   Vec               leftwork,rightwork;
 } Mat_Composite;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Composite"
 PetscErrorCode MatDestroy_Composite(Mat mat)
 {
-  PetscErrorCode   ierr;
-  Mat_Composite    *shell = (Mat_Composite*)mat->data;
-  Mat_CompositeLink next = shell->head,oldnext;
+  PetscErrorCode    ierr;
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;
+  Mat_CompositeLink next   = shell->head,oldnext;
 
   PetscFunctionBegin;
   while (next) {
-    ierr = MatDestroy(next->mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&next->mat);CHKERRQ(ierr);
     if (next->work && (!next->next || next->work != next->next->work)) {
-      ierr = VecDestroy(next->work);CHKERRQ(ierr);
+      ierr = VecDestroy(&next->work);CHKERRQ(ierr);
     }
     oldnext = next;
-    next     = next->next;
-    ierr     = PetscFree(oldnext);CHKERRQ(ierr);
+    next    = next->next;
+    ierr    = PetscFree(oldnext);CHKERRQ(ierr);
   }
-  if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
-  if (shell->left) {ierr = VecDestroy(shell->left);CHKERRQ(ierr);}
-  if (shell->right) {ierr = VecDestroy(shell->right);CHKERRQ(ierr);}
-  if (shell->leftwork) {ierr = VecDestroy(shell->leftwork);CHKERRQ(ierr);}
-  if (shell->rightwork) {ierr = VecDestroy(shell->rightwork);CHKERRQ(ierr);}
-  ierr      = PetscFree(shell);CHKERRQ(ierr);
-  mat->data = 0;
+  ierr = VecDestroy(&shell->work);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->leftwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->rightwork);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Composite_Multiplicative"
 PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
-  Mat_CompositeLink next = shell->head;
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in,out;
 
@@ -67,9 +65,9 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(next->mat,PETSC_NULL,&next->work);CHKERRQ(ierr);
+      ierr = MatGetVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
     }
-    out = next->work;
+    out  = next->work;
     ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
     in   = out;
     next = next->next;
@@ -82,12 +80,12 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Composite_Multiplicative"
 PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
-  Mat_CompositeLink tail = shell->tail;
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  Mat_CompositeLink tail   = shell->tail;
   PetscErrorCode    ierr;
   Vec               in,out;
 
@@ -103,9 +101,9 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(tail->mat,PETSC_NULL,&tail->prev->work);CHKERRQ(ierr);
+      ierr = MatGetVecs(tail->mat,NULL,&tail->prev->work);CHKERRQ(ierr);
     }
-    out = tail->prev->work;
+    out  = tail->prev->work;
     ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);
     in   = out;
     tail = tail->prev;
@@ -118,12 +116,12 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Composite"
 PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
-  Mat_CompositeLink next = shell->head;
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
 
@@ -148,12 +146,12 @@ PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Composite"
 PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
-  Mat_CompositeLink next = shell->head;
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
 
@@ -178,12 +176,12 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_Composite"
 PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
-  Mat_CompositeLink next = shell->head;
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
+  Mat_CompositeLink next   = shell->head;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -202,33 +200,33 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_Composite"
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_Composite"
 PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
 {
-  Mat_Composite  *a = (Mat_Composite*)inA->data;
+  Mat_Composite *a = (Mat_Composite*)inA->data;
 
   PetscFunctionBegin;
   a->scale *= alpha;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScale_Composite"
 PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 {
@@ -256,103 +254,147 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 }
 
 static struct _MatOps MatOps_Values = {0,
-       0,
-       0,
-       MatMult_Composite,
-       0,
-/* 5*/ MatMultTranspose_Composite,
-       0,
-       0,
-       0,
-       0,
-/*10*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*15*/ 0,
-       0,
-       MatGetDiagonal_Composite,
-       MatDiagonalScale_Composite,
-       0,
-/*20*/ 0,
-       MatAssemblyEnd_Composite,
-       0,
-       0,
-/*24*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*29*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*34*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*39*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*44*/ 0,
-       MatScale_Composite,
-       0,
-       0,
-       0,
-/*49*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*54*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*59*/ 0,
-       MatDestroy_Composite,
-       0,
-       0,
-       0,
-/*64*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*69*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*74*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*79*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*84*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*89*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*94*/ 0,
-       0,
-       0,
-       0};
+                                       0,
+                                       0,
+                                       MatMult_Composite,
+                                       0,
+                                /*  5*/ MatMultTranspose_Composite,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /* 10*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /* 15*/ 0,
+                                       0,
+                                       MatGetDiagonal_Composite,
+                                       MatDiagonalScale_Composite,
+                                       0,
+                                /* 20*/ 0,
+                                       MatAssemblyEnd_Composite,
+                                       0,
+                                       0,
+                               /* 24*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 39*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 44*/ 0,
+                                       MatScale_Composite,
+                                       0,
+                                       0,
+                                       0,
+                               /* 49*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 54*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 59*/ 0,
+                                       MatDestroy_Composite,
+                                       0,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
+};
 
 /*MC
    MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices (all matrices are of same size and parallel layout).
@@ -364,34 +406,30 @@ static struct _MatOps MatOps_Values = {0,
 .seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_Composite"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 {
   Mat_Composite  *b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
   A->data = (void*)b;
-  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_FALSE;
-  b->type          = MAT_COMPOSITE_ADDITIVE;
-  b->scale         = 1.0;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+  b->type         = MAT_COMPOSITE_ADDITIVE;
+  b->scale        = 1.0;
+  ierr            = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateComposite"
 /*@C
    MatCreateComposite - Creates a matrix as the sum of zero or more matrices
@@ -409,7 +447,7 @@ EXTERN_C_END
    Level: advanced
 
    Notes:
-     Alternative construction 
+     Alternative construction
 $       MatCreate(comm,&mat);
 $       MatSetSizes(mat,m,n,M,N);
 $       MatSetType(mat,MATCOMPOSITE);
@@ -424,11 +462,11 @@ $       MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
+PetscErrorCode  MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,i;
-  
+
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
   PetscValidPointer(mat,3);
@@ -446,7 +484,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeAddMat"
 /*@
     MatCompositeAddMat - add another matrix to a composite matrix
@@ -461,7 +499,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
 
 .seealso: MatCreateComposite()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
+PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
 {
   Mat_Composite     *shell;
   PetscErrorCode    ierr;
@@ -476,21 +514,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
   ilink->mat  = smat;
 
   shell = (Mat_Composite*)mat->data;
-  next = shell->head;
-  if (!next) {
-    shell->head  = ilink;
-  } else {
+  next  = shell->head;
+  if (!next) shell->head = ilink;
+  else {
     while (next->next) {
       next = next->next;
     }
-    next->next      = ilink;
-    ilink->prev     = next;
+    next->next  = ilink;
+    ilink->prev = next;
   }
   shell->tail = ilink;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeSetType"
 /*@C
    MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product
@@ -510,14 +547,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType type)
+PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 {
-  Mat_Composite  *b = (Mat_Composite*)mat->data;  
-  PetscTruth     flg;
+  Mat_Composite  *b = (Mat_Composite*)mat->data;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)mat,MATCOMPOSITE,&flg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATCOMPOSITE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Can only use with composite matrix");
   if (type == MAT_COMPOSITE_MULTIPLICATIVE) {
     mat->ops->getdiagonal   = 0;
@@ -534,7 +571,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType t
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeMerge"
 /*@C
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
@@ -558,12 +595,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType t
 .seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
+PetscErrorCode  MatCompositeMerge(Mat mat)
 {
-  Mat_Composite     *shell = (Mat_Composite*)mat->data;  
-  Mat_CompositeLink next = shell->head, prev = shell->tail;
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;
+  Mat_CompositeLink next   = shell->head, prev = shell->tail;
   PetscErrorCode    ierr;
   Mat               tmat,newmat;
+  Vec               left,right;
+  PetscScalar       scale;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
@@ -578,12 +617,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
     ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
     while ((prev = prev->prev)) {
       ierr = MatMatMult(tmat,prev->mat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
-      ierr = MatDestroy(tmat);CHKERRQ(ierr);
+      ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       tmat = newmat;
     }
   }
+
+  scale = shell->scale;
+  if ((left = shell->left)) {ierr = PetscObjectReference((PetscObject)left);CHKERRQ(ierr);}
+  if ((right = shell->right)) {ierr = PetscObjectReference((PetscObject)right);CHKERRQ(ierr);}
+
   ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(mat,shell->left,shell->right);CHKERRQ(ierr);
-  ierr = MatScale(mat,shell->scale);CHKERRQ(ierr);
+
+  ierr = MatDiagonalScale(mat,left,right);CHKERRQ(ierr);
+  ierr = MatScale(mat,scale);CHKERRQ(ierr);
+  ierr = VecDestroy(&left);CHKERRQ(ierr);
+  ierr = VecDestroy(&right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

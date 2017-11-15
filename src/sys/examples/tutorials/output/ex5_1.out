@@ -1,21 +1,25 @@
 PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
   filename = myfile; Name of secret file
-  rho = 44; Density, kg/m^3
-  W = 5; Vertical velocity, m/sec
-  modes_x = 2; Number of modes in x-direction
+  rho = 44 ; Density, kg/m^3
+  W = 5 ; Vertical velocity, m/sec
+  modes_x = 2 ; Number of modes in x-direction
+  int_array = 1 2 3 ; Int array with 3 locations
+  real_array = -1 -2 ; Real array with 2 locations
   do_output = TRUE; Write output file (yes/no)
   dt = INT; (PetscDataType) meaningless datatype
-  x1 = 1; x position
-  x2 = 1.9; y position
+  x1 = 1 ; x position
+  x2 = 1.9 ; y position
   choose = THAT; (EnumeratedChoices) Express yourself by choosing among enumerated things
 PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
   filename = myfile; Name of secret file
-  rho = 44; Density, kg/m^3
-  W = 5; Vertical velocity, m/sec
-  modes_x = 2; Number of modes in x-direction
+  rho = 44 ; Density, kg/m^3
+  W = 5 ; Vertical velocity, m/sec
+  modes_x = 2 ; Number of modes in x-direction
+  int_array = 1 2 3 ; Int array with 3 locations
+  real_array = -1 -2 ; Real array with 2 locations
   do_output = TRUE; Write output file (yes/no)
   dt = INT; (PetscDataType) meaningless datatype
-  x1 = 1; x position
-  x2 = 1.9; y position
+  x1 = 1 ; x position
+  x2 = 1.9 ; y position
   choose = THAT; (EnumeratedChoices) Express yourself by choosing among enumerated things
 The value of rho after loading is: 44.000000

@@ -4,9 +4,9 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
-    self.functions = ['make_new_seed_mpi'] 
-    self.includes  = ['sprng.h'] 
-    self.liblist   = [['libcmrg.a','liblcg64.a','liblcg.a','liblfg.a','libmlfg.a']]
+    self.functions = ['make_new_seed_mpi']
+    self.includes  = ['sprng.h']
+    self.liblist   = [['liblcg.a']]
     return
 
   def setupDependencies(self, framework):
@@ -14,7 +14,7 @@ class Configure(PETSc.package.NewPackage):
     self.deps = [self.mpi]
     return
 
-  def Install(self):    
+  def Install(self):
     import os
 
     g = open(os.path.join(self.packageDir,'SRC','make.PETSC'),'w')
@@ -50,7 +50,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded(os.path.join('SRC','make.PETSC')):
       try:
         self.logPrintBox('Compiling SPRNG; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+';SPRNG_INSTALL_DIR='+self.installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp -f lib/*.a '+os.path.join(self.installDir,self.libdir)+'; cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make realclean && cd SRC && make && cd .. &&  cp -f lib/*.a '+os.path.join(self.installDir,self.libdir,'')+' && cp -f include/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
       self.postInstall(output+err,os.path.join('SRC','make.PETSC'))

@@ -1,216 +1,218 @@
-#include "petscsys.h" 
+#include <petscsys.h>
+#include <petscao.h>
+#include <petsc-private/fortranimpl.h>
 
 #define max_colors  200
 #define max_nbtran 20
 
 #define REAL double
 
-typedef struct gxy{                            /* GRID STRUCTURE             */
-   int nnodes;                                 /* Number of nodes            */
-   int ncell;                                  /* Number of cells            */
-   int nedge;                                  /* Number of edges            */
-   int ncolor;                                 /* Number of colors           */
-   int nccolor;                                /* Number of colors for cells */
-   int nncolor;                                /* Number of colors for nodes */
-   int ncount[max_colors];                     /* No. of faces in color      */
-   int nccount[max_colors];                    /* No. of cells in color      */
-   int nncount[max_colors];                    /* No. of nodes in color      */
-   int iup;                                    /* if 1, upward int coef reqd */
-   int idown;                                  /* if 1, dwnwrd int coef reqd */
+typedef struct gxy {                          /* GRID STRUCTURE             */
+  int nnodes;                                 /* Number of nodes            */
+  int ncell;                                  /* Number of cells            */
+  int nedge;                                  /* Number of edges            */
+  int ncolor;                                 /* Number of colors           */
+  int nccolor;                                /* Number of colors for cells */
+  int nncolor;                                /* Number of colors for nodes */
+  int ncount[max_colors];                     /* No. of faces in color      */
+  int nccount[max_colors];                    /* No. of cells in color      */
+  int nncount[max_colors];                    /* No. of nodes in color      */
+  int iup;                                    /* if 1, upward int coef reqd */
+  int idown;                                  /* if 1, dwnwrd int coef reqd */
 
-   int nsface;                                 /* Total # of solid faces     */
-   int nvface;                                 /* Total # of viscous faces   */
-   int nfface;                                 /* Total # of far field faces */
-   int nsnode;                                 /* Total # of solid nodes     */
-   int nvnode;                                 /* Total # of viscous nodes   */
-   int nfnode;                                 /* Total # of far field nodes */
-   int jvisc;                                  /* 0 = Euler                  */
-                                               /* 1 = laminar no visc LHS    */
-                                               /* 2 = laminar w/ visc LHS    */
-                                               /* 3 = turb B-B no visc LHS   */
-                                               /* 4 = turb B-B w/ visc LHS   */
-                                               /* 5 = turb Splrt no visc LHS */
-                                               /* 6 = turb Splrt w/ visc LHS */
-   int ileast;                                 /* 1 = Lst square gradient    */
-   int nsets;                                  /* No of levels for scheduling*/
-   int *eptr;                                  /* edge pointers              */
-   int *isface;                                /* Face # of solid faces      */
-   int *ifface;                                /* Face # of far field faces  */
-   int *ivface;                                /* Face # of viscous faces    */
-   int *isford;                                /* Copies of isface, ifface,  */
-   int *ifford;                                /*  and ivface used for       */
-   int *ivford;                                /*  ordering                  */
-   int *isnode;                                /* Node # of solid nodes      */
-   int *ivnode;                                /* Node # of viscous nodes    */
-   int *ifnode;                                /* Node # of far field nodes  */
-   int *nflag;                                 /* Node flag                  */
-   int *nnext;                                 /* Next node                  */
-   int *nneigh;                                /* Neighbor of a node         */
-   int *c2n;                                   /* Cell-to-node pointers      */
-   int *c2e;                                   /* Cell-to-edge pointers      */
-   int *c2c;                                   /* Cell-to-cell pointers      */
-   int *ctag;                                  /* Cell tags                  */
-   int *csearch;                               /* Cell search list           */
-   int *cenc;                                  /* Enclosing cell for node    */
-   int *clist;                                 /* Colored list of cells      */
-   int *iupdate;                               /* Tells whether to update    */
-   int *sface;                                 /* Nodes for solid faces      */
-   int *vface;                                 /* Nodes for viscous faces    */
-   int *fface;                                 /* Nodes for far field faces  */
-   int *icount;                                /* # of surrounding nodes     */
-   int *isetc;                                /* Nodes in each level        */
-   int *iset;                                 /* Actual nodes for levels    */
-/* Forward substitution for ILU */
-   int *nlcol;                                /* No of edge colors for sets */
-   int *nlcount;                              /* How many edges in each colr*/
-   int *lvface;                               /* Edges that influence a set */
-/* Back substitution for ILU */
-   int *nbcol;                                /* No of edge colors for sets */
-   int *nbcount;                              /* How many edges in each colr*/
-   int *lbface;                               /* Edges that influence a set */
-   REAL *x, *y, *z;                           /* Node Coordinates           */
-   REAL *area;                                /* Area of control volumes    */
-   /*REAL *gradx, *grady, *gradz;*/           /* Gradients                  */
-   REAL *cdt;                                 /* Local time step            */
-   REAL *qcp, *rcp;                           /* Two work arrays            */
-   REAL *ff;                                  /* MG forcing function        */
-   REAL *dfp, *dfm;                           /* Flux Jacobians             */
-   REAL *dft1, *dft2;                         /* Turb mod linearization     */
-   REAL *slen;                                /* Generalized distance       */
-   REAL *turbre;                              /* nu x turb Reynolds #       */
-   REAL *amut;                                /* Turbulent mu (viscosity)   */
-   REAL *turbres;                             /* Turbulent residual         */
-   REAL *turbff;                              /* Turbulent forcing function */
-   REAL *turbold;                             /* Turbulent unknown (for MG) */
-   REAL *sxn, *syn, *szn, *sa;                /* Normals at solid nodes     */
-   REAL *vxn, *vyn, *vzn, *va;                /* Normals at viscous nodes   */
-   REAL *fxn, *fyn, *fzn, *fa;                /* Normals at far field nodes */
-   REAL *xn, *yn, *zn, *rl;                   /* Normal to faces and length */
-   REAL *us, *vs, *ws, *as;                   /* For linearizing viscous    */
-   REAL *phi;                                 /* Flux limiter               */
-   REAL *rxy;                                 /*                            */
-
-   int  *icoefup;                             /* Surrounding nodes          */
-   REAL *rcoefup;                             /* Coefficients               */
-   int  *icoefdn;                             /* Surrounding nodes          */
-   REAL *rcoefdn;                             /* Coefficients               */
-   REAL *AP;                                  /* Array for GMRES            */
-   REAL *Fgm;                                 /* Big array for GMRES        */
-   REAL *Xgm;                                 /* Another GMRES array        */
-   REAL *temr;                                /* Temporary array            */
-   REAL *ALU;                                 /* Big array for ILU(0)       */
-   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */ 
-
-/*
- * stuff to read in daves grid file
- */
-   int nnbound,nvbound,nfbound,nnfacet,nvfacet,nffacet,ntte;
-   int *ncolorn,*countn,*ncolorv,*countv,*ncolorf,*countf;
-   int *nntet,*nnpts,*nvtet,*nvpts,*nftet,*nfpts;
-   int *f2ntn,*f2ntv,*f2ntf;
-
-/* PETSc datastructures and other related info */
-   Vec qnode;                                 /* Global distributed solution 
-						 vector*/
-   Vec qnodeLoc;                              /* Local sequential solution 
-						 vector*/
-   Vec dq;                                    /* Delta Q                    */
-   Vec qold;                                  /* Global distributed solution 
-						 vector*/
-   Vec  res;                                  /* Residual                   */
-   Vec  grad;              		      /* Gradient Vector	    */
-   Vec  gradLoc;                  	      /* Local Gradient Vector	    */
-   Vec B;                                     /* Right hand side            */
-   Mat A;                                     /* Left hand side             */
-   VecScatter scatter, gradScatter;           /* Scatter between local
-                                                 and global vectors         */
-   int *loc2pet;                              /* local to PETSc mapping     */
-   int *loc2glo;                              /* local to global mapping     */
-   int *v2p;				      /* Vertex to processor mapping */
-   AO   ao;
-   int *sface_bit, *vface_bit;
-   int nnodesLoc, nedgeLoc, nvertices;
-   int nsnodeLoc, nvnodeLoc, nfnodeLoc;
-   int nnfacetLoc, nvfacetLoc, nffacetLoc;
-
-   /* global arrays needed for post processing */
-   /*int *indGlo, *isnodeGlo, *ivnodeGlo, *f2ntnGlo, *f2ntvGlo;
-   REAL *xGlo, *yGlo, *zGlo;
-   Vec qGlo;
-   VecScatter scatterGlo;*/
-
-
-
-   
-}GRID;                                         /* Grids                      */
-                                               /*============================*/
-                                            
-                                               /*============================*/
-typedef struct{                               /* GENERAL INFORMATION        */
-   REAL title[20];                            /* Title line                 */
-   REAL xmach;                                /* Mach # in X-direction      */
-   REAL alpha;                                /* Angle of attack            */
-   REAL yaw;                                  /* Yaw Angle                  */
-   REAL Re;                                   /* Reynolds number            */
-   REAL dt;                                   /* Input cfl                  */
-   REAL tot;                                  /* total computer time        */
-   REAL res0;                                 /* Begining residual          */
-   REAL resc;                                 /* Current residual           */
-   int ntt;                                   /* A counter                  */
-   int mseq;                                  /* Mesh sequencing            */
-   int ivisc;                                 /* 0 = Euler                  */
+  int nsface;                                 /* Total # of solid faces     */
+  int nvface;                                 /* Total # of viscous faces   */
+  int nfface;                                 /* Total # of far field faces */
+  int nsnode;                                 /* Total # of solid nodes     */
+  int nvnode;                                 /* Total # of viscous nodes   */
+  int nfnode;                                 /* Total # of far field nodes */
+  int jvisc;                                  /* 0 = Euler                  */
                                               /* 1 = laminar no visc LHS    */
                                               /* 2 = laminar w/ visc LHS    */
-                                              /* 3 = turb BB no visc LHS    */
-                                              /* 4 = turb BB w/ visc LHS    */
-                                              /* 5 = turb SA w/ visc LHS    */
-                                              /* 6 = turb SA w/ visc LHS    */
-   int irest;                                 /* for restarts irest = 1     */
-   int icyc;                                  /* iterations completed       */
-   int ihane;                                 /* ihane = 0 for van leer fds */
-                                              /*       = 1 for hanel flux   */
-                                              /*       = 2 for Roe's fds    */
-   int ntturb;                                /* Counter for turbulence     */
-}CINFO;                                       /* COMMON INFO                */
+                                              /* 3 = turb B-B no visc LHS   */
+                                              /* 4 = turb B-B w/ visc LHS   */
+                                              /* 5 = turb Splrt no visc LHS */
+                                              /* 6 = turb Splrt w/ visc LHS */
+  int ileast;                                 /* 1 = Lst square gradient    */
+  int nsets;                                  /* No of levels for scheduling*/
+  int *eptr;                                  /* edge pointers              */
+  int *isface;                                /* Face # of solid faces      */
+  int *ifface;                                /* Face # of far field faces  */
+  int *ivface;                                /* Face # of viscous faces    */
+  int *isford;                                /* Copies of isface, ifface,  */
+  int *ifford;                                /*  and ivface used for       */
+  int *ivford;                                /*  ordering                  */
+  int *isnode;                                /* Node # of solid nodes      */
+  int *ivnode;                                /* Node # of viscous nodes    */
+  int *ifnode;                                /* Node # of far field nodes  */
+  int *nflag;                                 /* Node flag                  */
+  int *nnext;                                 /* Next node                  */
+  int *nneigh;                                /* Neighbor of a node         */
+  int *c2n;                                   /* Cell-to-node pointers      */
+  int *c2e;                                   /* Cell-to-edge pointers      */
+  int *c2c;                                   /* Cell-to-cell pointers      */
+  int *ctag;                                  /* Cell tags                  */
+  int *csearch;                               /* Cell search list           */
+  int *cenc;                                  /* Enclosing cell for node    */
+  int *clist;                                 /* Colored list of cells      */
+  int *iupdate;                               /* Tells whether to update    */
+  int *sface;                                 /* Nodes for solid faces      */
+  int *vface;                                 /* Nodes for viscous faces    */
+  int *fface;                                 /* Nodes for far field faces  */
+  int *icount;                                /* # of surrounding nodes     */
+  int *isetc;                                /* Nodes in each level        */
+  int *iset;                                 /* Actual nodes for levels    */
+/* Forward substitution for ILU */
+  int *nlcol;                                /* No of edge colors for sets */
+  int *nlcount;                              /* How many edges in each colr*/
+  int *lvface;                               /* Edges that influence a set */
+/* Back substitution for ILU */
+  int  *nbcol;                               /* No of edge colors for sets */
+  int  *nbcount;                             /* How many edges in each colr*/
+  int  *lbface;                              /* Edges that influence a set */
+  REAL *x, *y, *z;                           /* Node Coordinates           */
+  REAL *area;                                /* Area of control volumes    */
+  /*REAL *gradx, *grady, *gradz;*/           /* Gradients                  */
+  REAL *cdt;                                 /* Local time step            */
+  REAL *qcp, *rcp;                           /* Two work arrays            */
+  REAL *ff;                                  /* MG forcing function        */
+  REAL *dfp, *dfm;                           /* Flux Jacobians             */
+  REAL *dft1, *dft2;                         /* Turb mod linearization     */
+  REAL *slen;                                /* Generalized distance       */
+  REAL *turbre;                              /* nu x turb Reynolds #       */
+  REAL *amut;                                /* Turbulent mu (viscosity)   */
+  REAL *turbres;                             /* Turbulent residual         */
+  REAL *turbff;                              /* Turbulent forcing function */
+  REAL *turbold;                             /* Turbulent unknown (for MG) */
+  REAL *sxn, *syn, *szn, *sa;                /* Normals at solid nodes     */
+  REAL *vxn, *vyn, *vzn, *va;                /* Normals at viscous nodes   */
+  REAL *fxn, *fyn, *fzn, *fa;                /* Normals at far field nodes */
+  REAL *xn, *yn, *zn, *rl;                   /* Normal to faces and length */
+  REAL *us, *vs, *ws, *as;                   /* For linearizing viscous    */
+  REAL *phi;                                 /* Flux limiter               */
+  REAL *rxy;                                 /*                            */
+
+  int  *icoefup;                             /* Surrounding nodes          */
+  REAL *rcoefup;                             /* Coefficients               */
+  int  *icoefdn;                             /* Surrounding nodes          */
+  REAL *rcoefdn;                             /* Coefficients               */
+  REAL *AP;                                  /* Array for GMRES            */
+  REAL *Fgm;                                 /* Big array for GMRES        */
+  REAL *Xgm;                                 /* Another GMRES array        */
+  REAL *temr;                                /* Temporary array            */
+  REAL *ALU;                                 /* Big array for ILU(0)       */
+  int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */
+
+/*
+* stuff to read in daves grid file
+*/
+  int nnbound,nvbound,nfbound,nnfacet,nvfacet,nffacet,ntte;
+  int *ncolorn,*countn,*ncolorv,*countv,*ncolorf,*countf;
+  int *nntet,*nnpts,*nvtet,*nvpts,*nftet,*nfpts;
+  int *f2ntn,*f2ntv,*f2ntf;
+
+/* PETSc datastructures and other related info */
+  Vec qnode;                                 /* Global distributed solution
+                                                vector*/
+  Vec qnodeLoc;                              /* Local sequential solution
+                                                vector*/
+  Vec dq;                                    /* Delta Q                     */
+  Vec qold;                                  /* Global distributed solution
+                                                vector*/
+  Vec        res;                            /* Residual                    */
+  Vec        grad;                           /* Gradient Vector             */
+  Vec        gradLoc;                        /* Local Gradient Vector       */
+  Vec        B;                              /* Right hand side             */
+  Mat        A;                              /* Left hand side              */
+  VecScatter scatter, gradScatter;           /* Scatter between local
+                                                and global vectors          */
+  int *loc2pet;                              /* local to PETSc mapping      */
+  int *loc2glo;                              /* local to global mapping     */
+  int *v2p;                                  /* Vertex to processor mapping */
+  AO  ao;
+  int *sface_bit, *vface_bit;
+  int nnodesLoc, nedgeLoc, nvertices;
+  int nsnodeLoc, nvnodeLoc, nfnodeLoc;
+  int nnfacetLoc, nvfacetLoc, nffacetLoc;
+
+  /* global arrays needed for post processing */
+  /*int *indGlo, *isnodeGlo, *ivnodeGlo, *f2ntnGlo, *f2ntvGlo;
+  REAL *xGlo, *yGlo, *zGlo;
+  Vec qGlo;
+  VecScatter scatterGlo;*/
+
+
+
+
+} GRID;                                         /* Grids                      */
+                                                /*============================*/
+
+                                             /*============================*/
+typedef struct {                             /* GENERAL INFORMATION        */
+  REAL title[20];                            /* Title line                 */
+  REAL xmach;                                /* Mach # in X-direction      */
+  REAL alpha;                                /* Angle of attack            */
+  REAL yaw;                                  /* Yaw Angle                  */
+  REAL Re;                                   /* Reynolds number            */
+  REAL dt;                                   /* Input cfl                  */
+  REAL tot;                                  /* total computer time        */
+  REAL res0;                                 /* Begining residual          */
+  REAL resc;                                 /* Current residual           */
+  int  ntt;                                  /* A counter                  */
+  int  mseq;                                 /* Mesh sequencing            */
+  int  ivisc;                                /* 0 = Euler                  */
+                                             /* 1 = laminar no visc LHS    */
+                                             /* 2 = laminar w/ visc LHS    */
+                                             /* 3 = turb BB no visc LHS    */
+                                             /* 4 = turb BB w/ visc LHS    */
+                                             /* 5 = turb SA w/ visc LHS    */
+                                             /* 6 = turb SA w/ visc LHS    */
+  int irest;                                 /* for restarts irest = 1     */
+  int icyc;                                  /* iterations completed       */
+  int ihane;                                 /* ihane = 0 for van leer fds */
+                                             /*       = 1 for hanel flux   */
+                                             /*       = 2 for Roe's fds    */
+  int ntturb;                                /* Counter for turbulence     */
+} CINFO;                                     /* COMMON INFO                */
+                                             /*============================*/
+
+                                             /*============================*/
+typedef struct {                             /* FLOW SOLVER VARIABLES      */
+  REAL cfl1;                                 /* Starting CFL number        */
+  REAL cfl2;                                 /* Ending   CFL number        */
+  int  nsmoth;                               /* How many its for Res smooth*/
+  int  iflim;                                /* 1=use limiter 0=no limiter */
+  int  itran;                                /* 1=transition (spalart only)*/
+  int  nbtran;                               /* No. of transition points   */
+  int  jupdate;                              /* For freezing Jacobians */
+  int  nstage;                               /* Number of subiterations    */
+  int  ncyct;                                /* Subiterations for turb mod */
+  int  iramp;                                /* Ramp CFL over iramp iters  */
+  int  nitfo;                                /* Iterations first order     */
+  int  ncyc;                                 /* Number of iterations to run*/
+} CRUNGE;                                    /* COMMON RUNGE               */
+                                             /*============================*/
+
+typedef struct {                              /*============================*/
+  REAL sref;                                  /* Reference area             */
+  REAL cref;                                  /* Reference chord            */
+  REAL bref;                                  /* Reference span (semi-span?)*/
+  REAL xmc;                                   /* x-location for moments     */
+  REAL ymc;                                   /* y-location for moments     */
+  REAL zmc;                                   /* z-location for moments     */
+} CREFGEOM;                                   /*============================*/
                                               /*============================*/
 
-                                              /*============================*/
-typedef struct {                              /* FLOW SOLVER VARIABLES      */
-   REAL cfl1;                                 /* Starting CFL number        */
-   REAL cfl2;                                 /* Ending   CFL number        */
-   int nsmoth;                                /* How many its for Res smooth*/
-   int iflim;                                 /* 1=use limiter 0=no limiter */
-   int itran;                                 /* 1=transition (spalart only)*/
-   int nbtran;                                /* No. of transition points   */
-   int jupdate;                               /* For freezing Jacobians */
-   int nstage;                                /* Number of subiterations    */
-   int ncyct;                                 /* Subiterations for turb mod */
-   int iramp;                                 /* Ramp CFL over iramp iters  */
-   int nitfo;                                 /* Iterations first order     */
-   int ncyc;                                  /* Number of iterations to run*/
-}CRUNGE;                                      /* COMMON RUNGE               */
-                                               /*============================*/
-
-typedef struct {                               /*============================*/
-   REAL sref;                                  /* Reference area             */
-   REAL cref;                                  /* Reference chord            */
-   REAL bref;                                  /* Reference span (semi-span?)*/
-   REAL xmc;                                   /* x-location for moments     */
-   REAL ymc;                                   /* y-location for moments     */
-   REAL zmc;                                   /* z-location for moments     */
-}CREFGEOM;                                     /*============================*/
-                                              /*============================*/
-
-typedef struct{                               /*============================*/
-   REAL  gtol;                                /* linear system tolerence    */
-   int   icycle;                              /* Number of GMRES iterations */
-   int   nsrch;                               /* Dimension of Krylov        */
-   int   ilu0;                                /* 1 for ILU(0)               */
-   int   ifcn;                                /* 0=fcn2 1=fcneval(nwt Krlv) */
-}CGMCOM;                                      /* COMMON GMCOM               */
-                                              /*============================*/
-int set_up_grid(GRID *);
-int write_fine_grid(GRID *);
+typedef struct {                             /*============================*/
+  REAL gtol;                                 /* linear system tolerence    */
+  int  icycle;                               /* Number of GMRES iterations */
+  int  nsrch;                                /* Dimension of Krylov        */
+  int  ilu0;                                 /* 1 for ILU(0)               */
+  int  ifcn;                                 /* 0=fcn2 1=fcneval(nwt Krlv) */
+} CGMCOM;                                    /* COMMON GMCOM               */
+                                             /*============================*/
+int set_up_grid(GRID*);
+int write_fine_grid(GRID*);
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
@@ -298,11 +300,11 @@ int write_fine_grid(GRID *);
 EXTERN_C_BEGIN
 extern void PETSC_STDCALL f77FORLINK(void);
 extern void PETSC_STDCALL f77OPENM(int*);
-extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface, 
-				   int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn, 
-				   PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,int* nsnodeLoc,int* nvnodeLoc,
-				   int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode, 
-				   PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar*,PetscScalar* zn,
+extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface,
+                                   int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
+                                   PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,int* nsnodeLoc,int* nvnodeLoc,
+                                   int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode,
+                                   PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar*,PetscScalar* zn,
              PetscScalar* cfl,int* rank,int* nvertices);
 extern void PETSC_STDCALL f77READR1(int*,int*);
 extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
@@ -311,26 +313,26 @@ extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,Pets
 extern void PETSC_STDCALL f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int* nsface,
                                     int* nvface,int* nfface,int* nbface,
                                     int* nsnodeLoc,int* nvnodeLoc,int* nfnodeLoc,
-				    int* isface,int* ivface,int* ifface,int* ileast,
-				    int* isnode,int* ivnode,int* ifnode,
-				    int* nnfacetLoc,int* f2ntn,int* nnbound,
-				    int* nvfacetLoc,int* f2ntv,int* nvbound,
-				    int* nffacetLoc,int* f2ntf,int* nfbound,int* eptr,
-				    PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,
-				    PetscScalar* vxn,PetscScalar* vyn,PetscScalar* vzn,
-				    PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
-				    PetscScalar* xn,PetscScalar*,PetscScalar* zn,PetscScalar* rl,
-				    PetscScalar* qnode,PetscScalar* cdt,PetscScalar* x,PetscScalar* y,PetscScalar* z,PetscScalar* area,
-				    PetscScalar* grad,PetscScalar* res,PetscScalar* turbre,PetscScalar* slen,int* c2n,int* c2e,
-				    PetscScalar* us,PetscScalar* vs,PetscScalar* as,PetscScalar* phi,PetscScalar* amut,
-				    int* ires,int* rank,int* nvertices);
-extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,   
-            int* isnode,int* ivnode,  
+                                    int* isface,int* ivface,int* ifface,int* ileast,
+                                    int* isnode,int* ivnode,int* ifnode,
+                                    int* nnfacetLoc,int* f2ntn,int* nnbound,
+                                    int* nvfacetLoc,int* f2ntv,int* nvbound,
+                                    int* nffacetLoc,int* f2ntf,int* nfbound,int* eptr,
+                                    PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,
+                                    PetscScalar* vxn,PetscScalar* vyn,PetscScalar* vzn,
+                                    PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
+                                    PetscScalar* xn,PetscScalar*,PetscScalar* zn,PetscScalar* rl,
+                                    PetscScalar* qnode,PetscScalar* cdt,PetscScalar* x,PetscScalar* y,PetscScalar* z,PetscScalar* area,
+                                    PetscScalar* grad,PetscScalar* res,PetscScalar* turbre,PetscScalar* slen,int* c2n,int* c2e,
+                                    PetscScalar* us,PetscScalar* vs,PetscScalar* as,PetscScalar* phi,PetscScalar* amut,
+                                    int* ires,int* rank,int* nvertices);
+extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,
+            int* isnode,int* ivnode,
             int* nnfacetLoc,int* f2ntn,int* nnbound,
             int* nvfacetLoc,int* f2ntv,int* nvbound,
             int* eptr,PetscScalar* qnode,PetscScalar* x,PetscScalar* y,PetscScalar* z,
             int* nvnodeLoc,int* c2n,int* ncell,
-	    PetscScalar* amut,int* sface_bit,int* vface_bit,
+            PetscScalar* amut,int* sface_bit,int* vface_bit,
             PetscScalar* clift,PetscScalar* cdrag,PetscScalar* cmom,int* rank,int* nvertices);
 extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
 extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
@@ -339,5 +341,5 @@ extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* n
              PetscScalar* qnode, int* nvpts, int* nvtet,
              int* f2ntv, int* ivnode,
              int* timeStep, int* rank, int* openFile, int* closeFile,
-             int* boundaryType,PetscScalar* title); 
+             int* boundaryType,PetscScalar* title);
 EXTERN_C_END

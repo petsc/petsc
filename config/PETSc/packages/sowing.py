@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/sowing/sowing-1.1.16.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16d.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
@@ -14,11 +14,11 @@ class Configure(PETSc.package.NewPackage):
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
-    help.addArgument('SOWING', '--download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cxxcpp=<prog>',                 nargs.Arg(None, None, 'CXX CPP for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxxcpp=<prog>',                 nargs.Arg(None, None, 'CXX CPP for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
     return
 
   def Install(self):
@@ -64,7 +64,7 @@ class Configure(PETSc.package.NewPackage):
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)
-    self.addMakeMacro('BIB2HTML ', self.bib2html)    
+    self.addMakeMacro('BIB2HTML ', self.bib2html)
     self.getExecutable('pdflatex', getFullPath = 1)
     return self.installDir
 
@@ -73,14 +73,16 @@ class Configure(PETSc.package.NewPackage):
       if self.framework.argDB['with-batch'] and not hasattr(self,'bfort'):
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
-      else:     
+      else:
         self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))
           import generatefortranstubs
           del sys.path[0]
-          generatefortranstubs.main(self.bfort)
+          generatefortranstubs.main(self.petscdir.dir, self.bfort, self.petscdir.dir,0)
+          if self.compilers.fortranIsF90:
+            generatefortranstubs.processf90interfaces(self.petscdir.dir,0)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError, e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
@@ -91,6 +93,11 @@ class Configure(PETSc.package.NewPackage):
 
   def configure(self):
     '''Determine whether the Sowing exist or not'''
+
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \
+          (self.framework.clArgDB.has_key('download-sowing') and not self.framework.argDB['download-sowing']):
+      self.framework.logPrint("Not checking sowing on user request\n")
+      return
 
     # If download option is specified always build sowing
     if self.framework.argDB['download-sowing']:

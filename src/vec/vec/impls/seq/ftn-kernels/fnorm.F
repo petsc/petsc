@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the Norm() vector routine
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranNormSqr(x,n,sum1)
       implicit none
@@ -18,7 +18,7 @@
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))
  10   continue
 
-      return 
+      return
       end
 
 
@@ -36,9 +36,9 @@
         sum1 = sum1 + PetscRealPart(x(i)*PetscConj(x(i)))                                         &
      &              + PetscRealPart(x(i+1)*PetscConj(x(i+1)))                                     &
      &              + PetscRealPart(x(i+2)*PetscConj(x(i+2)))                                     &
-     &              + PetscRealPart(x(i+3)*PetscConj(x(i+3))) 
+     &              + PetscRealPart(x(i+3)*PetscConj(x(i+3)))
  10   continue
 
-      return 
+      return
       end
 
