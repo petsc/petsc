@@ -4092,6 +4092,8 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*mat,bs);CHKERRQ(ierr);
+  ierr = MatSetUp(*mat);CHKERRQ(ierr);
   ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
   ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
