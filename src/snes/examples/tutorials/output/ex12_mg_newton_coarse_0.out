@@ -34,6 +34,7 @@ Labels:
     1 KSP unpreconditioned resid norm 5.274358775533e-06 true resid norm 5.274358775533e-06 ||r(i)||/||b|| 6.333071738753e-07
     2 KSP unpreconditioned resid norm 2.976628734213e-12 true resid norm 2.976628734213e-12 ||r(i)||/||b|| 3.574122299160e-13
   1 SNES Function norm < 1.e-11
+L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -191,5 +192,3 @@ SNES Object: 1 MPI processes
       total: nonzeros=1457, allocated nonzeros=1457
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-Number of SNES iterations = 1
-L_2 Error: 0.00131794
