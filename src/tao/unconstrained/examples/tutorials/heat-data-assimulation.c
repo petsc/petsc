@@ -56,7 +56,6 @@ typedef struct {
   PetscInt    steps;          /* number of timesteps */
   PetscReal   Tend;           /* endtime */
   PetscReal   mu;             /* viscosity */
-  PetscReal   dt;             /* timestep*/
   PetscReal   L;              /* total length of domain */   
   PetscReal   Le; 
   PetscReal   Tadj;
@@ -68,8 +67,6 @@ typedef struct {
   Vec         grad;
   Vec         ic;
   Vec         curr_sol;
-  PetscReal   *Z;                 /* mesh grid */
-  PetscScalar *W;                 /* weights */
 } PetscData;
 
 typedef struct {
@@ -84,7 +81,6 @@ typedef struct {
   PetscSEMOperators SEMop;
   PetscParam        param;
   PetscData         dat;
-  PetscBool         debug;
   TS                ts;
   PetscReal         initial_dt;
 } AppCtx;
@@ -127,24 +123,13 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create vector data structures
+     Create GLL data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscGLLCreate(appctx.param.N,PETSCGLL_VIA_LINEARALGEBRA,&appctx.SEMop.gll);CHKERRQ(ierr);
-  
-  ierr = PetscMalloc1(appctx.param.N, &appctx.dat.Z);CHKERRQ(ierr);
-  ierr = PetscMalloc1(appctx.param.N, &appctx.dat.W);CHKERRQ(ierr);
-
-  for(i=0; i<appctx.param.N; i++) { 
-    appctx.dat.Z[i]=(appctx.SEMop.gll.nodes[i]+1.0);
-    appctx.dat.W[i]=appctx.SEMop.gll.weights[i]; 
-  }
-
-
   lenglob  = appctx.param.E*(appctx.param.N-1);
 
   /*
@@ -171,7 +156,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&appctx.dat.curr_sol);CHKERRQ(ierr);
  
   ierr = DMDAGetCorners(appctx.da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
-
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
   
@@ -186,11 +170,11 @@ int main(int argc,char **argv)
 
   for (i=xs; i<xs+xm; i++) {
     for (j=0; j<appctx.param.N-1; j++) {
-      x = (appctx.param.Le/2.0)*(appctx.dat.Z[j])+appctx.param.Le*i; 
+      x = (appctx.param.Le/2.0)*(appctx.SEMop.gll.nodes[j]+1.0)+appctx.param.Le*i; 
       ind=i*(appctx.param.N-1)+j;
       wrk_ptr1[ind]=x;
-      wrk_ptr2[ind]=.5*appctx.param.Le*appctx.dat.W[j];
-      if (j==0) wrk_ptr2[ind]+=.5*appctx.param.Le*appctx.dat.W[j];
+      wrk_ptr2[ind]=.5*appctx.param.Le*appctx.SEMop.gll.weights[j];
+      if (j==0) wrk_ptr2[ind]+=.5*appctx.param.Le*appctx.SEMop.gll.weights[j];
     } 
   }
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
@@ -262,8 +246,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&appctx.dat.curr_sol);CHKERRQ(ierr);
   ierr = PetscGLLDestroy(&appctx.SEMop.gll);CHKERRQ(ierr);
   ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
-  ierr = PetscFree(appctx.dat.Z);CHKERRQ(ierr);
-  ierr = PetscFree(appctx.dat.W);CHKERRQ(ierr);
   ierr = TSDestroy(&appctx.ts);CHKERRQ(ierr);
 
   /*
