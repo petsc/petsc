@@ -4490,6 +4490,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ts->solvetime = ts->ptime;
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
+  ts->adjoint_max_steps = 0;
   PetscFunctionReturn(0);
 }
 

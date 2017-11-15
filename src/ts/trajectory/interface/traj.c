@@ -51,6 +51,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 
   PetscFunctionBegin;
   if (!tj) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"TS solver did not save trajectory");
+  if (stepnum < 0) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requesting negative step number");
   ierr = PetscLogEventBegin(TSTrajectory_Get,tj,ts,0,0);CHKERRQ(ierr);
   ierr = (*tj->ops->get)(tj,ts,stepnum,time);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TSTrajectory_Get,tj,ts,0,0);CHKERRQ(ierr);
@@ -595,7 +596,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   tj->diskwrites = 0;
   ierr = PetscStrlen(tj->dirname,&s1);CHKERRQ(ierr);
   ierr = PetscStrlen(tj->filetemplate,&s2);CHKERRQ(ierr);
-  ierr = PetscMalloc((s1 + s2 + 2)*sizeof(char),&tj->dirfiletemplate);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(tj->dirfiletemplate,s1+s2+1,"%s/%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
+  ierr = PetscMalloc((s1 + s2 + 10)*sizeof(char),&tj->dirfiletemplate);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(tj->dirfiletemplate,s1+s2+10,"%s/%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

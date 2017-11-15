@@ -1,8 +1,6 @@
-iter =   0, Function value: 2.73363,  Residual: 26.3947 
-iter =   1, Function value: 1.23704,  Residual: 17.7495 
-iter =   2, Function value: 5.1729e-08,  Residual: 0.00335488 
-iter =   3, Function value: 6.31692e-11,  Residual: 0.000116576 
-iter =   4, Function value: 5.05812e-14,  Residual: 3.70977e-06 
-iter =   5, Function value: 3.20412e-16,  Residual: 2.9262e-07 
-iter =   6, Function value: 1.28291e-18,  Residual: 1.79041e-08 
-iter =   7, Function value: 3.0404e-20,  Residual: 2.51086e-09 
+iter =   0, Function value: 0.00836733,  Residual: 1.53831 
+iter =   1, Function value: 0.0041486,  Residual: 1.08312 
+iter =   2, Function value: 8.6339e-11,  Residual: 0.000141734 
+iter =   3, Function value: 1.64068e-13,  Residual: 6.1719e-06 
+iter =   4, Function value: 2.19152e-17,  Residual: 7.74483e-08 
+iter =   5, Function value: 1.79148e-19,  Residual: 6.93185e-09 
