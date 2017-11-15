@@ -333,7 +333,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
        - vertex_parents: used for non-conforming meshes only when we want to use MFEM as a discretization package
                          and be able to derefine the mesh
   */
-  if (periodic) enable_boundary = PETSC_TRUE;
+  enable_boundary = periodic;
   enable_ncmesh = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation; useful for debugging purposes",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
