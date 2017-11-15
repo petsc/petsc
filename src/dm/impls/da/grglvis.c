@@ -106,17 +106,15 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
 
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
 {
-  DM                 da = (DM)oda,daview,dacoord;
-  Vec                xcoor,xcoorl,xlocal;
+  DM                 da = (DM)oda,daview,dacoord = NULL;
+  Vec                xcoor,xcoorl;
   DMDAGLVisViewerCtx *ctx;
   const char         **dafieldname;
-  char               **fec_type,**fieldname,fec[64],*fecmesh = NULL;
+  char               **fec_type,**fieldname,fec[64];
   const PetscInt     *lx,*ly,*lz;
   PetscInt           *nlocal,*bss,*dims;
   PetscInt           dim,M,N,P,m,n,p,dof,s,i,nf;
-  PetscInt           Mc,Nc,Pc,dofc;
-  const PetscInt     *lxc,*lyc,*lzc;
-  PetscBool          bsset;
+  PetscBool          bsset,hashocoord = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -126,48 +124,30 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
   ierr = PetscObjectQuery((PetscObject)da,"_glvis_mesh_coords",(PetscObject*)&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
-    Mc   = M;
-    Nc   = N;
-    Pc   = P;
-    lxc  = lx;
-    lyc  = ly;
-    lzc  = lz;
-    dofc = dim;
   } else {
-    PetscInt      nl,nc;
-    char          *found;
-    DMDALocalInfo info;
-
-    ierr = PetscObjectGetName((PetscObject)xcoor,(const char**)&fecmesh);CHKERRQ(ierr);
-    ierr = PetscStrstr("L2",fecmesh,&found);CHKERRQ(ierr);
-    if (!found || found != fecmesh) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported fec type %s. Use PetscObjectSetName(,\"L2_...\")",fecmesh);
-    ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-    nc = (info.xm-1);
-    if (dim > 1) nc *= (info.ym-1);
-    if (dim > 2) nc *= (info.zm-1);
-    ierr = VecGetLocalSize(xcoor,&nl);CHKERRQ(ierr);
-    if (nl % nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
-    Mc   = M-1;
-    Nc   = N-1;
-    Pc   = P-1;
-    lxc  = lyc = lzc = NULL;
-    dofc = nl/nc;
+    hashocoord = PETSC_TRUE;
   }
   ierr = PetscInfo(da,"Creating auxilary DMDA for managing GLVis graphics\n");CHKERRQ(ierr);
   switch (dim) {
   case 1:
     ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,M,dof,1,lx,&daview);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,Mc,dofc,1,lxc,&dacoord);CHKERRQ(ierr);
+    if (!hashocoord) {
+      ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,M,1,1,lx,&dacoord);CHKERRQ(ierr);
+    }
     ierr = PetscStrcpy(fec,"FiniteElementCollection: H1_1D_P1");CHKERRQ(ierr);
     break;
   case 2:
     ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,dof,1,lx,ly,&daview);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mc,Nc,m,n,dofc,1,lxc,lyc,&dacoord);CHKERRQ(ierr);
+    if (!hashocoord) {
+      ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,m,n,2,1,lx,ly,&dacoord);CHKERRQ(ierr);
+    }
     ierr = PetscStrcpy(fec,"FiniteElementCollection: H1_2D_P1");CHKERRQ(ierr);
     break;
   case 3:
     ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,P,m,n,p,dof,1,lx,ly,lz,&daview);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mc,Nc,Pc,m,n,p,dofc,1,lxc,lyc,lzc,&dacoord);CHKERRQ(ierr);
+    if (!hashocoord) {
+      ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,P,m,n,p,3,1,lx,ly,lz,&dacoord);CHKERRQ(ierr);
+    }
     ierr = PetscStrcpy(fec,"FiniteElementCollection: H1_3D_P1");CHKERRQ(ierr);
     break;
   default:
@@ -175,20 +155,39 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     break;
   }
   ierr = DMSetUp(daview);CHKERRQ(ierr);
-  ierr = DMSetUp(dacoord);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMDASetUniformCoordinates(daview,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DMGetCoordinates(daview,&xcoor);CHKERRQ(ierr);
   }
-  ierr = DMCreateLocalVector(daview,&xlocal);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dacoord,&xcoorl);CHKERRQ(ierr);
-  if (fecmesh) {
-    ierr = PetscObjectSetName((PetscObject)xcoorl,fecmesh);CHKERRQ(ierr);
+  if (dacoord) {
+    ierr = DMSetUp(dacoord);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dacoord,&xcoorl);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dacoord,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dacoord,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectSetName((PetscObject)xcoorl,"default");CHKERRQ(ierr);
+    PetscInt ien,jen,ken,nc,nl,cdof,deg;
+    char     fecmesh[32];
+
+    ierr = DMDAGetNumElementsGhosted(daview,&ien,&jen,&ken);CHKERRQ(ierr);
+    nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
+
+    ierr = VecGetLocalSize(xcoor,&nl);CHKERRQ(ierr);
+    if (nc && nl % nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible local coordinate size %D and number of cells %D",nl,nc);
+    ierr = VecDuplicate(xcoor,&xcoorl);CHKERRQ(ierr);
+    ierr = VecCopy(xcoor,xcoorl);CHKERRQ(ierr);
+    ierr = VecSetDM(xcoorl,NULL);CHKERRQ(ierr);
+    cdof = nl/(nc*dim);
+    deg  = 1;
+    while (1) {
+      PetscInt degd = 1;
+      for (i=0;i<dim;i++) degd *= (deg+1);
+      if (degd > cdof) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cell dofs %D",cdof);
+      if (degd == cdof) break;
+      deg++;
+    }
+    ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"L2_T1_%dD_P%d",dim,deg);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)xcoorl,fecmesh);CHKERRQ(ierr);
   }
-  ierr = DMGlobalToLocalBegin(dacoord,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dacoord,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
 
   /* xcoorl is composed with the original DMDA, ghosted coordinate DMDA is only available through this vector */
   ierr = PetscObjectCompose(oda,"GLVisGraphicsCoordsGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
@@ -200,6 +199,9 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
 
   /* customize the viewer if present */
   if (viewer) {
+    Vec xlocal;
+
+    ierr = DMCreateLocalVector(daview,&xlocal);CHKERRQ(ierr);
     ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
     ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
     ierr = PetscMalloc5(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname);CHKERRQ(ierr);
@@ -267,8 +269,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscInt          gsx,gsy,gsz,gm,gn,gp,kst,jst,ist;
   PetscBool         enabled = PETSC_TRUE, isascii;
   PetscErrorCode    ierr;
-  const char        *fmt,*fecname;
-  char              *homesh;
+  const char        *fmt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -368,28 +369,42 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   /* vertex coordinates */
   ierr = PetscObjectQuery((PetscObject)dm,"GLVisGraphicsCoordsGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis ghosted coords");
+  ierr = VecGetDM(xcoorl,&cda);CHKERRQ(ierr);
   ierr = DMDAGetNumVerticesGhosted(da,&ien,&jen,&ken);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",ien*jen*ken);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)xcoorl,&fecname);CHKERRQ(ierr);
-  ierr = PetscStrstr("L2",fecname,&homesh);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xcoorl,&array);CHKERRQ(ierr);
-  if (homesh && homesh == fecname) { /* HO viz */
+  if (!cda) { /* HO viz */
+    const char *fecname;
+    PetscInt   nc,nl;
+
+    ierr = PetscObjectGetName((PetscObject)xcoorl,&fecname);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"nodes\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementCollection: %s\n",fecname);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"VDim: %D\n",sdim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Ordering: 1\n\n");CHKERRQ(ierr); /*Ordering::byVDIM*/
+    /* L2 coordinates */
+    ierr = DMDAGetNumElementsGhosted(da,&ien,&jen,&ken);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(xcoorl,&nl);CHKERRQ(ierr);
+    nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
+    cdof = nl/nc;
+    if (!ien) ien++;
+    if (!jen) jen++;
+    if (!ken) ken++;
+    ist = jst = kst = 0;
+    gm = ien;
+    gn = jen;
+    gp = ken;
   } else {
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
+    cdof = sdim;
+    ierr = DMDAGetCorners(da,&sx,&sy,&sz,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(da,&gsx,&gsy,&gsz,&gm,&gn,&gp);CHKERRQ(ierr);
+    kst  = gsz != sz ? 1 : 0;
+    jst  = gsy != sy ? 1 : 0;
+    ist  = gsx != sx ? 1 : 0;
   }
-  ierr = VecGetDM(xcoorl,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(cda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&cdof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&sx,&sy,&sz,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da,&gsx,&gsy,&gsz,&gm,&gn,&gp);CHKERRQ(ierr);
-  kst  = gsz != sz ? 1 : 0;
-  jst  = gsy != sy ? 1 : 0;
-  ist  = gsx != sx ? 1 : 0;
   for (ke = kst; ke < kst + ken; ke++) {
     for (je = jst; je < jst + jen; je++) {
       for (ie = ist; ie < ist + ien; ie++) {
@@ -399,9 +414,9 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
         for (c=0;c<cdof/sdim;c++) {
           PetscInt d;
           for (d=0;d<sdim;d++) {
-            ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[sdim*i+d]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[cdof*i+c*sdim+d]));CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"\n",PetscRealPart(array[sdim*i+d]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
       }
     }
