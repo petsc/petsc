@@ -13,22 +13,22 @@ Labels:
   DM Object: Mesh 1 MPI processes
     type: plex
   Mesh in 2 dimensions:
-    0-cells:   5745  
-    1-cells:   17100  
-    2-cells:   11356  
+    0-cells:   5704  
+    1-cells:   16977  
+    2-cells:   11274  
   Labels:
     marker: 1 strata with value/size (1 (264))
-    depth: 3 strata with value/size (0 (5745), 1 (17100), 2 (11356))
-  L_2 Error: 0.00195356
+    depth: 3 strata with value/size (0 (5704), 1 (16977), 2 (11274))
+  L_2 Error: 0.00263324
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
-  0-cells: 8644
-  1-cells: 25681
-  2-cells: 17038
+  0-cells: 7807
+  1-cells: 23170
+  2-cells: 15364
 Labels:
   marker: 1 strata with value/size (1 (496))
-  depth: 3 strata with value/size (0 (8644), 1 (25681), 2 (17038))
-L_2 Error: 0.000570518
+  depth: 3 strata with value/size (0 (7807), 1 (23170), 2 (15364))
+L_2 Error: 0.000692112
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

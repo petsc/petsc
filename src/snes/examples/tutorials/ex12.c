@@ -906,7 +906,7 @@ int main(int argc, char **argv)
 {
   DM             dm;          /* Problem specification */
   SNES           snes;        /* nonlinear solver */
-  Vec            u,r;         /* solution, residual vectors */
+  Vec            u;           /* solution vector */
   Mat            A,J;         /* Jacobian matrix */
   MatNullSpace   nullSpace;   /* May be necessary for Neumann conditions */
   AppCtx         user;        /* user-defined work context */
@@ -927,7 +927,6 @@ int main(int argc, char **argv)
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
@@ -1038,17 +1037,21 @@ int main(int argc, char **argv)
     }
     ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
   } else if (user.runType == RUN_PERF) {
+    Vec       r;
     PetscReal res = 0.0;
 
+    ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
   } else {
+    Vec       r;
     PetscReal res = 0.0;
 
     /* Check discretization error */
+    ierr = SNESGetFunction(snes, &r, NULL, NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     if (!user.quiet) {ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
@@ -1063,7 +1066,7 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
     /* Check Jacobian */
     {
-      Vec          b;
+      Vec b;
 
       ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
@@ -1086,7 +1089,6 @@ int main(int argc, char **argv)
   if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFree2(user.exactFuncs, user.exactFields);CHKERRQ(ierr);
@@ -1534,7 +1536,7 @@ int main(int argc, char **argv)
   # Full solve tensor AMR
   test:
     suffix: quad_q1_adapt_0
-    args: -run_type exact -dim 2 -simplex 0 -dm_refine 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0.,0.1 -snes_adapt_initial -dm_view -dm_adapt_view
+    args: -run_type exact -dim 2 -simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0.,0.1 -snes_adapt_initial -dm_view -dm_adapt_view
   test:
     suffix: amr_0
     requires: hdf5
