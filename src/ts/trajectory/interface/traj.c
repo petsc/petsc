@@ -202,7 +202,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   t->keepfiles   = PETSC_TRUE;
   *tj  = t;
   ierr = TSTrajectorySetDirname(t,"SA-data");CHKERRQ(ierr);
-  ierr = TSTrajectorySetFiletemplate(t,"/SA-%06D.bin");CHKERRQ(ierr);
+  ierr = TSTrajectorySetFiletemplate(t,"SA-%06D.bin");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -462,7 +462,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj,const char dirname[])
    Options Database Keys:
 .  -ts_trajectory_file_template - set the file name template
 
-   Notes: The name template should be of the form, for example filename-%06D.bin
+   Notes: The name template should be of the form, for example filename-%06D.bin It should not begin with a leading /
 
    The final location of the files is determined by dirname/filetemplate where dirname was provided by TSTrajectorySetDirname(). The %06D is replaced by the 
    timestep counter
@@ -595,7 +595,7 @@ PetscErrorCode  TSTrajectorySetUp(TSTrajectory tj,TS ts)
   tj->diskwrites = 0;
   ierr = PetscStrlen(tj->dirname,&s1);CHKERRQ(ierr);
   ierr = PetscStrlen(tj->filetemplate,&s2);CHKERRQ(ierr);
-  ierr = PetscMalloc((s1 + s2 + 1)*sizeof(char),&tj->dirfiletemplate);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(tj->dirfiletemplate,s1+s2+1,"%s%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
+  ierr = PetscMalloc((s1 + s2 + 2)*sizeof(char),&tj->dirfiletemplate);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(tj->dirfiletemplate,s1+s2+1,"%s/%s",tj->dirname,tj->filetemplate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
