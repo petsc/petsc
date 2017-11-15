@@ -1536,6 +1536,7 @@ int main(int argc, char **argv)
   # Full solve tensor AMR
   test:
     suffix: quad_q1_adapt_0
+    requires: p4est
     args: -run_type exact -dim 2 -simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4 -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0.,0.1 -snes_adapt_initial -dm_view -dm_adapt_view
   test:
     suffix: amr_0
