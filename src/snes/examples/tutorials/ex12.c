@@ -1529,9 +1529,11 @@ int main(int argc, char **argv)
   # Full solve simplicial AMR
   test:
     suffix: tri_p1_adapt_0
+    requires: pragmatic
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_view -snes_adapt_initial
   test:
     suffix: tri_p1_adapt_1
+    requires: pragmatic
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
   # Full solve tensor AMR
   test:
