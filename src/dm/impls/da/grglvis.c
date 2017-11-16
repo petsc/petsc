@@ -206,7 +206,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
       ierr = DMDestroy(&dacoord);CHKERRQ(ierr);
     } else {
       PetscInt ien,jen,ken,nc,nl,cdof,deg;
-      char     fecmesh[32];
+      char     fecmesh[64];
 
       ierr = DMDAGetNumElementsGhosted(daview,&ien,&jen,&ken);CHKERRQ(ierr);
       nc   = ien*(jen>0 ? jen : 1)*(ken>0 ? ken : 1);
@@ -225,7 +225,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
         if (degd == cdof) break;
         deg++;
       }
-      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"L2_T1_%dD_P%d",dim,deg);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%dD_P%d",dim,deg);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)xcoorl,fecmesh);CHKERRQ(ierr);
     }
 
