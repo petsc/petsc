@@ -71,6 +71,7 @@ PetscErrorCode PetscGLLCreate(PetscInt n,PetscGLLCreateType type,PetscGLL *gll)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (n < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
   ierr = PetscMalloc2(n,&gll->nodes,n,&gll->weights);CHKERRQ(ierr);
 
   if (type == PETSCGLL_VIA_LINEARALGEBRA) {
