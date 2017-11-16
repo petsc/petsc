@@ -224,6 +224,7 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
 /*@C
    SNESView - Prints the SNES data structure.
 
@@ -282,6 +283,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 #endif
   if (iascii) {
     SNESNormSchedule normschedule;
+    DM               dm;
+    PetscErrorCode   (*cJ)(SNES,Vec,Mat,Mat,void*);
+    void             *ctx;
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (!snes->setupcalled) {
@@ -320,6 +324,13 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is never rebuilt\n");CHKERRQ(ierr);
     } else if (snes->lagjacobian > 1) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D SNES iterations\n",snes->lagjacobian);CHKERRQ(ierr);
+    }
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMSNESGetJacobian(dm,&cJ,&ctx);CHKERRQ(ierr);
+    if (cJ == SNESComputeJacobianDefault) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences one column at a time\n");CHKERRQ(ierr);
+    } else if (cJ == SNESComputeJacobianDefaultColor) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences with coloring\n");CHKERRQ(ierr);
     }
   } else if (isstring) {
     const char *type;
