@@ -395,7 +395,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
     ierr = VecGetDM(Grad, &dmGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(Grad, &grad);CHKERRQ(ierr);
     ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, pdim, MPIU_SCALAR, &fx);CHKERRQ(ierr);
   }
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (i = 0; i < numids; ++i) {
@@ -455,7 +455,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
   cleanup:
   ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
   if (Grad) {
-    ierr = DMRestoreWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, pdim, MPIU_SCALAR, &fx);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(Grad, &grad);CHKERRQ(ierr);
   }
   if (cellGeometry) {ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);}

@@ -117,7 +117,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEndInterior = cEndInterior < 0 ? cEnd : cEndInterior;
-  ierr = DMGetWorkArray(dm, dof, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, dof, MPIU_REAL, &cellPhi);CHKERRQ(ierr);
   for (cell = (dmGrad && lim) ? cStart : cEnd; cell < cEndInterior; ++cell) {
     const PetscInt        *faces;
     PetscScalar           *cx;
@@ -146,7 +146,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
       /* Scalar limiter applied to each component separately */
       for (d = 0; d < dim; ++d) cgrad[pd*dim+d] *= cellPhi[pd];
   }
-  ierr = DMRestoreWorkArray(dm, dof, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, dof, MPIU_REAL, &cellPhi);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
