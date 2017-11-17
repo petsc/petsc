@@ -74,6 +74,7 @@ typedef struct {
   Vec         grid;              /* total grid */   
   Vec         mass;              /* mass matrix for total integration */
   Mat         stiff;             /* stifness matrix */
+  Mat         keptstiff;
   PetscGLL    gll;
 } PetscSEMOperators;
 
@@ -101,6 +102,8 @@ extern PetscErrorCode ComputeObjective(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode VecSubset(Vec,Vec);
 extern PetscErrorCode MonitorError(Tao,void*);
 extern PetscErrorCode ComputeSolutionCoefficients(AppCtx*);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 
 int main(int argc,char **argv)
 {
@@ -204,6 +207,7 @@ int main(int argc,char **argv)
    as a time-dependent matrix.
    */
   ierr = RHSMatrixHeatgllDM(appctx.ts,0.0,u,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx);CHKERRQ(ierr);
+  ierr = MatDuplicate(appctx.SEMop.stiff,MAT_COPY_VALUES,&appctx.SEMop.keptstiff);CHKERRQ(ierr);
 
   /* attach the null space to the matrix, this probably is not needed but does no harm */
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
@@ -227,6 +231,8 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx.ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
   ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   /* Set Objective and Initial conditions for the problem and compute Objective function (evolution of true_solution to final time */
@@ -250,6 +256,7 @@ int main(int argc,char **argv)
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = PetscFree(appctx.solutioncoefficients);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.SEMop.stiff);CHKERRQ(ierr);
+  ierr = MatDestroy(&appctx.SEMop.keptstiff);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.ic);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.true_solution);CHKERRQ(ierr);
@@ -400,6 +407,29 @@ PetscErrorCode ComputeObjective(PetscReal t,Vec obj,AppCtx *appctx)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunction"
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+{
+  PetscErrorCode ierr;
+  AppCtx          *appctx = (AppCtx*)ctx;  
+
+  PetscFunctionBegin;
+  ierr = MatMult(appctx->SEMop.keptstiff,globalin,globalout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx)
+{
+  PetscErrorCode ierr;
+  AppCtx         *appctx = (AppCtx*)ctx;  
+
+  PetscFunctionBegin;
+  ierr = MatCopy(appctx->SEMop.keptstiff,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* --------------------------------------------------------------------- */
 
