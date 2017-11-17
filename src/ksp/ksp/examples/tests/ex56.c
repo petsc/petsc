@@ -1,0 +1,336 @@
+/*T
+   Concepts: KSP^solving a system of linear equations
+   Concepts: KSP^Laplacian, 2d
+   Processors: n
+T*/
+
+/*
+Added at the request of Marc Garbey.
+
+Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
+
+   -div \rho grad u = f,  0 < x,y < 1,
+
+with forcing function
+
+   f = e^{-x^2/\nu} e^{-y^2/\nu}
+
+with Dirichlet boundary conditions
+
+   u = f(x,y) for x = 0, x = 1, y = 0, y = 1
+
+or pure Neumman boundary conditions
+
+This uses multigrid to solve the linear system
+*/
+
+static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
+
+#include <petscdm.h>
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
+
+typedef enum {DIRICHLET, NEUMANN} BCType;
+
+typedef struct {
+  PetscReal rho;
+  PetscReal nu;
+  BCType    bcType;
+} UserContext;
+
+int main(int argc,char **argv)
+{
+  KSP            ksp;
+  DM             da;
+  UserContext    user;
+  const char     *bcTypes[2] = {"dirichlet","neumann"};
+  PetscErrorCode ierr;
+  PetscInt       bc,xn,j,col,*owner,i;
+  Vec            x,y,x_shm,y_shm,lvec;
+  PC             pc;
+  Mat            C,A,B;
+  PetscMPIInt    srank,size;
+  PetscBool      flg;
+  PetscScalar    *mem;
+  MPI_Win        win;
+  MPI_Comm       shmcomm;
+  PetscScalar    *x_arr;
+  const PetscInt *garray,*ranges;
+  Mat_MPIAIJ     *c;
+  PetscMPIInt orank;
+  MPI_Aint    sz;
+  PetscInt    dsp_unit,idx_loc;
+  PetscScalar *optr,*lvec_arr;
+#if defined(PETSC_USE_LOG)
+  PetscLogStage stages[4];
+#endif
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  MPI_Comm_split_type(PETSC_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &shmcomm);
+  ierr = MPI_Comm_rank(shmcomm,&srank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(shmcomm,&size);CHKERRQ(ierr);
+
+  ierr = PetscLogStageRegister("Setup",&stages[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MatMult MPI1",&stages[1]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Read lvec",&stages[2]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Loc Mv",&stages[3]);CHKERRQ(ierr);
+
+  ierr = KSPCreate(shmcomm,&ksp);CHKERRQ(ierr);
+  ierr = DMDACreate2d(shmcomm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0,1,0,1,0,0);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"Pressure");CHKERRQ(ierr);
+
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");CHKERRQ(ierr);
+  user.rho    = 1.0;
+  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
+  user.nu     = 0.1;
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
+  bc          = (PetscInt)DIRICHLET;
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
+  user.bcType = (BCType)bc;
+  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&C,NULL);CHKERRQ(ierr);
+
+  ierr = MatCreateVecs(C,&x,&y);CHKERRQ(ierr);
+
+  /* (1) Create x_shm and y_shm */
+  /*----------------------------*/
+  ierr = MatCreateVecs(C,&x_shm,&y_shm);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x_shm,&xn);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(shmcomm,&srank);CHKERRQ(ierr);
+  MPI_Win_allocate_shared(2*xn*sizeof(PetscScalar), 1, MPI_INFO_NULL, shmcomm, &mem, &win);
+
+  ierr = VecPlaceArray(x_shm,(const PetscScalar*)mem);CHKERRQ(ierr);
+  ierr = VecPlaceArray(y_shm,(const PetscScalar*)(mem+xn));CHKERRQ(ierr);
+
+  ierr = VecGetArray(x_shm,&x_arr);CHKERRQ(ierr);
+  for (i=0; i<xn; i++) x_arr[i] = (PetscScalar)(srank+1);
+  ierr = VecRestoreArray(x_shm,&x_arr);CHKERRQ(ierr);
+
+  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
+  ierr = MatMult(C,x_shm,y);CHKERRQ(ierr);
+  //ierr = VecView(x_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+
+  ierr = MatMult(C,x_shm,y_shm);CHKERRQ(ierr);
+  ierr = VecEqual(y,y_shm,&flg);CHKERRQ(ierr);
+  if (!flg) printf("0: y != y_shm\n");
+
+  /* (2) Read my ghosts from others into lvec */
+  /*------------------------------------------*/
+  c = (Mat_MPIAIJ*)C->data;
+  lvec = c->lvec;
+
+  ierr = MatMPIAIJGetSeqAIJ(C,&A,&B,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(B->cmap->n,&owner);CHKERRQ(ierr);
+  //printf("[%d] Bn %d\n",rank,B->cmap->n);
+  ierr = MatGetOwnershipRangesColumn(C,&ranges);CHKERRQ(ierr);
+  if (srank == 1000) {
+    printf("ranges: ");
+    for (j=0; j<=size; j++) printf(" %d,",ranges[j]);
+    printf("\n ");
+  }
+
+  j = 0;
+  for (i=0; i<=size; i++) {
+    while (j < B->cmap->n) {
+      col = garray[j];
+      if (col < ranges[i+1]) {
+        owner[j] = i; j++;
+      } else break;
+    }
+  }
+
+  ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
+  ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
+  for (j=0; j<B->cmap->n; j++) {
+    col = garray[j];
+    orank = owner[j];
+    idx_loc = col - ranges[orank];
+    //if (srank == 0) printf("col %d, owner %d, idx_loc %d\n",col,orank,idx_loc);
+    MPI_Win_shared_query(win,orank,&sz,&dsp_unit,&optr);
+    lvec_arr[j] = optr[idx_loc];
+  }
+  ierr = VecRestoreArray(lvec,&lvec_arr);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+
+  Vec yB,y_loc,x_loc;
+  ierr = MatCreateVecs(B,NULL,&yB);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)mem,&x_loc);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)(mem+xn),&y_loc);CHKERRQ(ierr);
+  if (srank == 1000) {
+    VecView(x_loc,0);
+  }
+
+  /* (3) y_loc = A*x_loc + B*lvec */
+  /*------------------------------*/
+  ierr = PetscLogStagePush(stages[3]);CHKERRQ(ierr);
+  ierr = MatMult(B,lvec,yB);CHKERRQ(ierr); /* yB = B*lvec */
+
+  /* y_loc = A*x_loc + yB */
+  ierr = MatMultAdd(A,x_loc,yB,y_loc);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  //if (srank == 0) printf("y_shm:\n");
+  //ierr = VecView(y_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* (4) Check y == y_shm */
+  /*----------------------*/
+  ierr = VecEqual(y,y_shm,&flg);CHKERRQ(ierr);
+  if (!flg) printf("y != y_shm\n");
+
+  ierr = VecResetArray(x_shm);CHKERRQ(ierr);
+  ierr = VecResetArray(y_shm);CHKERRQ(ierr);
+
+  /* Free spaces */
+  ierr = VecDestroy(&yB);CHKERRQ(ierr);
+  ierr = VecDestroy(&y_loc);CHKERRQ(ierr);
+  ierr = VecDestroy(&x_loc);CHKERRQ(ierr);
+  MPI_Win_free(&win);
+  MPI_Comm_free(&shmcomm);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x_shm);CHKERRQ(ierr);
+  ierr = VecDestroy(&y_shm);CHKERRQ(ierr);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  //ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
+  //ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return ierr;
+}
+
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
+{
+  UserContext    *user = (UserContext*)ctx;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    Hx,Hy;
+  PetscScalar    **array;
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx   = 1.0 / (PetscReal)(mx-1);
+  Hy   = 1.0 / (PetscReal)(my-1);
+  ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      array[j][i] = PetscExpScalar(-((PetscReal)i*Hx)*((PetscReal)i*Hx)/user->nu)*PetscExpScalar(-((PetscReal)j*Hy)*((PetscReal)j*Hy)/user->nu)*Hx*Hy;
+    }
+  }
+  ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+
+  /* force right hand side to be consistent for singular matrix */
+  /* note this is really a hack, normally the model would provide you with a consistent right handside */
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscReal centerRho, PetscReal *rho)
+{
+  PetscFunctionBeginUser;
+  if ((i > mx/3.0) && (i < 2.0*mx/3.0) && (j > my/3.0) && (j < 2.0*my/3.0)) {
+    *rho = centerRho;
+  } else {
+    *rho = 1.0;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
+{
+  UserContext    *user = (UserContext*)ctx;
+  PetscReal      centerRho;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    v[5];
+  PetscReal      Hx,Hy,HydHx,HxdHy,rho;
+  MatStencil     row, col[5];
+  DM             da;
+
+  PetscFunctionBeginUser;
+  ierr      = KSPGetDM(ksp,&da);CHKERRQ(ierr);
+  centerRho = user->rho;
+  ierr      = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  Hx        = 1.0 / (PetscReal)(mx-1);
+  Hy        = 1.0 / (PetscReal)(my-1);
+  HxdHy     = Hx/Hy;
+  HydHx     = Hy/Hx;
+  ierr      = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      row.i = i; row.j = j;
+      ierr  = ComputeRho(i, j, mx, my, centerRho, &rho);CHKERRQ(ierr);
+      if (i==0 || j==0 || i==mx-1 || j==my-1) {
+        if (user->bcType == DIRICHLET) {
+          v[0] = 2.0*rho*(HxdHy + HydHx);
+          ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+        } else if (user->bcType == NEUMANN) {
+          PetscInt numx = 0, numy = 0, num = 0;
+          if (j!=0) {
+            v[num] = -rho*HxdHy;              col[num].i = i;   col[num].j = j-1;
+            numy++; num++;
+          }
+          if (i!=0) {
+            v[num] = -rho*HydHx;              col[num].i = i-1; col[num].j = j;
+            numx++; num++;
+          }
+          if (i!=mx-1) {
+            v[num] = -rho*HydHx;              col[num].i = i+1; col[num].j = j;
+            numx++; num++;
+          }
+          if (j!=my-1) {
+            v[num] = -rho*HxdHy;              col[num].i = i;   col[num].j = j+1;
+            numy++; num++;
+          }
+          v[num] = numx*rho*HydHx + numy*rho*HxdHy; col[num].i = i;   col[num].j = j;
+          num++;
+          ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        }
+      } else {
+        v[0] = -rho*HxdHy;              col[0].i = i;   col[0].j = j-1;
+        v[1] = -rho*HydHx;              col[1].i = i-1; col[1].j = j;
+        v[2] = 2.0*rho*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
+        v[3] = -rho*HydHx;              col[3].i = i+1; col[3].j = j;
+        v[4] = -rho*HxdHy;              col[4].i = i;   col[4].j = j+1;
+        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    MatNullSpace nullspace;
+
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
