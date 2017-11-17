@@ -114,6 +114,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(x_shm,&x_arr);CHKERRQ(ierr);
 
   /* Compute y = C*x_shm using MatMult() for comparison */
+  ierr = MPI_Barrier(shmcomm);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   ierr = MatMult(C,x_shm,y);CHKERRQ(ierr);
   //ierr = VecView(x_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -168,21 +169,20 @@ int main(int argc,char **argv)
 
   /* (2) Read my ghosts from others into lvec */
   /*------------------------------------------*/
+  PetscScalar *optr1;
+  PetscInt    ii,rstart;
+  ierr = MPI_Barrier(shmcomm);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
   ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
   j = 0;
-  PetscScalar *optr1;
-  PetscInt    ii=0;
+  ii = 0;
   for (i=0; i<size; i++) {
     if (nGhosts[i]) { /* read ghost values from shared proc[i] */
+      optr1  = optr[ii];
+      rstart = ranges[i];
       for (k=0; k< nGhosts[i]; k++) {
-        //if (j>=B->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "j %d >= Bn %d ",j,B->cmap->n);
-        col = garray[j];
-        //if (owner[j] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "owner[j] %d != i %d ",owner[j],i);
-        idx_loc = col - ranges[i];
-        //MPI_Win_shared_query(win,i,&sz,&dsp_unit,&optr1);
-        //if (optr1 != optr[ii]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "optr1 %p != optrd[%d] %p ",optr1,ii,optr[ii]);
-        lvec_arr[j++] = optr[ii][idx_loc];
+        idx_loc = garray[j] - rstart;
+        lvec_arr[j++] = optr1[idx_loc];
       }
       ii++;
     }
