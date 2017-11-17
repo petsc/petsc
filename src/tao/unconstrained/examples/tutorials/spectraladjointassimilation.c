@@ -1,5 +1,5 @@
 
-static char help[] ="Solves a simple data assimulation problem with the heat equation using TSAdjoint\n\n";
+static char help[] ="Solves a simple data assimilation problem with one dimensional advection diffusion equation using TSAdjoint\n\n";
 
 /*
 
@@ -16,27 +16,16 @@ static char help[] ="Solves a simple data assimulation problem with the heat equ
 
 /* ------------------------------------------------------------------------
 
-   This program uses the one-dimensional heat equation (also called the
-   diffusion equation),
-       u_t = u_xx,
+   This program uses the one-dimensional advection-diffusion equation),
+       u_t = mu*u_xx - a u_x,
    on the domain 0 <= x <= 1, with periodic boundary conditions
 
-   to demonstrate solving a data assimulation problem of finding the initial conditions
+   to demonstrate solving a data assimilation problem of finding the initial conditions
    to produce a given solution at a fixed time.
 
-   We discretize the right-hand side using the spectral element method
+   The operators are discretized with the spectral element method
 
   ------------------------------------------------------------------------- */
-
-/*
-   Include "petscts.h" so that we can use TS solvers.  Note that this file
-   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h  - vectors
-     petscmat.h  - matrices
-     petscis.h     - index sets            petscksp.h  - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h   - preconditioners
-     petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
-*/
 
 #include <petsctao.h>
 #include <petscts.h>
@@ -99,7 +88,6 @@ extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode TrueSolution(Vec,AppCtx*);
 extern PetscErrorCode ComputeObjective(PetscReal,Vec,AppCtx*);
-extern PetscErrorCode VecSubset(Vec,Vec);
 extern PetscErrorCode MonitorError(Tao,void*);
 extern PetscErrorCode ComputeSolutionCoefficients(AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -135,7 +123,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ncoeff",&appctx.ncoeff,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-Tend",&appctx.param.Tend,NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetReal(NULL,NULL,"-Tend",&appctx.param.Tend,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&appctx.param.mu,NULL);CHKERRQ(ierr);
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
 
@@ -581,6 +570,7 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
   ierr = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
   ierr = VecDot(temp,appctx->SEMop.mass,&nrm);CHKERRQ(ierr);
   ierr = VecDestroy(&temp);CHKERRQ(ierr);
+  nrm  = PetscSqrtReal(nrm);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error for initial conditions %g\n",(double)nrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -593,11 +583,11 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
 
    test:
      requires: !single
-     args: -tao_monitor  -ts_adapt_dt_max 3.e-3 
+     args: -tao_monitor  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5 
 
    test:
      suffix: cn
      requires: !single
-     args: -tao_monitor -ts_type cn -ts_dt .003 -pc_type lu
+     args: -tao_monitor -ts_type cn -ts_dt .003 -pc_type lu -E 10 -N 8 -ncoeff 5 
 
 TEST*/
