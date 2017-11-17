@@ -49,8 +49,8 @@ int main(int argc,char **argv)
   UserContext    user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
-  PetscInt       bc,xn,j,col,*owner,i;
-  Vec            x,y,x_shm,y_shm,lvec;
+  PetscInt       bc,xn,j,col,*owner,i,k;
+  Vec            x,y,x_shm,y_shm,lvec,yB,y_loc,x_loc;
   PC             pc;
   Mat            C,A,B;
   PetscMPIInt    srank,size;
@@ -61,12 +61,12 @@ int main(int argc,char **argv)
   PetscScalar    *x_arr;
   const PetscInt *garray,*ranges;
   Mat_MPIAIJ     *c;
-  PetscMPIInt orank;
-  MPI_Aint    sz;
-  PetscInt    dsp_unit,idx_loc;
-  PetscScalar *optr,*lvec_arr;
+  PetscMPIInt    orank;
+  MPI_Aint       sz;
+  PetscInt       dsp_unit,idx_loc;
+  PetscScalar    **optr,*lvec_arr;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage stages[4];
+  PetscLogStage stages[3];
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -75,9 +75,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(shmcomm,&size);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Setup",&stages[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MatMult MPI1",&stages[1]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Read lvec",&stages[2]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Loc Mv",&stages[3]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MatMult MPI",&stages[1]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MatMult Shm",&stages[2]);CHKERRQ(ierr);
 
   ierr = KSPCreate(shmcomm,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate2d(shmcomm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
@@ -86,15 +85,10 @@ int main(int argc,char **argv)
   ierr = DMDASetUniformCoordinates(da,0,1,0,1,0,0);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Pressure");CHKERRQ(ierr);
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");CHKERRQ(ierr);
   user.rho    = 1.0;
-  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
   user.nu     = 0.1;
-  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
@@ -109,36 +103,29 @@ int main(int argc,char **argv)
 
   /* (1) Create x_shm and y_shm */
   /*----------------------------*/
-  ierr = MatCreateVecs(C,&x_shm,&y_shm);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x_shm,&xn);CHKERRQ(ierr);
-
-  ierr = MPI_Comm_rank(shmcomm,&srank);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&xn);CHKERRQ(ierr);
   MPI_Win_allocate_shared(2*xn*sizeof(PetscScalar), 1, MPI_INFO_NULL, shmcomm, &mem, &win);
 
-  ierr = VecPlaceArray(x_shm,(const PetscScalar*)mem);CHKERRQ(ierr);
-  ierr = VecPlaceArray(y_shm,(const PetscScalar*)(mem+xn));CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(shmcomm,1,xn,PETSC_DECIDE,(const PetscScalar*)mem,&x_shm);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(shmcomm,1,xn,PETSC_DECIDE,(const PetscScalar*)(mem+xn),&y_shm);CHKERRQ(ierr);
 
   ierr = VecGetArray(x_shm,&x_arr);CHKERRQ(ierr);
   for (i=0; i<xn; i++) x_arr[i] = (PetscScalar)(srank+1);
   ierr = VecRestoreArray(x_shm,&x_arr);CHKERRQ(ierr);
 
+  /* Compute y = C*x_shm using MatMult() for comparison */
   ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   ierr = MatMult(C,x_shm,y);CHKERRQ(ierr);
   //ierr = VecView(x_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = MatMult(C,x_shm,y_shm);CHKERRQ(ierr);
-  ierr = VecEqual(y,y_shm,&flg);CHKERRQ(ierr);
-  if (!flg) printf("0: y != y_shm\n");
-
-  /* (2) Read my ghosts from others into lvec */
-  /*------------------------------------------*/
+  /* Create Mv context */
   c = (Mat_MPIAIJ*)C->data;
   lvec = c->lvec;
 
   ierr = MatMPIAIJGetSeqAIJ(C,&A,&B,&garray);CHKERRQ(ierr);
   ierr = PetscMalloc1(B->cmap->n,&owner);CHKERRQ(ierr);
-  //printf("[%d] Bn %d\n",rank,B->cmap->n);
+  //printf("[%d] Bn %d\n",srank,B->cmap->n);
   ierr = MatGetOwnershipRangesColumn(C,&ranges);CHKERRQ(ierr);
   if (srank == 1000) {
     printf("ranges: ");
@@ -146,30 +133,32 @@ int main(int argc,char **argv)
     printf("\n ");
   }
 
+  PetscInt nNeighbors = 0,nGhosts[size];
   j = 0;
   for (i=0; i<=size; i++) {
+    nGhosts[i] = 0;
     while (j < B->cmap->n) {
       col = garray[j];
       if (col < ranges[i+1]) {
-        owner[j] = i; j++;
+        nGhosts[i]++; owner[j++] = i;
       } else break;
     }
   }
-
-  ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
-  ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
-  for (j=0; j<B->cmap->n; j++) {
-    col = garray[j];
-    orank = owner[j];
-    idx_loc = col - ranges[orank];
-    //if (srank == 0) printf("col %d, owner %d, idx_loc %d\n",col,orank,idx_loc);
-    MPI_Win_shared_query(win,orank,&sz,&dsp_unit,&optr);
-    lvec_arr[j] = optr[idx_loc];
+  PetscInt sum=0;
+  for (i=0; i<size; i++) {
+    if (nGhosts[i]) {nNeighbors++; sum += nGhosts[i];}
   }
-  ierr = VecRestoreArray(lvec,&lvec_arr);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  if (sum != B->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "sum %d != Bn %d ",sum,B->cmap->n);
+  //printf("[%d] nNeighbors %d\n",srank,nNeighbors);
+  ierr = PetscMalloc1(nNeighbors,&optr);CHKERRQ(ierr);
+  k = 0;
+  for (i=0; i<size; i++) {
+    if (nGhosts[i]) {
+      MPI_Win_shared_query(win,i,&sz,&dsp_unit,&optr[k]);
+      k++;
+    }
+  }
 
-  Vec yB,y_loc,x_loc;
   ierr = MatCreateVecs(B,NULL,&yB);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)mem,&x_loc);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)(mem+xn),&y_loc);CHKERRQ(ierr);
@@ -177,10 +166,33 @@ int main(int argc,char **argv)
     VecView(x_loc,0);
   }
 
+  /* (2) Read my ghosts from others into lvec */
+  /*------------------------------------------*/
+  ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
+  ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
+  j = 0;
+  PetscScalar *optr1;
+  PetscInt    ii=0;
+  for (i=0; i<size; i++) {
+    if (nGhosts[i]) { /* read ghost values from shared proc[i] */
+      for (k=0; k< nGhosts[i]; k++) {
+        //if (j>=B->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "j %d >= Bn %d ",j,B->cmap->n);
+        col = garray[j];
+        //if (owner[j] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "owner[j] %d != i %d ",owner[j],i);
+        idx_loc = col - ranges[i];
+        //MPI_Win_shared_query(win,i,&sz,&dsp_unit,&optr1);
+        //if (optr1 != optr[ii]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "optr1 %p != optrd[%d] %p ",optr1,ii,optr[ii]);
+        lvec_arr[j++] = optr[ii][idx_loc];
+      }
+      ii++;
+    }
+  }
+  ierr = VecRestoreArray(lvec,&lvec_arr);CHKERRQ(ierr);
+
   /* (3) y_loc = A*x_loc + B*lvec */
   /*------------------------------*/
-  ierr = PetscLogStagePush(stages[3]);CHKERRQ(ierr);
-  ierr = MatMult(B,lvec,yB);CHKERRQ(ierr); /* yB = B*lvec */
+  /* yB = B*lvec */
+  ierr = MatMult(B,lvec,yB);CHKERRQ(ierr);
 
   /* y_loc = A*x_loc + yB */
   ierr = MatMultAdd(A,x_loc,yB,y_loc);CHKERRQ(ierr);
@@ -193,13 +205,11 @@ int main(int argc,char **argv)
   ierr = VecEqual(y,y_shm,&flg);CHKERRQ(ierr);
   if (!flg) printf("y != y_shm\n");
 
-  ierr = VecResetArray(x_shm);CHKERRQ(ierr);
-  ierr = VecResetArray(y_shm);CHKERRQ(ierr);
-
   /* Free spaces */
   ierr = VecDestroy(&yB);CHKERRQ(ierr);
   ierr = VecDestroy(&y_loc);CHKERRQ(ierr);
   ierr = VecDestroy(&x_loc);CHKERRQ(ierr);
+  ierr = PetscFree(optr);CHKERRQ(ierr);
   MPI_Win_free(&win);
   MPI_Comm_free(&shmcomm);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -207,8 +217,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x_shm);CHKERRQ(ierr);
   ierr = VecDestroy(&y_shm);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
-  //ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
-  //ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
