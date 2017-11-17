@@ -1,0 +1,12 @@
+Error for initial conditions 0.07258
+iter =   0, Function value: 0.00526234,  Residual: 1.1919 
+Error for initial conditions 0.05002
+iter =   1, Function value: 0.00249937,  Residual: 0.821346 
+Error for initial conditions 6.65734e-06
+iter =   2, Function value: 4.34104e-11,  Residual: 0.000191739 
+Error for initial conditions 3.05274e-07
+iter =   3, Function value: 9.10474e-14,  Residual: 9.07531e-06 
+Error for initial conditions 3.54071e-09
+iter =   4, Function value: 1.23441e-17,  Residual: 5.49885e-08 
+Error for initial conditions 3.07518e-10
+iter =   5, Function value: 4.00471e-20,  Residual: 3.11884e-09 
