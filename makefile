@@ -562,7 +562,7 @@ exercises:
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
-        start_configure configure_petsc configure_clean matlabbin
+        start_configure configure_petsc configure_clean matlabbin install
 
 petscao : petscmat petscao.f90.h
 petscdm : petscksp petscdm.f90.h
