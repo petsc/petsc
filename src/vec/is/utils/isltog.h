@@ -22,7 +22,7 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
   }
   start   = mapping->globalstart;
   end     = mapping->globalend;
-  bs      = mapping->bs;
+  bs      = GTOLBS;
 
 
 
@@ -30,8 +30,8 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
     if (idxout) {
       for (i=0; i<n; i++) {
         if (idx[i] < 0)                   idxout[i] = idx[i];
-        else if (idx[i] < GTOLSTART)      idxout[i] = -1;
-        else if (idx[i] > GTOLEND)        idxout[i] = -1;
+        else if (idx[i] < bs*start)       idxout[i] = -1;
+        else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
         else                              GTOL(idx[i], idxout[i]);
       }
     }
@@ -40,8 +40,8 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
     if (idxout) {
       for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
-        if (idx[i] < GTOLSTART) continue;
-        if (idx[i] > GTOLEND) continue;
+        if (idx[i] < bs*start) continue;
+        if (idx[i] > bs*(end+1)-1) continue;
         GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         idxout[nf++] = tmp;
@@ -49,8 +49,8 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
     } else {
       for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
-        if (idx[i] < GTOLSTART) continue;
-        if (idx[i] > GTOLEND) continue;
+        if (idx[i] < bs*start) continue;
+        if (idx[i] > bs*(end+1)-1) continue;
         GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         nf++;
@@ -67,6 +67,5 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
 #undef PETSCMAPNAME
 #undef GTOLTYPE
 #undef GTOLNAME
-#undef GTOLSTART
-#undef GTOLEND
+#undef GTOLBS
 #undef GTOL
