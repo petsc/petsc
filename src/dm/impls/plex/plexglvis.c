@@ -838,7 +838,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"nodes\n");CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject)hovec,&fec);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementCollection: %s\n",fec);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%s\n",fec);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"VDim: %D\n",sdim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Ordering: 1\n\n");CHKERRQ(ierr); /*Ordering::byVDIM*/
     ierr = VecGetArrayRead(hovec,&array);CHKERRQ(ierr);
