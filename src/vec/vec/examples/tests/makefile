@@ -212,30 +212,6 @@ ex47: ex47.o  chkopts
 
 
 #--------------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1;\
-	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi ;\
-	   ${RM} -f ex1_1.tmp
-runex1_2:
-	-@${MPIEXEC} -n 2 ./ex1 > ex1_2.tmp 2>&1;\
-	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; fi ;\
-	   ${RM} -f ex1_2.tmp
-runex2:
-	-@${MPIEXEC} -n 1 ./ex2 > ex2_1.tmp 2>&1;\
-	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex2_1.tmp
-runex3:
-	-@${MPIEXEC} -n 2 ./ex3 > ex3_1.tmp 2>&1;\
-	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex3_1.tmp
-runex3_2:
-	-@${MPIEXEC} -n 2 ./ex3 -vec_view ascii::ascii_info > ex3_2.tmp 2>&1;\
-	   ${DIFF} output/ex3_2.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
-	   ${RM} ex3_2.tmp
 runex4:
 	-@${MPIEXEC} -n 2 ./ex4 > ex4_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
@@ -261,11 +237,6 @@ runex4_cuda2:
 	   if (${DIFF} output/ex4_1.out ex4_cuda_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex4_cuda2, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex4_cuda_2.tmp
-runex5:
-	-@${MPIEXEC} -n 2 ./ex5 > ex5_1.tmp 2>&1;\
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex5_1.tmp
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 > ex6_1.tmp 2>&1;\
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
@@ -502,8 +473,7 @@ runex47:
 	-@${MPIEXEC} -n 4 ./ex47  -viewer_hdf5_sp_output
 
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
-                              ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
+TESTEXAMPLES_C		    = ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
                               runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
                               runex11_bts ex11.rm ex12.PETSc runex12 ex12.rm  ex14.PETSc runex14 \
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
