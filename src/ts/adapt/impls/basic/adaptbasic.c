@@ -97,7 +97,7 @@ static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
 
    Level: intermediate
 
-.seealso: TS, TSAdapt, TSSetAdapt()
+.seealso: TS, TSAdapt, TSGetAdapt()
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {

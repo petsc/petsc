@@ -1035,7 +1035,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
     Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
 
- 
+
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen(), DMCreateInterpolation()
 
 @*/
@@ -1796,7 +1796,7 @@ PetscErrorCode DMRefineHookRemove(DM coarse,PetscErrorCode (*refinehook)(DM,DM,v
 
    Input Arguments:
 +  coarse - coarser DM to use as a base
-.  restrct - interpolation matrix, apply using MatInterpolate()
+.  interp - interpolation matrix, apply using MatInterpolate()
 -  fine - finer DM to update
 
    Level: developer
@@ -2512,8 +2512,9 @@ PetscErrorCode DMCoarsenHookRemove(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,v
    Input Arguments:
 +  fine - finer DM to use as a base
 .  restrct - restriction matrix, apply using MatRestrict()
+.  rscale - scaling vector for restriction
 .  inject - injection matrix, also use MatRestrict()
--  coarse - coarer DM to update
+-  coarse - coarser DM to update
 
    Level: developer
 

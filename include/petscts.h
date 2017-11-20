@@ -250,7 +250,7 @@ PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 /*S
-     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/ADE at each time step)
+     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)
 
    Level: advanced
 
