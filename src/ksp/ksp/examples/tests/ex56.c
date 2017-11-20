@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
   PetscInt       bc,xn,j,col,*owner,i,k;
-  Vec            x,y,x_shm,y_shm,lvec,yB,y_loc,x_loc;
+  Vec            x,y,x_shm,y_shm,lvec,y_loc,x_loc;
   PC             pc;
   Mat            C,A,B;
   PetscMPIInt    srank,size;
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   Mat_MPIAIJ     *c;
   PetscMPIInt    orank;
   MPI_Aint       sz;
-  PetscInt       dsp_unit,idx_loc;
+  PetscInt       dsp_unit,idx_loc,it,its=100;
   PetscScalar    **optr,*lvec_arr;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stages[3];
@@ -114,10 +114,12 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(x_shm,&x_arr);CHKERRQ(ierr);
 
   /* Compute y = C*x_shm using MatMult() for comparison */
+  ierr = VecCopy(x_shm,x);CHKERRQ(ierr);
   ierr = MPI_Barrier(shmcomm);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
-  ierr = MatMult(C,x_shm,y);CHKERRQ(ierr);
-  //ierr = VecView(x_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  for (i=0; i<its; i++) {
+    ierr = MatMult(C,x,y);CHKERRQ(ierr);
+  }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Create Mv context */
@@ -160,7 +162,6 @@ int main(int argc,char **argv)
     }
   }
 
-  ierr = MatCreateVecs(B,NULL,&yB);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)mem,&x_loc);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,xn,(const PetscScalar *)(mem+xn),&y_loc);CHKERRQ(ierr);
   if (srank == 1000) {
@@ -173,29 +174,31 @@ int main(int argc,char **argv)
   PetscInt    ii,rstart;
   ierr = MPI_Barrier(shmcomm);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
-  ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
-  j = 0;
-  ii = 0;
-  for (i=0; i<size; i++) {
-    if (nGhosts[i]) { /* read ghost values from shared proc[i] */
-      optr1  = optr[ii];
-      rstart = ranges[i];
-      for (k=0; k< nGhosts[i]; k++) {
-        idx_loc = garray[j] - rstart;
-        lvec_arr[j++] = optr1[idx_loc];
+  for (it=0; it<its; it++) {
+    ierr = VecGetArray(lvec,&lvec_arr);CHKERRQ(ierr);
+    j = 0;
+    ii = 0;
+    for (i=0; i<size; i++) {
+      if (nGhosts[i]) { /* read ghost values from shared proc[i] */
+        optr1  = optr[ii];
+        rstart = ranges[i];
+        for (k=0; k< nGhosts[i]; k++) {
+          idx_loc = garray[j] - rstart;
+          lvec_arr[j++] = optr1[idx_loc];
+        }
+        ii++;
       }
-      ii++;
     }
+    ierr = VecRestoreArray(lvec,&lvec_arr);CHKERRQ(ierr);
+
+    /* (3) y_loc = A*x_loc + B*lvec */
+    /*------------------------------*/
+    /*y_loc  = B*lvec */
+    ierr = MatMult(B,lvec,y_loc);CHKERRQ(ierr);
+
+    /* y_loc = A*x_loc + y_loc */
+    ierr = MatMultAdd(A,x_loc,y_loc,y_loc);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(lvec,&lvec_arr);CHKERRQ(ierr);
-
-  /* (3) y_loc = A*x_loc + B*lvec */
-  /*------------------------------*/
-  /* yB = B*lvec */
-  ierr = MatMult(B,lvec,yB);CHKERRQ(ierr);
-
-  /* y_loc = A*x_loc + yB */
-  ierr = MatMultAdd(A,x_loc,yB,y_loc);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   //if (srank == 0) printf("y_shm:\n");
   //ierr = VecView(y_shm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -206,7 +209,6 @@ int main(int argc,char **argv)
   if (!flg) printf("y != y_shm\n");
 
   /* Free spaces */
-  ierr = VecDestroy(&yB);CHKERRQ(ierr);
   ierr = VecDestroy(&y_loc);CHKERRQ(ierr);
   ierr = VecDestroy(&x_loc);CHKERRQ(ierr);
   ierr = PetscFree(optr);CHKERRQ(ierr);
