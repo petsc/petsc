@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   KSP            ksp;
   DM             da;
   UserContext    user;
-  const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
   PetscInt       bc,xn,j,col,*owner,i,k;
   Vec            x,y,x_shm,y_shm,lvec,y_loc,x_loc;
@@ -61,7 +60,6 @@ int main(int argc,char **argv)
   PetscScalar    *x_arr;
   const PetscInt *garray,*ranges;
   Mat_MPIAIJ     *c;
-  PetscMPIInt    orank;
   MPI_Aint       sz;
   PetscInt       dsp_unit,idx_loc,it,its=100;
   PetscScalar    **optr,*lvec_arr;
