@@ -1,7 +1,7 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
-/*@
+/*@C
    PetscViewerGetSubViewer - Creates a new PetscViewer (same type as the old)
     that lives on a subcommunicator
 
@@ -44,7 +44,7 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscViewerRestoreSubViewer - Restores a new PetscViewer obtained with PetscViewerGetSubViewer().
 
     Collective on PetscViewer

@@ -68,3 +68,8 @@
        end
 
 
+!/*TEST
+!
+!     test:
+!
+!TEST*/

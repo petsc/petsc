@@ -117,5 +117,10 @@
 
       end
 
-
+!/*TEST
+!
+!     test:
+!       nsize: 4
+!
+!TEST*/
 

@@ -127,4 +127,16 @@
        end
 
 
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!     test:
+!       suffix: 2
+!       nsize: 2
+!       args: -allocate
+!
+!TEST*/
+
 

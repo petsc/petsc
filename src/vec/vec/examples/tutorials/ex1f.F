@@ -211,3 +211,14 @@
 
       end
 
+!
+!/*TEST
+!
+!     test:
+!       suffix: 1
+!
+!     test:
+!       suffix: 2
+!       nsize: 2
+!
+!TEST*/

@@ -25,3 +25,9 @@
       call PetscSectionDestroy(section, ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!     test:
+!
+!TEST*/
