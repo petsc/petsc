@@ -13,6 +13,7 @@ struct _n_PetscViewerGLVisInfo {
   PetscBool enabled;  /* whether or not to visualize data from the process (it works, but it currently misses a public API) */
   PetscBool init;     /* whether or not the popup window has been initialized (must be done after having sent the data the first time) */
   PetscReal pause;    /* pause argument */
+  char*     fmt;      /* format */
 };
 typedef struct _n_PetscViewerGLVisInfo *PetscViewerGLVisInfo;
 

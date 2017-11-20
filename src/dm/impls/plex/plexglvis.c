@@ -80,7 +80,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
       ierr = DMPlexRestoreTransitiveClosure(dm,c,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
     }
   }
-  for (f=0,Nv=0;f<vEnd-vStart;f++) if (PetscBTLookup(vown,f)) Nv++;
+  for (f=0,Nv=0;f<vEnd-vStart;f++) if (PetscLikely(PetscBTLookup(vown,f))) Nv++;
 
   ierr = DMCreateLocalVector(dm,&xlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xlocal,&totdofs);CHKERRQ(ierr);
@@ -243,9 +243,7 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
   ierr = DMPlexGetConeSize(dm,p,&csize);CHKERRQ(ierr);
   if (label) {
     ierr = DMLabelGetValue(label,p,mid);CHKERRQ(ierr);
-  } else {
-    *mid = 1;
-  }
+  } else *mid = 1;
   *cid = mfem_table_cid[depth][csize];
   PetscFunctionReturn(0);
 }
@@ -276,17 +274,19 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
     ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
     for (q=0;q<dof/sdim;q++) vids[q] = off/sdim + q;
   }
-  ierr = DMPlexInvertCell(dim,q,vids);CHKERRQ(ierr);
   *nv  = q;
   PetscFunctionReturn(0);
 }
 
-/* ASCII visualization/dump: full support for simplices and tensor product cells. It supports AMR */
+/*
+   ASCII visualization/dump: full support for simplices and tensor product cells. It supports AMR
+   Higher order meshes are also supported
+*/
 static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 {
   DMLabel              label;
   PetscSection         coordSection,parentSection;
-  Vec                  coordinates;
+  Vec                  coordinates,hovec;
   IS                   globalNum = NULL;
   const PetscScalar    *array;
   const PetscInt       *gNum;
@@ -297,7 +297,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscBT              pown;
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
-  PetscBool            enabled = PETSC_TRUE;
+  PetscBool            periodic, enabled = PETSC_TRUE;
+  const char           *fmt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -315,23 +316,34 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
   {
     PetscViewerGLVisInfo glvis_info;
-    ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
+    ierr    = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
     enabled = glvis_info->enabled;
+    fmt     = glvis_info->fmt;
   }
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  if (periodic && !localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
   ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+
+  /* Users can attach a coordinate vector to the DM in case they have a higher-order mesh
+     DMPlex does not currently support HO meshes, so there's no API for this */
+  ierr = PetscObjectQuery((PetscObject)dm,"_glvis_mesh_coords",(PetscObject*)&hovec);CHKERRQ(ierr);
 
   /*
      a couple of sections of the mesh specification are disabled
-       - boundary: unless we want to visualize boundary attributes, the boundary is not needed for proper mesh visualization
-       - vertex_parents: used for non-conforming meshes only when we want to use MFEM as a discretization package and be able to derefine the mesh
+       - boundary: unless we want to visualize boundary attributes or we have a periodic mesh
+                   the boundary is not needed for proper mesh visualization
+       - vertex_parents: used for non-conforming meshes only when we want to use MFEM as a discretization package
+                         and be able to derefine the mesh
   */
-  enable_boundary = PETSC_FALSE;
-  enable_ncmesh   = PETSC_FALSE;
+  enable_boundary = periodic;
+  enable_ncmesh = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation; useful for debugging purposes",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation; useful for debugging purposes",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
@@ -367,7 +379,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"\nboundary\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
@@ -404,7 +415,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       }
     }
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
-    ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,localized ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
+    ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
+    ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
     for (i=0;i<nv;i++) {
       ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
@@ -417,8 +429,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (!enable_boundary) {
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
   } else {
-    PetscInt fStart,fEnd,fEndInterior;
-    PetscInt *faces = NULL,fpc = 0,vpf = 0;
+    DMLabel  perLabel;
+    PetscBT  bfaces;
+    PetscInt fStart,fEnd,fEndInterior,*fcells;
+    PetscInt *faces = NULL,fpc = 0,vpf = 0, vpc = 0;
     PetscInt fv1[]     = {0,1},
              fv2tri[]  = {0,1,
                           1,2,
@@ -438,7 +452,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                        3,2,6,5,
                        0,4,7,1};
 
-    if (localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Boundary specification with periodic mesh");
     /* determine orientation of boundary mesh */
     if (cEnd-cStart) {
       ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
@@ -447,16 +460,19 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           if (fpc != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case faces per cell %D",fpc);
           faces = fv1;
           vpf = 1;
+          vpc = 2;
           break;
         case 2:
           switch (fpc) {
             case 3:
               faces = fv2tri;
               vpf   = 2;
+              vpc   = 3;
               break;
             case 4:
               faces = fv2quad;
               vpf   = 2;
+              vpc   = 4;
               break;
             default:
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
@@ -468,10 +484,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             case 4:
               faces = fv3tet;
               vpf   = 3;
+              vpc   = 4;
               break;
             case 6:
               faces = fv3hex;
               vpf   = 4;
+              vpc   = 8;
               break;
             default:
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
@@ -483,30 +501,142 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           break;
       }
     }
-
-    ierr = DMPlexGetHybridBounds(dm, NULL, &fEndInterior, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm,NULL,&fEndInterior,NULL,NULL);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
     fEnd = fEndInterior < 0 ? fEnd : fEndInterior;
-    if (!ovl) {
-      for (p=fStart,bf=0;p<fEnd;p++) {
-        PetscInt supportSize;
+    ierr = PetscBTCreate(fEnd-fStart,&bfaces);CHKERRQ(ierr);
+    ierr = DMPlexGetMaxSizes(dm,NULL,&p);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p,&fcells);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,"glvis_periodic_cut",&perLabel);CHKERRQ(ierr);
+    if (!perLabel && localized) { /* this periodic cut can be moved up to DMPlex setup */
+      ierr = DMCreateLabel(dm,"glvis_periodic_cut");CHKERRQ(ierr);
+      ierr = DMGetLabel(dm,"glvis_periodic_cut",&perLabel);CHKERRQ(ierr);
+      ierr = DMLabelSetDefaultValue(perLabel,1);CHKERRQ(ierr);
+      for (p=cStart;p<cEnd;p++) {
+        PetscInt dof;
+        ierr = PetscSectionGetDof(coordSection,p,&dof);CHKERRQ(ierr);
+        if (dof) {
+          PetscInt    v,csize,cellClosureSize,*cellClosure = NULL,*vidxs = NULL;
+          PetscScalar *vals = NULL;
 
-        ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
-        if (supportSize == 1) bf++;
+          if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
+          if (dof/sdim != vpc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D and vertices %D",dof/sdim,vpc);
+          ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
+          ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
+          for (v=0;v<cellClosureSize;v++)
+            if (cellClosure[2*v] >= vStart && cellClosure[2*v] < vEnd) {
+              vidxs = cellClosure + 2*v;
+              break;
+            }
+          if (!vidxs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
+          for (v=0;v<vpc;v++) {
+            PetscInt s;
+            for (s=0;s<sdim;s++) {
+              if (PetscAbsScalar(vals[v*sdim+s]-vals[v*sdim+s+vpc*sdim])>PETSC_MACHINE_EPSILON) {
+                ierr = DMLabelSetValue(perLabel,vidxs[2*v],2);CHKERRQ(ierr);
+              }
+            }
+          }
+          ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
+          ierr = DMPlexVecRestoreClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
+        }
       }
-    } else {
-      for (p=fStart,bf=0;p<fEnd;p++) {
+      if (dim > 1) {
+        PetscInt eEnd,eStart,eEndInterior;
+        ierr = DMPlexGetHybridBounds(dm,NULL,NULL,&eEndInterior,NULL);CHKERRQ(ierr);
+        ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
+        eEnd = eEndInterior < 0 ? eEnd : eEndInterior;
+        for (p=eStart;p<eEnd;p++) {
+          const PetscInt *cone;
+          PetscInt       coneSize,i;
+          PetscBool      ispe = PETSC_TRUE;
+
+          ierr = DMPlexGetCone(dm,p,&cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeSize(dm,p,&coneSize);CHKERRQ(ierr);
+          for (i=0;i<coneSize;i++) {
+            PetscInt v;
+
+            ierr = DMLabelGetValue(perLabel,cone[i],&v);CHKERRQ(ierr);
+            ispe = (PetscBool)(ispe && (v==2));
+          }
+          if (ispe && coneSize) {
+            ierr = DMLabelSetValue(perLabel,p,2);CHKERRQ(ierr);
+          }
+        }
+        if (dim > 2) {
+          for (p=fStart;p<fEnd;p++) {
+            const PetscInt *cone;
+            PetscInt       coneSize,i;
+            PetscBool      ispe = PETSC_TRUE;
+
+            ierr = DMPlexGetCone(dm,p,&cone);CHKERRQ(ierr);
+            ierr = DMPlexGetConeSize(dm,p,&coneSize);CHKERRQ(ierr);
+            for (i=0;i<coneSize;i++) {
+              PetscInt v;
+
+              ierr = DMLabelGetValue(perLabel,cone[i],&v);CHKERRQ(ierr);
+              ispe = (PetscBool)(ispe && (v==2));
+            }
+            if (ispe && coneSize) {
+              ierr = DMLabelSetValue(perLabel,p,2);CHKERRQ(ierr);
+            }
+          }
+        }
+      }
+    }
+    for (p=fStart;p<fEnd;p++) {
+      const PetscInt *support;
+      PetscInt       supportSize;
+      PetscBool      isbf = PETSC_FALSE;
+
+      ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
+      if (ovl) {
+        PetscBool has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
+        PetscInt  i;
+
+        ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
+        for (i=0;i<supportSize;i++) {
+          if (PetscLikely(PetscBTLookup(pown,support[i]-cStart))) has_owned = PETSC_TRUE;
+          else has_ghost = PETSC_TRUE;
+        }
+        isbf = (PetscBool)((supportSize == 1 && has_owned) || (supportSize > 1 && has_owned && has_ghost));
+      } else {
+        isbf = (PetscBool)(supportSize == 1);
+      }
+      if (!isbf && perLabel) {
+        const PetscInt *cone;
+        PetscInt       coneSize,i;
+
+        ierr = DMPlexGetCone(dm,p,&cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm,p,&coneSize);CHKERRQ(ierr);
+        isbf = PETSC_TRUE;
+        for (i=0;i<coneSize;i++) {
+          PetscInt v,d;
+
+          ierr = DMLabelGetValue(perLabel,cone[i],&v);CHKERRQ(ierr);
+          ierr = DMLabelGetDefaultValue(perLabel,&d);CHKERRQ(ierr);
+          isbf = (PetscBool)(isbf && v != d);
+        }
+      }
+      if (isbf) {
+        ierr = PetscBTSet(bfaces,p-fStart);CHKERRQ(ierr);
+      }
+    }
+    /* count boundary faces */
+    for (p=fStart,bf=0;p<fEnd;p++) {
+      if (PetscUnlikely(PetscBTLookup(bfaces,p-fStart))) {
         const PetscInt *support;
-        PetscInt       i,supportSize;
-        PetscBool      has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
+        PetscInt       supportSize,c;
 
         ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-        for (i=0;i<supportSize;i++) {
-          if (PetscBTLookup(pown,support[i]-cStart)) has_owned = PETSC_TRUE;
-          else has_ghost = PETSC_TRUE;
-        }
-        if ((supportSize == 1 && has_owned) || (supportSize > 1 && has_owned && has_ghost)) bf++;
+        if (ovl) {
+          for (c=0;c<supportSize;c++) {
+            if (PetscLikely(PetscBTLookup(pown,support[c]-cStart))) {
+              bf++;
+            }
+          }
+        } else bf += supportSize;
       }
     }
     /* TODO: is this the label we want to use for marking boundary facets?
@@ -515,74 +645,47 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     */
     ierr = DMGetLabel(dm,"marker",&label);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",bf);CHKERRQ(ierr);
-    if (!ovl) {
-      for (p=fStart;p<fEnd;p++) {
-        PetscInt supportSize;
-
-        ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
-        if (supportSize == 1) {
-          const    PetscInt *support, *cone;
-          PetscInt i,c,v,cid = -1,mid = -1;
-          PetscInt cellClosureSize,*cellClosure = NULL;
-
-          ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm,support[0],&cone);CHKERRQ(ierr);
-          for (c=0;c<fpc;c++)
-            if (cone[c] == p)
-              break;
-
-          ierr = DMPlexGetTransitiveClosure(dm,support[0],PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
-          for (v=0;v<cellClosureSize;v++)
-            if (cellClosure[2*v] >= vStart && cellClosure[2*v] < vEnd)
-              break;
-          ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
-          for (i=0;i<vpf;i++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %D",cellClosure[2*(v+faces[c*vpf+i])]-vStart);CHKERRQ(ierr);
-          }
-          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-          ierr = DMPlexRestoreTransitiveClosure(dm,support[0],PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
-        }
-      }
-    } else {
-      for (p=fStart;p<fEnd;p++) {
+    for (p=fStart;p<fEnd;p++) {
+      if (PetscUnlikely(PetscBTLookup(bfaces,p-fStart))) {
         const PetscInt *support;
-        PetscInt       i,supportSize,validcell = -1;
-        PetscBool      has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
+        PetscInt       supportSize,c,nc = 0;
 
         ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-        for (i=0;i<supportSize;i++) {
-          if (PetscBTLookup(pown,support[i]-cStart)) {
-            has_owned = PETSC_TRUE;
-            validcell = support[i];
-          } else has_ghost = PETSC_TRUE;
-        }
-        if ((supportSize == 1 && has_owned) || (supportSize > 1 && has_owned && has_ghost)) {
-          const    PetscInt *support, *cone;
-          PetscInt i,c,v,cid = -1,mid = -1;
-          PetscInt cellClosureSize,*cellClosure = NULL;
+        if (ovl) {
+          for (c=0;c<supportSize;c++) {
+            if (PetscLikely(PetscBTLookup(pown,support[c]-cStart))) {
+              fcells[nc++] = support[c];
+            }
+          }
+        } else for (c=0;c<supportSize;c++) fcells[nc++] = support[c];
+        for (c=0;c<nc;c++) {
+          const    PetscInt *cone;
+          int      vids[8];
+          PetscInt i,cell,cl,nv,cid = -1,mid = -1;
 
-          ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm,validcell,&cone);CHKERRQ(ierr);
-          for (c=0;c<fpc;c++)
-            if (cone[c] == p)
+          cell = fcells[c];
+          ierr = DMPlexGetCone(dm,cell,&cone);CHKERRQ(ierr);
+          for (cl=0;cl<fpc;cl++)
+            if (cone[cl] == p)
               break;
 
-          ierr = DMPlexGetTransitiveClosure(dm,validcell,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
-          for (v=0;v<cellClosureSize;v++)
-            if (cellClosure[2*v] >= vStart && cellClosure[2*v] < vEnd)
-              break;
+          /* face material id and type */
           ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
+          /* vertex ids */
+          ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
           for (i=0;i<vpf;i++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %D",cellClosure[2*(v+faces[c*vpf+i])]-vStart);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %D",vids[faces[cl*vpf+i]]);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-          ierr = DMPlexRestoreTransitiveClosure(dm,validcell,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
         }
+        bf = bf-nc;
       }
     }
+    if (bf) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Remaining boundary faces %D",bf);
+    ierr = PetscBTDestroy(&bfaces);CHKERRQ(ierr);
+    ierr = PetscFree(fcells);CHKERRQ(ierr);
   }
 
   /* mark owned vertices */
@@ -650,6 +753,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             case 2: /* edge */
               nv   = 0;
               ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,parent,localized ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
+              ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
               ierr = PetscViewerASCIIPrintf(viewer,"%D",p-vStart);CHKERRQ(ierr);
               for (i=0;i<nv;i++) {
                 ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
@@ -725,21 +829,44 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscBTDestroy(&pown);CHKERRQ(ierr);
 
   /* vertices */
-  ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(coordinates,&nvert);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D\n",nvert/sdim);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates,&array);CHKERRQ(ierr);
-  for (p=0;p<nvert/sdim;p++) {
-    PetscInt s;
-    for (s=0;s<sdim;s++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%g ",PetscRealPart(array[p*sdim+s]));CHKERRQ(ierr);
+  if (hovec) { /* higher-order meshes */
+    const char *fec;
+    PetscInt   i,n;
+
+    ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D\n",vEnd-vStart);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"nodes\n");CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)hovec,&fec);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementCollection: %s\n",fec);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"VDim: %D\n",sdim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Ordering: 1\n\n");CHKERRQ(ierr); /*Ordering::byVDIM*/
+    ierr = VecGetArrayRead(hovec,&array);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(hovec,&n);CHKERRQ(ierr);
+    if (n%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Size of local coordinate vector %D incompatible with space dimension %D",n,sdim);
+    for (i=0;i<n/sdim;i++) {
+      PetscInt s;
+      for (s=0;s<sdim;s++) {
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(hovec,&array);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(coordinates,&nvert);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"\nvertices\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D\n",nvert/sdim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(coordinates,&array);CHKERRQ(ierr);
+    for (p=0;p<nvert/sdim;p++) {
+      PetscInt s;
+      for (s=0;s<sdim;s++) {
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[p*sdim+s]));CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(coordinates,&array);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(coordinates,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

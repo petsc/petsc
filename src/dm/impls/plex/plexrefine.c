@@ -8552,15 +8552,16 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
-  PetscBool      isUniform, localized;
+  PetscBool      isUniform;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   if (isUniform) {
     CellRefiner cellRefiner;
+    PetscBool   localized;
 
+    ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);

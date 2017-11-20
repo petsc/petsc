@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = DMSetUp(da2D);CHKERRQ(ierr);
 
   /* Set the coordinates */
-  DMDASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
+  ierr = DMDASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);CHKERRQ(ierr);
 
   /* Declare gauss as a DMDA component */
   ierr = DMCreateGlobalVector(da2D,&gauss);CHKERRQ(ierr);

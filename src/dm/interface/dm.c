@@ -4703,7 +4703,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 
 
 /*@
-  DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
+  DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for cells having periodic faces
 
   Input Parameter:
 . dm - The DM

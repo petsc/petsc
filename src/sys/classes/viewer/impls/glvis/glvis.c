@@ -25,8 +25,48 @@ struct _n_PetscViewerGLVis {
   PetscInt               snapid;                                                /* snapshot id, use PetscViewerGLVisSetSnapId to change this value*/
   void                   *userctx;                                              /* User context, used by g2lfield */
   PetscErrorCode         (*destroyctx)(void*);                                  /* destroy routine for userctx */
+  char*                  fmt;                                                   /* format string for FP values */
 };
 typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
+
+/*@
+     PetscViewerGLVisSetPrecision - Set the number of digits for floating point values
+
+  Not Collective
+
+  Input Parameters:
++  viewer - the PetscViewer
+-  prec   - the number of digits required
+
+  Level: beginner
+
+.seealso: PetscViewerGLVisOpen(), PetscViewerGLVisSetFields(), PetscViewerCreate(), PetscViewerSetType()
+@*/
+PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer viewer, PetscInt prec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTryMethod(viewer,"PetscViewerGLVisSetPrecision_C",(PetscViewer,PetscInt),(viewer,prec));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, PetscInt prec)
+{
+  PetscErrorCode   ierr;
+  PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(socket->fmt);CHKERRQ(ierr);
+  if (prec > 0) {
+    ierr = PetscMalloc1(16,&socket->fmt);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(socket->fmt,16," %%.%De",prec);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy(" %g",&socket->fmt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*@
      PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the viewer is of type PETSC_VIEWER_GLVIS_DUMP
@@ -39,7 +79,7 @@ typedef struct _n_PetscViewerGLVis *PetscViewerGLVis;
 
   Level: beginner
 
-.seealso: PetscViewerGLVisOpen(), PetscViewerCreate(), PetscViewerSetType()
+.seealso: PetscViewerGLVisOpen(), PetscViewerGLVisSetFields(), PetscViewerCreate(), PetscViewerSetType()
 @*/
 PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer viewer, PetscInt id)
 {
@@ -57,7 +97,7 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
   PetscViewerGLVis socket = (PetscViewerGLVis)viewer->data;
 
   PetscFunctionBegin;
-  socket->snapid = id;;
+  socket->snapid = id;
   PetscFunctionReturn(0);
 }
 
@@ -141,6 +181,7 @@ static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void *ptr)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(info->fmt);CHKERRQ(ierr);
   ierr = PetscFree(info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -154,15 +195,22 @@ static PetscErrorCode PetscViewerGLVisAttachInfo_Private(PetscViewer viewer, Pet
   PetscViewerGLVisInfo info;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&info);CHKERRQ(ierr);
-  info->enabled = PETSC_TRUE;
-  info->init    = PETSC_FALSE;
-  info->pause   = socket->pause;
-  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)window),&container);CHKERRQ(ierr);
-  ierr = PetscContainerSetPointer(container,(void*)info);CHKERRQ(ierr);
-  ierr = PetscContainerSetUserDestroy(container,PetscViewerGLVisInfoDestroy_Private);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)window,"_glvis_info_container",(PetscObject)container);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)window,"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
+  if (!container) {
+    ierr = PetscNew(&info);CHKERRQ(ierr);
+    info->enabled = PETSC_TRUE;
+    info->init    = PETSC_FALSE;
+    info->pause   = socket->pause;
+    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)window),&container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container,(void*)info);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container,PetscViewerGLVisInfoDestroy_Private);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)window,"_glvis_info_container",(PetscObject)container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  } else {
+    ierr = PetscContainerGetPointer(container,(void**)&info);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(info->fmt);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(socket->fmt,&info->fmt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -238,9 +286,11 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
       ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
     }
     if (socket->meshwindow) {
-      ierr = PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
     }
+  }
+  if (socket->meshwindow) {
+    ierr = PetscViewerGLVisAttachInfo_Private(viewer,socket->meshwindow);CHKERRQ(ierr);
   }
   *view = socket->meshwindow;
   PetscFunctionReturn(0);
@@ -334,7 +384,6 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
         ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->window[wid]);CHKERRQ(ierr);
       }
       if (socket->window[wid]) {
-        ierr = PetscViewerGLVisAttachInfo_Private(viewer,socket->window[wid]);CHKERRQ(ierr);
         ierr = PetscViewerPushFormat(socket->window[wid],PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
       }
       *view = socket->window[wid];
@@ -348,6 +397,9 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
     default:
       SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unhandled socket status %d\n",(int)status);
       break;
+  }
+  if (*view) {
+    ierr = PetscViewerGLVisAttachInfo_Private(viewer,*view);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -449,10 +501,12 @@ static PetscErrorCode PetscViewerDestroy_GLVis(PetscViewer viewer)
   }
   ierr = PetscFree(socket->name);CHKERRQ(ierr);
   ierr = PetscFree5(socket->window,socket->windowtitle,socket->fec_type,socket->spacedim,socket->Ufield);CHKERRQ(ierr);
+  ierr = PetscFree(socket->fmt);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&socket->meshwindow);CHKERRQ(ierr);
   ierr = PetscObjectDestroy(&socket->dm);CHKERRQ(ierr);
   if (socket->destroyctx && socket->userctx) { ierr = (*socket->destroyctx)(socket->userctx);CHKERRQ(ierr); }
 
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
@@ -615,10 +669,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_GLVis(PetscViewer viewer)
   socket->type  = PETSC_VIEWER_GLVIS_SOCKET;
   socket->pause = 0; /* just pause the first time */
 
+  /* defaults to full precision */
+  ierr = PetscStrallocpy(" %g",&socket->fmt);CHKERRQ(ierr);
+
   viewer->data                = (void*)socket;
   viewer->ops->destroy        = PetscViewerDestroy_GLVis;
   viewer->ops->setfromoptions = PetscViewerSetFromOptions_GLVis;
 
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetPrecision_C",PetscViewerGLVisSetPrecision_GLVis);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetSnapId_C",PetscViewerGLVisSetSnapId_GLVis);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerGLVisSetFields_C",PetscViewerGLVisSetFields_GLVis);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerSetFileName_GLVis);CHKERRQ(ierr);

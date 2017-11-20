@@ -77,6 +77,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFil
 E*/
 typedef enum {PETSC_VIEWER_GLVIS_DUMP, PETSC_VIEWER_GLVIS_SOCKET} PetscViewerGLVisType;
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm,PetscViewerGLVisType,const char*,PetscInt,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetPrecision(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*));
 
