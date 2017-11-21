@@ -13,16 +13,18 @@ runfiles='@LOCALRUNFILES@'
 wPETSC_DIR='@WPETSC_DIR@'
 petsc_dir='@PETSC_DIR@'
 petsc_arch='@PETSC_ARCH@'
-# Must be consistent with gmakefile
+# Must be consistent with gmakefile.test
 testlogfile=${petsc_dir}/${petsc_arch}/tests/examples-${petsc_arch}.log
+config_dir='@CONFIG_DIR@'
+petsc_bindir='@PETSC_BINDIR@'
 @DATAFILESPATH_LINE@
 args='@ARGS@'
 timeoutfactor=@TIMEOUTFACTOR@
 
 mpiexec=${PETSCMPIEXEC:-"@MPIEXEC@"}
-diffexec=${PETSCDIFF:-"${petsc_dir}/bin/petscdiff"}
+diffexec=${PETSCDIFF:-"${petsc_bindir}/petscdiff"}
 
-. "${petsc_dir}/config/petsc_harness.sh"
+. "${config_dir}/petsc_harness.sh"
 
 # The diff flags come from script arguments
 diff_exe="${diffexec} ${diff_flags}"
