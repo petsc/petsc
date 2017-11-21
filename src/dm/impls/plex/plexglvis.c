@@ -287,14 +287,13 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   DMLabel              label;
   PetscSection         coordSection,parentSection;
   Vec                  coordinates,hovec;
-  IS                   globalNum = NULL;
   const PetscScalar    *array;
-  const PetscInt       *gNum;
   PetscInt             bf,p,sdim,dim,depth,novl;
   PetscInt             cStart,cEnd,cEndInterior,vStart,vEnd,nvert;
   PetscMPIInt          commsize;
-  PetscBool            localized,ovl,isascii,enable_boundary,enable_ncmesh;
-  PetscBT              pown;
+  PetscBool            localized,isascii;
+  PetscBool            enable_mfem,enable_boundary,enable_ncmesh;
+  PetscBT              pown,vown;
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
   PetscBool            periodic, enabled = PETSC_TRUE;
@@ -340,22 +339,27 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
        - boundary: unless we want to visualize boundary attributes or we have a periodic mesh
                    the boundary is not needed for proper mesh visualization
        - vertex_parents: used for non-conforming meshes only when we want to use MFEM as a discretization package
-                         and be able to derefine the mesh
+                         and be able to derefine the mesh (MFEM does not currently have to ability to read ncmeshes in parallel)
   */
   enable_boundary = periodic;
-  enable_ncmesh = PETSC_FALSE;
+  enable_ncmesh   = PETSC_FALSE;
+  enable_mfem     = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation; useful for debugging purposes",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation; useful for debugging purposes",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  if (enable_ncmesh && commsize > 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
 
   /* Identify possible cells in the overlap */
-  gNum = NULL;
   novl = 0;
-  ovl  = PETSC_FALSE;
   pown = NULL;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   if (commsize > 1) {
+    IS             globalNum = NULL;
+    const PetscInt *gNum;
+    PetscBool      ovl  = PETSC_FALSE;
+
     ierr = DMPlexGetCellNumbering(dm,&globalNum);CHKERRQ(ierr);
     ierr = ISGetIndices(globalNum,&gNum);CHKERRQ(ierr);
     for (p=cStart; p<cEnd; p++) {
@@ -367,10 +371,18 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     if (ovl) {
       /* it may happen that pown get not destroyed, if the user closes the window while this function is running.
          TODO: garbage collector? attach pown to dm?  */
-      ierr = PetscBTCreate(PetscMax(cEnd-cStart,vEnd-vStart),&pown);CHKERRQ(ierr);
+      ierr = PetscBTCreate(cEnd-cStart,&pown);CHKERRQ(ierr);
+      for (p=cStart; p<cEnd; p++) {
+        if (gNum[p-cStart] < 0) continue;
+        else {
+          ierr = PetscBTSet(pown,p-cStart);CHKERRQ(ierr);
+        }
+      }
     }
+    ierr = ISRestoreIndices(globalNum,&gNum);CHKERRQ(ierr);
   }
 
+  /* return if this process is disabled */
   if (!enabled) {
     ierr = PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.1\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"\ndimension\n");CHKERRQ(ierr);
@@ -383,11 +395,88 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",0);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",sdim);CHKERRQ(ierr);
     ierr = PetscBTDestroy(&pown);CHKERRQ(ierr);
-    if (globalNum) {
-      ierr = ISRestoreIndices(globalNum,&gNum);CHKERRQ(ierr);
-    }
     PetscFunctionReturn(0);
   }
+
+  if (enable_mfem) {
+    if (periodic && !hovec) { /* we need to generate a vector of L2 coordinates, as this is how MFEM handles periodic meshes */
+      PetscInt    vpc = 0;
+      char        fec[64];
+      int         vids[8] = {0,1,2,3,4,5,6,7};
+      int         hexv[8] = {0,1,3,2,4,5,7,6},*dof;
+      PetscScalar *array,*ptr;
+
+      ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%dD_P1",dim);CHKERRQ(ierr);
+      if (cEnd-cStart) {
+        PetscInt fpc;
+
+        ierr = DMPlexGetConeSize(dm,cStart,&fpc);CHKERRQ(ierr);
+        switch(dim) {
+          case 1:
+            vpc = 2;
+            dof = hexv;
+            break;
+          case 2:
+            switch (fpc) {
+              case 3:
+                vpc = 3;
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                break;
+              case 4:
+                vpc = 4;
+                dof = hexv;
+                break;
+              default:
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                break;
+            }
+            break;
+          case 3:
+            switch (fpc) {
+              case 4:
+                vpc = 4;
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                break;
+              case 6:
+                vpc = 8;
+                dof = hexv;
+                break;
+              default:
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                break;
+            }
+            break;
+          default:
+            SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dim");
+            break;
+        }
+        ierr = DMPlexInvertCell(dim,vpc,vids);CHKERRQ(ierr);
+      }
+      ierr = VecCreateSeq(PETSC_COMM_SELF,(cEnd-cStart-novl)*vpc*sdim,&hovec);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)hovec);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)hovec);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)hovec,fec);CHKERRQ(ierr);
+      ierr = VecGetArray(hovec,&array);CHKERRQ(ierr);
+      ptr  = array;
+      for (p=cStart;p<cEnd;p++) {
+        PetscInt    csize,v,d;
+        PetscScalar *vals = NULL;
+
+        if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
+        ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
+        if (csize != vpc*sdim && csize != vpc*sdim*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported closure size %D (vpc %D, sdim %D)",csize,vpc,sdim);
+        for (v=0;v<vpc;v++) {
+          for (d=0;d<sdim;d++) {
+            ptr[sdim*dof[v]+d] = vals[sdim*vids[v]+d];
+          }
+        }
+        ptr += vpc*sdim;
+        ierr = DMPlexVecRestoreClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(hovec,&array);CHKERRQ(ierr);
+    }
+  }
+
 
   /* header */
   ierr = PetscViewerASCIIPrintf(viewer,"MFEM mesh v1.1\n");CHKERRQ(ierr);
@@ -408,12 +497,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     int      vids[8];
     PetscInt i,nv = 0,cid = -1,mid = 1;
 
-    if (ovl) {
-      if (gNum[p-cStart] < 0) continue;
-      else {
-        ierr = PetscBTSet(pown,p-cStart);CHKERRQ(ierr);
-      }
-    }
+    if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
     ierr = DMPlexGetPointMFEMCellID_Internal(dm,label,p,&mid,&cid);CHKERRQ(ierr);
     ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,p,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
@@ -590,7 +674,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscBool      isbf = PETSC_FALSE;
 
       ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
-      if (ovl) {
+      if (pown) {
         PetscBool has_owned = PETSC_FALSE, has_ghost = PETSC_FALSE;
         PetscInt  i;
 
@@ -630,7 +714,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
         ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-        if (ovl) {
+        if (pown) {
           for (c=0;c<supportSize;c++) {
             if (PetscLikely(PetscBTLookup(pown,support[c]-cStart))) {
               bf++;
@@ -652,7 +736,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
         ierr = DMPlexGetSupportSize(dm,p,&supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm,p,&support);CHKERRQ(ierr);
-        if (ovl) {
+        if (pown) {
           for (c=0;c<supportSize;c++) {
             if (PetscLikely(PetscBTLookup(pown,support[c]-cStart))) {
               fcells[nc++] = support[c];
@@ -689,25 +773,23 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   }
 
   /* mark owned vertices */
-  if (ovl) {
-    ierr = PetscBTMemzero(vEnd-vStart,pown);CHKERRQ(ierr);
+  vown = NULL;
+  if (pown) {
+    ierr = PetscBTCreate(vEnd-vStart,&vown);CHKERRQ(ierr);
     for (p=cStart;p<cEnd;p++) {
       PetscInt i,closureSize,*closure = NULL;
 
-      if (gNum[p-cStart] < 0) continue;
+      if (PetscUnlikely(!PetscBTLookup(pown,p-cStart))) continue;
       ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
       for (i=0;i<closureSize;i++) {
         const PetscInt pp = closure[2*i];
 
         if (pp >= vStart && pp < vEnd) {
-          ierr = PetscBTSet(pown,pp-vStart);CHKERRQ(ierr);
+          ierr = PetscBTSet(vown,pp-vStart);CHKERRQ(ierr);
         }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     }
-  }
-  if (globalNum) {
-    ierr = ISRestoreIndices(globalNum,&gNum);CHKERRQ(ierr);
   }
 
   /* vertex_parents (Non-conforming meshes) */
@@ -722,7 +804,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       DMLabel  dlabel;
       PetscInt parent,depth;
 
-      if (PetscUnlikely(ovl && !PetscBTLookup(pown,p-vStart))) continue;
+      if (PetscUnlikely(vown && !PetscBTLookup(vown,p-vStart))) continue;
       ierr = DMPlexGetDepthLabel(dm,&dlabel);CHKERRQ(ierr);
       ierr = DMLabelGetValue(dlabel,p,&depth);CHKERRQ(ierr);
       ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
@@ -741,7 +823,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         DMLabel  dlabel;
         PetscInt parent;
 
-        if (PetscUnlikely(ovl && !PetscBTLookup(pown,p-vStart))) continue;
+        if (PetscUnlikely(vown && !PetscBTLookup(vown,p-vStart))) continue;
         ierr = DMPlexGetDepthLabel(dm,&dlabel);CHKERRQ(ierr);
         ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
         if (parent != p) {
@@ -827,6 +909,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     if (vp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D hanging vertices",vp);
   }
   ierr = PetscBTDestroy(&pown);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&vown);CHKERRQ(ierr);
 
   /* vertices */
   if (hovec) { /* higher-order meshes */
