@@ -94,6 +94,23 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  VecGetValuesSection - Gets all the values associated with a given point, according to the section, in the given Vec
+
+  Not collective
+
+  Input Parameters:
++ v - the Vec
+. s - the organizing PetscSection
+- point - the point
+
+  Output Parameter:
+. values - the array of output values
+
+  Level: developer
+
+.seealso: PetscSection, PetscSectionCreate(), VecSetValuesSection()
+@*/
 PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
 {
   PetscScalar    *baseArray;
@@ -126,7 +143,7 @@ $
 $   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 $
 
-.seealso: PetscSection, PetscSectionCreate()
+.seealso: PetscSection, PetscSectionCreate(), VecGetValuesSection()
 @*/
 PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
 {
