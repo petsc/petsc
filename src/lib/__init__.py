@@ -44,7 +44,7 @@ def Import(pkg, name, path, arch):
     """
     Import helper for PETSc-based extension modules.
     """
-    import sys, os, imp
+    import sys, os, imp, warnings
     # full dotted module name
     fullname = '%s.%s' % (pkg, name)
     # test if extension module was already imported
@@ -58,6 +58,9 @@ def Import(pkg, name, path, arch):
         if arch is not None and arch != module.__arch__:
             raise ImportError("%s already imported" % module)
         return module
+    # silence annoying Cython warning
+    warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+    warnings.filterwarnings("ignore", message="numpy.ndarray size changed")
     # import extension module from 'path/arch' directory
     pathlist = [os.path.join(path, arch)]
     f, fn, info = imp.find_module(name, pathlist)
