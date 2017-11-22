@@ -308,8 +308,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&commsize);CHKERRQ(ierr);
   if (commsize > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  if (depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
 
   /* get container: determines if a process visualizes is portion of the data or not */
   ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
@@ -355,6 +353,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   if (enable_ncmesh && commsize > 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  if (enable_boundary && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+                                                             "Alternatively, run with -viewer_glvis_dm_plex_enable_boundary 0");
+  if (enable_ncmesh && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+                                                             "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
 
   /* Identify possible cells in the overlap */
   novl = 0;
