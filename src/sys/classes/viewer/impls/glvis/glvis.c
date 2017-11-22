@@ -278,12 +278,20 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
     if (socket->type == PETSC_VIEWER_GLVIS_SOCKET) {
       ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->meshwindow);CHKERRQ(ierr);
     } else {
-      PetscMPIInt rank;
-      char        filename[PETSC_MAX_PATH_LEN];
+      size_t    len;
+      PetscBool isstdout;
 
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
+      ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
+      ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+      if (!socket->name || !len || isstdout) {
+        ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)viewer),"stdout",&socket->meshwindow);CHKERRQ(ierr);
+      } else {
+        PetscMPIInt rank;
+        char        filename[PETSC_MAX_PATH_LEN];
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-mesh.%06d",socket->name,rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->meshwindow);CHKERRQ(ierr);
+      }
     }
     if (socket->meshwindow) {
       ierr = PetscViewerPushFormat(socket->meshwindow,PETSC_VIEWER_ASCII_GLVIS);CHKERRQ(ierr);
@@ -374,12 +382,21 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
     case PETSCVIEWERGLVIS_DISCONNECTED:
       if (socket->window[wid]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"This should not happen");
       if (socket->type == PETSC_VIEWER_GLVIS_DUMP) {
-        PetscMPIInt rank;
-        char        filename[PETSC_MAX_PATH_LEN];
+        size_t    len;
+        PetscBool isstdout;
 
-        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%d.%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
+        ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
+        ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
+        if (!socket->name || !len || isstdout) {
+          ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)viewer),"stdout",&socket->window[wid]);CHKERRQ(ierr);
+        } else {
+          PetscMPIInt rank;
+          char        filename[PETSC_MAX_PATH_LEN];
+
+          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s-%s-%d.%06d",socket->name,socket->windowtitle[wid],socket->snapid,rank);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&socket->window[wid]);CHKERRQ(ierr);
+        }
       } else {
         ierr = PetscViewerGLVisGetNewWindow_Private(viewer,&socket->window[wid]);CHKERRQ(ierr);
       }
