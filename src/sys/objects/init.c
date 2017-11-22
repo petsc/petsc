@@ -526,7 +526,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }
 
-  ierr   = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
     if (format == PETSC_VIEWER_ASCII_XML){
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);
@@ -688,7 +688,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_VECCUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-log_summary",&flg3);CHKERRQ(ierr);
   if (!flg3) {
-  ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-log_view",&flg3);CHKERRQ(ierr);
   }
 #endif
 #if defined(PETSC_HAVE_CUSP)
