@@ -461,7 +461,11 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   return 0;
 }
 
-/* Almost identical to Laplacian */
+/*
+    Almost identical to Laplacian
+
+    Note that the element matrix is NOT scaled by the size of element like the Laplacian term.
+ */
 PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
 {
   PetscReal      **temp;
