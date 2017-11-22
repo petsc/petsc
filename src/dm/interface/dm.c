@@ -4773,6 +4773,9 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->periodic) PetscFunctionReturn(0);
+  ierr = DMGetCoordinatesLocalized(dm, &alreadyLocalized);CHKERRQ(ierr);
+  if (alreadyLocalized) PetscFunctionReturn(0);
+
   /* We need some generic way of refering to cells/vertices */
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   {
