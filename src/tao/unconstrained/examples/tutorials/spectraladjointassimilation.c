@@ -52,7 +52,7 @@ typedef struct {
 } PetscParam;
 
 typedef struct {
-  Vec         obj;               /* desired end state */
+  Vec         reference;               /* desired end state */
   Vec         grid;              /* total grid */   
   Vec         grad;
   Vec         ic;
@@ -88,7 +88,7 @@ extern PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 extern PetscErrorCode RHSLaplacian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode RHSAdvection(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode ComputeObjective(TS,PetscReal,Vec,AppCtx*);
+extern PetscErrorCode ComputeReference(TS,PetscReal,Vec,AppCtx*);
 extern PetscErrorCode MonitorError(Tao,void*);
 extern PetscErrorCode ComputeSolutionCoefficients(AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -156,7 +156,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.dat.ic);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.dat.true_solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.dat.obj);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&appctx.dat.reference);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&appctx.dat.curr_sol);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ int main(int argc,char **argv)
 
   /* Create the TS solver that solves the ODE and its adjoint; set its options */
   ierr = TSCreate(PETSC_COMM_WORLD,&appctx.ts);CHKERRQ(ierr);
-  ierr = TSSetSolutionFunction(appctx.ts,(PetscErrorCode (*)(TS,PetscReal,Vec, void *))ComputeObjective,&appctx);CHKERRQ(ierr);
+  ierr = TSSetSolutionFunction(appctx.ts,(PetscErrorCode (*)(TS,PetscReal,Vec, void *))ComputeReference,&appctx);CHKERRQ(ierr);
   ierr = TSSetProblemType(appctx.ts,TS_LINEAR);CHKERRQ(ierr);
   ierr = TSSetType(appctx.ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetDM(appctx.ts,appctx.da);CHKERRQ(ierr);
@@ -232,11 +232,11 @@ int main(int argc,char **argv)
   // ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
   ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
-  /* Set Objective and Initial conditions for the problem and compute Objective function (evolution of true_solution to final time */
+  /* Set random initial conditions as initial guess, compute analytic reference solution and analytic (true) initial conditions */
   ierr = ComputeSolutionCoefficients(&appctx);CHKERRQ(ierr);
   ierr = InitialConditions(appctx.dat.ic,&appctx);CHKERRQ(ierr);
-  ierr = ComputeObjective(appctx.ts,0.0,appctx.dat.true_solution,&appctx);CHKERRQ(ierr);
-  ierr = ComputeObjective(appctx.ts,appctx.param.Tend,appctx.dat.obj,&appctx);CHKERRQ(ierr);
+  ierr = ComputeReference(appctx.ts,appctx.param.Tend,appctx.dat.reference,&appctx);CHKERRQ(ierr);
+  ierr = ComputeReference(appctx.ts,0.0,appctx.dat.true_solution,&appctx);CHKERRQ(ierr);
   
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -259,7 +259,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&appctx.dat.ic);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.joe);CHKERRQ(ierr);  
   ierr = VecDestroy(&appctx.dat.true_solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.dat.obj);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.dat.reference);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.curr_sol);CHKERRQ(ierr);
@@ -298,12 +298,9 @@ PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx)
 
 /* --------------------------------------------------------------------- */
 /*
-   InitialConditions - Computes the initial conditions for the Tao optimization solve (these are also initial conditions for the first TSSolve()
-
-                       The routine ComputeObjective(0.0,...) computes the true solution for the Tao optimization solve which means they are the initial conditions for the objective function
+   InitialConditions - Computes the (random) initial conditions for the Tao optimization solve (these are also initial conditions for the first TSSolve()
 
    Input Parameter:
-   u - uninitialized solution vector (global)
    appctx - user-defined application context
 
    Output Parameter:
@@ -349,7 +346,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
    appctx - user-defined application context
 
 */
-PetscErrorCode ComputeObjective(TS ts,PetscReal t,Vec obj,AppCtx *appctx)
+PetscErrorCode ComputeReference(TS ts,PetscReal t,Vec obj,AppCtx *appctx)
 {
   PetscScalar       *s,tc;
   const PetscScalar *xg;
@@ -519,7 +516,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
 
    Input Parameters:
    tao - the Tao context
-   IC   - the input vector
+   ic   - the input vector
    ctx - optional user-defined context, as set when calling TaoSetObjectiveAndGradientRoutine()
 
    Output Parameters:
@@ -549,7 +546,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
 
 
 */
-PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
+PetscErrorCode FormFunctionGradient(Tao tao,Vec ic,PetscReal *f,Vec G,void *ctx)
 {
   AppCtx           *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscErrorCode    ierr;
@@ -558,13 +555,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
-  ierr = VecCopy(IC,appctx->dat.curr_sol);CHKERRQ(ierr);
+  ierr = VecCopy(ic,appctx->dat.curr_sol);CHKERRQ(ierr);
 
   ierr = TSSolve(appctx->ts,appctx->dat.curr_sol);CHKERRQ(ierr);
   ierr = VecCopy(appctx->dat.curr_sol,appctx->dat.joe);CHKERRQ(ierr);
 
   /*     Compute the difference between the current ODE solution and target ODE solution */
-  ierr = VecWAXPY(G,-1.0,appctx->dat.curr_sol,appctx->dat.obj);CHKERRQ(ierr);
+  ierr = VecWAXPY(G,-1.0,appctx->dat.curr_sol,appctx->dat.reference);CHKERRQ(ierr);
 
   /*     Compute the objective/cost function   */
   ierr = VecDuplicate(G,&temp);CHKERRQ(ierr);
