@@ -298,6 +298,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscContainer       glvis_container;
   PetscBool            periodic, enabled = PETSC_TRUE;
   const char           *fmt;
+  char                 emark[64] = "",bmark[64] = "";
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -344,10 +345,13 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   enable_boundary = periodic;
   enable_ncmesh   = PETSC_FALSE;
   enable_mfem     = PETSC_FALSE;
+  /* I'm tired of problems with negative values in the markers, disable them */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"GLVis PetscViewer DMPlex Options","PetscViewer");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_boundary","Enable boundary section in mesh representation",NULL,enable_boundary,&enable_boundary,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_ncmesh","Enable vertex_parents section in mesh representation (allows derefinement)",NULL,enable_ncmesh,&enable_ncmesh,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_glvis_dm_plex_enable_mfem","Dump a mesh that can be used with MFEM's FiniteElementSpaces",NULL,enable_mfem,&enable_mfem,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_glvis_dm_plex_emarker","String for the material id label",NULL,emark,emark,sizeof(emark),NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_glvis_dm_plex_bmarker","String for the boundary id label",NULL,bmark,bmark,sizeof(bmark),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   if (enable_ncmesh && commsize > 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
@@ -486,11 +490,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",dim);CHKERRQ(ierr);
 
   /* elements */
-  /* TODO: is this the label we want to use for marking material IDs?
-     We should decide to have a single marker for these stuff
-     Proposal: DMSetMaterialLabel?
-  */
-  ierr = DMGetLabel(dm,"Cell Sets",&label);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm,emark,&label);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"\nelements\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n",cEnd-cStart-novl);CHKERRQ(ierr);
   for (p=cStart;p<cEnd;p++) {
@@ -604,7 +604,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           PetscScalar *vals = NULL;
 
           if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
-          if (dof/sdim != vpc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D and vertices %D",dof/sdim,vpc);
+          if (dof/sdim != vpc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Incompatible number of cell dofs %D, vertices %D and space dim %D",dof/sdim,vpc,sdim);
           ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
           ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
           for (v=0;v<cellClosureSize;v++)
@@ -723,11 +723,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         } else bf += supportSize;
       }
     }
-    /* TODO: is this the label we want to use for marking boundary facets?
-       We should decide to have a single marker for these stuff
-       Proposal: DMSetBoundaryLabel?
-    */
-    ierr = DMGetLabel(dm,"marker",&label);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm,bmark,&label);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D\n",bf);CHKERRQ(ierr);
     for (p=fStart;p<fEnd;p++) {
       if (PetscUnlikely(PetscBTLookup(bfaces,p-fStart))) {
