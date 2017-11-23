@@ -267,7 +267,7 @@ typedef char PetscChar;
 typedef float PetscFloat;
 
 /*MC
-  PetscInt - PETSc type that represents an interger, used primarily to
+  PetscInt - PETSc type that represents an integer, used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option --with-64-bit-indices to be either 32-bit (default) or 64-bit.
 
   Notes: 

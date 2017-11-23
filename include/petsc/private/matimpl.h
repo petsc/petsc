@@ -753,7 +753,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add an index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - interger array
+    indices   - integer array
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -790,7 +790,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a permuted index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - interger array
+    indices   - integer array
     perm      - permutation of indices
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
@@ -828,7 +828,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED ascending index set into a sorted linked list - same as PetscLLAdd() bus skip 'if (_k && _entry < _lnkdata) _lnkdata  = idx_start;'
   Input Parameters:
     nidx      - number of input indices
-    indices   - sorted interger array
+    indices   - sorted integer array
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -911,7 +911,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Same as PetscLLAddSorted() with an additional operation:
        count the number of input indices that are no larger than 'diag'
   Input Parameters:
-    indices   - sorted interger array
+    indices   - sorted integer array
     idx_start - starting index of the list, index of pivot row
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -997,7 +997,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Initialize a sorted linked list used for ILU and ICC
   Input Parameters:
     nidx      - number of input idx
-    idx       - interger array used for storing column indices
+    idx       - integer array used for storing column indices
     idx_start - starting index of the list
     perm      - indices of an IS
     lnk       - linked list(an integer array) that is created
@@ -1037,7 +1037,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list for ILU
   Input Parameters:
     nidx      - number of input indices
-    idx       - sorted interger array used for storing column indices
+    idx       - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl    - level of idx
     idx_start - starting index of the list
@@ -1085,7 +1085,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a index set into a sorted linked list
   Input Parameters:
     nidx      - number of input idx
-    idx   - interger array used for storing column indices
+    idx   - integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl - level of idx
     idx_start - starting index of the list
@@ -1130,7 +1130,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    idx   - sorted interger array used for storing column indices
+    idx   - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl - level of idx
     idx_start - starting index of the list
@@ -1174,7 +1174,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
   Add a SORTED index set into a sorted linked list for ICC
   Input Parameters:
     nidx      - number of input indices
-    idx       - sorted interger array used for storing column indices
+    idx       - sorted integer array used for storing column indices
     level     - level of fill, e.g., ICC(level)
     idxlvl    - level of idx
     idx_start - starting index of the list
@@ -1307,7 +1307,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
   Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
   Input Parameters:
     nidx      - number of input indices
-    indices   - sorted interger array
+    indices   - sorted integer array
     lnk       - condensed linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
