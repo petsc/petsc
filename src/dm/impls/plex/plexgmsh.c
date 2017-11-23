@@ -215,7 +215,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_gmsh_periodic", &periodic, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_gmsh_usemarker", &usemarker, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, NULL, "-dm_plex_gmsh_use_marker", &usemarker, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, NULL, "-gmsh_zero_base", &zerobase, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, NULL, "-gmsh_bd", &isbd, NULL);CHKERRQ(ierr);
   if (zerobase) shift = 0;
@@ -435,6 +435,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     *dm  = idm;
   }
 
+  if (usemarker && !interpolate && dim > 1) SETERRQ(comm,PETSC_ERR_SUP,"Cannot create marker label without interpolation")
   if (!rank && usemarker) {
     PetscInt f, fStart, fEnd;
 
@@ -463,7 +464,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     for (cell = 0, c = 0; c < numCells; ++c) {
 
       /* Create face sets */
-      if (gmsh_elem[c].dim == dim-1) {
+      if (interpolate && gmsh_elem[c].dim == dim-1) {
         const PetscInt *join;
         PetscInt        joinSize, pcone[8], corner;
         /* Find the relevant facet with vertex joins */
