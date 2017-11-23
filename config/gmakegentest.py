@@ -511,6 +511,8 @@ class generateExamples(Petsc):
         # nsize is special because it is usually overwritten
         if 'nsize' in testDict[stest]:
           fh.write("nsize="+str(testDict[stest]['nsize'])+"\n")
+        else:
+          fh.write("nsize=1\n")
         subst['label_suffix']='-'+string.ascii_letters[k]; k+=1
         sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
         #if '10_9' in testname: print sLoopVars
