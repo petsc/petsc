@@ -1248,13 +1248,13 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
 }
 
 /*@
-  DMPlexGetConeSize - Return the number of in-edges for this point in the Sieve DAG
+  DMPlexGetConeSize - Return the number of in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-- p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
 . size - The cone size for point p
@@ -1276,13 +1276,13 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
 }
 
 /*@
-  DMPlexSetConeSize - Set the number of in-edges for this point in the Sieve DAG
+  DMPlexSetConeSize - Set the number of in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - size - The cone size for point p
 
   Output Parameter:
@@ -1308,13 +1308,13 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 }
 
 /*@
-  DMPlexAddConeSize - Add the given number of in-edges to this point in the Sieve DAG
+  DMPlexAddConeSize - Add the given number of in-edges to this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - size - The additional cone size for point p
 
   Output Parameter:
@@ -1342,13 +1342,13 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
 }
 
 /*@C
-  DMPlexGetCone - Return the points on the in-edges for this point in the Sieve DAG
+  DMPlexGetCone - Return the points on the in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-- p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
 . cone - An array of points which are on the in-edges for point p
@@ -1378,13 +1378,13 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 }
 
 /*@
-  DMPlexSetCone - Set the points on the in-edges for this point in the Sieve DAG
+  DMPlexSetCone - Set the points on the in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - cone - An array of points which are on the in-edges for point p
 
   Output Parameter:
@@ -1418,13 +1418,13 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 }
 
 /*@C
-  DMPlexGetConeOrientation - Return the orientations on the in-edges for this point in the Sieve DAG
+  DMPlexGetConeOrientation - Return the orientations on the in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-- p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
 . coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
@@ -1464,13 +1464,13 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
 }
 
 /*@
-  DMPlexSetConeOrientation - Set the orientations on the in-edges for this point in the Sieve DAG
+  DMPlexSetConeOrientation - Set the orientations on the in-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - coneOrientation - An array of orientations which are on the in-edges for point p. An orientation is an
                     integer giving the prescription for cone traversal. If it is negative, the cone is
                     traversed in the opposite direction. Its value 'o', or if negative '-(o+1)', gives
@@ -1510,13 +1510,13 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
 }
 
 /*@
-  DMPlexInsertCone - Insert a point into the in-edges for the point p in the Sieve DAG
+  DMPlexInsertCone - Insert a point into the in-edges for the point p in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . conePos - The local index in the cone where the point should be put
 - conePoint - The mesh point to insert
 
@@ -1544,13 +1544,13 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
 }
 
 /*@
-  DMPlexInsertConeOrientation - Insert a point orientation for the in-edge for the point p in the Sieve DAG
+  DMPlexInsertConeOrientation - Insert a point orientation for the in-edge for the point p in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . conePos - The local index in the cone where the point should be put
 - coneOrientation - The point orientation to insert
 
@@ -1577,13 +1577,13 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 }
 
 /*@
-  DMPlexGetSupportSize - Return the number of out-edges for this point in the Sieve DAG
+  DMPlexGetSupportSize - Return the number of out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-- p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
 . size - The support size for point p
@@ -1605,13 +1605,13 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
 }
 
 /*@
-  DMPlexSetSupportSize - Set the number of out-edges for this point in the Sieve DAG
+  DMPlexSetSupportSize - Set the number of out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - size - The support size for point p
 
   Output Parameter:
@@ -1637,13 +1637,13 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
 }
 
 /*@C
-  DMPlexGetSupport - Return the points on the out-edges for this point in the Sieve DAG
+  DMPlexGetSupport - Return the points on the out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-- p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- p - The point, which must lie in the chart set with DMPlexSetChart()
 
   Output Parameter:
 . support - An array of points which are on the out-edges for point p
@@ -1673,13 +1673,13 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 }
 
 /*@
-  DMPlexSetSupport - Set the points on the out-edges for this point in the Sieve DAG
+  DMPlexSetSupport - Set the points on the out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 - support - An array of points which are on the in-edges for point p
 
   Output Parameter:
@@ -1713,13 +1713,13 @@ PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 }
 
 /*@
-  DMPlexInsertSupport - Insert a point into the out-edges for the point p in the Sieve DAG
+  DMPlexInsertSupport - Insert a point into the out-edges for the point p in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . supportPos - The local index in the cone where the point should be put
 - supportPoint - The mesh point to insert
 
@@ -1747,13 +1747,13 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
 }
 
 /*@C
-  DMPlexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
+  DMPlexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
 - points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
 
@@ -1890,13 +1890,13 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 }
 
 /*@C
-  DMPlexGetTransitiveClosure_Internal - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG with a specified initial orientation
+  DMPlexGetTransitiveClosure_Internal - Return the points on the transitive closure of the in-edges or out-edges for this point in the DAG with a specified initial orientation
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . orientation - The orientation of the point
 . useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
 - points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
@@ -2042,13 +2042,13 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 }
 
 /*@C
-  DMPlexRestoreTransitiveClosure - Restore the array of points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
+  DMPlexRestoreTransitiveClosure - Restore the array of points on the transitive closure of the in-edges or out-edges for this point in the DAG
 
   Not collective
 
   Input Parameters:
 + mesh - The DMPlex
-. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+. p - The point, which must lie in the chart set with DMPlexSetChart()
 . useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
 . numPoints - The number of points in the closure, so points[] is of size 2*numPoints, zeroed on exit
 - points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...], zeroed on exit
@@ -2080,7 +2080,7 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 }
 
 /*@
-  DMPlexGetMaxSizes - Return the maximum number of in-edges (cone) and out-edges (support) for any point in the Sieve DAG
+  DMPlexGetMaxSizes - Return the maximum number of in-edges (cone) and out-edges (support) for any point in the DAG
 
   Not collective
 
@@ -2137,7 +2137,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
 }
 
 /*@
-  DMPlexSymmetrize - Creates support (out-edge) information from cone (in-edge) inoformation
+  DMPlexSymmetrize - Create support (out-edge) information from cone (in-edge) information
 
   Not collective
 
@@ -2207,8 +2207,8 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 }
 
 /*@
-  DMPlexStratify - The Sieve DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
-  can be illustrated by Hasse Diagram (a http://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
+  DMPlexStratify - The DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
+  can be illustrated by a Hasse Diagram (a http://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
   same grade, and this function calculates the strata. This grade can be seen as the height (or depth) of the point in
   the DAG.
 
@@ -3375,7 +3375,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   Output Parameter:
 . section - The PetscSection object
 
-  Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on sieve points of dimension d. For instance, numDof[1] is the
+  Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
   number of dof for field 0 on each edge.
 
   The chart permutation is the same one set using PetscSectionSetPermutation()
@@ -3990,7 +3990,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-- point - The sieve point in the DM
+- point - The point in the DM
 
   Output Parameters:
 + csize - The number of values in the closure, or NULL
@@ -4075,7 +4075,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-. point - The sieve point in the DM
+. point - The point in the DM
 . csize - The number of values in the closure, or NULL
 - values - The array of values, which is a borrowed array and should not be freed
 
@@ -4377,7 +4377,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, Pets
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-. point - The sieve point in the DM
+. point - The point in the DM
 . values - The array of values
 - mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
 
@@ -4629,7 +4629,7 @@ static PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscIn
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat for sieve point %D\n", rank, point);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat for point %D\n", rank, point);CHKERRQ(ierr);
   for (i = 0; i < numRIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat row indices[%D] = %D\n", rank, i, rindices[i]);CHKERRQ(ierr);}
   for (i = 0; i < numCIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%d]mat col indices[%D] = %D\n", rank, i, cindices[i]);CHKERRQ(ierr);}
   numCIndices = numCIndices ? numCIndices : numRIndices;
@@ -5421,7 +5421,7 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
 . section - The section describing the layout in v, or NULL to use the default section
 . globalSection - The section describing the layout in v, or NULL to use the default global section
 . A - The matrix
-. point - The sieve point in the DM
+. point - The point in the DM
 . values - The array of values
 - mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
 
