@@ -209,10 +209,12 @@ typedef int PetscErrorCode;
 
     PetscClassId - A unique id used to identify each PETSc class.
 
-    Notes: Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
+    Notes: 
+    Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
          XXXInitializePackage() calls it for each class it defines.
 
-    Developer Notes: Internal integer stored in the _p_PetscObject data structure.
+    Developer Notes: 
+    Internal integer stored in the _p_PetscObject data structure.
          These are all computed by an offset from the lowest one, PETSC_SMALLEST_CLASSID.
 
     Level: developer
@@ -227,8 +229,9 @@ typedef int PetscClassId;
 
     Level: intermediate
 
-    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
-           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
+    Notes: 
+    usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt; it remains 32 bit.
 
     PetscMPIIntCast(a,&b) checks if the given PetscInt a will fit in a PetscMPIInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error.
@@ -264,18 +267,28 @@ typedef char PetscChar;
 typedef float PetscFloat;
 
 /*MC
-    PetscInt - PETSc type that represents integer - used primarily to
-      represent size of arrays and indexing into arrays. Its size can be configured with the option
-      --with-64-bit-indices - to be either 32bit or 64bit [default 32 bit ints]
+  PetscInt - PETSc type that represents an interger, used primarily to
+      represent size of arrays and indexing into arrays. Its size can be configured with the option --with-64-bit-indices to be either 32-bit (default) or 64-bit.
 
+  Notes: 
+  For MPI calls that require datatypes, use MPIU_INT as the datatype for PetscInt. It will automatically work correctly regardless of the size of PetscInt.
 
-   Notes: For MPI calls that require datatypes, use MPIU_INT as the datatype for PetscInt. It will automatically work correctly regardless of 
-          the size of PetscInt
+  Level: beginner
 
-   Level: intermediate
-
-.seealso: PetscScalar, PetscBLASInt, PetscMPIInt
+.seealso: PetscBLASInt, PetscMPIInt, PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
 M*/
+
+/*MC
+   MPIU_INT - MPI datatype corresponding to PetscInt
+
+   Notes: 
+   In MPI calls that require an MPI datatype that matches a PetscInt or array of PetscInt values, pass this value.
+
+   Level: beginner
+
+.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX
+M*/
+
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
 # define MPIU_INT64 MPI_INT64_T
@@ -302,18 +315,18 @@ typedef int PetscInt;
 #endif
 
 /*MC
-    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
+   PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
-    Level: intermediate
-
-    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
+   Notes: 
+    Usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt it remains 32 bit
            (except on very rare BLAS/LAPACK implementations that support 64 bit integers see the note below).
 
     PetscErrorCode PetscBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscBLASInt, if not it
       generates a PETSC_ERR_ARG_OUTOFRANGE error
 
-    Installation Notes: The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
+   Installation Notes: 
+    The 64bit versions of MATLAB ship with BLAS and LAPACK that use 64 bit integers for sizes etc,
      if you run ./configure with the option
      --with-blaslapack-lib=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
      but you need to also use --known-64-bit-blas-indices.
@@ -324,10 +337,13 @@ typedef int PetscInt;
         OpenBLAS can also be built to use 64 bit integers. The ./configure options --download-openblas -download-openblas-64-bit-blas-indices 
         will build a 64 bit integer version
 
-     Developer Notes: Eventually ./configure should automatically determine the size of the integers used by BLAS/LAPACK.
+    Developer Notes: 
+     Eventually ./configure should automatically determine the size of the integers used by BLAS/LAPACK.
 
      External packages such as hypre, ML, SuperLU etc do not provide any support for passing 64 bit integers to BLAS/LAPACK so cannot
      be used with PETSc if you have set PetscBLASInt to long int.
+
+   Level: intermediate
 
 .seealso: PetscMPIInt, PetscInt, PetscBLASIntCast()
 
@@ -375,7 +391,8 @@ PETSC_EXTERN FILE* PETSC_STDERR;
     Input Parameters:
 .   cond - condition or expression
 
-    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    Notes: 
+    This returns the same truth value, it is only a hint to compilers that the resulting
     branch is unlikely.
 
     Level: advanced
@@ -395,7 +412,8 @@ M*/
     Input Parameters:
 .   cond - condition or expression
 
-    Note: This returns the same truth value, it is only a hint to compilers that the resulting
+    Notes: 
+    This returns the same truth value, it is only a hint to compilers that the resulting
     branch is likely.
 
     Level: advanced
@@ -424,7 +442,8 @@ M*/
 
    Level: beginner
 
-   Developer Note: Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
+   Developer Note: 
+   Why have PetscBool , why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
       boolean values. It is not easy to have a simple macro that that will work properly in all circumstances with all three mechanisms.
 
 .seealso: PETSC_TRUE, PETSC_FALSE, PetscNot()
@@ -458,7 +477,8 @@ PETSC_EXTERN const char *const PetscCopyModes[];
 
     Level: beginner
 
-    Note: Zero integer
+    Note: 
+    Zero integer
 
 .seealso: PetscBool, PETSC_TRUE
 M*/
@@ -468,7 +488,8 @@ M*/
 
     Level: beginner
 
-    Note: Nonzero integer
+    Note: 
+    Nonzero integer
 
 .seealso: PetscBool, PETSC_FALSE
 M*/
@@ -478,13 +499,15 @@ M*/
 
    Level: beginner
 
-   Note: accepted by many PETSc functions to not set a parameter and instead use
+   Note: 
+   Accepted by many PETSc functions to not set a parameter and instead use
           some default
 
-   Fortran Notes: This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER,
+   Fortran Notes: 
+   This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER,
           PETSC_NULL_DOUBLE_PRECISION etc
 
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_NULL, PETSC_DETERMINE
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_DETERMINE
 
 M*/
 #define PETSC_IGNORE         NULL
@@ -498,7 +521,7 @@ M*/
 
    Level: beginner
 
-.seealso: PETSC_NULL, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+.seealso: PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
 #define PETSC_DECIDE  -1
@@ -509,7 +532,8 @@ M*/
 
    Level: beginner
 
-   Developer Note: I would like to use const PetscInt PETSC_DETERMINE = PETSC_DECIDE; but for
+   Developer Note: 
+   I would like to use const PetscInt PETSC_DETERMINE = PETSC_DECIDE; but for
      some reason this is not allowed by the standard even though PETSC_DECIDE is a constant value.
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, VecSetSizes()
@@ -523,7 +547,8 @@ M*/
 
    Level: beginner
 
-   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL.
+   Fortran Notes: 
+   You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL.
 
 .seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
@@ -536,7 +561,8 @@ M*/
 
    Level: beginner
 
-   Notes: By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to
+   Notes: 
+   By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to
           run PETSc on ONLY a subset of MPI_COMM_WORLD. In that case create your new (smaller)
           communicator, call it, say comm, and set PETSC_COMM_WORLD = comm BEFORE calling
           PetscInitialize(), but after MPI_Init() has been called.
@@ -554,7 +580,8 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 
    Level: beginner
 
-   Notes: Do not USE/access or set this variable before PetscInitialize() has been called.
+   Notes: 
+   Do not USE/access or set this variable before PetscInitialize() has been called.
 
 .seealso: PETSC_COMM_WORLD
 
@@ -664,7 +691,8 @@ M*/
    Output Parameter:
 .  r1 - memory allocated in first chunk
 
-   Note: This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
+   Note: 
+   This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
          multiply the number of elements requested by the sizeof() the type. For example use
 $  PetscInt *id;
 $  PetscMalloc1(10,&id);
@@ -698,7 +726,8 @@ M*/
    Output Parameter:
 .  r1 - memory allocated in first chunk
 
-   Notes: see PetsMalloc1() for more details on usage.
+   Notes: 
+   See PetsMalloc1() for more details on usage.
 
    Level: beginner
 
@@ -875,13 +904,13 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 -  m4 - number of elements to allocate in 4th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -908,14 +937,14 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
 -  m5 - number of elements to allocate in 5th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -947,14 +976,14 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
 -  m5 - number of elements to allocate in 5th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -982,7 +1011,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
@@ -990,7 +1019,7 @@ M*/
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
 -  m6 - number of elements to allocate in 6th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameteasr:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -1023,7 +1052,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
@@ -1031,7 +1060,7 @@ M*/
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
 -  m6 - number of elements to allocate in 6th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -1059,7 +1088,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
@@ -1068,7 +1097,7 @@ M*/
 .  m6 - number of elements to allocate in 6th chunk  (may be zero)
 -  m7 - number of elements to allocate in 7th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -1102,7 +1131,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
@@ -1111,7 +1140,7 @@ M*/
 .  m6 - number of elements to allocate in 6th chunk  (may be zero)
 -  m7 - number of elements to allocate in 7th chunk  (may be zero)
 
-   Output Parameter:
+   Output Parameters:
 +  r1 - memory allocated in first chunk
 .  r2 - memory allocated in second chunk
 .  r3 - memory allocated in third chunk
@@ -1213,7 +1242,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   memory1 - memory to free
 -   memory2 - 2nd memory to free
 
@@ -1241,7 +1270,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   memory1 - memory to free
 .   memory2 - 2nd memory to free
 -   memory3 - 3rd memory to free
@@ -1270,7 +1299,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
@@ -1300,7 +1329,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
@@ -1333,7 +1362,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
@@ -1368,7 +1397,7 @@ M*/
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +   m1 - memory to free
 .   m2 - 2nd memory to free
 .   m3 - 3rd memory to free
@@ -1436,7 +1465,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
    Level: beginner
 
-   Developer comment: It would be nice if we could always just use MPI Datatypes, why can we not?
+   Developer comment: 
+   It would be nice if we could always just use MPI Datatypes, why can we not?
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
@@ -1554,7 +1584,8 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 
    Level: beginner
 
-   Note: This is the base class from which all PETSc objects are derived from.
+   Note: 
+   This is the base class from which all PETSc objects are derived from.
 
 .seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereference()
 S*/
@@ -1565,7 +1596,8 @@ typedef struct _p_PetscObject* PetscObject;
 
     Level: developer
 
-    Notes: Unlike pointer values, object ids are never reused.
+    Notes: 
+    Unlike pointer values, object ids are never reused.
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
@@ -1766,7 +1798,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*,PetscBool);
 
    Level: developer
 
-   Notes: Used by PetscObjectCompose() and PetscObjectQuery()
+   Notes: 
+   Used by PetscObjectCompose() and PetscObjectQuery()
 
 .seealso:  PetscObjectListAdd(), PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectCompose(), PetscObjectQuery(), PetscFunctionList
 S*/
@@ -1824,7 +1857,8 @@ PETSC_EXTERN PetscErrorCode PetscMPIDump(FILE*);
 /*
     PetscNot - negates a logical type value and returns result as a PetscBool
 
-    Notes: This is useful in cases like
+    Notes: 
+    This is useful in cases like
 $     int        *a;
 $     PetscBool  flag = PetscNot(a)
      where !a would not return a PetscBool because we cannot provide a cast from int to PetscBool in C.
@@ -2188,59 +2222,84 @@ M*/
 M*/
 
 /*MC
-    PetscScalar - PETSc type that represents either a double precision real number, a double precision
+   PetscScalar - PETSc type that represents either a double precision real number, a double precision
        complex number, a single precision real number, a __float128 real or complex or a __fp16 real - if the code is configured
        with --with-scalar-type=real,complex --with-precision=single,double,__float128,__fp16
 
-   Notes: For MPI calls that require datatypes, use MPIU_SCALAR as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations.
-          They will automatically work correctly regardless of the size of PetscScalar
+   Notes: 
+   For MPI calls that require datatypes, use MPIU_SCALAR as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations. They will automatically work correctly regardless of the size of PetscScalar.
 
    Level: beginner
 
-.seealso: PetscReal, MPIU_SCALAR, PetscInt, MPIU_REAL, PetscComplex, MPIU_INT
+.seealso: PetscReal, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
 M*/
 
 /*MC
-    PetscComplex - PETSc type that represents a complex number with precision matching that of PetscReal.
+   PetscComplex - PETSc type that represents a complex number with precision matching that of PetscReal.
 
    Synopsis:
    #include <petscsys.h>
    PetscComplex number = 1. + 2.*PETSC_i;
 
-   Level: beginner
-
-   Notes: For MPI calls that require datatypes, use MPIU_COMPLEX as the datatype for PetscComplex and MPIU_SUM etc for operations.
-          They will automatically work correctly regardless of the size of PetscComplex
+   Notes: 
+   For MPI calls that require datatypes, use MPIU_COMPLEX as the datatype for PetscComplex and MPIU_SUM etc for operations.
+          They will automatically work correctly regardless of the size of PetscComplex.
 
           See PetscScalar for details on how to ./configure the size of PetscReal
 
           Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
-.seealso: PetscReal, PetscComplex, MPIU_COMPLEX, PetscInt, PETSC_i
+   Level: beginner
+
+.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
 M*/
 
 /*MC
-    PetscReal - PETSc type that represents a real number version of PetscScalar
+   PetscReal - PETSc type that represents a real number version of PetscScalar
+
+
+   Notes: 
+   For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX, etc. for operations.
+          They will automatically work correctly regardless of the size of PetscReal.
+
+          See PetscScalar for details on how to ./configure the size of PetscReal.
 
    Level: beginner
 
-   Notes: For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations.
-          They will automatically work correctly regardless of the size of PetscReal
-
-          See PetscScalar for details on how to ./configure the size of PetscReal
-
-.seealso: PetscScalar, PetscComplex, MPIU_REAL, MPIU_SCALAR
+.seealso: PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
 M*/
 
 /*MC
-    MPIU_SCALAR - MPI datatype corresponding to PetscScalar
+   MPIU_SCALAR - MPI datatype corresponding to PetscScalar
+
+   Notes: 
+   In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalar values, pass this value.
 
    Level: beginner
 
-    Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
-          pass this value
+.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_COMPLEX, MPIU_INT
+M*/
 
-.seealso: PetscReal, PetscScalar, MPIU_INT, MPIU_REAL, MPIU_COMPLEX
+/*MC
+   MPIU_COMPLEX - MPI datatype corresponding to PetscComplex
+
+   Notes: 
+   In MPI calls that require an MPI datatype that matches a PetscComplex or array of PetscComplex values, pass this value.
+
+   Level: beginner
+
+.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_REAL, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT, PETSC_i
+M*/
+
+/*MC
+   MPIU_REAL - MPI datatype corresponding to PetscReal
+
+   Notes: 
+   In MPI calls that require an MPI datatype that matches a PetscReal or array of PetscReal values, pass this value.
+
+   Level: beginner
+
+.seealso: PetscReal, PetscScalar, PetscComplex, PetscInt, MPIU_SCALAR, MPIU_COMPLEX, MPIU_INT
 M*/
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -2333,7 +2392,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
    Use PetscIntMultTruncate() to compute the product of two positive PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
 
-   Developers Note: We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
+   Developers Note: 
+   We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
@@ -2615,7 +2675,8 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
 
    Level: beginner
 
-   Notes: to use SPRNG or RANDOM123 you must have ./configure PETSc
+   Notes: 
+   To use SPRNG or RANDOM123 you must have ./configure PETSc
    with the option --download-sprng or --download-random123
 
 .seealso: PetscRandomSetType(), PetscRandom, PetscRandomCreate()
@@ -2816,7 +2877,8 @@ PETSC_EXTERN const char *const PetscSubcommTypes[];
 /*S
    PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
 
-   Notes: After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
+   Notes: 
+   After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
 $     PetscSubcommChild() returns the associated subcommunicator on this process
 $     PetscSubcommContiguousParent() returns a parent communitor but with all child of the same subcommunicator having contiguous rank
 
@@ -2836,11 +2898,12 @@ $   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the ne
 $   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiguous ranks in the original MPI communicator
 $   PETSC_SUBCOMM_INTERLACED - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
 
-   Examaple: Consider a communicator with six processes split into 3 subcommunicators.
+   Example: Consider a communicator with six processes split into 3 subcommunicators.
 $     PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
 $     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
 
-   Developer Notes: This is used in objects such as PCREDUNDANT() to manage the subcommunicators on which the redundant computations
+   Developer Notes: 
+   This is used in objects such as PCREDUNDANT to manage the subcommunicators on which the redundant computations
       are performed.
 
 
@@ -2993,7 +3056,8 @@ PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,
    Output Parameter:
 .  outdata - the reduced values
 
-   Notes: In optimized mode this directly calls MPI_Allreduce()
+   Notes: 
+   In optimized mode this directly calls MPI_Allreduce()
 
    Level: developer
 
