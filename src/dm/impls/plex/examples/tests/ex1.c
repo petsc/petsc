@@ -504,6 +504,12 @@ int main(int argc, char **argv)
     suffix: gmsh_6
     requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_7
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_8
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
 
   # Fluent mesh reader tests
   test:
