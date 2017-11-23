@@ -296,7 +296,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 }
 
 /*@
-  DMPlexCreateCubeBoundary - Creates a 2D mesh the is the boundary of a cubic lattice.
+  DMPlexCreateCubeBoundary - Creates a 2D mesh that is the boundary of a cubic lattice.
 
   Collective on MPI_Comm
 

@@ -7,7 +7,7 @@
 #endif
 
 /*@C
-  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+  DMPlexCreateExodusFromFile - Create a DMPlex mesh from an ExodusII file.
 
   Collective on comm
 
@@ -130,7 +130,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       ierr = ex_get_block(exoid, EX_ELEM_BLOCK, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, 0, 0, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,&cs_connect,num_vertex_per_cell,&cone);CHKERRQ(ierr);
       ierr = ex_get_conn (exoid, EX_ELEM_BLOCK, cs_id[cs], cs_connect,NULL,NULL);CHKERRQ(ierr);
-      /* EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
+      /* EXO uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
