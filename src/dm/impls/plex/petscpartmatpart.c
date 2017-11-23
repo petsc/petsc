@@ -89,15 +89,47 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *globalNumbering)
 {
-  /*PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;*/
+  PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
+  Mat                               matadj;
+  IS                                partitioning;
+  PetscInt                          numVerticesGlobal, numEdges;
+  PetscInt                          *i, *j;
+  MPI_Comm                          comm;
   PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  /* call MatPartitioningSetAdjacency, MatPartitioningApply, ISPartitioningToSectionAndIS */
-  *partition = NULL;
+  if (numVertices < 0) SETERRQ(comm, PETSC_ERR_PLIB, "number of vertices must be specified");
+  ierr = PetscObjectGetComm((PetscObject)part, &comm);CHKERRQ(ierr);
+
+  /* TODO: MatCreateMPIAdj should maybe take global number of ROWS */
+  /* TODO: And vertex distribution in PetscPartitionerPartition_ParMetis should be done using PetscSplitOwnership */
+  numVerticesGlobal = PETSC_DECIDE;
+  ierr = PetscSplitOwnership(comm, &numVertices, &numVerticesGlobal);CHKERRQ(ierr);
+
+  /* copy arrays to avoid memory errors because MatMPIAdjSetPreallocation copies just pointers */
+  numEdges = start[numVertices];
+  ierr = PetscMalloc2(numVertices+1, &i, numEdges, &j);CHKERRQ(ierr);
+  ierr = PetscMemcpy(i, start, (numVertices+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(j, adjacency, numEdges*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* construct the adjacency matrix */
+  ierr = MatCreateMPIAdj(comm, numVertices, numVerticesGlobal, i, j, NULL, &matadj);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(p->mp, matadj);CHKERRQ(ierr);
+  ierr = MatPartitioningSetNParts(p->mp, nparts);CHKERRQ(ierr);
+
+  /* apply the partitioning */
+  ierr = MatPartitioningApply(p->mp, &partitioning);CHKERRQ(ierr);
+
+  /* convert assignment IS to global numbering IS */
+  ierr = ISPartitioningToNumbering(partitioning, globalNumbering);CHKERRQ(ierr);
+
+  /* TODO: construct the PetscSection */
   ierr = PetscSectionReset(partSection);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&matadj);CHKERRQ(ierr);
+  ierr = ISDestroy(&partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
