@@ -58,6 +58,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DTPL_ENABLE_Pamgen=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
     args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
+    args.append('-DHDF5_DIR:PATH='+self.hdf5.directory)
     if self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     if self.compilerFlags.debugging:
