@@ -1518,12 +1518,12 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
   Input Parameters:
 + dm - the DM object
-. numFields - number of fields in this subproblem
-- len       - The number of subproblems in the decomposition (or NULL if not requested)
+. numFields - the number of fields in this subproblem
+- fields - the fields in the subproblem
 
   Output Parameters:
-. is - The global indices for the subproblem
-- dm - The DM for the subproblem
++ is - the global indices for the subproblem
+- dm - the DM for the subproblem
 
   Level: intermediate
 
