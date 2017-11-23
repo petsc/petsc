@@ -229,8 +229,8 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx.ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
-  //  ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
-  // ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
+  /*  ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
+      ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr); */
   ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   /* Set random initial conditions as initial guess, compute analytic reference solution and analytic (true) initial conditions */
@@ -435,6 +435,7 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
+  if (appctx->param.N-1 < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 
@@ -487,6 +488,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
+  if (appctx->param.N-1 < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 
@@ -627,17 +629,17 @@ PetscErrorCode MonitorDestroy(void **ctx)
 
    test:
      requires: !single
-     args: -tao_monitor  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5 
+     args:  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5
 
    test:
      suffix: cn
      requires: !single
-     args: -tao_monitor -ts_type cn -ts_dt .003 -pc_type lu -E 10 -N 8 -ncoeff 5 
+     args:  -ts_type cn -ts_dt .003 -pc_type lu -E 10 -N 8 -ncoeff 5
 
    test:
      suffix: 2
      requires: !single
-     args: -tao_monitor  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5  -a .1
+     args:  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5  -a .1
 
 
 TEST*/

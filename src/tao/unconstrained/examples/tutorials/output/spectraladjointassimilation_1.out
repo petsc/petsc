@@ -1,12 +1,9 @@
-Error for initial conditions 0.07258
-iter =   0, Function value: 0.00526234,  Residual: 1.1919 
-Error for initial conditions 0.05002
-iter =   1, Function value: 0.00249937,  Residual: 0.821346 
-Error for initial conditions 6.65734e-06
-iter =   2, Function value: 4.34104e-11,  Residual: 0.000191739 
-Error for initial conditions 3.05274e-07
-iter =   3, Function value: 9.10474e-14,  Residual: 9.07531e-06 
-Error for initial conditions 3.54071e-09
-iter =   4, Function value: 1.23441e-17,  Residual: 5.49885e-08 
-Error for initial conditions 3.07518e-10
-iter =   5, Function value: 4.00471e-20,  Residual: 3.11884e-09 
+% Iteration Error Objective Gradient-norm
+history = [
+  0 0.07258 0.00526234 0.0077268
+  1 0.05002 0.00249937 0.00367009
+  2 6.65734e-06 4.34104e-11 3.14426e-10
+  3 3.05274e-07 9.10474e-14 7.61749e-13
+  4 3.54071e-09 1.23441e-17 5.43075e-17
+  5 3.07518e-10 4.00471e-20 2.35723e-19
+];
