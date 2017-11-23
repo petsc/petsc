@@ -4,19 +4,20 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/STRUMPACK-sparse-1.1.0-p1.tar.gz']
+    self.gitcommit        = 'v2.1.0'
+    self.download         = ['git://https://github.com/pghysels/STRUMPACK','http://portal.nersc.gov/project/sparse/strumpack/strumpack-2.1.0.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
-    self.liblist          = [['libstrumpack_sparse.a']]
+    self.liblist          = [['libstrumpack.a']]
     self.cxx              = 1
     self.fc               = 1
-    self.requirescxx11    = 1
     self.hastests         = 1
     return
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.scalapack      = framework.require('config.packages.scalapack',self)
     self.metis          = framework.require('config.packages.metis',self)
@@ -49,13 +50,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_BUILD_TYPE=Debug')
     else:
       args.append('-DCMAKE_BUILD_TYPE=Release')
-
-    # building with shared libs results in things like:
-    #  /usr/bin/ld: ex5: hidden symbol `SCOTCH_dgraphOrderCompute' in
-    #        /home/pieterg/workspace/petsc/arch-linux2-c-debug/lib/libptscotch.a(library_dgraph_order.o)
-    #          is referenced by DSO
-    if not self.checkSharedLibrariesEnabled():
-      args.append('-DBUILD_SHARED_LIBS=off')
 
     if self.openmp.found:
       args.append('-DUSE_OPENMP=ON')

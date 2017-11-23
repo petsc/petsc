@@ -66,6 +66,7 @@ native PetscBLASInt
 native ISColoringValue
 native MatReal
 native PetscSysInt
+native MatSTRUMPACKReordering
 # Some structures are like arrays and can be treated as native types
 native MatInfo
 native MatStencil
