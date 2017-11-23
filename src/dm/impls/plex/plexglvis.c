@@ -226,25 +226,45 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
 
 typedef enum {MFEM_POINT=0,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE,MFEM_TETRAHEDRON,MFEM_CUBE,MFEM_UNDEF} MFEM_cid;
 
-MFEM_cid mfem_table_cid[4][7] = { {MFEM_POINT,MFEM_UNDEF,MFEM_UNDEF  ,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF, MFEM_UNDEF},
-                                  {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF, MFEM_UNDEF},
-                                  {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE     ,MFEM_UNDEF, MFEM_UNDEF},
-                                  {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_TETRAHEDRON,MFEM_UNDEF, MFEM_CUBE } };
+MFEM_cid mfem_table_cid[4][7]       = { {MFEM_POINT,MFEM_UNDEF,MFEM_UNDEF  ,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE     ,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_TETRAHEDRON,MFEM_UNDEF,MFEM_CUBE } };
+
+MFEM_cid mfem_table_cid_unint[4][9] = { {MFEM_POINT,MFEM_UNDEF,MFEM_UNDEF  ,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_UNDEF      ,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_TRIANGLE,MFEM_SQUARE     ,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF},
+                                        {MFEM_POINT,MFEM_UNDEF,MFEM_SEGMENT,MFEM_UNDEF   ,MFEM_TETRAHEDRON,MFEM_UNDEF,MFEM_UNDEF,MFEM_UNDEF,MFEM_CUBE } };
 
 static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt p, PetscInt *mid, PetscInt *cid)
 {
   DMLabel        dlabel;
-  PetscInt       depth,csize;
+  PetscInt       depth,csize,pdepth,dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepthLabel(dm,&dlabel);CHKERRQ(ierr);
-  ierr = DMLabelGetValue(dlabel,p,&depth);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(dlabel,p,&pdepth);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm,p,&csize);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (label) {
     ierr = DMLabelGetValue(label,p,mid);CHKERRQ(ierr);
   } else *mid = 1;
-  *cid = mfem_table_cid[depth][csize];
+  if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
+#if defined PETSC_USE_DEBUG
+    if (dim < 0 || dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D",dim);
+    if (csize > 8) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
+    if (depth != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
+#endif
+    *cid = mfem_table_cid_unint[dim][csize];
+  } else {
+#if defined PETSC_USE_DEBUG
+    if (csize > 6) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
+    if (pdepth < 0 || pdepth > 3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %D for point %D",csize,p);
+#endif
+    *cid = mfem_table_cid[pdepth][csize];
+  }
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +316,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscBT              pown,vown;
   PetscErrorCode       ierr;
   PetscContainer       glvis_container;
-  PetscBool            periodic, enabled = PETSC_TRUE;
+  PetscBool            cellvertex = PETSC_FALSE, periodic, enabled = PETSC_TRUE;
   const char           *fmt;
   char                 emark[64] = "",bmark[64] = "";
 
@@ -357,7 +377,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (enable_boundary && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                              "Alternatively, run with -viewer_glvis_dm_plex_enable_boundary 0");
   if (enable_ncmesh && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
-                                                             "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
+                                                           "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
+  if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
+    if (depth != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %D. You should interpolate the mesh first",depth);
+    cellvertex = PETSC_TRUE;
+  }
 
   /* Identify possible cells in the overlap */
   novl = 0;
@@ -410,7 +434,9 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscInt    vpc = 0;
       char        fec[64];
       int         vids[8] = {0,1,2,3,4,5,6,7};
-      int         hexv[8] = {0,1,3,2,4,5,7,6},*dof;
+      int         hexv[8] = {0,1,3,2,4,5,7,6}, tetv[4] = {0,1,2,3};
+      int         quadv[8] = {0,1,3,2}, triv[3] = {0,1,2};
+      int         *dof = NULL;
       PetscScalar *array,*ptr;
 
       ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%dD_P1",dim);CHKERRQ(ierr);
@@ -427,11 +453,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             switch (fpc) {
               case 3:
                 vpc = 3;
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                dof = triv;
                 break;
               case 4:
                 vpc = 4;
-                dof = hexv;
+                dof = quadv;
                 break;
               default:
                 SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
@@ -440,11 +466,18 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
             break;
           case 3:
             switch (fpc) {
-              case 4:
+              case 4: /* TODO: still need to understand L2 ordering for tets */
                 vpc = 4;
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                dof = tetv;
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled tethraedral case");
                 break;
               case 6:
+                if (cellvertex) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
+                vpc = 8;
+                dof = hexv;
+                break;
+              case 8:
+                if (!cellvertex) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
                 vpc = 8;
                 dof = hexv;
                 break;
@@ -459,6 +492,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
         ierr = DMPlexInvertCell(dim,vpc,vids);CHKERRQ(ierr);
       }
+      if (!dof) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing dofs");
       ierr = VecCreateSeq(PETSC_COMM_SELF,(cEnd-cStart-novl)*vpc*sdim,&hovec);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)hovec);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)hovec);CHKERRQ(ierr);
@@ -618,6 +652,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           if (!vidxs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
           for (v=0;v<vpc;v++) {
             PetscInt s;
+
             for (s=0;s<sdim;s++) {
               if (PetscAbsScalar(vals[v*sdim+s]-vals[v*sdim+s+vpc*sdim])>PETSC_MACHINE_EPSILON) {
                 ierr = DMLabelSetValue(perLabel,vidxs[2*v],2);CHKERRQ(ierr);
@@ -630,6 +665,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       }
       if (dim > 1) {
         PetscInt eEnd,eStart,eEndInterior;
+
         ierr = DMPlexGetHybridBounds(dm,NULL,NULL,&eEndInterior,NULL);CHKERRQ(ierr);
         ierr = DMPlexGetDepthStratum(dm,1,&eStart,&eEnd);CHKERRQ(ierr);
         eEnd = eEndInterior < 0 ? eEnd : eEndInterior;
