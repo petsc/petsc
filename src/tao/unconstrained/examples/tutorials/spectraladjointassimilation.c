@@ -90,6 +90,7 @@ extern PetscErrorCode RHSAdvection(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode ComputeReference(TS,PetscReal,Vec,AppCtx*);
 extern PetscErrorCode MonitorError(Tao,void*);
+extern PetscErrorCode MonitorDestroy(void**);
 extern PetscErrorCode ComputeSolutionCoefficients(AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -240,7 +241,7 @@ int main(int argc,char **argv)
   
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetMonitor(tao,MonitorError,&appctx,NULL);CHKERRQ(ierr);
+  ierr = TaoSetMonitor(tao,MonitorError,&appctx,MonitorDestroy);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,appctx.dat.ic);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation  */
@@ -582,18 +583,39 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec ic,PetscReal *f,Vec G,void *ctx)
 PetscErrorCode MonitorError(Tao tao,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*)ctx;
-  Vec            temp;
+  Vec            temp,grad;
   PetscReal      nrm;
+  PetscErrorCode ierr;
+  PetscInt       its;
+  PetscReal      fct,gnorm;
+
+  PetscFunctionBegin;
+  ierr  = VecDuplicate(appctx->dat.ic,&temp);CHKERRQ(ierr);
+  ierr  = VecWAXPY(temp,-1.0,appctx->dat.ic,appctx->dat.true_solution);CHKERRQ(ierr);
+  ierr  = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
+  ierr  = VecDot(temp,appctx->SEMop.mass,&nrm);CHKERRQ(ierr);
+  nrm   = PetscSqrtReal(nrm);
+  ierr  = TaoGetGradientVector(tao,&grad);CHKERRQ(ierr);
+  ierr  = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
+  ierr  = VecDot(temp,appctx->SEMop.mass,&gnorm);CHKERRQ(ierr);
+  gnorm = PetscSqrtReal(gnorm);
+  ierr  = VecDestroy(&temp);CHKERRQ(ierr);
+  ierr  = TaoGetIterationNumber(tao,&its);CHKERRQ(ierr);
+  ierr  = TaoGetObjective(tao,&fct);CHKERRQ(ierr);
+  if (!its) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%% Iteration Error Objective Gradient-norm\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"history = [\n");CHKERRQ(ierr);
+  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%3D %g %g %g\n",its,(double)nrm,(double)fct,(double)gnorm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MonitorDestroy(void **ctx)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(appctx->dat.ic,&temp);CHKERRQ(ierr);
-  ierr = VecWAXPY(temp,-1.0,appctx->dat.ic,appctx->dat.true_solution);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
-  ierr = VecDot(temp,appctx->SEMop.mass,&nrm);CHKERRQ(ierr);
-  ierr = VecDestroy(&temp);CHKERRQ(ierr);
-  nrm  = PetscSqrtReal(nrm);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error for initial conditions %g\n",(double)nrm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"];\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
