@@ -602,4 +602,54 @@ int main(int argc, char **argv)
     suffix: box_3d
     args: -dim 3 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 3 -test_shape -dm_view
 
+  # Test GLVis output
+  test:
+    suffix: glvis_2d_tet
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_tet_per
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
+
+  test:
+    suffix: glvis_2d_tet_per_mfem
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_2d_quad
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_quad_per
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_quad_per_mfem
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem
+
+  test:
+    suffix: glvis_3d_tet
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_view glvis:
+
+  test:
+    suffix: glvis_3d_tet_per
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_3d_tet_per_mfem
+    TODO: broken
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_plex_gmsh_enable_mfem -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_3d_hex
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -dm_view glvis:
+
+  test:
+    suffix: glvis_3d_hex_per
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
+
+  test:
+    suffix: glvis_3d_hex_per_mfem
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem -interpolate
+
 TEST*/
