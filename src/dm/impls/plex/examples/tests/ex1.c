@@ -510,6 +510,15 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_8
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_9
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_10
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_11
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape -dm_refine 1
 
   # Fluent mesh reader tests
   test:
