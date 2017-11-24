@@ -125,8 +125,17 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   /* convert assignment IS to global numbering IS */
   ierr = ISPartitioningToNumbering(partitioning, globalNumbering);CHKERRQ(ierr);
 
-  /* TODO: construct the PetscSection */
-  ierr = PetscSectionReset(partSection);CHKERRQ(ierr);
+  /* construct the PetscSection */
+  {
+    PetscInt v;
+    const PetscInt *assignment_arr;
+
+    ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
+    ierr = ISGetIndices(partitioning, &assignment_arr);CHKERRQ(ierr);
+    for (v = 0; v < numVertices; ++v) {ierr = PetscSectionAddDof(partSection, assignment_arr[v], 1);CHKERRQ(ierr);}
+    ierr = ISRestoreIndices(partitioning, &assignment_arr);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
+  }
 
   ierr = MatDestroy(&matadj);CHKERRQ(ierr);
   ierr = ISDestroy(&partitioning);CHKERRQ(ierr);
