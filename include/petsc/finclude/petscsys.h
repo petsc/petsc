@@ -195,10 +195,10 @@
 !     Macros for error checking
 !
 #if defined(PETSC_USE_ERRORCHECKING)
-#define SETERRQ(c,ierr,s)  ; call PetscError(c,ierr,0,s); return; endif
-#define SETERRA(c,ierr,s)  ; call PetscError(c,ierr,0,s); call MPIU_Abort(c,ierr); endif
-#define CHKERRQ(ierr) if (ierr .ne. 0) then ; call PetscErrorF(ierr); return; endif
-#define CHKERRA(ierr) if (ierr .ne. 0) then ; call PetscErrorF(ierr); call MPIU_Abort(MPI_COMM_WORLD,ierr); endif
+#define SETERRQ(c,ierr,s)  ;call PetscError(c,ierr,0,s);return;endif
+#define SETERRA(c,ierr,s)  ;call PetscError(c,ierr,0,s);call MPIU_Abort(c,ierr);endif
+#define CHKERRQ(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);return;endif
+#define CHKERRA(ierr) if (ierr .ne. 0) then;call PetscErrorF(ierr);call MPIU_Abort(MPI_COMM_SELF,ierr);endif
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 #else
 #define SETERRQ(c,ierr,s)

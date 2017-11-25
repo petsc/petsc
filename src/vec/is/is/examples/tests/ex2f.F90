@@ -25,12 +25,12 @@
       first = 2
       call ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr)
       call ISGetLocalSize(is,n,ierr)
-      if (n .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISCreateStride ')
+      if (n .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISCreateStride')
 
       call ISStrideGetInfo(is,start,stride,ierr)
-      if (start .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo ')
+      if (start .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo')
 
-      if (stride .ne. 2) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo ')
+      if (stride .ne. 2) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo') 
 
       call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr)
       if (.not. flag) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from PetscObjectTypeCompare')
