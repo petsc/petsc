@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c
 EXAMPLESCH      =
-EXAMPLESF       = ex5f.F ex12f.F ex16f.F90 ex52f.F
+EXAMPLESF       = ex5f.F ex12f.F ex16f.F90 ex52f.F ex54f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -193,6 +193,9 @@ ex53: ex53.o chkopts
 ex54: ex54.o chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
 	${RM} ex54.o
+ex54f: ex54f.o  chkopts
+	-${FLINKER} -o ex54f ex54f.o  ${PETSC_KSP_LIB}
+	${RM} ex54f.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
