@@ -3131,6 +3131,7 @@ PC subpc;
 PCCompositeGetPC(pc,0,&subpc);
 PCFactorSetFill(subpc,1);
 \end{lstlisting}
+One can also change the operator that is used to construct a particular PC in the composite PC call PCSetOperators() on the obtained PC.
 
 These various options can also be set via the options database. For example,
 \trl{-pc_type} \trl{composite} \findex{composite} \trl{-pc_composite_pcs} \trl{jacobi,ilu}
