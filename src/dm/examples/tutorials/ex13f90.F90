@@ -170,7 +170,9 @@ end program main
 !
 !   build:
 !      requires: !complex
-!      depends:  ex13f90aux.F90
+!     depends:  ex13f90aux.F90
+!
+!   test:
 !
 !TEST*/
 

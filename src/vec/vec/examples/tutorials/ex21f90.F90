@@ -5,7 +5,6 @@
 !/*T
 !   Concepts: vectors^basic routines;
 !   Processors: n
-!   depends: ex21.c
 !T*/
 !
 ! -----------------------------------------------------------------------
@@ -143,3 +142,5 @@
       call PetscFinalize(ierr)
 
       end
+
+      
