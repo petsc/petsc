@@ -231,121 +231,7 @@ ex44: ex44.o chkopts
 	${RM} ex44.o
 
 #---------------------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -snes_atol 1.e-7 -ts_pseudo_frtol 1.e-5 -ts_view draw:tikz:output/fig.tex > ex1_1.tmp 2>&1;	  \
-	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
-	   ${DIFF} output/fig.tex output/fig.tex.out || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
-         ${RM} -f ex1_1.tmp output/fig.tex
 
-runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor_pseudo -ts_pseudo_frtol 1.e-5 > ex1_2.tmp 2>&1;  \
-	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex1_2.tmp
-
-runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -ts_max_snes_failures 3 -ts_pseudo_frtol 1.e-5  -snes_stol 1e-5 > ex1f_1.tmp 2>&1;  \
-	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex1f_1.tmp
-
-runex2:
-	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 -mymonitor > ex2_1.tmp 2>&1;  \
-	   ${DIFF} output/ex2_1.out ex2_1.tmp || printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex2_1.tmp
-
-runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 > ex3_1.tmp 2>&1;  \
-	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_1.tmp
-runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;  \
-	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_2.tmp
-runex3_3:                       # IMEX IJacobian for constant RHS Jacobian
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason | ${SED} "s/ATOL/RTOL/g" > ex3_3.tmp 2>&1;	  \
-	   ${DIFF} output/ex3_3.out ex3_3.tmp || printf "${PWD}\nPossible problem with ex3_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_3.tmp
-runex3_4:                       # non-IMEX IJacobian with constant RHS Jacobian
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason | ${SED} "s/ATOL/RTOL/g" > ex3_4.tmp 2>&1;  \
-	   ${DIFF} output/ex3_4.out ex3_4.tmp || printf "${PWD}\nPossible problem with ex3_4, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_4.tmp
-runex3_5:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason -time_dependent_rhs | ${SED} "s/ATOL/RTOL/g" > ex3_5.tmp 2>&1;  \
-	   ${DIFF} output/ex3_5.out ex3_5.tmp || printf "${PWD}\nPossible problem with ex3_5, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_5.tmp
-
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_1.tmp
-runex4_2:
-	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox > ex4_2.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_2.tmp
-runex4_3:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox -nonlinear > ex4_3.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_3.tmp
-runex4_4:
-	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox -nonlinear > ex4_4.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_4, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_4.tmp
-runex4_sundials:
-	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 -nonlinear > ex4.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_sundials, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4.tmp
-runex5:
-	-@${MPIEXEC} -n 1 ./ex5    > ex5_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
-runex5_nox:
-	-@${MPIEXEC} -n 1 ./ex5 -nox   > ex5_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_nox, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
-runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -nox -ts_max_steps 4   > ex6_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_1.tmp
-
-runex7:
-	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5   > ex7_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex7_1.tmp
-
-runex7_2:
-	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;  \
-	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex7_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex7_2.tmp
-
-runex7_3:
-	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf > ex7_3.tmp 2>&1;  \
-	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex7_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex7_3.tmp
-
-runex8:
-	-@${MPIEXEC} -n 1 ./ex8 -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex > ex8_1.tmp 2>&1; \
-	   ${DIFF} output/ex8_1.out ex8_1.tmp || printf "${PWD}\nPossible problem with ex8_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8_1.tmp
-
-runex8_2:
-	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 0 > ex8_2.tmp 2>&1; \
-	   ${DIFF} output/ex8_2.out ex8_2.tmp || printf "${PWD}\nPossible problem with ex8_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8_2.tmp
-
-runex8_3:
-	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 1 > ex8_3.tmp 2>&1; \
-	   ${DIFF} output/ex8_3.out ex8_3.tmp || printf "${PWD}\nPossible problem with ex8_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8_3.tmp
 
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc > ex9_1.tmp 2>&1; \
@@ -815,10 +701,7 @@ runex44_2:
 	   sort  -b output/ex44_2.out | ${DIFF}  - ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44_2.tmp
 
-TESTEXAMPLES_C = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_4 runex3_5 ex3.rm \
-                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc runex5_nox ex5.rm\
-                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
-                            ex8.PETSc runex8 ex8.rm \
+TESTEXAMPLES_C =            
                             ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
                             ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm printdot \
@@ -831,7 +714,7 @@ TESTEXAMPLES_C = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 rune
                             ex43.PETSc ex43.rm \
                             ex44.PETSc runex44_a runex44_b runex44_2 ex44.rm
 
-TESTEXAMPLES_C_NOTSINGLE = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc printdot runex10 runex10_2 runex10_3  ex10.rm \
+TESTEXAMPLES_C_NOTSINGLE =  ex10.PETSc printdot runex10 runex10_2 runex10_3  ex10.rm \
                             printdot ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm printdot \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm printdot \
                             ex29.PETSc runex29 ex29.rm ex43.PETSc runex43_a runex43_b ex43.rm
@@ -842,15 +725,12 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm 
                             ex20fwd.PETSc runex20fwd runex20fwd_2 ex20fwd.rm \
                             ex20opt_p.PETSc runex20opt_p ex20opt_p.rm \
                             ex20opt_ic.PETSc runex20opt_ic ex20opt_ic.rm
-TESTEXAMPLES_C_X = ex5.PETSc runex5 ex5.rm
-TESTEXAMPLES_FORTRAN = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE = ex22f.PETSc runex22f ex22f.rm
 TESTEXAMPLES_F90_NOTSINGLE = ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI = ex40.PETSc runex40_a runex40_b runex40_c runex40_d runex40_e runex40_f runex40_g ex40.rm \
                             ex43.PETSc runex43_a runex43_b ex43.rm \
                             ex44.PETSc runex44_a runex44_b ex44.rm
-TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
-                            ex5.PETSc ex5.rm
+TESTEXAMPLES_13 =                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_MOAB = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_TCHEM = extchem.PETSc runextchem extchem.rm
