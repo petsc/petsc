@@ -348,6 +348,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+  if (!coordinates) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
 
   /* Users can attach a coordinate vector to the DM in case they have a higher-order mesh
      DMPlex does not currently support HO meshes, so there's no API for this */

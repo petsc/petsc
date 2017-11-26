@@ -4797,6 +4797,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
     } else SETERRQ(PetscObjectComm((PetscObject) cdm), PETSC_ERR_ARG_WRONG, "Coordinate localization requires a DMPLEX coordinate DM");
   }
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  if (!coordinates) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);

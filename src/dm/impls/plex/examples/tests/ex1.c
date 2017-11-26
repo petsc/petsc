@@ -599,6 +599,10 @@ int main(int argc, char **argv)
     args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
+    suffix: box_2d_per_unint
+    args: -dim 2 -cell_simplex 0 -interpolate 0 -domain_shape box -domain_box_sizes 3,3 -test_shape -dm_view ::ascii_info_detail
+
+  test:
     suffix: box_3d
     args: -dim 3 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 3 -test_shape -dm_view
 

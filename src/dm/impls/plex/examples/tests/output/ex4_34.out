@@ -842,6 +842,100 @@ base <-- cap:
 [1]: 63 <---- 106 (0)
 [1]: 63 <---- 107 (0)
 [1]: 63 <---- 108 (0)
+coordinates with 1 fields
+  field 0 with 2 components
+Process 0:
+  (  64) dim  2 offset   0 -0.5 0.
+  (  65) dim  2 offset   2 0. -0.5
+  (  66) dim  2 offset   4 0. 0.5
+  (  67) dim  2 offset   6 -0.25 -0.25
+  (  68) dim  2 offset   8 0. 0.
+  (  69) dim  2 offset  10 -0.25 0.25
+  (  70) dim  2 offset  12 -0.375 -0.125
+  (  71) dim  2 offset  14 -0.125 -0.375
+  (  72) dim  2 offset  16 0. -0.25
+  (  73) dim  2 offset  18 0. 0.25
+  (  74) dim  2 offset  20 -0.125 0.375
+  (  75) dim  2 offset  22 -0.375 0.125
+  (  76) dim  2 offset  24 -0.125 -0.125
+  (  77) dim  2 offset  26 -0.125 0.125
+  (  78) dim  2 offset  28 -0.25 0.
+  (  79) dim  2 offset  30 -0.4375 -0.0625
+  (  80) dim  2 offset  32 -0.3125 -0.1875
+  (  81) dim  2 offset  34 -0.1875 -0.3125
+  (  82) dim  2 offset  36 -0.0625 -0.4375
+  (  83) dim  2 offset  38 0. -0.375
+  (  84) dim  2 offset  40 0. -0.125
+  (  85) dim  2 offset  42 0. 0.125
+  (  86) dim  2 offset  44 0. 0.375
+  (  87) dim  2 offset  46 -0.0625 0.4375
+  (  88) dim  2 offset  48 -0.1875 0.3125
+  (  89) dim  2 offset  50 -0.3125 0.1875
+  (  90) dim  2 offset  52 -0.4375 0.0625
+  (  91) dim  2 offset  54 -0.1875 -0.1875
+  (  92) dim  2 offset  56 -0.0625 -0.0625
+  (  93) dim  2 offset  58 -0.0625 0.0625
+  (  94) dim  2 offset  60 -0.1875 0.1875
+  (  95) dim  2 offset  62 -0.25 0.125
+  (  96) dim  2 offset  64 -0.25 -0.125
+  (  97) dim  2 offset  66 -0.3125 -0.0625
+  (  98) dim  2 offset  68 -0.3125 0.0625
+  (  99) dim  2 offset  70 -0.375 0.
+  ( 100) dim  2 offset  72 -0.0625 -0.3125
+  ( 101) dim  2 offset  74 -0.0625 -0.1875
+  ( 102) dim  2 offset  76 -0.125 -0.25
+  ( 103) dim  2 offset  78 -0.0625 0.1875
+  ( 104) dim  2 offset  80 -0.0625 0.3125
+  ( 105) dim  2 offset  82 -0.125 0.25
+  ( 106) dim  2 offset  84 -0.125 0.
+  ( 107) dim  2 offset  86 -0.1875 0.0625
+  ( 108) dim  2 offset  88 -0.1875 -0.0625
+Process 1:
+  (  64) dim  2 offset   0 0. -0.5
+  (  65) dim  2 offset   2 0. 0.5
+  (  66) dim  2 offset   4 0.5 0.
+  (  67) dim  2 offset   6 0. 0.
+  (  68) dim  2 offset   8 0.25 -0.25
+  (  69) dim  2 offset  10 0.25 0.25
+  (  70) dim  2 offset  12 0. -0.25
+  (  71) dim  2 offset  14 0. 0.25
+  (  72) dim  2 offset  16 0.125 -0.375
+  (  73) dim  2 offset  18 0.375 -0.125
+  (  74) dim  2 offset  20 0.375 0.125
+  (  75) dim  2 offset  22 0.125 0.375
+  (  76) dim  2 offset  24 0.125 -0.125
+  (  77) dim  2 offset  26 0.25 0.
+  (  78) dim  2 offset  28 0.125 0.125
+  (  79) dim  2 offset  30 0. -0.375
+  (  80) dim  2 offset  32 0. -0.125
+  (  81) dim  2 offset  34 0. 0.125
+  (  82) dim  2 offset  36 0. 0.375
+  (  83) dim  2 offset  38 0.0625 -0.4375
+  (  84) dim  2 offset  40 0.1875 -0.3125
+  (  85) dim  2 offset  42 0.3125 -0.1875
+  (  86) dim  2 offset  44 0.4375 -0.0625
+  (  87) dim  2 offset  46 0.4375 0.0625
+  (  88) dim  2 offset  48 0.3125 0.1875
+  (  89) dim  2 offset  50 0.1875 0.3125
+  (  90) dim  2 offset  52 0.0625 0.4375
+  (  91) dim  2 offset  54 0.0625 -0.0625
+  (  92) dim  2 offset  56 0.1875 -0.1875
+  (  93) dim  2 offset  58 0.25 -0.125
+  (  94) dim  2 offset  60 0.25 0.125
+  (  95) dim  2 offset  62 0.1875 0.1875
+  (  96) dim  2 offset  64 0.0625 0.0625
+  (  97) dim  2 offset  66 0.0625 0.1875
+  (  98) dim  2 offset  68 0.125 0.25
+  (  99) dim  2 offset  70 0.0625 0.3125
+  ( 100) dim  2 offset  72 0.0625 -0.3125
+  ( 101) dim  2 offset  74 0.125 -0.25
+  ( 102) dim  2 offset  76 0.0625 -0.1875
+  ( 103) dim  2 offset  78 0.3125 -0.0625
+  ( 104) dim  2 offset  80 0.375 0.
+  ( 105) dim  2 offset  82 0.3125 0.0625
+  ( 106) dim  2 offset  84 0.1875 -0.0625
+  ( 107) dim  2 offset  86 0.1875 0.0625
+  ( 108) dim  2 offset  88 0.125 0.
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
