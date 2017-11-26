@@ -345,7 +345,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
   ierr = VecSum(u,&sum);CHKERRQ(ierr);
   ierr = VecShift(u,-sum/lenglob);CHKERRQ(ierr);
-  //  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   return 0;
 }
 
@@ -384,7 +383,6 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
   /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
   ierr = VecSum(u,&sum);CHKERRQ(ierr);
   ierr = VecShift(u,-sum/lenglob);CHKERRQ(ierr);
-  //  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -416,7 +414,6 @@ PetscErrorCode ComputeReference(TS ts,PetscReal t,Vec obj,AppCtx *appctx)
   }
   ierr = DMDAVecRestoreArray(appctx->da,obj,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
-  //ierr = VecView(obj,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   return 0;
 }
 
@@ -594,9 +591,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
           must be careful in initializing the "adjoint equation" and using the result. This is
           why
               G = -2 M(u(T) - u_d)
-          below (instead of -2(u(T) - u_d) and why the result is
-              G = G/appctx->SEMop.mass (that is G = M^{-1}w)
-          below (instead of just the result of the "adjoint solve").
+          below (instead of -2(u(T) - u_d)
 
 
 */

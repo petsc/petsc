@@ -7,7 +7,8 @@ for i=1:5
   syscommand = compose('./spectraladjointassimilation  -ts_adapt_dt_max 3.e-3 -E %d -N 2 -ncoeff 5  -a .1 -tao_grtol 1.e-12  -tao_gatol 1.e-12  -tao_max_it 7',[E])
   [status,result] = system(syscommand{1});
   eval(result);
-  h(i) = history(8,2);
+[m,n] = size(history);
+  h(i) = history(m,2);
   e(i) = E;
   if (mod(i,2) == 1)
     yyaxis left
@@ -36,11 +37,13 @@ h = zeros(4,1);
 e = zeros(4,1);
 for i=1:4
   N = 1 + 3*i;
-  syscommand = compose('./spectraladjointassimilation  -ts_adapt_dt_max 3.e-3 -E 8 -N %d -ncoeff 5  -a .1 -tao_grtol 1.e-12  -tao_gatol 1.e-12  -tao_max_it 7',[N])
+  syscommand = compose('./spectraladjointassimilation  -ts_adapt_dt_max 3.e-3 -E 8 -N %d -ncoeff 12  -a .1 -tao_grtol 1.e-12  -tao_gatol 1.e-12  -tao_max_it 20',[N])
   [status,result] = system(syscommand{1});
   eval(result);
+history
   e(i) = N;
-  h(i) = history(8,2)
+  [m,n] = size(history);
+  h(i) = history(m,2)
   yyaxis left
   semilogy(history(:,1),history(:,2));
   ylabel('Continuum Error');
@@ -49,7 +52,7 @@ for i=1:4
   ylabel('Objective function');
   hold on
 end
-legend('Order 2','Order 5','Order 8','Order 11','Order 2','Order 5','Order 8','Order 11')
+legend('Order 4','Order 7','Order 10','Order 13','Order 4','Order 7','Order 10','Order 13')
 xlabel('Iteration')
 print('convergencestudy-p','-dpdf');
 
