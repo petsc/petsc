@@ -36,13 +36,18 @@ static PetscErrorCode PetscViewerGetSubViewer_Binary(PetscViewer viewer,MPI_Comm
 
   PetscFunctionBegin;
   ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  if (vbinary->usempiio) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Not yet implemented for binary viewers using MPI I/O");
+#endif
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr    = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
     ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
-  } SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot get subcomm viewer for binary files or sockets unless SubViewer contains the rank 0 process");
+  } else {
+    *outviewer = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
