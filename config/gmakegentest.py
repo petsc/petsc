@@ -741,7 +741,7 @@ class generateExamples(Petsc):
       #if not exfile.startswith("ex"): continue
 
       # Ignore emacs files
-      if exfile.startswith("#"): continue
+      if exfile.startswith("#") or exfile.startswith(".#"): continue
 
       # Convenience
       fullex=os.path.join(root,exfile)
