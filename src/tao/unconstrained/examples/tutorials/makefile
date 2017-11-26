@@ -21,6 +21,10 @@ spectraladjointassimilation: spectraladjointassimilation.o chkopts
 	-${CLINKER} -o spectraladjointassimilation spectraladjointassimilation.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
 	${RM} spectraladjointassimilation.o
 
+burgers_spectral: burgers_spectral.o chkopts
+	-${CLINKER} -o burgers_spectral burgers_spectral.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
+	${RM} burgers_spectral.o
+
 rosenbrock1: rosenbrock1.o chkopts
 	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
 	${RM} rosenbrock1.o
