@@ -25,6 +25,10 @@ burgers_spectral: burgers_spectral.o chkopts
 	-${CLINKER} -o burgers_spectral burgers_spectral.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
 	${RM} burgers_spectral.o
 
+heat-data-assimulation: heat-data-assimulation.o chkopts
+	-${CLINKER} -o heat-data-assimulation heat-data-assimulation.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
+	${RM} heat-data-assimulation.o
+
 rosenbrock1: rosenbrock1.o chkopts
 	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
 	${RM} rosenbrock1.o

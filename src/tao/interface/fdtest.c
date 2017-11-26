@@ -27,8 +27,9 @@ PetscErrorCode TaoSolve_Test(Tao tao)
     ierr = VecDuplicate(x,&g1);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&g2);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd),\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"if the ratio ||fd - hc|| / ||hc|| is\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"O(1.e-8), the hand-coded gradient is probably correct.\n");CHKERRQ(ierr);
 
     if (!fd->complete_print) {
       ierr = PetscPrintf(comm,"Run with -tao_test_display to show difference\n");CHKERRQ(ierr);
