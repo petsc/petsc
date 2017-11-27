@@ -818,7 +818,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     char       vecgroup[PETSC_MAX_PATH_LEN];
 
     ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,vecname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",vecname);CHKERRQ(ierr);
     ierr = PetscViewerHDF5WriteAttribute(viewer,vecgroup,"complex",PETSC_INT,&one);CHKERRQ(ierr);
   }
 #endif
