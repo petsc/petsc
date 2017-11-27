@@ -206,6 +206,8 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
 
+  ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
+  
   tao->ntotalits += tao->niter;
   ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
 

@@ -168,6 +168,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
+.  -ts_monitor_error - Monitors norm of error
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_timestep_log - Monitor log timestep size graphically
 .  -ts_monitor_lg_snes_iterations - Monitor number nonlinear iterations for each timestep graphically
@@ -273,6 +274,11 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsName("-ts_monitor_error","Monitor error","TSMonitorError",&opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = TSMonitorSet(ts,TSMonitorError,NULL,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
@@ -7602,6 +7608,44 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
     ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSMonitorError - Monitors progress of the TS solvers by printing the 2 norm of the error at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  u - current solution
+-  dctx - unused context
+
+   Level: intermediate
+
+   The user must provide the solution using TSSetSolutionFunction() to use this monitor.
+
+   Options Database Keys:
+.  -ts_monitor_error - create a graphical monitor of error history
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode    ierr;
+  Vec               y;
+  PetscReal         nrm;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
