@@ -2882,7 +2882,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   ierr = PetscObjectSAWsViewOff((PetscObject)*snes);CHKERRQ(ierr);
   if ((*snes)->ops->destroy) {ierr = (*((*snes))->ops->destroy)((*snes));CHKERRQ(ierr);}
 
-  ierr = DMCoarsenHookRemove((*snes)->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,*snes);CHKERRQ(ierr);
+  if ((*snes)->dm) {ierr = DMCoarsenHookRemove((*snes)->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,*snes);CHKERRQ(ierr);}
   ierr = DMDestroy(&(*snes)->dm);CHKERRQ(ierr);
   ierr = KSPDestroy(&(*snes)->ksp);CHKERRQ(ierr);
   ierr = SNESLineSearchDestroy(&(*snes)->linesearch);CHKERRQ(ierr);
