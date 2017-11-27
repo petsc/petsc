@@ -225,7 +225,7 @@ PetscErrorCode VecScatterBeginMPI1_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMo
 /*
        The follow to are used for both VecScatterBeginMPI1_MPI_ToAll() and VecScatterBeginMPI1_MPI_ToOne()
 */
-PetscErrorCode VecScatterDestroyMPI1_MPI_ToAll(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_MPI_ToAll_MPI1(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
   PetscErrorCode       ierr;
@@ -237,7 +237,7 @@ PetscErrorCode VecScatterDestroyMPI1_MPI_ToAll(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterDestroyMPI1_SGToSG(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_SGToSG_MPI1(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -247,7 +247,7 @@ PetscErrorCode VecScatterDestroyMPI1_SGToSG(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterDestroyMPI1_SGToSS(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_SGToSS_MPI1(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -257,7 +257,7 @@ PetscErrorCode VecScatterDestroyMPI1_SGToSS(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterDestroyMPI1_SSToSG(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_SSToSG_MPI1(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -267,7 +267,7 @@ PetscErrorCode VecScatterDestroyMPI1_SSToSG(VecScatter ctx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterDestroyMPI1_SSToSS(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_SSToSS_MPI1(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -880,10 +880,9 @@ PetscErrorCode VecScatterViewMPI1_SSToSS(VecScatter in,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
-extern PetscErrorCode VecScatterCreateMPI1_PtoS(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateMPI1_PtoP(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
-extern PetscErrorCode VecScatterCreateMPI1_StoP(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoS_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+extern PetscErrorCode VecScatterCreate_StoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0
@@ -905,7 +904,7 @@ PetscErrorCode  VecScatterCreateEmptyMPI1(MPI_Comm comm,VecScatter *newctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroyMPI1,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
@@ -922,7 +921,7 @@ PetscErrorCode  VecScatterCreateEmptyMPI1(MPI_Comm comm,VecScatter *newctx)
 }
 
 /*@C
-   VecScatterCreateMPI1 - Creates a vector scatter context.
+   VecScatterCreate_MPI1 - Creates a vector scatter context.
 
    Collective on Vec
 
@@ -990,9 +989,9 @@ $
    Concepts: scatter^between vectors
    Concepts: gather^between vectors
 
-.seealso: VecScatterDestroyMPI1(), VecScatterCreateToAll(), VecScatterCreateToZero()
+.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;
@@ -1022,7 +1021,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
 
   /* generate the Scatter context */
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroyMPI1,VecScatterViewMPI1);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterViewMPI1);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1121,7 +1120,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ctx->fromdata     = (void*)from;
       ctx->ops->begin   = VecScatterBeginMPI1_SGToSG;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroyMPI1_SGToSG;
+      ctx->ops->destroy = VecScatterDestroy_SGToSG_MPI1;
       ctx->ops->copy    = VecScatterCopyMPI1_SGToSG;
       ctx->ops->view    = VecScatterViewMPI1_SGToSG;
       ierr              = PetscInfo(xin,"Special case: sequential vector general scatter\n");CHKERRQ(ierr);
@@ -1148,7 +1147,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ctx->fromdata     = (void*)from8;
       ctx->ops->begin   = VecScatterBeginMPI1_SSToSS;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroyMPI1_SSToSS;
+      ctx->ops->destroy = VecScatterDestroy_SSToSS_MPI1;
       ctx->ops->copy    = VecScatterCopyMPI1_SSToSS;
       ctx->ops->view    = VecScatterViewMPI1_SSToSS;
       ierr          = PetscInfo(xin,"Special case: sequential vector stride to stride\n");CHKERRQ(ierr);
@@ -1177,7 +1176,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
       if (step == 1)  ctx->ops->begin = VecScatterBeginMPI1_SGToSS_Stride1;
       else            ctx->ops->begin = VecScatterBeginMPI1_SGToSS;
-      ctx->ops->destroy   = VecScatterDestroyMPI1_SGToSS;
+      ctx->ops->destroy   = VecScatterDestroy_SGToSS_MPI1;
       ctx->ops->end       = 0;
       ctx->ops->copy      = VecScatterCopyMPI1_SGToSS;
       ctx->ops->view      = VecScatterViewMPI1_SGToSS;
@@ -1210,7 +1209,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ctx->fromdata = (void*)from10;
       if (step == 1) ctx->ops->begin = VecScatterBeginMPI1_SSToSG_Stride1;
       else           ctx->ops->begin = VecScatterBeginMPI1_SSToSG;
-      ctx->ops->destroy = VecScatterDestroyMPI1_SSToSG;
+      ctx->ops->destroy = VecScatterDestroy_SSToSG_MPI1;
       ctx->ops->end     = 0;
       ctx->ops->copy    = 0;
       ctx->ops->view    = VecScatterViewMPI1_SSToSG;
@@ -1245,7 +1244,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
         ctx->fromdata = (void*)from13;
         ctx->ops->begin    = VecScatterBeginMPI1_SSToSS;
         ctx->ops->end      = 0;
-        ctx->ops->destroy  = VecScatterDestroyMPI1_SSToSS;
+        ctx->ops->destroy  = VecScatterDestroy_SSToSS_MPI1;
         ctx->ops->copy     = VecScatterCopyMPI1_SSToSS;
         ctx->ops->view     = VecScatterViewMPI1_SSToSS;
         ierr = PetscInfo(xin,"Special case: sequential copy\n");CHKERRQ(ierr);
@@ -1272,7 +1271,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ctx->fromdata     = (void*)from11;
       ctx->ops->begin   = VecScatterBeginMPI1_SGToSG;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroyMPI1_SGToSG;
+      ctx->ops->destroy = VecScatterDestroy_SGToSG_MPI1;
       ctx->ops->copy    = VecScatterCopyMPI1_SGToSG;
       ctx->ops->view    = VecScatterViewMPI1_SGToSG;
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
@@ -1319,7 +1318,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
         ctx->fromdata      = (void*)from12;
         ctx->ops->begin    = VecScatterBeginMPI1_SSToSS;
         ctx->ops->end      = 0;
-        ctx->ops->destroy  = VecScatterDestroyMPI1_SSToSS;
+        ctx->ops->destroy  = VecScatterDestroy_SSToSS_MPI1;
         ctx->ops->copy     = VecScatterCopyMPI1_SSToSS;
         ctx->ops->view     = VecScatterViewMPI1_SSToSS;
         ierr = PetscInfo(xin,"Special case: processors only getting local values\n");CHKERRQ(ierr);
@@ -1370,7 +1369,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
         ctx->fromdata     = 0;
         ctx->ops->begin   = VecScatterBeginMPI1_MPI_ToAll;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroyMPI1_MPI_ToAll;
+        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll_MPI1;
         ctx->ops->copy    = VecScatterCopyMPI1_MPI_ToAll;
         ctx->ops->view    = VecScatterViewMPI1_MPI_ToAll;
         ierr = PetscInfo(xin,"Special case: all processors get entire parallel vector\n");CHKERRQ(ierr);
@@ -1429,7 +1428,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
         ctx->fromdata     = 0;
         ctx->ops->begin   = VecScatterBeginMPI1_MPI_ToOne;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroyMPI1_MPI_ToAll;
+        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll_MPI1;
         ctx->ops->copy    = VecScatterCopyMPI1_MPI_ToAll;
         ctx->ops->view    = VecScatterViewMPI1_MPI_ToAll;
         ierr = PetscInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none\n");CHKERRQ(ierr);
@@ -1455,7 +1454,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
           ierr = ISBlockGetLocalSize(iy,&ny);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(iy,&idy);CHKERRQ(ierr);
           if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-          ierr = VecScatterCreateMPI1_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
+          ierr = VecScatterCreate_PtoS_MPI1(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(iy,&idy);CHKERRQ(ierr);
           ierr = PetscInfo(xin,"Special case: blocked indices\n");CHKERRQ(ierr);
@@ -1479,7 +1478,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
             idy[0] = ystart/bsx;
             for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;
           }
-          ierr = VecScatterCreateMPI1_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
+          ierr = VecScatterCreate_PtoS_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           ierr = PetscFree(idy);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           ierr = PetscInfo(xin,"Special case: blocked indices to stride\n");CHKERRQ(ierr);
@@ -1497,7 +1496,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%d %d)",nx,ny);
 
-      ierr = VecScatterCreateMPI1_PtoS(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
+      ierr = VecScatterCreate_PtoS_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"General case: MPI to Seq\n");CHKERRQ(ierr);
@@ -1540,7 +1539,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
         ctx->fromdata     = (void*)from;
         ctx->ops->begin   = VecScatterBeginMPI1_SSToSS;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroyMPI1_SSToSS;
+        ctx->ops->destroy = VecScatterDestroy_SSToSS_MPI1;
         ctx->ops->copy    = VecScatterCopyMPI1_SSToSS;
         ctx->ops->view    = VecScatterViewMPI1_SSToSS;
         ierr          = PetscInfo(xin,"Special case: sequential stride to MPI stride\n");CHKERRQ(ierr);
@@ -1567,7 +1566,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
           idy[0] = ystart/bsx;
           for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;
         }
-        ierr = VecScatterCreateMPI1_StoP(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
+        ierr = VecScatterCreate_StoP_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
         ierr = PetscFree(idy);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
         ierr = PetscInfo(xin,"Special case: Blocked indices to stride\n");CHKERRQ(ierr);
@@ -1584,7 +1583,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
       ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-      ierr = VecScatterCreateMPI1_StoP(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
+      ierr = VecScatterCreate_StoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"General case: Seq to MPI\n");CHKERRQ(ierr);
@@ -1601,7 +1600,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
     ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
     ierr = ISGetIndices(iy,&idy);CHKERRQ(ierr);
     if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-    ierr = VecScatterCreateMPI1_PtoP(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_PtoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     ierr = PetscInfo(xin,"General case: MPI to MPI\n");CHKERRQ(ierr);
@@ -1631,7 +1630,7 @@ PetscErrorCode VecScatterCreateMPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newc
 
    Level: developer
 
-.seealso: VecScatterCreateMPI1(), VecScatterEnd(), VecScatterBeginMPI1()
+.seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBeginMPI1()
 @*/
 PetscErrorCode  VecScatterGetMergedMPI1(VecScatter ctx,PetscBool  *flg)
 {
@@ -1648,7 +1647,7 @@ PetscErrorCode  VecScatterGetMergedMPI1(VecScatter ctx,PetscBool  *flg)
    Neighbor-wise Collective on VecScatter and Vec
 
    Input Parameters:
-+  inctx - scatter context generated by VecScatterCreateMPI1()
++  inctx - scatter context generated by VecScatterCreate_MPI1()
 .  x - the vector from which we scatter
 .  y - the vector to which we scatter
 .  addv - either ADD_VALUES or INSERT_VALUES, with INSERT_VALUES mode any location
@@ -1659,15 +1658,15 @@ PetscErrorCode  VecScatterGetMergedMPI1(VecScatter ctx,PetscBool  *flg)
 
    Level: intermediate
 
-   Options Database: See VecScatterCreateMPI1()
+   Options Database: See VecScatterCreate()
 
    Notes:
    The vectors x and y need not be the same vectors used in the call
-   to VecScatterCreateMPI1(), but x must have the same parallel data layout
-   as that passed in as the x to VecScatterCreateMPI1(), similarly for the y.
+   to VecScatterCreate(), but x must have the same parallel data layout
+   as that passed in as the x to VecScatterCreate(), similarly for the y.
    Most likely they have been obtained from VecDuplicate().
 
-   You cannot change the values in the input vector between the calls to VecScatterBeginMPI1()
+   You cannot change the values in the input vector between the calls to VecScatterBegin()
    and VecScatterEnd().
 
    If you use SCATTER_REVERSE the two arguments x and y should be reversed, from
@@ -1685,7 +1684,7 @@ PetscErrorCode  VecScatterGetMergedMPI1(VecScatter ctx,PetscBool  *flg)
    Concepts: scatter^between vectors
    Concepts: gather^between vectors
 
-.seealso: VecScatterCreateMPI1(), VecScatterEnd()
+.seealso: VecScatterCreate(), VecScatterEnd()
 @*/
 PetscErrorCode  VecScatterBeginMPI1(VecScatter inctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
@@ -1738,7 +1737,7 @@ PetscErrorCode  VecScatterBeginMPI1(VecScatter inctx,Vec x,Vec y,InsertMode addv
    Neighbor-wise Collective on VecScatter and Vec
 
    Input Parameters:
-+  ctx - scatter context generated by VecScatterCreateMPI1()
++  ctx - scatter context generated by VecScatterCreate()
 .  x - the vector from which we scatter
 .  y - the vector to which we scatter
 .  addv - either ADD_VALUES or INSERT_VALUES.
@@ -1752,7 +1751,7 @@ PetscErrorCode  VecScatterBeginMPI1(VecScatter inctx,Vec x,Vec y,InsertMode addv
 
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
-.seealso: VecScatterBeginMPI1(), VecScatterCreateMPI1()
+.seealso: VecScatterBeginMPI1(), VecScatterCreate()
 @*/
 PetscErrorCode  VecScatterEndMPI1(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
@@ -1772,41 +1771,6 @@ PetscErrorCode  VecScatterEndMPI1(VecScatter ctx,Vec x,Vec y,InsertMode addv,Sca
   PetscFunctionReturn(0);
 }
 
-/*@C
-   VecScatterDestroyMPI1 - Destroys a scatter context created by
-   VecScatterCreateMPI1().
-
-   Collective on VecScatter
-
-   Input Parameter:
-.  ctx - the scatter context
-
-   Level: intermediate
-
-.seealso: VecScatterCreateMPI1(), VecScatterCopyMPI1()
-@*/
-PetscErrorCode  VecScatterDestroyMPI1(VecScatter *ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!*ctx) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(*ctx,VEC_SCATTER_CLASSID,1);
-  if ((*ctx)->inuse) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
-  if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
-
-  /* if memory was published with SAWs then destroy it */
-  ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
-  ierr = (*(*ctx)->ops->destroy)(*ctx);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  ierr = VecScatterCUSPIndicesDestroy((PetscCUSPIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_VECCUDA)
-  ierr = VecScatterCUDAIndicesDestroy((PetscCUDAIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*@
    VecScatterCopyMPI1 - Makes a copy of a scatter context.
 
@@ -1820,7 +1784,7 @@ PetscErrorCode  VecScatterDestroyMPI1(VecScatter *ctx)
 
    Level: advanced
 
-.seealso: VecScatterCreateMPI1(), VecScatterDestroyMPI1()
+.seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
 PetscErrorCode  VecScatterCopyMPI1(VecScatter sctx,VecScatter *ctx)
 {
@@ -1830,7 +1794,7 @@ PetscErrorCode  VecScatterCopyMPI1(VecScatter sctx,VecScatter *ctx)
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_CLASSID,1);
   PetscValidPointer(ctx,2);
   if (!sctx->ops->copy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot copy this type");
-  ierr = PetscHeaderCreate(*ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",PetscObjectComm((PetscObject)sctx),VecScatterDestroyMPI1,VecScatterViewMPI1);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",PetscObjectComm((PetscObject)sctx),VecScatterDestroy,VecScatterViewMPI1);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->ops->copy)(sctx,*ctx);CHKERRQ(ierr);
@@ -1986,7 +1950,7 @@ PetscErrorCode VecScatterIsSequential_Private_MPI1(VecScatter_Common *scatter,Pe
    to another for GPU based computation.
 
    Input Parameters:
-+  inctx - scatter context generated by VecScatterCreateMPI1()
++  inctx - scatter context generated by VecScatterCreate()
 .  x - the vector from which we scatter
 -  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
     SCATTER_FORWARD or SCATTER_REVERSE
@@ -2003,7 +1967,7 @@ PetscErrorCode VecScatterIsSequential_Private_MPI1(VecScatter_Common *scatter,Pe
    This function is executed before the call to MatMult. This enables the memory
    transfers to be overlapped with the MatMult SpMV kernel call.
 
-.seealso: VecScatterFinalizeForGPU(), VecScatterCreateMPI1(), VecScatterEnd()
+.seealso: VecScatterFinalizeForGPU(), VecScatterCreate(), VecScatterEnd()
 @*/
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU_MPI1(VecScatter inctx,Vec x,ScatterMode mode)
 {
@@ -2083,7 +2047,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU_MPI1(VecScatter inctx,Vec
    another for GPU based computation.
 
    Input Parameter:
-+  inctx - scatter context generated by VecScatterCreateMPI1()
++  inctx - scatter context generated by VecScatterCreate()
 
   Level: intermediate
 
@@ -2093,7 +2057,7 @@ PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU_MPI1(VecScatter inctx,Vec
    or MatMult_MPIAIJCUDAARSE. Once the MatMultAdd is finished, the GPU temporary
    buffers used for messaging are no longer valid.
 
-.seealso: VecScatterInitializeForGPU(), VecScatterCreateMPI1(), VecScatterEnd()
+.seealso: VecScatterInitializeForGPU(), VecScatterCreate(), VecScatterEnd()
 @*/
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU_MPI1(VecScatter inctx)
 {

@@ -122,7 +122,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   /* generate the scatter context */
   if (aij->Mvctx_mpi1_flg) {
     ierr = VecScatterDestroy(&aij->Mvctx_mpi1);CHKERRQ(ierr);
-    ierr = VecScatterCreateMPI1(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr = VecScatterCreate_MPI1(gvec,from,aij->lvec,to,&aij->Mvctx_mpi1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx_mpi1);CHKERRQ(ierr);
   } else {
     ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);

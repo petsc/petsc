@@ -314,6 +314,7 @@ struct _p_VecScatter {
   void           *spptr;
 };
 
+PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
 PETSC_INTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);

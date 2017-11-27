@@ -1022,7 +1022,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     PetscBool vec_mpi1_flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_mpi1",&vec_mpi1_flg,NULL);CHKERRQ(ierr);
     if (vec_mpi1_flg) {
-      ierr = VecScatterCreateMPI1(xin,ix,yin,iy,newctx);CHKERRQ(ierr);
+      ierr = VecScatterCreate_MPI1(xin,ix,yin,iy,newctx);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }

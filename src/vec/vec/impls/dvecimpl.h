@@ -54,4 +54,6 @@ PETSC_INTERN PetscErrorCode VecPointwiseDivide_Seq(Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
 
+PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
+
 #endif
