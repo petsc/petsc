@@ -287,3 +287,15 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
+
+/*TEST
+
+    test:
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000 -ts_trajectory_dirname ex20adj1dir
+
+    test:
+      suffix: 2
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_solution_only 
+
+
+TEST*/
