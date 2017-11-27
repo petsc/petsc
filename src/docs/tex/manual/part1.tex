@@ -305,15 +305,20 @@ See Section \ref{sec_debugging} for more information on debugging PETSc programs
 \label{sec_runningtests}
 
 As discussed in Section~\ref{sec_running}, 
-the users should set \trl{PETSC_DIR} and \trl{PETSC_ARCH} before running
-the tests.
+users should set \trl{PETSC_DIR} and \trl{PETSC_ARCH} before running
+the tests, or can provide them on the command line as below.
 
-To run a simple set of tests to quickly check an installation, use
+To check if the libraries are working do:
 \begin{bashlisting}
-make test PETSC_ARCH=<PETSC_ARCH>
+make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> test
 \end{bashlisting}
 
-PETSc also includes a large test suite, which can be invoked with
+A larger set of tests can be run with 
+\begin{bashlisting}
+make PETSC_DIR=<PETSC_DIR> PETSC_ARCH=<PETSC_ARCH> alltests
+\end{bashlisting}
+
+A new testing system is available by running
 \begin{bashlisting}
 make -f gmakefile test PETSC_ARCH=<PETSC_ARCH>
 \end{bashlisting}
