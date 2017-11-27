@@ -227,7 +227,7 @@ class generateExamples(Petsc):
     if 'depends' in srcDict:
       depSrc=srcDict['depends']
       depObj=os.path.splitext(depSrc)[0]+".o"
-      self.sources[pkg][lang][exfile]=depObj
+      self.sources[pkg][lang][relpfile]=os.path.join(rpath,depObj)
 
     # In gmakefile, ${TESTDIR} var specifies the object compilation
     testsdir=self.srcrelpath(root)+"/"
@@ -780,16 +780,20 @@ class generateExamples(Petsc):
     """
     def write(stem, srcs):
       for lang in LANGS:
-        if self.inInstallDir: 
-          if len(srcs[lang]['srcs'])>0:
-            fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang]['srcs'])))
-          else:
-            fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang]['srcs'])))
-        else:
+        if srcs[lang]['srcs']:
           fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang]['srcs'])))
     for pkg in PKGS:
         srcs = self.gen_pkg(pkg)
         write('testsrcs-' + pkg, srcs)
+        # Handle dependencies
+        for lang in LANGS:
+            for exfile in srcs[lang]['srcs']:
+                if exfile in srcs[lang]:
+                    ex='$(TESTDIR)/'+os.path.splitext(exfile)[0]
+                    exfo='$(TESTDIR)/'+os.path.splitext(exfile)[0]+'.o'
+                    fd.write(exfile+": $(TESTDIR)/"+ srcs[lang][exfile]+'\n')
+                    fd.write(ex    +": "+exfo+" $(TESTDIR)/"+srcs[lang][exfile] +'\n')
+
     return self.gendeps
 
   def gen_pkg(self, pkg):
