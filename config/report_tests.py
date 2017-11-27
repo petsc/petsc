@@ -24,7 +24,7 @@ def summarize_results(directory):
   print("\n# -------------")
   print("#   Summary    ")
   print("# -------------")
-  print("# FAILED " + failstr)
+  if failstr.strip(): print("# FAILED " + failstr)
 
   for t in "success failed todo skip".split():
     percent=summary[t]/float(summary['total'])*100
