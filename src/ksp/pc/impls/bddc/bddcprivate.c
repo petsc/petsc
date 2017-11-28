@@ -2074,6 +2074,9 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  if (ncc) *ncc = 0;
+  if (cc) *cc = NULL;
+  if (primalv) *primalv = NULL;
   ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   if (!dm) {
@@ -2148,8 +2151,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
 
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     if (!A->rmap->N || !A->cmap->N) {
-      *ncc = 0;
-      *cc = NULL;
+      ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
@@ -2303,7 +2305,6 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
       }
       *cc = cc_n;
     }
-    if (primalv) *primalv = NULL;
   }
   /* clean up graph */
   graph->xadj = 0;
