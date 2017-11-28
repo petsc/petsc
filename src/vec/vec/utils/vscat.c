@@ -27,7 +27,7 @@ PetscClassId VEC_SCATTER_CLASSID;
 /*
      Checks if any indices are less than zero and generates an error
 */
-static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,const PetscInt *idx)
+PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,const PetscInt *idx)
 {
   PetscInt i;
 
@@ -1019,7 +1019,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    PetscBool vec_mpi1_flg = PETSC_FALSE;
+    PetscBool vec_mpi1_flg = PETSC_TRUE; //PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_mpi1",&vec_mpi1_flg,NULL);CHKERRQ(ierr);
     if (vec_mpi1_flg) {
       ierr = VecScatterCreate_MPI1(xin,ix,yin,iy,newctx);CHKERRQ(ierr);

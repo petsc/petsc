@@ -20,865 +20,7 @@ PETSC_INTERN PetscErrorCode VecScatterCUDAIndicesDestroy(PetscCUDAIndices*);
 PETSC_INTERN PetscErrorCode VecScatterCUDA_StoS(Vec,Vec,PetscCUDAIndices,InsertMode,ScatterMode);
 #endif
 
-#if defined(PETSC_USE_DEBUG)
-/*
-     Checks if any indices are less than zero and generates an error
-*/
-static PetscErrorCode VecScatterCheckIndices_Private_MPI1(PetscInt nmax,PetscInt n,const PetscInt *idx)
-{
-  PetscInt i;
-
-  PetscFunctionBegin;
-  for (i=0; i<n; i++) {
-    if (idx[i] < 0)     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative index %D at %D location",idx[i],i);
-    if (idx[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D at %D location greater than max %D",idx[i],i,nmax);
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-
-/*
-      This is special scatter code for when the entire parallel vector is copied to each processor.
-
-   This code was written by Cameron Cooper, Occidental College, Fall 1995,
-   will working at ANL as a SERS student.
-*/
-PetscErrorCode VecScatterBeginMPI1_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  PetscErrorCode ierr;
-  PetscInt       yy_n,xx_n;
-  PetscScalar    *xv,*yv;
-
-  PetscFunctionBegin;
-  ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&xx_n);CHKERRQ(ierr);
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-
-  if (mode & SCATTER_REVERSE) {
-    PetscScalar          *xvt,*xvt2;
-    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt             i;
-    PetscMPIInt          *disply = scat->displx;
-
-    if (addv == INSERT_VALUES) {
-      PetscInt rstart,rend;
-      /*
-         copy the correct part of the local vector into the local storage of
-         the MPI one.  Note: this operation only makes sense if all the local
-         vectors have the same values
-      */
-      ierr = VecGetOwnershipRange(y,&rstart,&rend);CHKERRQ(ierr);
-      ierr = PetscMemcpy(yv,xv+rstart,yy_n*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else {
-      MPI_Comm    comm;
-      PetscMPIInt rank;
-      ierr = PetscObjectGetComm((PetscObject)y,&comm);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-      if (scat->work1) xvt = scat->work1;
-      else {
-        ierr        = PetscMalloc1(xx_n,&xvt);CHKERRQ(ierr);
-        scat->work1 = xvt;
-      }
-      if (!rank) { /* I am the zeroth processor, values are accumulated here */
-        if   (scat->work2) xvt2 = scat->work2;
-        else {
-          ierr        = PetscMalloc1(xx_n,&xvt2);CHKERRQ(ierr);
-          scat->work2 = xvt2;
-        }
-        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,disply,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-        ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPIU_SUM,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-        if (addv == ADD_VALUES) {
-          for (i=0; i<xx_n; i++) xvt[i] += xvt2[i];
-#if !defined(PETSC_USE_COMPLEX)
-        } else if (addv == MAX_VALUES) {
-          for (i=0; i<xx_n; i++) xvt[i] = PetscMax(xvt[i],xvt2[i]);
-#endif
-        } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-        ierr = MPI_Scatterv(xvt,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-      } else {
-        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-        ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPIU_SUM,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-        ierr = MPI_Scatterv(0,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-      }
-    }
-  } else {
-    PetscScalar          *yvt;
-    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt             i;
-    PetscMPIInt          *displx = scat->displx;
-
-    if (addv == INSERT_VALUES) {
-      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,displx,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-    } else {
-      if (scat->work1) yvt = scat->work1;
-      else {
-        ierr        = PetscMalloc1(yy_n,&yvt);CHKERRQ(ierr);
-        scat->work1 = yvt;
-      }
-      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,displx,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-      if (addv == ADD_VALUES) {
-        for (i=0; i<yy_n; i++) yv[i] += yvt[i];
-#if !defined(PETSC_USE_COMPLEX)
-      } else if (addv == MAX_VALUES) {
-        for (i=0; i<yy_n; i++) yv[i] = PetscMax(yv[i],yvt[i]);
-#endif
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-    }
-  }
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterViewMPI1_MPI_ToAll(VecScatter in,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscBool      isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Entire parallel vector is copied to each process\n");CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-      This is special scatter code for when the entire parallel vector is  copied to processor 0.
-
-*/
-PetscErrorCode VecScatterBeginMPI1_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  PetscErrorCode    ierr;
-  PetscMPIInt       rank;
-  PetscInt          yy_n,xx_n;
-  PetscScalar       *yv;
-  const PetscScalar *xv;
-  MPI_Comm          comm;
-
-  PetscFunctionBegin;
-  ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&xx_n);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(x,&xv);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-
-  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  /* --------  Reverse scatter; spread from processor 0 to other processors */
-  if (mode & SCATTER_REVERSE) {
-    PetscScalar          *yvt;
-    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt             i;
-    PetscMPIInt          *disply = scat->displx;
-
-    if (addv == INSERT_VALUES) {
-      ierr = MPI_Scatterv((PetscScalar*)xv,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-    } else {
-      if (scat->work2) yvt = scat->work2;
-      else {
-        ierr        = PetscMalloc1(xx_n,&yvt);CHKERRQ(ierr);
-        scat->work2 = yvt;
-      }
-      ierr = MPI_Scatterv((PetscScalar*)xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-      if (addv == ADD_VALUES) {
-        for (i=0; i<yy_n; i++) yv[i] += yvt[i];
-#if !defined(PETSC_USE_COMPLEX)
-      } else if (addv == MAX_VALUES) {
-        for (i=0; i<yy_n; i++) yv[i] = PetscMax(yv[i],yvt[i]);
-#endif
-      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-    }
-  /* ---------  Forward scatter; gather all values onto processor 0 */
-  } else {
-    PetscScalar          *yvt  = 0;
-    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt             i;
-    PetscMPIInt          *displx = scat->displx;
-
-    if (addv == INSERT_VALUES) {
-      ierr = MPI_Gatherv((PetscScalar*)xv,xx_n,MPIU_SCALAR,yv,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-    } else {
-      if (!rank) {
-        if (scat->work1) yvt = scat->work1;
-        else {
-          ierr        = PetscMalloc1(yy_n,&yvt);CHKERRQ(ierr);
-          scat->work1 = yvt;
-        }
-      }
-      ierr = MPI_Gatherv((PetscScalar*)xv,xx_n,MPIU_SCALAR,yvt,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
-      if (!rank) {
-        if (addv == ADD_VALUES) {
-          for (i=0; i<yy_n; i++) yv[i] += yvt[i];
-#if !defined(PETSC_USE_COMPLEX)
-        } else if (addv == MAX_VALUES) {
-          for (i=0; i<yy_n; i++) yv[i] = PetscMax(yv[i],yvt[i]);
-#endif
-        }  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-      }
-    }
-  }
-  ierr = VecRestoreArrayRead(x,&xv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-       The follow to are used for both VecScatterBeginMPI1_MPI_ToAll() and VecScatterBeginMPI1_MPI_ToOne()
-*/
-PetscErrorCode VecScatterDestroy_MPI_ToAll_MPI1(VecScatter ctx)
-{
-  VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-  PetscErrorCode       ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(scat->work1);CHKERRQ(ierr);
-  ierr = PetscFree(scat->work2);CHKERRQ(ierr);
-  ierr = PetscFree3(ctx->todata,scat->count,scat->displx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterDestroy_SGToSG_MPI1(VecScatter ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree2(((VecScatter_Seq_General*)ctx->todata)->vslots,((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterDestroy_SGToSS_MPI1(VecScatter ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterDestroy_SSToSG_MPI1(VecScatter ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(((VecScatter_Seq_General*)ctx->todata)->vslots);CHKERRQ(ierr);
-  ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterDestroy_SSToSS_MPI1(VecScatter ctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------*/
-PetscErrorCode VecScatterCopyMPI1_MPI_ToAll(VecScatter in,VecScatter out)
-{
-  VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
-  PetscErrorCode       ierr;
-  PetscMPIInt          size,*count,*displx;
-  PetscInt             i;
-
-  PetscFunctionBegin;
-  out->ops->begin   = in->ops->begin;
-  out->ops->end     = in->ops->end;
-  out->ops->copy    = in->ops->copy;
-  out->ops->destroy = in->ops->destroy;
-  out->ops->view    = in->ops->view;
-
-  ierr        = MPI_Comm_size(PetscObjectComm((PetscObject)out),&size);CHKERRQ(ierr);
-  ierr        = PetscMalloc3(1,&sto,size,&count,size,&displx);CHKERRQ(ierr);
-  sto->type   = in_to->type;
-  sto->count  = count;
-  sto->displx = displx;
-  for (i=0; i<size; i++) {
-    sto->count[i]  = in_to->count[i];
-    sto->displx[i] = in_to->displx[i];
-  }
-  sto->work1    = 0;
-  sto->work2    = 0;
-  out->todata   = (void*)sto;
-  out->fromdata = (void*)0;
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------------------------*/
-/*
-        Scatter: sequential general to sequential general
-*/
-PetscErrorCode VecScatterBeginMPI1_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
-  VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
-  PetscErrorCode         ierr;
-  PetscInt               i,n = gen_from->n,*fslots,*tslots;
-  PetscScalar            *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = 0,fromstep = 0;
-      fslots = gen_from->vslots;
-      tslots = gen_to->vslots;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = 0,fromstep = 0;
-      fslots = gen_from->vslots;
-      tslots = gen_to->vslots;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_Seq_General*)ctx->fromdata;
-    gen_from = (VecScatter_Seq_General*)ctx->todata;
-  }
-  fslots = gen_from->vslots;
-  tslots = gen_to->vslots;
-
-  if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]]  = xv[fslots[i]];
-  } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]] += xv[fslots[i]];
-#if !defined(PETSC_USE_COMPLEX)
-  } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);
-#endif
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    Scatter: sequential general to sequential stride 1
-*/
-PetscErrorCode VecScatterBeginMPI1_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
-  VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
-  PetscInt               i,n = gen_from->n,*fslots = gen_from->vslots;
-  PetscErrorCode         ierr;
-  PetscInt               first = gen_to->first;
-  PetscScalar            *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = first,tostep = 1,fromfirst = 0,fromstep = 0;
-      PetscInt *tslots = 0;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = first,tostep = 1,fromfirst = 0,fromstep = 0;
-      PetscInt *tslots = 0;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    xv += first;
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] = xv[i];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] += xv[i];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  } else {
-    yv += first;
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[i] = xv[fslots[i]];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[i] += xv[fslots[i]];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[i] = PetscMax(yv[i],xv[fslots[i]]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  }
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-   Scatter: sequential general to sequential stride
-*/
-PetscErrorCode VecScatterBeginMPI1_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
-  VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
-  PetscInt               i,n = gen_from->n,*fslots = gen_from->vslots;
-  PetscErrorCode         ierr;
-  PetscInt               first = gen_to->first,step = gen_to->step;
-  PetscScalar            *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = first,tostep = step,fromfirst = 0,fromstep = 0;
-      PetscInt * tslots = 0;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = first,tostep = step,fromfirst = 0,fromstep = 0;
-      PetscInt * tslots = 0;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] = xv[first + i*step];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] += xv[first + i*step];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  } else {
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] = xv[fslots[i]];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] += xv[fslots[i]];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  }
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    Scatter: sequential stride 1 to sequential general
-*/
-PetscErrorCode VecScatterBeginMPI1_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
-  VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
-  PetscInt               i,n = gen_from->n,*tslots = gen_to->vslots;
-  PetscErrorCode         ierr;
-  PetscInt               first = gen_from->first;
-  PetscScalar            *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = 1;
-      PetscInt *fslots = 0;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = 1;
-      PetscInt *fslots = 0;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    yv += first;
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[i] = xv[tslots[i]];
-    } else  if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[i] += xv[tslots[i]];
-#if !defined(PETSC_USE_COMPLEX)
-    } else  if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[i] = PetscMax(yv[i],xv[tslots[i]]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  } else {
-    xv += first;
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] = xv[i];
-    } else  if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] += xv[i];
-#if !defined(PETSC_USE_COMPLEX)
-    } else  if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[i]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  }
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-   Scatter: sequential stride to sequential general
-*/
-PetscErrorCode VecScatterBeginMPI1_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
-  VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
-  PetscInt               i,n = gen_from->n,*tslots = gen_to->vslots;
-  PetscErrorCode         ierr;
-  PetscInt               first = gen_from->first,step = gen_from->step;
-  PetscScalar            *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = step;
-      PetscInt *fslots = 0;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = step;
-      PetscInt *fslots = 0;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] = xv[tslots[i]];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] += xv[tslots[i]];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[first + i*step] = PetscMax(yv[first + i*step],xv[tslots[i]]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  } else {
-    if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] = xv[first + i*step];
-    } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] += xv[first + i*step];
-#if !defined(PETSC_USE_COMPLEX)
-    } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[first + i*step]);
-#endif
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  }
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterViewMPI1_SSToSG(VecScatter in,PetscViewer viewer)
-{
-  PetscErrorCode         ierr;
-  VecScatter_Seq_Stride  *in_from = (VecScatter_Seq_Stride*)in->fromdata;
-  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->todata;
-  PetscInt               i;
-  PetscBool              isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sequential stride to general scatter\n");CHKERRQ(ierr);
-    for (i=0; i<in_to->n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->first + in_from->step*i,in_to->vslots[i]);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-/*
-     Scatter: sequential stride to sequential stride
-*/
-PetscErrorCode VecScatterBeginMPI1_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
-{
-  VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
-  VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
-  PetscInt              i,n = gen_from->n,to_first = gen_to->first,to_step = gen_to->step;
-  PetscErrorCode        ierr;
-  PetscInt              from_first = gen_from->first,from_step = gen_from->step;
-  PetscScalar           *xv,*yv;
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt *tslots = 0,*fslots = 0;
-      ierr = VecScatterCUSPIndicesCreate_StoS(n,to_first,from_first,to_step,from_step,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (x->valid_GPU_array == PETSC_CUDA_GPU) {
-    /* create the scatter indices if not done already */
-    if (!ctx->spptr) {
-      PetscInt *tslots = 0,*fslots = 0;
-      ierr = VecScatterCUDAIndicesCreate_StoS(n,to_first,from_first,to_step,from_step,tslots,fslots,(PetscCUDAIndices*)&(ctx->spptr));CHKERRQ(ierr);
-    }
-    /* next do the scatter */
-    ierr = VecScatterCUDA_StoS(x,y,(PetscCUDAIndices)ctx->spptr,addv,mode);
-    PetscFunctionReturn(0);
-  }
-#endif
-
-  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  if (mode & SCATTER_REVERSE) {
-    from_first = gen_to->first;
-    to_first   = gen_from->first;
-    from_step  = gen_to->step;
-    to_step    = gen_from->step;
-  }
-
-  if (addv == INSERT_VALUES) {
-    if (to_step == 1 && from_step == 1) {
-      ierr = PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else  {
-      for (i=0; i<n; i++) yv[to_first + i*to_step] = xv[from_first+i*from_step];
-    }
-  } else if (addv == ADD_VALUES) {
-    if (to_step == 1 && from_step == 1) {
-      yv += to_first; xv += from_first;
-      for (i=0; i<n; i++) yv[i] += xv[i];
-    } else {
-      for (i=0; i<n; i++) yv[to_first + i*to_step] += xv[from_first+i*from_step];
-    }
-#if !defined(PETSC_USE_COMPLEX)
-  } else if (addv == MAX_VALUES) {
-    if (to_step == 1 && from_step == 1) {
-      yv += to_first; xv += from_first;
-      for (i=0; i<n; i++) yv[i] = PetscMax(yv[i],xv[i]);
-    } else {
-      for (i=0; i<n; i++) yv[to_first + i*to_step] = PetscMax(yv[to_first + i*to_step],xv[from_first+i*from_step]);
-    }
-#endif
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------------*/
-
-
-PetscErrorCode VecScatterCopyMPI1_SGToSG(VecScatter in,VecScatter out)
-{
-  PetscErrorCode         ierr;
-  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->todata,*out_to = NULL;
-  VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from = NULL;
-
-  PetscFunctionBegin;
-  out->ops->begin   = in->ops->begin;
-  out->ops->end     = in->ops->end;
-  out->ops->copy    = in->ops->copy;
-  out->ops->destroy = in->ops->destroy;
-  out->ops->view    = in->ops->view;
-
-  ierr                         = PetscMalloc2(1,&out_to,1,&out_from);CHKERRQ(ierr);
-  ierr                         = PetscMalloc2(in_to->n,&out_to->vslots,in_from->n,&out_from->vslots);CHKERRQ(ierr);
-  out_to->n                    = in_to->n;
-  out_to->type                 = in_to->type;
-  out_to->nonmatching_computed = PETSC_FALSE;
-  out_to->slots_nonmatching    = 0;
-  out_to->is_copy              = PETSC_FALSE;
-  ierr = PetscMemcpy(out_to->vslots,in_to->vslots,(out_to->n)*sizeof(PetscInt));CHKERRQ(ierr);
-
-  out_from->n                    = in_from->n;
-  out_from->type                 = in_from->type;
-  out_from->nonmatching_computed = PETSC_FALSE;
-  out_from->slots_nonmatching    = 0;
-  out_from->is_copy              = PETSC_FALSE;
-  ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
-
-  out->todata   = (void*)out_to;
-  out->fromdata = (void*)out_from;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterViewMPI1_SGToSG(VecScatter in,PetscViewer viewer)
-{
-  PetscErrorCode         ierr;
-  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->todata;
-  VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata;
-  PetscInt               i;
-  PetscBool              isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sequential general scatter\n");CHKERRQ(ierr);
-    for (i=0; i<in_to->n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->vslots[i]);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-
-PetscErrorCode VecScatterCopyMPI1_SGToSS(VecScatter in,VecScatter out)
-{
-  PetscErrorCode         ierr;
-  VecScatter_Seq_Stride  *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to = NULL;
-  VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from = NULL;
-
-  PetscFunctionBegin;
-  out->ops->begin   = in->ops->begin;
-  out->ops->end     = in->ops->end;
-  out->ops->copy    = in->ops->copy;
-  out->ops->destroy = in->ops->destroy;
-  out->ops->view    = in->ops->view;
-
-  ierr          = PetscMalloc2(1,&out_to,1,&out_from);CHKERRQ(ierr);
-  ierr          = PetscMalloc1(in_from->n,&out_from->vslots);CHKERRQ(ierr);
-  out_to->n     = in_to->n;
-  out_to->type  = in_to->type;
-  out_to->first = in_to->first;
-  out_to->step  = in_to->step;
-  out_to->type  = in_to->type;
-
-  out_from->n                    = in_from->n;
-  out_from->type                 = in_from->type;
-  out_from->nonmatching_computed = PETSC_FALSE;
-  out_from->slots_nonmatching    = 0;
-  out_from->is_copy              = PETSC_FALSE;
-  ierr = PetscMemcpy(out_from->vslots,in_from->vslots,(out_from->n)*sizeof(PetscInt));CHKERRQ(ierr);
-
-  out->todata   = (void*)out_to;
-  out->fromdata = (void*)out_from;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterViewMPI1_SGToSS(VecScatter in,PetscViewer viewer)
-{
-  PetscErrorCode         ierr;
-  VecScatter_Seq_Stride  *in_to   = (VecScatter_Seq_Stride*)in->todata;
-  VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata;
-  PetscInt               i;
-  PetscBool              isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sequential general scatter to stride\n");CHKERRQ(ierr);
-    for (i=0; i<in_to->n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%D to %D\n",in_from->vslots[i],in_to->first + in_to->step*i);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------------*/
-/*
-    Scatter: parallel to sequential vector, sequential strides for both.
-*/
-PetscErrorCode VecScatterCopyMPI1_SSToSS(VecScatter in,VecScatter out)
-{
-  VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to = NULL;
-  VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride*)in->fromdata,*out_from = NULL;
-  PetscErrorCode        ierr;
-
-  PetscFunctionBegin;
-  out->ops->begin   = in->ops->begin;
-  out->ops->end     = in->ops->end;
-  out->ops->copy    = in->ops->copy;
-  out->ops->destroy = in->ops->destroy;
-  out->ops->view    = in->ops->view;
-
-  ierr            = PetscMalloc2(1,&out_to,1,&out_from);CHKERRQ(ierr);
-  out_to->n       = in_to->n;
-  out_to->type    = in_to->type;
-  out_to->first   = in_to->first;
-  out_to->step    = in_to->step;
-  out_to->type    = in_to->type;
-  out_from->n     = in_from->n;
-  out_from->type  = in_from->type;
-  out_from->first = in_from->first;
-  out_from->step  = in_from->step;
-  out_from->type  = in_from->type;
-  out->todata     = (void*)out_to;
-  out->fromdata   = (void*)out_from;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecScatterViewMPI1_SSToSS(VecScatter in,PetscViewer viewer)
-{
-  VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride*)in->todata;
-  VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride*)in->fromdata;
-  PetscErrorCode        ierr;
-  PetscBool             isascii;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sequential stride count %D start %D step to start %D stride %D\n",in_to->n,in_to->first,in_to->step,in_from->first,in_from->step);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 extern PetscErrorCode VecScatterCreate_PtoS_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 extern PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
@@ -895,102 +37,8 @@ extern PetscErrorCode VecScatterCreate_StoP_MPI1(PetscInt,const PetscInt*,PetscI
    Blocksizes we have optimized scatters for
 */
 
-#define VecScatterOptimizedBS_MPI1(mbs) (2 <= mbs)
+#define VecScatterOptimizedBS(mbs) (2 <= mbs)
 
-
-PetscErrorCode  VecScatterCreateEmptyMPI1(MPI_Comm comm,VecScatter *newctx)
-{
-  VecScatter     ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,VEC_SCATTER_CLASSID,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
-  ctx->inuse               = PETSC_FALSE;
-  ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_merge",&ctx->beginandendtogether,NULL);CHKERRQ(ierr);
-  if (ctx->beginandendtogether) {
-    ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
-  }
-  ctx->packtogether = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_packtogether",&ctx->packtogether,NULL);CHKERRQ(ierr);
-  if (ctx->packtogether) {
-    ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
-  }
-  *newctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecScatterCreate_MPI1 - Creates a vector scatter context.
-
-   Collective on Vec
-
-   Input Parameters:
-+  xin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors from which we scatter
-.  yin - a vector that defines the shape (parallel data layout of the vector)
-         of vectors to which we scatter
-.  ix - the indices of xin to scatter (if NULL scatters all values)
--  iy - the indices of yin to hold results (if NULL fills entire vector yin)
-
-   Output Parameter:
-.  newctx - location to store the new scatter context
-
-   Options Database Keys: (uses regular MPI_Sends by default)
-+  -vecscatter_view         - Prints detail of communications
-.  -vecscatter_view ::ascii_info    - Print less details about communication
-.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init()
-.  -vecscatter_rsend           - use ready receiver mode for MPI sends
-.  -vecscatter_merge        - VecScatterBeginMPI1() handles all of the communication, VecScatterEnd() is a nop
-                              eliminates the chance for overlap of computation and communication
-.  -vecscatter_sendfirst    - Posts sends before receives
-.  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
-.  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
-.  -vecscatter_window       - Use MPI 2 window operations to move data
-.  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
--  -vecscatter_reproduce    - insure that the order of the communications are done the same for each scatter, this under certain circumstances
-                              will make the results of scatters deterministic when otherwise they are not (it may be slower also).
-
-$
-$                                                                                    --When packing is used--
-$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*
-$                                _nopack                   _sendfirst    _merge      _packtogether                -vecscatter_
-$ ----------------------------------------------------------------------------------------------------------------------------
-$    Message passing    Send       p                           X            X           X         always
-$                      Ssend       p                           X            X           X         always          _ssend
-$                      Rsend       p                        nonsense        X           X         always          _rsend
-$    AlltoAll  v or w              X                        nonsense     always         X         nonsense        _alltoall
-$    MPI_Win                       p                        nonsense        p           p         nonsense        _window
-$
-$   Since persistent sends and receives require a constant memory address they can only be used when data is packed into the work vector
-$   because the in and out array may be different for each call to VecScatterBeginMPI1/End().
-$
-$    p indicates possible, but not implemented. X indicates implemented
-$
-
-    Level: intermediate
-
-  Notes:
-   In calls to VecScatter() you can use different vectors than the xin and
-   yin you used above; BUT they must have the same parallel data layout, for example,
-   they could be obtained from VecDuplicate().
-   A VecScatter context CANNOT be used in two or more simultaneous scatters;
-   that is you cannot call a second VecScatterBeginMPI1() with the same scatter
-   context until the VecScatterEnd() has been called on the first VecScatterBeginMPI1().
-   In this case a separate VecScatter is needed for each concurrent scatter.
-
-   Currently the MPI_Send(), MPI_Ssend() and MPI_Rsend() all use PERSISTENT versions.
-   (this unfortunately requires that the same in and out arrays be used for each use, this
-    is why when not using MPI_alltoallw() we always need to pack the input into the work array before sending
-    and unpack upon receeving instead of using MPI datatypes to avoid the packing/unpacking).
-
-   Both ix and iy cannot be NULL at the same time.
-
-   Concepts: scatter^between vectors
-   Concepts: gather^between vectors
-
-.seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
-@*/
 PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
@@ -1004,7 +52,7 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
-
+  //printf("VecScatterCreate_MPI1...\n");
   /*
       Determine if the vectors are "parallel", ie. it shares a comm with other processors, or
       sequential (it does not share a comm). The difference is that parallel vectors treat the
@@ -1106,23 +154,23 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       ierr  = PetscMalloc2(nx,&to->vslots,nx,&from->vslots);CHKERRQ(ierr);
       to->n = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr = VecScatterCheckIndices_Private_MPI1(ctx->to_n,ny,idy);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr    = PetscMemcpy(to->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       from->n = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr = VecScatterCheckIndices_Private_MPI1(ctx->from_n,nx,idx);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr              =  PetscMemcpy(from->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
       to->type          = VEC_SCATTER_SEQ_GENERAL;
       from->type        = VEC_SCATTER_SEQ_GENERAL;
       ctx->todata       = (void*)to;
       ctx->fromdata     = (void*)from;
-      ctx->ops->begin   = VecScatterBeginMPI1_SGToSG;
+      ctx->ops->begin   = VecScatterBegin_SGToSG;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroy_SGToSG_MPI1;
-      ctx->ops->copy    = VecScatterCopyMPI1_SGToSG;
-      ctx->ops->view    = VecScatterViewMPI1_SGToSG;
+      ctx->ops->destroy = VecScatterDestroy_SGToSG;
+      ctx->ops->copy    = VecScatterCopy_SGToSG;
+      ctx->ops->view    = VecScatterView_SGToSG;
       ierr              = PetscInfo(xin,"Special case: sequential vector general scatter\n");CHKERRQ(ierr);
       goto functionend;
     } else if (ix_type == IS_STRIDE_ID &&  iy_type == IS_STRIDE_ID) {
@@ -1145,11 +193,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       from8->type       = VEC_SCATTER_SEQ_STRIDE;
       ctx->todata       = (void*)to8;
       ctx->fromdata     = (void*)from8;
-      ctx->ops->begin   = VecScatterBeginMPI1_SSToSS;
+      ctx->ops->begin   = VecScatterBegin_SSToSS;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroy_SSToSS_MPI1;
-      ctx->ops->copy    = VecScatterCopyMPI1_SSToSS;
-      ctx->ops->view    = VecScatterViewMPI1_SSToSS;
+      ctx->ops->destroy = VecScatterDestroy_SSToSS;
+      ctx->ops->copy    = VecScatterCopy_SSToSS;
+      ctx->ops->view    = VecScatterView_SSToSS;
       ierr          = PetscInfo(xin,"Special case: sequential vector stride to stride\n");CHKERRQ(ierr);
       goto functionend;
     } else if (ix_type == IS_GENERAL_ID && iy_type == IS_STRIDE_ID) {
@@ -1170,16 +218,16 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       to9->step  = step;
       from9->n   = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr           = VecScatterCheckIndices_Private_MPI1(ctx->from_n,nx,idx);CHKERRQ(ierr);
+      ierr           = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr           = PetscMemcpy(from9->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
       ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
-      if (step == 1)  ctx->ops->begin = VecScatterBeginMPI1_SGToSS_Stride1;
-      else            ctx->ops->begin = VecScatterBeginMPI1_SGToSS;
-      ctx->ops->destroy   = VecScatterDestroy_SGToSS_MPI1;
+      if (step == 1)  ctx->ops->begin = VecScatterBegin_SGToSS_Stride1;
+      else            ctx->ops->begin = VecScatterBegin_SGToSS;
+      ctx->ops->destroy   = VecScatterDestroy_SGToSS;
       ctx->ops->end       = 0;
-      ctx->ops->copy      = VecScatterCopyMPI1_SGToSS;
-      ctx->ops->view      = VecScatterViewMPI1_SGToSS;
+      ctx->ops->copy      = VecScatterCopy_SGToSS;
+      ctx->ops->view      = VecScatterView_SGToSS;
       to9->type      = VEC_SCATTER_SEQ_STRIDE;
       from9->type    = VEC_SCATTER_SEQ_GENERAL;
       ierr = PetscInfo(xin,"Special case: sequential vector general to stride\n");CHKERRQ(ierr);
@@ -1202,17 +250,17 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       from10->step  = step;
       to10->n       = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr = VecScatterCheckIndices_Private_MPI1(ctx->to_n,ny,idy);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(to10->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       ctx->todata   = (void*)to10;
       ctx->fromdata = (void*)from10;
-      if (step == 1) ctx->ops->begin = VecScatterBeginMPI1_SSToSG_Stride1;
-      else           ctx->ops->begin = VecScatterBeginMPI1_SSToSG;
-      ctx->ops->destroy = VecScatterDestroy_SSToSG_MPI1;
+      if (step == 1) ctx->ops->begin = VecScatterBegin_SSToSG_Stride1;
+      else           ctx->ops->begin = VecScatterBegin_SSToSG;
+      ctx->ops->destroy = VecScatterDestroy_SSToSG;
       ctx->ops->end     = 0;
       ctx->ops->copy    = 0;
-      ctx->ops->view    = VecScatterViewMPI1_SSToSG;
+      ctx->ops->view    = VecScatterView_SSToSG;
       to10->type   = VEC_SCATTER_SEQ_GENERAL;
       from10->type = VEC_SCATTER_SEQ_STRIDE;
       ierr = PetscInfo(xin,"Special case: sequential vector stride to general\n");CHKERRQ(ierr);
@@ -1242,11 +290,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         from13->type  = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata   = (void*)to13;
         ctx->fromdata = (void*)from13;
-        ctx->ops->begin    = VecScatterBeginMPI1_SSToSS;
+        ctx->ops->begin    = VecScatterBegin_SSToSS;
         ctx->ops->end      = 0;
-        ctx->ops->destroy  = VecScatterDestroy_SSToSS_MPI1;
-        ctx->ops->copy     = VecScatterCopyMPI1_SSToSS;
-        ctx->ops->view     = VecScatterViewMPI1_SSToSS;
+        ctx->ops->destroy  = VecScatterDestroy_SSToSS;
+        ctx->ops->copy     = VecScatterCopy_SSToSS;
+        ctx->ops->view     = VecScatterView_SSToSS;
         ierr = PetscInfo(xin,"Special case: sequential copy\n");CHKERRQ(ierr);
         goto functionend;
       }
@@ -1257,23 +305,23 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       ierr = PetscMalloc2(nx,&to11->vslots,nx,&from11->vslots);CHKERRQ(ierr);
       to11->n = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr = VecScatterCheckIndices_Private_MPI1(ctx->to_n,ny,idy);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->to_n,ny,idy);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(to11->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       from11->n = nx;
 #if defined(PETSC_USE_DEBUG)
-      ierr = VecScatterCheckIndices_Private_MPI1(ctx->from_n,nx,idx);CHKERRQ(ierr);
+      ierr = VecScatterCheckIndices_Private(ctx->from_n,nx,idx);CHKERRQ(ierr);
 #endif
       ierr = PetscMemcpy(from11->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
       to11->type        = VEC_SCATTER_SEQ_GENERAL;
       from11->type      = VEC_SCATTER_SEQ_GENERAL;
       ctx->todata       = (void*)to11;
       ctx->fromdata     = (void*)from11;
-      ctx->ops->begin   = VecScatterBeginMPI1_SGToSG;
+      ctx->ops->begin   = VecScatterBegin_SGToSG;
       ctx->ops->end     = 0;
-      ctx->ops->destroy = VecScatterDestroy_SGToSG_MPI1;
-      ctx->ops->copy    = VecScatterCopyMPI1_SGToSG;
-      ctx->ops->view    = VecScatterViewMPI1_SGToSG;
+      ctx->ops->destroy = VecScatterDestroy_SGToSG;
+      ctx->ops->copy    = VecScatterCopy_SGToSG;
+      ctx->ops->view    = VecScatterView_SGToSG;
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"Sequential vector scatter with block indices\n");CHKERRQ(ierr);
@@ -1316,11 +364,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         from12->type       = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata        = (void*)to12;
         ctx->fromdata      = (void*)from12;
-        ctx->ops->begin    = VecScatterBeginMPI1_SSToSS;
+        ctx->ops->begin    = VecScatterBegin_SSToSS;
         ctx->ops->end      = 0;
-        ctx->ops->destroy  = VecScatterDestroy_SSToSS_MPI1;
-        ctx->ops->copy     = VecScatterCopyMPI1_SSToSS;
-        ctx->ops->view     = VecScatterViewMPI1_SSToSS;
+        ctx->ops->destroy  = VecScatterDestroy_SSToSS;
+        ctx->ops->copy     = VecScatterCopy_SSToSS;
+        ctx->ops->view     = VecScatterView_SSToSS;
         ierr = PetscInfo(xin,"Special case: processors only getting local values\n");CHKERRQ(ierr);
         goto functionend;
       }
@@ -1367,11 +415,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         sto->type         = VEC_SCATTER_MPI_TOALL;
         ctx->todata       = (void*)sto;
         ctx->fromdata     = 0;
-        ctx->ops->begin   = VecScatterBeginMPI1_MPI_ToAll;
+        ctx->ops->begin   = VecScatterBegin_MPI_ToAll;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll_MPI1;
-        ctx->ops->copy    = VecScatterCopyMPI1_MPI_ToAll;
-        ctx->ops->view    = VecScatterViewMPI1_MPI_ToAll;
+        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll;
+        ctx->ops->copy    = VecScatterCopy_MPI_ToAll;
+        ctx->ops->view    = VecScatterView_MPI_ToAll;
         ierr = PetscInfo(xin,"Special case: all processors get entire parallel vector\n");CHKERRQ(ierr);
         goto functionend;
       }
@@ -1426,11 +474,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         sto->type         = VEC_SCATTER_MPI_TOONE;
         ctx->todata       = (void*)sto;
         ctx->fromdata     = 0;
-        ctx->ops->begin   = VecScatterBeginMPI1_MPI_ToOne;
+        ctx->ops->begin   = VecScatterBegin_MPI_ToOne;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll_MPI1;
-        ctx->ops->copy    = VecScatterCopyMPI1_MPI_ToAll;
-        ctx->ops->view    = VecScatterViewMPI1_MPI_ToAll;
+        ctx->ops->destroy = VecScatterDestroy_MPI_ToAll;
+        ctx->ops->copy    = VecScatterCopy_MPI_ToAll;
+        ctx->ops->view    = VecScatterView_MPI_ToAll;
         ierr = PetscInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none\n");CHKERRQ(ierr);
         goto functionend;
       }
@@ -1448,7 +496,7 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         const PetscInt *idx,*idy;
         ierr = ISGetBlockSize(iy,&bsy);CHKERRQ(ierr);
         ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
-        if (bsx == bsy && VecScatterOptimizedBS_MPI1(bsx)) {
+        if (bsx == bsy && VecScatterOptimizedBS(bsx)) {
           ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockGetLocalSize(iy,&ny);CHKERRQ(ierr);
@@ -1467,7 +515,7 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
         ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         /* see if stride index set is equivalent to block index set */
-        if (VecScatterOptimizedBS_MPI1(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
+        if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt       nx,il,*idy;
           const PetscInt *idx;
           ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
@@ -1537,11 +585,11 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
         from->type        = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata       = (void*)to;
         ctx->fromdata     = (void*)from;
-        ctx->ops->begin   = VecScatterBeginMPI1_SSToSS;
+        ctx->ops->begin   = VecScatterBegin_SSToSS;
         ctx->ops->end     = 0;
-        ctx->ops->destroy = VecScatterDestroy_SSToSS_MPI1;
-        ctx->ops->copy    = VecScatterCopyMPI1_SSToSS;
-        ctx->ops->view    = VecScatterViewMPI1_SSToSS;
+        ctx->ops->destroy = VecScatterDestroy_SSToSS;
+        ctx->ops->copy    = VecScatterCopy_SSToSS;
+        ctx->ops->view    = VecScatterView_SSToSS;
         ierr          = PetscInfo(xin,"Special case: sequential stride to MPI stride\n");CHKERRQ(ierr);
         goto functionend;
       }
@@ -1555,7 +603,7 @@ PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *new
       ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
       ierr = ISGetBlockSize(ix,&bsx);CHKERRQ(ierr);
       /* see if stride index set is equivalent to block index set */
-      if (VecScatterOptimizedBS_MPI1(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
+      if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
         PetscInt       nx,il,*idy;
         const PetscInt *idx;
         ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);

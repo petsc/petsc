@@ -3,6 +3,7 @@
    Support for the parallel AIJ matrix vector multiply
 */
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
 PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
