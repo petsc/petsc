@@ -1477,22 +1477,6 @@ runex58_sbaij:
 	${DIFF} output/ex58.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_sbaij, diffs above\n=========================================\n"; \
 	${RM} -f ex58.tmp
 
-runex59:
-	-@${MPIEXEC} -n 4 ./ex59 -nex 7 -physical_pc_bddc_coarse_eqs_per_proc 3 -physical_pc_bddc_switch_static > ex59_1.tmp 2>&1;         \
-	${DIFF} output/ex59_1.out ex59_1.tmp || printf "${PWD}\nPossible problem with ex59, diffs above\n=========================================\n"; \
-	${RM} -f ex59_1.tmp
-runex59_2:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 > ex59_2.tmp 2>&1;         \
-	${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; \
-	${RM} -f ex59_2.tmp
-runex59_3:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 > ex59_3.tmp 2>&1;         \
-	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; \
-	${RM} -f ex59_3.tmp
-runex59_4:
-	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_pc_bddc_use_change_of_basis -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg > ex59_4.tmp 2>&1;         \
-	${DIFF} output/ex59_4.out ex59_4.tmp || printf "${PWD}\nPossible problem with ex59_4, diffs above\n=========================================\n"; \
-	${RM} -f ex59_4.tmp
 runex59_approximate:
 	-@${MPIEXEC} -n 8 ./ex59 -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -fluxes_ksp_max_it 20 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale > ex59_approximate.tmp 2>&1;         \
 	${DIFF} output/ex59_approximate.out ex59_approximate.tmp || printf "${PWD}\nPossible problem with ex59_approximate, diffs above\n=========================================\n"; \
@@ -1687,7 +1671,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 
                                  ex51.PETSc runex51 ex51.rm \
                                  ex53.PETSc runex53 ex53.rm \
                                  ex54.PETSc runex54 runex54_Classical ex54.rm ex55.PETSc runex55 runex55_Classical runex55_NC ex55.rm\
-                                 ex56.PETSc runex56 runex56_nns runex56_nns_telescope  ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 runex59_4 ex59.rm \
+                                 ex56.PETSc runex56 runex56_nns runex56_nns_telescope  ex56.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 runex60_2 runex60_3 ex60.rm \
                                  ex62.PETSc runex62_2D_1 runex62_2D_2 runex62_2D_3 ex62.rm ex65.PETSc runex65 ex65.rm

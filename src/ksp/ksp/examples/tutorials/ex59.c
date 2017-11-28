@@ -1135,3 +1135,41 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+ test:
+   nsize: 4
+   suffix: 1
+   args: -nex 7 -physical_pc_bddc_coarse_eqs_per_proc 3 -physical_pc_bddc_switch_static
+
+ test:
+   nsize: 4
+   suffix: 2
+   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10
+
+ test:
+   nsize: 4
+   suffix: 3
+   args: -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10
+
+ test:
+   nsize: 4
+   suffix: 4
+   args: -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_pc_bddc_use_change_of_basis -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg
+
+ test:
+   nsize: 4
+   suffix: ml_1
+   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 1
+
+ test:
+   nsize: 4
+   suffix: ml_2
+   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 2 -mat_partitioning_type average
+
+ test:
+   nsize: 4
+   suffix: ml_3
+   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 4
+
+TEST*/
