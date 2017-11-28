@@ -49,9 +49,9 @@ class generateExamples(Petsc):
       self.testroot_dir=os.path.join(self.arch_dir,"tests")
 
     self.ptNaming=True
+    self.verbose=verbose
     # Whether to write out a useful debugging
-    #if verbose: self.summarize=True
-    self.summarize=True
+    self.summarize=True if verbose else False
 
     # For help in setting the requirements
     self.precision_types="single double __float128 int32".split()
@@ -78,6 +78,7 @@ class generateExamples(Petsc):
     if not os.path.isdir(self.testroot_dir): os.makedirs(self.testroot_dir)
 
     self.indent="   "
+    if self.verbose: print('Finishing the constructor')
     return
 
   def srcrelpath(self,rdir):
@@ -169,7 +170,7 @@ class generateExamples(Petsc):
             lsuffix+=keyvar+'-${' + keyvar + '}_'
         else:
           if key=='args': newargs+=" -"+varset.strip()
-        if len(varlist)>0: loopVars[akey]['varlist']=varlist
+        if varlist: loopVars[akey]['varlist']=varlist
 
       
     # For subtests, args are always substituted in (not top level)
@@ -181,10 +182,10 @@ class generateExamples(Petsc):
       else:
         inDict['label_suffix']=lsuffix.rstrip('_')
     else:
-      if len(loopVars.keys())>0: 
+      if loopVars.keys(): 
         inDict['args']=newargs.strip()
         inDict['label_suffix']=lsuffix.rstrip('_')
-    if len(loopVars.keys())>0:
+    if loopVars.keys():
       return loopVars
     else:
       return None
@@ -584,7 +585,7 @@ class generateExamples(Petsc):
 
     # isRun can work with srcDict to handle the requires
     if "requires" in srcDict: 
-      if len(srcDict["requires"])>0: 
+      if srcDict["requires"]: 
         return self._isRun(srcDict)
 
     return srcDict['SKIP'] == []
@@ -691,6 +692,7 @@ class generateExamples(Petsc):
     """
     if not self.summarize: return
     indent="   "
+    print(self.testroot_dir, os.path.realpath(os.curdir))
     fhname=os.path.join(self.testroot_dir,'GenPetscTests_summarize.txt')
     fh=open(fhname,"w")
     #print "See ", fhname
@@ -745,17 +747,14 @@ class generateExamples(Petsc):
 
       # Convenience
       fullex=os.path.join(root,exfile)
-      relpfile=os.path.join(self.srcrelpath(root),exfile)
-      if debug: print relpfile
+      if self.verbose: print('   --> '+fullex)
       dataDict[root].update(testparse.parseTestFile(fullex,0))
-      # Need to check and make sure tests are in the file
-      # if verbosity>=1: print relpfile
       if exfile in dataDict[root]:
         self.genScriptsAndInfo(exfile,root,dataDict[root][exfile])
 
     return
 
-  def walktree(self,top,action="printFiles"):
+  def walktree(self,top):
     """
     Walk a directory tree, starting from 'top'
     """
@@ -765,13 +764,12 @@ class generateExamples(Petsc):
     for root, dirs, files in os.walk(top, topdown=False):
       if not "examples" in root: continue
       if not os.path.isfile(os.path.join(root,"makefile")): continue
+      if self.verbose: print(root)
       bname=os.path.basename(root.rstrip("/"))
       if bname=="tests" or bname=="tutorials":
-        eval("self."+action+"(root,dirs,files,dataDict)")
-      if type(top) != types.StringType:
-          raise TypeError("top must be a string")
+        self.genPetscTests(root,dirs,files,dataDict)
     # Now summarize this dictionary
-    eval("self."+action+"_summarize(dataDict)")
+    self.genPetscTests_summarize(dataDict)
     return dataDict
 
   def gen_gnumake(self, fd):
@@ -888,13 +886,14 @@ def main(petsc_dir=None, petsc_arch=None, output=None, verbose=False, single_ex=
         output = 'gnumake'
 
     # Allow petsc_arch to have both petsc_dir and petsc_arch for convenience
-    if len(petsc_arch.split(os.path.sep))>1:
-        petsc_dir,petsc_arch=os.path.split(petsc_arch.rstrip(os.path.sep))
+    if petsc_arch: 
+        if len(petsc_arch.split(os.path.sep))>1:
+            petsc_dir,petsc_arch=os.path.split(petsc_arch.rstrip(os.path.sep))
 
     pEx=generateExamples(petsc_dir=petsc_dir, petsc_arch=petsc_arch,
                          verbose=verbose, single_ex=single_ex, srcdir=srcdir,
                          testdir=testdir)
-    dataDict=pEx.walktree(os.path.join(pEx.srcdir),action="genPetscTests")
+    dataDict=pEx.walktree(os.path.join(pEx.srcdir))
     pEx.writeHarness(output,dataDict)
 
 if __name__ == '__main__':
