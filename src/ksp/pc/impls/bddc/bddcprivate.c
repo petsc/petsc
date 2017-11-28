@@ -7484,7 +7484,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
-  PetscBool              isredundant,isbddc,isnn,coarse_reuse;
+  PetscBool              coarse_reuse;
   PetscInt               ncoarse,nedcfield;
   PetscBool              compute_vecs = PETSC_FALSE;
   PetscScalar            *array;
@@ -7811,7 +7811,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* create the coarse KSP object only once with defaults */
   if (coarse_mat) {
+    PetscBool   isredundant,isnn,isbddc;
     PetscViewer dbg_viewer = NULL;
+
     if (pcbddc->dbg_flag) {
       dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)coarse_mat));
       ierr = PetscViewerASCIIAddTab(dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
@@ -7873,21 +7875,20 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
 
     /* get some info after set from options */
-    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     /* multilevel can only be requested via -pc_bddc_levels or PCBDDCSetLevels */
     if (isbddc && !multilevel_allowed) {
       ierr   = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
       isbddc = PETSC_FALSE;
     }
     /* multilevel cannot be done with coarse PCs different from BDDC or NN */
-    if (multilevel_requested && !isbddc && !isnn) {
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
+    if (multilevel_requested && multilevel_allowed && !isbddc && !isnn) {
       ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
       isbddc = PETSC_TRUE;
-      isnn   = PETSC_FALSE;
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     if (isredundant) {
       KSP inner_ksp;
       PC  inner_pc;
@@ -7898,8 +7899,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
 
     /* parameters which miss an API */
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
     if (isbddc) {
       PC_BDDC* pcbddc_coarse = (PC_BDDC*)pc_temp->data;
+
       pcbddc_coarse->detect_disconnected = PETSC_TRUE;
       pcbddc_coarse->coarse_eqs_per_proc = pcbddc->coarse_eqs_per_proc;
       pcbddc_coarse->benign_saddle_point = pcbddc->benign_have_null;
