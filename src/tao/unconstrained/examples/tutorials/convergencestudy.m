@@ -20,7 +20,7 @@ for i=1:5
   if (mod(i,2) == 1)
     yyaxis left
     semilogy(history(:,1),history(:,2),'Markersize',6,'LineWidth',2);
-    ylabel('Continuum Error');
+    ylabel('Analytic Error');
     yyaxis right
     semilogy(history(:,1),history(:,3),'Markersize',6,'LineWidth',2);
     ylabel('Objective function');
@@ -38,7 +38,7 @@ set(gca,'FontSize',fontsize_grid)
 set(gca,'FontSize',fontsize_labels)
 loglog(e,h,'-+','Markersize',6,'LineWidth',2);
 xlabel('1/h');
-ylabel('Continuum Error');
+ylabel('Analytic Error');
 print('convergencestudy-h-2','-depsc');
 
 
@@ -59,7 +59,7 @@ history
   h(i) = history(m,2)
   yyaxis left
   semilogy(history(:,1),history(:,2),'Markersize',6,'LineWidth',2);
-  ylabel('Continuum Error');
+  ylabel('Analytic Error');
   yyaxis right
   semilogy(history(:,1),history(:,3),'Markersize',6,'LineWidth',2);
   ylabel('Objective function');
@@ -76,5 +76,5 @@ set(gca,'FontSize',fontsize_grid)
 set(gca,'FontSize',fontsize_labels)
 loglog(e,h,'-+','Markersize',6,'LineWidth',2);
 xlabel('Polynomial order');
-ylabel('Continuum Error');
+ylabel('Analytic Error');
 print('convergencestudy-p-2','-depsc');
