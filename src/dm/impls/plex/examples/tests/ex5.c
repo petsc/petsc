@@ -778,51 +778,51 @@ int main(int argc, char **argv)
 /*TEST
   # 2D Simplex 0-1
   test:
-    suffix: 0
+    suffix: tri_0
     args: -dim 2 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 1
+    suffix: tri_1
     nsize: 2
     args: -dim 2 -dm_view ascii::ascii_info_detail
   # 2D Quads 2-3
   test:
-    suffix: 2
+    suffix: quad_0
     args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 3
+    suffix: quad_1
     nsize: 2
     args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   # 3D Simplex 4-5
   test:
-    suffix: 4
+    suffix: tet_0
     args: -dim 3 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 5
+    suffix: tet_1
     nsize: 2
     args: -dim 3 -dm_view ascii::ascii_info_detail
   # 3D Hex 6-7
   test:
-    suffix: 6
+    suffix: hex_0
     args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 7
+    suffix: hex_1
     nsize: 2
     args: -dim 3 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   # Examples from PyLith 8-12
   test:
-    suffix: 8
+    suffix: tri_t1_0
     args: -dim 2 -test_num 1 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 9
+    suffix: tet_t1_0
     args: -dim 3 -test_num 1 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 10
+    suffix: hex_t1_0
     args: -dim 3 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 11
+    suffix: quad_t1_0
     args: -dim 2 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
   test:
-    suffix: 12
+    suffix: hex_t2_0
     args: -dim 3 -cell_simplex 0 -test_num 2 -dm_view ascii::ascii_info_detail
 
 TEST*/
