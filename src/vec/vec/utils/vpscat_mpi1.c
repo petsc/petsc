@@ -2432,6 +2432,7 @@ PetscErrorCode VecScatterCreate_PtoS_MPI1(PetscInt nx,const PetscInt *inidx,Pets
   to->bs     = bs;
 
   ierr = VecScatterCreateCommon_PtoS_MPI1(from,to,ctx);CHKERRQ(ierr);
+  ctx->mpi3 = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2747,6 +2748,7 @@ PetscErrorCode VecScatterCreate_StoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
   waits              = to->rev_requests;
   to->rev_requests   = to->requests;
   to->requests       = waits;
+  ctx->mpi3          = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2918,6 +2920,7 @@ PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt nx,const PetscInt *inidx,Pets
   }
   ierr = VecScatterCreate_StoP_MPI1(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
+  ctx->mpi3 = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

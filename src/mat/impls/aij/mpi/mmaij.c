@@ -131,6 +131,13 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+
+    if (!aij->Mvctx->mpi3) {
+      /* MPI1 is used, there is no need to create aij->Mvctx_mpi1 for Mat-Mat ops */
+      aij->Mvctx_mpi1     = aij->Mvctx;
+      aij->Mvctx_mpi1_flg = PETSC_TRUE;
+      ierr = PetscObjectReference((PetscObject)aij->Mvctx);CHKERRQ(ierr);
+    }
   }
   aij->garray = garray;
 

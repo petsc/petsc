@@ -59,7 +59,7 @@ typedef struct {
   Vec        lvec;                 /* local vector */
   Vec        diag;
   VecScatter Mvctx,Mvctx_mpi1;     /* scatter context for vector */
-  PetscBool  Mvctx_mpi1_flg;       /* if true, Mvctx_mpi1 is requested, default false */
+  PetscBool  Mvctx_mpi1_flg;       /* if true, additional Mvctx_mpi1 is requested for mat-mat ops, default false */
   PetscBool  roworiented;          /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */

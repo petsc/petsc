@@ -312,36 +312,10 @@ struct _p_VecScatter {
   PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
   void           *fromdata,*todata;
   void           *spptr;
+  PetscBool      mpi3;                 /* MPI3 shared memory is used. Default is 'false' */
 };
 
 PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
-#if defined(PETSC_USE_DEBUG)
-PETSC_INTERN PetscErrorCode VecScatterCheckIndices_Private(PetscInt,PetscInt,const PetscInt*);
-#endif
-PETSC_INTERN PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterView_MPI_ToAll(VecScatter,PetscViewer);
-PETSC_INTERN PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSG(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterDestroy_SGToSS(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterDestroy_SSToSG(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterDestroy_SSToSS(VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSG(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter,VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SGToSS(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSG(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterBegin_SSToSS(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-PETSC_INTERN PetscErrorCode VecScatterView_SSToSG(VecScatter,PetscViewer);
-PETSC_INTERN PetscErrorCode VecScatterView_SGToSG(VecScatter,PetscViewer);
-PETSC_INTERN PetscErrorCode VecScatterView_SGToSS(VecScatter,PetscViewer);
-PETSC_INTERN PetscErrorCode VecScatterView_SSToSS(VecScatter,PetscViewer);
-PETSC_INTERN PetscErrorCode VecScatterCopy_SSToSG(VecScatter,VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterCopy_SGToSG(VecScatter,VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterCopy_SGToSS(VecScatter,VecScatter);
-PETSC_INTERN PetscErrorCode VecScatterCopy_SSToSS(VecScatter,VecScatter);
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);

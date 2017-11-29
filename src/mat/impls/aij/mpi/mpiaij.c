@@ -2771,6 +2771,12 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->lvec);CHKERRQ(ierr);
   ierr    = VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->Mvctx);CHKERRQ(ierr);
+  if (!a->Mvctx->mpi3) {
+    /* MPI1 is used, there is no need to create a->Mvctx_mpi1 for Mat-Mat ops */
+    a->Mvctx_mpi1     = a->Mvctx;
+    a->Mvctx_mpi1_flg = PETSC_TRUE;
+    ierr = PetscObjectReference((PetscObject)a->Mvctx);CHKERRQ(ierr);
+  }
   ierr    = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->A);CHKERRQ(ierr);
   ierr    = MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
