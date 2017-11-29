@@ -6171,7 +6171,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
 . time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
-- X     - The coefficient vector u_h
+- X     - The coefficient vector u_h, a global vector
 
   Output Parameter:
 . diff - The diff ||u - u_h||_2
@@ -6200,7 +6200,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
 , time  - The time
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
-. X     - The coefficient vector u_h
+. X     - The coefficient vector u_h, a global vector
 - n     - The vector to project along
 
   Output Parameter:
@@ -6230,7 +6230,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
 . time  - The time
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
-- X     - The coefficient vector u_h
+- X     - The coefficient vector u_h, a global vector
 
   Output Parameter:
 . diff - The array of differences, ||u^f - u^f_h||_2
