@@ -458,6 +458,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   if (!rank) {
     switch (testNum) {
     case 0:
+    case 2:
     {
       PetscInt    numPoints[2]        = {6, 2};
       PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
@@ -469,7 +470,8 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 6; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
-      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+      if (testNum == 0) for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+      if (testNum == 2) for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "pfault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     case 1:
@@ -503,7 +505,8 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscInt numPoints[3] = {0, 0, 0};
 
     ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);
+    if (testNum == 2) {ierr = DMCreateLabel(*dm, "pfault");CHKERRQ(ierr);}
+    else              {ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);}
   }
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
@@ -709,8 +712,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
           ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
           ierr = PetscMemcpy(points, quadPoints_p2, 3 * sizeof(PetscInt));CHKERRQ(ierr);break;}
+        case 2: {
+          PetscInt quadSizes_p2[2]  = {1, 1};
+          PetscInt quadPoints_p2[2] = {0, 1};
+
+          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
+          ierr = PetscMemcpy(sizes,  quadSizes_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(points, quadPoints_p2, 2 * sizeof(PetscInt));CHKERRQ(ierr);break;}
         default:
-          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
+          SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -814,6 +824,10 @@ int main(int argc, char **argv)
   test:
     suffix: quad_t1_0
     args: -dim 2 -cell_simplex 0 -test_num 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: quad_t2_0
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -test_num 2 -dm_view ascii::ascii_info_detail
   # 3D Simplex
   test:
     suffix: tet_0
