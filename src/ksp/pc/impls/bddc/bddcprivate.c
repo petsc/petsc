@@ -4891,7 +4891,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscScalar    m_one = -1.0;
   PetscReal      value;
   PetscInt       n_D,n_R;
-  PetscBool      check_corr[2],issbaij;
+  PetscBool      check_corr,issbaij;
   PetscErrorCode ierr;
   /* prefixes stuff */
   char           dir_prefix[256],neu_prefix[256],str_level[16];
@@ -4908,8 +4908,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
     ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
   } else {
-    ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
-    sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
+    ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
     ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
     len -= 15; /* remove "pc_bddc_coarse_" */
     if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
@@ -5100,19 +5099,18 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* adapt Dirichlet and Neumann solvers if a nullspace correction has been requested */
-  check_corr[0] = check_corr[1] = PETSC_FALSE;
+  check_corr = PETSC_FALSE;
   if (pcbddc->NullSpace_corr[0]) {
     ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
   if (dirichlet && pcbddc->NullSpace_corr[0] && !pcbddc->switch_static) {
-    check_corr[0] = PETSC_TRUE;
+    check_corr = PETSC_TRUE;
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_TRUE,pcbddc->NullSpace_corr[1]);CHKERRQ(ierr);
   }
   if (neumann && pcbddc->NullSpace_corr[2]) {
-    check_corr[1] = PETSC_TRUE;
+    check_corr = PETSC_TRUE;
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_FALSE,pcbddc->NullSpace_corr[3]);CHKERRQ(ierr);
   }
-
   /* check Dirichlet and Neumann solvers */
   if (pcbddc->dbg_flag) {
     if (dirichlet) { /* Dirichlet */
@@ -5122,7 +5120,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = VecAXPY(pcis->vec1_D,m_one,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecNorm(pcis->vec1_D,NORM_INFINITY,&value);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
-      if (check_corr[0]) {
+      if (check_corr) {
         ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -5134,7 +5132,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = VecAXPY(pcbddc->vec1_R,m_one,pcbddc->vec2_R);CHKERRQ(ierr);
       ierr = VecNorm(pcbddc->vec1_R,NORM_INFINITY,&value);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e\n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
-      if (check_corr[1]) {
+      if (check_corr) {
         ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -7843,7 +7841,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
         if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
         ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
-        sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
+        ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
         ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
       }
       ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);

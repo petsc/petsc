@@ -1477,11 +1477,6 @@ runex58_sbaij:
 	${DIFF} output/ex58.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_sbaij, diffs above\n=========================================\n"; \
 	${RM} -f ex58.tmp
 
-runex59_approximate:
-	-@${MPIEXEC} -n 8 ./ex59 -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -fluxes_ksp_max_it 20 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale > ex59_approximate.tmp 2>&1;         \
-	${DIFF} output/ex59_approximate.out ex59_approximate.tmp || printf "${PWD}\nPossible problem with ex59_approximate, diffs above\n=========================================\n"; \
-	${RM} -f ex59_approximate.tmp
-
 runex60:
 	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1 > ex60_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex60_1.out ex60_1.tmp) then true; \

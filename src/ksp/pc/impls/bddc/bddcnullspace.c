@@ -68,7 +68,12 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
 
   PetscFunctionBegin;
   ierr = MatGetNullSpace(matis->A,&NullSpace);CHKERRQ(ierr);
-  if (!NullSpace) PetscFunctionReturn(0);
+  if (!NullSpace) {
+    if (pcbddc->dbg_flag) {
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d doesn't have local nullspace: no need for correction in %s solver \n",PetscGlobalRank,isdir ? "Dirichlet" : "Neumann");CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
   /* Infer the local solver */
   if (isdir) {
     /* Dirichlet solver */
