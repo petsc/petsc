@@ -313,7 +313,7 @@ allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 	@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:
