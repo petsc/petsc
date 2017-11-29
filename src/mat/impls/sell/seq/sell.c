@@ -258,7 +258,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
   const MatScalar   *aval=a->val;
   PetscInt          totalslices=a->totalslices;
   const PetscInt    *acolidx=a->colidx;
-  PetscInt          i,j=0;
+  PetscInt          i,j;
   PetscErrorCode    ierr;
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
   __m512d           vec_x,vec_y,vec_vals;
@@ -318,10 +318,6 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     }
     #pragma novector
     for (; j<(a->sliidx[i+1]>>3); j+=4) {
-      /*
-      vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
-      vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
-      */
       AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
       AVX512_Mult_Private(vec_idx2,vec_x2,vec_vals2,vec_y2);
@@ -364,7 +360,7 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     }
 
     /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
-    for (; j<a->sliidx[i+1]; j+=8) {
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
       vec_vals  = _mm256_loadu_pd(aval);
       vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
       vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
@@ -389,32 +385,23 @@ PetscErrorCode MatMult_SeqSELL(Mat A,Vec xx,Vec yy)
     _mm256_storeu_pd(y + i*8,     vec_y);
     _mm256_storeu_pd(y + i*8 + 4, vec_y2);
   }
-
 #else
   for (i=0; i<totalslices; i++) { /* loop over slices */
     for (j=0; j<8; j++) sum[j] = 0.0;
-
     for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
-      sum[0] += aval[j]*x[acolidx[j]];
-      sum[1] += aval[j+1]*x[acolidx[j+1]];
-      sum[2] += aval[j+2]*x[acolidx[j+2]];
-      sum[3] += aval[j+3]*x[acolidx[j+3]];
-      sum[4] += aval[j+4]*x[acolidx[j+4]];
-      sum[5] += aval[j+5]*x[acolidx[j+5]];
-      sum[6] += aval[j+6]*x[acolidx[j+6]];
-      sum[7] += aval[j+7]*x[acolidx[j+7]];
+      sum[0] += aval[j] * x[acolidx[j]];
+      sum[1] += aval[j+1] * x[acolidx[j+1]];
+      sum[2] += aval[j+2] * x[acolidx[j+2]];
+      sum[3] += aval[j+3] * x[acolidx[j+3]];
+      sum[4] += aval[j+4] * x[acolidx[j+4]];
+      sum[5] += aval[j+5] * x[acolidx[j+5]];
+      sum[6] += aval[j+6] * x[acolidx[j+6]];
+      sum[7] += aval[j+7] * x[acolidx[j+7]];
     }
     if (i == totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
-      for(j=0;j<(A->rmap->n & 0x07);j++) y[8*i+j] = sum[j];
+      for(j=0; j<(A->rmap->n & 0x07); j++) y[8*i+j] = sum[j];
     } else {
-      y[8*i]   = sum[0];
-      y[8*i+1] = sum[1];
-      y[8*i+2] = sum[2];
-      y[8*i+3] = sum[3];
-      y[8*i+4] = sum[4];
-      y[8*i+5] = sum[5];
-      y[8*i+6] = sum[6];
-      y[8*i+7] = sum[7];
+      for(j=0; j<8; j++) y[8*i+j] = sum[j];
     }
   }
 #endif
@@ -436,10 +423,17 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j;
   PetscErrorCode    ierr;
-#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)  && !defined(PETSC_USE_64BIT_INDICES)
-  __m512d           vec_x,vec_y,vec_z,vec_vals;
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
+  __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask;
+  __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
+  __m256i           vec_idx2,vec_idx3,vec_idx4;
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  __m128d           vec_x_tmp;
+  __m256d           vec_x,vec_y,vec_y2,vec_vals;
+  MatScalar         yval;
+  PetscInt          r,row,nnz_in_row;
 #else
   PetscScalar       sum[8];
 #endif
@@ -451,53 +445,132 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
-  for (i=0; i<totalslices; i++) { /* loop over slices */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
-    vec_y = _mm512_load_pd(&y[8*i]);
-    #pragma novector
-    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+
+    if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
+      mask   = (__mmask8)(0xff >> (8-(A->rmap->n & 0x07)));
+      vec_y  = _mm512_mask_load_pd(vec_y,mask,&y[8*i]);
+    } else {
+      vec_y  = _mm512_load_pd(&y[8*i]);
+    }
+    vec_y2 = _mm512_setzero_pd();
+    vec_y3 = _mm512_setzero_pd();
+    vec_y4 = _mm512_setzero_pd();
+
+    j = a->sliidx[i]>>3; /* 8 bytes are read at each time, corresponding to a slice columnn */
+    switch ((a->sliidx[i+1]-a->sliidx[i])/8 & 3) {
+    case 3:
       AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
       acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx3,vec_x3,vec_vals3,vec_y3);
+      acolidx += 8; aval += 8;
+      j += 3;
+      break;
+    case 2:
+      AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      j += 2;
+      break;
+    case 1:
+      AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      j += 1;
+      break;
     }
+    #pragma novector
+    for (; j<(a->sliidx[i+1]>>3); j+=4) {
+      AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx3,vec_x3,vec_vals3,vec_y3);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(vec_idx4,vec_x4,vec_vals4,vec_y4);
+      acolidx += 8; aval += 8;
+    }
+
+    vec_y = _mm512_add_pd(vec_y,vec_y2);
+    vec_y = _mm512_add_pd(vec_y,vec_y3);
+    vec_y = _mm512_add_pd(vec_y,vec_y4);
     if (i == totalslices-1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
-      mask = (__mmask8)(0xff >> (8-(A->rmap->n & 0x07)));
       _mm512_mask_store_pd(&z[8*i],mask,vec_y);
     } else {
       _mm512_store_pd(&z[8*i],vec_y);
     }
-#else
-    sum[0] = y[8*i];
-    sum[1] = y[8*i+1];
-    sum[2] = y[8*i+2];
-    sum[3] = y[8*i+3];
-    sum[4] = y[8*i+4];
-    sum[5] = y[8*i+5];
-    sum[6] = y[8*i+6];
-    sum[7] = y[8*i+7];
-    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
-      sum[0] += aval[j]*x[acolidx[j]];
-      sum[1] += aval[j+1]*x[acolidx[j+1]];
-      sum[2] += aval[j+2]*x[acolidx[j+2]];
-      sum[3] += aval[j+3]*x[acolidx[j+3]];
-      sum[4] += aval[j+4]*x[acolidx[j+4]];
-      sum[5] += aval[j+5]*x[acolidx[j+5]];
-      sum[6] += aval[j+6]*x[acolidx[j+6]];
-      sum[7] += aval[j+7]*x[acolidx[j+7]];
-    }
-    if (i == totalslices-1 && (A->rmap->n & 0x07)) { /* if last slice has padding rows */
-      for(j=0;j<(A->rmap->n & 0x07);j++) z[8*i+j] = sum[j];
-    } else {
-      z[8*i]   = sum[0];
-      z[8*i+1] = sum[1];
-      z[8*i+2] = sum[2];
-      z[8*i+3] = sum[3];
-      z[8*i+4] = sum[4];
-      z[8*i+5] = sum[5];
-      z[8*i+6] = sum[6];
-      z[8*i+7] = sum[7];
-    }
-#endif
   }
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  for (i=0; i<totalslices; i++) { /* loop over full slices */
+    PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+
+    /* last slice may have padding rows. Don't use vectorization. */
+    if (i == totalslices-1 && (A->rmap->n & 0x07)) {
+      for (r=0; r<(A->rmap->n & 0x07); ++r) {
+        row        = 8*i + r;
+        yval       = (MatScalar)0.0;
+        nnz_in_row = a->rlen[row];
+        for (j=0; j<nnz_in_row; ++j) yval += aval[8*j+r] * x[acolidx[8*j+r]];
+        z[row] = y[row] + yval;
+      }
+      break;
+    }
+
+    vec_y  = _mm256_loadu_pd(y+8*i);
+    vec_y2 = _mm256_loadu_pd(y+8*i+4);
+
+    /* Process slice of height 8 (512 bits) via two subslices of height 4 (256 bits) via AVX */
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,1);
+      vec_y     = _mm256_add_pd(_mm256_mul_pd(vec_x,vec_vals),vec_y);
+      aval     += 4;
+
+      vec_vals  = _mm256_loadu_pd(aval);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
+      vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *acolidx++);
+      vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *acolidx++);
+      vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,1);
+      vec_y2    = _mm256_add_pd(_mm256_mul_pd(vec_x,vec_vals),vec_y2);
+      aval     += 4;
+    }
+
+    _mm256_storeu_pd(z+i*8,vec_y);
+    _mm256_storeu_pd(z+i*8+4,vec_y2);
+  }
+#else
+  for (i=0; i<totalslices; i++) { /* loop over slices */
+    for (j=0; j<8; j++) sum[j] = 0.0;
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      sum[0] += aval[j] * x[acolidx[j]];
+      sum[1] += aval[j+1] * x[acolidx[j+1]];
+      sum[2] += aval[j+2] * x[acolidx[j+2]];
+      sum[3] += aval[j+3] * x[acolidx[j+3]];
+      sum[4] += aval[j+4] * x[acolidx[j+4]];
+      sum[5] += aval[j+5] * x[acolidx[j+5]];
+      sum[6] += aval[j+6] * x[acolidx[j+6]];
+      sum[7] += aval[j+7] * x[acolidx[j+7]];
+    }
+    if (i == totalslices-1 && (A->rmap->n & 0x07)) {
+      for (j=0; j<(A->rmap->n & 0x07); j++) z[8*i+j] = y[8*i+j] + sum[j];
+    } else {
+      for (j=0; j<8; j++) z[8*i+j] = y[8*i+j] + sum[j];
+    }
+  }
+#endif
 
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
@@ -512,8 +585,7 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
   const PetscScalar *x;
   const MatScalar   *aval=a->val;
   const PetscInt    *acolidx=a->colidx;
-  PetscInt          i,j,row;
-  PetscBool         isnonzero;
+  PetscInt          i,j,r,row,nnz_in_row,totalslices=a->totalslices;
   PetscErrorCode    ierr;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -525,9 +597,23 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   for (i=0; i<a->totalslices; i++) { /* loop over slices */
-    for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      isnonzero = (PetscBool)((j-a->sliidx[i])/8 < a->rlen[8*i+row]);
-      if (isnonzero) y[acolidx[j]] += aval[j]*x[8*i+row];
+    if (i == totalslices-1 && (A->rmap->n & 0x07)) {
+      for (r=0; r<(A->rmap->n & 0x07); ++r) {
+        row        = 8*i + r;
+        nnz_in_row = a->rlen[row];
+        for (j=0; j<nnz_in_row; ++j) y[acolidx[8*j+r]] += aval[8*j+r] * x[row];
+      }
+      break;
+    }
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      y[acolidx[j]]   += aval[j] * x[8*i];
+      y[acolidx[j+1]] += aval[j+1] * x[8*i+1];
+      y[acolidx[j+2]] += aval[j+2] * x[8*i+2];
+      y[acolidx[j+3]] += aval[j+3] * x[8*i+3];
+      y[acolidx[j+4]] += aval[j+4] * x[8*i+4];
+      y[acolidx[j+5]] += aval[j+5] * x[8*i+5];
+      y[acolidx[j+6]] += aval[j+6] * x[8*i+6];
+      y[acolidx[j+7]] += aval[j+7] * x[8*i+7];
     }
   }
   ierr = PetscLogFlops(2.0*a->sliidx[a->totalslices]);CHKERRQ(ierr);
