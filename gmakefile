@@ -52,6 +52,8 @@ generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 
 all : $(generated) $(libpetscall)
 
+$(libpetscall_shared): $(libpetscall_soname)
+
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
