@@ -1872,6 +1872,49 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   PetscFunctionReturn(0);
 }
 
+/* Check that no cell have all vertices on the fault */
+PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM subdm)
+{
+  IS              subpointIS;
+  const PetscInt *dmpoints;
+  PetscInt        defaultValue, cStart, cEnd, c, vStart, vEnd;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (!label) PetscFunctionReturn(0);
+  ierr = DMLabelGetDefaultValue(label, &defaultValue);CHKERRQ(ierr);
+  ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+  if (!subpointIS) PetscFunctionReturn(0);
+  ierr = DMPlexGetHeightStratum(subdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(subpointIS, &dmpoints);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscBool invalidCell = PETSC_TRUE;
+    PetscInt *closure     = NULL;
+    PetscInt  closureSize, cl;
+
+    ierr = DMPlexGetTransitiveClosure(dm, dmpoints[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      PetscInt value = 0;
+
+      if ((closure[cl] < vStart) || (closure[cl] >= vEnd)) continue;
+      ierr = DMLabelGetValue(label, closure[cl], &value);CHKERRQ(ierr);
+      if (value == defaultValue) {invalidCell = PETSC_FALSE; break;}
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, dmpoints[c], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    if (invalidCell) {
+      ierr = ISRestoreIndices(subpointIS, &dmpoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+      ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ambiguous submesh. Cell %D has all of its vertices on the submesh.", dmpoints[c]);
+    }
+  }
+  ierr = ISRestoreIndices(subpointIS, &dmpoints);CHKERRQ(ierr);
+  ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*@
   DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
 
@@ -1879,17 +1922,19 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
   Input Parameters:
 + dm - The original DM
-- labelName - The label specifying the interface vertices
+. label - The label specifying the interface vertices
+- bdlabel - The optional label specifying the interface boundary vertices
 
   Output Parameters:
 + hybridLabel - The label fully marking the interface
-- dmHybrid - The new DM
+. dmInterface - The new interface DM, or NULL
+- dmHybrid - The new DM with cohesive cells
 
   Level: developer
 
 .seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel *hybridLabel, DM *dmHybrid)
+PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel bdlabel, DMLabel *hybridLabel, DM *dmInterface, DM *dmHybrid)
 {
   DM             idm;
   DMLabel        subpointMap, hlabel;
@@ -1898,16 +1943,20 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel *hybridLabel
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (hybridLabel) PetscValidPointer(hybridLabel, 3);
-  PetscValidPointer(dmHybrid, 4);
+  if (bdlabel) PetscValidPointer(bdlabel, 3);
+  if (hybridLabel) PetscValidPointer(hybridLabel, 4);
+  if (dmInterface) PetscValidPointer(dmInterface, 5);
+  PetscValidPointer(dmHybrid, 6);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, &idm);CHKERRQ(ierr);
+  ierr = DMPlexCheckValidSubmesh_Private(dm, label, idm);CHKERRQ(ierr);
   ierr = DMPlexOrient(idm);CHKERRQ(ierr);
   ierr = DMPlexGetSubpointMap(idm, &subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDuplicate(subpointMap, &hlabel);CHKERRQ(ierr);
   ierr = DMLabelClearStratum(hlabel, dim);CHKERRQ(ierr);
-  ierr = DMPlexLabelCohesiveComplete(dm, hlabel, NULL, PETSC_FALSE, idm);CHKERRQ(ierr);
-  ierr = DMDestroy(&idm);CHKERRQ(ierr);
+  ierr = DMPlexLabelCohesiveComplete(dm, hlabel, bdlabel, PETSC_FALSE, idm);CHKERRQ(ierr);
+  if (dmInterface) {*dmInterface = idm;}
+  else             {ierr = DMDestroy(&idm);CHKERRQ(ierr);}
   ierr = DMPlexConstructCohesiveCells(dm, hlabel, dmHybrid);CHKERRQ(ierr);
   if (hybridLabel) *hybridLabel = hlabel;
   else             {ierr = DMLabelDestroy(&hlabel);CHKERRQ(ierr);}

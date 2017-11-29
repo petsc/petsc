@@ -489,11 +489,11 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscScalar vertexCoords[32]     = {-3.0,  3.0,  -1.0,  3.0,  1.0,  3.0,  3.0,  3.0,  -3.0,  1.0,  -1.0,  1.0,  1.0,  1.0,  3.0,  1.0,
                                           -3.0, -1.0,  -1.0, -1.0,  1.0, -1.0,  3.0, -1.0,  -3.0, -3.0,  -1.0, -3.0,  1.0, -3.0,  3.0, -3.0};
       PetscInt    faultPoints[3]       = {11, 15, 19};
-      PetscInt    faultBPoints[2]      = {17, 18};
+      PetscInt    fault2Points[2]      = {17, 18};
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "fault",  faultPoints[p], 1);CHKERRQ(ierr);}
-      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "faultB", faultBPoints[p], 1);CHKERRQ(ierr);}
+      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault2", fault2Points[p], 1);CHKERRQ(ierr);}
     }
     break;
     default:
@@ -621,7 +621,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim          = user->dim;
-  PetscBool      cellSimplex  = user->cellSimplex, hasFaultB;
+  PetscBool      cellSimplex  = user->cellSimplex, hasFault, hasFault2, hasParallelFault;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -652,28 +652,31 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-  {
+  ierr = DMHasLabel(*dm, "fault", &hasFault);CHKERRQ(ierr);
+  if (hasFault) {
     DM      dmHybrid = NULL;
-    DMLabel faultLabel, hybridLabel;
+    DMLabel faultLabel, faultBdLabel, hybridLabel;
 
     ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
-    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "faultBd", &faultBdLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, &dmHybrid);CHKERRQ(ierr);
     ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = dmHybrid;
   }
-  ierr = DMHasLabel(*dm, "faultB", &hasFaultB);CHKERRQ(ierr);
-  if (hasFaultB) {
+  ierr = DMHasLabel(*dm, "fault2", &hasFault2);CHKERRQ(ierr);
+  if (hasFault2) {
     DM      dmHybrid = NULL;
-    DMLabel faultLabel, hybridLabel;
+    DMLabel faultLabel, faultBdLabel, hybridLabel;
 
     ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
     ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
     ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "faultB", &faultLabel);CHKERRQ(ierr);
-    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "fault2", &faultLabel);CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "fault2Bd", &faultBdLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, &dmHybrid);CHKERRQ(ierr);
     ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -752,6 +755,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
+  }
+  ierr = DMHasLabel(*dm, "pfault", &hasParallelFault);CHKERRQ(ierr);
+  if (hasParallelFault) {
+    DM      dmHybrid = NULL;
+    DMLabel faultLabel, faultBdLabel, hybridLabel;
+
+    ierr = DMGetLabel(*dm, "pfault", &faultLabel);CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "pfaultBd", &faultBdLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, &dmHybrid);CHKERRQ(ierr);
+    ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = dmHybrid;
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
