@@ -77,7 +77,7 @@ runex1_euler:
           ${RM} -f ex1.tmp
 
 runex1_ssp:
-	-@${MPIEXEC} -n ex1 ./1 -ts_type ssp > ex1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -ts_type ssp > ex1.tmp 2>&1;   \
           ${DIFF} output/ex1.out ex1.tmp || printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; \
           ${RM} -f ex1.tmp
 
