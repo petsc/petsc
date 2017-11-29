@@ -46,7 +46,7 @@ else
   libpetscall_libname := $(libpetsc_libname)
   libpetscall_static  := $(libpetsc_static)
 endif
-libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
+libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
 
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 

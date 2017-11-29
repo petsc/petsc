@@ -136,13 +136,13 @@ endif
 
 # Test executables
 $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $^ $(PETSC_LIB)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $^ $(PETSC_LIB)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
 $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $^ $(PETSC_LIB)
+	$(call quiet,CLINKER) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
