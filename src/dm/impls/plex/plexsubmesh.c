@@ -1611,7 +1611,18 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     PetscInt        supportSize, s;
 
     ierr = DMPlexGetSupportSize(dm, points[p], &supportSize);CHKERRQ(ierr);
-    if (supportSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Split face %d has %d != 2 supports", points[p], supportSize);
+#if 0
+    if (supportSize != 2) {
+      const PetscInt *lp;
+      PetscInt        Nlp, pind;
+
+      /* Check that for a cell with a single support face, that face is in the SF */
+      /*   THis check only works for the remote side. We would need root side information */
+      ierr = PetscSFGetGraph(dm->sf, NULL, &Nlp, &lp, NULL);CHKERRQ(ierr);
+      ierr = PetscFindInt(points[p], Nlp, lp, &pind);CHKERRQ(ierr);
+      if (pind < 0) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Split face %d has %d != 2 supports, and the face is not shared with another process", points[p], supportSize);
+    }
+#endif
     ierr = DMPlexGetSupport(dm, points[p], &support);CHKERRQ(ierr);
     for (s = 0; s < supportSize; ++s) {
       const PetscInt *cone;
