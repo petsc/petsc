@@ -177,11 +177,15 @@ PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,M
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,a->rlen);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,a->rlen);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  }
 
   for (i=0; i<a->totalslices; i++) { /* loop over slices */
     for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
@@ -219,17 +223,22 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
     ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  /* Can we just use ilen? */
-  ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    rowlengths[i] = ai[i+1] - ai[i];
-  }
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQSELL);CHKERRQ(ierr);
-  ierr = MatSeqSELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+  } else {
+    /* Can we just use ilen? */
+    ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      rowlengths[i] = ai[i+1] - ai[i];
+    }
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSEQSELL);CHKERRQ(ierr);
+    ierr = MatSeqSELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  }
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
