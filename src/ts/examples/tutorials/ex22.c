@@ -289,3 +289,27 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none -ts_dt .005 -ts_final_time .1 
+      requires: !single 
+
+    test:
+      suffix: 2
+      args: -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none -ts_dt .005 -ts_final_time .1
+      nsize: 2
+
+    test:
+      suffix: 3
+      args: -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_final_time .1  -ts_adapt_type none 
+      nsize: 2
+
+    test:
+      suffix: 4
+      args: -ts_type eimex -da_grid_x 200 -ts_eimex_order_adapt true -ts_dt 0.001 -ts_monitor -ts_max_steps 100
+      filter: sed "s/ITS/TIME/g"
+      nsize: 2
+
+TEST*/
