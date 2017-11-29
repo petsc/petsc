@@ -89,11 +89,11 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *globalNumbering)
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *is)
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
   Mat                               matadj;
-  IS                                partitioning;
+  IS                                is1, is2, is3;
   PetscInt                          numVerticesGlobal, numEdges;
   PetscInt                          *i, *j;
   MPI_Comm                          comm;
@@ -120,20 +120,7 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   ierr = MatPartitioningSetNParts(p->mp, nparts);CHKERRQ(ierr);
 
   /* apply the partitioning */
-  ierr = MatPartitioningApply(p->mp, &partitioning);CHKERRQ(ierr);
-
-  /* convert assignment IS to global numbering IS */
-  ierr = ISPartitioningToNumbering(partitioning, globalNumbering);CHKERRQ(ierr);
-
-  /* renumber IS into local numbering */
-  {
-    IS newis, newis2;
-    ierr = ISOnComm(*globalNumbering, PETSC_COMM_SELF, PETSC_USE_POINTER, &newis);CHKERRQ(ierr);
-    ierr = ISRenumber(newis, NULL, NULL, &newis2);CHKERRQ(ierr);
-    ierr = ISDestroy(globalNumbering);CHKERRQ(ierr);
-    ierr = ISDestroy(&newis);CHKERRQ(ierr);
-    *globalNumbering = newis2;
-  }
+  ierr = MatPartitioningApply(p->mp, &is1);CHKERRQ(ierr);
 
   /* construct the PetscSection */
   /* TODO: impl. ISPartitioningToNumberingAndSection */
@@ -142,14 +129,29 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
     const PetscInt *assignment_arr;
 
     ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
-    ierr = ISGetIndices(partitioning, &assignment_arr);CHKERRQ(ierr);
+    ierr = ISGetIndices(is1, &assignment_arr);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {ierr = PetscSectionAddDof(partSection, assignment_arr[v], 1);CHKERRQ(ierr);}
-    ierr = ISRestoreIndices(partitioning, &assignment_arr);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is1, &assignment_arr);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
   }
 
+  /* convert assignment IS to global numbering IS */
+  ierr = ISPartitioningToNumbering(is1, &is2);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+
+  /* renumber IS into local numbering */
+  ierr = ISOnComm(is2, PETSC_COMM_SELF, PETSC_USE_POINTER, &is1);CHKERRQ(ierr);
+  ierr = ISRenumber(is1, NULL, NULL, &is3);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+
+  /* invert IS */
+  ierr = ISSetPermutation(is3);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(is3, numVertices, &is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is3);CHKERRQ(ierr);
+
   ierr = MatDestroy(&matadj);CHKERRQ(ierr);
-  ierr = ISDestroy(&partitioning);CHKERRQ(ierr);
+  *is = is1;
   PetscFunctionReturn(0);
 }
 
