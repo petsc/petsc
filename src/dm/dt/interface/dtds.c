@@ -2192,12 +2192,15 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (numConstants != prob->numConstants) {
     ierr = PetscFree(prob->constants);CHKERRQ(ierr);
-    prob->constants = NULL;
+    prob->numConstants = numConstants;
+    if (prob->numConstants) {
+      ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
+    } else {
+      prob->constants = NULL;
+    }
   }
-  prob->numConstants = numConstants;
   if (prob->numConstants) {
     PetscValidPointer(constants, 3);
-    ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
     ierr = PetscMemcpy(prob->constants, constants, prob->numConstants * sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
