@@ -83,3 +83,10 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1 -ksp_monitor_short
+      requires: datafilespath !complex double
+
+TEST*/

@@ -298,8 +298,8 @@ int main(int argc, char **argv)
    * Set a large number of timesteps and final duration time to insure
    * convergenge to steady state
    */
-  ierr = TSSetMaxSteps(ts, 1e12);
-  ierr = TSSetMaxTime(ts, 1e12);
+  ierr = TSSetMaxSteps(ts, 2147483647);
+  ierr = TSSetMaxTime(ts, 1.e12);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
 
   /*
@@ -350,3 +350,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
     return 0;
 }
+
+/*TEST
+
+    test:
+      args: -ts_max_steps 8 
+      output_file: output/ex42.out 
+      TODO: broken
+
+TEST*/

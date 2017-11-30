@@ -321,3 +321,15 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3
+
+    test:
+      suffix: 2
+      args:   -ts_exact_final_time INTERPOLATE -snes_rtol 1.e-3
+
+TEST*/
+

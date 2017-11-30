@@ -84,3 +84,10 @@
       call PetscFinalize(ierr)
       end
 
+!/*TEST
+!
+!    test:
+!      args: -f ${DATAFILESPATH}/matrices/arco1 -options_left no
+!      requires: datafilespath   !complex double
+!
+!TEST*/

@@ -487,3 +487,44 @@ PetscErrorCode PostStep(TS ts)
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -ts_fd -ts_type beuler
+      output_file: output/ex4.out
+
+    test:
+      suffix: 2
+      args: -ts_fd -ts_type beuler
+      nsize: 2
+      output_file: output/ex4.out
+
+    test:
+      suffix: 3
+      args: -ts_fd -ts_type cn
+
+    test:
+      suffix: 4
+      args: -ts_fd -ts_type cn
+      output_file: output/ex4_3.out
+      nsize: 2
+
+    test:
+      suffix: 5
+      args: -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl
+      output_file: output/ex4.out
+
+    test:
+      suffix: 6
+      args: -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl
+      output_file: output/ex4.out
+      nsize: 2
+
+    test:
+      suffix: 7
+      requires: !single
+      args: -ts_fd -ts_type beuler -test_PostStep -ts_dt .1
+
+TEST*/
+
