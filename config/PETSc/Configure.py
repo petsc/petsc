@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import cPickle
+import string
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -388,7 +389,7 @@ prepend-path PATH %s
     self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+self.packagelibs+self.complibs)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
-      string.replace(self.PETSC_EXTERNAL_LIB_BASIC.replace,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
+      string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
 
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
     self.allincludes = self.headers.toStringNoDupes(includes)
