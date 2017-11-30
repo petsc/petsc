@@ -7,7 +7,7 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscsf.h>
 
-PetscErrorCode VecScatterViewMPI1_MPI(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
@@ -78,6 +78,7 @@ PetscErrorCode VecScatterViewMPI1_MPI(VecScatter ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if 0
 /* -----------------------------------------------------------------------------------*/
 /*
       The next routine determines what part of  the local part of the scatter is an
@@ -128,7 +129,7 @@ PetscErrorCode VecScatterLocalOptimize_Private_MPI1(VecScatter scatter,VecScatte
   }
   PetscFunctionReturn(0);
 }
-
+#endif
 /* --------------------------------------------------------------------------------------*/
 
 /* -------------------------------------------------------------------------------------*/
@@ -276,7 +277,7 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private_MPI1(VecScatter scatter,VecSc
 
 /* --------------------------------------------------------------------------------------*/
 
-PetscErrorCode VecScatterCopyMPI1_PtoP_X(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_PtoP_X_MPI1(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
@@ -404,7 +405,7 @@ PetscErrorCode VecScatterCopyMPI1_PtoP_X(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecScatterCopyMPI1_PtoP_AllToAll(VecScatter in,VecScatter out)
+PetscErrorCode VecScatterCopy_PtoP_AllToAll_MPI1(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
@@ -2542,12 +2543,12 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
           ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }
-    } else ctx->ops->copy = VecScatterCopyMPI1_PtoP_AllToAll;
+    } else ctx->ops->copy = VecScatterCopy_PtoP_AllToAll_MPI1;
 
 #else
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
-    ctx->ops->copy      = VecScatterCopyMPI1_PtoP_AllToAll;
+    ctx->ops->copy      = VecScatterCopy_PtoP_AllToAll_MPI1;
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
@@ -2643,7 +2644,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     }
 
-    ctx->ops->copy = VecScatterCopyMPI1_PtoP_X;
+    ctx->ops->copy = VecScatterCopy_PtoP_X_MPI1;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
 
@@ -2707,7 +2708,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General *from,Vec
     ctx->ops->end   = VecScatterEndMPI1_bs;
 
   }
-  ctx->ops->view = VecScatterViewMPI1_MPI;
+  ctx->ops->view = VecScatterView_MPI_MPI1;
   /* Check if the local scatter is actually a copy; important special case */
   if (to->local.n) {
     ierr = VecScatterLocalOptimizeCopy_Private_MPI1(ctx,&to->local,&from->local,bs);CHKERRQ(ierr);
