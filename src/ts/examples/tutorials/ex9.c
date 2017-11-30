@@ -1520,18 +1520,24 @@ int main(int argc,char *argv[])
 
 /*TEST
 
+    build:
+      requires: !complex
+
     test:
       args: -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc
+      requires: !complex !single
 
     test:
       suffix: 2
       args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
       filter:  sed "s/at 48/at 0/g"
+      requires: !complex !single
 
     test:
       suffix: 3
       args: -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1
       nsize: 3
       filter:  sed "s/at 48/at 0/g"
+      requires: !complex !single
 
 TEST*/

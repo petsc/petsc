@@ -505,6 +505,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
       suffix: 3
       args:  -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason 
       filter: sed "s/ATOL/RTOL/g"
+      requires: !single
 
     test:
       suffix: 4
