@@ -49,12 +49,12 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   const PetscScalar *constants;
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscInt           dim, dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
+  const PetscInt     dim = fegeom->dim, dimEmbed = fegeom->dimEmbed;
+  PetscInt           dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
         ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(quad, NULL, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
         for (q = 0; q < numPoints; ++q, ++tp) {
-          CoordinatesRefToReal(dim, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
+          CoordinatesRefToReal(dimEmbed, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
           EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, fegeom->invJ, coefficients, coefficients_t, u, u_x, u_t);
           if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
           (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, numConstants, constants, bc);
