@@ -287,7 +287,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
   const PetscInt Nf = prob->Nf;
-  PetscInt       dim, work, NcMax = 0, NqMax = 0, f;
+  PetscInt       dim, dimEmbed, work, NcMax = 0, NqMax = 0, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -295,6 +295,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   if (prob->setup) PetscFunctionReturn(0);
   /* Calculate sizes */
   ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  ierr = PetscDSGetCoordinateDimension(prob, &dimEmbed);CHKERRQ(ierr);
   prob->totDim = prob->totComp = 0;
   ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf+1,&prob->off,Nf+1,&prob->offDer);CHKERRQ(ierr);
@@ -336,7 +337,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
-  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dim,&prob->u_x,dim,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dim,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
   ierr = PetscMalloc6(NqMax*NcMax,&prob->f0,NqMax*NcMax*dim,&prob->f1,NqMax*NcMax*NcMax,&prob->g0,NqMax*NcMax*NcMax*dim,&prob->g1,NqMax*NcMax*NcMax*dim,&prob->g2,NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
   if (prob->ops->setup) {ierr = (*prob->ops->setup)(prob);CHKERRQ(ierr);}
   prob->setup = PETSC_TRUE;
@@ -503,6 +504,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
   p->setup = PETSC_FALSE;
   p->numConstants = 0;
   p->constants    = NULL;
+  p->dimEmbed     = -1;
 
   *prob = p;
   PetscFunctionReturn(0);
@@ -533,7 +535,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 }
 
 /*@
-  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS, meaning the topological dimension of the discretizations
 
   Not collective
 
@@ -545,7 +547,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
@@ -565,6 +567,52 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
     else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetCoordinateDimension - Returns the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSSetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(dimEmbed, 2);
+  if (prob->dimEmbed < 0) SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONGSTATE, "No coordinate dimension set for this DS");
+  *dimEmbed = prob->dimEmbed;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetCoordinateDimension - Set the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->dimEmbed = dimEmbed;
   PetscFunctionReturn(0);
 }
 
