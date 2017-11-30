@@ -503,6 +503,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
   p->setup = PETSC_FALSE;
   p->numConstants = 0;
   p->constants    = NULL;
+  p->dimEmbed     = -1;
 
   *prob = p;
   PetscFunctionReturn(0);
@@ -533,7 +534,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 }
 
 /*@
-  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS, meaning the topological dimension of the discretizations
 
   Not collective
 
@@ -545,7 +546,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
@@ -565,6 +566,52 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
     else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetCoordinateDimension - Returns the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSSetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(dimEmbed, 2);
+  if (prob->dimEmbed < 0) SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONGSTATE, "No coordinate dimension set for this DS");
+  *dimEmbed = prob->dimEmbed;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetCoordinateDimension - Set the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->dimEmbed = dimEmbed;
   PetscFunctionReturn(0);
 }
 
