@@ -78,60 +78,6 @@ PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if 0
-/* -----------------------------------------------------------------------------------*/
-/*
-      The next routine determines what part of  the local part of the scatter is an
-  exact copy of values into their current location. We check this here and
-  then know that we need not perform that portion of the scatter when the vector is
-  scattering to itself with INSERT_VALUES.
-
-     This is currently not used but would speed up, for example DMLocalToLocalBegin/End()
-
-*/
-PetscErrorCode VecScatterLocalOptimize_Private_MPI1(VecScatter scatter,VecScatter_Seq_General *to,VecScatter_Seq_General *from)
-{
-  PetscInt       n = to->n,n_nonmatching = 0,i,*to_slots = to->vslots,*from_slots = from->vslots;
-  PetscErrorCode ierr;
-  PetscInt       *nto_slots,*nfrom_slots,j = 0;
-
-  PetscFunctionBegin;
-  for (i=0; i<n; i++) {
-    if (to_slots[i] != from_slots[i]) n_nonmatching++;
-  }
-
-  if (!n_nonmatching) {
-    to->nonmatching_computed = PETSC_TRUE;
-    to->n_nonmatching        = from->n_nonmatching = 0;
-
-    ierr = PetscInfo1(scatter,"Reduced %D to 0\n", n);CHKERRQ(ierr);
-  } else if (n_nonmatching == n) {
-    to->nonmatching_computed = PETSC_FALSE;
-
-    ierr = PetscInfo(scatter,"All values non-matching\n");CHKERRQ(ierr);
-  } else {
-    to->nonmatching_computed= PETSC_TRUE;
-    to->n_nonmatching       = from->n_nonmatching = n_nonmatching;
-
-    ierr = PetscMalloc1(n_nonmatching,&nto_slots);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n_nonmatching,&nfrom_slots);CHKERRQ(ierr);
-
-    to->slots_nonmatching   = nto_slots;
-    from->slots_nonmatching = nfrom_slots;
-    for (i=0; i<n; i++) {
-      if (to_slots[i] != from_slots[i]) {
-        nto_slots[j]   = to_slots[i];
-        nfrom_slots[j] = from_slots[i];
-        j++;
-      }
-    }
-    ierr = PetscInfo2(scatter,"Reduced %D to %D\n",n,n_nonmatching);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-#endif
-/* --------------------------------------------------------------------------------------*/
-
 /* -------------------------------------------------------------------------------------*/
 PetscErrorCode VecScatterDestroy_PtoP_MPI1(VecScatter ctx)
 {

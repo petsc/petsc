@@ -165,7 +165,7 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter scatter,VecScatter_Seq
 /* --------------------------------------------------------------------------------------*/
 
 /* -------------------------------------------------------------------------------------*/
-PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
+PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
 {
   VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
@@ -2228,7 +2228,7 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
 
 /*              create parallel to sequential scatter context                           */
 
-PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
+PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
 /*@
      VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send and receive.
@@ -2316,7 +2316,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   to->type   = VEC_SCATTER_MPI_GENERAL;
   from->bs   = bs;
   to->bs     = bs;
-  ierr       = VecScatterCreateCommon_PtoS(from, to, ctx);CHKERRQ(ierr);
+  ierr       = VecScatterCreateCommon_PtoS_MPI3(from, to, ctx);CHKERRQ(ierr);
 
   /* mark lengths as negative so it won't check local vector lengths */
   ctx->from_n = ctx->to_n = -1;
@@ -2328,7 +2328,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
    contains check that PetscMPIInt can handle the sizes needed
 */
-PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoS_MPI3(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
   PetscMPIInt            size,rank,mrank,imdex,tag,n;
@@ -2610,7 +2610,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   from->bs   = bs;
   to->bs     = bs;
 
-  ierr = VecScatterCreateCommon_PtoS(from,to,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateCommon_PtoS_MPI3(from,to,ctx);CHKERRQ(ierr);
   ctx->mpi3 = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2618,7 +2618,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 /*
    bs indicates how many elements there are in each block. Normally this would be 1.
 */
-PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
+PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
 {
   MPI_Comm       comm;
   PetscMPIInt    tag  = ((PetscObject)ctx)->tag, tagr;
@@ -2630,7 +2630,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ctx,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tagr);CHKERRQ(ierr);
-  ctx->ops->destroy = VecScatterDestroy_PtoP;
+  ctx->ops->destroy = VecScatterDestroy_PtoP_MPI3;
 
   ctx->reproduce = PETSC_FALSE;
   to->sendfirst  = PETSC_FALSE;
@@ -2902,14 +2902,14 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
          Reverses the order of the arguments, calls VecScatterCreate_PtoS() then
          reverses the result.
 */
-PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_StoP_MPI3(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode         ierr;
   MPI_Request            *waits;
   VecScatter_MPI_General *to,*from;
 
   PetscFunctionBegin;
-  ierr          = VecScatterCreate_PtoS(ny,inidy,nx,inidx,yin,xin,bs,ctx);CHKERRQ(ierr);
+  ierr          = VecScatterCreate_PtoS_MPI3(ny,inidy,nx,inidx,yin,xin,bs,ctx);CHKERRQ(ierr);
   to            = (VecScatter_MPI_General*)ctx->fromdata;
   from          = (VecScatter_MPI_General*)ctx->todata;
   ctx->todata   = (void*)to;
@@ -2932,7 +2932,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt 
 }
 
 /* ---------------------------------------------------------------------------------*/
-PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoP_MPI3(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
@@ -2957,7 +2957,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
+    ierr = VecScatterCreate_StoP_MPI3(nx,inidx,ny,inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -3097,7 +3097,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   if (duplicate) {
     ierr = PetscInfo(ctx,"Duplicate from to indices passed in VecScatterCreate(), they are ignored\n");CHKERRQ(ierr);
   }
-  ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate_StoP_MPI3(slen,local_inidx,slen,local_inidy,xin,yin,bs,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);
   ctx->mpi3 = PETSC_TRUE;
   PetscFunctionReturn(0);
