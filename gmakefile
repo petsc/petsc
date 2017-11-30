@@ -52,8 +52,6 @@ generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 
 all : $(generated) $(libpetscall)
 
-$(libpetscall_shared): $(libpetscall_soname)
-
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
@@ -138,11 +136,13 @@ ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
 
-%.$(SL_LINKER_SUFFIX) : $(call libname_function,%)
+%.$(SL_LINKER_SUFFIX) : $(call libname_function,%) | $(call soname_function,%)
 	@ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)
 	@ln -sf $(notdir $<) $@
+
+.PRECIOUS: $(call soname_function,%)
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
