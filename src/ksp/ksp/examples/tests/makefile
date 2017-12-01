@@ -190,92 +190,6 @@ ex54: ex54.o chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
 	${RM} ex54.o
 #------------------------------------------------------------------------------------
-
-
-
-runex28:
-	-@${MPIEXEC} -n 3 ./ex28 > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28.out ex28.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex28, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28.tmp
-runex28_2:
-	-@${MPIEXEC} -n 3 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28_2.out ex28.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex28_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28.tmp
-runex28_3:
-	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28_3.out ex28.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex28_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28.tmp
-runex29:
-	-@${MPIEXEC} -n 1 ./ex29 -mat_no_inode > ex29.tmp 2>&1; \
-	if (${DIFF} output/ex29.out ex29.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex29, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex29.tmp
-runex29_2:
-	-@${MPIEXEC} -n 3 ./ex29  > ex29_2.tmp 2>&1; \
-	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex29_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex29_2.tmp
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex30:
-	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
-	if (${DIFF} output/ex30.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-runex30_2:
-	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
-	if (${DIFF} output/ex30_2.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
-runex30_shift: # test lu with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftnz, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftpd, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
-runex30_shift_cholesky_aij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftnz_cholesky_aij, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftpd_cholesky_aij, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
-runex30_shift_cholesky_sbaij: # test cholesky with shift
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftnz_cholesky_sbaij, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE -mat_type sbaij > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftpd_cholesky_sbaij, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
-runex30_shift_in_blocks_aij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftinblocks_lu, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shiftinblocks_cholesky, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
-runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the nightly tests
-	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS -mat_type sbaij > ex30.tmp 2>&1; \
-	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex30_shift_in_blocks_sbaij, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex30.tmp
-
 runex31:
 	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition -mat_partitioning_type parmetis > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
@@ -739,8 +653,7 @@ runex54_2:
 
 
 TESTEXAMPLES_C		       =                                   ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
-                                 ex28.PETSc runex28 runex28_2 runex28_3 ex28.rm \
-                                 ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
+                                                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
                                  runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky printdot \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
@@ -753,12 +666,10 @@ TESTEXAMPLES_C_NOTSINGLE       = ex49.PETSc runex49 ex49.rm
 TESTEXAMPLES_C_X	       = ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       =  ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc ex12f.rm ex52f.PETSc runex52f ex52f.rm
-TESTEXAMPLES_DATAFILESPATH     =                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
-                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm
+TESTEXAMPLES_DATAFILESPATH     =                               ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm
 TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex5f.PETSc ex5f.rm
-TESTEXAMPLES_ML                =  ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 TESTEXAMPLES_VECCUDA_DATAFILESPATH = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 ex43.rm
 TESTEXAMPLES_SUITESPARSE       = ex32.PETSc runex32_cholmod runex32_cholmod_seqsbaij ex32.rm
