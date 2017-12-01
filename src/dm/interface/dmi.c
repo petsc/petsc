@@ -277,6 +277,7 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
       else                            {bs = bsMinMax[0];}
       ierr = ISSetBlockSize((*is)[i], bs);CHKERRQ(ierr);
     }
+    ierr = PetscFree2(offs, globalOffs);CHKERRQ(ierr);
   }
   if (superdm) {
     PetscSection supersection;
@@ -327,5 +328,6 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
     ierr = DMPlexSetGlobalToNaturalPetscSF(*superdm, sfNatural);CHKERRQ(ierr);
   }
 #endif
+  ierr = PetscFree3(Nfs, sections, sectionGlobals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
