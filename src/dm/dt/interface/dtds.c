@@ -449,6 +449,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   if (--((PetscObject)(*prob))->refct > 0) {*prob = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*prob))->refct = 0;
   ierr = PetscDSDestroyStructs_Static(*prob);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&(*prob)->bdprob);CHKERRQ(ierr);
   for (f = 0; f < (*prob)->Nf; ++f) {
     ierr = PetscObjectDereference((*prob)->disc[f]);CHKERRQ(ierr);
   }
@@ -2821,6 +2822,39 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
       ierr = PetscDSSetBdJacobian(newprob, f, g, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob)
+{
+  PetscInt       Nf, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(subprob, 3);
+  if (height == 0) {*subprob = prob; PetscFunctionReturn(0);}
+  if (height != 1) SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_OUTOFRANGE, "DS can only handle height 1, not %D", height);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  if (!prob->bdprob) {
+    PetscInt cdim;
+
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject) prob), &prob->bdprob);CHKERRQ(ierr);
+    ierr = PetscDSGetCoordinateDimension(prob, &cdim);CHKERRQ(ierr);
+    ierr = PetscDSSetCoordinateDimension(prob->bdprob, cdim);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscFE      subfe;
+      PetscObject  obj;
+      PetscClassId id;
+
+      ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {ierr = PetscFEGetHeightSubspace((PetscFE) obj, height, &subfe);CHKERRQ(ierr);}
+      else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %d", f);
+      ierr = PetscDSSetDiscretization(prob->bdprob, f, (PetscObject) subfe);CHKERRQ(ierr);
+    }
+  }
+  *subprob = prob->bdprob;
   PetscFunctionReturn(0);
 }
 
