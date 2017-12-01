@@ -190,12 +190,6 @@ ex54: ex54.o chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
 	${RM} ex54.o
 #------------------------------------------------------------------------------------
-runex31:
-	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition -mat_partitioning_type parmetis > ex31.tmp 2>&1; \
-	if (${DIFF} output/ex31.out ex31.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex31, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex31.tmp
-
 runex32_testset1:
 	@-count=0; \
 	for i in 1 2 3 4 5; do \
@@ -652,8 +646,7 @@ runex54_2:
 	   ${RM} -f ex54_2.tmp
 
 
-TESTEXAMPLES_C		       = ex27.PETSc ex27.rm \
-                                 ex28.PETSc runex28 runex28_2 runex28_3 ex28.rm \
+TESTEXAMPLES_C		       = 
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
                                  runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky printdot \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
@@ -668,7 +661,6 @@ TESTEXAMPLES_C_X	       = ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       =  ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc ex12f.rm ex52f.PETSc runex52f ex52f.rm
 TESTEXAMPLES_DATAFILESPATH     =                               ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm
-TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex31.PETSc runex31 ex31.rm
 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
