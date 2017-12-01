@@ -2136,6 +2136,16 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (superdm) {ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);}
+  ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexSymmetrize - Creates support (out-edge) information from cone (in-edge) inoformation
 
