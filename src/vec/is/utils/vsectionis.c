@@ -1362,6 +1362,98 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
+{
+  PetscInt       Nf = 0, nf, f, pStart, pEnd, p, maxCdof = 0, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!len) PetscFunctionReturn(0);
+  for (i = 0; i < len; ++i) {
+    PetscInt pStarti, pEndi;
+
+    ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(s[i], &pStarti, &pEndi);CHKERRQ(ierr);
+    pStart = PetscMin(pStart, pStarti);
+    pEnd   = PetscMax(pEnd,   pEndi);
+    Nf += nf;
+  }
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s[0]), supers);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(*supers, Nf);CHKERRQ(ierr);
+  for (i = 0, f = 0; i < len; ++i) {
+    PetscInt fi;
+    for (fi = 0; fi < nf; ++fi, ++f) {
+      const char *name   = NULL;
+      PetscInt   numComp = 0;
+
+      ierr = PetscSectionGetFieldName(s[i], fi, &name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(*supers, f, name);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldComponents(s[i], fi, &numComp);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldComponents(*supers, f, numComp);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetChart(*supers, pStart, pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof = 0, cdof = 0;
+
+    for (i = 0, f = 0; i < len; ++i) {
+      PetscInt fi, pStarti, pEndi;
+      PetscInt fdof = 0, cfdof = 0;
+
+      ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(s[i], &pStarti, &pEndi);CHKERRQ(ierr);
+      if ((p < pStarti) || (p >= pEndi)) continue;
+      for (fi = 0; fi < nf; ++fi, ++f) {
+        ierr = PetscSectionGetFieldDof(s[i], p, fi, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionAddFieldDof(*supers, p, f, fdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof);CHKERRQ(ierr);
+        if (cfdof) {ierr = PetscSectionAddFieldConstraintDof(*supers, p, f, cfdof);CHKERRQ(ierr);}
+        dof  += fdof;
+        cdof += cfdof;
+      }
+    }
+    ierr = PetscSectionSetDof(*supers, p, dof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(*supers, p, cdof);CHKERRQ(ierr);}
+    maxCdof = PetscMax(cdof, maxCdof);
+  }
+  ierr = PetscSectionSetUp(*supers);CHKERRQ(ierr);
+  if (maxCdof) {
+    PetscInt *indices;
+
+    ierr = PetscMalloc1(maxCdof, &indices);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt cdof;
+
+      ierr = PetscSectionGetConstraintDof(*supers, p, &cdof);CHKERRQ(ierr);
+      if (cdof) {
+        PetscInt dof, numConst = 0, fOff = 0;
+
+        for (i = 0, f = 0; i < len; ++i) {
+          const PetscInt *oldIndices = NULL;
+          PetscInt        fi, pStarti, pEndi, fdof, cfdof, fc;
+
+          ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
+          ierr = PetscSectionGetChart(s[i], &pStarti, &pEndi);CHKERRQ(ierr);
+          if ((p < pStarti) || (p >= pEndi)) continue;
+          for (fi = 0; fi < nf; ++fi, ++f) {
+            ierr = PetscSectionGetFieldDof(s[i], p, fi, &fdof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldConstraintIndices(s[i], p, fi, &oldIndices);CHKERRQ(ierr);
+            for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + fOff;
+            ierr = PetscSectionSetFieldConstraintIndices(*supers, p, f, &indices[numConst]);CHKERRQ(ierr);
+            numConst += cfdof;
+          }
+          ierr = PetscSectionGetDof(s[i], p, &dof);CHKERRQ(ierr);
+          fOff += dof;
+        }
+        ierr = PetscSectionSetConstraintIndices(*supers, p, indices);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(indices);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
