@@ -407,7 +407,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     test:
       suffix: 2
       nsize: 2
-      args: -n 50 -ts_type gl -ts_adapt_type none -ts_dt 0.1 -io
+      args: -n 50 -ts_type glee -ts_adapt_type none -ts_dt 0.1 -io
       TODO:
 
 TEST*/
