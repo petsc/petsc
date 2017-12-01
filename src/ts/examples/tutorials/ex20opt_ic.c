@@ -305,9 +305,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 }
 
 /*TEST
-
-    test:
+    build:
       requires: !complex !single
+    test:
       args:  -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -tao_view -mu 1.0 -ts_trajectory_dirname ex20opt_icdir
       output_file: output/ex20opt_ic_1.out
 

@@ -87,6 +87,6 @@ int main(int argc,char **args)
 
     test:
       args: -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1 -ksp_monitor_short
-      requires: datafilespath !complex double
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/

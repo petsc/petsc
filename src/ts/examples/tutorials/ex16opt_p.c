@@ -367,9 +367,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 
 /*TEST
 
+    build:
+      requires: !complex !single
+
     test:
       suffix: 1
       args: -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  -tao_gttol 1.e-5 -ts_trajectory_dirname ex16opt_pdir
-      requires: !complex !single
 
 TEST*/
