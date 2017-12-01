@@ -892,7 +892,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 @*/
 PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
-  PetscInt       bs = -1, bsLocal, bsMin, bsMax;
+  PetscInt       bs = -1, bsLocal[2], bsMinMax[2];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -931,13 +931,11 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
-      bsLocal = bs;
-      ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-      bsLocal = bs < 0 ? bsMax : bs;
-      ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-      if (bsMin != bsMax) {bs = 1;}
-      else                {bs = bsMax;}
-      bs   = bs < 0 ? 1 : bs;
+      bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+      ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
+      if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+      else                            {bs = bsMinMax[0];}
+      bs = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
       if (bs > 1) {
         for (l = 0, k = 0; l < n; l += bs, ++k) ltog[k] = ltog[l]/bs;
