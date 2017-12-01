@@ -766,10 +766,7 @@ class generateExamples(Petsc):
       if not "examples" in root: continue
       if not os.path.isfile(os.path.join(root,"makefile")): continue
       bname=os.path.basename(root.rstrip("/"))
-      if bname=="tests" or bname=="tutorials":
-        eval("self."+action+"(root,dirs,files,dataDict)")
-      if type(top) != types.StringType:
-          raise TypeError("top must be a string")
+      self.genPetscTests(root,dirs,files,dataDict)
     # Now summarize this dictionary
     eval("self."+action+"_summarize(dataDict)")
     return dataDict
