@@ -313,30 +313,31 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 }
 
 /*@
-  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector. 
-                  vfull[is[i]] += alpha*vreduced[i]
+  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
+              vfull[is[i]] += alpha*vreduced[i]
 
   Input Parameters:
-+ vfull - the full-space vector
-. vreduced - the reduced-space vector
-- is - the index set for the reduced space
++ vfull    - the full-space vector
+. is       - the index set for the reduced space
+. alpha    - the scalar coefficient
+- vreduced - the reduced-space vector
 
   Output Parameters:
-. vfull - the sum of the full-space vector and reduced-space vector
+. vfull    - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
 
 .seealso:  VecAXPY()
 @*/
-PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
+PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
   PetscInt       nfull,nreduced;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,4);
   ierr = VecGetSize(vfull,&nfull);CHKERRQ(ierr);
   ierr = VecGetSize(vreduced,&nreduced);CHKERRQ(ierr);
 
