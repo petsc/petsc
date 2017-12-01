@@ -177,7 +177,8 @@ int main(int argc,char **argv)
 }
 
 /*TEST
-
+    build:
+      requires: !single !complex
     test:
 
 TEST*/

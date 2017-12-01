@@ -352,7 +352,8 @@ int main(int argc, char **argv)
 }
 
 /*TEST
-
+    build:
+      requires: !single !complex
     test:
       args: -ts_max_steps 8 
       output_file: output/ex42.out 
