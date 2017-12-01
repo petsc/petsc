@@ -9,23 +9,10 @@ x1
 Vec Object: 2 MPI processes
   type: mpi
   length=3
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
-0.655738
--0.983607
-Process [1]
-0.491803
 x2 
 Vec Object: 2 MPI processes
   type: mpi
   length=2
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
--0.147541
-Process [1]
-0.311475
 test_solve_matgetvecs 
   0 KSP Residual norm 1.73205 
   1 KSP Residual norm 114.018 
@@ -37,20 +24,7 @@ x1
 Vec Object: 2 MPI processes
   type: mpi
   length=3
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
-0.655738
--0.983607
-Process [1]
-0.491803
 x2 
 Vec Object: 2 MPI processes
   type: mpi
   length=2
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
--0.147541
-Process [1]
-0.311475

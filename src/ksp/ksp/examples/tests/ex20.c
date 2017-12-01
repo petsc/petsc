@@ -95,4 +95,9 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
 
+    test:
+      args: -ksp_monitor_short
+
+TEST*/
