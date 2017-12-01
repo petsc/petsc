@@ -1714,22 +1714,32 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Ma
   PetscFunctionBegin;
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  }
   b    = (Mat_MPIAIJ*) B->data;
-  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&b->B);CHKERRQ(ierr);
-  ierr = MatDisAssemble_MPISELL(A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqSELL_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqSELL_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatConvert_SeqSELL_SeqAIJ(a->A, MATSEQAIJ, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqSELL_SeqAIJ(a->B, MATSEQAIJ, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+    ierr = MatDestroy(&b->B);CHKERRQ(ierr);
+    ierr = MatDisAssemble_MPISELL(A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqSELL_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqSELL_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
@@ -1749,22 +1759,32 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A,MatType newtype,MatReuse reuse,Ma
   PetscFunctionBegin;
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATMPISELL);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    B = *newmat;
+  } else {
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATMPISELL);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  }
   b    = (Mat_MPISELL*) B->data;
-  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&b->B);CHKERRQ(ierr);
-  ierr = MatDisAssemble_MPIAIJ(A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqSELL(a->A, MATSEQSELL, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqSELL(a->B, MATSEQSELL, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatConvert_SeqAIJ_SeqSELL(a->A, MATSEQSELL, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_SeqSELL(a->B, MATSEQSELL, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+    ierr = MatDestroy(&b->B);CHKERRQ(ierr);
+    ierr = MatDisAssemble_MPIAIJ(A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_SeqSELL(a->A, MATSEQSELL, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_SeqSELL(a->B, MATSEQSELL, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
 
   if (reuse == MAT_INPLACE_MATRIX) {
     ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
