@@ -95,7 +95,44 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFunctionProjection(DM dm, AppCtx *user)
+static PetscErrorCode CreateBoundaryMesh(DM dm, DM *subdm, AppCtx *user)
+{
+  DMLabel        label;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMLabelCreate("sub", &label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexCreateSubmesh(dm, label, 1, subdm);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
+  ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
+  ierr = SetupDiscretization(*subdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateAuxiliaryData(DM dm, DM *auxdm, Vec *la, AppCtx *user)
+{
+  PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
+  PetscInt          dim, Nf, f;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf, &afuncs);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
+  ierr = DMClone(dm, auxdm);CHKERRQ(ierr);
+  ierr = SetupDiscretization(*auxdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(*auxdm, la);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, *la);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(*la, NULL, "-local_aux_view");CHKERRQ(ierr);
+  ierr = PetscFree(afuncs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TestFunctionProjection(DM dm, DM auxdm, Vec la, AppCtx *user)
 {
   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
   Vec               x, lx;
@@ -103,6 +140,10 @@ static PetscErrorCode TestFunctionProjection(DM dm, AppCtx *user)
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
+  if (auxdm) {
+    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) auxdm);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
+  }
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &funcs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) funcs[f] = linear;
@@ -115,42 +156,54 @@ static PetscErrorCode TestFunctionProjection(DM dm, AppCtx *user)
   ierr = VecViewFromOptions(lx, NULL, "-local_func_view");CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = PetscFree(funcs);CHKERRQ(ierr);
+  if (auxdm) {
+    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFieldProjection(DM dm, AppCtx *user)
+static PetscErrorCode TestFieldProjection(DM dm, DM auxdm, Vec la, AppCtx *user)
 {
   PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
   void           (**funcs)(PetscInt, PetscInt, PetscInt,
                            const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                            const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                            PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
-  Vec               lx, la;
+  Vec               lx, lu;
   PetscInt          Nf, f;
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
+  if (auxdm) {
+    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) auxdm);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) la);CHKERRQ(ierr);
+  }
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, Nf, &afuncs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
   funcs[0] = linear_vector;
   funcs[1] = linear_scalar;
-  ierr = DMGetLocalVector(dm, &la);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, la);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(la, NULL, "-local_input_view");CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &lu);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, lu);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(lu, NULL, "-local_input_view");CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(dm, 0.0, la, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);
   ierr = VecViewFromOptions(lx, NULL, "-local_field_view");CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &la);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
+  if (auxdm) {
+    ierr = PetscObjectCompose((PetscObject) dm, "dmAux", NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dm, "A", NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 int main(int argc, char **argv)
 {
-  DM             dm, subdm;
-  DMLabel        label;
+  DM             dm, subdm, auxdm;
+  Vec            la;
   AppCtx         user;
   PetscErrorCode ierr;
 
@@ -158,40 +211,35 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, user.dim, user.cellSimplex, &user);CHKERRQ(ierr);
-  ierr = TestFunctionProjection(dm, &user);CHKERRQ(ierr);
-  ierr = TestFieldProjection(dm, &user);CHKERRQ(ierr);
+  /* Volumetric Mesh Projection */
+  ierr = TestFunctionProjection(dm, NULL, NULL, &user);CHKERRQ(ierr);
+  ierr = TestFieldProjection(dm, NULL, NULL, &user);CHKERRQ(ierr);
+  if (user.auxfield) {
+    /* Volumetric Mesh Projection with Volumetric Data */
+    ierr = CreateAuxiliaryData(dm, &auxdm, &la, &user);CHKERRQ(ierr);
+    ierr = TestFunctionProjection(dm, auxdm, la, &user);CHKERRQ(ierr);
+    ierr = TestFieldProjection(dm, auxdm, la, &user);CHKERRQ(ierr);
+    ierr = VecDestroy(&la);CHKERRQ(ierr);
+    ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+  }
   if (user.submesh) {
-    ierr = DMLabelCreate("sub", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-    ierr = DMPlexCreateSubmesh(dm, label, 1, &subdm);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
-    ierr = SetupDiscretization(subdm, user.dim-1, user.cellSimplex, &user);CHKERRQ(ierr);
-    ierr = TestFunctionProjection(subdm, &user);CHKERRQ(ierr);
-    ierr = TestFieldProjection(subdm, &user);CHKERRQ(ierr);
+    /* Boundary Mesh Projection */
+    ierr = CreateBoundaryMesh(dm, &subdm, &user);CHKERRQ(ierr);
+    ierr = TestFunctionProjection(subdm, NULL, NULL, &user);CHKERRQ(ierr);
+    ierr = TestFieldProjection(subdm, NULL, NULL, &user);CHKERRQ(ierr);
     if (user.auxfield) {
-      PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
-      DM                auxdm;
-      Vec               la;
-      PetscInt          Nf, f;
-
-      ierr = DMGetNumFields(subdm, &Nf);CHKERRQ(ierr);
-      ierr = PetscMalloc1(Nf, &afuncs);CHKERRQ(ierr);
-      for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
-      ierr = DMClone(subdm, &auxdm);CHKERRQ(ierr);
-      ierr = SetupDiscretization(auxdm, user.dim-1, user.cellSimplex, &user);CHKERRQ(ierr);
-      ierr = DMGetLocalVector(auxdm, &la);CHKERRQ(ierr);
-      ierr = DMProjectFunctionLocal(subdm, 0.0, afuncs, NULL, INSERT_VALUES, la);CHKERRQ(ierr);
-      ierr = VecViewFromOptions(la, NULL, "-local_aux_view");CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) subdm, "dmAux", (PetscObject) auxdm);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) subdm, "A", (PetscObject) la);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(subdm, &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(subdm, &user);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) subdm, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) subdm, "A", NULL);CHKERRQ(ierr);
-      ierr = DMRestoreLocalVector(auxdm, &la);CHKERRQ(ierr);
+      /* Boundary Mesh Projection with Boundary Data */
+      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = TestFunctionProjection(subdm, auxdm, la, &user);CHKERRQ(ierr);
+      ierr = TestFieldProjection(subdm, auxdm, la, &user);CHKERRQ(ierr);
+      ierr = VecDestroy(&la);CHKERRQ(ierr);
       ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
-      ierr = PetscFree(afuncs);CHKERRQ(ierr);
+      /* Volumetric Mesh Projection with Boundary Data */
+      ierr = CreateAuxiliaryData(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
+      ierr = TestFunctionProjection(dm, auxdm, la, &user);CHKERRQ(ierr);
+      ierr = TestFieldProjection(dm, auxdm, la, &user);CHKERRQ(ierr);
+      ierr = VecDestroy(&la);CHKERRQ(ierr);
+      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
     }
     ierr = DMDestroy(&subdm);CHKERRQ(ierr);
   }
@@ -209,6 +257,6 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     requires: triangle
-    args: -dim 2 -velocity_petscspace_order 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_order 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh
+    args: -dim 2 -velocity_petscspace_order 1 -velocity_petscfe_default_quadrature_order 2 -pressure_petscspace_order 2 -pressure_petscfe_default_quadrature_order 2 -func_view -local_func_view -local_input_view -local_field_view -submesh -auxfield
 
 TEST*/
