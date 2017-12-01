@@ -16,6 +16,7 @@
       Mat:: MTX
       Vec:: PTCB,PTCX
       KSP:: KK
+      PetscInt one,three
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -23,8 +24,10 @@
         stop
       endif
 
+      one=1
+      three=3
       call MatCreate(PETSC_COMM_WORLD,mtx,ierr)
-      call MatSetSizes(mtx,PETSC_DECIDE,PETSC_DECIDE,DMS,3,ierr)
+      call MatSetSizes(mtx,PETSC_DECIDE,PETSC_DECIDE,DMS,three,ierr)
       call MatSetFromOptions(mtx,ierr)
       call MatSetUp(mtx,ierr)
       call MatSetOption(mtx,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE,ierr)
@@ -33,7 +36,7 @@
       do J=1,3
          do I=1,DMS
             IR(1)=I-1; IC(1)=J-1; X(1)=MV(J+(I-1)*3)
-            call MatSetValues(MTX,1,IR,1,IC,X,INSERT_VALUES,ierr)
+            call MatSetValues(MTX,one,IR,one,IC,X,INSERT_VALUES,ierr)
          end do
       end do
 
@@ -48,14 +51,14 @@
       do I=1,DMS
          IR(1)=I-1
          BI(1)=B(i)
-         call VecSetValues(PTCB,1,IR,BI,INSERT_VALUES,ierr)
+         call VecSetValues(PTCB,one,IR,BI,INSERT_VALUES,ierr)
       end do
 
       call vecAssemblyBegin(PTCB,ierr);
       call vecAssemblyEnd(PTCB,ierr)
 
       call VecCreate(PETSC_COMM_WORLD,PTCX,ierr)   ! Solution vector
-      call VecSetSizes(PTCX,PETSC_DECIDE,3,ierr)
+      call VecSetSizes(PTCX,PETSC_DECIDE,three,ierr)
       call VecSetFromOptions(PTCX,ierr)
       call vecAssemblyBegin(PTCX,ierr);
       call vecAssemblyEnd(PTCX,ierr)
@@ -75,7 +78,8 @@
       end program main
 
 !/*TEST
-!
+!     build:
+!       requires: !complex
 !     test:
 !       args: -ksp_type cgls -pc_type none
 !
