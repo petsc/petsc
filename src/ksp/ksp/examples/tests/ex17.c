@@ -211,6 +211,9 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 
 /*TEST
 
+    build:
+      requires: complex
+
     test:
       args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
       requires: complex
