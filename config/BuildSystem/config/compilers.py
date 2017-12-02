@@ -1464,6 +1464,7 @@ class Configure(config.base.Configure):
         self.c99flag = flag
         self.framework.logPrint('Accepted C99 compile flag: '+flag)
         break
+    if self.c99flag == '': self.addDefine('HAVE_C99', 1)
     self.setCompilers.popLanguage()
     self.logWrite(self.setCompilers.restoreLog())
     return

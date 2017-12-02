@@ -272,7 +272,8 @@ int main(int argc, char **argv)
 /*TEST
 
     build:
-      requires: !single  !complex
+      requires: !single  !complex c99
+
     test:
       TODO: broken, was not nightly tested
 
