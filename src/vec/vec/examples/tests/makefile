@@ -485,7 +485,7 @@ TESTEXAMPLES_C		    = ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc 
                               ex46.PETSc runex46 runex46_2 runex46_3 runex46_mpiio ex46.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_C_X_MPIUNI     = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
+TESTEXAMPLES_C_X_MPIUNI     = ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm
 TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm \
                               ex4.PETSc runex4_cusp runex4_cusp2 ex4.rm 

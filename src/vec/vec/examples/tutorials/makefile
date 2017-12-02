@@ -177,7 +177,7 @@ runex21f90:
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm
 TESTEXAMPLES_FORTRAN	    =  ex7.PETSc runex7 ex7.rm
-TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm  ex7.PETSc ex7.rm
+TESTEXAMPLES_FORTRAN_MPIUNI = ex7.PETSc ex7.rm
 TESTEXAMPLES_F90	    = ex21f90.PETSc runex21f90 ex21f90.rm
 TESTEXAMPLES_VECCUDA        = ex1.PETSc runex1_cuda runex1_2_cuda ex1.rm
 
