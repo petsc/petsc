@@ -45,7 +45,7 @@ int main(int argc,char **args)
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
-  ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */
