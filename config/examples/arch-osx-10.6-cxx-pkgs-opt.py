@@ -36,6 +36,7 @@ configure_options = [
   '--download-moab=1',
   '--download-saws',
   '--download-revolve=1',
+  '--download-ctetgen=1',
   ]
 
 if __name__ == '__main__':
