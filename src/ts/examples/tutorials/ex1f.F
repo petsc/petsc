@@ -184,7 +184,7 @@
       call TSGetConvergedReason(ts,reason,ierr)
 
       write(6,100) its,ftime,reason
- 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2    &
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe9.2    &
      &     ,' reason ',i3)
 
 !
