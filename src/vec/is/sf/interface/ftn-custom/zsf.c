@@ -3,7 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscsfview_       PETSCSFVIEW
-#define petscsfgetgraph_   PETSCSFEGTGRAPH
+#define petscsfgetgraph_   PETSCSFGETGRAPH
 #define petscsfbcastbegin_ PETSCSFBCASTBEGIN
 #define petscsfbcastend_   PETSCSFBCASTEND
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

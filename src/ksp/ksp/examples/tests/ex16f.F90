@@ -72,7 +72,7 @@
 
 
       write(6,100) norm,its
-  100 format('Residual norm ',e10.4,' iterations ',i5)
+  100 format('Residual norm ',e11.4,' iterations ',i5)
 
 ! Create system 2 by striping off some rows of the matrix
       call ISCreateStride(PETSC_COMM_SELF,ifive,izero,ione,isrow,ierr)
