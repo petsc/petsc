@@ -242,5 +242,6 @@ int main(int argc, char **args)
       suffix: 3
       nsize: 2
       args: -ksp_monitor_short -ksp_type bicg
+      requires: !single
 
 TEST*/
