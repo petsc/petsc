@@ -102,7 +102,7 @@
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then SETERRA(PETSC_COMM_SELF,1,'Lambda provided with -par is out of range ')
+      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then SETERRA(PETSC_COMM_SELF,1,'Lambda out of range ')
       N       = mx*my
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
