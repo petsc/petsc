@@ -641,8 +641,8 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
 
     ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);
     ierr = VecGetArrayRead(locX, &pointSols);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(plex, cell, pointSols, &pointSol);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, &pointGrad);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(plex, cell, pointSols, (void *) &pointSol);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, (void *) &pointGrad);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(adaptor->cellDM, cell, adaptor->cellGeomArray, &cg);CHKERRQ(ierr);
     ierr = (*adaptor->ops->computeerrorindicator)(adaptor, dim, Nc, pointSol, pointGrad, cg, errInd, ctx);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(locX, &pointSols);CHKERRQ(ierr);
@@ -881,7 +881,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         PetscReal          detH, fact;
         PetscInt           i;
 
-        ierr = DMPlexPointLocalRead(dmHess, v, H, &Hp);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(dmHess, v, H, (void *) &Hp);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRef(dmMetric, v, M, &Mp);CHKERRQ(ierr);
         if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detH, Hp);
         else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detH, Hp);
