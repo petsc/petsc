@@ -749,19 +749,6 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_RK(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSReset_RK(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
 static PetscErrorCode DMCoarsenHook_TSRK(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
@@ -840,10 +827,8 @@ static PetscErrorCode TSSetUp_RK(TS ts)
     ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
   }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -863,7 +848,7 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
     PetscBool      flg;
     const char   **namelist;
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rk->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSRKSetType(ts,namelist[choice]);CHKERRQ(ierr);}
@@ -1021,6 +1006,21 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSDestroy_RK(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_RK(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRK,DMSubDomainRestrictHook_TSRK,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetType_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
 /*MC

@@ -484,6 +484,11 @@ runex2_pipecgrr:
 	   ${DIFF} output/ex2_pipecgrr.out ex2_pipecgrr.tmp || printf "${PWD}\nPossible problem with ex2_pipecgrr, diffs above\n=========================================\n"; \
 	   ${RM} -f ex2_pipecgrr.tmp
 
+runex2_ell:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type ell > ex2_ell.tmp 2>&1; \
+	   ${DIFF} output/ex2_ell.out ex2_ell.tmp || printf "${PWD}\nPossible problem with ex2_ell, diffs above\n=========================================\n"; \
+	   ${RM} -f ex2_ell.tmp
+
 runex2f:
 	-@${MPIEXEC} -n 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
@@ -952,12 +957,12 @@ runex10_zeropivot:
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
 runex10_zeropivot_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_type gmres -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1 > ex10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_zeropivot.out ex10.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
 runex10_zeropivot_3:
-	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason > ex10.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp -ksp_type gmres -ksp_pc_type bjacobi > ex10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_zeropivot_3.out ex10.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
@@ -1085,7 +1090,7 @@ runex28:
 	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex28_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex28_1.tmp binaryoutput
+	   ${RM} -f ex28_1.tmp binaryoutput binaryoutput.info
 
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 > ex29_1.tmp 2>&1;	  \
@@ -1272,7 +1277,7 @@ runex49_3:
 runex49_4:
 	-@${MPIEXEC} -n 4 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebyshev -elas_pc_type ml -elas_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 2 -use_nonsymbc -elas_pc_ml_nullspace user > ex49_4.tmp 2>&1; \
 	   ${DIFF} output/ex49_4.out ex49_4.tmp || printf "${PWD}\nPossible problem with ex49_4, diffs above\n=========================================\n"; \
-	   ${RM} -f ex49_4.tmp
+	   ${RM} -f ex49_4.tmp mesh-p0*.dat properties-p0*.dat X-p*.dat
 
 runex49_5:
 	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi > ex49_5.tmp 2>&1; \
@@ -1349,19 +1354,19 @@ runex52_superlu_dist:
 	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu_dist, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_ilu:
-	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_ilu  2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp;	  \
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_ilu 2>&1 > ex52.tmp;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack:
-	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_lu  2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp;	  \
+	-@${MPIEXEC} -n 1 ./ex52 -use_strumpack_lu 2>&1 > ex52.tmp;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_ilu_2:
-	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_ilu 2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp ;	  \
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_ilu 2>&1 > ex52.tmp ;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack_ilu, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_strumpack_2:
-	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_lu 2>&1 | grep -v "WARNING STRUMPACK: There were unrecognized options." > ex52.tmp ;	  \
+	-@${MPIEXEC} -n 2 ./ex52 -use_strumpack_lu 2>&1 > ex52.tmp ;	  \
 	   ${DIFF} output/ex52_3.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_strumpack, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 
@@ -1689,7 +1694,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 
 TESTEXAMPLES_C_NOTSINGLE       = ex18.PETSc runex18_bas ex18.rm ex25.PETSc runex25 ex25.rm ex43.PETSc runex43_3 ex43.rm ex67.PETSc printdot \
                                  runex67_symmetric_left runex67_symmetric_right runex67_nonsymmetric_left runex67_nonsymmetric_right ex67.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc runex15_tsirm ex15.rm \
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex2.PETSc runex2_ell ex2.rm ex23.PETSc runex23_3 ex23.rm  ex15.PETSc runex15_tsirm ex15.rm \
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
                                  ex43.PETSc runex43_4 runex43_5 ex43.rm \
                                  ex49.PETSc runex49_6 runex49_7 runex49_8 ex49.rm \

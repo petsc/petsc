@@ -288,7 +288,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - MPI communicator
+.  comm - MPI communicator
 
    Output Parameter:
 .  r  - the random number generator context

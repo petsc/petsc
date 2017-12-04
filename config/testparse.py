@@ -296,7 +296,7 @@ def parseTest(testStr,srcfile,verbosity):
   testname="run"+os.path.splitext(bn)[0]
 
   # Tests that have default everything (so empty effectively)
-  if len(testStr)==0: return testname, {}
+  if len(testStr)==0: return [testname], [{}]
 
   striptest=_stripIndent(testStr,srcfile)
 

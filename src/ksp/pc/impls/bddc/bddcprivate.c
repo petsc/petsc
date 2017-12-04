@@ -2387,7 +2387,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
   ierr = PCBDDCBenignGetOrSetP0(pc,pcis->vec1_global,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0;i<pcbddc->benign_n;i++) {
     PetscInt val = PetscRealPart(pcbddc->benign_p0[i]);
-    if (val != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %d instead of %g\n",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);CHKERRQ(ierr);
+    if (val != -PetscGlobalRank-i) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error testing PCBDDCBenignGetOrSetP0! Found %g at %d instead of %g\n",PetscRealPart(pcbddc->benign_p0[i]),i,-PetscGlobalRank-i);
   }
   PetscFunctionReturn(0);
 }
@@ -3635,11 +3635,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         PetscBool   done;
 
         ierr = MatGetRowIJ(C_CR,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done);CHKERRQ(ierr);
-        if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");CHKERRQ(ierr);
+        if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
         ierr = MatSeqAIJGetArray(C_CR,&aa);CHKERRQ(ierr);
         ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n_constraints,lda_rhs,ii,jj,aa,&tC_CR);CHKERRQ(ierr);
         ierr = MatRestoreRowIJ(C_CR,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done);CHKERRQ(ierr);
-        if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");CHKERRQ(ierr);
+        if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
       } else {
         ierr  = PetscObjectReference((PetscObject)C_CR);CHKERRQ(ierr);
         tC_CR = C_CR;
@@ -3929,11 +3929,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
           PetscBool   done;
 
           ierr = MatGetRowIJ(A_RVT,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done);CHKERRQ(ierr);
-          if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");CHKERRQ(ierr);
+          if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
           ierr = MatSeqAIJGetArray(A_RVT,&aa);CHKERRQ(ierr);
           ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n_vertices,lda_rhs,ii,jj,aa,&tA_RVT);CHKERRQ(ierr);
           ierr = MatRestoreRowIJ(A_RVT,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done);CHKERRQ(ierr);
-          if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");CHKERRQ(ierr);
+          if (!done) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
         } else {
           ierr   = PetscObjectReference((PetscObject)A_RVT);CHKERRQ(ierr);
           tA_RVT = A_RVT;
@@ -6374,7 +6374,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       if (pcbddc->use_deluxe_scaling) {
         PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
 
-        if (pcbddc->use_change_of_basis && pcbddc->adaptive_userdefined) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot mix automatic change of basis, adaptive selection and user-defined constraints");CHKERRQ(ierr);
+        if (pcbddc->use_change_of_basis && pcbddc->adaptive_userdefined) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot mix automatic change of basis, adaptive selection and user-defined constraints");
         if (sub_schurs && sub_schurs->S_Ej_all) {
           Mat                    S_new,tmat;
           IS                     is_all_N,is_V_Sall = NULL;

@@ -109,13 +109,55 @@ runex5adj:
 	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 16 -da_grid_y 16 > ex5adj_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5adj_1.out ex5adj_1.tmp) then true; \
 	   else printf "${PWD}\n Possible problem with ex5adj_1, diffs above\n=======================================\n"; fi; \
-	   ${RM} -f ex5adj_1.tmp SA-data/*
+	   ${RM} -rf ex5adj_1.tmp SA-data
 
 runex5adj_2:
+	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file test-%06D.cp > ex5adj_2.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_2.out ex5adj_2.tmp) then true; \
+	   else printf "${PWD}\n Possible problem with ex5adj_2, diffs above\n=======================================\n"; fi; \
+	   ${RM} -rf ex5adj_2.tmp Test-dir
+
+runex5adj_3:
 	-@${MPIEXEC} -n 2 ./ex5adj -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi -draw_pause -2
 
 runex5adj_knl:
-	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 128 -da_grid_y 128 -ts_trajectory_type memory -ts_trajectory_solution_only 0 -malloc_hbw -ts_trajectory_use_dram 1 2>&1
+	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -malloc_hbw -ts_trajectory_use_dram 1 2>&1
+
+runex5adj_ell:
+	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type none > ex5adj_ell_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_1.out ex5adj_ell_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_1.tmp
+
+runex5adj_ell2:
+	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor > ex5adj_ell_2.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_2.out ex5adj_ell_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_2.tmp
+
+runex5adj_ell3:
+	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi > ex5adj_ell_3.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_3.out ex5adj_ell_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_3.tmp
+
+runex5adj_ell4:
+	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi > ex5adj_ell_4.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_4.out ex5adj_ell_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_4.tmp
+
+runex5adj_ell5:
+	-@${MPIEXEC} -n 4 ./ex5adj -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type ell -aijpc > ex5adj_ell_5.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_5.out ex5adj_ell_5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_5.tmp
+
+runex5adj_ell6:
+	-@${MPIEXEC} -n 1 ./ex5adj -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -dm_mat_type ell -pc_type jacobi > ex5adj_ell_6.tmp 2>&1; \
+	   if (${DIFF} output/ex5adj_ell_6.out ex5adj_ell_6.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5adj_ell6, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5adj_ell_6.tmp
 
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -ts_max_steps 10 -ts_monitor > ex6_1.tmp 2>&1;	  \
@@ -191,10 +233,12 @@ runex10_4:
 
 TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm \
-                            ex5adj.PETSc runex5adj ex5adj.rm ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 ex6.rm
+                            ex5adj.PETSc runex5adj runex5adj_2 ex5adj.rm ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 ex6.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		  =
+
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex5adj.PETSc runex5adj_ell runex5adj_ell2 runex5adj_ell3 runex5adj_ell4 runex5adj_ell5 runex5adj_ell6 ex5adj.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

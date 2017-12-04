@@ -313,7 +313,7 @@ allfortranstubs:
 	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 	@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:
@@ -562,7 +562,7 @@ exercises:
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
-        start_configure configure_petsc configure_clean matlabbin
+        start_configure configure_petsc configure_clean matlabbin install
 
 petscao : petscmat petscao.f90.h
 petscdm : petscksp petscdm.f90.h

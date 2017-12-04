@@ -95,6 +95,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
   MPI_Comm       local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 

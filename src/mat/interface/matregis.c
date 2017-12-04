@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
-#if defined PETSC_HAVE_MKL
+#if defined PETSC_HAVE_MKL_SPARSE
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat);
 
@@ -38,6 +38,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
+
+PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
 
 #if defined PETSC_HAVE_CUSP
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);
@@ -103,7 +106,7 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATMPIAIJPERM,     MatCreate_MPIAIJPERM);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM);CHKERRQ(ierr);
 
-#if defined PETSC_HAVE_MKL
+#if defined PETSC_HAVE_MKL_SPARSE
   ierr = MatRegisterBaseName(MATAIJMKL, MATSEQAIJMKL,MATMPIAIJMKL);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIAIJMKL,      MatCreate_MPIAIJMKL);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJMKL,      MatCreate_SeqAIJMKL);CHKERRQ(ierr);
@@ -133,6 +136,10 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATSCATTER,        MatCreate_Scatter);CHKERRQ(ierr);
   ierr = MatRegister(MATBLOCKMAT,       MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegister(MATNEST,           MatCreate_Nest);CHKERRQ(ierr);
+
+  ierr = MatRegisterBaseName(MATELL,MATSEQELL,MATMPIELL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIELL,         MatCreate_MPIELL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQELL,         MatCreate_SeqELL);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_CUSP
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);

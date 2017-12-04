@@ -62,30 +62,31 @@ static PetscErrorCode ConvergenceTest(Tao, void*);
 
 int main( int argc, char **argv )
 {
-  PetscErrorCode     ierr;               /* used to check for functions returning nonzeros */
-  PetscInt           Nx, Ny;             /* number of processors in x- and y- directions */
+  PetscErrorCode     ierr;            /* used to check for functions returning nonzeros */
+  PetscInt           Nx, Ny;          /* number of processors in x- and y- directions */
   PetscInt           m;               /* number of local elements in vectors */
-  Vec                x;                  /* variables vector */
-  Vec                xl,xu;                  /* bounds vectors */
+  Vec                x;               /* variables vector */
+  Vec                xl,xu;           /* bounds vectors */
   PetscReal          d1000 = 1000;
-  PetscBool          flg;              /* A return variable when checking for user options */
-  Tao                tao;                /* Tao solver context */
+  PetscBool          flg,testgetdiag; /* A return variable when checking for user options */
+  Tao                tao;             /* Tao solver context */
   KSP                ksp;
-  AppCtx             user;               /* user-defined work context */
-  PetscReal          zero=0.0;           /* lower bound on all variables */
+  AppCtx             user;            /* user-defined work context */
+  PetscReal          zero = 0.0;      /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
   ierr = PetscInitialize( &argc, &argv,(char *)0,help );if (ierr) return ierr;
 
   /* Set the default values for the problem parameters */
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
+  testgetdiag = PETSC_FALSE;
 
   /* Check for any command line arguments that override defaults */
   ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_getdiagonal",&testgetdiag,NULL);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mx: %D,  my: %D,  ecc: %g \n\n",user.nx,user.ny,(double)user.ecc);CHKERRQ(ierr);
@@ -115,6 +116,10 @@ int main( int argc, char **argv )
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.dm,&user.A);CHKERRQ(ierr);
+
+  if (testgetdiag) {
+    ierr = MatShellSetOperation(user.A,MATOP_GET_DIAGONAL,NULL);CHKERRQ(ierr);
+  }
 
   /* User defined function -- compute linear term of quadratic */
   ierr = ComputeB(&user);CHKERRQ(ierr);

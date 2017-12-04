@@ -806,6 +806,28 @@ struct _p_PetscContainer {
 };
 
 /*@C
+   PetscContainerUserDestroyDefault - Default destroy routine for user-provided data that simply calls PetscFree().
+
+   Logically Collective on PetscContainer
+
+   Input Parameter:
+.  ctx - pointer to user-provided data
+
+   Level: advanced
+
+.seealso: PetscContainerDestroy(), PetscContainterSetUserDestroy()
+@*/
+PetscErrorCode PetscContainerUserDestroyDefault(void* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(ctx,1);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    PetscContainerGetPointer - Gets the pointer value contained in the container.
 
    Not Collective
@@ -888,9 +910,12 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 +  obj - an object that was created with PetscContainerCreate()
 -  des - name of the user destroy function
 
+   Notes:
+   Use PetscContainerUserDestroyDefault() if the memory was obtained by calling PetscMalloc or one of its variants for single memory allocation.
+
    Level: advanced
 
-.seealso: PetscContainerDestroy()
+.seealso: PetscContainerDestroy(), PetscContainerUserDestroyDefault(), PetscMalloc(), PetscMalloc1(), PetscCalloc(), PetscCalloc1()
 @*/
 PetscErrorCode  PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {

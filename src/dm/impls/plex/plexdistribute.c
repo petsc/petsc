@@ -1088,7 +1088,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
-  /* Create supports and stratify sieve */
+  /* Create supports and stratify DMPlex */
   {
     PetscInt pStart, pEnd;
 
@@ -1600,6 +1600,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
+  if (sf) *sf = NULL;
   *dmParallel = NULL;
   if (size == 1) {
     ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);

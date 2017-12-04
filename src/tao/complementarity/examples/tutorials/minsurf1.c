@@ -270,16 +270,17 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 */
 PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,row;
-  PetscInt       mx=user->mx, my=user->my;
-  PetscInt       col[7];
-  PetscReal      hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
-  PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscReal      hl,hr,ht,hb,hc,htl,hbr;
-  PetscScalar    *x, v[7];
-  PetscBool      assembled;
+  AppCtx            *user = (AppCtx *) ptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,k,row;
+  PetscInt          mx=user->mx, my=user->my;
+  PetscInt          col[7];
+  PetscReal         hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscReal         f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal         hl,hr,ht,hb,hc,htl,hbr;
+  const PetscScalar *x;
+  PetscScalar       v[7];
+  PetscBool         assembled;
 
   /* Set various matrix options */
   ierr = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
@@ -287,7 +288,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   if (assembled){ierr = MatZeroEntries(H); CHKERRQ(ierr);}
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
 
   /* Compute Jacobian over the locally owned part of the mesh */
   for (i=0; i< mx; i++){
@@ -299,28 +300,28 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 
       /* Left side */
       if (i==0){
-        xl= user->left[j+1];
+        xl  = user->left[j+1];
         xlt = user->left[j+2];
       } else {
         xl = x[row-1];
       }
 
       if (j==0){
-        xb=user->bottom[i+1];
+        xb  = user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
 
       if (i+1 == mx){
-        xr=user->right[j+1];
+        xr  = user->right[j+1];
         xrb = user->right[j];
       } else {
         xr = x[row+1];
       }
 
       if (j+1==my){
-        xt=user->top[i+1];
+        xt  = user->top[i+1];
         xlt = user->top[i];
       }else {
         xt = x[row+mx];
@@ -400,7 +401,7 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Assemble the matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

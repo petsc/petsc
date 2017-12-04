@@ -1049,7 +1049,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}","${HOSTNAME}",0};
-  const char     *r[] = {0,0,0,0,0,0,0,0,0};
+  char           *r[] = {0,0,0,0,0,0,0,0,0};
   PetscBool      flag;
 
   PetscFunctionBegin;
@@ -1060,25 +1060,25 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   ierr = PetscMalloc1(len,&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  ierr = PetscStrallocpy(PETSC_ARCH,(char**)&r[0]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PETSC_DIR,(char**)&r[1]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PETSC_LIB_DIR,(char**)&r[2]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_ARCH,&r[0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_DIR,&r[1]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_LIB_DIR,&r[2]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[3]);CHKERRQ(ierr);
   ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[6]);CHKERRQ(ierr);
   ierr = PetscMalloc1(256,&r[7]);CHKERRQ(ierr);
-  ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
-  ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetUserName((char*)r[6],256);CHKERRQ(ierr);
-  ierr = PetscGetHostName((char*)r[7],256);CHKERRQ(ierr);
+  ierr = PetscGetDisplay(r[3],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory(r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory(r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetUserName(r[6],256);CHKERRQ(ierr);
+  ierr = PetscGetHostName(r[7],256);CHKERRQ(ierr);
 
   /* replace that are in environment */
   ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = PetscFree(r[2]);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(env,(char**)&r[2]);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(env,&r[2]);CHKERRQ(ierr);
   }
 
   /* replace the requested strings */

@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.liblist          = [[]] # use MKL detected by BlasLapack.py
     self.precisions       = ['single','double']
     self.lookforbydefault = 1
+    self.requires32bitint = 1
     return
 
   def setupDependencies(self, framework):

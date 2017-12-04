@@ -263,6 +263,72 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
+{
+  long int *bytes = NULL;
+  PetscContainer container = NULL;
+  const char *viewername;
+  char datafile[PETSC_MAX_PATH_LEN];
+  PetscViewer fviewer;
+  PetscInt N,bs;
+  const char *vecname;
+  char fieldname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr = PetscContainerGetPointer(container,(void**)&bytes);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
+  
+  ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
+  ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
+  
+  /* re-open a sub-viewer for all data fields */
+  /* name is viewer.name + "_swarm_fields.pbin" */
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)viewer),&fviewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(fviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetSkipHeader(fviewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetSkipInfo(fviewer,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(fviewer,FILE_MODE_APPEND);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(fviewer,datafile);CHKERRQ(ierr);
+  
+  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
+  N = N/bs;
+  ierr = PetscObjectGetName((PetscObject)is,&vecname);CHKERRQ(ierr);
+  if (!vecname) {
+    ierr = PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"swarmfield_%D",((PetscObject)is)->tag);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(fieldname,PETSC_MAX_PATH_LEN-1,"%s",vecname);CHKERRQ(ierr);
+  }
+  
+  /* write data header */
+  PetscViewerASCIIPushTab(viewer);
+  PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname);
+  PetscViewerASCIIPushTab(viewer);
+  if (bs == 1) {
+    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]);
+  } else {
+    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);
+  }
+  PetscViewerASCIIPushTab(viewer);
+  PetscViewerASCIIPrintf(viewer,"%s\n",datafile);
+  PetscViewerASCIIPopTab(viewer);
+  PetscViewerASCIIPrintf(viewer,"</DataItem>\n");
+  PetscViewerASCIIPopTab(viewer);
+  PetscViewerASCIIPrintf(viewer,"</Attribute>\n");
+  PetscViewerASCIIPopTab(viewer);
+  
+  /* write data */
+  ierr = ISView(is,fviewer);CHKERRQ(ierr);
+  bytes[0] += sizeof(PetscInt) * N * bs;
+  
+  ierr = PetscViewerDestroy(&fviewer);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
 /*@C
    DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
  
@@ -277,7 +343,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
    Level: beginner
 
    Notes:
-   Only fields registered with data type PETSC_REAL can be written into the file
+   Only fields registered with data type PETSC_DOUBLE or PETSC_INT can be written into the file
  
 .seealso: DMSwarmViewXDMF()
 @*/
@@ -285,17 +351,39 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
 {
   PetscErrorCode ierr;
   Vec dvec;
-  PetscInt f;
+  PetscInt f,N;
   PetscViewer viewer;
   
   PetscFunctionBegin;
   ierr = private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm),filename,&viewer);CHKERRQ(ierr);
   ierr = private_DMSwarmView_XDMF(dm,viewer);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(dm,&N);CHKERRQ(ierr);
   for (f=0; f<nfields; f++) {
-    ierr = DMSwarmCreateGlobalVectorFromField(dm,field_name_list[f],&dvec);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)dvec,field_name_list[f]);CHKERRQ(ierr);
-    ierr = private_VecView_Swarm_XDMF(dvec,viewer);CHKERRQ(ierr);
-    ierr = DMSwarmDestroyGlobalVectorFromField(dm,field_name_list[f],&dvec);CHKERRQ(ierr);
+    void *data;
+    PetscDataType type;
+
+    ierr = DMSwarmGetField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
+    ierr = DMSwarmRestoreField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
+
+    if (type == PETSC_DOUBLE) {
+      ierr = DMSwarmCreateGlobalVectorFromField(dm,field_name_list[f],&dvec);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)dvec,field_name_list[f]);CHKERRQ(ierr);
+      ierr = private_VecView_Swarm_XDMF(dvec,viewer);CHKERRQ(ierr);
+      ierr = DMSwarmDestroyGlobalVectorFromField(dm,field_name_list[f],&dvec);CHKERRQ(ierr);
+    } else if (type == PETSC_INT) {
+      IS is;
+      const PetscInt *idx;
+
+      ierr = DMSwarmGetField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
+      idx = (const PetscInt*)data;
+      
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),N,idx,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)is,field_name_list[f]);CHKERRQ(ierr);
+      ierr = private_ISView_Swarm_XDMF(is,viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      ierr = DMSwarmRestoreField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Can only write PETSC_INT and PETSC_DOUBLE");
+
   }
   ierr = private_PetscViewerDestroy_XDMF(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -313,7 +401,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
    Level: beginner
 
    Notes:
-   Only fields registered with data type PETSC_REAL will be written into the file
+   Only fields user registered with data type PETSC_DOUBLE or PETSC_INT will be written into the file
 
 .seealso: DMSwarmViewFieldsXDMF()
 @*/
@@ -333,12 +421,27 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
     
     /* query field type - accept all those of type PETSC_DOUBLE */
     field = swarm->db->field[f];
-    if (field->petsc_type != PETSC_DOUBLE) continue;
-    
-    ierr = DMSwarmCreateGlobalVectorFromField(dm,field->name,&dvec);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)dvec,field->name);CHKERRQ(ierr);
-    ierr = private_VecView_Swarm_XDMF(dvec,viewer);CHKERRQ(ierr);
-    ierr = DMSwarmDestroyGlobalVectorFromField(dm,field->name,&dvec);CHKERRQ(ierr);
+    if (field->petsc_type == PETSC_DOUBLE) {
+      ierr = DMSwarmCreateGlobalVectorFromField(dm,field->name,&dvec);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)dvec,field->name);CHKERRQ(ierr);
+      ierr = private_VecView_Swarm_XDMF(dvec,viewer);CHKERRQ(ierr);
+      ierr = DMSwarmDestroyGlobalVectorFromField(dm,field->name,&dvec);CHKERRQ(ierr);
+    } else if (field->petsc_type == PETSC_INT) {
+      IS is;
+      PetscInt N;
+      const PetscInt *idx;
+      void *data;
+      
+      ierr = DMSwarmGetLocalSize(dm,&N);CHKERRQ(ierr);
+      ierr = DMSwarmGetField(dm,field->name,NULL,NULL,&data);CHKERRQ(ierr);
+      idx = (const PetscInt*)data;
+      
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),N,idx,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)is,field->name);CHKERRQ(ierr);
+      ierr = private_ISView_Swarm_XDMF(is,viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      ierr = DMSwarmRestoreField(dm,field->name,NULL,NULL,&data);CHKERRQ(ierr);
+    }
   }
   ierr = private_PetscViewerDestroy_XDMF(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

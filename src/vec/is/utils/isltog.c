@@ -442,7 +442,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 
     Notes: There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
@@ -736,7 +736,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
@@ -833,7 +833,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    For "small" problems when using ISGlobalToLocalMappingApply() and ISGlobalToLocalMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
     this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
     Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 

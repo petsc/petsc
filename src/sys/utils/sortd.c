@@ -6,6 +6,7 @@
 
  */
 #include <petscsys.h>                /*I  "petscsys.h"  I*/
+#include <petsc/private/petscimpl.h>
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
@@ -47,7 +48,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 
    Concepts: sorting^doubles
 
-.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+.seealso: PetscSortInt(), PetscSortRealWithPermutation(), PetscSortRealWithArrayInt()
 @*/
 PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 {
@@ -55,6 +56,7 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
   PetscReal tmp,vk;
 
   PetscFunctionBegin;
+  PetscValidPointer(v,2);
   if (n<8) {
     for (k=0; k<n; k++) {
       vk = v[k];
@@ -69,6 +71,111 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
+#define SWAP2ri(a,b,c,d,rt,it) {rt=a;a=b;b=rt;it=c;c=d;d=it;}
+
+/* modified from PetscSortIntWithArray_Private */
+static PetscErrorCode PetscSortRealWithArrayInt_Private(PetscReal *v,PetscInt *V,PetscInt right)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,last,itmp;
+  PetscReal      rvl,rtmp;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP2ri(v[0],v[1],V[0],V[1],rtmp,itmp);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP2ri(v[0],v[right/2],V[0],V[right/2],rtmp,itmp);
+  rvl  = v[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (v[i] < rvl) {last++; SWAP2ri(v[last],v[i],V[last],V[i],rtmp,itmp);}
+  }
+  SWAP2ri(v[0],v[last],V[0],V[last],rtmp,itmp);
+  ierr = PetscSortRealWithArrayInt_Private(v,V,last-1);CHKERRQ(ierr);
+  ierr = PetscSortRealWithArrayInt_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/*@
+   PetscSortRealWithArrayInt - Sorts an array of PetscReal in place in increasing order;
+       changes a second PetscInt array to match the sorted first array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  i  - array of integers
+-  I - second array of integers
+
+   Level: intermediate
+
+   Concepts: sorting^ints with array
+
+.seealso: PetscSortReal()
+@*/
+PetscErrorCode  PetscSortRealWithArrayInt(PetscInt n,PetscReal r[],PetscInt Ii[])
+{
+  PetscErrorCode ierr;
+  PetscInt       j,k,itmp;
+  PetscReal      rk,rtmp;
+
+  PetscFunctionBegin;
+  PetscValidPointer(r,2);
+  PetscValidPointer(Ii,3);
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      rk = r[k];
+      for (j=k+1; j<n; j++) {
+        if (rk > r[j]) {
+          SWAP2ri(r[k],r[j],Ii[k],Ii[j],rtmp,itmp);
+          rk = r[k];
+        }
+      }
+    }
+  } else {
+    ierr = PetscSortRealWithArrayInt_Private(r,Ii,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscFindReal - Finds a PetscReal in a sorted array of PetscReals
+
+   Not Collective
+
+   Input Parameters:
++  key - the value to locate
+.  n   - number of values in the array
+.  ii  - array of values
+-  eps - tolerance used to compare
+
+   Output Parameter:
+.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortReal(), PetscSortRealWithArrayInt()
+@*/
+PetscErrorCode PetscFindReal(PetscReal key, PetscInt n, const PetscReal t[], PetscReal eps, PetscInt *loc)
+{
+  PetscInt lo = 0,hi = n;
+
+  PetscFunctionBegin;
+  PetscValidPointer(loc,4);
+  if (!n) {*loc = -1; PetscFunctionReturn(0);}
+  PetscValidPointer(t,3);
+  while (hi - lo > 1) {
+    PetscInt mid = lo + (hi - lo)/2;
+    if (key < t[mid]) hi = mid;
+    else              lo = mid;
+  }
+  *loc = (PetscAbsReal(key - t[lo]) < eps) ? lo : -(lo + (key > t[lo]) + 1);
+  PetscFunctionReturn(0);
+}
 
 /*@
    PetscSortRemoveDupsReal - Sorts an array of doubles in place in increasing order removes all duplicate entries

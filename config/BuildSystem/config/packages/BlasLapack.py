@@ -406,10 +406,6 @@ class Configure(config.package.Package):
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     self.executeTest(self.checksdotreturnsdouble)
-    
-    if self.mkl:
-      self.executeTest(self.checksSupportBaijCrossCase)
-    return
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
@@ -428,6 +424,10 @@ class Configure(config.package.Package):
       '''Set include directory for mkl.h and friends'''
       '''(the include directory is in CPATH if mklvars.sh has been sourced.'''
       ''' if the script hasn't been sourced, we still try to pick up the include dir)'''
+      if 'with-blaslapack-include' in self.argDB:
+        incl = self.argDB['with-blaslapack-include']
+        if not isinstance(incl, list): incl = [incl]
+        self.include = incl
       if not self.checkCompile('#include "mkl_spblas.h"',''):
         self.logPrint('MKL include path not automatically picked up by compiler. Trying to find mkl_spblas.h...')
         if 'with-blaslapack-dir' in self.argDB:
@@ -531,6 +531,7 @@ class Configure(config.package.Package):
       self.framework.addBatchInclude(includes)
       self.framework.addBatchBody(body)
       if lib: self.framework.addBatchLib(lib)
+      if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
       return None
     else:
       result = None
@@ -577,22 +578,3 @@ class Configure(config.package.Package):
       result = int(result)
       if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
 
-  def checksSupportBaijCrossCase(self):
-    '''Determines if MKL Sparse BLAS create routine returns correct status with zero based indexing and columnMajor block layout'''
-    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n#include <mkl.h>'''
-    body     = '''sparse_matrix_t A;\n
-                  int n=1,ia[1],ja[1];\n
-                  float a[1];
-                  sparse_status_t status = mkl_sparse_s_create_bsr(&A,SPARSE_INDEX_BASE_ZERO,SPARSE_LAYOUT_COLUMN_MAJOR,n,n,n,ia,ia,ja,a);\n
-                  fprintf(output, "  '--known-mklspblas-supports-zero-based=%d',\\n",(status != SPARSE_STATUS_NOT_SUPPORTED));\n 
-                  '''                  
-    temp1 = self.compilers.LIBS
-    temp2 = self.compilers.CPPFLAGS
-    self.compilers.LIBS = self.libraries.toString(self.lib)+' -lm '+self.compilers.LIBS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)    
-    result = self.runTimeTest('known-mklspblas-supports-zero-based',includes,body)
-    self.compilers.LIBS = temp1
-    self.compilers.CPPFLAGS = temp2
-    if result:
-      result = int(result)
-      if result: self.addDefine('MKL_SUPPORTS_BAIJ_ZERO_BASED', 1)

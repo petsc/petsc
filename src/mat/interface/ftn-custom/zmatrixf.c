@@ -101,13 +101,13 @@
 #define matsetvaluesblocked11_           matsetvaluesblocked11
 #define matsetvaluesblocked111_          matsetvaluesblocked111
 #define matsetvaluesblocked1n_           matsetvaluesblocked1n
-#define matsetvaluesblocked1n_           matsetvaluesblockedn1
+#define matsetvaluesblockedn1_           matsetvaluesblockedn1
 #define matsetvaluesblockedlocal_        matsetvaluesblockedlocal
 #define matsetvaluesblockedlocal0_       matsetvaluesblockedlocal0
 #define matsetvaluesblockedlocal11_      matsetvaluesblockedlocal11
 #define matsetvaluesblockedlocal111_     matsetvaluesblockedlocal111
 #define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocal1n
-#define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocaln1
+#define matsetvaluesblockedlocaln1_      matsetvaluesblockedlocaln1
 #define matgetrowmin_                    matgetrowmin
 #define matgetrowminabs_                 matgetrowminabs
 #define matgetrowmax_                    matgetrowmax

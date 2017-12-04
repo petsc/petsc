@@ -535,7 +535,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
 Note: This routine should be called after all TS options have been set
 
-    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and 
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
@@ -552,7 +552,6 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
-    ierr = TSTrajectorySetFromOptions(ts->trajectory,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -618,7 +617,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   if (ts->rhsjacobian.reuse) {
     ierr = MatShift(A,-ts->rhsjacobian.shift);CHKERRQ(ierr);
     ierr = MatScale(A,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
-    if (A != B) {
+    if (B && A != B) {
       ierr = MatShift(B,-ts->rhsjacobian.shift);CHKERRQ(ierr);
       ierr = MatScale(B,1./ts->rhsjacobian.scale);CHKERRQ(ierr);
     }
@@ -2335,9 +2334,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 /*@
-   TSGetSolutionComponents - Returns any solution components at the present 
-   timestep, if available for the time integration method being used. 
-   Solution components are quantities that share the same size and 
+   TSGetSolutionComponents - Returns any solution components at the present
+   timestep, if available for the time integration method being used.
+   Solution components are quantities that share the same size and
    structure as the solution vector.
 
    Not Collective, but Vec returned is parallel if TS is parallel
@@ -2345,9 +2344,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
 .  n - If v is PETSC_NULL, then the number of solution components is
-       returned through n, else the n-th solution component is 
+       returned through n, else the n-th solution component is
        returned in v.
-.  v - the vector containing the n-th solution component 
+.  v - the vector containing the n-th solution component
        (may be PETSC_NULL to use this function to find out
         the number of solutions components).
 
@@ -2364,21 +2363,21 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->getsolutioncomponents) *n = 0;
-  else { 
-    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr); 
+  else {
+    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@
-   TSGetAuxSolution - Returns an auxiliary solution at the present 
+   TSGetAuxSolution - Returns an auxiliary solution at the present
    timestep, if available for the time integration method being used.
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
-.  v - the vector containing the auxiliary solution 
+.  v - the vector containing the auxiliary solution
 
    Level: intermediate
 
@@ -2426,7 +2425,7 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->gettimeerror) {
-    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(*v);CHKERRQ(ierr);
   }
@@ -2458,7 +2457,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
   if (ts->ops->settimeerror) {
-    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2568,15 +2567,15 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
    Notes:
    For basic use of the TS solvers the user need not explicitly call
    TSSetUp(), since these actions will automatically occur during
-   the call to TSStep().  However, if one wishes to control this
+   the call to TSStep() or TSSolve().  However, if one wishes to control this
    phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().
+   and optional routines of the form TSSetXXX(), but before TSStep() and TSSolve().
 
    Level: advanced
 
 .keywords: TS, timestep, setup
 
-.seealso: TSCreate(), TSStep(), TSDestroy()
+.seealso: TSCreate(), TSStep(), TSDestroy(), TSSolve()
 @*/
 PetscErrorCode  TSSetUp(TS ts)
 {
@@ -3598,10 +3597,10 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   Level: intermediate
 
   Note:
-  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling 
-  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep() 
-  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step 
-  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step 
+  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling
+  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep()
+  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step
+  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step
   with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
 .keywords: TS, timestep
@@ -3822,7 +3821,7 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      identical;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   for (i=0; i<ts->numbermonitors;i++) {
@@ -4311,8 +4310,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
 
-  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
-    PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && u) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,solution);CHKERRQ(ierr);
@@ -4339,7 +4337,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      TSTrajectory to incorrectly save the output files
   */
   /* reset time step and iteration counters */
-
   if (!ts->steps) {
     ts->ksp_its           = 0;
     ts->snes_its          = 0;
@@ -4348,6 +4345,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
   }
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && ts->ptime + ts->time_step > ts->max_time) ts->time_step = ts->max_time - ts->ptime;
   ts->reason = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
@@ -4413,17 +4411,17 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 /*@
  TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
- 
+
  Collective on TS
- 
+
  Input Arguments:
  .  ts - time stepping context
- 
+
  Level: advanced
- 
+
  Notes:
  This function cannot be called until TSAdjointStep() has been completed.
- 
+
  .seealso: TSAdjointSolve(), TSAdjointStep
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
@@ -6254,7 +6252,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   PetscReal         max,gmax,maxa,gmaxa,maxr,gmaxr;
   PetscReal         tol,tola,tolr,diff;
   PetscReal         err_loc[3],err_glb[3];
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,2);

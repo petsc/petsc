@@ -1005,11 +1005,11 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
   if (Mc < 2 && Mf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1266,11 +1266,11 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
   if (Mc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1317,11 +1317,11 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");
 
   if (Mf < Mc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
   if (Nf < Nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);

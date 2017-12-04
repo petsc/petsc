@@ -447,8 +447,8 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = MatGetLocalSize(pc->pmat,&m,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
-  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
-  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);
   VecLocked(y,3);
 
   ierr = PCSetUp(pc);CHKERRQ(ierr);

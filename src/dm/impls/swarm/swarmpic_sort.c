@@ -137,7 +137,7 @@ PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx)
  
 .seealso: DMSwarmSetType(), DMSwarmSortGetAccess(), DMSwarmSortGetPointsPerCell()
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *npoints)
+PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt e,PetscInt *npoints)
 {
   DM_Swarm     *swarm = (DM_Swarm*)dm->data;
   PetscInt     points_per_cell;

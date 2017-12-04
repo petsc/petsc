@@ -606,6 +606,15 @@ int main(int argc, char **argv)
     suffix: 5
     requires: triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1
+  # 2D serial P3 tests
+  test:
+    suffix: 2d_p3_0
+    requires: triangle
+    args: -run_type test -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
+  test:
+    suffix: 2d_p3_1
+    requires: triangle
+    args: -run_type full -bc_type dirichlet -interpolate 1 -vel_petscspace_order 3 -pres_petscspace_order 2
   # Parallel tests 6-17
   test:
     suffix: 6

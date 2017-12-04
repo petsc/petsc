@@ -981,20 +981,6 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSReset_ARKIMEX(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
 static PetscErrorCode TSARKIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
 {
   TS_ARKIMEX     *ax = (TS_ARKIMEX*)ts->data;
@@ -1160,10 +1146,8 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&ark->Ydot0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ark->Z);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSARKIMEX,DMRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSARKIMEX,DMSubDomainRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSARKIMEX,DMRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSARKIMEX,DMSubDomainRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1182,7 +1166,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
     PetscBool      flg;
     const char     **namelist;
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,ark->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSARKIMEXSetType(ts,namelist[choice]);CHKERRQ(ierr);}
@@ -1374,6 +1358,23 @@ static PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 
   PetscFunctionBegin;
   ark->imex = (PetscBool)!flg;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_ARKIMEX(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSARKIMEX,DMRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSARKIMEX,DMSubDomainRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

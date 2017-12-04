@@ -22,6 +22,7 @@ J*/
 typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERCHACO    "chaco"
 #define PETSCPARTITIONERPARMETIS "parmetis"
+#define PETSCPARTITIONERPTSCOTCH "ptscotch"
 #define PETSCPARTITIONERSHELL    "shell"
 #define PETSCPARTITIONERSIMPLE   "simple"
 #define PETSCPARTITIONERGATHER   "gather"
@@ -300,8 +301,11 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeIntegralFEM(DM, Vec, PetscReal *, void 
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorNested(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorGeneral(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixNested(DM, DM, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, MatNullSpace *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);
 
 PETSC_EXTERN PetscErrorCode DMPlexSetSNESLocalFEM(DM,void *,void *,void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM, Vec, void *);

@@ -171,7 +171,7 @@
       ff = 0
 
 !     Get pointers to vector data
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       call VecGetArray(G,g_v,g_i,ierr)
 
 
@@ -185,7 +185,7 @@
       enddo
 
 !     Restore vectors
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       call VecRestoreArray(G,g_v,g_i,ierr)
 
       f = ff
@@ -247,7 +247,7 @@
 
 !  Get a pointer to vector data
 
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
 
 !  Compute Hessian entries
 
@@ -264,7 +264,7 @@
 
 !  Restore vector
 
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
 
 !  Assemble matrix
 

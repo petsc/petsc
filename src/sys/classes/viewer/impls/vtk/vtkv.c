@@ -241,13 +241,14 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
 
 .seealso: DMDAVTKWriteAll(), DMComplexVTKWriteAll(), PetscViewerPushFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
 @*/
-PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,PetscDataType dtype)
+PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,MPI_Datatype dtype)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  MPI_Datatype   vdtype=dtype;
 #if defined(PETSC_USE_REAL___FLOAT128)
+  double         *tmp;
   PetscInt       i;
-  double         *tmp = NULL;
   PetscReal      *ttmp = (PetscReal*)data;
 #endif
 
@@ -257,42 +258,28 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     size_t      count;
-    PetscInt    size;
+    PetscMPIInt dsize;
     PetscVTKInt bytes;
-    switch (dtype) {
-    case PETSC_DOUBLE:
-      size = sizeof(double);
-      break;
-    case PETSC_FLOAT:
-      size = sizeof(float);
-      break;
+
 #if defined(PETSC_USE_REAL___FLOAT128)
-    case PETSC___FLOAT128:
-      size = sizeof(double);
+    if (dtype == MPIU___FLOAT128) {
       ierr = PetscMalloc1(n,&tmp);CHKERRQ(ierr);
       for (i=0; i<n; i++) tmp[i] = ttmp[i];
-      data = (void*) tmp;
-      break;
-#endif
-    case PETSC_INT:
-      size = sizeof(PetscInt);
-      break;
-    case PETSC_ENUM:
-      size = sizeof(PetscEnum);
-      break;
-    case PETSC_CHAR:
-      size = sizeof(char);
-      break;
-    default: SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Data type not supported");
+      data  = (void*) tmp;
+      vdtype = MPI_DOUBLE;
     }
-    bytes = PetscVTKIntCast(size*n);
+#endif
+    ierr  = MPI_Type_size(vdtype,&dsize);CHKERRQ(ierr);
+    bytes = PetscVTKIntCast(dsize*n);
 
     count = fwrite(&bytes,sizeof(int),1,fp);
     if (count != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
-    count = fwrite(data,size,(size_t)n,fp);
-    if ((PetscInt)count != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
+    count = fwrite(data,dsize,(size_t)n,fp);
+    if ((PetscInt)count != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %d",(PetscInt)count,n,dsize);
 #if defined(PETSC_USE_REAL___FLOAT128)
-    ierr = PetscFree(tmp);CHKERRQ(ierr);
+    if (dtype == MPIU___FLOAT128) {
+      ierr = PetscFree(tmp);CHKERRQ(ierr);
+    }
 #endif
   }
   PetscFunctionReturn(0);

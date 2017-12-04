@@ -740,18 +740,6 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_GLEE(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSReset_GLEE(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode TSGLEEGetVecs(TS ts,DM dm,Vec *Ydot)
 {
   TS_GLEE     *glee = (TS_GLEE*)ts->data;
@@ -879,10 +867,8 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
   ierr = PetscMalloc2(s,&glee->swork,r,&glee->rwork); CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -921,7 +907,7 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
 
     ierr = PetscStrncpy(gleetype,TSGLEEDefaultType,sizeof(gleetype));CHKERRQ(ierr);
     for (link=GLEETableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=GLEETableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_glee_type","Family of GLEE method","TSGLEESetType",(const char*const*)namelist,count,gleetype,&choice,&flg);CHKERRQ(ierr);
     ierr = TSGLEESetType(ts,flg ? namelist[choice] : gleetype);CHKERRQ(ierr);
@@ -1155,6 +1141,22 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
     ierr = VecAXPBY(Y[i],S[0],S[1],X); CHKERRQ(ierr);
     ierr = VecCopy(X,glee->yGErr); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSDestroy_GLEE(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_GLEE(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSGLEE,DMSubDomainRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLEEGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLEESetType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

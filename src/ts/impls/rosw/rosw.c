@@ -1155,20 +1155,6 @@ static PetscErrorCode TSReset_RosW(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_RosW(TS ts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSReset_RosW(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C",NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
 static PetscErrorCode TSRosWGetVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot,Vec *Ystage,Vec *Zstage)
 {
   TS_RosW        *rw = (TS_RosW*)ts->data;
@@ -1363,10 +1349,8 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&ros->Zstage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->vec_sol_prev);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRosW,DMSubDomainRestrictHook_TSRosW,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRosW,DMSubDomainRestrictHook_TSRosW,ts);CHKERRQ(ierr);
   /* Rosenbrock methods are linearly implicit, so set that unless the user has specifically asked for something else */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!((PetscObject)snes)->type_name) {
@@ -1391,7 +1375,7 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
     const char      **namelist;
 
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,(char***)&namelist);CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-ts_rosw_type","Family of Rosenbrock-W method","TSRosWSetType",(const char*const*)namelist,count,ros->tableau->name,&choice,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSRosWSetType(ts,namelist[choice]);CHKERRQ(ierr);}
@@ -1585,6 +1569,22 @@ static PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSDestroy_RosW(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_RosW(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSRosW,DMSubDomainRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
 /*MC

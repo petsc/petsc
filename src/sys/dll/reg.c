@@ -420,7 +420,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc1(count+1,array);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(count+1,(char***)array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;

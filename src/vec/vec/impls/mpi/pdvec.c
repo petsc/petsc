@@ -302,7 +302,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
         ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
         for (i=0;i<n;i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,glvis_info->fmt,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
         ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
       }
@@ -817,7 +818,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     char       vecgroup[PETSC_MAX_PATH_LEN];
 
     ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,vecname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname ? groupname : "",vecname);CHKERRQ(ierr);
     ierr = PetscViewerHDF5WriteAttribute(viewer,vecgroup,"complex",PETSC_INT,&one);CHKERRQ(ierr);
   }
 #endif

@@ -348,7 +348,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     }
     ierr = MatNorm(Bcheck,NORM_INFINITY,&error);CHKERRQ(ierr);
     ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);CHKERRQ(ierr);
+    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);
   } else {
     Vec       rv,rv2,lv,lv2;
     PetscReal error1,error2;
@@ -373,7 +373,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
     ierr = VecDestroy(&rv);CHKERRQ(ierr);
     ierr = VecDestroy(&rv2);CHKERRQ(ierr);
 
-    if (error1 > PETSC_SQRT_MACHINE_EPSILON || error2 > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: (mult) %g, (multt) %g",func,error1,error2);CHKERRQ(ierr);
+    if (error1 > PETSC_SQRT_MACHINE_EPSILON || error2 > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: (mult) %g, (multt) %g",func,error1,error2);
   }
   PetscFunctionReturn(0);
 }
@@ -447,7 +447,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
   if (square) {
     ierr = VecAXPY(b2,-1.,b);CHKERRQ(ierr);
     ierr = VecNorm(b2,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",error,diagstr);CHKERRQ(ierr);
+    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",error,diagstr);
   }
   /* test MatMissingDiagonal */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatMissingDiagonal\n");CHKERRQ(ierr);

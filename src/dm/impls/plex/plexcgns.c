@@ -196,7 +196,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = PetscMalloc2(elementDataSize,&elements,maxCorners,&cone);CHKERRQ(ierr);
       ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
       if (cellType == CGNS_ENUMV( MIXED )) {
-        /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
+        /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           switch (elements[v]) {
           case CGNS_ENUMV( TRI_3 ):   numCorners = 3;break;
@@ -233,7 +233,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
         }
 
-        /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
+        /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) {
             cone[v_loc] = elements[v]+numCells-1;

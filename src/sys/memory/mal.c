@@ -3,14 +3,15 @@
     Code that allows a user to dictate what malloc() PETSc uses.
 */
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
+#include <stdarg.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
 #if defined(PETSC_HAVE_MEMKIND)
 #include <memkind.h>
-typedef enum {PETSC_MK_DEFAULT=0,PETSC_MK_HBW_PREFERRED=1} PetscMemkindType;
-PetscMemkindType currentmktype = PETSC_MK_HBW_PREFERRED;
-PetscMemkindType previousmktype = PETSC_MK_HBW_PREFERRED;
+typedef enum {PETSC_MK_DEFAULT=0,PETSC_MK_HBW=1} PetscMemkindType;
+PetscMemkindType currentmktype = PETSC_MK_HBW;
+PetscMemkindType previousmktype = PETSC_MK_HBW;
 #endif
 /*
         We want to make sure that all mallocs of double or complex numbers are complex aligned.
@@ -29,7 +30,7 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
   {
     int ierr;
     if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,result,PETSC_MEMALIGN,mem);
-    else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,result,PETSC_MEMALIGN,mem);
+    else ierr = memkind_posix_memalign(MEMKIND_HBW,result,PETSC_MEMALIGN,mem);
     if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested with memkind %.0f",(PetscLogDouble)mem);
   }
 #else
@@ -100,7 +101,7 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
   }
 #if defined(PETSC_HAVE_MEMKIND)
   if (!currentmktype) *result = memkind_realloc(MEMKIND_DEFAULT,*result,mem);
-  else *result = memkind_realloc(MEMKIND_HBW_PREFERRED,*result,mem);
+  else *result = memkind_realloc(MEMKIND_HBW,*result,mem);
 #else
 #  if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   {
@@ -145,7 +146,7 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
     {
       int ierr;
       if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,&newResult,PETSC_MEMALIGN,mem);
-      else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,&newResult,PETSC_MEMALIGN,mem);
+      else ierr = memkind_posix_memalign(MEMKIND_HBW,&newResult,PETSC_MEMALIGN,mem);
       if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested with memkind %.0f",(PetscLogDouble)mem);
     }
 #  else
@@ -302,6 +303,152 @@ PetscErrorCode PetscMallocResetDRAM(void)
     /* Reset to the previous choice */
     PetscTrMalloc = PetscTrMallocOld;
     PetscTrFree   = PetscTrFreeOld;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscBool petscmalloccoalesce =
+#if defined(PETSC_USE_MALLOC_COALESCED)
+  PETSC_TRUE;
+#else
+  PETSC_FALSE;
+#endif
+
+/*@C
+   PetscMallocSetCoalesce - Use coalesced malloc when allocating groups of objects
+
+   Not Collective
+
+   Input Parameters:
+.  coalesce - PETSC_TRUE to use coalesced malloc for multi-object allocation.
+
+   Options Database Keys:
+.  -malloc_coalesce - turn coalesced malloc on or off
+
+   Note:
+   PETSc uses coalesced malloc by default for optimized builds and not for debugging builds.  This default can be changed via the command-line option -malloc_coalesce or by calling this function.
+
+   Level: developer
+
+.seealso: PetscMallocA()
+@*/
+PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
+{
+  PetscFunctionBegin;
+  petscmalloccoalesce = coalesce;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscMallocA - Allocate and optionally clear one or more objects, possibly using coalesced malloc
+
+   Not Collective
+
+   Input Parameters:
++  n - number of objects to allocate (at least 1)
+.  lineno - line number to attribute allocation (typically __LINE__)
+.  function - function to attribute allocation (typically PETSC_FUNCTION_NAME)
+.  filename - file name to attribute allocation (typically __FILE__)
+-  bytes0 - first of n object sizes
+
+   Output Parameters:
+.  ptr0 - first of n pointers to allocate
+
+   Notes:
+   This function is not normally called directly by users, but rather via the macros PetscMalloc1(), PetscMalloc2(), or PetscCalloc1(), etc.
+
+   Level: developer
+
+.seealso: PetscMallocAlign(), PetscMallocSet(), PetscMalloc1(), PetscMalloc2(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(), PetscMalloc7(), PetscCalloc1(), PetscCalloc2(), PetscCalloc3(), PetscCalloc4(), PetscCalloc5(), PetscCalloc6(), PetscCalloc7(), PetscFreeA()
+@*/
+PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *function,const char *filename,size_t bytes0,void *ptr0,...)
+{
+  PetscErrorCode ierr;
+  va_list Argp;
+  size_t bytes[8],sumbytes;
+  void **ptr[8];
+  int i;
+
+  PetscFunctionBegin;
+  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
+  bytes[0] = bytes0;
+  ptr[0] = (void**)ptr0;
+  sumbytes = (bytes0 + PETSC_MEMALIGN-1) & ~(PETSC_MEMALIGN-1);
+  va_start(Argp,ptr0);
+  for (i=1; i<n; i++) {
+    bytes[i] = va_arg(Argp,size_t);
+    ptr[i] = va_arg(Argp,void**);
+    sumbytes += (bytes[i] + PETSC_MEMALIGN-1) & ~(PETSC_MEMALIGN-1);
+  }
+  va_end(Argp);
+  if (petscmalloccoalesce) {
+    char *p;
+    ierr = (*PetscTrMalloc)(sumbytes,lineno,function,filename,(void**)&p);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      *ptr[i] = bytes[i] ? p : NULL;
+      p = (char*)PetscAddrAlign(p + bytes[i]);
+    }
+  } else {
+    for (i=0; i<n; i++) {
+      ierr = (*PetscTrMalloc)(bytes[i],lineno,function,filename,(void**)ptr[i]);CHKERRQ(ierr);
+    }
+  }
+  if (clear) {
+    for (i=0; i<n; i++) {
+      ierr = PetscMemzero(*ptr[i],bytes[i]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscFreeA - Free one or more objects, possibly allocated using coalesced malloc
+
+   Not Collective
+
+   Input Parameters:
++  n - number of objects to free (at least 1)
+.  lineno - line number to attribute deallocation (typically __LINE__)
+.  function - function to attribute deallocation (typically PETSC_FUNCTION_NAME)
+.  filename - file name to attribute deallocation (typically __FILE__)
+-  ptr0 ... - first of n pointers to free
+
+   Note:
+   This function is not normally called directly by users, but rather via the macros PetscFree1(), PetscFree2(), etc.
+
+   Level: developer
+
+.seealso: PetscMallocAlign(), PetscMallocSet(), PetscMallocA(), PetscFree1(), PetscFree2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
+@*/
+PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *filename,void *ptr0,...)
+{
+  PetscErrorCode ierr;
+  va_list Argp;
+  void **ptr[8];
+  int i;
+
+  PetscFunctionBegin;
+  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
+  ptr[0] = (void**)ptr0;
+  va_start(Argp,ptr0);
+  for (i=1; i<n; i++) {
+    ptr[i] = va_arg(Argp,void**);
+  }
+  va_end(Argp);
+  if (petscmalloccoalesce) {
+    for (i=0; i<n; i++) {       /* Find first nonempty allocation */
+      if (*ptr[i]) break;
+    }
+    while (--n > i) {
+      *ptr[n] = NULL;
+    }
+    ierr = (*PetscTrFree)(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
+    *ptr[n] = NULL;
+  } else {
+    while (--n >= 0) {
+      ierr = (*PetscTrFree)(*ptr[n],lineno,function,filename);CHKERRQ(ierr);
+      *ptr[n] = NULL;
+    }
   }
   PetscFunctionReturn(0);
 }

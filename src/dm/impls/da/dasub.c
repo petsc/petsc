@@ -5,7 +5,7 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-/*@C
+/*@
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
 
    Collective on DMDA
@@ -75,7 +75,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a DMDA vector
 
    Collective on DMDA
@@ -184,6 +184,8 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    Notes:
    All processors that share the DMDA must call this with the same gp value
 
+   After use, comm should be freed with MPI_Comm_free()
+
    This routine is particularly useful to compute boundary conditions
    or other application-specific calculations that require manipulating
    sets of data throughout a logical plane of grid points.
@@ -254,6 +256,8 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
    Notes:
    This routine is useful for distributing one-dimensional data in a tensor product grid.
+
+   After use, comm should be freed with MPI_Comm_free()
 
 .keywords: distributed array, get, processor subset
 @*/

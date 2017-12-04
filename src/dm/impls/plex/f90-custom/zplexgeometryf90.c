@@ -16,9 +16,9 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryaffinefem_(DM *dm, Pets
   PetscReal *J;
   PetscReal *invJ;
 
-  *ierr = F90Array1dAccess(ptrV,  PETSC_REAL, (void**) &v0 PETSC_F90_2PTR_PARAM(ptrVd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrV,  MPIU_REAL, (void**) &v0 PETSC_F90_2PTR_PARAM(ptrVd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrJ,  MPIU_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrIJ, MPIU_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
   *ierr = DMPlexComputeCellGeometryAffineFEM(*dm, *cell, v0, J, invJ, detJ);
 }
 
@@ -28,9 +28,9 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfem_(DM *dm, PetscInt *
   PetscReal *J;
   PetscReal *invJ;
 
-  *ierr = F90Array1dAccess(ptrV,  PETSC_REAL, (void**) &v0 PETSC_F90_2PTR_PARAM(ptrVd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrV,  MPIU_REAL, (void**) &v0 PETSC_F90_2PTR_PARAM(ptrVd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrJ,  MPIU_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrIJ, MPIU_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
   *ierr = DMPlexComputeCellGeometryFEM(*dm, *cell, *quad, v0, J, invJ, detJ);
 }
 
@@ -39,7 +39,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfvm_(DM *dm, PetscInt *
   PetscReal *centroid;
   PetscReal *normal;
 
-  *ierr = F90Array1dAccess(ptrCentroid, PETSC_REAL, (void**) &centroid PETSC_F90_2PTR_PARAM(ptrCentroidd));if (*ierr) return;
-  *ierr = F90Array1dAccess(ptrNormal,   PETSC_REAL, (void**) &normal   PETSC_F90_2PTR_PARAM(ptrNormald));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrCentroid, MPIU_REAL, (void**) &centroid PETSC_F90_2PTR_PARAM(ptrCentroidd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrNormal,   MPIU_REAL, (void**) &normal   PETSC_F90_2PTR_PARAM(ptrNormald));if (*ierr) return;
   *ierr = DMPlexComputeCellGeometryFVM(*dm, *cell, vol, centroid, normal);
 }

@@ -203,6 +203,7 @@ outfile.write('<th class="verticalTableHeader"><p>Debug</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Precision</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Complex</p></th>');
 outfile.write('<th class="verticalTableHeader"><p>Indices</p></th>');
+outfile.write('<th class="verticalTableHeader"><p>MPICH-ErrorCheck</p></th>');
 for package in packages:
  outfile.write('<th class="verticalTableHeader"><p>' + package + '</p></th>');
 outfile.write("<th>Stat</th><th>Time</th><th></th><th></th> <th>Warn</th><th>Err</th><th>Time</th><th></th><th></th> <th>Prob?</th><th>Time</th><td><a href=\"examples_full_"+sys.argv[1]+".log\">[all]</a></td></tr>\n");
@@ -237,38 +238,11 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                       "</td>")
       else:
         outfile.write("<tr><td>" + match.group(1) + "</td>")
-      #
-      # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
-      #
-      if not os.path.isfile(logfile_configure_full) or not os.path.isfile(logfile_make_full) or not os.path.isfile(logfile_examples_full):
-        print "  -- incomplete logs!"
-
-        # Configure section
-        outfile.write("<td class=\"red\">Incomplete</td>")
-        outfile.write("<td class=\"red\">Incomplete</td>")
-        if os.path.isfile(logfile_configure_full): outfile.write("<td><a href=\"" + logfile_configure + "\">[log]</a></td>")
-        else: outfile.write("<td></td>")
-
-        # Make/Build section
-        outfile.write("<td></td>")
-        outfile.write("<td class=\"red\" colspan=\"2\"><a href=\"" + logfile_build + "\">[build.log]</a></td>")
-        if os.path.isfile(logfile_make_full):
-          outfile.write("<td class=\"red\" colspan=\"2\"><a href=\"" + logfile_make + "\">[make.log]</a></td>")
-        else:
-          outfile.write("<td colspan=\"2\" class=\"red\">Incomplete</td>")
-
-        # Examples section
-        outfile.write("<td></td>")
-        outfile.write("<td class=\"red\">Incomplete</td>")
-        outfile.write("<td class=\"red\">Incomplete</td>")
-        if os.path.isfile(logfile_examples_full): outfile.write("<td><a href=\"" + logfile_examples + "\">[log]</a></td>")
-        else: outfile.write("<td></td>\n")
-        outfile.write("</tr>\n");
-        continue
 
       #
       ### Configure section
       #
+      #if not os.path.isfile(logfile_configure_full): ??
 
       # Checking for successful completion
       configure_success = False
@@ -301,6 +275,12 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
            else:
              outfile.write("<td class=\"centered\">32</td>");
 
+           #MPICH-ErrorCheck
+           if configline.find("enable-error-messages=all") > 0:
+             outfile.write("<td class=\"have\">Y</td>");
+           else:
+             outfile.write("<td class=\"centered\">N</td>");
+
            # Packages:
            for package in packages:
              if configline.find(package.lower()) > 0:
@@ -317,6 +297,29 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
           outfile.write("<td class=\"red\">Fail</td>")
           outfile.write("<td class=\"red\">Fail</td>")
       outfile.write("<td><a href=\"" + logfile_configure + "\">[log]</a></td>")
+
+      #
+      # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
+      #
+      if not os.path.isfile(logfile_make_full) or not os.path.isfile(logfile_examples_full):
+        print "  -- incomplete logs!"
+
+        # Make/Build section
+        outfile.write("<td></td>")
+        outfile.write("<td class=\"red\" colspan=\"2\"><a href=\"" + logfile_build + "\">[build.log]</a></td>")
+        if os.path.isfile(logfile_make_full):
+          outfile.write("<td class=\"red\" colspan=\"2\"><a href=\"" + logfile_make + "\">[make.log]</a></td>")
+        else:
+          outfile.write("<td colspan=\"2\" class=\"red\">Incomplete</td>")
+
+        # Examples section
+        outfile.write("<td></td>")
+        outfile.write("<td class=\"red\">Incomplete</td>")
+        outfile.write("<td class=\"red\">Incomplete</td>")
+        if os.path.isfile(logfile_examples_full): outfile.write("<td><a href=\"" + logfile_examples + "\">[log]</a></td>")
+        else: outfile.write("<td></td>\n")
+        outfile.write("</tr>\n");
+        continue
 
       #
       ### Make section
@@ -414,7 +417,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       outfile.write("<td></td>")
       example_problem_num = 0
       write_to_summary = True
-      if match.group(1).startswith("c-exodus-dbg-builder") or match.group(1).startswith("linux-analyzer"):
+      if match.group(1).startswith("c-exodus-dbg-builder"):
         write_to_summary = False
       for line in open(logfile_examples_full):
         if write_to_summary:

@@ -224,6 +224,7 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
+
 /*@C
    SNESView - Prints the SNES data structure.
 
@@ -282,6 +283,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 #endif
   if (iascii) {
     SNESNormSchedule normschedule;
+    DM               dm;
+    PetscErrorCode   (*cJ)(SNES,Vec,Mat,Mat,void*);
+    void             *ctx;
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (!snes->setupcalled) {
@@ -320,6 +324,13 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is never rebuilt\n");CHKERRQ(ierr);
     } else if (snes->lagjacobian > 1) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D SNES iterations\n",snes->lagjacobian);CHKERRQ(ierr);
+    }
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMSNESGetJacobian(dm,&cJ,&ctx);CHKERRQ(ierr);
+    if (cJ == SNESComputeJacobianDefault) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences one column at a time\n");CHKERRQ(ierr);
+    } else if (cJ == SNESComputeJacobianDefaultColor) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is built using finite differences with coloring\n");CHKERRQ(ierr);
     }
   } else if (isstring) {
     const char *type;
@@ -1093,6 +1104,8 @@ PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool m
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,mf_operator,2);
+  PetscValidLogicalCollectiveBool(snes,mf,3);
   if (mf && !mf_operator) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"If using mf must also use mf_operator");
   snes->mf          = mf;
   snes->mf_operator = mf_operator;
@@ -1156,6 +1169,8 @@ PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool 
 .ve
    can be used in your ComputeJacobian() function to cause the Jacobian to be
    recomputed every second SNES iteration.
+
+   After the SNES solve is complete this will return the number of nonlinear iterations used.
 
    Level: intermediate
 
@@ -2880,6 +2895,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   ierr = PetscObjectSAWsViewOff((PetscObject)*snes);CHKERRQ(ierr);
   if ((*snes)->ops->destroy) {ierr = (*((*snes))->ops->destroy)((*snes));CHKERRQ(ierr);}
 
+  if ((*snes)->dm) {ierr = DMCoarsenHookRemove((*snes)->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,*snes);CHKERRQ(ierr);}
   ierr = DMDestroy(&(*snes)->dm);CHKERRQ(ierr);
   ierr = KSPDestroy(&(*snes)->ksp);CHKERRQ(ierr);
   ierr = SNESLineSearchDestroy(&(*snes)->linesearch);CHKERRQ(ierr);
@@ -4940,6 +4956,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
       ierr = DMGetDMSNES(snes->dm,&sdm);CHKERRQ(ierr);
       if (sdm->originaldm == snes->dm) sdm->originaldm = dm; /* Grant write privileges to the replacement DM */
     }
+    ierr = DMCoarsenHookRemove(snes->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
     ierr = DMDestroy(&snes->dm);CHKERRQ(ierr);
   }
   snes->dm     = dm;

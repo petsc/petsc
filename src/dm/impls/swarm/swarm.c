@@ -1,7 +1,9 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
+#include <petsc/private/hash.h>
 #include <petscviewer.h>
 #include <petscdraw.h>
+#include <petscdmplex.h>
 #include "data_bucket.h"
 
 PetscLogEvent DMSWARM_Migrate, DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints, DMSWARM_Sort;
@@ -31,7 +33,9 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
    Level: beginner
 
    Notes:
+ 
    The field with name fieldname must be defined as having a data type of PetscScalar.
+ 
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
    Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
@@ -157,6 +161,160 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   /* Set guard */
   ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject) *vec, name, DMSwarmDestroyVectorFromField_Private);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass, void *ctx)
+{
+  const char    *name = "Mass Matrix";
+  PetscDS        prob;
+  PetscSection   fsection, globalFSection;
+  PetscHashJK    ht;
+  PetscLayout    rLayout;
+  PetscInt      *dnz, *onz;
+  PetscInt       locRows, rStart, rEnd;
+  PetscReal     *x, *v0, *J, *invJ, detJ;
+  PetscScalar   *elemMat;
+  PetscInt       dim, Nf, field, totDim, cStart, cEnd, cell, maxC = 0;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dmf), &size);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dmf, &dim);CHKERRQ(ierr);
+  ierr = DMGetDS(dmf, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dmf, &fsection);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmf, &globalFSection);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmf, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = DMSwarmSortGetAccess(dmc);CHKERRQ(ierr);
+
+  ierr = MatGetLocalSize(mass, &locRows, NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) mass), &rLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(rLayout, locRows);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(rLayout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(rLayout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
+  ierr = PetscCalloc2(locRows,&dnz,locRows,&onz);CHKERRQ(ierr);
+  ierr = PetscHashJKCreate(&ht);CHKERRQ(ierr);
+  for (field = 0; field < Nf; ++field) {
+    PetscObject      obj;
+    PetscQuadrature  quad;
+    const PetscReal *qpoints;
+    PetscInt         Nq, Nc, i;
+
+    ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &Nc, &Nq, &qpoints, NULL);CHKERRQ(ierr);
+    /* For each fine grid cell */
+    for (cell = cStart; cell < cEnd; ++cell) {
+      PetscInt  Np, c;
+      PetscInt *findices,   *cindices;
+      PetscInt  numFIndices, numCIndices;
+
+      ierr = DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
+      ierr = DMSwarmSortGetNumberOfPointsPerCell(dmc, cell, &Np);CHKERRQ(ierr);
+      if (Np != Nq) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not all closure points located %D != %D", Np, Nq);
+      ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
+      maxC = PetscMax(maxC, numCIndices);
+      /* Update preallocation info */
+      {
+        PetscHashJKKey  key;
+        PetscHashJKIter missing, iter;
+
+        for (i = 0; i < numFIndices; ++i) {
+          key.j = findices[i];
+          if (key.j >= 0) {
+            /* Get indices for coarse elements */
+            for (c = 0; c < numCIndices; ++c) {
+              key.k = cindices[c];
+              if (key.k < 0) continue;
+              ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
+              if (missing) {
+                ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
+                if ((size == 1) || ((key.k >= rStart) && (key.k < rEnd))) ++dnz[key.j-rStart];
+                else                                                      ++onz[key.j-rStart];
+              }
+            }
+          }
+        }
+        ierr = PetscFree(cindices);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscHashJKDestroy(&ht);CHKERRQ(ierr);
+  ierr = MatXAIJSetPreallocation(mass, 1, dnz, onz, NULL, NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(mass, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxC, &elemMat);CHKERRQ(ierr);
+  for (field = 0; field < Nf; ++field) {
+    PetscObject      obj;
+    PetscQuadrature  quad;
+    PetscReal       *Bfine;
+    const PetscReal *qweights;
+    PetscInt         Nq, Nc, i;
+
+    ierr = PetscDSGetDiscretization(prob, field, &obj);CHKERRQ(ierr);
+    ierr = PetscFEGetDefaultTabulation((PetscFE) obj, &Bfine, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &Nc, &Nq, NULL, &qweights);CHKERRQ(ierr);
+    /* For each fine grid cell */
+    for (cell = cStart; cell < cEnd; ++cell) {
+      PetscInt           Np, c, j;
+      PetscInt          *findices,   *cindices;
+      PetscInt           numFIndices, numCIndices;
+
+      ierr = DMPlexComputeCellGeometryFEM(dmf, cell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+      ierr = DMPlexGetClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
+      ierr = DMSwarmSortGetNumberOfPointsPerCell(dmc, cell, &Np);CHKERRQ(ierr);
+      if (Np != Nq) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not all closure points located %D != %D", Np, Nq);
+      ierr = DMSwarmSortGetPointsPerCell(dmc, cell, &numCIndices, &cindices);CHKERRQ(ierr);
+      /* Get elemMat entries by multiplying by weight */
+      for (i = 0; i < numFIndices; ++i) {
+        ierr = PetscMemzero(elemMat, numCIndices * sizeof(PetscScalar));CHKERRQ(ierr);
+        for (j = 0; j < numCIndices; ++j) {
+          for (c = 0; c < Nc; ++c) elemMat[j] += Bfine[(j*numFIndices + i)*Nc + c]*qweights[j*Nc + c]*detJ;
+        }
+        /* Update interpolator */
+        if (0) {ierr = DMPrintCellMatrix(cell, name, 1, numCIndices, elemMat);CHKERRQ(ierr);}
+        ierr = MatSetValues(mass, 1, &findices[i], numCIndices, cindices, elemMat, ADD_VALUES);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(cindices);CHKERRQ(ierr);
+      ierr = DMPlexRestoreClosureIndices(dmf, fsection, globalFSection, cell, &numFIndices, &findices, NULL);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMSwarmSortRestoreAccess(dmc);CHKERRQ(ierr);
+  ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
+  ierr = PetscFree(elemMat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mass, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass)
+{
+  PetscSection   gsf;
+  PetscInt       m, n;
+  void          *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(dmCoarse, &n);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), mass);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mass, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*mass, dmCoarse->mattype);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
+
+  ierr = DMSwarmComputeMassMatrix_Private(dmCoarse, dmFine, *mass, ctx);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(*mass, NULL, "-mass_mat_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1195,6 +1353,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   dm->ops->createinterpolation             = NULL;
   dm->ops->getaggregates                   = NULL;
   dm->ops->getinjection                    = NULL;
+  dm->ops->createmassmatrix                = DMCreateMassMatrix_Swarm;
   dm->ops->refine                          = NULL;
   dm->ops->coarsen                         = NULL;
   dm->ops->refinehierarchy                 = NULL;

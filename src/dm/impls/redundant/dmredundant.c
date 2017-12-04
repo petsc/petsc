@@ -49,6 +49,7 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -179,7 +180,7 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscMalloc1(red->N,&globals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) globals[i] = i;
-  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -357,6 +358,12 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 /*MC
    DMREDUNDANT = "redundant" - A DM object that is used to manage data for a small set of dense globally coupled variables.
          In the global representation of the vector the variables are all stored on a single MPI process (all the other MPI processes have
@@ -382,23 +389,24 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);
 
-  dm->ops->setup              = DMSetUp_Redundant;
-  dm->ops->view               = DMView_Redundant;
-  dm->ops->createglobalvector = DMCreateGlobalVector_Redundant;
-  dm->ops->createlocalvector  = DMCreateLocalVector_Redundant;
-  dm->ops->creatematrix       = DMCreateMatrix_Redundant;
-  dm->ops->destroy            = DMDestroy_Redundant;
-  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Redundant;
-  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Redundant;
-  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Redundant;
-  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Redundant;
-  dm->ops->refine             = DMRefine_Redundant;
-  dm->ops->coarsen            = DMCoarsen_Redundant;
-  dm->ops->createinterpolation= DMCreateInterpolation_Redundant;
-  dm->ops->getcoloring        = DMCreateColoring_Redundant;
+  dm->ops->setup               = DMSetUp_Redundant;
+  dm->ops->view                = DMView_Redundant;
+  dm->ops->createglobalvector  = DMCreateGlobalVector_Redundant;
+  dm->ops->createlocalvector   = DMCreateLocalVector_Redundant;
+  dm->ops->creatematrix        = DMCreateMatrix_Redundant;
+  dm->ops->destroy             = DMDestroy_Redundant;
+  dm->ops->globaltolocalbegin  = DMGlobalToLocalBegin_Redundant;
+  dm->ops->globaltolocalend    = DMGlobalToLocalEnd_Redundant;
+  dm->ops->localtoglobalbegin  = DMLocalToGlobalBegin_Redundant;
+  dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Redundant;
+  dm->ops->refine              = DMRefine_Redundant;
+  dm->ops->coarsen             = DMCoarsen_Redundant;
+  dm->ops->createinterpolation = DMCreateInterpolation_Redundant;
+  dm->ops->getcoloring         = DMCreateColoring_Redundant;
 
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2192,12 +2192,15 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (numConstants != prob->numConstants) {
     ierr = PetscFree(prob->constants);CHKERRQ(ierr);
-    prob->constants = NULL;
+    prob->numConstants = numConstants;
+    if (prob->numConstants) {
+      ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
+    } else {
+      prob->constants = NULL;
+    }
   }
-  prob->numConstants = numConstants;
   if (prob->numConstants) {
     PetscValidPointer(constants, 3);
-    ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
     ierr = PetscMemcpy(prob->constants, constants, prob->numConstants * sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2746,7 +2749,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(newprob, &Ng);CHKERRQ(ierr);
-  if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);CHKERRQ(ierr);
+  if (Nf != Ng) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_SIZ, "Number of fields must match %D != %D", Nf, Ng);
   for (f = 0; f < Nf; ++f) {
     PetscPointFunc   obj;
     PetscPointFunc   f0, f1;

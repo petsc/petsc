@@ -1469,8 +1469,8 @@ PetscErrorCode  PetscOptionsReject(PetscOptions options,const char name[],const 
 
    Input Parameters:
 +  options - options database, use NULL for default global database
-.  name - the option one is seeking
--  pre - string to prepend to the name or NULL
+.  pre - string to prepend to the name or NULL
+-  name - the option one is seeking
 
    Output Parameters:
 .  set - PETSC_TRUE if found else PETSC_FALSE.
@@ -1519,6 +1519,9 @@ PetscErrorCode  PetscOptionsHasName(PetscOptions options,const char pre[],const 
 
    Level: beginner
 
+   Notes:  If the user does not supply the option ivalue is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
+
    Concepts: options database^has int
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
@@ -1566,10 +1569,13 @@ PetscErrorCode  PetscOptionsGetInt(PetscOptions options,const char pre[],const c
 .  ntext - number of choices
 
    Output Parameter:
-+  value - the index of the value to return (defaults to zero if the option name is given but choice is listed)
++  value - the index of the value to return (defaults to zero if the option name is given but no choice is listed)
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: intermediate
+
+   Notes:  If the user does not supply the option value is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
    See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
@@ -1628,9 +1634,10 @@ PetscErrorCode  PetscOptionsGetEList(PetscOptions options,const char pre[],const
 
    Concepts: options database
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes:  If the user does not supply the option value is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
-          list is usually something like PCASMTypes or some other predefined list of enum names
+          List is usually something like PCASMTypes or some other predefined list of enum names
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1681,8 +1688,11 @@ PetscErrorCode  PetscOptionsGetEnum(PetscOptions options,const char pre[],const 
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
        FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
 
-       If the user does not supply the option (as either true or false) ivalue is NOT changed. Thus
-     you NEED TO ALWAYS initialize the ivalue.
+      If the option is given, but no value is provided, then ivalue and set are both given the value PETSC_TRUE. That is -requested_bool
+     is equivalent to -requested_bool true
+
+       If the user does not supply the option at all ivalue is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
    Concepts: options database^has logical
 
@@ -1796,7 +1806,8 @@ PetscErrorCode  PetscOptionsGetBoolArray(PetscOptions options,const char pre[],c
 +  dvalue - the double value to return
 -  set - PETSC_TRUE if found, PETSC_FALSE if not found
 
-   Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
+   Notes:  If the user does not supply the option dvalue is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
    Level: beginner
 
@@ -1852,7 +1863,8 @@ PetscErrorCode  PetscOptionsGetReal(PetscOptions options,const char pre[],const 
    Usage:
    A complex number 2+3i must be specified with NO spaces
 
-   Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
+   Notes:  If the user does not supply the option dvalue is NOT changed. Thus
+     you should ALWAYS initialize the ivalue if you access it without first checking if the set flag is true.
 
    Concepts: options database^has scalar
 
@@ -2110,7 +2122,7 @@ PetscErrorCode  PetscOptionsGetIntArray(PetscOptions options,const char pre[],co
             value[j] = 0;
 
             ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);
-            if (inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);CHKERRQ(ierr);
+            if (inc <= 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Error in %D-th array entry,%s cannot have negative increment",n,value+j+1);
             break;
           }
         }
@@ -2242,6 +2254,9 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
 .ve
 
    Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE
+
+           If the user does not use the option then the string is not changed. Thus
+           you should ALWAYS initialize the string if you access it without first checking if the set flag is true.
 
    Concepts: options database^string
 

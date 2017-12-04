@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
     ierr = MatMult(A, x, y);CHKERRQ(ierr);
     ierr = VecNorm(y, NORM_1, &error);CHKERRQ(ierr);
-    if (PetscAbsReal(error - 4.0) > PETSC_SMALL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
+    if (PetscAbsReal(error - 4) > PETSC_SMALL) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
   }
   /* Cleanup */
   ierr = MatDestroy(&A);CHKERRQ(ierr);

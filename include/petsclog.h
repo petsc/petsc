@@ -375,6 +375,9 @@ PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
   ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
 
+#define MPI_Bcast(buffer,count,datatype,root,comm) \
+  ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Bcast(buffer,count,datatype,root,comm))
+
 #define MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm) \
   ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm))
 

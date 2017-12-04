@@ -882,7 +882,7 @@ PetscErrorCode  VecResetArray(Vec vec)
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
   format, since VecLoad() and VecView() completely hide these details.
-  But for anyone who's interested, the standard binary matrix storage
+  But for anyone who's interested, the standard binary vector storage
   format is
 .vb
      int    VEC_FILE_CLASSID

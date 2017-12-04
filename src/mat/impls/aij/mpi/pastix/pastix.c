@@ -17,20 +17,16 @@ EXTERN_C_END
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL c_pastix
-#define PASTIX_CHECKMATRIX c_pastix_checkMatrix
 #else
 #define PASTIX_CALL z_pastix
-#define PASTIX_CHECKMATRIX z_pastix_checkMatrix
 #endif
 
 #else /* PETSC_USE_COMPLEX */
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL s_pastix
-#define PASTIX_CHECKMATRIX s_pastix_checkMatrix
 #else
 #define PASTIX_CALL d_pastix
-#define PASTIX_CHECKMATRIX d_pastix_checkMatrix
 #endif
 
 #endif /* PETSC_USE_COMPLEX */
@@ -48,8 +44,8 @@ typedef struct Mat_Pastix_ {
   PetscInt      *invp;           /* Reverse permutation tabular                          */
   PetscScalar   *rhs;            /* Rhight-hand-side member                              */
   PetscInt      rhsnbr;          /* Rhight-hand-side number (must be 1)                  */
-  PetscInt      iparm[64];       /* Integer parameters                                   */
-  double        dparm[64];       /* Floating point parameters                            */
+  PetscInt      iparm[IPARM_SIZE];       /* Integer parameters                                   */
+  double        dparm[DPARM_SIZE];       /* Floating point parameters                            */
   MPI_Comm      pastix_comm;     /* PaStiX MPI communicator                              */
   PetscMPIInt   commRank;        /* MPI rank                                             */
   PetscMPIInt   commSize;        /* MPI communicator size                                */
@@ -92,10 +88,6 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
   PetscBool      isSeqSBAIJ;
   PetscBool      isMpiSBAIJ;
   PetscBool      isSym;
-  PetscBool      flg;
-  PetscInt       icntl;
-  PetscInt       verb;
-  PetscInt       check;
 
   PetscFunctionBegin;
   ierr = MatIsSymmetric(A,0.0,&isSym);CHKERRQ(ierr);
@@ -172,39 +164,6 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
       }
     }
   }
-
-  icntl =-1;
-  check = 0;
-  ierr  = PetscOptionsGetInt(NULL,((PetscObject) A)->prefix, "-mat_pastix_check", &icntl, &flg);CHKERRQ(ierr);
-  if ((flg && icntl >= 0) || PetscLogPrintInfo) check =  icntl;
-
-  if (check == 1) {
-    PetscScalar *tmpvalues;
-    PetscInt    *tmprows,*tmpcolptr;
-
-    ierr = PetscMalloc3(nnz,&tmpvalues,nnz,&tmprows,*n+1,&tmpcolptr);CHKERRQ(ierr);
-
-    ierr = PetscMemcpy(tmpcolptr,*colptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmprows,*row,nnz*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpvalues,*values,nnz*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscFree(*row);CHKERRQ(ierr);
-    ierr = PetscFree(*values);CHKERRQ(ierr);
-
-    icntl=-1;
-    verb = API_VERBOSE_NOT;
-    /* "iparm[IPARM_VERBOSE] : level of printing (0 to 2)" */
-    ierr = PetscOptionsGetInt(NULL,((PetscObject) A)->prefix, "-mat_pastix_verbose", &icntl, &flg);CHKERRQ(ierr);
-    if ((flg && icntl >= 0) || PetscLogPrintInfo) verb =  icntl;
-    PASTIX_CHECKMATRIX(MPI_COMM_WORLD,verb,((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,*n,&tmpcolptr,&tmprows,(PastixScalar**)&tmpvalues,NULL,1);
-
-    ierr = PetscMemcpy(*colptr,tmpcolptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc1(((*colptr)[*n]-1),row);CHKERRQ(ierr);
-    ierr = PetscMemcpy(*row,tmprows,((*colptr)[*n]-1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc1(((*colptr)[*n]-1),values);CHKERRQ(ierr);
-    ierr = PetscMemcpy(*values,tmpvalues,((*colptr)[*n]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscFree3(tmpvalues,tmprows,tmpcolptr);CHKERRQ(ierr);
-
-  }
   PetscFunctionReturn(0);
 }
 
@@ -239,7 +198,7 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
-
+    if (lu->iparm[IPARM_ERROR_NUMBER] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in destroy: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
     ierr = PetscFree(lu->colptr);CHKERRQ(ierr);
     ierr = PetscFree(lu->row);CHKERRQ(ierr);
     ierr = PetscFree(lu->val);CHKERRQ(ierr);
@@ -300,8 +259,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
               lu->rhsnbr,
               lu->iparm,
               lu->dparm);
-
-  if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER]);
+  if (lu->iparm[IPARM_ERROR_NUMBER] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER]);
 
   if (lu->commSize == 1) {
     ierr = VecRestoreArray(x,&(lu->rhs));CHKERRQ(ierr);
@@ -365,13 +323,11 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
+    if (lu->iparm[IPARM_ERROR_NUMBER] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in MatFactorNumeric: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
 
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"PaStiX Options","Mat");CHKERRQ(ierr);
-
     icntl = -1;
-
     lu->iparm[IPARM_VERBOSE] = API_VERBOSE_NOT;
-
     ierr = PetscOptionsInt("-mat_pastix_verbose","iparm[IPARM_VERBOSE] : level of printing (0 to 2)","None",lu->iparm[IPARM_VERBOSE],&icntl,&flg);CHKERRQ(ierr);
     if ((flg && icntl >= 0) || PetscLogPrintInfo) {
       lu->iparm[IPARM_VERBOSE] =  icntl;
@@ -445,7 +401,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
-    if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
+    if (lu->iparm[IPARM_ERROR_NUMBER] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
   } else {
     lu->iparm[IPARM_START_TASK] = API_TASK_NUMFACT;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;
@@ -461,7 +417,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
                 lu->rhsnbr,
                 lu->iparm,
                 lu->dparm);
-    if (lu->iparm[IPARM_ERROR_NUMBER] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
+    if (lu->iparm[IPARM_ERROR_NUMBER] != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%d\n",lu->iparm[IPARM_ERROR_NUMBER]);
   }
 
   (F)->assembled    = PETSC_TRUE;
@@ -532,6 +488,9 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
   Options Database Keys:
 + -mat_pastix_verbose   <0,1,2>   - print level
 - -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
+
+  Notes: This only works for matrices with symmetric nonzero structure, if you pass it a matrix with
+   nonsymmetric structure PasTiX and hence PETSc return with an error.
 
   Level: beginner
 

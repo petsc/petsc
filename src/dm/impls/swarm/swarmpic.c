@@ -365,12 +365,20 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
 +  dm - the DMSwarm
 .  layout_type - method used to fill each cell with the cell DM
 -  fill_param - parameter controlling how many points per cell are added (the meaning of this parameter is dependent on the layout type)
- 
- Level: beginner
- 
- Notes:
- The insert method will reset any previous defined points within the DMSwarm
- 
+
+   Level: beginner
+
+   Notes:
+
+   The insert method will reset any previous defined points within the DMSwarm.
+
+   When using a DMDA both 2D and 3D are supported for all layout types provided you are using DMDA_ELEMENT_Q1.
+
+   When using a DMPLEX the following case are supported:
+   (i  ) DMSWARMPIC_LAYOUT_REGULAR: 2D (triangle),
+   (ii ) DMSWARMPIC_LAYOUT_GAUSS: 2D and 3D provided the cell is a tri/tet or a quad/hex,
+   (iii) DMSWARMPIC_LAYOUT_SUBDIVISION: 2D and 3D for quad/hex and 2D tri.
+
 .seealso: DMSwarmPICLayoutType, DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayoutType layout_type,PetscInt fill_param)
@@ -393,13 +401,53 @@ PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayou
   PetscFunctionReturn(0);
 }
 
-/*
-PETSC_EXTERN PetscErrorCode DMSwarmAddPointCoordinatesCellWise(DM dm,PetscInt cell,PetscInt npoints,PetscReal xi[],PetscBool proximity_initialization)
+
+extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,PetscReal*);
+
+/*@C
+   DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
+
+   Not collective
+
+   Input parameters:
++  dm - the DMSwarm
+.  celldm - the cell DM
+.  npoints - the number of points to insert in each cell
+-  xi - the coordinates (defined in the local coordinate system for each cell) to insert
+
+ Level: beginner
+
+ Notes:
+ The method will reset any previous defined points within the DMSwarm.
+ Only supported for DMPLEX. If you are using a DMDA it is recommended to either use
+ DMSwarmInsertPointsUsingCellDM(), or extract and set the coordinates yourself the following code
+ 
+$    PetscReal *coor;
+$    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+$    // user code to define the coordinates here
+$    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+
+.seealso: DMSwarmSetCellDM(), DMSwarmInsertPointsUsingCellDM()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt npoints,PetscReal xi[])
 {
+  PetscErrorCode ierr;
+  DM celldm;
+  PetscBool isDA,isPLEX;
+  
   PetscFunctionBegin;
+  DMSWARMPICVALID(dm);
+  ierr = DMSwarmGetCellDM(dm,&celldm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX);CHKERRQ(ierr);
+  if (isDA) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
+  else if (isPLEX) {
+    ierr = private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm,celldm,npoints,xi);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+  
   PetscFunctionReturn(0);
 }
-*/
+
 
 /* Field projection API */
 extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
@@ -427,11 +475,15 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
    Level: beginner
  
    Notes:
-   - If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec. 
+ 
+   If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec.
      The user is responsible for destroying both the array and the individual Vec objects.
-   - Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
-   - Only swarm fields of block size = 1 can currently be projected.
-   - The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
+ 
+   Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
+ 
+   Only swarm fields of block size = 1 can currently be projected.
+ 
+   The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
  
 .seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/

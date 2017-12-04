@@ -295,6 +295,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg3) {
     ierr = PetscMallocSetDumpLogThreshold((PetscLogDouble)logthreshold);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_coalesce",&flg1,&flg2);CHKERRQ(ierr);
+  if (flg2) {ierr = PetscMallocSetCoalesce(flg1);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_debug",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {

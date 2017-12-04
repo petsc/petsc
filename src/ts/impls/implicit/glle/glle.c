@@ -1038,6 +1038,10 @@ static PetscErrorCode TSDestroy_GLLE(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_GLLE(ts);CHKERRQ(ierr);
+  if (ts->dm) {
+    ierr = DMCoarsenHookRemove(ts->dm,DMCoarsenHook_TSGLLE,DMRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookRemove(ts->dm,DMSubDomainHook_TSGLLE,DMSubDomainRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
+  }
   if (gl->adapt) {ierr = TSGLLEAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
@@ -1121,10 +1125,8 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
     gl->current_scheme = i;
   }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLLE,DMRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
-    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLLE,DMSubDomainRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
-  }
+  ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLLE,DMRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGLLE,DMSubDomainRestrictHook_TSGLLE,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

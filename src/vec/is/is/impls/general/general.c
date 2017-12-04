@@ -386,6 +386,7 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
   int            fdes;
   MPI_Status     status;
   PetscInt       message_count,flowcontrolcount,*values;
+  PetscBool skip;
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
@@ -398,7 +399,11 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 
   tr[0] = IS_FILE_CLASSID;
   tr[1] = N;
-  ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skip);CHKERRQ(ierr);
+  if (!skip) {
+    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  }
   ierr  = MPI_Reduce(&n,&len,1,MPIU_INT,MPI_SUM,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 
   ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);

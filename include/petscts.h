@@ -250,7 +250,7 @@ PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
 
 /*S
-     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/ADE at each time step)
+     TSTrajectory - Abstract PETSc object that stores the trajectory (solution of ODE/DAE at each time step)
 
    Level: advanced
 
@@ -292,6 +292,9 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetUp(TSTrajectory,TS);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetMonitor(TSTrajectory,PetscBool);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory,const char * const*);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetTransform(TSTrajectory,PetscErrorCode (*)(void*,Vec,Vec*),PetscErrorCode (*)(void*),void*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory,PetscBool);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetDirname(TSTrajectory,const char[]);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory,const char[]);
 PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS,TSTrajectory*);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS,PetscInt,Vec*,Vec*);
@@ -600,6 +603,7 @@ E*/
 typedef const char *TSAdaptType;
 #define TSADAPTNONE  "none"
 #define TSADAPTBASIC "basic"
+#define TSADAPTDSP   "dsp"
 #define TSADAPTCFL   "cfl"
 #define TSADAPTGLEE  "glee"
 
@@ -630,6 +634,8 @@ PETSC_EXTERN PetscErrorCode TSAdaptGetClip(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
+PETSC_EXTERN PetscErrorCode TSAdaptDSPSetFilter(TSAdapt,const char *);
+PETSC_EXTERN PetscErrorCode TSAdaptDSPSetPID(TSAdapt,PetscReal,PetscReal,PetscReal);
 
 /*S
    TSGLLEAdapt - Abstract object that manages time-step adaptivity

@@ -48,6 +48,7 @@ use compatible domain decomposition relative to the 3D DMDAs.
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <ctype.h>              /* toupper() */
+#include <petsc/private/petscimpl.h>
 
 #if defined __SSE2__
 #  include <emmintrin.h>
@@ -239,7 +240,7 @@ struct _p_THI {
   PetscReal rhog;
   PetscBool no_slip;
   PetscBool verbose;
-  MatType   mattype;
+  char      *mattype;
   char      *monitor_basename;
   PetscInt  monitor_interval;
 };
@@ -1348,8 +1349,8 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = THIJacobianLocal_Momentum(&info3,x3,x2,B11,B12,thi);CHKERRQ(ierr);
 
   /* Need to switch from ADD_VALUES to INSERT_VALUES */
-  ierr = MatAssemblyBegin(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = THIJacobianLocal_2D(&info3,x3,x2,xdot2,a,B22,B21,thi);CHKERRQ(ierr);
 
@@ -1374,7 +1375,7 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  if (thi->verbose) {ierr = THIMatrixStatistics(thi,B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1415,8 +1416,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = PetscMPIIntCast(range[4]*range[5]*dof2,&nn2);CHKERRQ(ierr);
   ierr = MPI_Reduce(&nn2,&nmax2,1,MPI_INT,MPI_MAX,0,comm);CHKERRQ(ierr);
   tag  = ((PetscObject)viewer3)->tag;
-  ierr = VecGetArray(X3,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(X2,&x2);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array,*array2;
     ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
@@ -1508,8 +1509,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
     ierr = MPI_Send(x,nn,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
     ierr = MPI_Send(x2,nn2,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(X3,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X2,&x2);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer3,"  </StructuredGrid>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer2,"  </StructuredGrid>\n");CHKERRQ(ierr);
 

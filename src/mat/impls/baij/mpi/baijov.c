@@ -80,7 +80,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(imax+1,&idx,imax,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc2(imax+1,(PetscInt***)&idx,imax,&n);CHKERRQ(ierr);
 
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(idx,n);CHKERRQ(ierr);
+  ierr = PetscFree2(*(PetscInt***)&idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -650,7 +650,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
   rank = c->rank;
 
   ierr = PetscMalloc5(ismax,&row2proc,ismax,&cmap,ismax,&rmap,ismax+1,&allcolumns,ismax,&allrows);CHKERRQ(ierr);
-  ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],&issorted[i]);CHKERRQ(ierr);
@@ -1537,8 +1537,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS 
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  /* Destroy allocated memory */
-  ierr = PetscFree5(irow,icol,nrow,ncol,issorted);CHKERRQ(ierr);
+  ierr = PetscFree5(*(PetscInt***)&irow,*(PetscInt***)&icol,nrow,ncol,issorted);CHKERRQ(ierr);
   ierr = PetscFree5(row2proc,cmap,rmap,allcolumns,allrows);CHKERRQ(ierr);
 
   if (!ijonly) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import glob, os
+import glob, os, re
 import optparse
 """
 Quick script for parsing the output of the test system and summarizing the results.
@@ -20,14 +20,27 @@ def summarize_results(directory):
         l = line.split()
         summary[l[0]] += l[1:] if l[0] == 'failures' else int(l[1])
 
+  failstr=' '.join(summary['failures'])
   print("\n# -------------")
   print("#   Summary    ")
   print("# -------------")
-  print("# FAILED " + ' '.join(summary['failures']))
+  print("# FAILED " + failstr)
 
   for t in "success failed todo skip".split():
     percent=summary[t]/float(summary['total'])*100
     print("# %s %d/%d tests (%3.1f%%)" % (t, summary[t], summary['total'], percent))
+
+  fail_targets=(
+          re.sub('(?<=[0-9]_\w)_.*','',
+          re.sub('_1 ',' ',
+          re.sub('-','-run',
+          re.sub('cmd-','',
+          re.sub('diff-','',failstr+' ')))))
+          )
+  # Need to make sure we have a unique list
+  fail_targets=' '.join(list(set(fail_targets.split())))
+  print("#\n# To rerun failed tests: ")
+  print("#     make -f gmakefile.test test search='" + fail_targets.strip()+"'")
   return
 
 def main():

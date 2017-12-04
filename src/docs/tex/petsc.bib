@@ -3,6 +3,26 @@
 % those belong in petscapp.bib
 %
 %   DO NOT DEFINE ANY ABREVIATIONS TO USE IN ENTRIES BELOW: Always write out the names of journels etc
+@article{more1994line,
+  title={Line search algorithms with guaranteed sufficient decrease},
+  author={Mor{\'e}, Jorge J and Thuente, David J},
+  journal={ACM Transactions on Mathematical Software},
+  volume={20},
+  number={3},
+  pages={286--307},
+  year={1994},
+  publisher={ACM}
+}
+@article{griewank2000algorithm,
+  title={Algorithm 799: revolve: an implementation of checkpointing for the reverse or adjoint mode of computational differentiation},
+  author={Griewank, Andreas and Walther, Andrea},
+  journal={ACM Transactions on Mathematical Software},
+  volume={26},
+  number={1},
+  pages={19--45},
+  year={2000},
+  publisher={ACM}
+}
 
 @article{metcalf2011seven,
   title={The seven ages of fortran},
@@ -1024,7 +1044,7 @@ address = {Los Alamitos, CA},
 @article{davis2004algorithm,
   title={Algorithm 832: {UMFPACK} V4.3---An Unsymmetric-Pattern Multifrontal Method},
   author={Davis, Timothy A},
-  journal={ACM Transactions on Mathematical Software (TOMS)},
+  journal={ACM Transactions on Mathematical Software},
   volume={30},
   number={2},
   pages={196--199},
@@ -3374,6 +3394,13 @@ Booktitle = "Supercomputing '95 Proceedings",
   year = 2005
 }
 
+@inproceedings{serban2005cvodes,
+  title={CVODES, the sensitivity-enabled {ODE} solver in {SUNDIALS}},
+  author={Serban, Radu and Hindmarsh, Alan C},
+  booktitle={Proceedings of the 5th International Conference on Multibody Systems, Nonlinear Dynamics and Control, Long Beach, CA},
+  year={2005}
+}
+
 @article{pvode99,
   author = "G. Byrne and A. Hindmarsh",
   title = "{PVODE}, An {ODE} Solver for Parallel Computers",
@@ -3698,9 +3725,9 @@ mesh refinement",
 @TechReport{hypre-users-manual,
   author      = "R. Falgout",
   title       = "{hypre} Users Manual",
-  number      = "Revision 2.0.0",
+  number      = "Revision 2.11.2",
   institution = "Lawrence Livermore National Laboratory",
-  year        = 2006
+  year        = 2017
 }
 
 
@@ -3729,15 +3756,15 @@ mesh refinement",
 author = {Michael A. Heroux and Roscoe A. Bartlett and Vicki E. Howle and Robert J. Hoekstra and Jonathan J. Hu and Tamara G. Kolda and Richard B. Lehoucq and Kevin R. Long
           and Roger P. Pawlowski and Eric T. Phipps and Andrew G. Salinger and Heidi K. Thornquist and Ray S. Tuminaro and James M. Willenbring and Alan Williams and Kendall S. Stanley},
 title = {An overview of the {T}rilinos project},
-journal = {ACM Trans. Math. Softw.},
+journal = {ACM Transactions on Mathematical Software},
 volume = {31},
 number = {3},
 year = {2005},
 issn = {0098-3500},
 pages = {397--423},
-doi = {http://doi.acm.org/10.1145/1089014.1089021},
 publisher = {ACM Press}
 }
+%doi = {http://doi.acm.org/10.1145/1089014.1089021},
 
 @misc{rythmos:homepage,
   author = "T. Coffey and R. Bartlett",
@@ -4150,7 +4177,7 @@ publisher = {ACM Press}
      AUTHOR = {Xiaoye S. Li and James W. Demmel},
      TITLE = {{SuperLU\_DIST}: A Scalable Distributed-Memory Sparse Direct
               Solver for Unsymmetric Linear Systems},
-     JOURNAL = {ACM Trans. Mathematical Software},
+     JOURNAL = {ACM Transactions on Mathematical Software},
      YEAR = 2003,
      MONTH = {June},
      VOLUME = {29},
@@ -9390,7 +9417,7 @@ year = {2009}
   title   = {Firedrake: automating the finite element method by composing abstractions},
   author  = {Rathgeber, Florian and Ham, David A and Mitchell, Lawrence and Lange, Michael and Luporini, Fabio and McRae, Andrew TT and Bercea, Gheorghe-Teodor and Markall, Graham R and Kelly, Paul HJ},
   archiveprefix = {arXiv},
-  journal = {Submitted to ACM TOMS},
+  journal = {Submitted to ACM Transaction on Mathematical Software},
   eprint  = {1501.01809},
   year    = {2015},
   url     = {http://arxiv.org/abs/1501.01809}
@@ -9926,14 +9953,13 @@ year = {2009}
   url         = {http://cs.uchicago.edu/files/tr_authentic/TR-2012-02.pdf},
   year        = {2012}
 }
-@Article{PaigeSaunders1975,
-  author =       "C. C. Paige and M. A. Saunders",
-  title =        "Solution of Sparse Indefinite Systems of Linear
-                 Equations",
-  journal =      sina,
-  year =         "1975",
-  volume =       "12",
-  pages =        "617--629",
+@article{PaigeSaunders1975,
+  title   = {Solution of Sparse Indefinite Systems of Linear Equations},
+  author  = {C. C. Paige and M. A. Saunders},
+  journal = {SIAM Journal on Numerical Analysis},
+  volume  = {12},
+  pages   = {617--629},
+  year    = {1975},
 }
 
 @article{Roth2010,
@@ -10144,15 +10170,6 @@ year = {2009}
   number  = {10},
   pages   = {5622--5634},
   year    = {2013}
-}
-@article{KausMuhlhausMay2010,
-  title   = {A stabilization algorithm for geodynamic numerical simulations with a free surface},
-  author  = {Boris JP Kaus and Hans M{\"u}hlhaus and Dave A May},
-  journal = {Physics of the Earth and Planetary Interiors},
-  volume  = {181},
-  number  = {1},
-  pages   = {12--20},
-  year    = {2010},
 }
 @article{ZhongGurnis1995,
   title   = {Mantle convection with plates and mobile, faulted plate margins},
@@ -10523,9 +10540,59 @@ year = {2009}
 @article{TurcksinKronbichlerBangerth2016,
   title   = {WorkStream--A Design Pattern for Multicore-Enabled Finite Element Computations},
   author  = {Bruno Turcksin and Martin Kronbichler and Wolfgang Bangerth},
-  journal = {ACM Transactions on Mathematical Software (TOMS)},
+  journal = {ACM Transactions on Mathematical Software)},
   volume  = {43},
   number  = {1},
   pages   = {2},
   year    = {2016},
+}
+@article{Kolmogorov1957,
+  title   = {On the representation of continuous functions of several variables as superpositions of continuous functions of one variable and addition},
+  author  = {Andrei N. Kolmogorov},
+  journal = {Dokl. Akad. Nauk SSSR},
+  pages   = {953--956},
+  volume  = {114:5},
+  note    = {English transl. Amer. Math. Soc. Transl. (2) 28 (1963), 55},
+  year    = {1957},
+}
+@article{Fridman1967,
+  title   = {Improvement in the smoothness of functions in the {Kolmogorov Superposition Theorem}},
+  author  = {B. L. Fridman},
+  journal = {Dokl. Akad. Nauk SSR},
+  volume  = {177:5},
+  pages   = {1019--1022},
+  note    = {English transl. Soviet Math. Dokl. 8, 6 (1967), 1550-1553},
+  year    = {1967},
+}
+@article{Sprecher1972,
+  title   = {An improvement in The {Superposition Theorem of Kolmogorov}},
+  author  = {David Sprecher},
+  journal = {Journal of Mathematical Analysis and Applications},
+  volume  = {38},
+  pages   = {208--213},
+  year    = {1972},
+}
+@article{BraunGriebel2009,
+  title   = {On a constructive proof of {Kolmogorov}'s superposition theorem},
+  author  = {Jurgen Bra\"un and Michael Griebel},
+  journal = {Constructive Approximation},
+  pages   = {653--675},
+  volume  = {30},
+  year    = {2009}
+}
+@inbook{Koppen2002,
+  title  = {On the Training of a Kolmogorov Network},
+  author = {Mario K\"oppen},
+  pages  = {474--9},
+  publisher = {ICANN 2002, LNCS 2415},
+  year   = {2002}
+}
+@article{ButlerGrahamMattisWalsh2017,
+  title   = {A measure-theoretic interpretation of sample based numerical integration with applications to inverse and prediction problems under uncertainty},
+  author  = {Troy Butler and Lindsey Graham and S. Mattis and S. Walsh},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {39},
+  number  = {5},
+  pages   = {A2072--A2098},
+  year    = {2017},
 }

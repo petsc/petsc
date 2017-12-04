@@ -1335,7 +1335,7 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order
 }
 
 /*@
-   SNESLineSearchSetOrder - Sets the line search damping paramter.
+   SNESLineSearchSetOrder - Sets the maximum order of the polynomial fit used in the line search
 
    Input Parameters:
 .  linesearch - linesearch context
@@ -1353,7 +1353,7 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order
 +  bt - cubic and quadratic
 -  cp - linear and quadratic
 
-.seealso: SNESLineSearchGetOrder()
+.seealso: SNESLineSearchGetOrder(), SNESLineSearchSetDamping()
 @*/
 PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,PetscInt order)
 {
@@ -1459,10 +1459,10 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
 -  flg  - indicates whether or not to compute norms
 
    Options Database Keys:
-.   -snes_linesearch_turn - norms norm computation on or off
+.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch
 
    Notes:
-   This is most relevant to the SNESLINESEARCHBASIC line search type.
+   This is most relevant to the SNESLINESEARCHBASIC line search type since most line searches have a stopping criteria involving the norm.
 
    Level: intermediate
 

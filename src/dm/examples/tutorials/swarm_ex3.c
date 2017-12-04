@@ -14,7 +14,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   PetscInt p,n,bs,npoints,si,sj,milocal,mjlocal,mx,my;
   DM dmregular;
   PetscInt *cellidx;
-  PetscScalar *coor;
+  const PetscScalar *coor;
   PetscReal dx,dy;
   PetscErrorCode ierr;
   PetscMPIInt rank;
@@ -24,7 +24,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   ierr = VecGetBlockSize(pos,&bs);CHKERRQ(ierr);
   npoints = n/bs;
   
-  PetscMalloc1(npoints,&cellidx);
+  ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
 
   ierr = DMGetApplicationContext(dm,(void**)&dmregular);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL);CHKERRQ(ierr);
@@ -33,13 +33,13 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   dx = 2.0/((PetscReal)mx);
   dy = 2.0/((PetscReal)my);
 
-  ierr = VecGetArray(pos,&coor);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(pos,&coor);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
     PetscReal coorx,coory;
     PetscInt mi,mj;
     
-    coorx = coor[2*p];
-    coory = coor[2*p+1];
+    coorx = PetscRealPart(coor[2*p]);
+    coory = PetscRealPart(coor[2*p+1]);
     
     mi = (PetscInt)( (coorx - (-1.0))/dx );
     mj = (PetscInt)( (coory - (-1.0))/dy );
@@ -57,7 +57,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
     if (coory < -1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (coory >  1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
   }
-  ierr = VecRestoreArray(pos,&coor);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(pos,&coor);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,npoints,cellidx,PETSC_OWN_POINTER,iscell);CHKERRQ(ierr);
   
@@ -91,6 +91,7 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm,Vec pos,DMPointLocationType ltyp
 
   nfound = npoints;
   ierr = PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscell);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -180,14 +181,14 @@ PetscErrorCode ex3_1(void)
   
   {
     PetscInt si,sj,milocal,mjlocal;
-    PetscReal *LA_coors;
+    const PetscScalar *LA_coors;
     Vec coors;
     PetscInt cnt;
     
     ierr = DMDAGetCorners(dmregular,&si,&sj,NULL,&milocal,&mjlocal,NULL);CHKERRQ(ierr);
     ierr = DMGetCoordinates(dmregular,&coors);CHKERRQ(ierr);
     /*VecView(coors,PETSC_VIEWER_STDOUT_WORLD);*/
-    ierr = VecGetArray(coors,&LA_coors);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(coors,&LA_coors);CHKERRQ(ierr);
     
     ierr = DMSwarmSetLocalSizes(dms,milocal*mjlocal,4);CHKERRQ(ierr);
     ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);
@@ -203,8 +204,8 @@ PetscErrorCode ex3_1(void)
       ierr = PetscRandomGetValueReal(rand,&rx);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(rand,&ry);CHKERRQ(ierr);
       
-      px = LA_coors[2*p+0] + 0.1*rx*dx;
-      py = LA_coors[2*p+1] + 0.1*ry*dx;
+      px = PetscRealPart(LA_coors[2*p+0]) + 0.1*rx*dx;
+      py = PetscRealPart(LA_coors[2*p+1]) + 0.1*ry*dx;
       
       r2 = px*px + py*py;
       if (r2 < 0.75*0.75) {
@@ -216,7 +217,7 @@ PetscErrorCode ex3_1(void)
     }
     ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coors,&LA_coors);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(coors,&LA_coors);CHKERRQ(ierr);
     ierr = DMSwarmSetLocalSizes(dms,cnt,4);CHKERRQ(ierr);
 
     ierr = DMSwarmGetLocalSize(dms,&nlocal);CHKERRQ(ierr);

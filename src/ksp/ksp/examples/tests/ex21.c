@@ -2,6 +2,9 @@ static const char help[] = "Tests MatGetSchurComplement\n";
 
 #include <petscksp.h>
 
+/*T
+    Concepts: Mat, Schur Complement
+T*/
 
 PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 {
@@ -95,17 +98,21 @@ PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
-  Mat            A,S = NULL,Sexplicit = NULL;
-  IS             is0,is1;
+  Mat                        A,S = NULL,Sexplicit = NULL;
+  MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
+  IS                         is0,is1;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21","KSP");CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementAinvType",MatSchurComplementAinvTypes,(PetscEnum)ainv_type,(PetscEnum*)&ainv_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Test the Schur complement one way */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(is0,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(is1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,MAT_SCHUR_COMPLEMENT_AINV_DIAG,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -115,7 +122,7 @@ int main(int argc,char *argv[])
 
   /* And the other */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,MAT_SCHUR_COMPLEMENT_AINV_DIAG,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is1,is1,is0,is0,MAT_INITIAL_MATRIX,&S,ainv_type,MAT_IGNORE_MATRIX,NULL);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -125,12 +132,12 @@ int main(int argc,char *argv[])
 
   /* This time just the preconditioning matrix. */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_DIAG,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_INITIAL_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPreconditioning Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Modify and refresh */
   ierr = MatShift(A,1.);CHKERRQ(ierr);
-  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_DIAG,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
+  ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,ainv_type,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
@@ -139,3 +146,30 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: diag_1
+    args: -mat_schur_complement_ainv_type diag
+    nsize: 1
+  test:
+    suffix: blockdiag_1
+    args: -mat_schur_complement_ainv_type blockdiag
+    nsize: 1
+  test:
+    suffix: diag_2
+    args: -mat_schur_complement_ainv_type diag
+    nsize: 2
+  test:
+    suffix: blockdiag_2
+    args: -mat_schur_complement_ainv_type blockdiag
+    nsize: 2
+  test:
+    suffix: diag_3
+    args: -mat_schur_complement_ainv_type diag
+    nsize: 3
+  test:
+    suffix: blockdiag_3
+    args: -mat_schur_complement_ainv_type blockdiag
+    nsize: 3
+TEST*/
