@@ -80,7 +80,6 @@ typedef struct {
           what code to calculate Jacobians, etc. usually sees.
   Vector scatters:
      gtol - Global representation to local
-     ltog - Local representation to global (involves no communication)
      ltol - Local representation to local representation, updates the
             ghostpoint values in the second vector from (correct) interior
             values in the first vector.  This is good for explicit
