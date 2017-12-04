@@ -1170,18 +1170,18 @@ int main(int argc,char **args)
    nsize: 4
    suffix: bddc_fetidp_ml_1
    args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 1
-   filter: grep -v HERMITIAN
+   filter: grep -v "variant HERMITIAN"
 
  test:
    nsize: 4
    suffix: bddc_fetidp_ml_2
    args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 2 -mat_partitioning_type average
-   filter: grep -v HERMITIAN
+   filter: grep -v "variant HERMITIAN"
 
  test:
    nsize: 4
    suffix: bddc_fetidp_ml_3
    args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 4
-   filter: grep -v HERMITIAN
+   filter: grep -v "variant HERMITIAN"
 
 TEST*/
