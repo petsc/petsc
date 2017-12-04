@@ -138,9 +138,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 
   ierr = VecGetArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRQ(ierr);
+                     (double)time,(double)PetscRealPart(tmp[0]),(double)PetscRealPart(tmp[1]),(double)PetscRealPart(tmp[2]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
+                     (double)time,(double)PetscRealPart(tmp[0]-solx(time)),(double)PetscRealPart(tmp[1]-soly(time)),(double)PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);

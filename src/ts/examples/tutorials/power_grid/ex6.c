@@ -117,7 +117,7 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = VecSum(X,&sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",t,sum*user->dx*user->dy);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %3.2f = %3.6f\n",(double)t,(double)sum*user->dx*user->dy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
