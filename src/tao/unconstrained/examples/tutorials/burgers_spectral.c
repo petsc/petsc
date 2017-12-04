@@ -710,18 +710,3 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
 }
 
 
-/*TEST
-
-   build:
-     requires: !complex
-
-   test:
-     requires: !single
-     args: -tao_monitor  -ts_adapt_dt_max 3.e-3 -E 10 -N 8 -ncoeff 5 
-
-   test:
-     suffix: cn
-     requires: !single
-     args: -tao_monitor -ts_type cn -ts_dt .003 -pc_type lu -E 10 -N 8 -ncoeff 5 
-
-TEST*/
