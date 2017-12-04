@@ -678,10 +678,12 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
     PetscClassId id;
 
     ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
-    if (id == PETSCFV_CLASSID) {
-      prob->implicit[f]      = PETSC_FALSE;
-      prob->adjacency[f*2+0] = PETSC_TRUE;
-      prob->adjacency[f*2+1] = PETSC_FALSE;
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscDSSetImplicit(prob, f, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDSSetAdjacency(prob, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      ierr = PetscDSSetImplicit(prob, f, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscDSSetAdjacency(prob, f, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -781,11 +783,11 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(useCone, 3);
-  PetscValidPointer(useClosure, 4);
+  if (useCone) PetscValidPointer(useCone, 3);
+  if (useClosure) PetscValidPointer(useClosure, 4);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *useCone    = prob->adjacency[f*2+0];
-  *useClosure = prob->adjacency[f*2+1];
+  if (useCone)    *useCone    = prob->adjacency[f*2+0];
+  if (useClosure) *useClosure = prob->adjacency[f*2+1];
   PetscFunctionReturn(0);
 }
 
