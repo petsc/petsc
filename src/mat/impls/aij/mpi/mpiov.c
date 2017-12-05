@@ -1957,7 +1957,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const I
 PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
-  PetscInt       nmax,nstages,i,pos,max_no,nrow,ncol,in[2],out[2];
+  PetscInt       nmax,nstages=0,i,pos,max_no,nrow,ncol,in[2],out[2];
   PetscBool      rowflag,colflag,wantallmatrix=PETSC_FALSE;
   Mat_SeqAIJ     *subc;
   Mat_SubSppt    *smat;
