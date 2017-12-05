@@ -124,19 +124,16 @@ class Configure(config.base.Configure):
     newldflags = []
     newlibs = []
     frame = 0
+    dupflags = ['-L']
+    flagName  = self.language[-1]+'SharedLinkerFlag'
+    if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+      dupflags.append(getattr(self.setCompilers, flagName))
     for j in libs:
-      # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
-      if frame:
-        newlibs.append(j)
-        frame = 0
-        continue
-      if j in newldflags: continue
+      # remove duplicate -L, -Wl,-rpath options - and only consecutive -l optipons
+      if j in newldflags and any([j.startswith(flg) for flg in dupflags]): continue
       if newlibs and j == newlibs[-1]: continue
       if j.startswith('-l'):
         newlibs.append(j)
-      elif j == '-framework':
-        newlibs.append(j)
-        frame = 1
       else:
         newldflags.append(j)
     return ' '.join(newldflags + newlibs)

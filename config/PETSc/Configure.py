@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import cPickle
+import string
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -197,8 +198,7 @@ class Configure(config.base.Configure):
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
     # Remove RPATH flags from library list.  User can add them using
     # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
-    lflags = self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in lflags if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in self.packagelibs+self.complibs if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
 
     fd.close()
     return
@@ -368,31 +368,30 @@ prepend-path PATH %s
     # print include and lib for makefiles
     self.framework.packages.reverse()
     includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
-    libs = []
+    self.packagelibs = []
     for i in self.framework.packages:
       if i.useddirectly:
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      if i.linkedbypetsc: libs.extend(i.lib)
+      if i.linkedbypetsc: self.packagelibs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
-    self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
       self.petsclib = '-lpetsc'
     else:
       self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
-    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split())
+    self.complibs = self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
+    self.PETSC_WITH_EXTERNAL_LIB = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+self.packagelibs+self.complibs)
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(self.packagelibs+self.complibs)
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
-      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
-    else:
-      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
-    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
+      string.replace(self.PETSC_EXTERNAL_LIB_BASIC,self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
+
+    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.PETSC_EXTERNAL_LIB_BASIC)
     self.allincludes = self.headers.toStringNoDupes(includes)
     self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
     self.PETSC_CC_INCLUDES = self.allincludes
@@ -413,7 +412,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.PETSC_WITH_EXTERNAL_LIB)
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
