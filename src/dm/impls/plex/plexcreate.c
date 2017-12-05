@@ -2921,6 +2921,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extCV      = ".dat";
   size_t         len;
   PetscBool      isGmsh, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isMed, isPLY, isCV;
+  PetscBool      load_hdf5_viz = PETSC_FALSE;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -2939,6 +2940,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,     4, &isMed);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extPLY,     4, &isPLY);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extCV,      4, &isCV);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, NULL, "-load_hdf5_viz", &load_hdf5_viz, NULL);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -2947,7 +2949,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isFluent) {
     ierr = DMPlexCreateFluentFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
-  } else if (isHDF5) {
+  } else if (isHDF5 && !load_hdf5_viz) {
     PetscViewer viewer;
 
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
@@ -2966,6 +2968,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = idm;
     }
+  } else if (isHDF5 && load_hdf5_viz) {
+    ierr = DMPlexCreateHDF5VizFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isMed) {
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {
