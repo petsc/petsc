@@ -330,7 +330,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetInterval(rand,.9,1.0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx->da,u,&s);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   lenglob  = appctx->param.E*(appctx->param.N-1);
   for (i=0; i<lenglob; i++) {
     s[i]= 0;
@@ -341,7 +341,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   }
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
   ierr = VecSum(u,&sum);CHKERRQ(ierr);
   ierr = VecShift(u,-sum/lenglob);CHKERRQ(ierr);
@@ -370,7 +370,7 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
   PetscReal         sum;
 
   ierr = DMDAVecGetArray(appctx->da,u,&s);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   lenglob  = appctx->param.E*(appctx->param.N-1);
   for (i=0; i<lenglob; i++) {
     s[i]= 0;
@@ -379,7 +379,7 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
     }
   }
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
   ierr = VecSum(u,&sum);CHKERRQ(ierr);
   ierr = VecShift(u,-sum/lenglob);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ PetscErrorCode ComputeReference(TS ts,PetscReal t,Vec obj,AppCtx *appctx)
   PetscInt          i, j,lenglob;
 
   ierr = DMDAVecGetArray(appctx->da,obj,&s);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   lenglob  = appctx->param.E*(appctx->param.N-1);
   for (i=0; i<lenglob; i++) {
     s[i]= 0;
@@ -413,7 +413,7 @@ PetscErrorCode ComputeReference(TS ts,PetscReal t,Vec obj,AppCtx *appctx)
     }
   }
   ierr = DMDAVecRestoreArray(appctx->da,obj,&s);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,(void*)&xg);CHKERRQ(ierr);
   return 0;
 }
 
