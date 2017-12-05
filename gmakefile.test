@@ -134,15 +134,22 @@ else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
+# link line constructed differently for gmakefile vs gmakefile.test invocation
+ifeq ($(libpetscall),)
+PETSC_TEST_LIB = $(PETSC_LIB)
+else
+PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
+endif
+
 # Test executables
-$(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
+$(TESTDIR)/%f : $(TESTDIR)/%f.o $$^ $(libpetscall)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
-$(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
+$(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $$^ $(libpetscall)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
-$(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $< $(PETSC_LIB)
+$(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)

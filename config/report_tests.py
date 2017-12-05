@@ -24,23 +24,24 @@ def summarize_results(directory):
   print("\n# -------------")
   print("#   Summary    ")
   print("# -------------")
-  print("# FAILED " + failstr)
+  if failstr.strip(): print("# FAILED " + failstr)
 
   for t in "success failed todo skip".split():
     percent=summary[t]/float(summary['total'])*100
     print("# %s %d/%d tests (%3.1f%%)" % (t, summary[t], summary['total'], percent))
 
-  fail_targets=(
+  if failstr.strip():
+      fail_targets=(
           re.sub('(?<=[0-9]_\w)_.*','',
           re.sub('_1 ',' ',
           re.sub('-','-run',
           re.sub('cmd-','',
           re.sub('diff-','',failstr+' ')))))
           )
-  # Need to make sure we have a unique list
-  fail_targets=' '.join(list(set(fail_targets.split())))
-  print("#\n# To rerun failed tests: ")
-  print("#     make -f gmakefile.test test search='" + fail_targets.strip()+"'")
+      # Need to make sure we have a unique list
+      fail_targets=' '.join(list(set(fail_targets.split())))
+      print("#\n# To rerun failed tests: ")
+      print("#     make -f gmakefile.test test search='" + fail_targets.strip()+"'")
   return
 
 def main():
