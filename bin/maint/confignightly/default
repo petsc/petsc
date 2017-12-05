@@ -13,9 +13,9 @@
   set DASHN=-n
   set GIT=yes
   set URL=https://bitbucket.org/petsc/petsc
-  set RNAME=petsc.clone
   set TNAME=`echo ${TEST} | cut -d ':' -f 1`
   set BRANCH=`echo ${TEST} | cut -s -d ':' -f 2`
   if ("$BRANCH" == "") then
     set BRANCH='next'
   endif
+  set RNAME=petsc.$BRANCH
