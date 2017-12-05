@@ -89,7 +89,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscCalloc1(dim,&lambda);CHKERRQ(ierr);
+  ierr = PetscCalloc1(PetscMax(3, dim),&lambda);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMClone(cdm, &mdm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(cdm, &csec);CHKERRQ(ierr);
