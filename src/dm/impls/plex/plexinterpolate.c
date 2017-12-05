@@ -561,7 +561,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Vec            coordinatesA, coordinatesB;
   PetscSection   coordSectionA, coordSectionB;
   PetscScalar   *coordsA, *coordsB;
-  PetscInt       spaceDim, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
+  PetscInt       spaceDim, Nf, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -572,6 +572,9 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
   if (coordSectionA == coordSectionB) PetscFunctionReturn(0);
+  ierr = PetscSectionGetNumFields(coordSectionA, &Nf);CHKERRQ(ierr);
+  if (!Nf) PetscFunctionReturn(0);
+  if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate fields must be 1, not %D", Nf);
   if (!coordSectionB) {
     PetscInt dim;
 
