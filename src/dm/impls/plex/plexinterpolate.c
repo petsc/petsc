@@ -488,7 +488,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
 
   Input Parameters:
 + dm - The DMPlex object with only cells and vertices
-- dmInt - If NULL a new DM is created, otherwise the interpolated DM is put into the given DM
+- dmInt - The interpolated DM
 
   Output Parameter:
 . dmInt - The complete DMPlex object
@@ -503,9 +503,12 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   DM             idm, odm = dm;
   PetscSF        sfPoint;
   PetscInt       depth, dim, d;
+  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmInt, 2);
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -515,8 +518,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
-    if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
-    else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
     if (depth > 0) {
@@ -527,6 +529,10 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
   }
+  ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
+  ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
