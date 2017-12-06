@@ -118,14 +118,17 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Basic
 #define GTOLNAME _Basic
+#define GTOLBS mapping->bs
 #define GTOL(g, local) do {                  \
     local = map->globals[g/bs - start];      \
     local = bs*local + (g % bs);             \
   } while (0)
+
 #include <../src/vec/is/utils/isltog.h>
 
 #define GTOLTYPE _Basic
 #define GTOLNAME Block_Basic
+#define GTOLBS 1
 #define GTOL(g, local) do {                  \
     local = map->globals[g - start];         \
   } while (0)
@@ -133,6 +136,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Hash
 #define GTOLNAME _Hash
+#define GTOLBS mapping->bs
 #define GTOL(g, local) do {                  \
     PetscHashIMap(map->globalht,g/bs,local); \
     local = bs*local + (g % bs);             \
@@ -141,6 +145,7 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 
 #define GTOLTYPE _Hash
 #define GTOLNAME Block_Hash
+#define GTOLBS 1
 #define GTOL(g, local) do {                  \
     PetscHashIMap(map->globalht,g,local);    \
   } while (0)
