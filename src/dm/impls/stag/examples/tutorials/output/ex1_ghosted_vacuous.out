@@ -1,0 +1,119 @@
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 13
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 5 (7 with ghosts)
+[0] Local native entries: 10
+[0] Local entries total : 14
+[1] Local elements : 4 (6 with ghosts)
+[1] Local native entries: 8
+[1] Local entries total : 12
+[2] Local elements : 4 (6 with ghosts)
+[2] Local native entries: 9
+[2] Local entries total : 12
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 13
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:1
+[0] Local elements : 5 (7 with ghosts)
+[0] Local native entries: 10
+[0] Local entries total : 14
+[1] Local elements : 4 (6 with ghosts)
+[1] Local native entries: 8
+[1] Local entries total : 12
+[2] Local elements : 4 (6 with ghosts)
+[2] Local native entries: 9
+[2] Local entries total : 12
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 13
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:0
+[0] Local elements : 5 (7 with ghosts)
+[0] Local native entries: 5
+[0] Local entries total : 7
+[1] Local elements : 4 (6 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 6
+[2] Local elements : 4 (6 with ghosts)
+[2] Local native entries: 5
+[2] Local entries total : 6
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 13
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:1 1:0
+[0] Local elements : 5 (7 with ghosts)
+[0] Local native entries: 5
+[0] Local entries total : 7
+[1] Local elements : 4 (6 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 6
+[2] Local elements : 4 (6 with ghosts)
+[2] Local native entries: 5
+[2] Local entries total : 6
+DM Object: 3 MPI processes
+  type: stag
+Dimension: 1
+Global size: 13
+Boundary ghosting: GHOSTED
+Elementwise ghost stencil: BOX, width 1
+Stratum dof: 0:0 1:1
+[0] Local elements : 5 (7 with ghosts)
+[0] Local native entries: 5
+[0] Local entries total : 7
+[1] Local elements : 4 (6 with ghosts)
+[1] Local native entries: 4
+[1] Local entries total : 6
+[2] Local elements : 4 (6 with ghosts)
+[2] Local native entries: 4
+[2] Local entries total : 6
+Vec Object: Sol_u 3 MPI processes
+  type: mpi
+Process [0]
+1.1234
+1.15533
+1.19317
+1.23693
+1.28661
+Process [1]
+1.34221
+1.40372
+1.47116
+1.5445
+Process [2]
+1.62377
+1.70895
+1.80005
+1.89707
+2.
+Vec Object: Sol_p 3 MPI processes
+  type: mpi
+Process [0]
+0.415062
+0.491985
+0.568908
+0.645831
+0.722754
+Process [1]
+0.799677
+0.8766
+0.953523
+1.03045
+Process [2]
+1.10737
+1.18429
+1.26122
+1.33814
+Error (abs): 3.4542e-15
+Error (rel): 5.26821e-16

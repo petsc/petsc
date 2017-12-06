@@ -24,6 +24,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 #endif
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
 
 /*@C
   DMRegisterAll - Registers all of the DM components in the DM package.
@@ -63,6 +65,8 @@ PetscErrorCode  DMRegisterAll(void)
   ierr = DMRegister(DMP4EST,      DMCreate_p4est);CHKERRQ(ierr);
   ierr = DMRegister(DMP8EST,      DMCreate_p8est);CHKERRQ(ierr);
 #endif
+  ierr = DMRegister(DMPRODUCT,    DMCreate_Product);CHKERRQ(ierr);
+  ierr = DMRegister(DMSTAG,       DMCreate_Stag);CHKERRQ(ierr);
   ierr = DMRegister(DMPRODUCT,    DMCreate_Product);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,0 +1,65 @@
+DM Object: 14 MPI processes
+  type: stag
+Dimension: 2
+Global sizes: 11 x 7
+Parallel decomposition: 7 x 2 ranks
+Boundary ghosting: NONE NONE
+Elementwise ghost stencil: STAR, width 1
+Stratum dof: 0:1 1:1 2:1
+[0] Rank coordinates (0,0)
+[0] Local elements : 2 x 4 (3 x 5 with ghosts)
+[0] Local native entries: 32
+[0] Local entries total : 60
+[1] Rank coordinates (1,0)
+[1] Local elements : 2 x 4 (4 x 5 with ghosts)
+[1] Local native entries: 32
+[1] Local entries total : 80
+[2] Rank coordinates (2,0)
+[2] Local elements : 2 x 4 (4 x 5 with ghosts)
+[2] Local native entries: 32
+[2] Local entries total : 80
+[3] Rank coordinates (3,0)
+[3] Local elements : 2 x 4 (4 x 5 with ghosts)
+[3] Local native entries: 32
+[3] Local entries total : 80
+[4] Rank coordinates (4,0)
+[4] Local elements : 1 x 4 (3 x 5 with ghosts)
+[4] Local native entries: 16
+[4] Local entries total : 60
+[5] Rank coordinates (5,0)
+[5] Local elements : 1 x 4 (3 x 5 with ghosts)
+[5] Local native entries: 16
+[5] Local entries total : 60
+[6] Rank coordinates (6,0)
+[6] Local elements : 1 x 4 (3 x 5 with ghosts)
+[6] Local native entries: 24
+[6] Local entries total : 60
+[7] Rank coordinates (0,1)
+[7] Local elements : 2 x 3 (3 x 5 with ghosts)
+[7] Local native entries: 28
+[7] Local entries total : 60
+[8] Rank coordinates (1,1)
+[8] Local elements : 2 x 3 (4 x 5 with ghosts)
+[8] Local native entries: 28
+[8] Local entries total : 80
+[9] Rank coordinates (2,1)
+[9] Local elements : 2 x 3 (4 x 5 with ghosts)
+[9] Local native entries: 28
+[9] Local entries total : 80
+[10] Rank coordinates (3,1)
+[10] Local elements : 2 x 3 (4 x 5 with ghosts)
+[10] Local native entries: 28
+[10] Local entries total : 80
+[11] Rank coordinates (4,1)
+[11] Local elements : 1 x 3 (3 x 5 with ghosts)
+[11] Local native entries: 14
+[11] Local entries total : 60
+[12] Rank coordinates (5,1)
+[12] Local elements : 1 x 3 (3 x 5 with ghosts)
+[12] Local native entries: 14
+[12] Local entries total : 60
+[13] Rank coordinates (6,1)
+[13] Local elements : 1 x 3 (3 x 5 with ghosts)
+[13] Local native entries: 21
+[13] Local entries total : 60
+2 Norm of test vector: 37.1484

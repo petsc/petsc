@@ -1,4 +1,3 @@
-
 #include <petsc/private/dmdaimpl.h>    /*I "petscdmda.h"  I*/
 
 extern PetscErrorCode  DMSetUp_DA_1D(DM);
@@ -27,4 +26,3 @@ PetscErrorCode  DMSetUp_DA(DM da)
   ierr = DMViewFromOptions(da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
