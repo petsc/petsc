@@ -134,7 +134,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     if (pcbddc->graphmaxcount != PETSC_MAX_INT) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Graph max count: %D\n",pcbddc->graphmaxcount);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  Use vertices: %d (vertex size %d)\n",pcbddc->use_vertices,pcbddc->vertex_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Use vertices: %d (vertex size %D)\n",pcbddc->use_vertices,pcbddc->vertex_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use edges: %d\n",pcbddc->use_edges);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use faces: %d\n",pcbddc->use_faces);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use true near null space: %d\n",pcbddc->use_nnsp_true);CHKERRQ(ierr);
@@ -146,22 +146,22 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Eliminate dirichlet boundary dofs: %d\n",pcbddc->eliminate_dirdofs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Switch on static condensation ops around the interface preconditioner: %d\n",pcbddc->switch_static);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use exact dirichlet trick: %d\n",pcbddc->use_exact_dirichlet_trick);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Multilevel max levels: %d\n",pcbddc->max_levels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Multilevel coarsening ratio: %d\n",pcbddc->coarsening_ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Multilevel max levels: %D\n",pcbddc->max_levels);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Multilevel coarsening ratio: %D\n",pcbddc->coarsening_ratio);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use estimated eigs for coarse problem: %d\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use deluxe scaling: %d\n",pcbddc->use_deluxe_scaling);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use deluxe zerorows: %d\n",pcbddc->deluxe_zerorows);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use deluxe singlemat: %d\n",pcbddc->deluxe_singlemat);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rebuild interface graph for Schur principal minors: %d\n",pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of dofs' layers for the computation of principal minors: %d\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of dofs' layers for the computation of principal minors: %D\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Use user CSR graph to compute successive layers: %d\n",pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Adaptive constraint selection threshold (active %d, userdefined %d): %g\n",pcbddc->adaptive_threshold,pcbddc->adaptive_selection,pcbddc->adaptive_userdefined);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Min constraints / connected component: %d\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Max constraints / connected component: %d\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Min constraints / connected component: %D\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Max constraints / connected component: %D\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Invert exact Schur complement for adaptive selection: %d\n",pcbddc->sub_schurs_exact_schur);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Symmetric computation of primal basis functions: %d\n",pcbddc->symmetric_primal);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Num. Procs. to map coarse adjacency list: %d\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Coarse eqs per proc (significant at the coarsest level): %d\n",pcbddc->coarse_eqs_per_proc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Num. Procs. to map coarse adjacency list: %D\n",pcbddc->coarse_adj_red);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Coarse eqs per proc (significant at the coarsest level): %D\n",pcbddc->coarse_eqs_per_proc);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Detect disconnected: %d\n",pcbddc->detect_disconnected);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick: %d (change explicit %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_change_explicit);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
@@ -198,20 +198,20 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
       ratio2 = PetscRealPart(interface_size)/pcbddc->coarse_size;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ********************************** STATISTICS AT LEVEL %d **********************************\n",pcbddc->current_level);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Global dofs sizes: all %d interface %d coarse %d\n",pc->pmat->rmap->N,(PetscInt)PetscRealPart(interface_size),pcbddc->coarse_size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Coarsening ratios: all/coarse %d interface/coarse %d\n",(PetscInt)ratio1,(PetscInt)ratio2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Active processes : %d\n",(PetscInt)gsum[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Total subdomains : %d\n",(PetscInt)gsum[5]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Global dofs sizes: all %D interface %D coarse %D\n",pc->pmat->rmap->N,(PetscInt)PetscRealPart(interface_size),pcbddc->coarse_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Coarsening ratios: all/coarse %D interface/coarse %D\n",(PetscInt)ratio1,(PetscInt)ratio2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Active processes : %D\n",(PetscInt)gsum[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Total subdomains : %D\n",(PetscInt)gsum[5]);CHKERRQ(ierr);
     if (pcbddc->benign_have_null) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Benign subs      : %d\n",(PetscInt)totbenign);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Benign subs      : %D\n",(PetscInt)totbenign);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  Dofs type        :\tMIN\tMAX\tMEAN\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Interior  dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Interface dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[2],(PetscInt)gmax[2],(PetscInt)(gsum[2]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Primal    dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Local     dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[4],(PetscInt)gmax[4],(PetscInt)(gsum[4]/gsum[0]));CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Local     subs   :\t%d\t%d\n",(PetscInt)gmin[5],(PetscInt)gmax[5]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  ********************************** COARSE PROBLEM DETAILS *********************************\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Dofs type        :\tMIN\tMAX\tMEAN\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Interior  dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[1],(PetscInt)gmax[1],(PetscInt)(gsum[1]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Interface dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[2],(PetscInt)gmax[2],(PetscInt)(gsum[2]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Primal    dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Local     dofs   :\t%D\t%D\t%D\n",(PetscInt)gmin[4],(PetscInt)gmax[4],(PetscInt)(gsum[4]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Local     subs   :\t%D\t%D\n"    ,(PetscInt)gmin[5],(PetscInt)gmax[5]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ********************************** COARSE PROBLEM DETAILS *********************************\n");CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /* the coarse problem can be handled by a different communicator */

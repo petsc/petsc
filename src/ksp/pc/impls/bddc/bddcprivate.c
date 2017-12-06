@@ -2074,6 +2074,9 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  if (ncc) *ncc = 0;
+  if (cc) *cc = NULL;
+  if (primalv) *primalv = NULL;
   ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   if (!dm) {
@@ -2148,8 +2151,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
 
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     if (!A->rmap->N || !A->cmap->N) {
-      *ncc = 0;
-      *cc = NULL;
+      ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
@@ -2303,7 +2305,6 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
       }
       *cc = cc_n;
     }
-    if (primalv) *primalv = NULL;
   }
   /* clean up graph */
   graph->xadj = 0;
@@ -4890,7 +4891,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscScalar    m_one = -1.0;
   PetscReal      value;
   PetscInt       n_D,n_R;
-  PetscBool      check_corr[2],issbaij;
+  PetscBool      check_corr,issbaij;
   PetscErrorCode ierr;
   /* prefixes stuff */
   char           dir_prefix[256],neu_prefix[256],str_level[16];
@@ -4907,8 +4908,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
     ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
   } else {
-    ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
-    sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
+    ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
     ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
     len -= 15; /* remove "pc_bddc_coarse_" */
     if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
@@ -5099,19 +5099,18 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   }
 
   /* adapt Dirichlet and Neumann solvers if a nullspace correction has been requested */
-  check_corr[0] = check_corr[1] = PETSC_FALSE;
+  check_corr = PETSC_FALSE;
   if (pcbddc->NullSpace_corr[0]) {
     ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
   }
   if (dirichlet && pcbddc->NullSpace_corr[0] && !pcbddc->switch_static) {
-    check_corr[0] = PETSC_TRUE;
+    check_corr = PETSC_TRUE;
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_TRUE,pcbddc->NullSpace_corr[1]);CHKERRQ(ierr);
   }
   if (neumann && pcbddc->NullSpace_corr[2]) {
-    check_corr[1] = PETSC_TRUE;
+    check_corr = PETSC_TRUE;
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,PETSC_FALSE,pcbddc->NullSpace_corr[3]);CHKERRQ(ierr);
   }
-
   /* check Dirichlet and Neumann solvers */
   if (pcbddc->dbg_flag) {
     if (dirichlet) { /* Dirichlet */
@@ -5121,7 +5120,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = VecAXPY(pcis->vec1_D,m_one,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecNorm(pcis->vec1_D,NORM_INFINITY,&value);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
-      if (check_corr[0]) {
+      if (check_corr) {
         ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -5133,7 +5132,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = VecAXPY(pcbddc->vec1_R,m_one,pcbddc->vec2_R);CHKERRQ(ierr);
       ierr = VecNorm(pcbddc->vec1_R,NORM_INFINITY,&value);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e\n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
-      if (check_corr[1]) {
+      if (check_corr) {
         ierr = PCBDDCNullSpaceCheckCorrection(pc,PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -7483,7 +7482,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
-  PetscBool              isredundant,isbddc,isnn,coarse_reuse;
+  PetscBool              coarse_reuse;
   PetscInt               ncoarse,nedcfield;
   PetscBool              compute_vecs = PETSC_FALSE;
   PetscScalar            *array;
@@ -7810,7 +7809,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* create the coarse KSP object only once with defaults */
   if (coarse_mat) {
+    PetscBool   isredundant,isnn,isbddc;
     PetscViewer dbg_viewer = NULL;
+
     if (pcbddc->dbg_flag) {
       dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)coarse_mat));
       ierr = PetscViewerASCIIAddTab(dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
@@ -7840,7 +7841,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
         if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
         ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
-        sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
+        ierr = PetscSNPrintf(str_level,sizeof(str_level),"l%d_",(int)(pcbddc->current_level));CHKERRQ(ierr);
         ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
       }
       ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
@@ -7872,21 +7873,20 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
 
     /* get some info after set from options */
-    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     /* multilevel can only be requested via -pc_bddc_levels or PCBDDCSetLevels */
     if (isbddc && !multilevel_allowed) {
       ierr   = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
       isbddc = PETSC_FALSE;
     }
     /* multilevel cannot be done with coarse PCs different from BDDC or NN */
-    if (multilevel_requested && !isbddc && !isnn) {
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
+    if (multilevel_requested && multilevel_allowed && !isbddc && !isnn) {
       ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
       isbddc = PETSC_TRUE;
-      isnn   = PETSC_FALSE;
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     if (isredundant) {
       KSP inner_ksp;
       PC  inner_pc;
@@ -7897,8 +7897,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
 
     /* parameters which miss an API */
+    ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
     if (isbddc) {
       PC_BDDC* pcbddc_coarse = (PC_BDDC*)pc_temp->data;
+
       pcbddc_coarse->detect_disconnected = PETSC_TRUE;
       pcbddc_coarse->coarse_eqs_per_proc = pcbddc->coarse_eqs_per_proc;
       pcbddc_coarse->benign_saddle_point = pcbddc->benign_have_null;

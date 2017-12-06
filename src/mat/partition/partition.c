@@ -41,23 +41,17 @@ static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part,IS *part
   nparts = part->n;
   ierr = PetscCalloc1(nparts,&parts);CHKERRQ(ierr);
   d = M/nparts;
-  for(i=0; i<nparts; i++){
-	parts[i] = d;
-  }
+  for (i=0; i<nparts; i++) parts[i] = d;
   r = M%nparts;
-  for(i=0; i<r; i++){
-	parts[i] += 1;
-  }
-  for(i=1; i<nparts; i++){
-	parts[i] += parts[i-1];
-  }
+  for (i=0; i<r; i++) parts[i] += 1;
+  for (i=1; i<nparts; i++) parts[i] += parts[i-1];
   ierr = PetscCalloc1(m,&indices);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(part->adj,&start,&end);CHKERRQ(ierr);
-  for(i=start; i<end; i++){
-	ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
-	if(loc<0) loc = -(loc+1);
-	else loc = loc+1;
-	indices[i-start] = loc;
+  for (i=start; i<end; i++) {
+    ierr = PetscFindInt(i,nparts,parts,&loc);CHKERRQ(ierr);
+    if (loc<0) loc = -(loc+1);
+    else loc = loc+1;
+    indices[i-start] = loc;
   }
   ierr = PetscFree(parts);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),m,indices,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
