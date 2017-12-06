@@ -47,7 +47,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);                /* work1 <- A y */
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);   /* work2 <- x - work1 */
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);  /* work1 <- C work2 */
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);                /* y <- y + work1 = B x + C (x - A B x) = (B + C (1 - A B)) x */
   }
@@ -56,7 +55,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
       next = next->previous;
       ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
       ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
       ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
       ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
     }
@@ -86,7 +84,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
     next = next->previous;
     ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -96,7 +93,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
       next = next->next;
       ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
       ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
       ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
       ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
     }
@@ -147,7 +143,6 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -165,7 +160,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApplyTranspose(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
