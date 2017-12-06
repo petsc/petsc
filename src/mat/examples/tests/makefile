@@ -1006,26 +1006,26 @@ runex5_3:
 	else printf "${PWD}\nPossible problem with ex5_34 for mpibaij,np = 3,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_3.tmp;
 
-runex5_ell:
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type ell > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_41.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for seqell,np = 1,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+runex5_sell:
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type sell > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_41.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for seqsell,np = 1,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type ell > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_43.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for mpiell,np = 3,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type sell > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_43.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for mpisell,np = 3,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type ell -test_diagonalscale > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_51.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for seqell,np = 1,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type sell -test_diagonalscale > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_51.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for seqsell,np = 1,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type ell -test_diagonalscale > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_53.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for mpiell,np = 3,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type sell -test_diagonalscale > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_53.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for mpisell,np = 3,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
 runex5_aijcusparse:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -vec_type cuda -rectA > ex5_1_aijcusparse.tmp 2>&1; \

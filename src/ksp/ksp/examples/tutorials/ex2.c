@@ -62,8 +62,8 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(A,1,5,NULL);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,1,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatMPIELLSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatSeqELLSetPreallocation(A,5,NULL);CHKERRQ(ierr);
+  ierr = MatMPISELLSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(A,5,NULL);CHKERRQ(ierr);
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by

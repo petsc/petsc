@@ -3,12 +3,12 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zellf.c
+SOURCEC  = zsellf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/ell/seq/ftn-custom/
+LOCDIR   = src/mat/impls/sell/seq/ftn-custom/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

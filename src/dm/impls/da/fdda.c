@@ -486,8 +486,8 @@ extern PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_3d_MPIELL(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM,Mat);
 
 /*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
@@ -598,7 +598,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   MPI_Comm       comm;
   MatType        Atype;
   PetscSection   section, sectionGlobal;
-  void           (*aij)(void)=NULL,(*baij)(void)=NULL,(*sbaij)(void)=NULL,(*ell)(void)=NULL;
+  void           (*aij)(void)=NULL,(*baij)(void)=NULL,(*sbaij)(void)=NULL,(*sell)(void)=NULL;
   MatType        mtype;
   PetscMPIInt    size;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -720,9 +720,9 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
         ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
       }
       if (!sbaij) {
-        ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIELLSetPreallocation_C",&ell);CHKERRQ(ierr);
-        if (!ell) {
-          ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqELLSetPreallocation_C",&ell);CHKERRQ(ierr);
+        ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISELLSetPreallocation_C",&sell);CHKERRQ(ierr);
+        if (!sell) {
+          ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSELLSetPreallocation_C",&sell);CHKERRQ(ierr);
         }
       }
     }
@@ -759,11 +759,11 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     } else if (dim == 3) {
       ierr = DMCreateMatrix_DA_3d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
-  } else if (ell) {
+  } else if (sell) {
      if (dim == 2) {
-       ierr = DMCreateMatrix_DA_2d_MPIELL(da,A);CHKERRQ(ierr);
+       ierr = DMCreateMatrix_DA_2d_MPISELL(da,A);CHKERRQ(ierr);
      } else if (dim == 3) {
-       ierr = DMCreateMatrix_DA_3d_MPIELL(da,A);CHKERRQ(ierr);
+       ierr = DMCreateMatrix_DA_3d_MPISELL(da,A);CHKERRQ(ierr);
      } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   }else {
     ISLocalToGlobalMapping ltog;
@@ -787,7 +787,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 }
 
 /* ---------------------------------------------------------------------------------*/
-PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
+PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p;
@@ -842,8 +842,8 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
     }
   }
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
-  ierr = MatSeqELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPISELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
@@ -889,7 +889,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMatrix_DA_3d_MPIELL(DM da,Mat J)
+PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
@@ -949,8 +949,8 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIELL(DM da,Mat J)
     }
   }
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
-  ierr = MatSeqELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
-  ierr = MatMPIELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPISELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
 

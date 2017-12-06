@@ -1,8 +1,8 @@
 
-#if !defined(__MPIELL_H)
-#define __MPIELL_H
+#if !defined(__MPISELL_H)
+#define __MPISELL_H
 #endif
-#include <../src/mat/impls/ell/seq/ell.h>
+#include <../src/mat/impls/sell/seq/sell.h>
 
 typedef struct {
   Mat A,B;                             /* local submatrices: A (diag part),
@@ -35,31 +35,31 @@ typedef struct {
   PetscScalar *rowvalues;          /* nonzero values in row */
   PetscBool   getrowactive;        /* indicates MatGetRow(), not restored */
 
-  /* Used by MatDistribute_MPIELL() to allow reuse of previous matrix allocation  and nonzero pattern */
+  /* Used by MatDistribute_MPISELL() to allow reuse of previous matrix allocation  and nonzero pattern */
   PetscInt *ld;                    /* number of entries per row left of diagona block */
-} Mat_MPIELL;
+} Mat_MPISELL;
 
-PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
-PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIELL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPISELL(Mat);
 
-PETSC_INTERN PetscErrorCode MatDisAssemble_MPIELL(Mat);
-PETSC_INTERN PetscErrorCode MatDuplicate_MPIELL(Mat,MatDuplicateOption,Mat*);
+PETSC_INTERN PetscErrorCode MatDisAssemble_MPISELL(Mat);
+PETSC_INTERN PetscErrorCode MatDuplicate_MPISELL(Mat,MatDuplicateOption,Mat*);
 
-PETSC_INTERN PetscErrorCode MatDestroy_MPIELL_PtAP(Mat);
-PETSC_INTERN PetscErrorCode MatDestroy_MPIELL(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_PtAP(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_MPISELL(Mat);
 
-PETSC_INTERN PetscErrorCode MatSetValues_MPIELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
-PETSC_INTERN PetscErrorCode MatDestroy_MPIELL_MatMatMult(Mat);
-PETSC_INTERN PetscErrorCode MatSetOption_MPIELL(Mat,MatOption,PetscBool);
-PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIELL(Mat,Mat*);
+PETSC_INTERN PetscErrorCode MatSetValues_MPISELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
+PETSC_INTERN PetscErrorCode MatDestroy_MPISELL_MatMatMult(Mat);
+PETSC_INTERN PetscErrorCode MatSetOption_MPISELL(Mat,MatOption,PetscBool);
+PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPISELL(Mat,Mat*);
 
-PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIELL(PetscOptionItems*,Mat);
-PETSC_INTERN PetscErrorCode MatMPIELLSetPreallocation_MPIELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_MPISELL(PetscOptionItems*,Mat);
+PETSC_INTERN PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat,MatType,MatReuse,Mat*);
 
-PETSC_INTERN PetscErrorCode MatSOR_MPIELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
+PETSC_INTERN PetscErrorCode MatSOR_MPISELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
-PETSC_INTERN PetscErrorCode MatCreateColmap_MPIELL_Private(Mat);
-PETSC_INTERN PetscErrorCode MatDiagonalScaleLocal_MPIELL(Mat,Vec);
+PETSC_INTERN PetscErrorCode MatCreateColmap_MPISELL_Private(Mat);
+PETSC_INTERN PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat,Vec);
