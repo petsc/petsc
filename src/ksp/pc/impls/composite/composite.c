@@ -179,8 +179,12 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   }
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   while (next) {
-    ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
-    ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
+    if (!next->pc->dm) {
+      ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
+    }
+    if (!next->pc->mat) {
+      ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
+    }
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -536,9 +540,12 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 
    Level: Developer
 
+    Notes: To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+            call PCSetOperators() on that PC.
+
 .keywords: PC, get, composite preconditioner, sub preconditioner
 
-.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC()
+.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC(), PCSetOperators()
 @*/
 PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
@@ -558,7 +565,7 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_use_amat - Activates PCSetUseAmat()
+.  -pc_use_amat - activates PCSetUseAmat()
 -  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
@@ -569,6 +576,8 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
           inner PCs to be PCKSP.
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the outer Krylov method
+          To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+          call PCSetOperators() on that PC.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
