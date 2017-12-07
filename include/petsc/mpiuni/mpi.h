@@ -224,6 +224,7 @@ typedef int MPI_Datatype;
 #define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
 #define MPI_LONG_LONG          (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
 #define MPI_LONG_LONG_INT      MPI_LONG_LONG
+#define MPI_INTEGER8           MPI_LONG_LONG
 
 #define MPI_UNSIGNED_SHORT     (5 << 20 | 1 << 8 | (int)sizeof(unsigned short))
 #define MPI_UNSIGNED           (5 << 20 | 1 << 8 | (int)sizeof(unsigned))
@@ -235,6 +236,11 @@ typedef int MPI_Datatype;
 #define MPI_LONG_INT           (12 << 20 | 1 << 8 | (int)(sizeof(long) + sizeof(int)))
 #define MPI_SHORT_INT          (13 << 20 | 1 << 8 | (int)(sizeof(short) + sizeof(int)))
 #define MPI_2INT               (14 << 20 | 1 << 8 | (int)(2*sizeof(int)))
+
+/* Fortran datatypes; Jed Brown says they should be defined here */
+#define MPI_INTEGER MPI_INT
+#define MPI_DOUBLE_PRECISION MPI_DOUBLE
+#define MPI_COMPLEX16 MPI_C_DOUBLE_COMPLEX
 
 #define MPI_ORDER_C            0
 #define MPI_ORDER_FORTRAN      1

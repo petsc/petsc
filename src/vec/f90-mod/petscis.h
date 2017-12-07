@@ -19,6 +19,10 @@
       type tPetscSF
         PetscFortranAddr:: v
       end type tPetscSF
+      type PetscSFNode
+        PetscInt    rank
+        PetscInt    index
+      end type PetscSFNode
 
       IS, parameter :: PETSC_NULL_IS = tIS(-1)
       PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(-1)
