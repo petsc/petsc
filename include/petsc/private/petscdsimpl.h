@@ -34,7 +34,7 @@ struct _PetscDSOps {
 struct _p_PetscDS {
   PETSCHEADER(struct _PetscDSOps);
   void        *data;              /* Implementation object */
-  PetscDS      bdprob;            /* The height 1 subspace */
+  PetscDS     *subprobs;          /* The subspaces for each dimension */
   PetscBool    setup;             /* Flag for setup */
   PetscInt     Nf;                /* The number of solution fields */
   PetscBool   *implicit;          /* Flag for implicit or explicit solve */
