@@ -34,7 +34,7 @@ PETSC_EXTERN void PETSC_STDCALL  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,P
   *ierr = PetscSFGetGraph(*sf,nroots,nleaves,&ilocal,&iremote);if (*ierr) return;
   *ierr = F90Array1dCreate((void*)ilocal,MPIU_INT,1,*nleaves, ailocal PETSC_F90_2PTR_PARAM(pilocal));
   /* this creates a memory leak */
-  f90arraysfnodecreate_((PetscInt*)iremote,nleaves, airemote PETSC_F90_2PTR_PARAM(pairemote));
+  f90arraysfnodecreate_((PetscInt*)iremote,nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, int *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
