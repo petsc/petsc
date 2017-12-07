@@ -83,6 +83,10 @@ ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_DM_LIB}
 	${RM} -f ex22.o
 
+ex26: ex26.o  chkopts
+	-${CLINKER} -o ex26 ex26.o ${PETSC_DM_LIB}
+	${DSYMUTIL} ex26
+	${RM} -f ex26.o
 
 #--------------------------------------------------------------------------
 runex3_nonconforming_simplex_2_view:
