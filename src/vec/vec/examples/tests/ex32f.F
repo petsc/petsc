@@ -51,5 +51,10 @@
 
       end
 
-
+!/*TEST
+!
+!     test:
+!       requires: !complex
+!
+!TEST*/
 

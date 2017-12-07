@@ -26,6 +26,7 @@
       PetscErrorCode ierr
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
+      PetscViewer singleton
 
       nlocal = 6
       nghost = 2
@@ -113,12 +114,21 @@
 
 !     Print out each vector, including the ghost padding region.
 
-      call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+      call PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,singleton,ierr)
+      call VecView(lx,singleton,ierr)
+      call PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,singleton,ierr)
 
       call VecGhostRestoreLocalForm(gx,lx,ierr)
       call VecDestroy(gx,ierr)
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!TEST*/
 
 

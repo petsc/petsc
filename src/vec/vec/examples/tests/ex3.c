@@ -47,3 +47,14 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+     test:
+       nsize: 2
+
+     test:
+       suffix: 2
+       nsize: 2
+       args: -vec_view ascii::ascii_info
+
+TEST*/
