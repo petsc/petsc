@@ -157,4 +157,27 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -pc_type jacobi -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always
+
+    test:
+      suffix: 2
+      nsize: 2
+      args: -pc_type jacobi -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always
+
+    test:
+      suffix: nocheby
+      args: -ksp_est_view
+
+    test:
+      suffix: chebynoest
+      args: -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_eigenvalues 0.1,1.0
+
+    test:
+      suffix: chebyest
+      args: -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_esteig 
+
+TEST*/
 

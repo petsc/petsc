@@ -164,3 +164,17 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
+
+/*TEST
+
+    test:
+      output_file: output/ex29.out
+      args: -mat_no_inode
+      requires: ml
+
+    test:
+      suffix: 2
+      nsize: 3
+      requires: ml
+
+TEST*/

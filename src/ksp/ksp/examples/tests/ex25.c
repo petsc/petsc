@@ -110,4 +110,10 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
 
+    test:
+      args: -f ${DATAFILESPATH}/matrices/indefinite/afiro -ksp_rtol 1.e-3
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

@@ -152,3 +152,33 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
+
+/*TEST
+
+    test:
+      args: -ksp_monitor_short
+
+    test:
+      suffix: 2
+      args:  -ksp_monitor_short
+      nsize: 3
+
+    test:
+      suffix: ml_1
+      args:  -ksp_monitor_short -pc_type ml -mat_no_inode
+      nsize: 3
+      requires: ml
+
+    test:
+      suffix: ml_2
+      args:  -ksp_monitor_short -pc_type ml -mat_no_inode -ksp_max_it 3
+      nsize: 3
+      requires: ml
+
+    test:
+      suffix: ml_3
+      args:  -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE -ksp_max_it 7
+      nsize: 1
+      requires: ml
+
+TEST*/

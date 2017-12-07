@@ -147,3 +147,46 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 1
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 2
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      output_file: output/ex37.out
+
+    test:
+      suffix: mumps
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -pc_factor_mat_solver_package mumps -pc_type lu 
+      requires: datafilespath  mumps !complex double !define(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      output_file: output/ex37.out
+
+    test:
+      suffix: 3
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 0
+      requires: datafilespath  !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 4
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 1
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+    test:
+      suffix: 5
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      output_file: output/ex37.out
+
+TEST*/

@@ -292,3 +292,13 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   ierr = DMRestoreNamedLocalVector(cdm,"coefficient",&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres  -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4 
+      nsize: 16
+      requires: !single
+      output_file: output/ex29.out
+
+TEST*/

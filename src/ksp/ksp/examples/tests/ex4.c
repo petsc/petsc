@@ -122,3 +122,18 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      args: -ksp_monitor_short -m 5 -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+
+    test:
+      suffix: 3
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always
+
+    test:
+      suffix: 5
+      args: -pc_type eisenstat -ksp_monitor_short -m 5	-ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/

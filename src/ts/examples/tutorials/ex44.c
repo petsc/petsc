@@ -187,3 +187,24 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      suffix: a
+      output_file: output/ex44.out
+
+    test:
+      suffix: b
+      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic
+      output_file: output/ex44.out
+
+    test:
+      suffix: 2
+      nsize: 2
+      args: -ts_rtol 0 -ts_atol 1e-1 -ts_adapt_type basic
+      output_file: output/ex44_2.out
+      filter: sort -b
+      filter_output: sort -b
+
+TEST*/

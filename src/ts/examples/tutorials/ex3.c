@@ -491,3 +491,30 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 
   return 0;
 }
+
+/*TEST
+
+    test:
+      args: -nox -ts_type ssp -ts_dt 0.0005
+
+    test:
+      suffix: 2
+      args: -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1
+
+    test:
+      suffix: 3
+      args:  -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason 
+      filter: sed "s/ATOL/RTOL/g"
+      requires: !single
+
+    test:
+      suffix: 4
+      args: -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason
+      filter: sed "s/ATOL/RTOL/g"
+
+    test:
+      suffix: 5
+      args: -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason -time_dependent_rhs
+      filter: sed "s/ATOL/RTOL/g"
+
+TEST*/

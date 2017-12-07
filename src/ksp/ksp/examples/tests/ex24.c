@@ -121,3 +121,23 @@ int main(int argc,char **args)
 }
 
 
+/*TEST
+
+    test:
+      args: -pc_type icc -mat_type seqsbaij -mat_ignore_lower_triangular
+
+    test:
+      suffix: 2
+      args: -pc_type icc -pc_factor_levels 2  -mat_type seqsbaij -mat_ignore_lower_triangular 
+
+    test:
+      suffix: 3
+      nsize: 2
+      args: -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular -ksp_max_it 8
+
+    test:
+      suffix: 4
+      nsize: 2
+      args: -pc_type bjacobi -sub_pc_type icc -sub_pc_factor_levels 1 -mat_type mpisbaij -mat_ignore_lower_triangular
+
+TEST*/

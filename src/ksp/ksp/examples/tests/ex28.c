@@ -139,3 +139,21 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      nsize: 3
+      output_file: output/ex28.out
+
+    test:
+      suffix: 2
+      args:  -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
+      nsize: 3
+
+    test:
+      suffix: 3
+      args:  -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi
+      nsize: 5
+
+TEST*/

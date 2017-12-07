@@ -287,3 +287,124 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
+
+/*TEST
+
+    test:
+      requires: revolve
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.001 -mu 100000 -ts_trajectory_dirname ex20adj1dir
+
+    test:
+      suffix: 2
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_solution_only 
+
+    test:
+      suffix: 3
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_solution_only 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 4
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 5
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 6
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 7
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 8
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 5 -ts_trajectory_solution_only -ts_trajectory_monitor
+      output_file: output/ex20adj_3.out
+
+    test:
+      suffix: 9
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 5 -ts_trajectory_solution_only 0 -ts_trajectory_monitor
+      output_file: output/ex20adj_4.out
+
+    test:
+      requires: revolve
+      suffix: 10
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 5 -ts_trajectory_revolve_online -ts_trajectory_solution_only
+      output_file: output/ex20adj_2.out
+
+    test:
+      requires: revolve
+      suffix: 11
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 5 -ts_trajectory_revolve_online -ts_trajectory_solution_only 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 12
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_solution_only
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 13
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_solution_only 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 14
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 15
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 16
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 17
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 18
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 19
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 20
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_solution_only 0
+      output_file: output/ex20adj_2.out
+
+    test:
+      suffix: 21
+      requires: revolve
+      args: -ts_type cn -ts_dt 0.001 -mu 100000 -ts_max_steps 15 -ts_trajectory_type memory -ts_trajectory_max_cps_ram 3 -ts_trajectory_max_cps_disk 8 -ts_trajectory_stride 5 -ts_trajectory_solution_only 0 -ts_trajectory_save_stack 0
+      output_file: output/ex20adj_2.out
+
+TEST*/

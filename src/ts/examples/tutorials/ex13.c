@@ -265,4 +265,18 @@ PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
   PetscFunctionReturn(0);
 }
 
+/*TEST
+
+    test:
+      args: -ts_max_steps 5 -ts_monitor 
+
+    test:
+      suffix: 2
+      args: -ts_max_steps 5 -ts_monitor
+
+    test:
+      suffix: 3
+      args: -ts_max_steps 5 -snes_fd_color -ts_monitor
+
+TEST*/
 

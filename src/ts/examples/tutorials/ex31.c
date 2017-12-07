@@ -1317,3 +1317,12 @@ int main(int argc, char **argv)
   return ierr;
 }
 
+/*TEST
+
+    test:
+
+    test:
+      suffix: 2
+      args: -ts_type glee
+
+TEST*/
