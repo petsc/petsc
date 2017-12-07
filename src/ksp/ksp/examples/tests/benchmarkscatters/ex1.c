@@ -112,7 +112,7 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   ierr = MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ksptime = ksptime/size;
 
-  for (i=0; i<sizeof(events)/sizeof(int); i++) {
+  for (i=0; i<(int)(sizeof(events)/sizeof(int)); i++) {
     event = events[i];
     stats[COUNT]   = eventInfo[event].count;
     stats[TIME]    = eventInfo[event].time;
