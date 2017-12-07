@@ -206,6 +206,8 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
 
+  ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
+  
   tao->ntotalits += tao->niter;
   ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
 
@@ -2101,7 +2103,7 @@ PetscErrorCode TaoRegisterDestroy(void)
 
 .keywords: Tao, nonlinear, get, iteration, number,
 
-.seealso:   TaoGetLinearSolveIterations()
+.seealso:   TaoGetLinearSolveIterations(), TaoGetResidualNorm(), TaoGetObjective()
 @*/
 PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
 {
@@ -2109,6 +2111,63 @@ PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidIntPointer(iter,2);
   *iter = tao->niter;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TaoGetObjective - Gets the current value of the objective function
+   at this time.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  value - the current value
+
+   Level: intermediate
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetResidualNorm()
+@*/
+PetscErrorCode  TaoGetObjective(Tao tao,PetscReal *value)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidRealPointer(value,2);
+  *value = tao->fc;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   TaoGetResidualNorm - Gets the current value of the norm of the residual
+   at this time.
+
+   Not Collective
+
+   Input Parameter:
+.  tao - Tao context
+
+   Output Parameter:
+.  value - the current value
+
+   Level: intermediate
+
+   Developer Note: This is the 2-norm of the residual, we cannot use TaoGetGradientNorm() because that has
+                   a different meaning. For some reason Tao sometimes calls the gradient the residual.
+
+.keywords: Tao, nonlinear, get, iteration, number,
+
+.seealso:   TaoGetLinearSolveIterations(), TaoGetIterationNumber(), TaoGetObjective()
+@*/
+PetscErrorCode  TaoGetResidualNorm(Tao tao,PetscReal *value)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidRealPointer(value,2);
+  *value = tao->residual;
   PetscFunctionReturn(0);
 }
 

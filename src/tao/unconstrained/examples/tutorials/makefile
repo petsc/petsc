@@ -4,7 +4,7 @@ CFLAGS		 =
 FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
-EXAMPLESC        = eptorsion1.c eptorsion2.c minsurf2.c rosenbrock1.c heat-data-assimulation.c
+EXAMPLESC        = eptorsion1.c eptorsion2.c minsurf2.c rosenbrock1.c spectraladjointassimilation.c
 EXAMPLESF        = eptorsion2f.F rosenbrock1f.F90
 EXAMPLESCH       =
 EXAMPLESFH       = eptorsion2f.h rosenbrock1f.h
@@ -17,8 +17,16 @@ CLEANFILES       = eptorsion1 eptorsion2 minsurf2 rosenbrock1 eptorsion2f rosenb
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
+spectraladjointassimilation: spectraladjointassimilation.o chkopts
+	-${CLINKER} -o spectraladjointassimilation spectraladjointassimilation.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
+	${RM} spectraladjointassimilation.o
+
+burgers_spectral: burgers_spectral.o chkopts
+	-${CLINKER} -o burgers_spectral burgers_spectral.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
+	${RM} burgers_spectral.o
+
 heat-data-assimulation: heat-data-assimulation.o chkopts
-	-${CLINKER} -o heat-data-assimulation heat-data-assimulation.o ${PETSC_TAO_LIB}
+	-${CLINKER} -o heat-data-assimulation heat-data-assimulation.o ${PETSC_TAO_LIB}  ${PETSC_TS_LIB}
 	${RM} heat-data-assimulation.o
 
 rosenbrock1: rosenbrock1.o chkopts

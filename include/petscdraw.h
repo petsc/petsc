@@ -65,6 +65,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,PetscObj
 #define PETSC_DRAW_LIMEGREEN       30
 #define PETSC_DRAW_LAVENDERBLUSH   31
 #define PETSC_DRAW_PLUM            32
+#define PETSC_DRAW_MAXCOLOR       256
 
 /*MC
 
