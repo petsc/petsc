@@ -2771,12 +2771,12 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->lvec);CHKERRQ(ierr);
   ierr    = VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->Mvctx);CHKERRQ(ierr);
-  if (!a->Mvctx->mpi3) {
-    /* MPI1 is used, there is no need to create a->Mvctx_mpi1 for Mat-Mat ops */
-    a->Mvctx_mpi1     = a->Mvctx;
-    a->Mvctx_mpi1_flg = PETSC_TRUE;
-    ierr = PetscObjectReference((PetscObject)a->Mvctx);CHKERRQ(ierr);
+
+  if (oldmat->Mvctx_mpi1) {
+    ierr    = VecScatterCopy(oldmat->Mvctx_mpi1,&a->Mvctx_mpi1);CHKERRQ(ierr);
+    ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->Mvctx_mpi1);CHKERRQ(ierr);
   }
+
   ierr    = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   ierr    = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->A);CHKERRQ(ierr);
   ierr    = MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
@@ -5167,11 +5167,14 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
     PetscFunctionReturn(0);
   }
 
-  if (!a->Mvctx_mpi1) { /* create a->Mvctx_mpi1 to be used for Mat-Mat ops */
+  ctx = a->Mvctx;
+  if (a->Mvctx->mpi3 && !a->Mvctx_mpi1) { 
+    /* a->Mvctx is type of MPI3 which is not implemented for Mat-Mat ops,
+     thus create a->Mvctx_mpi1 */
     a->Mvctx_mpi1_flg = PETSC_TRUE;
     ierr = MatSetUpMultiply_MPIAIJ(A);CHKERRQ(ierr);
+    ctx = a->Mvctx_mpi1;
   }
-  ctx = a->Mvctx_mpi1;
   tag = ((PetscObject)ctx)->tag;
 
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
