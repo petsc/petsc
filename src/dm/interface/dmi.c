@@ -158,7 +158,16 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);
+    if (bs > 1) {
+      /* We need to check that the block size does not come from non-contiguous fields */
+      PetscInt i, j, set = 1;
+      for (i = 0; i < subSize; i += bs) {
+        for (j = 0; j < bs; ++j) {
+          if (subIndices[i+j] != subIndices[i]+j) {set = 0; break;}
+        }
+      }
+      if (set) {ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);}
+    }
   }
   if (subdm) {
     PetscSection subsection;
