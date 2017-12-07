@@ -1529,7 +1529,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
-PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
 
