@@ -3,6 +3,7 @@
 #include <petscdmshell.h>
 #include <petscdraw.h>
 #include <petscds.h>
+#include <petscdmadaptor.h>
 #include <petscconvest.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
@@ -3956,13 +3957,34 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 @*/
 PetscErrorCode  SNESReasonView(SNES snes,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool      isAscii;
+  PetscViewerFormat format;
+  PetscBool         isAscii;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isAscii);CHKERRQ(ierr);
   if (isAscii) {
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      DM                dm;
+      Vec               u;
+      PetscDS           prob;
+      PetscInt          Nf, f;
+      PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+      PetscReal         error;
+
+      ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+      ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
+      ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Nf, &exactFuncs);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(prob, f, &exactFuncs[f]);CHKERRQ(ierr);}
+      ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+      ierr = PetscFree(exactFuncs);CHKERRQ(ierr);
+      if (error < 1.0e-11) {ierr = PetscViewerASCIIPrintf(viewer, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
+      else                 {ierr = PetscViewerASCIIPrintf(viewer, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
+    }
     if (snes->reason > 0) {
       if (((PetscObject) snes)->prefix) {
         ierr = PetscViewerASCIIPrintf(viewer,"Nonlinear %s solve converged due to %s iterations %D\n",((PetscObject) snes)->prefix,SNESConvergedReasons[snes->reason],snes->iter);CHKERRQ(ierr);
@@ -4052,13 +4074,16 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
 
+  /* High level operations using the nonlinear solver */
   {
     PetscViewer       viewer;
     PetscViewerFormat format;
+    PetscInt          num;
     PetscBool         flg;
     static PetscBool  incall = PETSC_FALSE;
 
     if (!incall) {
+      /* Estimate the convergence rate of the discretization */
       ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) snes), ((PetscObject) snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
       if (flg) {
         PetscConvEst conv;
@@ -4075,6 +4100,37 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+      /* Adaptively refine the initial grid */
+      flg  = PETSC_FALSE;
+      ierr = PetscOptionsGetBool(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_initial", &flg, NULL);CHKERRQ(ierr);
+      if (flg) {
+        DMAdaptor adaptor;
+
+        incall = PETSC_TRUE;
+        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+        ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_INITIAL, &dm, &x);CHKERRQ(ierr);
+        ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+      /* Use grid sequencing to adapt */
+      num  = 0;
+      ierr = PetscOptionsGetInt(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_sequence", &num, NULL);CHKERRQ(ierr);
+      if (num) {
+        DMAdaptor adaptor;
+
+        incall = PETSC_TRUE;
+        ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSequenceLength(adaptor, num);CHKERRQ(ierr);
+        ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
+        ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_SEQUENTIAL, &dm, &x);CHKERRQ(ierr);
+        ierr = DMAdaptorDestroy(&adaptor);CHKERRQ(ierr);
         incall = PETSC_FALSE;
       }
     }

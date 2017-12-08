@@ -9656,5 +9656,5 @@ PC Object: 1 MPI processes
     total number of mallocs used during MatSetValues calls =0
       not using I-node routines
   1 SNES Function norm 4.078726123735e-13 
-Number of SNES iterations = 1
 L_2 Error: 1.8925
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

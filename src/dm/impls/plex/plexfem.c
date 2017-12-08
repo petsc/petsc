@@ -1006,6 +1006,146 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexComputeGradientClementInterpolant - This function computes the L2 projection of the cellwise gradient of a function u onto P1, and stores it in a Vec.
+
+  Input Parameters:
++ dm - The DM
+- LocX  - The coefficient vector u_h
+
+  Output Parameter:
+. locC - A Vec which holds the Clement interpolant of the gradient
+
+  Notes: Add citation to (Clement, 1975) and definition of the interpolant
+  \nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMComputeL2GradientDiff()
+@*/
+PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC)
+{
+  DM_Plex         *mesh  = (DM_Plex *) dm->data;
+  PetscInt         debug = mesh->printFEM;
+  DM               dmC;
+  PetscSection     section;
+  PetscQuadrature  quad;
+  PetscScalar     *interpolant, *gradsum;
+  PetscReal       *coords, *detJ, *J, *invJ;
+  const PetscReal *quadPoints, *quadWeights;
+  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cStart, cEnd, cEndInterior, vStart, vEnd, v, field, fieldOffset;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(locC, &dmC);CHKERRQ(ierr);
+  ierr = VecSet(locC, 0.0);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     Nc;
+
+    ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &quad);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+    numComponents += Nc;
+  }
+  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
+  ierr = PetscMalloc6(coordDim*numComponents*2,&gradsum,coordDim*numComponents,&interpolant,coordDim*Nq,&coords,Nq,&detJ,coordDim*coordDim*Nq,&J,coordDim*coordDim*Nq,&invJ);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+  for (v = vStart; v < vEnd; ++v) {
+    PetscScalar volsum = 0.0;
+    PetscInt   *star = NULL;
+    PetscInt    starSize, st, d, fc;
+
+    ierr = PetscMemzero(gradsum, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for (st = 0; st < starSize*2; st += 2) {
+      const PetscInt cell = star[st];
+      PetscScalar   *grad = &gradsum[coordDim*numComponents];
+      PetscScalar   *x    = NULL;
+      PetscReal      vol  = 0.0;
+
+      if ((cell < cStart) || (cell >= cEnd)) continue;
+      ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, J, invJ, detJ);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (field = 0, fieldOffset = 0; field < numFields; ++field) {
+        PetscObject  obj;
+        PetscClassId id;
+        PetscInt     Nb, Nc, q, qc = 0;
+
+        ierr = PetscMemzero(grad, coordDim*numComponents * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
+        else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);Nb = 1;}
+        else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+        for (q = 0; q < Nq; ++q) {
+          if (detJ[q] <= 0.0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)detJ[q], cell, q);
+          if (ierr) {
+            PetscErrorCode ierr2;
+            ierr2 = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr2);
+            ierr2 = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr2);
+            ierr2 = PetscFree4(interpolant,coords,detJ,J);CHKERRQ(ierr2);
+            CHKERRQ(ierr);
+          }
+          if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolateGradient_Static((PetscFE) obj, &x[fieldOffset], coordDim, invJ, NULL, q, interpolant);CHKERRQ(ierr);}
+          else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
+          for (fc = 0; fc < Nc; ++fc) {
+            const PetscReal wt = quadWeights[q*qNc+qc+fc];
+
+            for (d = 0; d < coordDim; ++d) grad[fc*coordDim+d] += interpolant[fc*dim+d]*wt*detJ[q];
+          }
+          vol += quadWeights[q*qNc]*detJ[q];
+        }
+        fieldOffset += Nb;
+        qc          += Nc;
+      }
+      ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (fc = 0; fc < numComponents; ++fc) {
+        for (d = 0; d < coordDim; ++d) {
+          gradsum[fc*coordDim+d] += grad[fc*coordDim+d];
+        }
+      }
+      volsum += vol;
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D gradient: [", cell);CHKERRQ(ierr);
+        for (fc = 0; fc < numComponents; ++fc) {
+          for (d = 0; d < coordDim; ++d) {
+            if (fc || d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(grad[fc*coordDim+d]));CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
+      }
+    }
+    for (fc = 0; fc < numComponents; ++fc) {
+      for (d = 0; d < coordDim; ++d) gradsum[fc*coordDim+d] /= volsum;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dmC, NULL, locC, v, gradsum, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree6(gradsum,interpolant,coords,detJ,J,invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMPlexComputeIntegralFEM - Form the local integral F from the local input X using pointwise functions specified by the user
 
@@ -1494,6 +1634,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
+        /* OPT: Pack all quad points from fine cell */
         ierr = DMLocatePoints(dmc, pointVec, DM_POINTLOCATION_NEAREST, &coarseCellSF);CHKERRQ(ierr);
         ierr = PetscSFViewFromOptions(coarseCellSF, NULL, "-interp_sf_view");CHKERRQ(ierr);
         /* Update preallocation info */
@@ -1583,6 +1724,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
         }
         ierr = VecRestoreArray(pointVec, &pV);CHKERRQ(ierr);
         /* Get set of coarse cells that overlap points (would like to group points by coarse cell) */
+        /* OPT: Read this out from preallocation information */
         ierr = DMLocatePoints(dmc, pointVec, DM_POINTLOCATION_NEAREST, &coarseCellSF);CHKERRQ(ierr);
         /* Update preallocation info */
         ierr = PetscSFGetGraph(coarseCellSF, NULL, &numCoarseCells, NULL, &coarseCells);CHKERRQ(ierr);
