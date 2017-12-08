@@ -6544,6 +6544,14 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         }
       }
       break;
+    case REFINER_SIMPLEX_TO_HEX_2D:
+      for (p = cStart; p < cEnd; ++p) {
+        for (r = 0; r < 3; ++r) {
+          newp     = (p - cStart)*3 + r;
+          pi[newp] = p;
+        }
+      }
+      break;
     case REFINER_HYBRID_SIMPLEX_2D:
       for (p = cStart; p < cMax; ++p) {
         for (r = 0; r < 4; ++r) {
@@ -6590,6 +6598,14 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (p = cMax; p < cEnd; ++p) {
         for (r = 0; r < 4; ++r) {
           newp     = (cMax - cStart)*8 + (p - cMax)*4 + r;
+          pi[newp] = p;
+        }
+      }
+      break;
+    case REFINER_SIMPLEX_TO_HEX_3D:
+      for (p = cStart; p < cEnd; ++p) {
+        for (r = 0; r < 4; ++r) {
+          newp     = (p - cStart)*4 + r;
           pi[newp] = p;
         }
       }
@@ -8552,15 +8568,16 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
-  PetscBool      isUniform, localized;
+  PetscBool      isUniform;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
   if (isUniform) {
     CellRefiner cellRefiner;
+    PetscBool   localized;
 
+    ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
     ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);

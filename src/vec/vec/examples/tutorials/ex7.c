@@ -11,7 +11,6 @@ and from Fortran to C\n\n";
 /*T
    Concepts: vectors^fortran-c;
    Processors: n
-   depends: ex7f.F
 T*/
 #include <petsc/private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -72,3 +71,4 @@ PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
   *ierr = MPI_Barrier(comm);
 
 }
+

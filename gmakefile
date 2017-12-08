@@ -5,10 +5,7 @@ include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
-TESTDIR := $(PETSC_ARCH)/tests
-MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
-TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
 
 pkgs := sys vec mat dm ksp snes ts tao
 
@@ -49,105 +46,27 @@ else
   libpetscall_libname := $(libpetsc_libname)
   libpetscall_static  := $(libpetsc_static)
 endif
-libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
+libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
 
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
-petscconf      := $(PETSC_ARCH)/include/petscconf.h
-petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
-generatedtest      := $(PETSC_ARCH)/lib/petsc/conf/testfiles
 
 all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
-TESTFLAGS :=             # Initialize as simple variable
-
-#workarround old cygwin versions
-ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
-ifeq ($(shell basename $(AR)),ar)
-  V ?=1
-endif
-endif
-V ?= $(if $(findstring s,$(MAKEFLAGS)),0)
-ifeq ($(V),)  # Default
-  quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
-  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-  quiettest = @printf "  %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
-else ifeq ($(V),0)		# Suppress entire command
-  quiet = @$($1)
-  quiettest = @
-else				# Show the full command line
-  quiet = $($1)
-  quiettest =
-  TESTFLAGS += -v
-endif
-
-ifeq ($(FORCE),1)
-  TESTFLAGS += -f    # force test execution
-endif
-ifeq ($(VALGRIND),1)
-  TESTFLAGS += -V    # Add valgrind to the flags
-endif
-ifeq ($(REPLACE),1)
-  TESTFLAGS += -m    # Replace results by passing -m to petscdiff
-endif
-ifeq ($(DIFF_NUMBERS),1)
-  TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
-endif
-ifdef OPTIONS
-  TESTFLAGS += -a '$(OPTIONS)'   # override arguments
-endif
-ifdef EXTRA_OPTIONS
-  TESTFLAGS += -e '$(EXTRA_OPTIONS)'  # add extra arguments
-endif
-ifdef NP
-  TESTFLAGS += -n $(NP)  # set number of processes
-endif
-# Override the default timeout that may be found at the top of config/petsc_harness.sh
-# This must be an integer.  It is given in seconds.
-ifdef TIMEOUT
-  TESTFLAGS += -t $(TIMEOUT)  # Override the default timeout
-endif
-
-
 $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
-$(generatedtest) : $(petscconf) $(petscvariables) config/gmakegentest.py | $$(@D)/.DIR
-	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
-
 -include $(generated)
--include $(generatedtest)
-
-ifeq ($(PETSC_LANGUAGE),CXXONLY)
-  cc_name := CXX
-else
-  cc_name := CC
-endif
 
 # implies shared libraries with MS compilers
 ifeq ($(SL_LINKER_FUNCTION),-LD)
 $(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
-PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
-PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
-
 langs := F cu cxx c
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
-testlangs := c cu cxx F F90
-concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
-testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
-testsrcs := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
-
-# Refresh testfiles when sources change, but don't balk if the source file is nonexistent (deleted)
-$(generatedtest) : $(testsrcs)
-$(testsrcs) :
-
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
@@ -217,87 +136,38 @@ ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
 
-%.$(SL_LINKER_SUFFIX) : $(call libname_function,%)
+%.$(SL_LINKER_SUFFIX) : $(call libname_function,%) | $(call soname_function,%)
 	@ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)
 	@ln -sf $(notdir $<) $@
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.c | $$(@D)/.DIR
+.PRECIOUS: $(call soname_function,%)
+
+$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
-# Test modules go in a different directory
-$(TESTDIR)/%.o : MODDIR = $(@D)
 FCMOD = cd
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
-
-# Test executables
-$(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
-
-$(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $< $(PETSC_LIB)
-
-$(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $< $(PETSC_LIB)
-
-# Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
-$(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
-
-# Testing convenience targets
-.PHONY: alltest test pre-clean
-test: pre-clean report_tests
-pre-clean:
-	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
-	@touch $(TESTLOGFILE)
-
-.PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
-testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
-# Targets to run tests in test-$pkg.$lang and delete the executables, language by language
-$(testpkgs) : test-% : $(foreach lang, $(testlangs), test-rm-%.$(lang))
-# List of raw test run targets
-alltesttargets := $(foreach tp, $(testpkgs), $(foreach lang, $(testlangs), $($(tp).$(lang))))
-
-# Run targets
-$(alltesttargets) : % : $(TESTDIR)/counts/%.counts
-.PHONY: $(alltesttargets)
-
-$(TESTDIR)/counts/%.counts :
-	$(quiettest) $< $(TESTFLAGS)
-
-# Targets to run tests and remove executables, by package-lang pairs.
-# Run the tests in each batch using recursive invocation of make because
-# we need all of them to complete before removing the executables.  Make
-# doesn't guarantee an exploration order for the graph.  Only recursive
-# if there is something to be done.
-alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
-$(alltest-rm) : test-rm-% : test-%
-ifneq ($(NO_RM),1)
-	$(call quiet,RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
-endif
-
-# Remove intermediate .o files
-# This only removes the files at the end which is insufficient
-#.INTERMEDIATE: $(testsrcs.o:%.o=%)
 
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
@@ -317,130 +187,20 @@ $(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
-$(testsrcs.o) : $(petscvariables)
 
-%/.DIR :
-	@mkdir -p $(@D)
-	@touch $@
+.PHONY: clean all 
 
-.PRECIOUS: %/.DIR
-
-.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
-
-.PHONY: clean cleantest all print
-
-cleantest:
-	${RM} -r $(TESTDIR) $(generatedtest)
-
-clean: cleantest
+clean: 
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
-# make print VAR=the-variable
-print:
-	@echo $($(VAR))
-
 allobj.d := $(srcs.o:%.o=%.d)
-alltest.d := $(testsrcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
 $(allobj.d) : ;
-$(alltest.d) : ;
 
 -include $(allobj.d)
--include $(alltest.d)
 
-# Tests can be generated by searching
-# Percent is a wildcard (only one allowed):
-#    make -f gmakefile test search=sys%ex2
-# To match internal substrings (matches *ex2*):
-#    make -f gmakefile test searchin=ex2
-# Search and searchin can be combined:
-#    make -f gmakefile test search='sys%' searchin=ex2
-# For args:
-#    make -f gmakefile test argsearch=cuda
-# For general glob-style searching using python:
-# NOTE: uses shell which is possibly slower and is possibly more brittle
-#    make -f gmakefile test globsearch='sys*ex2*'
-ifdef search
-  TESTTARGETS := $(filter $(search),$(alltesttargets))
-  ifdef searchin
-    TESTTARGETS2 := $(foreach v,$(TESTTARGETS),$(if $(findstring $(searchin),$(v)),$(v)))
-    TESTTARGETS := $(TESTTARGETS2)
-  endif
-else ifdef searchin
-  TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(searchin),$(v)),$(v)))
-else ifdef argsearch
-  TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
-else ifdef globsearch
-  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print ' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1]))" '$(globsearch)' '$(alltesttargets)')
-else                            # No filter - run them all, but delete the executables as we go
-  TESTTARGETS := $(testpkgs)
-endif
-
-.PHONY: report_tests print-test
-
-print-test:
-	-@echo $(TESTTARGETS)
-
-report_tests: $(TESTTARGETS)
-	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts | tee -a $(TESTLOGFILE)
-
-help: help-make help-targets help-test
-	-@echo "Above is from: help-make help-targets help-test"
-
-help-make:
-	-@echo "Basic build usage:"
-	-@echo "   make -f gmakefile <options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  V=0           Very quiet builds"
-	-@echo "  V=1           Verbose builds"
-	-@echo
-
-help-targets:
-	-@echo "All makefile targets and their dependencies:"
-	-@grep ^[a-z] gmakefile | grep : | grep -v =
-	-@echo
-	-@echo
-
-help-test:
-	-@echo "Basic test usage:"
-	-@echo "   make -f gmakefile test <options>"
-	-@echo
-	-@echo "Options:"
-	-@echo "  NO_RM=1           Do not remove the executables after running"
-	-@echo "  REPLACE=1         Replace the output in the PETSC_DIR source tree (-m to test scripts)"
-	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
-	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
-	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"
-	-@echo "  EXTRA_OPTIONS='<args>'  Add options to scripts (-e to test scripts)"
-	-@echo
-	-@echo "Tests can be generated by searching:"
-	-@echo "  Percent is a wildcard (only one allowed):"
-	-@echo "    make -f gmakefile test search=sys%ex2"
-	-@echo
-	-@echo "  To match internal substrings (matches *ex2*):"
-	-@echo "    make -f gmakefile test searchin=ex2"
-	-@echo
-	-@echo "  Search and searchin can be combined:"
-	-@echo "    make -f gmakefile test search='sys%' searchin=ex2"
-	-@echo
-	-@echo "  To match patterns in the arguments:"
-	-@echo "    make -f gmakefile test argsearch=cuda"
-	-@echo
-	-@echo "  For general glob-style searching using python:"
-	-@echo "   NOTE: uses shell which is possibly slower and more brittle"
-	-@echo "    make -f gmakefile test globsearch='sys*ex2*'"
-	-@echo
-	-@echo "  To see which targets match a given pattern (useful for doing a specific target):"
-	-@echo "    make -f gmakefile print-test search=sys%"
-	-@echo "  which is equivalent to:"
-	-@echo "    make -f gmakefile print VAR=TESTTARGETS search='sys%'"
-	-@echo
-	-@echo "  To build an executable, give full path to location:"
-	-@echo '    make -f gmakefile $${PETSC_ARCH}/tests/src/sys/examples/tests/ex1'
-	-@echo "  or make the test with NO_RM=1"
-	-@echo
+# Handle test framework (also defines compilation lines for both lib and test)
+include ./gmakefile.test        # This must be below the all target
 

@@ -245,13 +245,13 @@ class Xdmf:
         for cf in cfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
         self.writeSpaceGridFooter(fp)
       if useTime: self.writeTimeGridFooter(fp)
-      # Particle information
-      self.writeLocations(fp, numParticles, spaceDim)
-      if useTime: self.writeTimeGridHeader(fp, time)
-      for t in range(len(time)):
-        self.writeParticleGridHeader(fp, numParticles, spaceDim)
-        self.writeSpaceGridFooter(fp)
-      if useTime: self.writeTimeGridFooter(fp)
+      if numParticles:
+        self.writeLocations(fp, numParticles, spaceDim)
+        if useTime: self.writeTimeGridHeader(fp, time)
+        for t in range(len(time)):
+          self.writeParticleGridHeader(fp, numParticles, spaceDim)
+          self.writeSpaceGridFooter(fp)
+        if useTime: self.writeTimeGridFooter(fp)
       self.writeFooter(fp)
     return
 

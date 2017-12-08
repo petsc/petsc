@@ -2591,7 +2591,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     PetscInt f;
 
     numFaces = 0;
-    ierr     = DMGetWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
+    ierr     = DMGetWorkArray(subdm, 1, MPIU_INT, (void **) &faces);CHKERRQ(ierr);
     for (f = firstFace; f < *newFacePoint; ++f) {
       PetscInt dof, off, d;
 
@@ -2622,7 +2622,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     PetscInt *indices, *origVertices, *orientedVertices, *orientedSubVertices, v, ov;
     PetscBool posOriented;
 
-    ierr                = DMGetWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
+    ierr                = DMGetWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), MPIU_INT, &orientedVertices);CHKERRQ(ierr);
     origVertices        = &orientedVertices[numFaceVertices];
     indices             = &orientedVertices[numFaceVertices*2];
     orientedSubVertices = &orientedVertices[numFaceVertices*3];
@@ -2640,13 +2640,13 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     }
     ierr = DMPlexSetCone(subdm, *newFacePoint, orientedSubVertices);CHKERRQ(ierr);
     ierr = DMPlexSetCone(subdm, subcell, newFacePoint);CHKERRQ(ierr);
-    ierr = DMRestoreWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), MPIU_INT, &orientedVertices);CHKERRQ(ierr);
     ++(*newFacePoint);
   }
 #if 0
   ierr = DMPlexRestoreJoin(subdm, numFaceVertices, subfaceVertices, &numFaces, &faces);CHKERRQ(ierr);
 #else
-  ierr = DMRestoreWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(subdm, 1, MPIU_INT, (void **) &faces);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -2692,7 +2692,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   /* Create face cones */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(subdm, maxConeSize, MPIU_INT, (void**) &subface);CHKERRQ(ierr);
   for (c = 0; c < numSubCells; ++c) {
     const PetscInt cell    = subCells[c];
     const PetscInt subcell = c;
@@ -2720,7 +2720,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
-  ierr = DMRestoreWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(subdm, maxConeSize, MPIU_INT, (void**) &subface);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
@@ -3178,7 +3178,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   /* Create face cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(subdm, maxConeSize, MPIU_INT, (void**) &subface);CHKERRQ(ierr);
   for (c = 0; c < numSubCells; ++c) {
     const PetscInt  cell    = subCells[c];
     const PetscInt  subcell = c;
@@ -3210,7 +3210,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = DMPlexRestoreJoin(dm, nFV, cone, &numCells, &cells);CHKERRQ(ierr);
     ++newFacePoint;
   }
-  ierr = DMRestoreWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(subdm, maxConeSize, MPIU_INT, (void**) &subface);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
@@ -3515,7 +3515,7 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
   if (subpointMap && depth >= 0) {
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Submeshes must start the point numbering at 0, not %d", pStart);
-    ierr = DMGetWorkArray(dm, depth+1, PETSC_INT, &depths);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
     depths[0] = depth;
     depths[1] = 0;
     for(d = 2; d <= depth; ++d) {depths[d] = depth+1 - d;}
@@ -3546,7 +3546,7 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
         ierr = ISDestroy(&is);CHKERRQ(ierr);
       }
     }
-    ierr = DMRestoreWorkArray(dm, depth+1, PETSC_INT, &depths);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, depth+1, MPIU_INT, &depths);CHKERRQ(ierr);
     if (off != pEnd) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %d should be %d", off, pEnd);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd, points, PETSC_OWN_POINTER, subpointIS);CHKERRQ(ierr);
   }

@@ -314,7 +314,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
+  /* ignore this option if malloc is already set */
+  if (flg1 && !petscsetmallocvisited) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL);CHKERRQ(ierr);

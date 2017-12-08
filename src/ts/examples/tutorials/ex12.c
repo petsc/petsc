@@ -275,3 +275,15 @@ PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,PetscViewerA
   ierr = SNESMonitorDefaultShort(snes,its,fnorm,vf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*TEST
+
+    test:
+      args: -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -ksp_monitor_short 
+      requires: !single
+
+    test:
+      suffix: 2
+      args: -da_grid_x 20 -ts_final_time 0.11 -ts_dt 1e-1 -ts_type glle -ts_monitor -ksp_monitor_short
+      requires: !single
+
+TEST*/

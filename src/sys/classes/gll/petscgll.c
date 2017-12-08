@@ -71,6 +71,7 @@ PetscErrorCode PetscGLLCreate(PetscInt n,PetscGLLCreateType type,PetscGLL *gll)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (n < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide at least 2 grid points per element");
   ierr = PetscMalloc2(n,&gll->nodes,n,&gll->weights);CHKERRQ(ierr);
 
   if (type == PETSCGLL_VIA_LINEARALGEBRA) {
@@ -267,7 +268,7 @@ PetscErrorCode PetscGLLElementLaplacianCreate(PetscGLL *gll,PetscReal ***AA)
   PetscErrorCode  ierr;
   const PetscReal  *nodes = gll->nodes;
   const PetscInt   n = gll->n, p = gll->n-1;
-  PetscReal        z0,z1,z2 = 0,x,Lpj,Lpr;
+  PetscReal        z0,z1,z2 = -1,x,Lpj,Lpr;
   PetscInt         i,j,nn,r;
 
   PetscFunctionBegin;

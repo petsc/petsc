@@ -168,6 +168,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_solution - Monitor solution graphically
 .  -ts_monitor_lg_error - Monitor error graphically
+.  -ts_monitor_error - Monitors norm of error
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_timestep_log - Monitor log timestep size graphically
 .  -ts_monitor_lg_snes_iterations - Monitor number nonlinear iterations for each timestep graphically
@@ -275,6 +276,11 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsName("-ts_monitor_error","Monitor error","TSMonitorError",&opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = TSMonitorSet(ts,TSMonitorError,NULL,NULL);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
   if (opt) {
     TSMonitorLGCtx ctx;
@@ -329,7 +335,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Computed Solution",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -367,10 +373,20 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     PetscInt         howoften = 1;
 
     ierr = PetscOptionsInt("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",howoften,&howoften,NULL);CHKERRQ(ierr);
-    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Error",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawError,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_monitor_draw_solution_function","Monitor solution provided by TSMonitorSetSolutionFunction() graphically","TSMonitorDrawSolutionFunction",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscInt         howoften = 1;
 
+    ierr = PetscOptionsInt("-ts_monitor_draw_solution_function","Monitor solution provided by TSMonitorSetSolutionFunction() graphically","TSMonitorDrawSolutionFunction",howoften,&howoften,NULL);CHKERRQ(ierr);
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,"Solution provided by user function",PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDrawSolutionFunction,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  
   opt  = PETSC_FALSE;
   ierr = PetscOptionsString("-ts_monitor_solution_vtk","Save each time step to a binary file, use filename-%%03D.vts","TSMonitorSolutionVTK",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -535,7 +551,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
 Note: This routine should be called after all TS options have been set
 
-    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and 
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
@@ -1123,6 +1139,10 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 .   u - output vector
 -   ctx - [optional] user-defined function context
 
+    Options Database:
++  -ts_monitor_lg_error - create a graphical monitor of error history, requires user to have provided TSSetSolutionFunction()
+-  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
     Notes:
     This routine is used for testing accuracy of time integration schemes when you already know the solution.
     If analytic solutions are not known for your system, consider using the Method of Manufactured Solutions to
@@ -1134,7 +1154,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetForcingFunction(), TSSetSolution(), TSGetSolution(), TSMonitorLGError(), TSMonitorDrawError()
 @*/
 PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
@@ -2320,7 +2340,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal *dt)
 
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents()
+.seealso: TSGetTimeStep(), TSGetTime(), TSGetSolveTime(), TSGetSolutionComponents(), TSSetSolutionFunction()
 
 .keywords: TS, timestep, get, solution
 @*/
@@ -2334,9 +2354,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 /*@
-   TSGetSolutionComponents - Returns any solution components at the present 
-   timestep, if available for the time integration method being used. 
-   Solution components are quantities that share the same size and 
+   TSGetSolutionComponents - Returns any solution components at the present
+   timestep, if available for the time integration method being used.
+   Solution components are quantities that share the same size and
    structure as the solution vector.
 
    Not Collective, but Vec returned is parallel if TS is parallel
@@ -2344,9 +2364,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
 .  n - If v is PETSC_NULL, then the number of solution components is
-       returned through n, else the n-th solution component is 
+       returned through n, else the n-th solution component is
        returned in v.
-.  v - the vector containing the n-th solution component 
+.  v - the vector containing the n-th solution component
        (may be PETSC_NULL to use this function to find out
         the number of solutions components).
 
@@ -2363,21 +2383,21 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->getsolutioncomponents) *n = 0;
-  else { 
-    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr); 
+  else {
+    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@
-   TSGetAuxSolution - Returns an auxiliary solution at the present 
+   TSGetAuxSolution - Returns an auxiliary solution at the present
    timestep, if available for the time integration method being used.
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
-.  v - the vector containing the auxiliary solution 
+.  v - the vector containing the auxiliary solution
 
    Level: intermediate
 
@@ -2425,7 +2445,7 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->gettimeerror) {
-    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(*v);CHKERRQ(ierr);
   }
@@ -2457,7 +2477,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
   if (ts->ops->settimeerror) {
-    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3111,6 +3131,8 @@ PetscErrorCode TSGetTotalSteps(TS ts,PetscInt *steps) { return TSGetStepNumber(t
    Level: beginner
 
 .keywords: TS, timestep, set, solution, initial values
+
+.seealso: TSSetSolutionFunction(), TSGetSolution(), TSCreate()
 @*/
 PetscErrorCode  TSSetSolution(TS ts,Vec u)
 {
@@ -3172,6 +3194,8 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
    Level: beginner
 
    Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
+
+   After TSAdjointSolve() is called the lamba and the mu contain the computed sensitivities
 
 .keywords: TS, timestep, set, sensitivity, initial values
 @*/
@@ -3597,10 +3621,10 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   Level: intermediate
 
   Note:
-  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling 
-  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep() 
-  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step 
-  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step 
+  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling
+  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep()
+  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step
+  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step
   with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
 .keywords: TS, timestep
@@ -3821,7 +3845,7 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      identical;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   for (i=0; i<ts->numbermonitors;i++) {
@@ -4411,17 +4435,17 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 /*@
  TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
- 
+
  Collective on TS
- 
+
  Input Arguments:
  .  ts - time stepping context
- 
+
  Level: advanced
- 
+
  Notes:
  This function cannot be called until TSAdjointStep() has been completed.
- 
+
  .seealso: TSAdjointSolve(), TSAdjointStep
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
@@ -4488,6 +4512,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ts->solvetime = ts->ptime;
   ierr = TSTrajectoryViewFromOptions(ts->trajectory,NULL,"-ts_trajectory_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vecs_sensi[0],(PetscObject) ts, "-ts_adjoint_view_solution");CHKERRQ(ierr);
+  ts->adjoint_max_steps = 0;
   PetscFunctionReturn(0);
 }
 
@@ -5189,6 +5214,43 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 }
 
 /*@C
+   TSMonitorDrawSolutionFunction - Monitors progress of the TS solvers by calling
+   VecView() for the solution provided by TSSetSolutionFunction() at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  dummy - either a viewer or NULL
+
+   Options Database:
+.  -ts_monitor_draw_solution_function - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSMonitorDrawSolutionFunction(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode   ierr;
+  TSMonitorDrawCtx ctx    = (TSMonitorDrawCtx)dummy;
+  PetscViewer      viewer = ctx->viewer;
+  Vec              work;
+
+  PetscFunctionBegin;
+  if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
+  ierr = VecDuplicate(u,&work);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,work);CHKERRQ(ierr);
+  ierr = VecView(work,viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    TSMonitorDrawError - Monitors progress of the TS solvers by calling
    VecView() for the error at each timestep
 
@@ -5200,11 +5262,14 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 .  ptime - current time
 -  dummy - either a viewer or NULL
 
+   Options Database:
+.  -ts_monitor_draw_error - Monitor error graphically, requires user to have provided TSSetSolutionFunction()
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
 PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
 {
@@ -6252,7 +6317,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   PetscReal         max,gmax,maxa,gmaxa,maxr,gmaxr;
   PetscReal         tol,tola,tolr,diff;
   PetscReal         err_loc[3],err_glb[3];
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,2);
@@ -7543,6 +7608,44 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
     ierr = PetscDrawLGSave(ctx->lg);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSMonitorError - Monitors progress of the TS solvers by printing the 2 norm of the error at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+.  u - current solution
+-  dctx - unused context
+
+   Level: intermediate
+
+   The user must provide the solution using TSSetSolutionFunction() to use this monitor.
+
+   Options Database Keys:
+.  -ts_monitor_error - create a graphical monitor of error history
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
+@*/
+PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode    ierr;
+  Vec               y;
+  PetscReal         nrm;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

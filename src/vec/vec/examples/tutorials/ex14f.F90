@@ -26,6 +26,7 @@
       PetscErrorCode ierr
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
+      PetscViewer singleton
 
       nlocal = 6
       nghost = 2
@@ -40,9 +41,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-      if (size .ne. 2) then
-       SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors')
-      endif
+      if (size .ne. 2) then SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors')
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of
@@ -115,12 +114,21 @@
 
 !     Print out each vector, including the ghost padding region.
 
-      call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
+      call PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,singleton,ierr)
+      call VecView(lx,singleton,ierr)
+      call PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,singleton,ierr)
 
       call VecGhostRestoreLocalForm(gx,lx,ierr)
       call VecDestroy(gx,ierr)
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!TEST*/
 
 

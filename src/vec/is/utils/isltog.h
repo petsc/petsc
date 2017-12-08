@@ -22,7 +22,7 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
   }
   start   = mapping->globalstart;
   end     = mapping->globalend;
-  bs      = mapping->bs;
+  bs      = GTOLBS;
 
 
 
@@ -67,4 +67,5 @@ static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalM
 #undef PETSCMAPNAME
 #undef GTOLTYPE
 #undef GTOLNAME
+#undef GTOLBS
 #undef GTOL

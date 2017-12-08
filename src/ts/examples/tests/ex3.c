@@ -578,3 +578,21 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   }
   return 0;
 }
+
+/*TEST
+
+    build:
+      requires: !complex
+
+    test:
+      suffix: euler
+      output_file: output/ex3.out
+
+    test:
+      suffix: 2
+      args:   -useAlhs
+      output_file: output/ex3.out
+      TODO: Broken because SNESComputeJacobianDefault is incompatible with TSComputeIJacobianConstant
+
+TEST*/
+

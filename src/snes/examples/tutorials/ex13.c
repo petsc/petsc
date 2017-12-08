@@ -391,7 +391,7 @@ int main(int argc, char **argv)
     args: -dim 3 -simplex 0 -potential_petscspace_order 2 -dm_refine 2 -num_refine 2 -snes_convergence_estimate
   test:
     suffix: 3d_q3_0
-    args: -dim 3 -simplex 0 -potential_petscspace_order 3 -dm_refine 1 -num_refine 2 -snes_convergence_estimate
+    args: -dim 3 -simplex 0 -potential_petscspace_order 3 -num_refine 2 -snes_convergence_estimate
   test:
     suffix: 2d_p1_adj_0
     requires: triangle

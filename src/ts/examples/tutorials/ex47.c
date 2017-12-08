@@ -302,7 +302,7 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt it, PetscReal rnorm, voi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
+static PetscErrorCode MyTSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
@@ -337,7 +337,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts, TSMonitorError, &ctx, NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts, MyTSMonitorError, &ctx, NULL);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
   ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx);CHKERRQ(ierr);

@@ -515,3 +515,9 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
 
   return 0;
 }
+
+/*TEST
+
+    test:
+
+TEST*/

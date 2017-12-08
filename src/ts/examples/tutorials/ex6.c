@@ -518,3 +518,10 @@ PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
 
   return 0;
 }
+
+/*TEST
+
+    test:
+      args: -nox -ts_max_steps 4
+
+TEST*/

@@ -23,7 +23,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
-                ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c
+                ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c ex210.c
 
 EXAMPLESF	 = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F
 
@@ -817,6 +817,10 @@ ex209: ex209.o chkopts
 	-${CLINKER} -o ex209 ex209.o ${PETSC_MAT_LIB}
 	${RM} ex209.o
 
+ex210: ex210.o chkopts
+	-${CLINKER} -o ex210 ex210.o ${PETSC_MAT_LIB}
+	${RM} ex210.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1002,26 +1006,26 @@ runex5_3:
 	else printf "${PWD}\nPossible problem with ex5_34 for mpibaij,np = 3,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex5_3.tmp;
 
-runex5_ell:
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type ell > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_41.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for seqell,np = 1,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+runex5_sell:
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type sell > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_41.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for seqsell,np = 1,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type ell > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_43.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for mpiell,np = 3,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type sell > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_43.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for mpisell,np = 3,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex5 -mat_type ell -test_diagonalscale > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_51.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for seqell,np = 1,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 1 ./ex5 -mat_type sell -test_diagonalscale > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_51.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for seqsell,np = 1,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type ell -test_diagonalscale > ex5_ell.tmp 2>&1; \
-	if (${DIFF} output/ex5_53.out ex5_ell.tmp) then true; \
-	else printf "${PWD}\nPossible problem with ex5_ell for mpiell,np = 3,diffs above\n=========================================\n"; fi; \
-	${RM} -f ex5_ell.tmp;
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type sell -test_diagonalscale > ex5_sell.tmp 2>&1; \
+	if (${DIFF} output/ex5_53.out ex5_sell.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex5_sell for mpisell,np = 3,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex5_sell.tmp;
 
 runex5_aijcusparse:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaijcusparse -vec_type cuda -rectA > ex5_1_aijcusparse.tmp 2>&1; \

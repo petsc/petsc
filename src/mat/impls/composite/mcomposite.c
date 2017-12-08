@@ -421,7 +421,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 -  mats - the matrices
 
    Output Parameter:
-.  A - the matrix
+.  mat - the matrix
 
    Level: advanced
 

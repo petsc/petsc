@@ -55,63 +55,9 @@ PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
-{
-  switch (i) {
-  case 0:
-    switch (j) {
-    case 0: return 0;
-    case 1:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 0;
-      case 2: return 1;
-      }
-    case 2:
-      switch (k) {
-      case 0: return 0;
-      case 1: return -1;
-      case 2: return 0;
-      }
-    }
-  case 1:
-    switch (j) {
-    case 0:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 0;
-      case 2: return -1;
-      }
-    case 1: return 0;
-    case 2:
-      switch (k) {
-      case 0: return 1;
-      case 1: return 0;
-      case 2: return 0;
-      }
-    }
-  case 2:
-    switch (j) {
-    case 0:
-      switch (k) {
-      case 0: return 0;
-      case 1: return 1;
-      case 2: return 0;
-      }
-    case 1:
-      switch (k) {
-      case 0: return -1;
-      case 1: return 0;
-      case 2: return 0;
-      }
-    case 2: return 0;
-    }
-  }
-  return 0;
-}
-
 static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
 {
+  const PetscInt eps[3][3][3] = {{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}}, {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}}, {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}};
   PetscInt *ctxInt  = (PetscInt *) ctx;
   PetscInt  dim2    = ctxInt[0];
   PetscInt  d       = ctxInt[1];
@@ -121,11 +67,11 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   if (dim != dim2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input dimension %d does not match context dimension %d", dim, dim2);
   for (i = 0; i < dim; i++) mode[i] = 0.;
   if (d < dim) {
-    mode[d] = 1.;
+    mode[d] = 1.; /* Translation along axis d */
   } else {
     for (i = 0; i < dim; i++) {
       for (j = 0; j < dim; j++) {
-        mode[j] += epsilon(i, j, k)*X[i];
+        mode[j] += eps[i][j][k]*X[i]; /* Rotation about axis d */
       }
     }
   }
@@ -133,7 +79,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
 }
 
 /*@C
-  DMPlexCreateRigidBody - for the default global section, create rigid body modes from coordinates
+  DMPlexCreateRigidBody - For the default global section, create rigid body modes by function space interpolation
 
   Collective on DM
 
@@ -143,11 +89,11 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   Output Argument:
 . sp - the null space
 
-  Note: This is necessary to take account of Dirichlet conditions on the displacements
+  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
 
   Level: advanced
 
-.seealso: MatNullSpaceCreate()
+.seealso: MatNullSpaceCreate(), PCGAMG
 @*/
 PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 {
@@ -194,6 +140,75 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   }
   ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
   for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexCreateRigidBodies - For the default global section, create rigid body modes by function space interpolation
+
+  Collective on DM
+
+  Input Arguments:
++ dm    - the DM
+. nb    - The number of bodies
+. label - The DMLabel marking each domain
+. nids  - The number of ids per body
+- ids   - An array of the label ids in sequence for each domain
+
+  Output Argument:
+. sp - the null space
+
+  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
+
+  Level: advanced
+
+.seealso: MatNullSpaceCreate()
+@*/
+PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const PetscInt nids[], const PetscInt ids[], MatNullSpace *sp)
+{
+  MPI_Comm       comm;
+  PetscSection   section, globalSection;
+  Vec           *mode;
+  PetscScalar   *dots;
+  PetscInt       dim, dimEmbed, n, m, b, d, i, j, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &n);CHKERRQ(ierr);
+  m    = nb * (dim*(dim+1))/2;
+  ierr = PetscMalloc2(m, &mode, m, &dots);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &mode[0]);CHKERRQ(ierr);
+  ierr = VecSetSizes(mode[0], n, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
+  for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
+  for (b = 0, off = 0; b < nb; ++b) {
+    for (d = 0; d < m/nb; ++d) {
+      PetscInt         ctx[2];
+      PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody_Private;
+      void            *voidctx = (void *) (&ctx[0]);
+
+      ctx[0] = dimEmbed;
+      ctx[1] = d;
+      ierr = DMProjectFunctionLabel(dm, 0.0, label, nids[b], &ids[off], 0, NULL, &func, &voidctx, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+      off   += nids[b];
+    }
+  }
+  for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
+  /* Orthonormalize system */
+  for (i = 0; i < m; ++i) {
+    ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
+    for (j = 0; j < i; ++j) dots[j] *= -1.0;
+    ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
+    ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
+  for (i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
+  ierr = PetscFree2(mode, dots);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -395,7 +410,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
     ierr = VecGetDM(Grad, &dmGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(Grad, &grad);CHKERRQ(ierr);
     ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, pdim, MPIU_SCALAR, &fx);CHKERRQ(ierr);
   }
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (i = 0; i < numids; ++i) {
@@ -455,7 +470,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
   cleanup:
   ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
   if (Grad) {
-    ierr = DMRestoreWorkArray(dm, pdim, PETSC_SCALAR, &fx);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, pdim, MPIU_SCALAR, &fx);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(Grad, &grad);CHKERRQ(ierr);
   }
   if (cellGeometry) {ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);}
@@ -550,15 +565,46 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 
 PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
+  Vec              localX;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, localX, time, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2DiffLocal(dm, time, funcs, ctxs, localX, diff);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+
+  Input Parameters:
++ dm     - The DM
+. time   - The time
+. funcs  - The functions to evaluate for each field component
+. ctxs   - Optional array of contexts to pass to each function, or NULL.
+- localX - The coefficient vector u_h, a local vector
+
+  Output Parameter:
+. diff - The diff ||u - u_h||_2
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMComputeL2FieldDiff(), DMComputeL2GradientDiff()
+@*/
+PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec localX, PetscReal *diff)
+{
   const PetscInt   debug = 0;
   PetscSection     section;
   PetscQuadrature  quad;
-  Vec              localX;
   PetscScalar     *funcVal, *interpolant;
   PetscReal       *coords, *detJ, *J;
   PetscReal        localDiff = 0.0;
   const PetscReal *quadWeights;
-  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cStart, cEnd, cEndInterior, c, field, fieldOffset;
+  PetscInt         dim, coordDim, numFields, numComponents = 0, qNc, Nq, cellHeight, cStart, cEnd, cEndInterior, c, field, fieldOffset;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -566,10 +612,6 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
   ierr = DMGetCoordinateDim(dm, &coordDim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dm, time, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
     PetscObject  obj;
     PetscClassId id;
@@ -593,7 +635,8 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
   ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights);CHKERRQ(ierr);
   if ((qNc != 1) && (qNc != numComponents)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D != %D field components", qNc, numComponents);
   ierr = PetscMalloc5(numComponents,&funcVal,numComponents,&interpolant,coordDim*Nq,&coords,Nq,&detJ,coordDim*coordDim*Nq,&J);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   for (c = cStart; c < cEnd; ++c) {
@@ -647,7 +690,6 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
     localDiff += elemDiff;
   }
   ierr  = PetscFree5(funcVal,interpolant,coords,detJ,J);CHKERRQ(ierr);
-  ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr  = MPIU_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);

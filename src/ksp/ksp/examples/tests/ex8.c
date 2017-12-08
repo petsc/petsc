@@ -152,3 +152,17 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    build:
+      requires: !complex
+
+    test:
+      args:
+
+    test:
+      suffix: 2
+      args: -sameA
+
+TEST*/

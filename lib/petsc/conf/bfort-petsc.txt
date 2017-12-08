@@ -67,6 +67,7 @@ native PetscBLASInt
 native ISColoringValue
 native MatReal
 native PetscSysInt
+native MatSTRUMPACKReordering
 # Some structures are like arrays and can be treated as native types
 native MatInfo
 native MatStencil
@@ -154,6 +155,7 @@ nativeptr TSMonitorLGCtx
 nativeptr TSMonitorSPEigCtx
 nativeptr VecScatterCUSPIndices_PtoP
 nativeptr VecScatterCUSPIndices_StoS
+nativeptr PetscSFNode
 # the following are old PETSc types - they might be requird for older versions
 # of PETSc
 nativeptr AOData

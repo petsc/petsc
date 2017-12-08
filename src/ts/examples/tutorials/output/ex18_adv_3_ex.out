@@ -51,6 +51,7 @@ SNES Object: 1 MPI processes
   total number of linear solver iterations=0
   total number of function evaluations=0
   norm schedule ALWAYS
+  Jacobian is built using finite differences with coloring
   SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic

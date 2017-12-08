@@ -300,3 +300,17 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
+
+/*TEST
+
+    test:
+      requires: !complex !single
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
+
+    test:
+      suffix: 2
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
+      requires:  !complex !single
+      output_file: output/ex20fwd_1.out
+
+TEST*/

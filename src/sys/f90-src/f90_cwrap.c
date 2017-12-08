@@ -1,5 +1,39 @@
 #include <petsc/private/f90impl.h>
 
+/*@C
+
+   Converts a MPI_Fint that contains a Fortran MPI_Datatype to its C MPI_Datatype equivalent
+
+   Not Collective
+
+   Input Parameter:
+.  unit - The Fortran MPI_Datatype
+
+   Output Parameter:
+.  dtype - the corresponding C MPI_Datatype
+
+   Level: developer
+
+   Developer Notes: The MPI documentation in multiple places says that one can never us
+   Fortran MPI_Datatypes in C (or vis-versa) but this is problematic since users could never
+   call C routines from Fortran that have MPI_Datatype arguments. Jed states that the Fortran
+   MPI_Datatypes will always be available in C if the MPI was built to support Fortran. This function
+   relys on this.
+@*/
+PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit,MPI_Datatype *dtype)
+{
+  MPI_Datatype ftype;
+
+  PetscFunctionBegin;
+  ftype = MPI_Type_f2c(unit);
+  if (ftype == MPI_INTEGER) *dtype = MPI_INT;
+  else if (ftype == MPI_INTEGER8) *dtype = MPIU_INT64;
+  else if (ftype == MPI_DOUBLE_PRECISION) *dtype = MPI_DOUBLE;
+  else if (ftype == MPI_COMPLEX16) *dtype = MPI_C_DOUBLE_COMPLEX;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown Fortran MPI_Datatype");
+  PetscFunctionReturn(0);
+}
+
 /*************************************************************************/
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

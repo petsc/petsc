@@ -50,6 +50,7 @@
        integer MPI_INTEGER,MPI_LOGICAL
        integer MPI_REAL,MPI_DOUBLE_PRECISION
        integer MPI_COMPLEX, MPI_CHARACTER
+       integer MPI_COMPLEX16
        integer MPI_2INTEGER
        integer MPI_DOUBLE_COMPLEX
        integer MPI_INTEGER4
@@ -60,11 +61,12 @@
 !
 !  These should match the values in mpi.h many below are wrong
 !
-       parameter (MPI_INTEGER=x'400104')
+       parameter (MPI_INTEGER=4194564)
+       parameter (MPI_DOUBLE_PRECISION=1048840)
+       parameter (MPI_COMPLEX16=2097424)
        parameter (MPI_LOGICAL=x'400104')
        parameter (MPI_REAL=x'100104')
        parameter (MPI_REAL4=x'100104')
-       parameter (MPI_DOUBLE_PRECISION=x'100108')
        parameter (MPI_REAL8=x'100108')
        parameter (MPI_COMPLEX=x'200108')
        parameter (MPI_CHARACTER=x'300101')

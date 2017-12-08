@@ -537,7 +537,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 
    Level: advanced
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), DMTSSetSolutionFunction()
 @*/
 PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx)
 {
@@ -569,7 +569,7 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), DMTSGetSolutionFunction()
 @*/
 PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 {

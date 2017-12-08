@@ -26,6 +26,7 @@
       PetscBool   flag
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
+      PetscViewer  subviewer
 
       nlocal = 6
       nghost = 2
@@ -38,9 +39,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-      if (size .ne. 2) then
-       SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors')
-      endif
+      if (size .ne. 2) then SETERRA(PETSC_COMM_WORLD,1,'Requires 2 processors')
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of
@@ -113,13 +112,9 @@
 
 !     Print out each vector, including the ghost padding region.
 
-       if (rank .eq. 0) then
-          call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
-       endif
-       call MPI_Barrier(PETSC_COMM_WORLD,ierr)
-       if (rank .eq. 1) then
-          call VecView(lx,PETSC_VIEWER_STDOUT_SELF,ierr)
-       endif
+       call PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr)
+       call VecView(lx,subviewer,ierr)
+       call PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr)
 
        call VecGhostRestoreLocalForm(gx,lx,ierr)
        call VecDestroy(gx,ierr)
@@ -127,4 +122,15 @@
        end
 
 
+!/*TEST
+!
+!     test:
+!       nsize: 2
+!
+!     test:
+!       suffix: 2
+!       nsize: 2
+!       args: -allocate
+!
+!TEST*/
 

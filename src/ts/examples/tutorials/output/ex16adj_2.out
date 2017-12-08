@@ -1,0 +1,19 @@
+mu 1., steps 9, ftime 0.5
+Vec Object: 1 MPI processes
+  type: seq
+2.00704
+-0.377173
+Vec Object: 1 MPI processes
+  type: seq
+0.880911
+0.241108
+Vec Object: 1 MPI processes
+  type: seq
+-0.138072
+0.193408
+Vec Object: 1 MPI processes
+  type: seq
+-0.0319446
+Vec Object: 1 MPI processes
+  type: seq
+0.087131

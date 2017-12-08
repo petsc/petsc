@@ -726,6 +726,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
       if (!ploc) {
+        PetscInt *widxs2;
+
         if (!pP) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing parallel pressure IS");
         ierr = ISGetLocalSize(pP,&ni);CHKERRQ(ierr);
         ierr = ISGetIndices(pP,&idxs);CHKERRQ(ierr);
@@ -734,10 +736,11 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
         ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
         for (i=0,ni=0;i<n;i++) if (matis->sf_leafdata[i]) widxs[ni++] = i;
-        ierr = ISLocalToGlobalMappingApply(l2g,ni,widxs,widxs+ni);CHKERRQ(ierr);
+        ierr = PetscMalloc1(ni,&widxs2);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingApply(l2g,ni,widxs,widxs2);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF,ni,widxs,PETSC_COPY_VALUES,&lP);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_lP",(PetscObject)lP);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs+ni,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs2,PETSC_OWN_POINTER,&is1);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_gP",(PetscObject)is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
       } else {

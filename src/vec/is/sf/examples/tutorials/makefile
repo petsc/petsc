@@ -3,9 +3,9 @@ CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR   = src/vec/is/sf/examples/tutorials/
+LOCDIR           = src/vec/is/sf/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c
-EXAMPLESF        =
+EXAMPLESF        = ex1f.F90
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -13,6 +13,10 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
+
+ex1f: ex1f.o chkopts
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_VEC_LIB}
+	${RM} -f ex1f.o
 
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_VEC_LIB}
@@ -87,7 +91,6 @@ runex1_7_basic:
 	-@${MPIEXEC} -n 4 ./ex1 -test_invert -sf_type basic > ex1_7.tmp 2>&1; \
 	   ${DIFF} output/ex1_7_basic.out ex1_7.tmp || printf "${PWD}\nPossible problem with ex1_7_basic, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_7.tmp
-
 runex2_basic:
 	-@${MPIEXEC} -n 2 ./ex2 -sf_type basic > ex2.tmp 2>&1; \
           ${DIFF} output/ex2_basic.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_basic, diffs above\n=========================================\n"; \
@@ -124,6 +127,5 @@ TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    =
 TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_C_X_MPIUNI   =
-TESTEXAMPLES_F90	    =
 
 include ${PETSC_DIR}/lib/petsc/conf/test

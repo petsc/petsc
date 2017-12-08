@@ -316,7 +316,7 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!cone) {ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);}
+  if (!cone) {ierr = DMGetWorkArray(dm, 6, MPIU_INT, cone);CHKERRQ(ierr);}
   ierr = DMDAGetNumCells(dm, &nCx, &nCy, &nCz, &nC);CHKERRQ(ierr);
   ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
   ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, 6, MPIU_INT, cone);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1210,7 +1210,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
-  ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscFECellGeom geom;
@@ -1231,7 +1231,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
-  ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

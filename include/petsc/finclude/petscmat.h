@@ -133,9 +133,9 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
-#define MATELL             'ell'
-#define MATSEQELL          'seqell'
-#define MATMPIELL          'mpiell'
+#define MATSELL            'sell'
+#define MATSEQSELL         'seqsell'
+#define MATMPISELL         'mpisell'
 #define MATDUMMY           'dummy'
 
 !
@@ -174,5 +174,10 @@
 
 #define MatCUSPStorageFormat PetscEnum
 #define MatCUSPFormatOperation PetscEnum
+
+!
+! sparsity reducing ordering for STRUMPACK
+!
+#define MatSTRUMPACKReordering PetscEnum
 
 #endif

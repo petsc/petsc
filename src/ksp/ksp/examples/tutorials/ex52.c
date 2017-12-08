@@ -235,11 +235,18 @@ int main(int argc,char **args)
   /*
     Example of how to use external package STRUMPACK
     Note: runtime options
-          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_package strumpack \
-              -mat_strumpack_rctol 1.e-3 -mat_strumpack_hssminsize 50 -mat_strumpack_colperm 0'
-          are equivalent to these procedural calls
+          '-pc_type lu/ilu \
+           -pc_factor_mat_solver_package strumpack \
+           -mat_strumpack_reordering METIS \
+           -mat_strumpack_colperm 0 \
+           -mat_strumpack_hss_rel_tol 1.e-3 \
+           -mat_strumpack_hss_min_sep_size 50 \
+           -mat_strumpack_max_rank 100 \
+           -mat_strumpack_leaf_size 4'
+       are equivalent to these procedural calls
 
-    We refer to the STRUMPACK-sparse manual, section 5, on more info on how to tune the preconditioner.
+    We refer to the STRUMPACK-sparse manual, section 5, for more info on
+    how to tune the preconditioner.
   */
 #if defined(PETSC_HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
@@ -261,16 +268,25 @@ int main(int argc,char **args)
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_STRUMPACK)
-    /* The compression tolerance used when doing low-rank compression */
-    /* in the preconditioner. This is problem specific!               */
-    ierr = MatSTRUMPACKSetHSSRelCompTol(F,1.e-3);CHKERRQ(ierr);
-    /* Set minimum matrix size for HSS compression to 50 in order to  */
-    /* demonstrate preconditioner on small problems. For performance  */
-    /* a value of say 500 (the default) is better.                    */
-    ierr = MatSTRUMPACKSetHSSMinSize(F,50);CHKERRQ(ierr);
+    /* Set the fill-reducing reordering.                              */
+    ierr = MatSTRUMPACKSetReordering(F,MAT_STRUMPACK_METIS);CHKERRQ(ierr);
     /* Since this is a simple discretization, the diagonal is always  */
     /* nonzero, and there is no need for the extra MC64 permutation.  */
     ierr = MatSTRUMPACKSetColPerm(F,PETSC_FALSE);CHKERRQ(ierr);
+    /* The compression tolerance used when doing low-rank compression */
+    /* in the preconditioner. This is problem specific!               */
+    ierr = MatSTRUMPACKSetHSSRelTol(F,1.e-3);CHKERRQ(ierr);
+    /* Set minimum matrix size for HSS compression to 15 in order to  */
+    /* demonstrate preconditioner on small problems. For performance  */
+    /* a value of say 500 is better.                                  */
+    ierr = MatSTRUMPACKSetHSSMinSepSize(F,15);CHKERRQ(ierr);
+    /* You can further limit the fill in the preconditioner by        */
+    /* setting a maximum rank                                         */
+    ierr = MatSTRUMPACKSetHSSMaxRank(F,100);CHKERRQ(ierr);
+    /* Set the size of the diagonal blocks (the leafs) in the HSS     */
+    /* approximation. The default value should be better for real     */
+    /* problems. This is mostly for illustration on a small problem.  */
+    ierr = MatSTRUMPACKSetHSSLeafSize(F,4);CHKERRQ(ierr);
 #endif
   }
 #endif

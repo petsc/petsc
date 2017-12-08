@@ -122,3 +122,31 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      args: -sigma 2.0
+      requires: !complex
+      output_file: output/ex33.out
+
+    test:
+      suffix: mumps
+      args: -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
+      requires: mumps !complex
+      output_file: output/ex33.out
+
+    test:
+      suffix: mumps_2
+      args: -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
+      requires: mumps !complex
+      nsize: 3
+      output_file: output/ex33.out
+
+    test:
+      suffix: mkl_pardiso
+      args: -sigma 2.0 -pc_factor_mat_solver_package mkl_pardiso
+      requires: mkl_pardiso
+      output_file: output/ex33.out
+
+TEST*/

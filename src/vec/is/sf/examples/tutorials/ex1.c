@@ -1,7 +1,8 @@
 static const char help[] = "Test star forest communication (PetscSF)\n\n";
 
 /*T
-    Description: A star forest is a simple tree with one root and zero or more leaves.
+    Description: A star is a simple tree with one root and zero or more leaves.
+    A star forest is a union of disjoint stars.
     Many common communication patterns can be expressed as updates of rootdata using leafdata and vice-versa.
     This example creates a star forest, communicates values using the graph (see options for types of communication), views the graph, then destroys it.
 T*/

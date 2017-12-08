@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Solve system */
-  ierr = PetscLogStageRegister("Stage 1",&stage1);
+  ierr = PetscLogStageRegister("Stage 1",&stage1);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Show result */
-  ierr = MatMult(A,x,u);
+  ierr = MatMult(A,x,u);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -83,3 +83,10 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+    test:
+      args: -ksp_gmres_cgs_refinement_type refine_always -f  ${DATAFILESPATH}/matrices/arco1 -ksp_monitor_short
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

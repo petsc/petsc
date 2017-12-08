@@ -47,7 +47,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);                /* work1 <- A y */
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);   /* work2 <- x - work1 */
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);  /* work1 <- C work2 */
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);                /* y <- y + work1 = B x + C (x - A B x) = (B + C (1 - A B)) x */
   }
@@ -56,7 +55,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
       next = next->previous;
       ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
       ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
       ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
       ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
     }
@@ -86,7 +84,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
     next = next->previous;
     ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -96,7 +93,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
       next = next->next;
       ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
       ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
       ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
       ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
     }
@@ -147,7 +143,6 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -165,7 +160,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApplyTranspose(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -185,8 +179,12 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   }
   ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
   while (next) {
-    ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
-    ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
+    if (!next->pc->dm) {
+      ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
+    }
+    if (!next->pc->mat) {
+      ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
+    }
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -542,9 +540,12 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 
    Level: Developer
 
+    Notes: To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+            call PCSetOperators() on that PC.
+
 .keywords: PC, get, composite preconditioner, sub preconditioner
 
-.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC()
+.seealso: PCCompositeAddPC(), PCCompositeGetNumberPC(), PCSetOperators()
 @*/
 PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
@@ -564,7 +565,7 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_use_amat - Activates PCSetUseAmat()
+.  -pc_use_amat - activates PCSetUseAmat()
 -  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
@@ -575,6 +576,8 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
           inner PCs to be PCKSP.
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the outer Krylov method
+          To use a different operator to construct one of the inner preconditioners first call PCCompositeGetPC(), then 
+          call PCSetOperators() on that PC.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,

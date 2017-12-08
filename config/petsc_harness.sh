@@ -117,7 +117,7 @@ function petsc_testrun() {
     eval "($cmd) &"
     pid=$!
     # Put a watcher process in that will kill a job that exceeds limit
-    $petsc_dir/config/watchtime.sh $pid $TIMEOUT &
+    $config_dir/watchtime.sh $pid $TIMEOUT &
     watcher=$!
 
     # See if the job we want finishes
@@ -199,7 +199,8 @@ function petsc_mpiexec_valgrind() {
   npopt=$1;shift
   np=$1;shift
 
-  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_dir/bin/maint/petsc-val.supp"
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_bindir/maint/petsc-val.supp"
+
   $mpiexec $npopt $np $valgrind $*
 }
 export LC_ALL=C
