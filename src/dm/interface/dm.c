@@ -3884,6 +3884,7 @@ PetscErrorCode DMGetDS(DM dm, PetscDS *prob)
 @*/
 PetscErrorCode DMSetDS(DM dm, PetscDS prob)
 {
+  PetscInt       dimEmbed;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3892,6 +3893,8 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   ierr = PetscObjectReference((PetscObject) prob);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&dm->prob);CHKERRQ(ierr);
   dm->prob = prob;
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  ierr = PetscDSSetCoordinateDimension(prob, dimEmbed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4068,10 +4071,13 @@ PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
 @*/
 PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   dm->dim = dim;
+  if (dm->prob->dimEmbed < 0) {ierr = PetscDSSetCoordinateDimension(dm->prob, dm->dim);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -4369,9 +4375,12 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
 @*/
 PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->dimEmbed = dim;
+  ierr = PetscDSSetCoordinateDimension(dm->prob, dm->dimEmbed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

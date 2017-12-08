@@ -52,7 +52,7 @@ struct _p_PetscDS {
   PetscInt          numConstants; /* Number of constants passed to point functions */
   PetscScalar      *constants;    /* Array of constants passed to point functions */
   void       **ctx;               /* User contexts for each field */
-  PetscInt     dim;               /* The spatial dimension */
+  PetscInt     dimEmbed;          /* The real space coordinate dimension */
   /* Computed sizes */
   PetscInt     totDim;            /* Total system dimension */
   PetscInt     totComp;           /* Total field components */
