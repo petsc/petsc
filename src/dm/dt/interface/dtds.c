@@ -501,8 +501,10 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
   p->Nf    = 0;
   p->setup = PETSC_FALSE;
-  p->numConstants = 0;
-  p->constants    = NULL;
+  p->numConstants  = 0;
+  p->constants     = NULL;
+  p->defaultAdj[0] = PETSC_FALSE;
+  p->defaultAdj[1] = PETSC_TRUE;
 
   *prob = p;
   PetscFunctionReturn(0);
