@@ -1,6 +1,10 @@
 
 static char help[] = "Demonstrates scattering with the indices specified by a process that is not sender or receiver.\n\n";
 
+/*T
+   TODO: Need to determine if deprecated
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -55,3 +59,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+
+TEST*/

@@ -60,3 +60,28 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+     requires: hdf5
+
+   test:
+     requires: hdf5
+
+   test:
+     suffix: 2
+     nsize: 4
+
+   test:
+     suffix: 3
+     nsize: 4
+     args: -viewer_hdf5_base_dimension2
+
+   test:
+     suffix: 4
+     nsize: 4
+     args: -viewer_hdf5_sp_output
+
+TEST*/

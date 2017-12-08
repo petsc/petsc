@@ -73,3 +73,36 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      args: -n 126
+
+   test:
+      suffix: bts
+      nsize: 3
+      args: -n 126 -vec_assembly_bts
+      output_file: output/ex29_1.out
+
+   test:
+      suffix: bts_2
+      nsize: 3
+      args: -n 126 -vec_assembly_bts -repeat 2
+      output_file: output/ex29_1.out
+
+   test:
+      suffix: bts_2_subset
+      nsize: 3
+      args: -n 126 -vec_assembly_bts -repeat 2 -subset
+      output_file: output/ex29_1.out
+
+   test:
+      suffix: bts_2_subset_proper
+      nsize: 3
+      args: -n 126 -vec_assembly_bts -repeat 5 -subset
+      output_file: output/ex29_1.out
+
+TEST*/

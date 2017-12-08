@@ -58,3 +58,17 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+   test:
+      suffix: bts
+      nsize: 2
+      args: -vec_assembly_bts
+      output_file: output/ex11_1.out
+
+TEST*/

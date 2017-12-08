@@ -2,6 +2,10 @@
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -49,3 +53,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+TEST*/

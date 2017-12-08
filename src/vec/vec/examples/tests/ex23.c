@@ -8,6 +8,10 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
      Scatter first and third block to first processor and
      second and third block to second processor
 */
+/*T
+   requires: x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -67,3 +71,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+TEST*/

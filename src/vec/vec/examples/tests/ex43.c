@@ -1,4 +1,6 @@
 static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
+
+
 #include <petscvec.h>
 
 int main(int argc, char **argv)
@@ -58,3 +60,16 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: cuda
+      args: -vec_type cuda
+      output_file: output/ex43_1.out
+      requires: cuda
+
+TEST*/

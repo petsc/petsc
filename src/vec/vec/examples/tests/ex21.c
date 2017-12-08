@@ -39,3 +39,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+
+TEST*/
