@@ -80,8 +80,8 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
       ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
       ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
       ierr = PetscFree(ptap->merge);CHKERRQ(ierr);
-    } 
-    
+    }
+
     ierr = ptap->destroy(A);CHKERRQ(ierr);
     ierr = PetscFree(ptap);CHKERRQ(ierr);
   }
@@ -98,6 +98,7 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
   ierr = (*ptap->duplicate)(A,op,M);CHKERRQ(ierr);
   (*M)->ops->destroy   = ptap->destroy;
   (*M)->ops->duplicate = ptap->duplicate;
+  (*M)->ops->view      = ptap->view;
   PetscFunctionReturn(0);
 }
 
