@@ -3,6 +3,10 @@ static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
 
+/*T
+   TODO: Need to determine if deprecated
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -40,3 +44,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

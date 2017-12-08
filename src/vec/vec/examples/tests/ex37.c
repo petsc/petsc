@@ -277,3 +277,26 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -explicit_is 0
+
+   test:
+      suffix: 2
+      args: -explicit_is 1
+      output_file: output/ex37_1.out
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -explicit_is 0
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -explicit_is 1
+
+TEST*/

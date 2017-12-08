@@ -156,3 +156,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      filter: sed s/e-00/e+00/g | awk '{ if (v!="") { if (v!=$2) {print "  orig <" v "
+
+TEST*/
