@@ -42,15 +42,15 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 /*@
    MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated it randomly selects appropriate locations
 
-   Logically Collective on Vec
+   Logically Collective on Mat
 
    Input Parameters:
-+  x  - the vector
++  x  - the matrix
 -  rctx - the random number context, formed by PetscRandomCreate(), or NULL and
           it will create one internally.
 
    Output Parameter:
-.  x  - the vector
+.  x  - the matrix
 
    Example of Usage:
 .vb
