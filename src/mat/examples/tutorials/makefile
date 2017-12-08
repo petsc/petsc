@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.c ex16.c ex17.c
+EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.c ex16.c ex17.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -73,18 +73,18 @@ ex17: ex17.o  chkopts
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
-	
+
 runex4_1:
 	-@${MPIEXEC} -n 1 ./ex4 > ex4_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_1.tmp
-	 
+
 runex4_2:
 	-@${MPIEXEC} -n 2 ./ex4 > ex4_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_2.tmp	   
+	   ${RM} -f ex4_2.tmp
 
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
