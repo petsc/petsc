@@ -80,9 +80,13 @@ PetscErrorCode DMPlexSetAdjacencyUseCone(DM dm, PetscBool useCone)
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (Nf < 1) {ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);}
-  ierr = PetscDSGetAdjacency(prob, 0, NULL, &useClosure);CHKERRQ(ierr);
-  ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, &useClosure);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, NULL, &useClosure);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -113,8 +117,11 @@ PetscErrorCode DMPlexGetAdjacencyUseCone(DM dm, PetscBool *useCone)
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (Nf < 1) {ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);}
-  ierr = PetscDSGetAdjacency(prob, 0, useCone, NULL);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, useCone, NULL);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, useCone, NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -144,9 +151,13 @@ PetscErrorCode DMPlexSetAdjacencyUseClosure(DM dm, PetscBool useClosure)
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (Nf < 1) {ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);}
-  ierr = PetscDSGetAdjacency(prob, 0, &useCone, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, &useCone, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, PETSC_DEFAULT, useCone, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, &useCone, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetAdjacency(prob, 0, useCone, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -177,8 +188,11 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
   PetscFunctionBegin;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  if (Nf < 1) {ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);}
-  ierr = PetscDSGetAdjacency(prob, 0, NULL, useClosure);CHKERRQ(ierr);
+  if (!Nf) {
+    ierr = PetscDSGetAdjacency(prob, PETSC_DEFAULT, NULL, useClosure);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDSGetAdjacency(prob, 0, NULL, useClosure);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

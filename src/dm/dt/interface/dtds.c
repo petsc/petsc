@@ -785,9 +785,14 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (useCone) PetscValidPointer(useCone, 3);
   if (useClosure) PetscValidPointer(useClosure, 4);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  if (useCone)    *useCone    = prob->adjacency[f*2+0];
-  if (useClosure) *useClosure = prob->adjacency[f*2+1];
+  if (f < 0) {
+    if (useCone)    *useCone    = prob->defaultAdj[0];
+    if (useClosure) *useClosure = prob->defaultAdj[1];
+  } else {
+    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+    if (useCone)    *useCone    = prob->adjacency[f*2+0];
+    if (useClosure) *useClosure = prob->adjacency[f*2+1];
+  }
   PetscFunctionReturn(0);
 }
 
@@ -812,9 +817,14 @@ PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  prob->adjacency[f*2+0] = useCone;
-  prob->adjacency[f*2+1] = useClosure;
+  if (f < 0) {
+    prob->defaultAdj[0] = useCone;
+    prob->defaultAdj[1] = useClosure;
+  } else {
+    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+    prob->adjacency[f*2+0] = useCone;
+    prob->adjacency[f*2+1] = useClosure;
+  }
   PetscFunctionReturn(0);
 }
 
