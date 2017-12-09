@@ -86,3 +86,24 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: basic
+      args: -sf_type basic
+
+   test:
+      suffix: basic_dupped
+      args: -test_dupped_type -sf_type basic
+
+   test:
+      suffix: window
+      args: -sf_type window
+
+   test:
+      suffix: window_dupped
+      args: -test_dupped_type -sf_type window
+
+TEST*/
