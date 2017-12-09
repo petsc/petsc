@@ -140,20 +140,4 @@ ex43: ex43.o chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_MIXED_LIB}
 	${RM} ex43.o
 
-runex7:
-	-@${RM} -f input.dat input.dat.info
-	-@${MPIEXEC} -n 3 ./ex7 | sort -b |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
-	   if (sort -b output/ex7_1.out | ${DIFF} - ex7_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi
-	-@${RM} -f ex7_1.tmp input.dat input.dat.info
-runex21f90:
-	-@${MPIEXEC} -n 1 ./ex21f90 > ex21f90_1.tmp 2>&1;\
-	   if (${DIFF} output/ex21f90_1.out ex21f90_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex21f90_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex21f90_1.tmp mymodule.mod
-
-TESTEXAMPLES_FORTRAN	    =  ex7.PETSc runex7 ex7.rm
-TESTEXAMPLES_FORTRAN_MPIUNI = ex7.PETSc ex7.rm
-TESTEXAMPLES_F90	    = ex21f90.PETSc runex21f90 ex21f90.rm
-
 include ${PETSC_DIR}/lib/petsc/conf/test
