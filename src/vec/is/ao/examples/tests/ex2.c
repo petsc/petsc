@@ -49,3 +49,19 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex2_1.out
+   
+   test:
+      suffix: 2
+      nsize: 2
+   
+   test:
+      suffix: 3
+      nsize: 3
+
+TEST*/
