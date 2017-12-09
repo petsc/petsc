@@ -1,10 +1,6 @@
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
-/*T
-
-T*/
-
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -176,14 +172,14 @@ int main(int argc,char **argv)
       suffix: 2_cuda
       nsize: 3
       args: -splitreduction_async -vec_type cuda
-      TODO: Need to develop comparison test
       requires: veccuda
+      TODO: Need to develop comparison test
 
    test:
       suffix: cuda
       nsize: 3
       args: -vec_type cuda
       TODO: Need to develop comparison test
-      requires:  veccuda
-
+      requires: veccuda
+ 
 TEST*/

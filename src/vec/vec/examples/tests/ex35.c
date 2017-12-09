@@ -1,7 +1,6 @@
 
 static char help[] = "Test VecGetArray4d()\n";
 
-
 #include <petscvec.h>
 
 int main(int argc,char **argv)
