@@ -121,9 +121,8 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       args: -pc_factor_shift_type positive_definite
-      output_file: output/ex1_1.out
 
 TEST*/
