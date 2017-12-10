@@ -95,7 +95,7 @@ int main(int argc,char **args)
 
 
 /*TEST
-   
+
    test:
       requires: datafilespath
       args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info

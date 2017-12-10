@@ -81,3 +81,11 @@ int main(int argc,char **args)
 
 
 
+
+
+/*TEST
+
+   test:
+      args: -ksp_type gmres -ksp_monitor_short -pc_type sor -pc_sor_symmetric
+
+TEST*/
