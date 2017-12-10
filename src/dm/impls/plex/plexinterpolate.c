@@ -529,10 +529,12 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
   }
-  ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
-  ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
+  if (idm != dm) {
+    ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
+    ierr = DMCopyLabels(dm, idm);CHKERRQ(ierr);
+  }
   *dmInt = idm;
   ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
