@@ -257,7 +257,7 @@ print-test:
 	-@echo $(TESTTARGETS)
 
 report_tests: $(TESTTARGETS)
-	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -d $(PETSC_ARCH)/tests/counts
+	-@$(PYTHON) $(CONFIGDIR)/report_tests.py -m $(MAKE) -d $(PETSC_ARCH)/tests/counts
 
 # Do not how how to invoke test from makefile
 HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))

@@ -464,7 +464,6 @@ class generateExamples(Petsc):
     runscript_dir=os.path.join(self.testroot_dir,rpath)
     if not os.path.isdir(runscript_dir): os.makedirs(runscript_dir)
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
-    petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
 
     # Get variables to go into shell scripts.  last time testDict used
     subst=self.getSubstVars(testDict,rpath,testname)

@@ -81,6 +81,7 @@ class Installer(script.Script):
     self.installBinDir     = os.path.join(self.installDir, 'bin')
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
+    self.rootSrcDir        = os.path.join(self.rootDir, 'src')
 
     self.ranlib      = self.compilers.RANLIB
     self.arLibSuffix = self.compilers.AR_LIB_SUFFIX
@@ -213,10 +214,10 @@ class Installer(script.Script):
     for name in names:
       srcname = os.path.join(src, name)
       dstname = os.path.join(dst, name)
-      if not name.startswith('arch') and os.path.isdir(srcname) and os.path.isfile(os.path.join(srcname,'makefile')):
+      if os.path.isdir(srcname) and os.path.isfile(os.path.join(srcname,'makefile')):
         os.mkdir(dstname)
         nret = self.copyExamples(srcname,dstname)
-        if name == 'tests' or name == 'tutorials':
+        if 'examples' in srcname:
           self.copyexamplefiles(srcname,dstname)
           if os.path.isdir(os.path.join(srcname,'output')):
             os.mkdir(os.path.join(dstname,'output'))
@@ -366,7 +367,8 @@ for dir in dirs:
     if os.path.exists(examplesdir):
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
-    self.copyExamples(self.rootDir,examplesdir)
+    os.mkdir(os.path.join(examplesdir,'src'))
+    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
     self.copyConfig(self.rootDir,examplesdir)
     self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return
