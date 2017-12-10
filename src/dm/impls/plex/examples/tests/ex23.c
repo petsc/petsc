@@ -23,7 +23,7 @@ static void linear_vector(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                           PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
 {
   PetscInt d;
-  for (d = 0; d < dim; ++d) f[d] = u[uOff[0]+d];
+  for (d = uOff[0]; d < uOff[1]; ++d) f[d-uOff[0]] = u[d];
 }
 
 static void linear_scalar(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -109,6 +109,8 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DM *subdm, AppCtx *user)
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
   ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
   ierr = SetupDiscretization(*subdm, dim, user->cellSimplex, user);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *subdm, "boundary");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*subdm, NULL, "-sub_dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
