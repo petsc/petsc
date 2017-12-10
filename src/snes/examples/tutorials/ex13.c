@@ -261,7 +261,7 @@ int main(int argc, char **argv)
       DM        dmErr, dmErrAux, dms[2];
       Vec       errorEst, errorL2, uErr, uErrLoc, uAdjLoc, uAdjProj;
       IS       *subis;
-      PetscReal errorEstTot, errorL2Tot;
+      PetscReal errorEstTot, errorL2Norm, errorL2Tot;
       PetscInt  N, i;
       PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *) = {trig_u};
       void (*identity[1])(PetscInt, PetscInt, PetscInt,
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
       /*   Attach auxiliary data */
       dms[0] = dm; dms[1] = dm;
       ierr = DMCreateSuperDM(dms, 2, &subis, &dmErrAux);CHKERRQ(ierr);
-      {
+      if (0) {
         PetscSection sec;
 
         ierr = DMGetDefaultSection(dms[0], &sec);CHKERRQ(ierr);
@@ -314,24 +314,28 @@ int main(int argc, char **argv)
       ierr = DMGlobalToLocalBegin(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(dm, uErr, INSERT_VALUES, uErrLoc);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErrAux, &uErr);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", (PetscObject) dmErrAux);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmErr, "A", (PetscObject) uErrLoc);CHKERRQ(ierr);
       /*   Compute cellwise error estimate */
-      ierr = DMPlexComputeCellwiseIntegralFEM(dmAdj, uAdj, errorEst, &user);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "dmAux", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) dmAdj, "A", NULL);CHKERRQ(ierr);
+      ierr = VecSet(errorEst, 0.0);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellwiseIntegralFEM(dmErr, uAdj, errorEst, &user);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmErr, "dmAux", NULL);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dmErr, "A", NULL);CHKERRQ(ierr);
       ierr = DMRestoreLocalVector(dmErrAux, &uErrLoc);CHKERRQ(ierr);
       ierr = DMDestroy(&dmErrAux);CHKERRQ(ierr);
       /*   Plot cellwise error vector */
       ierr = VecViewFromOptions(errorEst, NULL, "-error_view");CHKERRQ(ierr);
       /*   Compute ratio of estimate (sum over cells) with actual L_2 error */
+      ierr = DMComputeL2Diff(dm, 0.0, funcs, ctxs, u, &errorL2Norm);CHKERRQ(ierr);
       ierr = DMPlexComputeL2DiffVec(dm, 0.0, funcs, ctxs, u, errorL2);CHKERRQ(ierr);
-      ierr = VecNorm(errorL2,  NORM_1, &errorL2Tot);CHKERRQ(ierr);
-      ierr = VecNorm(errorEst, NORM_1, &errorEstTot);CHKERRQ(ierr);
+      ierr = VecViewFromOptions(errorL2, NULL, "-l2_error_view");CHKERRQ(ierr);
+      ierr = VecNorm(errorL2,  NORM_INFINITY, &errorL2Tot);CHKERRQ(ierr);
+      ierr = VecNorm(errorEst, NORM_INFINITY, &errorEstTot);CHKERRQ(ierr);
       ierr = VecGetSize(errorEst, &N);CHKERRQ(ierr);
       ierr = VecPointwiseDivide(errorEst, errorEst, errorL2);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) errorEst, "Error ratio");CHKERRQ(ierr);
       ierr = VecViewFromOptions(errorEst, NULL, "-error_ratio_view");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D Error Ratio: %g\n", N, (double) errorEstTot/errorL2Tot);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g Error Ratio: %g/%g = %g\n", N, (double) errorL2Norm, (double) errorEstTot, (double) PetscSqrtReal(errorL2Tot), (double) errorEstTot/PetscSqrtReal(errorL2Tot));CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErr, &errorEst);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(dmErr, &errorL2);CHKERRQ(ierr);
       ierr = DMDestroy(&dmErr);CHKERRQ(ierr);
