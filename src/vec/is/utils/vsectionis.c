@@ -1370,7 +1370,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
-  PetscInt       Nf = 0, nf, f, pStart, pEnd, p, maxCdof = 0, i;
+  PetscInt       Nf = 0, nf, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
