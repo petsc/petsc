@@ -234,7 +234,6 @@ PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, 
     if (!sectionGlobals[i]) SETERRQ(PetscObjectComm((PetscObject)dms[0]), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
     ierr = PetscSectionGetNumFields(sections[i], &Nfs[i]);CHKERRQ(ierr);
     Nf += Nfs[i];
-    ierr = PetscSectionView(sectionGlobals[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   if (is) {
     PetscInt *offs, *globalOffs, iOff = 0;
