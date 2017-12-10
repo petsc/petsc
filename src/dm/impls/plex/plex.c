@@ -3082,7 +3082,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 static PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
   PetscInt      *pMax;
-  PetscInt       depth, pStart = 0, pEnd = 0;
+  PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
   PetscInt       Nf, p, d, dep, f;
   PetscBool     *isFE;
   PetscErrorCode ierr;
@@ -3157,7 +3157,8 @@ static PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt n
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscMalloc1(depth+1,&pMax);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
-  for (dep = 0; dep <= depth; ++dep) {
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  for (dep = 0; dep <= depth - cellHeight; ++dep) {
     d    = dim == depth ? dep : (!dep ? 0 : dim);
     ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
     pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
