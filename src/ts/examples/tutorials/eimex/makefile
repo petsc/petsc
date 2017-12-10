@@ -38,8 +38,8 @@ runct_vdp_imex_conv:
           done
 
 runallen_cahn:
-	-@${MPIEXEC} -n 1 ./allen_cahn -ts_monitor -fp_trap -ts_rtol 1e-04 -ts_dt 0.025 -pc_type lu -ksp_error_if_not_converged TRUE  -ts_type eimex -ts_adapt_type none -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_draw_solution
+	-@${MPIEXEC} -n 1 ./allen_cahn  -fp_trap -ts_rtol 1e-04 -ts_dt 0.025 -pc_type lu -ksp_error_if_not_converged TRUE  -ts_type eimex -ts_adapt_type none -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_draw_solution
 
-TESTEXAMPLES_C = ct_vdp_imex.PETSc ct_vdp_imex.rm allen_cahn.PETSc allen_cahn.rm
+TESTEXAMPLES_C = ct_vdp_imex.PETSc runct_vdp_imex runct_vdp_imex_adapt runct_vdp_imex_conv ct_vdp_imex.rm allen_cahn.PETSc runallen_cahn allen_cahn.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
