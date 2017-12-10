@@ -943,6 +943,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(gs);CHKERRQ(ierr);
+  if (gs->bcIndices) {ierr = PetscMemcpy(gs->bcIndices, s->bcIndices, sizeof(PetscInt) * (gs->bc->atlasOff[gs->bc->pEnd-gs->bc->pStart-1] + gs->bc->atlasDof[gs->bc->pEnd-gs->bc->pStart-1]));CHKERRQ(ierr);}
   if (nroots >= 0) {
     ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
