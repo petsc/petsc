@@ -26,16 +26,17 @@ runct_vdp_imex_adapt:
 	-@${MPIEXEC} -n 1 ./ct_vdp_imex -ts_type eimex -ts_adapt_type none -fp_trap -pc_type lu -ts_dt 0.01 -ts_final_time 10 -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_lg_solution
 
 runct_vdp_imex_conv:
-	-@rm -f eimex_nonstiff_vdp.txt; \
+	-@touch runct_vdp_imex_conv.tmp ; ${RM} -f eimex_nonstiff_vdp.txt; \
           for j in 1 2 3; do \
             for i in $$(seq $$j 3); do \
               for dt in 0.005 0.001 0.0005; do \
                  ftime=0.5; \
                  msteps=`echo $$ftime / $$dt | bc`; \
-                 ${MPIEXEC} -n 1 ./ct_vdp_imex -ts_type eimex  -ts_adapt_type none -fp_trap -pc_type lu -ts_dt $$dt -ts_max_steps $$msteps -ts_eimex_row_col $$i,$$j; \
+                 ${MPIEXEC} -n 1 ./ct_vdp_imex -ts_type eimex  -ts_adapt_type none -fp_trap -pc_type lu -ts_dt $$dt -ts_max_steps $$msteps -ts_eimex_row_col $$i,$$j >>  runct_vdp_imex_conv.tmp; \
               done; \
             done; \
-          done
+          done; ${DIFF} output/runct_vdp_imex_conv.out runct_vdp_imex_conv.tmp || printf "${PWD}\nPossible problem with runct_vdp_imex_con, diffs above\n=========================================\n"; \
+        ${RM} -f runct_vdp_imex_conv.tmp
 
 runallen_cahn:
 	-@${MPIEXEC} -n 1 ./allen_cahn  -fp_trap -ts_rtol 1e-04 -ts_dt 0.025 -pc_type lu -ksp_error_if_not_converged TRUE  -ts_type eimex -ts_adapt_type none -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_draw_solution
