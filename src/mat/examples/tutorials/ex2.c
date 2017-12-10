@@ -5,6 +5,10 @@ static char help[] = "testing SeqDense matrices with an LDA (leading dimension o
  * This example tests the functionality of MatInsertValues(), MatMult(),
  * and MatMultTranspose().
  */
+/*T
+   requires: x
+T*/
+
 #include <petscmat.h>
 
 int main(int argc,char **argv)
@@ -172,3 +176,12 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      requires: x
+      TODO: Need to implement test
+
+TEST*/

@@ -92,3 +92,13 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+      TODO: Need to develop comparison test
+
+TEST*/

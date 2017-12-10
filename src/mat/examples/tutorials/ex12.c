@@ -7,7 +7,10 @@ static char help[] = "Reads a PETSc matrix and vector from a file; expands the m
    Concepts: Vectors^loading a binary vector;
    Concepts: PetscLog^preloading executable
    Processors: 1
+   requires: define(PETSC_USE_REAL_DOUBLE) !define(USE_64BIT_INDICES)
 T*/
+
+
 
 /*
   Include "petscmat.h" so that we can use matrices.
@@ -104,3 +107,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

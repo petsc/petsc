@@ -61,3 +61,30 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      suffix: mpiaij
+      nsize: 2
+      requires: datafilespath
+      args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij
+
+   test:
+      suffix: mpidense
+      nsize: 2
+      requires: datafilespath
+      args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpidense
+
+   test:
+      suffix: seqaij
+      requires: datafilespath
+      args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij
+
+   test:
+      suffix: seqdense
+      requires: datafilespath
+      args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense
+
+TEST*/

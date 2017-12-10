@@ -59,3 +59,15 @@ int main(int argc,char **args)
 
 
 
+
+
+/*TEST
+
+   build:
+     requires: parmetis
+
+   test:
+      nsize: 2
+      requires: parmetis
+
+TEST*/

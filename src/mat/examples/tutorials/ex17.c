@@ -4,7 +4,10 @@ static char help[] = "Example of using graph partitioning with a matrix in which
    Concepts: Mat^mat partitioning
    Concepts: Mat^image segmentation
    Processors: n
+   TODO: Need to determine if deprecated
 T*/
+
+
 
 #include <petscmat.h>
 
@@ -67,3 +70,13 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 8
+      args: -emptyranks 0,2,4 -bigranks 1,3,7
+      TODO: Need to determine if deprecated
+
+TEST*/
