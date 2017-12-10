@@ -512,24 +512,23 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  if (dim <= 1) {
+  if ((depth == dim) || (dim <= 1)) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
-  }
-  for (d = 1; d < dim; ++d) {
-    /* Create interpolated mesh */
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
-    ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
-    if (depth > 0) {
-      ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
-      ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
-      ierr = DMPlexInterpolatePointSF(idm, sfPoint, depth);CHKERRQ(ierr);
+  } else {
+    for (d = 1; d < dim; ++d) {
+      /* Create interpolated mesh */
+      ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
+      ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
+      ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
+      if (depth > 0) {
+        ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
+        ierr = DMGetPointSF(odm, &sfPoint);CHKERRQ(ierr);
+        ierr = DMPlexInterpolatePointSF(idm, sfPoint, depth);CHKERRQ(ierr);
+      }
+      if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
+      odm  = idm;
     }
-    if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
-    odm  = idm;
-  }
-  if (idm != dm) {
     ierr = PetscObjectGetName((PetscObject) dm,  &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) idm,  name);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
