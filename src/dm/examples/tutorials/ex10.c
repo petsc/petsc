@@ -92,3 +92,26 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+      build:
+         requires: hdf5
+
+      test:
+         nsize: 4
+
+      test:
+         nsize: 4
+         suffix: 2
+         args: -viewer_hdf5_base_dimension2
+         output_file: output/ex10_1.out
+
+      test:
+         nsize: 4
+         suffix: 3
+         args: -viewer_hdf5_sp_output
+         output_file: output/ex10_1.out
+
+TEST*/
