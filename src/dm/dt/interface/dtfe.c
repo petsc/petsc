@@ -3798,14 +3798,16 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal *
     ierr = DMPlexGetConeSize(dm, 0, &numFaces);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, 0, &faces);CHKERRQ(ierr);
     ierr = PetscFEGetFaceQuadrature(fem, &fq);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(fq, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numFaces*npoints*dim, &facePoints);CHKERRQ(ierr);
-    for (f = 0; f < numFaces; ++f) {
-      ierr = DMPlexComputeCellGeometryFEM(dm, faces[f], NULL, cgeom.v0, cgeom.J, NULL, &cgeom.detJ);CHKERRQ(ierr);
-      for (q = 0; q < npoints; ++q) CoordinatesRefToReal(dim, dim-1, cgeom.v0, cgeom.J, &points[q*(dim-1)], &facePoints[(f*npoints+q)*dim]);
+    if (fq) {
+      ierr = PetscQuadratureGetData(fq, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numFaces*npoints*dim, &facePoints);CHKERRQ(ierr);
+      for (f = 0; f < numFaces; ++f) {
+        ierr = DMPlexComputeCellGeometryFEM(dm, faces[f], NULL, cgeom.v0, cgeom.J, NULL, &cgeom.detJ);CHKERRQ(ierr);
+        for (q = 0; q < npoints; ++q) CoordinatesRefToReal(dim, dim-1, cgeom.v0, cgeom.J, &points[q*(dim-1)], &facePoints[(f*npoints+q)*dim]);
+      }
+      ierr = PetscFEGetTabulation(fem, numFaces*npoints, facePoints, &fem->Bf, &fem->Df, NULL/*&fem->Hf*/);CHKERRQ(ierr);
+      ierr = PetscFree(facePoints);CHKERRQ(ierr);
     }
-    ierr = PetscFEGetTabulation(fem, numFaces*npoints, facePoints, &fem->Bf, &fem->Df, NULL/*&fem->Hf*/);CHKERRQ(ierr);
-    ierr = PetscFree(facePoints);CHKERRQ(ierr);
   }
   if (Bf) *Bf = fem->Bf;
   if (Df) *Df = fem->Df;
@@ -6601,7 +6603,6 @@ PetscErrorCode PetscFEGetHeightSubspace(PetscFE fe, PetscInt height, PetscFE *su
   ierr = PetscFEGetFaceQuadrature(fe, &subq);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(Q, &dim);CHKERRQ(ierr);
   if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %D for dimension %D space", height, dim);}
-  if (height != 1) SETERRQ1(PetscObjectComm((PetscObject) fe), PETSC_ERR_SUP, "Height %D not currently supported", height);
   if (!fe->subspaces) {ierr = PetscCalloc1(dim, &fe->subspaces);CHKERRQ(ierr);}
   if (height <= dim) {
     if (!fe->subspaces[height-1]) {
