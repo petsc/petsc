@@ -2245,8 +2245,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->getchildsymmetry    = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
   mesh->vtkCellHeight       = 0;
-  mesh->useCone             = PETSC_FALSE;
-  mesh->useClosure          = PETSC_TRUE;
   mesh->useAnchors          = PETSC_FALSE;
 
   mesh->maxProjectionHeight = 0;

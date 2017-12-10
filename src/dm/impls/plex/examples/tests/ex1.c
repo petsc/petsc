@@ -449,6 +449,11 @@ int main(int argc, char **argv)
     nsize: 8
     args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
 
+  test:
+    suffix: part_parmetis_0
+    requires: parmetis
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -petscpartitioner_type parmetis -dm_view -petscpartitioner_view
   # Parallel ptscotch partitioner tests
   test:
     suffix: part_ptscotch_0
