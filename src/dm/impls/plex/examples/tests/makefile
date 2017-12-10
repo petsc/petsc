@@ -73,6 +73,7 @@ ex18: ex18.o  chkopts
 
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_DM_LIB}
+	${DSYMUTIL} ex19
 	${RM} -f ex19.o
 
 ex20: ex20.o  chkopts

@@ -432,14 +432,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     }
   }
   {
-    DM interpolatedMesh = NULL;
+    DM idm;
 
     ierr = CheckMesh(*dm, user);CHKERRQ(ierr);
-    ierr = DMPlexInterpolate(*dm, &interpolatedMesh);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*dm, interpolatedMesh);CHKERRQ(ierr);
-    ierr = CompareCones(*dm, interpolatedMesh);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = CompareCones(*dm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = interpolatedMesh;
+    *dm  = idm;
   }
   {
     DM               distributedMesh = NULL;

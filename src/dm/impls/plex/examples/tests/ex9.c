@@ -219,13 +219,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = rdm;
   }
   if (user->interpolate) {
-    DM idm = NULL;
-    const char *name;
+    DM idm;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) *newdm, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)    idm,  name);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*newdm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = idm;
   }

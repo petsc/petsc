@@ -347,7 +347,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
