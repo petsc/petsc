@@ -5,6 +5,8 @@ static char help[] = "Tests TSLINESEARCHL2 handing of Inf/Nan.\n\n";
    Concepts: SNES^basic example
 T*/
 
+
+
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -228,3 +230,12 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 }
 
 
+
+
+/*TEST
+
+   test:
+      args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type l2
+      filter: grep Inf
+
+TEST*/
