@@ -913,15 +913,19 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 @*/
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
 {
+  PetscSection    gs;
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
   PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), gsection);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 2);
+  PetscValidPointer(gsection, 5);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(gs, pStart, pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   nlocal = nroots;              /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
@@ -933,19 +937,19 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   /* Mark all local points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(gs, p, dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
-    if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
+    if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(gs, p, cdof);CHKERRQ(ierr);}
     if (neg) neg[p] = -(dof+1);
   }
-  ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
+  ierr = PetscSectionSetUpBC(gs);CHKERRQ(ierr);
   if (nroots >= 0) {
     ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       if (recv[p] < 0) {
-        (*gsection)->atlasDof[p-pStart] = recv[p];
+        gs->atlasDof[p-pStart] = recv[p];
         ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
         if (-(recv[p]+1) != dof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is not the unconstrained %d", -(recv[p]+1), p, dof);
       }
@@ -957,16 +961,16 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     const PetscInt q = pind ? pind[p] : p;
 
     cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
-    (*gsection)->atlasOff[q] = off;
-    off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q]-cdof : 0;
+    gs->atlasOff[q] = off;
+    off += gs->atlasDof[q] > 0 ? gs->atlasDof[q]-cdof : 0;
   }
   if (!localOffsets) {
     ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) s));CHKERRQ(ierr);
     globalOff -= off;
   }
   for (p = pStart, off = 0; p < pEnd; ++p) {
-    (*gsection)->atlasOff[p-pStart] += globalOff;
-    if (neg) neg[p] = -((*gsection)->atlasOff[p-pStart]+1);
+    gs->atlasOff[p-pStart] += globalOff;
+    if (neg) neg[p] = -(gs->atlasOff[p-pStart]+1);
   }
   if (s->perm) {ierr = ISRestoreIndices(s->perm, &pind);CHKERRQ(ierr);}
   /* Put in negative offsets for ghost points */
@@ -975,11 +979,12 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      if (recv[p] < 0) (*gsection)->atlasOff[p-pStart] = recv[p];
+      if (recv[p] < 0) gs->atlasOff[p-pStart] = recv[p];
     }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
-  ierr = PetscSectionViewFromOptions(*gsection,NULL,"-global_section_view");CHKERRQ(ierr);
+  ierr = PetscSectionViewFromOptions(gs, NULL, "-global_section_view");CHKERRQ(ierr);
+  *gsection = gs;
   PetscFunctionReturn(0);
 }
 
