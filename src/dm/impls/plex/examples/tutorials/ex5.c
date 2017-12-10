@@ -27,6 +27,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 int main(int argc, char **argv)
 {
   DM             dm, dmdist, dmnew;
+  PetscPartitioner part;
   AppCtx         user;
   PetscViewer    v;
   PetscSF        pointSF;
@@ -37,6 +38,9 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)part, "orig_");CHKERRQ(ierr);
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 0, &pointSF, &dmdist);CHKERRQ(ierr);
   if (dmdist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -46,7 +50,7 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
-  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v); CHKERRQ(ierr);
+  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), "dmdist.h5", FILE_MODE_WRITE, &v);CHKERRQ(ierr);
   ierr = DMView(dm, v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 
