@@ -68,19 +68,4 @@ ex25: ex25.o  chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_TS_LIB}
 	${RM} ex25.o
 
-#----------------------------------------------------------------------------------
-
-runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
-	   ${DIFF} output/ex5.out ex5.tmp || printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex5.tmp
-
-runex5_2:
-	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
-	   ${DIFF} output/ex5.out ex5.tmp || printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex5.tmp
-
-
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex5.PETSc runex5 runex5_2 ex5.rm
-
 include ${PETSC_DIR}/lib/petsc/conf/test
