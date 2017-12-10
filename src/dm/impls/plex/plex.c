@@ -3531,20 +3531,30 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 
 /******************************** FEM Support **********************************/
 
-PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection section)
+PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscInt point, PetscSection section)
 {
+  DMLabel        label;
   PetscInt      *perm;
-  PetscInt       dim, eStart, k, Nf, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
+  PetscInt       dim, depth, eStart, k, Nf, f, Nc, c, i, j, size = 0, offset = 0, foffset = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (point < 0) {ierr = DMPlexGetDepthStratum(dm, 1, &point, NULL);CHKERRQ(ierr);}
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  ierr = DMLabelGetValue(label, point, &depth);CHKERRQ(ierr);
+  if (depth == 1) {eStart = point;}
+  else if  (depth == dim) {
+    const PetscInt *cone;
+
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    eStart = cone[0];
+  } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D of depth %D cannot be used to bootstrap spectral ordering", point, depth);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   if (dim <= 1) PetscFunctionReturn(0);
   for (f = 0; f < Nf; ++f) {
     /* An order k SEM disc has k-1 dofs on an edge */
-    ierr = DMPlexGetDepthStratum(dm, 1, &eStart, NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
     k = k/Nc + 1;
@@ -3555,7 +3565,6 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection sectio
     switch (dim) {
     case 2:
       /* The original quad closure is oriented clockwise, {f, e_b, e_r, e_t, e_l, v_lb, v_rb, v_tr, v_tl} */
-      ierr = DMPlexGetDepthStratum(dm, 1, &eStart, NULL);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
       k = k/Nc + 1;
@@ -3602,7 +3611,6 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection sectio
           e_bl, e_bb, e_br, e_bf,  e_tf, e_tr, e_tb, e_tl,  e_rf, e_lf, e_lb, e_rb,
           v_blf, v_blb, v_brb, v_brf, v_tlf, v_trf, v_trb, v_tlb}
       */
-      ierr = DMPlexGetDepthStratum(dm, 1, &eStart, NULL);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldDof(section, eStart, f, &k);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
       k = k/Nc + 1;
