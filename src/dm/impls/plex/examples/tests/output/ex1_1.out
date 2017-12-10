@@ -3259,7 +3259,7 @@ subface ver 2, mark 2:
 [0] TetGenMeshOutputSubfaces(): Writing faces.
 DM Object: Simplicial Mesh 1 MPI processes
   type: plex
-Mesh 'Simplicial Mesh':
+Simplicial Mesh in 3 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 4 support: 24
