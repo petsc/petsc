@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   ierr = PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2);CHKERRQ(ierr);
 
   /* Going through cell sets then cells, and setting up storage for the sections */
-  ierr = DMGetLabelSize(dm, "Cell Sets", &numCS);
+  ierr = DMGetLabelSize(dm, "Cell Sets", &numCS);CHKERRQ(ierr);
   ierr = DMGetLabelIdIS(dm, "Cell Sets", &csIS);CHKERRQ(ierr);
   ierr = ISGetIndices(csIS, &csID);CHKERRQ(ierr);
   for (set = 0; set < numCS; set++) {
