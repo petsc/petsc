@@ -1,8 +1,9 @@
 static char help[] = "Test FEM layout with DM\n\n";
 
 #include <petsc.h>
-#include "exodusII.h"
-//#include <petsc/private/dmimpl.h>
+#ifdef PETSC_HAVE_EXODUSII
+#include <exodusII.h>
+#endif
 
 int main(int argc, char **argv) {
   DM                dm, dmU, dmA, dmS, dmUA;
@@ -26,7 +27,9 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsInt("-order", "FEM polynomial order", "ex26", order, &order, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+#ifdef PETSC_HAVE_EXODUSII
   ex_opts(EX_VERBOSE+EX_DEBUG);
+#endif
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
@@ -187,7 +190,8 @@ int main(int argc, char **argv) {
 
 /*TEST
 
-  test:
+   test:
+    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -order 2
 
 TEST*/
