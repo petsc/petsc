@@ -126,10 +126,10 @@ int main(int argc,char **args)
 
 
 /*TEST
-   
+
    test:
       nsize: 2
-      requires: datafilespath
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
       TODO: Need to develop comparison test
 

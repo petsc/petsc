@@ -4,7 +4,6 @@ static char help[] = "Example of using graph partitioning with a matrix in which
    Concepts: Mat^mat partitioning
    Concepts: Mat^image segmentation
    Processors: n
-   TODO: Need to determine if deprecated
 T*/
 
 
@@ -73,6 +72,9 @@ int main(int argc, char **args)
 
 
 /*TEST
+
+   build:
+      requires: c99
 
    test:
       nsize: 8

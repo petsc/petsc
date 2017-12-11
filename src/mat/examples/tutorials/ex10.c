@@ -68,23 +68,23 @@ int main(int argc,char **args)
    test:
       suffix: mpiaij
       nsize: 2
-      requires: datafilespath
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij
 
    test:
       suffix: mpidense
       nsize: 2
-      requires: datafilespath
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type mpidense
 
    test:
       suffix: seqaij
-      requires: datafilespath
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij
 
    test:
       suffix: seqdense
-      requires: datafilespath
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense
 
 TEST*/

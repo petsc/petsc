@@ -1,15 +1,8 @@
 static char help[] = "Tests coarsening with DM.\n";
 
-
-
-/*T
-   requires: !complex
-T*/
-
 #include <petscsys.h>
 #include <petscvec.h>
 #include <petscdmda.h>
-
 
 int main(int argc, char **argv)
 {
@@ -116,6 +109,9 @@ int main(int argc, char **argv)
 
 
 /*TEST
+
+   build:
+      requires: !complex
 
    test:
       TODO: Need to implement test

@@ -25,7 +25,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
   PetscScalar    Ke[16];
-  PetscReal      x,y,h;
+  PetscReal      h;
   IS             *is1,*is2,*islocal1,*islocal2;
   PetscBool      flg;
 
@@ -44,8 +44,6 @@ int main(int argc,char **args)
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;

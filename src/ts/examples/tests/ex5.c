@@ -65,10 +65,6 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
    and not as a predictive weather model.
 */
 
-/*T
-   requires: !complex !single
-T*/
-
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -744,6 +740,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
 
 /*TEST
+
+   build:
+      requires: !complex !single
 
    test:
       args: -ts_max_steps 130 -monitor_interval 60
