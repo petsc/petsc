@@ -1,4 +1,5 @@
 
+
 /*
     Defines parallel vector scatters.
 */
@@ -6,6 +7,8 @@
 #include <../src/vec/vec/impls/dvecimpl.h>         /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscsf.h>
+
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
 
 PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
@@ -283,7 +286,6 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
   ierr = PetscFree(to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 
 /* --------------------------------------------------------------------------------------*/
@@ -2230,99 +2232,6 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_bs(PetscInt n,const PetscInt *indices
 
 PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
 
-/*@
-     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send and receive.
-
-     Collective on VecScatter
-
-   Input Parameters:
-+     VecScatter - obtained with VecScatterCreateEmpty()
-.     nsends -
-.     sendSizes -
-.     sendProcs -
-.     sendIdx - indices where the sent entries are obtained from (in local, on process numbering), this is one long array of size \sum_{i=0,i<nsends} sendSizes[i]
-.     nrecvs - number of receives to expect
-.     recvSizes -
-.     recvProcs - processes who are sending to me
-.     recvIdx - indices of where received entries are to be put, (in local, on process numbering), this is one long array of size \sum_{i=0,i<nrecvs} recvSizes[i]
--     bs - size of block
-
-     Notes:  sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
-      to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
-
-       Probably does not handle sends to self properly. It should remove those from the counts that are used
-      in allocating space inside of the from struct
-
-  Level: intermediate
-
-@*/
-PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
-{
-  VecScatter_MPI_General *from, *to;
-  PetscInt               sendSize, recvSize;
-  PetscInt               n, i;
-  PetscErrorCode         ierr;
-
-  /* allocate entire send scatter context */
-  ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
-  to->sharedwin       = MPI_WIN_NULL;
-  to->n = nsends;
-  for (n = 0, sendSize = 0; n < to->n; n++) sendSize += sendSizes[n];
-
-  ierr = PetscMalloc1(to->n,&to->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bs*sendSize,&to->values,sendSize,&to->indices,to->n+1,&to->starts,to->n,&to->procs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(PetscMax(to->n,nrecvs),&to->sstatus,PetscMax(to->n,nrecvs),&to->rstatus);CHKERRQ(ierr);
-
-  to->starts[0] = 0;
-  for (n = 0; n < to->n; n++) {
-    if (sendSizes[n] <=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
-    to->starts[n+1] = to->starts[n] + sendSizes[n];
-    to->procs[n]    = sendProcs[n];
-    for (i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) to->indices[i] = sendIdx[i];
-  }
-  ctx->todata = (void*) to;
-
-  /* allocate entire receive scatter context */
-  ierr    = PetscNewLog(ctx,&from);CHKERRQ(ierr);
-  from->sharedwin       = MPI_WIN_NULL;
-  from->n = nrecvs;
-  for (n = 0, recvSize = 0; n < from->n; n++) recvSize += recvSizes[n];
-
-  ierr = PetscMalloc1(from->n,&from->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bs*recvSize,&from->values,recvSize,&from->indices,from->n+1,&from->starts,from->n,&from->procs);CHKERRQ(ierr);
-
-  from->starts[0] = 0;
-  for (n = 0; n < from->n; n++) {
-    if (recvSizes[n] <=0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);
-    from->starts[n+1] = from->starts[n] + recvSizes[n];
-    from->procs[n]    = recvProcs[n];
-    for (i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) from->indices[i] = recvIdx[i];
-  }
-  ctx->fromdata = (void*)from;
-
-  /* No local scatter optimization */
-  from->local.n                    = 0;
-  from->local.vslots               = 0;
-  to->local.n                      = 0;
-  to->local.vslots                 = 0;
-  from->local.nonmatching_computed = PETSC_FALSE;
-  from->local.n_nonmatching        = 0;
-  from->local.slots_nonmatching    = 0;
-  to->local.nonmatching_computed   = PETSC_FALSE;
-  to->local.n_nonmatching          = 0;
-  to->local.slots_nonmatching      = 0;
-
-  from->type = VEC_SCATTER_MPI_GENERAL;
-  to->type   = VEC_SCATTER_MPI_GENERAL;
-  from->bs   = bs;
-  to->bs     = bs;
-  ierr       = VecScatterCreateCommon_PtoS_MPI3(from, to, ctx);CHKERRQ(ierr);
-
-  /* mark lengths as negative so it won't check local vector lengths */
-  ctx->from_n = ctx->to_n = -1;
-  PetscFunctionReturn(0);
-}
-
 /*
    bs indicates how many elements there are in each block. Normally this would be 1.
 
@@ -3142,3 +3051,5 @@ PetscErrorCode PetscSFCreateFromZero(MPI_Comm comm, Vec gv, PetscSF *sf)
   ierr = PetscSFSetGraph(*sf, numroots, n, localnodes, PETSC_OWN_POINTER, remotenodes, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#endif

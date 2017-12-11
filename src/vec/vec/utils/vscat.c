@@ -884,9 +884,11 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
 }
 
 
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
 extern PetscErrorCode VecScatterCreate_PtoS_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 extern PetscErrorCode VecScatterCreate_PtoP_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 extern PetscErrorCode VecScatterCreate_StoP_MPI3(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
+#endif
 
 extern PetscErrorCode VecScatterCreate_PtoS_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
 extern PetscErrorCode VecScatterCreate_PtoP_MPI1(PetscInt,const PetscInt*,PetscInt,const PetscInt*,Vec,Vec,PetscInt,VecScatter);
@@ -1634,14 +1636,17 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PetscInt          xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range;
   PetscInt          ix_type  = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
   MPI_Comm          comm,ycomm;
-  PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando,flag,vec_mpi1_flg;
+  PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando,flag;
+  PetscBool         vec_mpi1_flg;
   IS                tix = 0,tiy = 0;
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
   vec_mpi1_flg = PETSC_TRUE; /* default */
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
   ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_mpi1",&vec_mpi1_flg,NULL);CHKERRQ(ierr);
-
+#endif
+  
   /*
       Determine if the vectors are "parallel", ie. it shares a comm with other processors, or
       sequential (it does not share a comm). The difference is that parallel vectors treat the
@@ -2093,9 +2098,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
           if (vec_mpi1_flg) {
             ierr = VecScatterCreate_PtoS_MPI1(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-          } else {
+          }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+          else {
             ierr = VecScatterCreate_PtoS_MPI3(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           }
+#endif
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(iy,&idy);CHKERRQ(ierr);
           ierr = PetscInfo(xin,"Special case: blocked indices\n");CHKERRQ(ierr);
@@ -2121,9 +2129,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           }
           if (vec_mpi1_flg) {
             ierr = VecScatterCreate_PtoS_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-          } else {
+          }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+          else {
             ierr = VecScatterCreate_PtoS_MPI3(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           }
+#endif          
           ierr = PetscFree(idy);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           ierr = PetscInfo(xin,"Special case: blocked indices to stride\n");CHKERRQ(ierr);
@@ -2142,9 +2153,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != ny) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match (%d %d)",nx,ny);
       if (vec_mpi1_flg) {
         ierr = VecScatterCreate_PtoS_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-      } else {
+      }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+      else {
         ierr = VecScatterCreate_PtoS_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       }
+#endif
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"General case: MPI to Seq\n");CHKERRQ(ierr);
@@ -2216,9 +2230,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         }
         if (vec_mpi1_flg) {
           ierr = VecScatterCreate_StoP_MPI1(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-        } else {
+        }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+        else {
           ierr = VecScatterCreate_StoP_MPI3(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
         }
+#endif
         ierr = PetscFree(idy);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
         ierr = PetscInfo(xin,"Special case: Blocked indices to stride\n");CHKERRQ(ierr);
@@ -2237,9 +2254,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       if (vec_mpi1_flg) {
         ierr = VecScatterCreate_StoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-      } else {
+      }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+      else {
         ierr = VecScatterCreate_StoP_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       }
+#endif
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
       ierr = PetscInfo(xin,"General case: Seq to MPI\n");CHKERRQ(ierr);
@@ -2258,9 +2278,12 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
     if (vec_mpi1_flg) {
       ierr = VecScatterCreate_PtoP_MPI1(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
-    } else {
+    }
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+    else {
       ierr = VecScatterCreate_PtoP_MPI3(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
     }
+#endif
     ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
     ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
     ierr = PetscInfo(xin,"General case: MPI to MPI\n");CHKERRQ(ierr);

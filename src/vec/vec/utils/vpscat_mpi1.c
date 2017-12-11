@@ -7,6 +7,11 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscsf.h>
 
+#if !defined(PETSC_HAVE_MPI_WIN_CREATE)
+#define VecScatterCreateLocalMPI1 VecScatterCreateLocal
+#define PetscSFCreateFromZeroMPI1 PetscSFCreateFromZero
+#endif
+
 PetscErrorCode VecScatterView_MPI_MPI1(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to  =(VecScatter_MPI_General*)ctx->todata;
@@ -2085,6 +2090,8 @@ PETSC_STATIC_INLINE PetscErrorCode Scatter_MPI1_bs(PetscInt n,const PetscInt *in
 /*              create parallel to sequential scatter context                           */
 
 PetscErrorCode VecScatterCreateCommon_PtoS_MPI1(VecScatter_MPI_General*,VecScatter_MPI_General*,VecScatter);
+
+
 
 /*@
      VecScatterCreateLocalMPI1 - Creates a VecScatter from a list of messages it must send and receive.
