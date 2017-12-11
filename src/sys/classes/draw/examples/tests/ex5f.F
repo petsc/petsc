@@ -69,3 +69,12 @@
       call PetscFinalize(ierr)
       end
 
+!/*TEST
+!
+!   build:
+!     requires: x
+!
+!   test:
+!     output_file: output/ex1_1.out
+!
+!TEST*/
