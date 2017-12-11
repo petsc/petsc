@@ -54,7 +54,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
     args.append('-DTPL_ENABLE_Matio:BOOL=OFF')
     args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
-    args.append('-DTPL_ENABLE_MPI=OFF')
+    args.append('-DTPL_ENABLE_MPI=ON')
     args.append('-DTPL_ENABLE_Pamgen=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
     args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)
