@@ -187,4 +187,15 @@ PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)
   return numit;
 }
 
+/*TEST
 
+   build:
+      requires: !comple
+      output_file: output/ex1_1.out
+
+   test:
+      nsize: 2
+      output_file: output/ex1_1.out
+      localrunfiles: ex2_stock.txt
+
+TEST*/
