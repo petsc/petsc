@@ -173,7 +173,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
   PetscSection   section;
