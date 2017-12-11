@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
 void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
 {
   PetscInt       i;
-  PetscScalar    u1,u2,t;
+  PetscScalar    u1,u2;
+  PetscReal      t;
   PetscErrorCode ierr;
 
   for (i=0; i<numdim; i+=2) {
