@@ -29,7 +29,7 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_EXODUSII)
-  int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+  int   CPU_word_size = sizeof(PetscReal), IO_word_size = 0, exoid = -1;
   float version;
 #endif
 
@@ -208,7 +208,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
-    float *x, *y, *z;
+    PetscReal *x, *y, *z;
 
     ierr = PetscMalloc3(numVertices,&x,numVertices,&y,numVertices,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
