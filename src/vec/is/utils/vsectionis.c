@@ -1287,7 +1287,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, PetscInt fields[], PetscSection *subs)
+PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, const PetscInt fields[], PetscSection *subs)
 {
   PetscInt       nF, f, pStart, pEnd, p, maxCdof = 0;
   PetscErrorCode ierr;
