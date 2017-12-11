@@ -455,7 +455,7 @@ cdef int DMSHELL_CreateDomainDecompositionScatters(
 cdef int DMSHELL_CreateSubDM(
     PetscDM cdm,
     PetscInt numFields,
-    PetscInt cfields[],
+    const_PetscInt cfields[],
     PetscIS *ciset,
     PetscDM *csubdm) except PETSC_ERR_PYTHON with gil:
     cdef DM dm = subtype_DM(cdm)()
