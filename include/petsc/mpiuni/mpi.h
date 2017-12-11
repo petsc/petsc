@@ -190,6 +190,7 @@ typedef int MPI_Comm;
 #define MPI_COMM_NULL  0
 #define MPI_COMM_SELF  1
 #define MPI_COMM_WORLD 2
+#define MPI_COMM_TYPE_SHARED 1
 
 typedef int MPI_Info;
 #define MPI_INFO_NULL 0
@@ -884,6 +885,11 @@ typedef int MPI_Fint;
 #define MPI_Comm_split(comm,color,key,newcomm) \
      (MPIUNI_ARG(color),\
       MPIUNI_ARG(key),\
+      MPI_Comm_dup(comm,newcomm))
+#define MPI_Comm_split_type(comm,color,key,info,newcomm) \
+     (MPIUNI_ARG(color),\
+      MPIUNI_ARG(key),\
+      MPIUNI_ARG(info),\
       MPI_Comm_dup(comm,newcomm))
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1, MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1 ,MPI_SUCCESS)
