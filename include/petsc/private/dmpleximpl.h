@@ -218,6 +218,12 @@ PETSC_INTERN PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
+/* TODO Make these INTERN */
+PETSC_EXTERN PetscErrorCode DMPlexView_ExodusII_Internal(DM, int, PetscInt);
+PETSC_EXTERN PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec, int, int);
+PETSC_EXTERN PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec, int, int);
 PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM,PetscInt,PetscInt,PetscInt*);
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_INTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
