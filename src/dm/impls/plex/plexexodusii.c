@@ -115,7 +115,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
   PetscSection    section;
   Vec             coord;
   PetscInt      **nodes;
-  PetscInt        depth, d, dim;
+  PetscInt        depth, d, dim, skipCells = 0;
   PetscInt        pStart, pEnd, p, cStart, cEnd, numCells, vStart, vEnd, numVertices, eStart, eEnd, numEdges, fStart, fEnd, numFaces, numNodes;
   PetscInt        num_vs, num_fs;
   PetscMPIInt     rank, size;
@@ -216,7 +216,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
     IS              stratumIS;
     const PetscInt *cells;
     PetscInt       *connect;
-    PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0, skipCells = 0;
+    PetscInt        edgesInClosure = 0, facesInClosure = 0, verticesInClosure = 0;
     PetscInt        csSize, c, connectSize, closureSize;
     char           *elem_type = NULL;
     char            elem_type_tri3[]  = "TRI3",  elem_type_quad4[] = "QUAD4";
