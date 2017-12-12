@@ -1,6 +1,6 @@
 DM Object: Mesh 1 MPI processes
   type: plex
-Mesh 'Mesh':
+Mesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 6
@@ -148,7 +148,7 @@ Label 'marker':
 [0]: 32 (1)
 DM Object: Submesh 1 MPI processes
   type: plex
-Mesh 'Submesh':
+Submesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 5
@@ -251,7 +251,7 @@ Label 'subpoint_map':
 [0]: 14 (0)
 DM Object: Submesh 1 MPI processes
   type: plex
-Mesh 'Submesh':
+Submesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 5

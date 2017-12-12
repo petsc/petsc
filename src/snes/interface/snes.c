@@ -4994,7 +4994,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 
    Level: intermediate
 
-.seealso: SNESGetDM(), SNESHasDM(), KSPSetDM(), KSPGetDM()
+.seealso: SNESGetDM(), KSPSetDM(), KSPGetDM()
 @*/
 PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 {
@@ -5041,7 +5041,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 
    Level: intermediate
 
-.seealso: SNESSetDM(), SNESHasDM(), KSPSetDM(), KSPGetDM()
+.seealso: SNESSetDM(), KSPSetDM(), KSPGetDM()
 @*/
 PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 {
@@ -5054,32 +5054,6 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
     snes->dmAuto = PETSC_TRUE;
   }
   *dm = snes->dm;
-  PetscFunctionReturn(0);
-}
-
-
-/*@
-   SNESHasDM - Whether snes has dm
-
-   Not collective but all processes must return the same value
-
-   Input Parameter:
-. snes - the nonlinear solver object
-
-   Output Parameter:
-.  hasdm - a flag indicates whether there is dm in snes
-
-   Level: intermediate
-
-.seealso: SNESGetDM(), SNESSetDM(), KSPSetDM(), KSPGetDM()
-@*/
-PetscErrorCode  SNESHasDM(SNES snes,PetscBool *hasdm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(hasdm,2);
-  if (snes->dm) *hasdm = PETSC_TRUE;
-  else *hasdm = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

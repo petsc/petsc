@@ -199,10 +199,9 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }

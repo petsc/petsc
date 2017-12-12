@@ -433,23 +433,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
   ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
-  /* generate appropriate vector scatters */
-  /* local to global inserts non-ghost point region into global */
-  ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
-  left   = xs - Xs; right = left + x;
-  bottom = ys - Ys; top = bottom + y;
-  down   = zs - Zs; up  = down + z;
-  count  = 0;
-  for (i=down; i<up; i++) {
-    for (j=bottom; j<top; j++) {
-      for (k=left; k<right; k++) {
-        idx[count++] = (i*(Ye-Ys) + j)*(Xe-Xs) + k;
-      }
-    }
-  }
+  /* generate global to local vector scatter and local to global mapping*/
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
+  ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
   if (stencil_type == DMDA_STENCIL_BOX) {
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);

@@ -1,162 +1,162 @@
-Timestep: 0000 time = 0        	 L_2 Error: [1.41e-16, 6.14e-17]
+Timestep: 0000 time = 0        	 L_2 Error: [1.33e-16, 3.65e-17]
 0 TS dt 0.1 time 0.
-    0 SNES Function norm 0.0707547 
-      0 KSP Residual norm 4.36147 
-      1 KSP Residual norm 2.126e-10 
+    0 SNES Function norm 0.0519993 
+      0 KSP Residual norm 8.20485 
+      1 KSP Residual norm 3.805e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00330843 
-      0 KSP Residual norm 0.0776172 
-      1 KSP Residual norm 1.818e-11 
+    1 SNES Function norm 0.00247602 
+      0 KSP Residual norm 0.122269 
+      1 KSP Residual norm 8.229e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 6.15507e-06 
-      0 KSP Residual norm 0.000161344 
+    2 SNES Function norm 5.59362e-06 
+      0 KSP Residual norm 0.000406257 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm 3.088e-11 
+    3 SNES Function norm 5.725e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0001 time = 0.1      	 L_2 Error: [0.0062, 0.383]
+Timestep: 0001 time = 0.1      	 L_2 Error: [0.00265, 0.386]
 1 TS dt 0.1 time 0.1
-    0 SNES Function norm 0.130438 
-      0 KSP Residual norm 2.13732 
-      1 KSP Residual norm 5.815e-11 
+    0 SNES Function norm 0.0776369 
+      0 KSP Residual norm 4.42075 
+      1 KSP Residual norm 1.209e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.0035094 
-      0 KSP Residual norm 0.0802827 
-      1 KSP Residual norm 2.410e-11 
+    1 SNES Function norm 0.00256643 
+      0 KSP Residual norm 0.126691 
+      1 KSP Residual norm 5.983e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 6.64322e-06 
-      0 KSP Residual norm 0.000171674 
+    2 SNES Function norm 5.81644e-06 
+      0 KSP Residual norm 0.000414174 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm 3.567e-11 
+    3 SNES Function norm 5.869e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0002 time = 0.2      	 L_2 Error: [0.0101, 0.364]
+Timestep: 0002 time = 0.2      	 L_2 Error: [0.00386, 0.367]
 2 TS dt 0.1 time 0.2
-    0 SNES Function norm 0.131329 
-      0 KSP Residual norm 2.14459 
-      1 KSP Residual norm 4.621e-11 
+    0 SNES Function norm 0.0785782 
+      0 KSP Residual norm 4.42365 
+      1 KSP Residual norm 1.011e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00357453 
-      0 KSP Residual norm 0.080747 
-      1 KSP Residual norm 1.827e-11 
+    1 SNES Function norm 0.00257563 
+      0 KSP Residual norm 0.127169 
+      1 KSP Residual norm 9.027e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 6.34021e-06 
-      0 KSP Residual norm 0.00015751 
+    2 SNES Function norm 5.41582e-06 
+      0 KSP Residual norm 0.000376419 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm 2.664e-11 
+    3 SNES Function norm 4.636e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0003 time = 0.3      	 L_2 Error: [0.0126, 0.346]
+Timestep: 0003 time = 0.3      	 L_2 Error: [0.00447, 0.351]
 3 TS dt 0.1 time 0.3
-    0 SNES Function norm 0.132437 
-      0 KSP Residual norm 2.14629 
-      1 KSP Residual norm 4.239e-11 
+    0 SNES Function norm 0.0797038 
+      0 KSP Residual norm 4.42434 
+      1 KSP Residual norm 1.434e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00357689 
-      0 KSP Residual norm 0.0799562 
-      1 KSP Residual norm 2.212e-11 
+    1 SNES Function norm 0.00257152 
+      0 KSP Residual norm 0.126431 
+      1 KSP Residual norm 8.249e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 5.5542e-06 
-      0 KSP Residual norm 0.000131317 
+    2 SNES Function norm 4.83964e-06 
+      0 KSP Residual norm 0.000328401 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm 1.660e-11 
+    3 SNES Function norm 3.482e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0004 time = 0.4      	 L_2 Error: [0.0142, 0.332]
+Timestep: 0004 time = 0.4      	 L_2 Error: [0.00476, 0.336]
 4 TS dt 0.1 time 0.4
-    0 SNES Function norm 0.133785 
-      0 KSP Residual norm 2.14617 
-      1 KSP Residual norm 4.875e-11 
+    0 SNES Function norm 0.0809897 
+      0 KSP Residual norm 4.42479 
+      1 KSP Residual norm 1.224e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00356555 
-      0 KSP Residual norm 0.0788528 
-      1 KSP Residual norm 2.036e-11 
+    1 SNES Function norm 0.00256992 
+      0 KSP Residual norm 0.125549 
+      1 KSP Residual norm 6.171e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 4.76327e-06 
-      0 KSP Residual norm 0.000108466 
+    2 SNES Function norm 4.29413e-06 
+      0 KSP Residual norm 0.000279032 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm 1.084e-11 
+    3 SNES Function norm 2.489e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0005 time = 0.5      	 L_2 Error: [0.0149, 0.319]
+Timestep: 0005 time = 0.5      	 L_2 Error: [0.00483, 0.323]
 5 TS dt 0.1 time 0.5
-    0 SNES Function norm 0.135355 
-      0 KSP Residual norm 2.1463 
-      1 KSP Residual norm 4.128e-11 
+    0 SNES Function norm 0.0824195 
+      0 KSP Residual norm 4.42543 
+      1 KSP Residual norm 1.112e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00356347 
-      0 KSP Residual norm 0.0780844 
-      1 KSP Residual norm 2.436e-11 
+    1 SNES Function norm 0.0025737 
+      0 KSP Residual norm 0.124927 
+      1 KSP Residual norm 3.276e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 4.20823e-06 
-      0 KSP Residual norm 9.43706e-05 
+    2 SNES Function norm 3.83541e-06 
+      0 KSP Residual norm 0.0002354 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm < 1.e-11
+    3 SNES Function norm 1.776e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0006 time = 0.6      	 L_2 Error: [0.0151, 0.309]
+Timestep: 0006 time = 0.6      	 L_2 Error: [0.00474, 0.312]
 6 TS dt 0.1 time 0.6
-    0 SNES Function norm 0.137118 
-      0 KSP Residual norm 2.14738 
-      1 KSP Residual norm 4.861e-11 
+    0 SNES Function norm 0.0839824 
+      0 KSP Residual norm 4.42632 
+      1 KSP Residual norm 1.183e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00357195 
-      0 KSP Residual norm 0.0777228 
-      1 KSP Residual norm 1.716e-11 
+    1 SNES Function norm 0.00258045 
+      0 KSP Residual norm 0.124457 
+      1 KSP Residual norm 5.521e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 3.82092e-06 
-      0 KSP Residual norm 8.53453e-05 
+    2 SNES Function norm 3.41663e-06 
+      0 KSP Residual norm 0.000196507 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    3 SNES Function norm < 1.e-11
+    3 SNES Function norm 1.240e-11 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0007 time = 0.7      	 L_2 Error: [0.015, 0.302]
+Timestep: 0007 time = 0.7      	 L_2 Error: [0.00458, 0.305]
 7 TS dt 0.1 time 0.7
-    0 SNES Function norm 0.139047 
-      0 KSP Residual norm 2.14905 
-      1 KSP Residual norm 5.493e-11 
+    0 SNES Function norm 0.0856682 
+      0 KSP Residual norm 4.42721 
+      1 KSP Residual norm 1.090e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00358291 
-      0 KSP Residual norm 0.0774643 
-      1 KSP Residual norm 1.426e-11 
+    1 SNES Function norm 0.00258556 
+      0 KSP Residual norm 0.123945 
+      1 KSP Residual norm 5.127e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 3.47526e-06 
-      0 KSP Residual norm 7.67472e-05 
+    2 SNES Function norm 3.00431e-06 
+      0 KSP Residual norm 0.000160428 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
     3 SNES Function norm < 1.e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0008 time = 0.8      	 L_2 Error: [0.0146, 0.298]
+Timestep: 0008 time = 0.8      	 L_2 Error: [0.00439, 0.299]
 8 TS dt 0.1 time 0.8
-    0 SNES Function norm 0.141117 
-      0 KSP Residual norm 2.15059 
-      1 KSP Residual norm 5.921e-11 
+    0 SNES Function norm 0.0874668 
+      0 KSP Residual norm 4.42787 
+      1 KSP Residual norm 7.844e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00358965 
-      0 KSP Residual norm 0.0770566 
-      1 KSP Residual norm 2.107e-11 
+    1 SNES Function norm 0.00258667 
+      0 KSP Residual norm 0.123378 
+      1 KSP Residual norm 4.436e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 3.1365e-06 
-      0 KSP Residual norm 6.75158e-05 
+    2 SNES Function norm 2.62308e-06 
+      0 KSP Residual norm 0.000129702 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
     3 SNES Function norm < 1.e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0009 time = 0.9      	 L_2 Error: [0.0142, 0.296]
+Timestep: 0009 time = 0.9      	 L_2 Error: [0.00418, 0.297]
 9 TS dt 0.1 time 0.9
-    0 SNES Function norm 0.14332 
-      0 KSP Residual norm 2.15155 
-      1 KSP Residual norm 5.780e-11 
+    0 SNES Function norm 0.0893703 
+      0 KSP Residual norm 4.42823 
+      1 KSP Residual norm 1.159e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    1 SNES Function norm 0.00359083 
-      0 KSP Residual norm 0.0764681 
-      1 KSP Residual norm 1.740e-11 
+    1 SNES Function norm 0.00258477 
+      0 KSP Residual norm 0.122839 
+      1 KSP Residual norm 3.890e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    2 SNES Function norm 2.82333e-06 
-      0 KSP Residual norm 5.86403e-05 
+    2 SNES Function norm 2.30161e-06 
+      0 KSP Residual norm 0.000106239 
       1 KSP Residual norm < 1.e-11
     Linear solve converged due to CONVERGED_RTOL iterations 1
     3 SNES Function norm < 1.e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
-Timestep: 0010 time = 1        	 L_2 Error: [0.0138, 0.297]
+Timestep: 0010 time = 1        	 L_2 Error: [0.00398, 0.297]
 10 TS dt 0.1 time 1.

@@ -1,6 +1,6 @@
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
-Mesh 'Simplicial Mesh':
+Simplicial Mesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 6
@@ -214,7 +214,7 @@ Flipping Proc+Comp 2:
 1 2
 DM Object: Simplicial Mesh 2 MPI processes
   type: plex
-Mesh 'Simplicial Mesh':
+Simplicial Mesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 6

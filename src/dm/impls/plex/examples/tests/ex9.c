@@ -219,13 +219,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = rdm;
   }
   if (user->interpolate) {
-    DM idm = NULL;
-    const char *name;
+    DM idm;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) *newdm, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)    idm,  name);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*newdm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = idm;
   }
@@ -342,7 +338,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
   if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
-  if (useSpectral) {ierr = DMPlexCreateSpectralClosurePermutation(dm, s);CHKERRQ(ierr);}
+  if (useSpectral) {ierr = DMPlexCreateSpectralClosurePermutation(dm, PETSC_DETERMINE, s);CHKERRQ(ierr);}
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &v);CHKERRQ(ierr);

@@ -1,0 +1,12 @@
+Mat Object: 2 MPI processes
+  type: mpiaij
+row 0: (0, 2.)  (5, 1.) 
+row 1: (1, 2.)  (5, 1.) 
+row 2: (2, 2.)  (5, 1.) 
+row 3: (3, 2.)  (5, 1.) 
+row 4: (4, 2.)  (5, 1.) 
+row 5: (5, 2.) 
+row 6: (6, 2.) 
+row 7: (7, 2.) 
+row 8: (8, 2.) 
+row 9: (9, 2.) 

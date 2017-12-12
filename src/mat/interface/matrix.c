@@ -813,6 +813,36 @@ PetscErrorCode MatGetOptionsPrefix(Mat A,const char *prefix[])
 }
 
 /*@
+   MatResetPreallocation - Reset mat to use the original nonzero pattern provided by users.
+
+   Collective on Mat
+
+   Input Parameters:
+.  A - the Mat context
+
+   Notes:
+   The allocated memory will be shrunk after calling MatAssembly with MAT_FINAL_ASSEMBLY. Users can reset the preallocation to access the original memory.
+   Currently support MPIAIJ and SEQAIJ.
+
+   Level: beginner
+
+.keywords: Mat, ResetPreallocation
+
+.seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatXAIJSetPreallocation()
+@*/
+PetscErrorCode MatResetPreallocation(Mat A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  ierr = PetscUseMethod(A,"MatResetPreallocation_C",(Mat),(A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+/*@
    MatSetUp - Sets up the internal matrix data structures for the later use.
 
    Collective on Mat

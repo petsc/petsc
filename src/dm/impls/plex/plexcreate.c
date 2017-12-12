@@ -115,14 +115,9 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     *newdm = rdm;
   }
   if (interpolate) {
-    DM idm = NULL;
-    const char *name;
+    DM idm;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) *newdm, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)    idm,  name);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*newdm, idm);CHKERRQ(ierr);
-    ierr = DMCopyLabels(*newdm, idm);CHKERRQ(ierr);
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = idm;
   }
@@ -1209,7 +1204,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
   }
   /* Interpolate */
   {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -1407,7 +1402,7 @@ PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm comm, PetscInt n, PetscBoo
   }
   /* Interpolate */
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -1504,7 +1499,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
   switch (dim) {
   case 2:
     if (simplex) {
-      DM              idm         = NULL;
+      DM              idm;
       const PetscReal edgeLen     = 2.0/(1.0 + PETSC_PHI);
       const PetscReal vertex[3]   = {0.0, 1.0/(1.0 + PETSC_PHI), PETSC_PHI/(1.0 + PETSC_PHI)};
       const PetscInt  degree      = 5;
@@ -1688,7 +1683,7 @@ PetscErrorCode DMPlexCreateSphereMesh(MPI_Comm comm, PetscInt dim, PetscBool sim
     break;
   case 3:
     if (simplex) {
-      DM              idm             = NULL;
+      DM              idm;
       const PetscReal edgeLen         = 1.0/PETSC_PHI;
       const PetscReal vertexA[4]      = {0.5, 0.5, 0.5, 0.5};
       const PetscReal vertexB[4]      = {1.0, 0.0, 0.0, 0.0};
@@ -1860,7 +1855,7 @@ extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
-extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
+extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 extern PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm);
 static PetscErrorCode DMInitialize_Plex(DM dm);
 
@@ -2247,8 +2242,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->getchildsymmetry    = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
   mesh->vtkCellHeight       = 0;
-  mesh->useCone             = PETSC_FALSE;
-  mesh->useClosure          = PETSC_TRUE;
   mesh->useAnchors          = PETSC_FALSE;
 
   mesh->maxProjectionHeight = 0;
@@ -2509,7 +2502,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexBuildFromCellList_Parallel_Private(*dm, numCells, numVertices, numCorners, cells, &sfVert);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -2646,7 +2639,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexBuildFromCellList_Private(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm = NULL;
+    DM idm;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -2816,6 +2809,14 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
     ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+    if (interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+    }
   } else if (isMed) {
     ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isPLY) {
@@ -2917,7 +2918,6 @@ PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool 
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
   }
-  *refdm = NULL;
   ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
   if (rdm->coordinateDM) {
     DM           ncdm;
