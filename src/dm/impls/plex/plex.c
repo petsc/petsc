@@ -4141,6 +4141,7 @@ PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, Petsc
   PetscFunctionBegin;
   /* Should work without recalculating size */
   ierr = DMRestoreWorkArray(dm, size, MPIU_SCALAR, (void*) values);CHKERRQ(ierr);
+  *values = NULL;
   PetscFunctionReturn(0);
 }
 
