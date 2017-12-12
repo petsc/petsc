@@ -290,6 +290,8 @@ int main(int argc,char **argv)
     suffix: 8
     nsize: 3
     args: -test_bcast -test_sf_distribute -sf_type window
+    requires: defined(PETSC_HAVE_MPI_WIN_CREATE)
+
   test:
     suffix: 8_basic
     nsize: 3

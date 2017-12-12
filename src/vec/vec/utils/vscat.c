@@ -1637,12 +1637,11 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PetscInt          ix_type  = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
   MPI_Comm          comm,ycomm;
   PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando,flag;
-  PetscBool         vec_mpi1_flg;
+  PetscBool         vec_mpi1_flg = PETSC_TRUE;
   IS                tix = 0,tiy = 0;
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
-  vec_mpi1_flg = PETSC_TRUE; /* default */
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   ierr = PetscOptionsGetBool(NULL,NULL,"-vecscatter_mpi1",&vec_mpi1_flg,NULL);CHKERRQ(ierr);
 #endif
