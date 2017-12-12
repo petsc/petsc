@@ -313,30 +313,31 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 }
 
 /*@
-  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector. 
-                  vfull[is[i]] += alpha*vreduced[i]
+  VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
+              vfull[is[i]] += alpha*vreduced[i]
 
   Input Parameters:
-+ vfull - the full-space vector
-. vreduced - the reduced-space vector
-- is - the index set for the reduced space
++ vfull    - the full-space vector
+. is       - the index set for the reduced space
+. alpha    - the scalar coefficient
+- vreduced - the reduced-space vector
 
   Output Parameters:
-. vfull - the sum of the full-space vector and reduced-space vector
+. vfull    - the sum of the full-space vector and reduced-space vector
 
   Level: advanced
 
 .seealso:  VecAXPY()
 @*/
-PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
+PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
 {
   PetscInt       nfull,nreduced;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,4);
   ierr = VecGetSize(vfull,&nfull);CHKERRQ(ierr);
   ierr = VecGetSize(vreduced,&nreduced);CHKERRQ(ierr);
 
@@ -369,6 +370,76 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
     ierr = ISRestoreIndices(is,&id);CHKERRQ(ierr);
     ierr = VecRestoreArray(vfull,&y);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(vreduced,&x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  VecISCopy - Copies between a reduced vector and the appropriate elements of a full-space vector.
+              vfull[is[i]] = vreduced[i]
+
+  Input Parameters:
++ vfull    - the full-space vector
+. is       - the index set for the reduced space
+. mode     - the direction of copying, SCATTER_FORWARD or SCATTER_REVERSE
+- vreduced - the reduced-space vector
+
+  Output Parameters:
+. vfull    - the sum of the full-space vector and reduced-space vector
+
+  Level: advanced
+
+.seealso:  VecAXPY()
+@*/
+PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
+{
+  PetscInt       nfull, nreduced;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,3);
+  ierr = VecGetSize(vfull, &nfull);CHKERRQ(ierr);
+  ierr = VecGetSize(vreduced, &nreduced);CHKERRQ(ierr);
+
+  if (nfull == nreduced) { /* Also takes care of masked vectors */
+    ierr = VecCopy(vreduced, vfull);CHKERRQ(ierr);
+  } else {
+    const PetscInt *id;
+    PetscInt        i, n, m, rstart;
+
+    ierr = ISGetIndices(is, &id);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vfull, &rstart, NULL);CHKERRQ(ierr);
+    if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %D not equal to Vec local length %D", n, m);
+    if (mode == SCATTER_FORWARD) {
+      PetscScalar       *y;
+      const PetscScalar *x;
+
+      ierr = VecGetArray(vfull, &y);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(vreduced, &x);CHKERRQ(ierr);
+      y   -= rstart;
+      for (i = 0; i < n; ++i) {
+        y[id[i]] = x[i];
+      }
+      y   += rstart;
+      ierr = VecRestoreArrayRead(vreduced, &x);CHKERRQ(ierr);
+      ierr = VecRestoreArray(vfull, &y);CHKERRQ(ierr);
+    } else if (mode == SCATTER_REVERSE) {
+      PetscScalar       *x;
+      const PetscScalar *y;
+
+      ierr = VecGetArrayRead(vfull, &y);CHKERRQ(ierr);
+      ierr = VecGetArray(vreduced, &x);CHKERRQ(ierr);
+      for (i = 0; i < n; ++i) {
+        x[i] = y[id[i]-rstart];
+      }
+      ierr = VecRestoreArray(vreduced, &x);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(vfull, &y);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) vfull), PETSC_ERR_ARG_WRONG, "Only forward or reverse modes are legal");
+    ierr = ISRestoreIndices(is, &id);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -424,33 +424,6 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
   PetscFunctionReturn(0);
 }
 
-/*@C
-  PetscGlobalMinMax - Get the global min/max from local min/max input
-
-  Collective on comm
-
-  Input Parameter:
-. minMaxVal - An array with the local min and max
-
-  Output Parameter:
-. minMaxValGlobal - An array with the global min and max
-
-  Level: beginner
-
-.keywords: minimum, maximum
-.seealso: PetscSplitOwnership()
-@*/
-PetscErrorCode PetscGlobalMinMax(MPI_Comm comm, PetscReal minMaxVal[2], PetscReal minMaxValGlobal[2])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  minMaxVal[1] = -minMaxVal[1];
-  ierr = MPI_Allreduce(minMaxVal, minMaxValGlobal, 2, MPIU_REAL, MPI_MIN, comm);CHKERRQ(ierr);
-  minMaxValGlobal[1] = -minMaxValGlobal[1];
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode DMAdaptorModifyHessian_Private(PetscInt dim, PetscReal h_min, PetscReal h_max, PetscScalar Hp[])
 {
   PetscScalar   *Hpos;
@@ -774,7 +747,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       }
       ierr = VecRestoreArrayRead(locX, &pointSols);CHKERRQ(ierr);
       ierr = VecRestoreArray(errVec, &errArray);CHKERRQ(ierr);
-      ierr = PetscGlobalMinMax(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
+      ierr = PetscGlobalMinMaxReal(PetscObjectComm((PetscObject) adaptor), minMaxInd, minMaxIndGlobal);CHKERRQ(ierr);
       ierr = PetscInfo2(adaptor, "DMAdaptor: error indicator range (%E, %E)\n", minMaxIndGlobal[0], minMaxIndGlobal[1]);CHKERRQ(ierr);
       /*     Compute IS from VecTagger */
       ierr = VecTaggerComputeIS(adaptor->refineTag, errVec, &refineIS);CHKERRQ(ierr);

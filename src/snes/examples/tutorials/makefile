@@ -85,6 +85,7 @@ ex12: ex12.o chkopts
 	${RM} ex12.o
 ex13: ex13.o chkopts
 	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
+	${DSYMUTIL} ex13
 	${RM} ex13.o
 ex14: ex14.o chkopts
 	-${CLINKER} -o ex14 ex14.o ${PETSC_SNES_LIB}
