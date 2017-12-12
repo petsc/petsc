@@ -1,6 +1,6 @@
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
-Mesh 'Parallel Mesh':
+Parallel Mesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 1

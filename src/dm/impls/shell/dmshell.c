@@ -873,7 +873,7 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 
 .seealso: DMCreateSubDM(), DMShellSetContext(), DMShellGetContext()
 @*/
-PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,PetscInt[],IS*,DM*))
+PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM,PetscInt,const PetscInt[],IS*,DM*))
 {
   PetscErrorCode ierr;
   PetscBool      isshell;
@@ -924,7 +924,7 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
 

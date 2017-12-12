@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode DMShellSetCreateInjection(DM,PetscErrorCode (*)(DM,D
 PETSC_EXTERN PetscErrorCode DMShellSetCreateFieldDecomposition(DM,PetscErrorCode (*)(DM,PetscInt*,char***,IS**,DM**));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateDomainDecomposition(DM,PetscErrorCode (*)(DM,PetscInt*,char***,IS**,IS**,DM**));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM,PetscErrorCode (*)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**));
-PETSC_EXTERN PetscErrorCode DMShellSetCreateSubDM(DM,PetscErrorCode (*)(DM,PetscInt,PetscInt[],IS*,DM*));
+PETSC_EXTERN PetscErrorCode DMShellSetCreateSubDM(DM,PetscErrorCode (*)(DM,PetscInt,const PetscInt[],IS*,DM*));
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEndDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM,Vec,InsertMode,Vec);

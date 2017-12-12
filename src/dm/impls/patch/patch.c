@@ -364,7 +364,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
 }
