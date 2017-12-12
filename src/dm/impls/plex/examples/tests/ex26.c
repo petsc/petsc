@@ -547,7 +547,7 @@ int main(int argc, char **argv) {
   test:
     suffix: 18
     nsize: 2
-    requires: exodusii skip
+    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 19
