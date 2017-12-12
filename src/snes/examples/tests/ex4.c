@@ -149,7 +149,7 @@ PetscErrorCode FormObjective(SNES snes,Vec x,PetscReal *f,void *dummy)
   Vec               F;
   static PetscInt   cnt = 0;
 
-  if (cnt++ == infatcount) *f = 1.0/0.0;
+  if (cnt++ == infatcount) *f = INFINITY;
   else {
     ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
     ierr = FormFunction2(snes,x,F,dummy);CHKERRQ(ierr);
@@ -233,6 +233,9 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 
 
 /*TEST
+
+   build:
+      requires: c99 !define(PETSC_USE_CXXCOMPLEX)
 
    test:
       args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type l2
