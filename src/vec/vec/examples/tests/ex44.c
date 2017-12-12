@@ -150,6 +150,6 @@ int main(int argc, char * argv[]) {
    test:
       suffix: cuda
       args: -vec_type cuda
-      requires: cuda
+      requires: veccuda
 
 TEST*/

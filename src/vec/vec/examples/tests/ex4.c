@@ -60,14 +60,14 @@ int main(int argc,char **argv)
       suffix: cuda
       args: -vec_type cuda
       output_file: output/ex4_1.out
-      requires: cuda
+      requires: veccuda
 
    test:
       suffix: cuda2
       nsize: 2
       args: -vec_type cuda
       output_file: output/ex4_1.out
-      requires: cuda
+      requires: veccuda
 
    test:
       suffix: cusp

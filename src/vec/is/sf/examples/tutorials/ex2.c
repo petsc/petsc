@@ -96,15 +96,16 @@ int main(int argc, char **argv)
 
 
 /*TEST
-   
+
    test:
       suffix: basic
       nsize: 2
       args: -sf_type basic
-   
+
    test:
       suffix: window
       nsize: 2
       args: -sf_type window
+      requires: defined(PETSC_HAVE_MPI_WIN_CREATE)
 
 TEST*/

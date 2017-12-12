@@ -156,6 +156,6 @@
 !     requires: !complex
 !
 !   test:
-      filter: grep -v "Vec Object"  
+!     filter: grep -v "Vec Object"
 !
 !TEST*/
