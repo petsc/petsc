@@ -2223,7 +2223,7 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionItems *PetscOptionsObject,PC 
 
   ierr = PetscOptionsReal("-pc_syspfmg_tol","Tolerance of SysPFMG","HYPRE_SStructSysPFMGSetTol",ex->tol,&ex->tol,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetTol,(ex->ss_solver,ex->tol));
-  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,4,SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_syspfmg_relax_type","Relax type for the up and down cycles","HYPRE_SStructSysPFMGSetRelaxType",SysPFMGRelaxType,ALEN(SysPFMGRelaxType),SysPFMGRelaxType[ex->relax_type],&ex->relax_type,NULL);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetRelaxType,(ex->ss_solver, ex->relax_type));
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
