@@ -6,6 +6,7 @@
 #include <exodusII.h>
 #endif
 
+#if defined(PETSC_HAVE_EXODUSII)
 /*
   EXOGetVarIndex - Locate a result in an exodus file based on its name
 
@@ -32,17 +33,14 @@
 */
 static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type, const char name[], int *varIndex)
 {
-#if defined(PETSC_HAVE_EXODUSII)
   int            exoerr, num_vars, i, j;
   char           ext_name[MAX_STR_LENGTH+1], var_name[MAX_STR_LENGTH+1];
   const int      num_suffix = 5;
   char          *suffix[5];
   PetscBool      flg;
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_EXODUSII)
   suffix[0] = (char *) "";
   suffix[1] = (char *) "_X";
   suffix[2] = (char *) "_XX";
@@ -64,11 +62,9 @@ static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type,
     }
   }
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to locate variable %s in ExodusII file.", name);
-#else
-  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
  PetscFunctionReturn(-1);
 }
+#endif
 
 /*
   DMPlexView_ExodusII_Internal - Write a DM to disk in exodus format
