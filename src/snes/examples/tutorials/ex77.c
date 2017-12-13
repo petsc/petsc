@@ -390,6 +390,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
@@ -416,7 +419,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscInt         tetPoints_n2[6]      = {1, 2, 3, 0, 4, 5};
       const PetscInt  *sizes = NULL;
       const PetscInt  *points = NULL;
-      PetscPartitioner part;
       PetscInt         cEnd;
       PetscMPIInt      rank, size;
 
@@ -440,9 +442,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = tetSizes_n2; points = tetPoints_n2;
         } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
       }
-      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
