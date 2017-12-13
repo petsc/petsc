@@ -1,7 +1,6 @@
 
 manual.pdf: abstract.tex acknowl.tex manual.tex part0.tex part1.tex part2.tex part3.tex addsolver.tex license.tex changes.tex cover.tex part2b.tex
 # First build the manual
-	cp ../sty/*.sty .
 	pdflatex manual | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
 	-bibtex manual
 	makeindex manual
