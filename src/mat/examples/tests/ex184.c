@@ -66,7 +66,7 @@ int main(int argc, char **args)
     ierr = MatSetFromOptions(A_inv);CHKERRQ(ierr);
     ierr = MatInvertBlockDiagonalMat(A,A_inv);CHKERRQ(ierr);
 
-    // Test A_inv * A on a random vector
+    /* Test A_inv * A on a random vector */
     ierr = MatCreateVecs(A, &X, &Y);CHKERRQ(ierr);
     ierr = VecSetRandom(X, NULL);CHKERRQ(ierr);
     ierr = MatMult(A, X, Y);CHKERRQ(ierr);
