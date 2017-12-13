@@ -7,9 +7,7 @@ static char help[] = "Test FEM layout with DM and ExodusII storage\n\n";
 */
 
 #include <petsc.h>
-#ifdef PETSC_HAVE_EXODUSII
 #include <exodusII.h>
-#endif
 
 #include <petsc/private/dmpleximpl.h>
 
@@ -58,9 +56,7 @@ int main(int argc, char **argv) {
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if ((order > 2) || (order < 1)) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
 
-#ifdef PETSC_HAVE_EXODUSII
   ex_opts(EX_VERBOSE+EX_DEBUG);
-#endif
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -194,7 +190,6 @@ int main(int argc, char **argv) {
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
 
   {
-#ifdef PETSC_HAVE_EXODUSII
     /* TODO: Replace with ExodusII viewer */
     /* Create the exodus result file */
     PetscInt numstep = 2, step;
@@ -276,7 +271,6 @@ int main(int argc, char **argv) {
     /* TODO Replace with ExodusII viewer */
     /* Reopen the exodus result file on all processors */
     MPI_Info mpi_info = MPI_INFO_NULL;
-#ifdef PETSC_HAVE_EXODUSII
     int      CPU_word_size, IO_word_size, EXO_mode;
     float    EXO_version;
 
@@ -284,7 +278,6 @@ int main(int argc, char **argv) {
     CPU_word_size = sizeof(PetscReal);
     IO_word_size  = 0;
     exoid = ex_open_par(ofilename, EXO_mode, &CPU_word_size, &IO_word_size, &EXO_version, PetscObjectComm((PetscObject) dm), mpi_info);
-#endif
   }
 
   /* Get DM and IS for each field of dm */
@@ -457,102 +450,84 @@ int main(int argc, char **argv) {
 
 /*TEST
 
+  build:
+    requires: exodusii
   # 2D seq
   test:
     suffix: 0
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 1
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 3
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 4
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 5
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -order 2
 
   # 2D par
   test:
     suffix: 6
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 7
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 8
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 9
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareT-large.exo -o FourSquareT-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 10
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareQ-large.exo -o FourSquareQ-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 11
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -dm_section_view -order 2
 
   #3d seq
   test:
     suffix: 12
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 13
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 14
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 15
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -order 2
 
   #3d par
   test:
     suffix: 16
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 17
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -order 1
   test:
     suffix: 18
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickHex-large.exo -o FourBrickHex-large_out.exo -dm_view -dm_section_view -order 2
   test:
     suffix: 19
     nsize: 2
-    requires: exodusii
     args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -dm_section_view -order 2
 
 TEST*/

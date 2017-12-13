@@ -64,7 +64,6 @@ static PetscErrorCode EXOGetVarIndex_Private(int exoid, ex_entity_type obj_type,
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to locate variable %s in ExodusII file.", name);
  PetscFunctionReturn(-1);
 }
-#endif
 
 /*
   DMPlexView_ExodusII_Internal - Write a DM to disk in exodus format
@@ -400,7 +399,6 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 {
   MPI_Comm         comm;
   PetscMPIInt      size;
-#if defined(PETSC_HAVE_EXODUSII)
   DM               dm;
   Vec              vNatural, vComp;
   const PetscReal *varray;
@@ -409,12 +407,10 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
   PetscBool        useNatural;
   int              offset;
   PetscErrorCode   ierr;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_EXODUSII)
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -454,9 +450,6 @@ PetscErrorCode VecViewPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     ierr = ISDestroy(&compIS);CHKERRQ(ierr);
   }
   if (useNatural) {ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);}
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +478,6 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
 {
   MPI_Comm       comm;
   PetscMPIInt    size;
-#if defined(PETSC_HAVE_EXODUSII)
   DM             dm;
   Vec            vNatural, vComp;
   PetscReal     *varray;
@@ -494,12 +486,10 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
   PetscBool      useNatural;
   int            offset;
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_EXODUSII)
   ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -536,9 +526,6 @@ PetscErrorCode VecLoadPlex_ExodusII_Nodal_Internal(Vec v, int exoid, int step)
     ierr = DMPlexNaturalToGlobalEnd(dm, vNatural, v);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);
   }
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -567,7 +554,6 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 {
   MPI_Comm          comm;
   PetscMPIInt       size;
-#if defined(PETSC_HAVE_EXODUSII)
   DM                dm;
   Vec               vNatural, vComp;
   const PetscReal  *varray;
@@ -579,12 +565,10 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
   PetscInt         *csSize, *csID;
   PetscInt          numCS, set, csxs = 0;
   PetscErrorCode    ierr;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)v, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_EXODUSII)
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -645,9 +629,6 @@ PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
   ierr = PetscFree2(csID, csSize);CHKERRQ(ierr);
   if (bs > 1) {ierr = ISDestroy(&compIS);CHKERRQ(ierr);}
   if (useNatural) {ierr = DMRestoreGlobalVector(dm,&vNatural);CHKERRQ(ierr);}
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -676,7 +657,6 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
 {
   MPI_Comm          comm;
   PetscMPIInt       size;
-#if defined(PETSC_HAVE_EXODUSII)
   DM                dm;
   Vec               vNatural, vComp;
   PetscReal        *varray;
@@ -688,12 +668,10 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
   PetscInt         *csSize, *csID;
   PetscInt          numCS, set, csxs = 0;
   PetscErrorCode    ierr;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_EXODUSII)
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetUseNatural(dm, &useNatural);CHKERRQ(ierr);
   useNatural = useNatural && size > 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -753,11 +731,9 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step)
     ierr = DMPlexNaturalToGlobalEnd(dm, vNatural, v);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &vNatural);CHKERRQ(ierr);
   }
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
   PetscFunctionReturn(0);
 }
+#endif
 
 /*@C
   DMPlexCreateExodusFromFile - Create a DMPlex mesh from an ExodusII file.
