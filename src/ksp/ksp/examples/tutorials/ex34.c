@@ -249,8 +249,10 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
     ierr = MatComputeExplicitOperator(jac,&JJ);CHKERRQ(ierr);
     ierr = MatConvert(JJ,MATAIJ,MAT_INITIAL_MATRIX,&JJ2);CHKERRQ(ierr);
     ierr = MatChop(JJ2,1.e-8);CHKERRQ(ierr);
-    ierr = MatView(JJ2,NULL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = MatView(JJ2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&JJ2);CHKERRQ(ierr);
+    ierr = MatDestroy(&JJ);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);

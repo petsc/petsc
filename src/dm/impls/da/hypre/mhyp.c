@@ -773,10 +773,13 @@ PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 
 PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
-  Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
-  PetscErrorCode   ierr;
+  Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
+  PetscErrorCode         ierr;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
+  ierr = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructGraphDestroy,(ex->ss_graph));
   PetscStackCallStandard(HYPRE_SStructMatrixDestroy,(ex->ss_mat));
   PetscStackCallStandard(HYPRE_SStructVectorDestroy,(ex->ss_x));
