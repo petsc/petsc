@@ -582,15 +582,12 @@ int main(int argc,char ** argv)
   return ierr;
 }
 
-/*
-    requires:  defined(PETSC_HAVE_ATTRIBUTEALIGNED) says it is not set even when it is set.
-
-*/
-
 /*TEST
 
    build:
      depends: PFReadData.c
+     requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+
 
    test:
      args: -snes_rtol 1.e-3
