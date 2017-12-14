@@ -106,6 +106,6 @@ int main(int argc, char **argv)
       suffix: window
       nsize: 2
       args: -sf_type window
-      requires: defined(PETSC_HAVE_MPI_WIN_CREATE)
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
 TEST*/
