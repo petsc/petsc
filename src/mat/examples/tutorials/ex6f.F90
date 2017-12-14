@@ -87,7 +87,9 @@
 
 !/*TEST
 !
-!     test:
+!     build:
 !       requires: double
+!
+!     test:
 !
 !TEST*/
