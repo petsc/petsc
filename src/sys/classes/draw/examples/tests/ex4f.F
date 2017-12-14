@@ -10,15 +10,18 @@
 #include <petsc/finclude/petscdraw.h>
       use petscsys
       implicit none
-
+      PetscReal zero, one,value
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
 
-      integer i
+      PetscInt i
 
+      zero = 0
+      one  = 1
       do 10, i=0,255
-        call PetscDrawLine(draw,0.d0,i/256.d0,1.d0,i/256.d0,i,ierr)
+        value = i/256.0
+        call PetscDrawLine(draw,zero,value,one,value,i,ierr)
  10   continue
       return
       end
