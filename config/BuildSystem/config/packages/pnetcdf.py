@@ -13,11 +13,12 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.flibs = framework.require('config.packages.flibs',self)
     self.mpi   = framework.require('config.packages.MPI', self)
-    self.deps  = [self.mpi]
+    self.deps  = [self.mpi,self.flibs]
     return
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('LIBS="'+self.compilers.LIBS+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.flibs.lib)+'"')
     return args
