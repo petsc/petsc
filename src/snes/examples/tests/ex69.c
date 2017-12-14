@@ -34,7 +34,7 @@ extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 extern PetscErrorCode MatMult_MyShell(Mat,Vec,Vec);
 extern PetscErrorCode MatAssemblyEnd_MyShell(Mat,MatAssemblyType);
 extern PetscErrorCode PCApply_MyShell(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
+extern PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
 
 int main(int argc,char **argv)
 {
