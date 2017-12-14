@@ -79,8 +79,12 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
     }
 #if defined(PETSC_USE_COMPLEX)
     case PETSC_SCALAR:{         /* C++ is seriously dysfunctional with volatile std::complex. */
+#if defined(PETSC_USE_CXXCOMPLEX)
       PetscReal xreal = ((volatile PetscReal*)ptr)[0],ximag = ((volatile PetscReal*)ptr)[1];
       PETSC_UNUSED volatile PetscScalar x = xreal + PETSC_i*ximag;
+#else
+      PETSC_UNUSED PetscScalar x = *(volatile PetscScalar*)ptr;
+#endif
       break;
     }
 #endif
