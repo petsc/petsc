@@ -26,6 +26,7 @@ configure_options = [
   '--download-hdf5',
   '--with-zlib=1',
   '--download-exodusii',
+  '--download-pnetcdf',
   '--download-party',
   '--download-yaml',
   '--download-ml',

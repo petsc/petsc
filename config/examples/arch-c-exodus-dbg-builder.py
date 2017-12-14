@@ -12,6 +12,7 @@ if __name__ == '__main__':
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
+    '--download-pnetcdf',
     '--download-generator',
     '--download-hdf5',
     '--download-zlib=1',

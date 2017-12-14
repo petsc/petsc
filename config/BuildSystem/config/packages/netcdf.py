@@ -16,7 +16,8 @@ class Configure(config.package.GNUPackage):
     self.mpi     = framework.require('config.packages.MPI', self)
     self.pnetcdf = framework.require('config.packages.pnetcdf', self)
     self.hdf5    = framework.require('config.packages.hdf5', self)
-    self.deps    = [self.mpi, self.pnetcdf, self.hdf5]
+    self.deps    = [self.mpi, self.hdf5]
+    self.odeps   = [self.pnetcdf]
     return
 
   def formGNUConfigureArgs(self):
@@ -25,7 +26,8 @@ class Configure(config.package.GNUPackage):
     args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
     args.append('LIBS="'+self.libraries.toString(self.hdf5.dlib)+' '+self.compilers.LIBS+'"')
     args.append('--enable-netcdf-4')
-    args.append('--enable-pnetcdf')
+    if self.pnetcdf.found:
+      args.append('--enable-pnetcdf')
     args.append('--disable-dap')
     args.append('--disable-dynamic-loading') #This was disabled in v4.3.2 - but enabled in subsequent versions - giving config errors on freebsd (wrt -ldl)
     args.append('--disable-hdf4')
