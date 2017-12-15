@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.c ex16.c ex17.c
-EXAMPLESF       =
+EXAMPLESF       = ex6f.F90
 MANSEC          = Mat
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
@@ -34,6 +34,10 @@ ex2_kds: ex2_kds.o  chkopts
 ex5: ex5.o  chkopts
 	-${CLINKER}  -o ex5 ex5.o ${PETSC_MAT_LIB}
 	${RM} ex5.o
+
+ex6f: ex6f.o  chkopts
+	-${CLINKER}  -o ex6f ex6f.o ${PETSC_MAT_LIB}
+	${RM} ex6f.o
 
 ex8: ex8.o  chkopts
 	-${CLINKER}  -o ex8 ex8.o ${PETSC_MAT_LIB}
