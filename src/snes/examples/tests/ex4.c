@@ -235,7 +235,7 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 /*TEST
 
    build:
-      requires: c99 !define(PETSC_USE_CXXCOMPLEX)
+      requires: c99 infinity
 
    test:
       args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type l2

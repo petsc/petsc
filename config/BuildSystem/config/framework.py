@@ -425,6 +425,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterCompileOutput(self, output):
     if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    if output.find('PGC-W-0129-Floating point overflow') >= 0: return output
+    if output.find('warning #264: floating-point value does not fit in required floating-point type') >= 0: return output
     if output.find('warning: ISO C90 does not support') >= 0: return output
     if output.find('warning: ISO C does not support') >= 0: return output
     if output.find('Warning: attribute visibility is unsupported and will be skipped') >= 0: return output
