@@ -1370,13 +1370,13 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
-  PetscInt       Nf = 0, nf, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
+  PetscInt       Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(0);
   for (i = 0; i < len; ++i) {
-    PetscInt pStarti, pEndi;
+    PetscInt nf, pStarti, pEndi;
 
     ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(s[i], &pStarti, &pEndi);CHKERRQ(ierr);
@@ -1387,7 +1387,9 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s[0]), supers);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(*supers, Nf);CHKERRQ(ierr);
   for (i = 0, f = 0; i < len; ++i) {
-    PetscInt fi;
+    PetscInt nf, fi;
+
+    ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
     for (fi = 0; fi < nf; ++fi, ++f) {
       const char *name   = NULL;
       PetscInt   numComp = 0;
@@ -1403,7 +1405,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
     PetscInt dof = 0, cdof = 0;
 
     for (i = 0, f = 0; i < len; ++i) {
-      PetscInt fi, pStarti, pEndi;
+      PetscInt nf, fi, pStarti, pEndi;
       PetscInt fdof = 0, cfdof = 0;
 
       ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
@@ -1436,7 +1438,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
 
         for (i = 0, f = 0; i < len; ++i) {
           const PetscInt *oldIndices = NULL;
-          PetscInt        fi, pStarti, pEndi, fdof, cfdof, fc;
+          PetscInt        nf, fi, pStarti, pEndi, fdof, cfdof, fc;
 
           ierr = PetscSectionGetNumFields(s[i], &nf);CHKERRQ(ierr);
           ierr = PetscSectionGetChart(s[i], &pStarti, &pEndi);CHKERRQ(ierr);
