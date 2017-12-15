@@ -5,10 +5,7 @@ static const char help[] = "Test star forest communication (PetscSF)\n\n";
     A star forest is a union of disjoint stars.
     Many common communication patterns can be expressed as updates of rootdata using leafdata and vice-versa.
     This example creates a star forest, communicates values using the graph (see options for types of communication), views the graph, then destroys it.
-   TODO: Need to determine if deprecated
 T*/
-
-
 
 /*
   Include petscsf.h so we can use PetscSF objects. Note that this automatically
@@ -288,20 +285,18 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-
 /*TEST
 
    test:
       nsize: 4
       args: -test_bcast -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 2
       nsize: 4
-      args: -test_reduce -sf_type window> ex1_2.tmp 2>&1
-      TODO: Need to determine if deprecated
+      args: -test_reduce -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 2_basic
@@ -312,7 +307,7 @@ int main(int argc,char **argv)
       suffix: 3
       nsize: 4
       args: -test_degree -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 3_basic
@@ -323,7 +318,7 @@ int main(int argc,char **argv)
       suffix: 4
       nsize: 4
       args: -test_gather -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 4_basic
@@ -339,7 +334,7 @@ int main(int argc,char **argv)
       suffix: 5
       nsize: 4
       args: -test_scatter -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 5_basic
@@ -355,7 +350,7 @@ int main(int argc,char **argv)
       suffix: 6
       nsize: 4
       args: -test_embed -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 6_basic
@@ -366,7 +361,7 @@ int main(int argc,char **argv)
       suffix: 7
       nsize: 4
       args: -test_invert -sf_type window
-      TODO: Need to determine if deprecated
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: 7_basic
@@ -378,5 +373,16 @@ int main(int argc,char **argv)
       nsize: 4
       args: -test_bcast -sf_type basic
       output_file: output/ex1_1_basic.out
+
+   test:
+      suffix: 8
+      nsize: 3
+      args: -test_bcast -test_sf_distribute -sf_type window
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
+
+   test:
+      suffix: 8_basic
+      nsize: 3
+      args: -test_bcast -test_sf_distribute -sf_type basic
 
 TEST*/
