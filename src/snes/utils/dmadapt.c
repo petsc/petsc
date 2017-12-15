@@ -639,7 +639,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     const PetscScalar *pointGrad;
     PetscFVCellGeom   *cg;
 
-    ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);
+    ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locX, &pointSols);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(plex, cell, pointSols, (void *) &pointSol);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(adaptor->gradDM, cell, adaptor->cellGradArray, (void *) &pointGrad);CHKERRQ(ierr);
@@ -657,7 +657,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
     ierr = PetscFEGetQuadrature((PetscFE) obj, &quad);CHKERRQ(ierr);
     ierr = DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
     ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);
+    ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
     ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &quadWeights);CHKERRQ(ierr);
     ierr = PetscMalloc6(Nc,&field,cdim*Nc,&gradient,cdim*Nq,&coords,Nq,&detJ,cdim*cdim*Nq,&J,cdim*cdim*Nq,&invJ);CHKERRQ(ierr);
     ierr = PetscMalloc2(Nc, &interpolant, cdim*Nc, &interpolantGrad);CHKERRQ(ierr);
