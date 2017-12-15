@@ -76,6 +76,7 @@ PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 
    build:
      depends: ex7f.F
+     requires: fortran
 
    test:
       nsize: 3

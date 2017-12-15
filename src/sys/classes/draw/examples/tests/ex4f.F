@@ -10,7 +10,7 @@
 #include <petsc/finclude/petscdraw.h>
       use petscsys
       implicit none
-      PetscReal zero, one,value
+      PetscReal zero, one,value, max
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
@@ -19,8 +19,9 @@
 
       zero = 0
       one  = 1
+      max = 256.0
       do 10, i=0,255
-        value = i/256.0
+        value = i/max
         call PetscDrawLine(draw,zero,value,one,value,i,ierr)
  10   continue
       return
