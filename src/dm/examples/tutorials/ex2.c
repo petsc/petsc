@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMDAGlobalToNaturalAllCreate() using contour plotting for 2d DMDAs.\n\n";
 
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
@@ -82,3 +83,15 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+     requires: !complex
+
+   test:
+      nsize: 3
+      TODO: Need to develop comparison test
+
+TEST*/

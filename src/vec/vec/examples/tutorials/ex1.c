@@ -6,6 +6,8 @@ static char help[] = "Basic vector routines.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
@@ -162,3 +164,28 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 2_cuda
+      nsize: 2
+      args: -vec_type cuda
+      output_file: output/ex1_1.out
+      requires: veccuda
+
+   test:
+      suffix: cuda
+      args: -vec_type cuda
+      output_file: output/ex1_1.out
+      requires: veccuda
+
+TEST*/

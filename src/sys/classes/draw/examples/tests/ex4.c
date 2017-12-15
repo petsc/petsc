@@ -2,6 +2,7 @@
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 #if defined(PETSC_APPLE_FRAMEWORK)
+
 #include <PETSc/petscsys.h>
 #include <PETSc/petscdraw.h>
 #else
@@ -41,3 +42,29 @@ int main(int argc,char **argv)
 }
 
 
+
+
+/*TEST
+
+   build:
+     requires: x
+
+   test:
+     output_file: output/ex1_1.out
+
+   test:
+     suffix: db
+     args: -draw_double_buffer 0
+     output_file: output/ex1_1.out
+
+   test:
+     suffix: df
+     args: -draw_fast
+     output_file: output/ex1_1.out
+
+   test:
+     suffix: dv
+     args: -draw_virtual
+     output_file: output/ex1_1.out
+
+TEST*/

@@ -225,10 +225,12 @@ class generateExamples(Petsc):
     lang=self.getLanguage(exfile)
     if not lang: return
     self.sources[pkg][lang]['srcs'].append(relpfile)
+    self.sources[pkg][lang][relpfile] = []
     if 'depends' in srcDict:
-      depSrc=srcDict['depends']
-      depObj=os.path.splitext(depSrc)[0]+".o"
-      self.sources[pkg][lang][relpfile]=os.path.join(rpath,depObj)
+      depSrcList=srcDict['depends'].split()
+      for depSrc in depSrcList:
+        depObj=os.path.splitext(depSrc)[0]+".o"
+        self.sources[pkg][lang][relpfile].append(os.path.join(rpath,depObj))
 
     # In gmakefile, ${TESTDIR} var specifies the object compilation
     testsdir=self.srcrelpath(root)+"/"
@@ -787,8 +789,9 @@ class generateExamples(Petsc):
                 if exfile in srcs[lang]:
                     ex='$(TESTDIR)/'+os.path.splitext(exfile)[0]
                     exfo='$(TESTDIR)/'+os.path.splitext(exfile)[0]+'.o'
-                    fd.write(exfile+": $(TESTDIR)/"+ srcs[lang][exfile]+'\n')
-                    fd.write(ex    +": "+exfo+" $(TESTDIR)/"+srcs[lang][exfile] +'\n')
+                    for dep in srcs[lang][exfile]:
+                        fd.write(exfile+": $(TESTDIR)/"+ dep+'\n')
+                        fd.write(ex    +": "+exfo+" $(TESTDIR)/"+dep +'\n')
 
     return self.gendeps
 
@@ -851,19 +854,15 @@ class generateExamples(Petsc):
 
           # *.counts depends on the script and either executable (will
           # be run) or the example source file (SKIP or TODO)
+          fd.write('%s.counts : %s %s'
+              % (os.path.join('$(TESTDIR)/counts', nmtest),
+                 fullscript,
+                 execname if exfile in self.sources[pkg][lang]['srcs'] else fullex)
+              )
           if exfile in self.sources[pkg][lang]:
-              fd.write('%s.counts : %s %s %s\n'
-                  % (os.path.join('$(TESTDIR)/counts', nmtest),
-                     fullscript,
-                     execname if exfile in self.sources[pkg][lang]['srcs'] else fullex,
-                     os.path.join('$(TESTDIR)',self.sources[pkg][lang][exfile]))
-                  )
-          else:
-              fd.write('%s.counts : %s %s\n'
-                  % (os.path.join('$(TESTDIR)/counts', nmtest),
-                     fullscript,
-                     execname if exfile in self.sources[pkg][lang]['srcs'] else fullex)
-                  )
+            for dep in self.sources[pkg][lang][exfile]:
+              fd.write(' %s' % os.path.join('$(TESTDIR)',dep))
+          fd.write('\n')
 
           # Now write the args:
           fd.write(nmtest+"_ARGS := '"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")

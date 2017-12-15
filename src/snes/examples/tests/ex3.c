@@ -362,3 +362,11 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat nest,Mat jac,void *ptr)
   return 0;
 }
 
+
+
+/*TEST
+
+   test:
+      args: -snes_converged_reason
+
+TEST*/

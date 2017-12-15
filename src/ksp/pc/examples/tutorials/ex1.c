@@ -118,3 +118,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -pc_factor_shift_type positive_definite
+
+TEST*/

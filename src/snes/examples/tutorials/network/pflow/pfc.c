@@ -405,7 +405,7 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 int main(int argc,char ** argv)
 {
   PetscErrorCode   ierr;
-  char             pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
+  char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata;
   PetscInt         numEdges=0,numVertices=0;
   int              *edges = NULL;
@@ -581,3 +581,22 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   build:
+     depends: PFReadData.c
+     requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+
+
+   test:
+     args: -snes_rtol 1.e-3
+     localrunfiles: pfoptions case9.m
+
+   test:
+     suffix: 2
+     args: -snes_rtol 1.e-3 -petscpartitioner_type simple
+     nsize: 4
+     localrunfiles: pfoptions case9.m
+
+TEST*/

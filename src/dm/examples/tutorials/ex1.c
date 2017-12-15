@@ -108,3 +108,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -nox
+      TODO: Need to develop comparison test
+
+TEST*/

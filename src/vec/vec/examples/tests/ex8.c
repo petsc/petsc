@@ -1,6 +1,10 @@
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -42,3 +46,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

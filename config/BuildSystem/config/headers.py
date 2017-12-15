@@ -211,6 +211,11 @@ class Configure(config.base.Configure):
         self.logPrint('Activated Windows math #defines, like M_PI')
       else:
         self.logPrint('Missing math #defines, like M_PI')
+      if self.checkCompile('#include <math.h>\n', 'double f = INFINITY;\n\nif (f);\n'):
+        self.framework.addDefine('HAVE_MATH_INFINITY', 1)
+        self.logPrint('Found math INFINITY')
+      else:
+        self.logPrint('Unable to find INFINITY in math.h or the compiler generates a warning/error message when used')
     else:
       self.logPrint('Missing math.h')
     return

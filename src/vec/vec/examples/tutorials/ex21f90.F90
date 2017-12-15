@@ -143,4 +143,10 @@
 
       end
 
-      
+!/*TEST
+!   build:
+!     depends: ex21.c
+!
+!   test:
+!
+!TEST*/

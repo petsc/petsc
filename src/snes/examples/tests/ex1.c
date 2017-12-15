@@ -11,6 +11,8 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
    Processors: 1
 T*/
 
+
+
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -442,3 +444,22 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   return 0;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !single
+
+   test:
+      args: -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3
+      args: -snes_monitor_short -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/
