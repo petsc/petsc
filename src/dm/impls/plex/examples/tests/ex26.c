@@ -253,7 +253,6 @@ int main(int argc, char **argv) {
       }
       ierr = ex_close(exoid);CHKERRQ(ierr);
     }
-#endif
   }
   {
     DM pdm;
@@ -295,6 +294,7 @@ int main(int argc, char **argv) {
     ierr = DMCreateGlobalToNatural(dmUA, migrationSF, migrationSFInv);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&migrationSFInv);CHKERRQ(ierr);
   }
+  ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm,   &X);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmU,  &U);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmA,  &A);CHKERRQ(ierr);
