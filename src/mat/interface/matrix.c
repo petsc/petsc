@@ -10390,11 +10390,13 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A,Mat C)
   ierr = MatXAIJSetPreallocation(C,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscFree(dnnz);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   for (i = rstart/bs; i < rend/bs; i++) {
     ierr = MatSetValuesBlocked(C,1,&i,1,&i,&vals[(i-rstart/bs)*bs*bs],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

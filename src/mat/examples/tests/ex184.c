@@ -16,6 +16,8 @@ int main(int argc, char **args)
     PetscInt*      dnnz;
     PetscErrorCode ierr;
     PetscScalar    *v;
+    Vec            X, Y;
+    PetscReal      norm;
 
     ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -47,9 +49,9 @@ int main(int argc, char **args)
         for (x = 0; x < bs; x++) {
             for (y = 0; y < bs; y++) {
                 if (x == y) {
-                    v[y+bs*x] = bs;
+                    v[y+bs*x] = 2*bs;
                 } else {
-                    v[y+bs*x] = -1;
+                    v[y+bs*x] = -1 * (x < y) - 2 * (x > y);
                 }
             }
         }
@@ -64,11 +66,22 @@ int main(int argc, char **args)
     ierr = MatSetFromOptions(A_inv);CHKERRQ(ierr);
     ierr = MatInvertBlockDiagonalMat(A,A_inv);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Inverse of block diagonal A\n");CHKERRQ(ierr);
-    ierr = MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    /* Test A_inv * A on a random vector */
+    ierr = MatCreateVecs(A, &X, &Y);CHKERRQ(ierr);
+    ierr = VecSetRandom(X, NULL);CHKERRQ(ierr);
+    ierr = MatMult(A, X, Y);CHKERRQ(ierr);
+    ierr = VecScale(X, -1);CHKERRQ(ierr);
+    ierr = MatMultAdd(A_inv, Y, X, X);CHKERRQ(ierr);
+    ierr = VecNorm(X, NORM_MAX, &norm);CHKERRQ(ierr);
+    if (norm > PETSC_SMALL) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error exceeds tolerance.\nInverse of block diagonal A\n");CHKERRQ(ierr);
+        ierr = MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&A_inv);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
 
     ierr = PetscFinalize();
     return ierr;
