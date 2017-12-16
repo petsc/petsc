@@ -1,40 +1,14 @@
-0 TS dt 0.0001 time 0.
-1 TS dt 0.001 time 0.0001
-2 TS dt 0.01 time 0.0011
-3 TS dt 0.1 time 0.0111
-4 TS dt 1. time 0.1111
-5 TS dt 10. time 1.1111
-6 TS dt 10.0561 time 11.1111
-7 TS dt 11.8335 time 21.1672
-8 TS dt 11.1992 time 33.0007
-9 TS dt 14.2984 time 44.2
-10 TS dt 17.4936 time 58.4984
-11 TS dt 22.1151 time 75.992
-12 TS dt 29.4669 time 98.1071
-13 TS dt 34.1746 time 127.574
-14 TS dt 39.5697 time 161.749
-15 TS dt 36.3786 time 195.719
-16 TS dt 33.4997 time 232.098
-17 TS dt 35.9743 time 265.597
-18 TS dt 44.9934 time 301.572
-19 TS dt 49.3358 time 346.565
-20 TS dt 69.319 time 395.901
-21 TS dt 57.2954 time 439.857
-22 TS dt 46.6912 time 476.653
-23 TS dt 42.4492 time 523.345
 TS Object: 1 MPI processes
-  type: arkimex
-    ARK IMEX 3
-    Stiff abscissa       ct =  0.000000  0.871733  0.600000  1.000000 
-  Stiffly accurate: yes
-  Explicit first stage: yes
-  FSAL property: yes
-    Nonstiff abscissa     c =  0.000000  0.871733  0.600000  1.000000 
-  maximum time=500.
-  total number of nonlinear solver iterations=264
-  total number of linear solver iterations=1418
-  total number of nonlinear solve failures=0
-  total number of rejected steps=3
+  type: rosw
+    Rosenbrock-W ra34pw2
+    Abscissa of A       =  0.000000  0.871733  0.731580  1.000000 
+    Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
+  maximum steps=1000
+  maximum time=20.
+  total number of nonlinear solver iterations=108
+  total number of linear solver iterations=108
+  total number of linear solve failures=0
+  total number of rejected steps=0
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
 TSAdapt Object: 1 MPI processes
   type: basic
@@ -45,19 +19,18 @@ TSAdapt Object: 1 MPI processes
   maximum allowed timestep 1e+20
   minimum allowed timestep 1e-20
 SNES Object: 1 MPI processes
-  type: newtonls
+  type: ksponly
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=35
-  total number of function evaluations=6
+  total number of linear solver iterations=1
+  total number of function evaluations=1
   norm schedule ALWAYS
+  Jacobian is never rebuilt
   SNESLineSearch Object: 1 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
+    type: basic
     maxstep=1.000000e+08, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
+    maximum iterations=1
   KSP Object: 1 MPI processes
     type: gmres
       restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -76,15 +49,15 @@ SNES Object: 1 MPI processes
         Factored matrix follows:
           Mat Object: 1 MPI processes
             type: seqaij
-            rows=8450, cols=8450, bs=2
+            rows=3, cols=3
             package used to perform factorization: petsc
-            total: nonzeros=84500, allocated nonzeros=84500
+            total: nonzeros=9, allocated nonzeros=9
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 4225 nodes, limit used is 5
+              using I-node routines: found 1 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
-      rows=8450, cols=8450, bs=2
-      total: nonzeros=84500, allocated nonzeros=84500
+      rows=3, cols=3
+      total: nonzeros=9, allocated nonzeros=15
       total number of mallocs used during MatSetValues calls =0
-        using I-node routines: found 4225 nodes, limit used is 5
+        using I-node routines: found 1 nodes, limit used is 5

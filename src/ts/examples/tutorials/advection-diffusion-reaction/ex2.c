@@ -21,6 +21,7 @@ static char help[] = "Reaction Equation from Chemistry\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petscts.h>
 
 typedef struct {
@@ -178,3 +179,17 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+     args: -ts_view -ts_max_time 1.e5
+
+   test:
+     suffix: 2
+     args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 1.e5
+     requires: x
+     output_file: output/ex2_1.out
+
+TEST*/
