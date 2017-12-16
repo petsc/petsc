@@ -1146,120 +1146,123 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   PetscFunctionReturn(0);
 }
 
-/*@
-  DMPlexComputeIntegralFEM - Form the local integral F from the local input X using pointwise functions specified by the user
-
-  Input Parameters:
-+ dm - The mesh
-. X  - Local input vector
-- user - The user context
-
-  Output Parameter:
-. integral - Local integral for each field
-
-  Level: developer
-
-.seealso: DMPlexComputeResidualFEM()
-@*/
-PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void *user)
+static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cStart, PetscInt cEnd, PetscScalar *cintegral, void *user)
 {
-  DM_Plex           *mesh  = (DM_Plex *) dm->data;
-  DM                 dmAux, dmGrad;
-  Vec                localX, A, cellGeometryFVM = NULL, faceGeometryFVM = NULL, locGrad = NULL;
-  PetscDS            prob, probAux = NULL;
+  DM                 dmAux = NULL;
+  PetscDS            prob,    probAux;
   PetscSection       section, sectionAux;
-  PetscFV            fvm = NULL;
+  Vec                locX,    locA;
+  PetscInt           dim, numCells = cEnd - cStart, cell, c, f;
+  PetscBool          useFEM = PETSC_FALSE, useFVM = PETSC_FALSE;
+  /* DS */
+  PetscInt           Nf,    totDim,    *uOff, *uOff_x, numConstants;
+  PetscInt           NfAux, totDimAux, *aOff;
+  PetscScalar       *u, *a;
+  const PetscScalar *constants;
+  /* Geometry */
   PetscFECellGeom   *cgeomFEM;
-  PetscFVFaceGeom   *fgeomFVM;
+  DM                 dmGrad;
+  Vec                cellGeometryFVM = NULL, faceGeometryFVM = NULL, locGrad = NULL;
   PetscFVCellGeom   *cgeomFVM;
-  PetscScalar       *u, *a = NULL;
-  const PetscScalar *constants, *lgrad;
-  PetscReal         *lintegral;
-  PetscInt          *uOff, *uOff_x, *aOff = NULL;
-  PetscInt           dim, numConstants, Nf, NfAux = 0, f, numCells, cStart, cEnd, cEndInterior, c;
-  PetscInt           totDim, totDimAux;
-  PetscBool          useFVM = PETSC_FALSE;
+  const PetscScalar *lgrad;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, localX, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
-  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
-  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  numCells = cEnd - cStart;
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
-  if (dmAux) {
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
-    ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
-    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
-    ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, NULL);CHKERRQ(ierr);
-  }
+  /* Determine which discretizations we have */
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
+    if (id == PETSCFE_CLASSID) useFEM = PETSC_TRUE;
+    if (id == PETSCFV_CLASSID) useFVM = PETSC_TRUE;
+  }
+  /* Get local solution with boundary values */
+  ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locX, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
+  /* Read DS information */
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
+  ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
+  /* Read Auxiliary DS information */
+  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &locA);CHKERRQ(ierr);
+  if (dmAux) {
+    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = PetscDSGetComponentOffsets(probAux, &aOff);CHKERRQ(ierr);
+  }
+  /* Allocate data  arrays */
+  ierr = PetscCalloc1(numCells*totDim, &u);CHKERRQ(ierr);
+  if (useFEM) {ierr = PetscMalloc1(numCells, &cgeomFEM);CHKERRQ(ierr);}
+  if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
+  /* Read out geometry */
+  if (useFEM) {
+    for (cell = cStart; cell < cEnd; ++cell) {
+      const PetscInt c = cell - cStart;
+
+      ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, cgeomFEM[c].v0, cgeomFEM[c].J, cgeomFEM[c].invJ, &cgeomFEM[c].detJ);CHKERRQ(ierr);
+      if (cgeomFEM[c].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cgeomFEM[c].detJ, c);
+    }
   }
   if (useFVM) {
+    PetscFV   fv = NULL;
     Vec       grad;
     PetscInt  fStart, fEnd;
     PetscBool compGrad;
 
-    ierr = PetscFVGetComputeGradients(fvm, &compGrad);CHKERRQ(ierr);
-    ierr = PetscFVSetComputeGradients(fvm, PETSC_TRUE);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscObject  obj;
+      PetscClassId id;
+
+      ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFV_CLASSID) {fv = (PetscFV) obj; break;}
+    }
+    ierr = PetscFVGetComputeGradients(fv, &compGrad);CHKERRQ(ierr);
+    ierr = PetscFVSetComputeGradients(fv, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexComputeGeometryFVM(dm, &cellGeometryFVM, &faceGeometryFVM);CHKERRQ(ierr);
-    ierr = DMPlexComputeGradientFVM(dm, fvm, faceGeometryFVM, cellGeometryFVM, &dmGrad);CHKERRQ(ierr);
-    ierr = PetscFVSetComputeGradients(fvm, compGrad);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(faceGeometryFVM, (const PetscScalar **) &fgeomFVM);CHKERRQ(ierr);
+    ierr = DMPlexComputeGradientFVM(dm, fv, faceGeometryFVM, cellGeometryFVM, &dmGrad);CHKERRQ(ierr);
+    ierr = PetscFVSetComputeGradients(fv, compGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellGeometryFVM, (const PetscScalar **) &cgeomFVM);CHKERRQ(ierr);
     /* Reconstruct and limit cell gradients */
     ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dmGrad, &grad);CHKERRQ(ierr);
-    ierr = DMPlexReconstructGradients_Internal(dm, fvm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, localX, grad);CHKERRQ(ierr);
+    ierr = DMPlexReconstructGradients_Internal(dm, fv, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad);CHKERRQ(ierr);
     /* Communicate gradient values */
     ierr = DMGetLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmGrad, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmGrad, grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dmGrad, &grad);CHKERRQ(ierr);
     /* Handle non-essential (e.g. outflow) boundary values */
-    ierr = DMPlexInsertBoundaryValues(dm, PETSC_FALSE, localX, 0.0, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
+    ierr = DMPlexInsertBoundaryValues(dm, PETSC_FALSE, locX, 0.0, faceGeometryFVM, cellGeometryFVM, locGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc3(Nf,&lintegral,numCells*totDim,&u,numCells,&cgeomFEM);CHKERRQ(ierr);
-  if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
-  for (f = 0; f < Nf; ++f) {lintegral[f] = 0.0;}
+  /* Read out data from inputs */
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;
 
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, cgeomFEM[c].v0, cgeomFEM[c].J, cgeomFEM[c].invJ, &cgeomFEM[c].detJ);CHKERRQ(ierr);
-    if (cgeomFEM[c].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cgeomFEM[c].detJ, c);
-    ierr = DMPlexVecGetClosure(dm, section, localX, c, NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, section, locX, c, NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < totDim; ++i) u[c*totDim+i] = x[i];
-    ierr = DMPlexVecRestoreClosure(dm, section, localX, c, NULL, &x);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, section, locX, c, NULL, &x);CHKERRQ(ierr);
     if (dmAux) {
-      ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dmAux, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
       for (i = 0; i < totDimAux; ++i) a[c*totDimAux+i] = x[i];
-      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, locA, c, NULL, &x);CHKERRQ(ierr);
     }
   }
+  /* Do integration for each field */
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
@@ -1283,10 +1286,9 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
       Ne        = numChunks*numBatches*batchSize;
       Nr        = numCells % (numBatches*batchSize);
       offset    = numCells - Nr;
-      ierr = PetscFEIntegrate(fe, prob, f, Ne, cgeomFEM, u, probAux, a, lintegral);CHKERRQ(ierr);
-      ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeomFEM[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], lintegral);CHKERRQ(ierr);
+      ierr = PetscFEIntegrate(fe, prob, f, Ne, cgeomFEM, u, probAux, a, cintegral);CHKERRQ(ierr);
+      ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeomFEM[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], &cintegral[offset*Nf]);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
-      /* PetscFV  fv = (PetscFV) obj; */
       PetscInt       foff;
       PetscPointFunc obj_func;
       PetscScalar    lint;
@@ -1298,30 +1300,136 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
           PetscScalar *u_x;
 
           ierr = DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x);CHKERRQ(ierr);
-          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim*c+foff], NULL, u_x, aOff, NULL, a, NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
-          lintegral[f] += PetscRealPart(lint)*cgeomFVM[c].volume;
+          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim*c+foff], NULL, u_x, aOff, NULL, &a[totDimAux*c], NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
+          cintegral[c*Nf+f] += PetscRealPart(lint)*cgeomFVM[c].volume;
         }
       }
     } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
+  /* Cleanup data arrays */
   if (useFVM) {
     ierr = VecRestoreArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(faceGeometryFVM, (const PetscScalar **) &fgeomFVM);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(cellGeometryFVM, (const PetscScalar **) &cgeomFVM);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
     ierr = VecDestroy(&faceGeometryFVM);CHKERRQ(ierr);
     ierr = VecDestroy(&cellGeometryFVM);CHKERRQ(ierr);
     ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
   }
+  if (useFEM) {ierr = PetscFree(cgeomFEM);CHKERRQ(ierr);}
   if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
+  ierr = PetscFree(u);CHKERRQ(ierr);
+  /* Cleanup */
+  ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexComputeIntegralFEM - Form the integral over the domain from the global input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. X  - Global input vector
+- user - The user context
+
+  Output Parameter:
+. integral - Integral for each field
+
+  Level: developer
+
+.seealso: DMPlexComputeResidualFEM()
+@*/
+PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void *user)
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscScalar   *cintegral;
+  PetscReal     *lintegral;
+  PetscInt       Nf, f, cellHeight, cStart, cEnd, cEndInterior[4], cell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidPointer(integral, 3);
+  ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior[0], &cEndInterior[1], &cEndInterior[2], &cEndInterior[3]);CHKERRQ(ierr);
+  cEnd = cEndInterior[cellHeight] < 0 ? cEnd : cEndInterior[cellHeight];
+  /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
+  ierr = PetscCalloc2(Nf, &lintegral, (cEnd-cStart)*Nf, &cintegral);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user);CHKERRQ(ierr);
+  /* Sum up values */
+  for (cell = cStart; cell < cEnd; ++cell) {
+    const PetscInt c = cell - cStart;
+
+    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c*Nf]);CHKERRQ(ierr);}
+    for (f = 0; f < Nf; ++f) lintegral[f] += PetscRealPart(cintegral[c*Nf+f]);
+  }
+  ierr = MPIU_Allreduce(lintegral, integral, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   if (mesh->printFEM) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Local integral:");CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) {ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), " %g", lintegral[f]);CHKERRQ(ierr);}
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Integral:");CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), " %g", integral[f]);CHKERRQ(ierr);}
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "\n");CHKERRQ(ierr);
   }
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = MPIU_Allreduce(lintegral, integral, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
-  ierr = PetscFree3(lintegral,u,cgeomFEM);CHKERRQ(ierr);
+  ierr = PetscFree2(lintegral, cintegral);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexComputeCellwiseIntegralFEM - Form the vector of cellwise integrals F from the global input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. X  - Global input vector
+- user - The user context
+
+  Output Parameter:
+. integral - Cellwise integrals for each field
+
+  Level: developer
+
+.seealso: DMPlexComputeResidualFEM()
+@*/
+PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DM             dmF;
+  PetscSection   sectionF;
+  PetscScalar   *cintegral, *af;
+  PetscInt       Nf, f, cellHeight, cStart, cEnd, cEndInterior[4], cell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
+  ierr = PetscLogEventBegin(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior[0], &cEndInterior[1], &cEndInterior[2], &cEndInterior[3]);CHKERRQ(ierr);
+  cEnd = cEndInterior[cellHeight] < 0 ? cEnd : cEndInterior[cellHeight];
+  /* TODO Introduce a loop over large chunks (right now this is a single chunk) */
+  ierr = PetscCalloc1((cEnd-cStart)*Nf, &cintegral);CHKERRQ(ierr);
+  ierr = DMPlexComputeIntegral_Internal(dm, X, cStart, cEnd, cintegral, user);CHKERRQ(ierr);
+  /* Put values in F*/
+  ierr = VecGetDM(F, &dmF);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dmF, &sectionF);CHKERRQ(ierr);
+  ierr = VecGetArray(F, &af);CHKERRQ(ierr);
+  for (cell = cStart; cell < cEnd; ++cell) {
+    const PetscInt c = cell - cStart;
+    PetscInt       dof, off;
+
+    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c*Nf]);CHKERRQ(ierr);}
+    ierr = PetscSectionGetDof(sectionF, cell, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(sectionF, cell, &off);CHKERRQ(ierr);
+    if (dof != Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of cell dofs %D != %D", dof, Nf);
+    for (f = 0; f < Nf; ++f) af[off+f] = cintegral[c*Nf+f];
+  }
+  ierr = VecRestoreArray(F, &af);CHKERRQ(ierr);
+  ierr = PetscFree(cintegral);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_IntegralFEM,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
