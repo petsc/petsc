@@ -101,11 +101,11 @@ int main(int argc, char **argv)
    test:
       suffix: window
       args: -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
    test:
       suffix: window_dupped
       args: -test_dupped_type -sf_type window
-      requires: define(PETSC_HAVE_MPI_WIN_CREATE) define(PETSC_HAVE_MPICH_NUMVERSION)
+      requires: define(PETSC_HAVE_MPI_WIN_CREATE)
 
 TEST*/
