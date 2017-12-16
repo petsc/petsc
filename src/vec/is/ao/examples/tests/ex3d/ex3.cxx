@@ -63,3 +63,34 @@ int main(int argc, char** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 12
+      requires: double !complex datafilespath
+      args: -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 2
+      nsize: 12
+      requires: double !complex datafilespath
+      args: -ao_type basic -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_1.out
+
+   test:
+      suffix: 3
+      nsize: 30
+      requires: double !complex datafilespath
+      args: -datafiles ${DATAFILESPATH}/ao
+
+   test:
+      suffix: 4
+      nsize: 30
+      requires: double !complex datafilespath
+      args: -ao_type basic -datafiles ${DATAFILESPATH}/ao
+      output_file: output/ex3_3.out
+
+TEST*/
