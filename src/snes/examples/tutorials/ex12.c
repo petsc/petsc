@@ -22,7 +22,7 @@ Information on refinement:
 
 typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_EXACT, RUN_TEST, RUN_PERF} RunType;
-typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR, COEFF_CIRCLE} CoeffType;
+typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR, COEFF_CIRCLE, COEFF_CROSS} CoeffType;
 
 typedef struct {
   PetscInt       debug;             /* The debugging level */
@@ -110,6 +110,15 @@ static PetscErrorCode circle_u_2d(PetscInt dim, PetscReal time, const PetscReal 
   return 0;
 }
 
+static PetscErrorCode cross_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  const PetscReal alpha = 50*4;
+  const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
+
+  *u = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
+  return 0;
+}
+
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -129,6 +138,17 @@ static void f0_circle_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscReal xi      = alpha*(radius2 - r2);
 
   f0[0] = (-4.0*alpha - 8.0*PetscSqr(alpha)*r2*PetscTanhReal(xi)) * PetscSqr(1.0/PetscCoshReal(xi));
+}
+
+static void f0_cross_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  const PetscReal alpha = 50*4;
+  const PetscReal xy    = (x[0]-0.5)*(x[1]-0.5);
+
+  f0[0] = PetscSinScalar(alpha*xy) * (alpha*PetscAbsScalar(xy) < 2*PETSC_PI ? 1 : 0.01);
 }
 
 static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -378,7 +398,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[4] = {"full", "exact", "test", "perf"};
-  const char    *coeffTypes[5] = {"none", "analytic", "field", "nonlinear", "circle"};
+  const char    *coeffTypes[6] = {"none", "analytic", "field", "nonlinear", "circle", "cross"};
   PetscInt       bd, bc, run, coeff, n;
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -435,7 +455,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
-  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,5,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,6,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
   options->variableCoefficient = (CoeffType) coeff;
 
   ierr = PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL);CHKERRQ(ierr);
@@ -627,6 +647,10 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     ierr = PetscDSSetResidual(prob, 0, f0_circle_u, f1_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
+  case COEFF_CROSS:
+    ierr = PetscDSSetResidual(prob, 0, f0_cross_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    break;
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
   switch (user->dim) {
@@ -634,6 +658,8 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     switch (user->variableCoefficient) {
     case COEFF_CIRCLE:
       user->exactFuncs[0]  = circle_u_2d;break;
+    case COEFF_CROSS:
+      user->exactFuncs[0]  = cross_u_2d;break;
     default:
       if (user->periodicity[0]) {
         if (user->periodicity[1]) {
@@ -1545,6 +1571,10 @@ int main(int argc, char **argv)
     suffix: tri_p1_adapt_1
     requires: pragmatic
     args: -run_type exact -dim 2 -dm_refine 5 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -adaptor_refinement_factor 1.0 -dm_view -dm_adapt_iter_view -dm_adapt_view -snes_adapt_sequence 2
+  test:
+    suffix: tri_p1_adapt_analytic_0
+    requires: pragmatic
+    args: -run_type exact -dim 2 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient cross -snes_adapt_initial 4 -adaptor_target_num 500 -adaptor_monitor -dm_view -dm_adapt_iter_view
   # Full solve tensor AMR
   test:
     suffix: quad_q1_adapt_0
