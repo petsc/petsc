@@ -359,11 +359,12 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
 
    test:
       args: -ts_view  -ts_monitor -ts_max_time 500
+      requires: double
 
    test:
      suffix: 2
      args: -ts_view  -ts_monitor -ts_max_time 500 -ts_monitor_draw_solution
-     requires: x
+     requires: x double
      output_file: output/ex5_1.out
 
 TEST*/
