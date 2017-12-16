@@ -19,4 +19,14 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   build:
+     requires: ssl saws
+
+   test:
+     TODO: determine how to run this test without making a box refresh token public
+
+TEST*/
+
 
