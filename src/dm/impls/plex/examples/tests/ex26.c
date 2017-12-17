@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
 /*TEST
 
   build:
-    requires: exodusii
+    requires: exodusii pnetcdf
   # 2D seq
   test:
     suffix: 0
