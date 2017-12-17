@@ -20,7 +20,7 @@ Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 
 Evolve the Cahn-Hillard equations: (this fails after a few timesteps 12/17/2017)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason   -ts_type beuler    -da_refine 6 -vi  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason   -ts_type beuler    -da_refine 6  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
 
 */
@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   ISColoring     iscoloring;
   PetscReal      dt;
   PetscReal      vbounds[] = {-100000,100000,-1.1,1.1};
-  Vec            ul,uh;
   SNES           snes;
   UserCtx        ctx;
 
@@ -113,7 +112,6 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);
   ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
@@ -123,16 +121,6 @@ int main(int argc,char **argv)
   ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
-
-  {
-    ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
-    ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
@@ -161,10 +149,6 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  {
-    ierr = VecDestroy(&ul);CHKERRQ(ierr);
-    ierr = VecDestroy(&uh);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -311,5 +295,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
 
    test:
      args: -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason  -ts_type beuler  -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
+     requires: x
 
 TEST*/
