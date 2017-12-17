@@ -321,7 +321,7 @@ PETSC_EXTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
-PETSC_INTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
+PETSC_EXTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
 PETSC_INTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
 PETSC_INTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
 PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
