@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = PetscLogView_VecScatter(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 #include <petsctime.h>
@@ -106,7 +106,7 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
 #endif
   ierr = PetscViewerASCIIPrintf(viewer, "----------------------------------------------------\n");CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n");
+  ierr = PetscViewerASCIIPrintf(viewer,"                Time     Min to Max Range   Proportion of KSP\n");CHKERRQ(ierr);
 
   eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
   ierr = MPI_Allreduce(&eventInfo[KSP_Solve].time,&ksptime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
