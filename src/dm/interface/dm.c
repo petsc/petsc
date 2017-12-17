@@ -892,7 +892,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
 @*/
 PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
-  PetscInt       bs = -1, bsLocal, bsMin, bsMax;
+  PetscInt       bs = -1, bsLocal[2], bsMinMax[2];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -931,13 +931,11 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         }
       }
       /* Must have same blocksize on all procs (some might have no points) */
-      bsLocal = bs;
-      ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-      bsLocal = bs < 0 ? bsMax : bs;
-      ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-      if (bsMin != bsMax) {bs = 1;}
-      else                {bs = bsMax;}
-      bs   = bs < 0 ? 1 : bs;
+      bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+      ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
+      if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+      else                            {bs = bsMinMax[0];}
+      bs = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
       if (bs > 1) {
         for (l = 0, k = 0; l < n; l += bs, ++k) ltog[k] = ltog[l]/bs;
@@ -1517,13 +1515,13 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   Not collective
 
   Input Parameters:
-+ dm - the DM object
-. numFields - the number of fields in this subproblem
-- fields - the fields in the subproblem
++ dm        - The DM object
+. numFields - The number of fields in this subproblem
+- fields    - The field numbers of the selected fields
 
   Output Parameters:
-+ is - the global indices for the subproblem
-- dm - the DM for the subproblem
++ is - The global indices for the subproblem
+- subdm - The DM for the subproblem
 
   Level: intermediate
 
@@ -1541,6 +1539,42 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
   if (dm->ops->createsubdm) {
     ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMCreateSuperDM - Returns an arrays of ISes and DM encapsulating a superproblem defined by the DMs passed in.
+
+  Not collective
+
+  Input Parameter:
++ dms - The DM objects
+- len - The number of DMs
+
+  Output Parameters:
++ is - The global indices for the subproblem
+- superdm - The DM for the superproblem
+
+  Level: intermediate
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+@*/
+PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt len, IS **is, DM *superdm)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dms,1);
+  for (i = 0; i < len; ++i) {PetscValidHeaderSpecific(dms[i],DM_CLASSID,1);}
+  if (is) PetscValidPointer(is,3);
+  if (superdm) PetscValidPointer(superdm,4);
+  if (len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of DMs must be nonnegative: %D", len);
+  if (len) {
+    if (dms[0]->ops->createsuperdm) {
+      ierr = (*dms[0]->ops->createsuperdm)(dms, len, is, superdm);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) dms[0]), PETSC_ERR_SUP, "This type has no DMCreateSuperDM implementation defined");
+  }
   PetscFunctionReturn(0);
 }
 

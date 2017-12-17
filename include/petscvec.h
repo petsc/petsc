@@ -538,6 +538,7 @@ PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
 PETSC_EXTERN PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar,Vec);
+PETSC_EXTERN PetscErrorCode VecISCopy(Vec, IS, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode VecISSet(Vec,IS, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal*);
