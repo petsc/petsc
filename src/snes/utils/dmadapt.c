@@ -775,8 +775,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscDS      probGrad, probHess;
       Vec          xGrad,    xHess,    metric;
       PetscSection sec, msec;
-      PetscScalar *H, *M;
-      PetscReal    N, integral;
+      PetscScalar *H, *M, integral;
+      PetscReal    N;
       DMLabel      bdLabel;
       PetscInt     Nd = coordDim*coordDim, f, vStart, vEnd, v;
 
@@ -859,7 +859,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
         if      (dim == 2) DMPlex_Det2D_Scalar_Internal(&detH, Hp);
         else if (dim == 3) DMPlex_Det3D_Scalar_Internal(&detH, Hp);
         else SETERRQ1(PetscObjectComm((PetscObject) adaptor), PETSC_ERR_SUP, "Dimension %d not supported", dim);
-        fact = PetscPowReal(N, 2.0/dim) * PetscPowReal(integral, -2.0/dim) * PetscPowReal(PetscAbsReal(detH), -1.0/(2*p+dim));
+        fact = PetscPowReal(N, 2.0/dim) * PetscPowReal(PetscRealPart(integral), -2.0/dim) * PetscPowReal(PetscAbsReal(detH), -1.0/(2*p+dim));
 #if 0
         ierr = PetscPrintf(PETSC_COMM_SELF, "fact: %g integral: %g |detH|: %g termA: %g termB: %g\n", fact, integral, PetscAbsReal(detH), PetscPowReal(integral, -2.0/dim), PetscPowReal(PetscAbsReal(detH), -1.0/(2*p+dim)));CHKERRQ(ierr);
         ierr = DMPrintCellMatrix(v, "H", coordDim, coordDim, Hp);CHKERRQ(ierr);
