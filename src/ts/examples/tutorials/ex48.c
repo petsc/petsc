@@ -285,7 +285,7 @@ static PetscErrorCode PostStep(TS ts)
   if (ctx->debug<1) PetscFunctionReturn(0);
   ierr = TSGetSolution(ts, &X);CHKERRQ(ierr);
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts, &stepi);CHKERRQ(ierr);
+  ierr = TSGetStepNumber(ts, &stepi);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &num, NULL);CHKERRQ(ierr);
   if (num < 0) {ierr = DMSetOutputSequenceNumber(dm, 0, 0.0);CHKERRQ(ierr);}
   ierr = PetscObjectSetName((PetscObject) X, "u");CHKERRQ(ierr);
@@ -349,7 +349,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
         totCells *= ctx->cells[d];
       }
       if (totCells % numProcs) SETERRQ2(comm,PETSC_ERR_ARG_WRONG,"Total cells %D not divisible by processes %D", totCells, numProcs);
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, ctx->cells, ctx->domain_lo, ctx->domain_hi, ctx->periodicity[0], ctx->periodicity[1], ctx->periodicity[2], dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, ctx->cells, ctx->domain_lo, ctx->domain_hi, ctx->periodicity, PETSC_TRUE, dm);CHKERRQ(ierr);
     } else {
       if (ctx->periodicity[0]==DM_BOUNDARY_PERIODIC || ctx->periodicity[1]==DM_BOUNDARY_PERIODIC) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot do periodic in x or y in a cylinder");
       /* we stole dm_refine so clear it */
