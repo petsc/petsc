@@ -452,8 +452,8 @@ PetscErrorCode  PetscCommSharedGlobalToLocal(PetscCommShared scomm,PetscMPIInt g
   for (i=low; i<high; i++) {
     if (scomm->ranks[i] > grank) PetscFunctionReturn(0);
     if (scomm->ranks[i] == grank) {
-      *lrank = i;
       int rank;
+      *lrank = i;
       MPI_Comm_rank(MPI_COMM_WORLD,&rank);
       PetscFunctionReturn(0);
     }
