@@ -298,7 +298,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, AppCtx *user, DM *dm)
       {
         const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
         const int      cells[4]  = {0, 1, 2, 3};
-        PetscScalar    coords[6] = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0};
+        PetscReal      coords[6] = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0};
         PetscInt       markerPoints[4*2] = {1, 1, 2, 1, 3, 1, 4, 1};
 
         ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
