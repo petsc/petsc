@@ -9,15 +9,15 @@ static char help[] = "Solves heat equation in 1d.\n";
 
 Evolve the  heat equation:
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve the  Allen-Cahn equation:
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
 
 Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait  -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45  -mymonitor
 
 
 The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with
@@ -40,13 +40,11 @@ int main(int argc,char **argv)
 {
   TS             ts;                           /* time integrator */
   Vec            x,r;                          /* solution, residual vectors */
-  Mat            J;                            /* Jacobian matrix */
   PetscInt       steps,Mx;
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
   PetscReal      vbounds[] = {-1.1,1.1};
-  PetscBool      wait;
   UserCtx        ctx;
   PetscBool      mymonitor;
 
@@ -55,10 +53,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ctx.kappa     = 1.0;
-  ierr          = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.allencahn = PETSC_FALSE;
-  ierr          = PetscOptionsHasName(NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
-  ierr          = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
@@ -66,7 +64,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,1,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Heat equation: u");CHKERRQ(ierr);
@@ -117,11 +115,6 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
-  if (wait) {
-    ierr = PetscSleep(-1);CHKERRQ(ierr);
-  }
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
@@ -129,7 +122,6 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -245,7 +237,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   /* scale = N/Mx; */
   /* ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr); */
 
-  ierr = PetscOptionsHasName(NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-square_initial",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr  = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr  = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
@@ -425,3 +417,14 @@ PetscErrorCode  MyDestroy(void **ptr)
   ierr = PetscDrawViewPortsDestroy(ctx->ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   test:
+     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 2 -square_initial
+
+   test:
+     suffix: 2
+     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 5 -mymonitor -square_initial -allen-cahn -kappa .001
+
+TEST*/

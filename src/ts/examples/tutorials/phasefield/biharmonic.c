@@ -9,11 +9,11 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation:
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -draw_pause -2   -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn   -da_refine 5 -vi -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -draw_pause -2   -ts_type cn   -da_refine 5 -vi -mymonitor
 
    u_t =  kappa \Delta \Delta u +   6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
     -1 <= u <= 1
@@ -21,28 +21,28 @@ Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 
 Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_draw_solution --mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -draw_pause -2   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_draw_solution --mymonitor
 
 Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
 
-./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_draw_solution --mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -draw_pause -2   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_draw_solution --mymonitor
 
-./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_draw_solution --mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -draw_pause -2   -ts_type cn    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_draw_solution --mymonitor
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_linesearch_monitor   -vi -ts_monitor_draw_solution --mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -draw_pause -2   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_linesearch_monitor   -vi -ts_monitor_draw_solution --mymonitor
 
 Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and then grows)
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_draw_solution --ts_final_time 1. -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -draw_pause -2   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_draw_solution --ts_final_time 1. -mymonitor
 
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_draw_solution --ts_final_time 1. -degenerate -mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -draw_pause -2   -ts_type cn    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_linesearch_monitor -theta .00000001  -vi  -ts_monitor_draw_solution --ts_final_time 1. -degenerate -mymonitor
 
 
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
-./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_linesearch_monitor -theta .00000001  -vi -ts_monitor_draw_solution --mymonitor
+./biharmonic -ts_monitor -snes_vi_monitor  -pc_type lu  --snes_converged_reason  -draw_pause -2   -ts_type cn    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_linesearch_monitor -theta .00000001  -vi -ts_monitor_draw_solution --mymonitor
 
 
 
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   DM             da;
   PetscReal      dt;
   PetscReal      vbounds[] = {-1.1,1.1};
-  PetscBool      wait,vi = PETSC_FALSE,mymonitor;
+  PetscBool      vi = PETSC_FALSE,mymonitor;
   Vec            ul,uh;
   UserCtx        ctx;
 
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,1,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: u");CHKERRQ(ierr);
@@ -187,11 +187,6 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
-  if (wait) {
-    ierr = PetscSleep(-1);CHKERRQ(ierr);
-  }
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
@@ -769,3 +764,11 @@ PetscErrorCode  MyDestroy(void **ptr)
   PetscFunctionReturn(0);
 }
 
+
+
+/*TEST
+
+   test:
+     TODO: currently requires initial condition file generated by heat
+
+TEST*/
