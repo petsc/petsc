@@ -931,7 +931,7 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 }
 
 /* ------------ Will be removed later ------------------- */
-PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PETSC_EXTERN PetscErrorCode VecScatterCreate_MPI1(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter        ctx;
   PetscErrorCode    ierr;

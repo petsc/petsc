@@ -317,7 +317,7 @@ struct _p_VecScatter {
   PetscBool      mpi3;                 /* MPI3 shared memory is used. Default is 'false' */
 };
 
-PETSC_INTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
+PETSC_EXTERN PetscErrorCode VecScatterCreate_MPI1(Vec,IS,Vec,IS,VecScatter*);
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
