@@ -491,7 +491,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   ierr = DMCreateLocalVector(dmAux, &eq);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) eq);CHKERRQ(ierr);
-  {  /* plot refereance functions */
+  {  /* plot reference functions */
     PetscViewer       viewer = NULL;
     PetscBool         isHDF5,isVTK;
     char              buf[256];
@@ -501,7 +501,11 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
     ierr = DMLocalToGlobalBegin(dmAux,eq,INSERT_VALUES,global);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmAux,eq,INSERT_VALUES,global);CHKERRQ(ierr);
     ierr = PetscViewerCreate(PetscObjectComm((PetscObject)dmAux),&viewer);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_HDF5
     ierr = PetscViewerSetType(viewer,PETSCVIEWERHDF5);CHKERRQ(ierr);
+#else
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+#endif
     ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
@@ -513,9 +517,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
     }
     ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
-    if (isHDF5) {
-      ierr = DMView(dmAux,viewer);CHKERRQ(ierr);
-    }
+    if (isHDF5) {ierr = DMView(dmAux,viewer);CHKERRQ(ierr);}
     /* view equilibrium fields, this will overwrite fine grids with coarse grids! */
     ierr = PetscObjectSetName((PetscObject) global, "u0");CHKERRQ(ierr);
     ierr = VecView(global,viewer);CHKERRQ(ierr);
