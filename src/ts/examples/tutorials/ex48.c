@@ -245,10 +245,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->Jo = options->Jop*PetscCosReal(options->ke*options->a)/(1.0-PetscCosReal(options->ke*options->a));
   }
   options->ky = PETSC_PI*options->m/options->b;
-  if (PetscPowScalar(options->ky,2)<options->Jop) {
+  if (PetscPowReal(options->ky, 2) < options->Jop) {
     options->kx = PetscSqrtScalar(options->Jop-PetscPowScalar(options->ky,2));
     options->DeltaPrime = -2.0*options->kx*options->a*PetscCosReal(options->kx*options->a)/PetscSinReal(options->kx*options->a);
-  } else if (PetscPowScalar(options->ky,2)>options->Jop) {
+  } else if (PetscPowReal(options->ky, 2) > options->Jop) {
     options->kx = PetscSqrtScalar(PetscPowScalar(options->ky,2)-options->Jop);
     options->DeltaPrime = -2.0*options->kx*options->a*PetscCoshReal(options->kx*options->a)/PetscSinhReal(options->kx*options->a);
   } else { //they're equal (or there's a NaN), lim(x*cot(x))_x->0=1
@@ -301,7 +301,7 @@ static PetscErrorCode PostStep(TS ts)
     ierr = DMPlexComputeIntegralFEM(plex,X,tt,ctx);CHKERRQ(ierr);
     den = tt[0];
     ierr = DMDestroy(&plex);CHKERRQ(ierr);
-    PetscPrintf(PetscObjectComm((PetscObject)dm), "%D) total perturbed mass = %g\n", stepi, den);CHKERRQ(ierr);
+    PetscPrintf(PetscObjectComm((PetscObject)dm), "%D) total perturbed mass = %g\n", stepi, (double) PetscRealPart(den));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
