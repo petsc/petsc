@@ -188,6 +188,10 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_NaturalToGlobalBegin,dm,0,0,0);CHKERRQ(ierr);
   if (dm->sfNatural) {
+    /* We only have acces to the SF that goes from Global to Natural.
+       Instead of inverting dm->sfNatural, we can call PetscSFReduceBegin/End with MPI_Op MPI_SUM.
+       Here the SUM really does nothing since sfNatural is one to one, as long as gV is set to zero first. */
+    ierr = VecZeroEntries(gv);CHKERRQ(ierr);
     ierr = VecGetArray(gv, &outarray);CHKERRQ(ierr);
     ierr = VecGetArrayRead(nv, &inarray);CHKERRQ(ierr);
     ierr = PetscSFReduceBegin(dm->sfNatural, MPIU_SCALAR, (PetscScalar *) inarray, outarray, MPI_SUM);CHKERRQ(ierr);

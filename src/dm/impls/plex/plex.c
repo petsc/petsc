@@ -4013,11 +4013,38 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-- point - The point in the DM
+. point - The point in the DM
+. csize - The size of the input values array, or NULL
+- values - An array to use for the values, or NULL to have it allocated automatically
 
   Output Parameters:
-+ csize - The number of values in the closure, or NULL
-- values - The array of values, which is a borrowed array and should not be freed
++ csize - The number of values in the closure
+- values - The array of values. If the user provided NULL, it is a borrowed array and should not be freed
+
+$ Note that DMPlexVecGetClosure/DMPlexVecRestoreClosure only allocates the values array if it set to NULL in the
+$ calling function. This is because DMPlexVecGetClosure() is typically called in the inner loop of a Vec or Mat
+$ assembly function, and a user may already have allocated storage for this operation.
+$
+$ A typical use could be
+$
+$  values = NULL;
+$  ierr = DMPlexVecGetClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$  for (cl = 0; cl < clSize; ++cl) {
+$    <Compute on closure>
+$  }
+$  ierr = DMPlexVecRestoreClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$
+$ or
+$
+$  PetscMalloc1(clMaxSize, &values);
+$  for (p = pStart; p < pEnd; ++p) {
+$    clSize = clMaxSize;
+$    ierr = DMPlexVecGetClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$    for (cl = 0; cl < clSize; ++cl) {
+$      <Compute on closure>
+$    }
+$  }
+$  PetscFree(values);
 
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
@@ -4102,6 +4129,8 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 . csize - The number of values in the closure, or NULL
 - values - The array of values, which is a borrowed array and should not be freed
 
+  Note that the array values are discarded and not copied back into v. In order to copy values back to v, use DMPlexVecSetClosure()
+
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
@@ -4120,6 +4149,7 @@ PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, Petsc
   PetscFunctionBegin;
   /* Should work without recalculating size */
   ierr = DMRestoreWorkArray(dm, size, MPIU_SCALAR, (void*) values);CHKERRQ(ierr);
+  *values = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -4440,7 +4470,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, Pets
 . v - The local vector
 . point - The point in the DM
 . values - The array of values
-- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+- mode - The insert mode. One of INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_VALUES, ADD_VALUES, INSERT_BC_VALUES, and ADD_BC_VALUES,
+         where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions.
 
   Fortran Notes:
   This routine is only available in Fortran 90, and you must include petsc.h90 in your code.

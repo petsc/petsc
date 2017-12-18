@@ -268,8 +268,9 @@ int main(int argc, char **argv)
                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                           PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {f0_identityaux_u};
-      void            *ctxs[1] = {&user};
+      void            *ctxs[1] = {0};
 
+      ctxs[0] = &user;
       ierr = DMClone(dm, &dmErr);CHKERRQ(ierr);
       ierr = SetupDiscretization(dmErr, "error", SetupErrorProblem, &user);CHKERRQ(ierr);
       ierr = DMGetGlobalVector(dmErr, &errorEst);CHKERRQ(ierr);
