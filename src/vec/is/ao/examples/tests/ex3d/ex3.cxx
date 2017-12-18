@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank);CHKERRQ(ierr);
   ifstream fin(infile);
   if (!fin) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
-  vector<int>  myapp;
+  vector<PetscInt>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
     tmp=-1;

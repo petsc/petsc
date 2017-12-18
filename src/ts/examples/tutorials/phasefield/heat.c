@@ -204,7 +204,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,xs,xm,Mx,scale,N;
+  PetscInt          i,xs,xm,Mx,scale=1,N;
   PetscScalar       *u;
   const PetscScalar *f;
   PetscReal         hx,x,r;

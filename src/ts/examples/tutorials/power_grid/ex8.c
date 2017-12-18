@@ -235,6 +235,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscInt       xs,ys,xm,ym,M,N;
   Vec            localX,gc,localXdot;
   PetscScalar    p_adv1,p_adv2,p_diff;
+  PetscScalar    diffuse1,gamma;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
@@ -256,7 +257,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   ierr = DMDAVecGetArrayRead(user->da,localXdot,&pdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
-  PetscScalar diffuse1,gamma;
   gamma = user->D*user->ws/(2*user->H);
   diffuse1 = user->lambda*user->lambda*user->q/(user->lambda*gamma+1)*(1.0 - PetscExpScalar(-t*(gamma+1.0)/user->lambda));
   user->disper_coe = user->ws*user->ws/(4*user->H*user->H)*diffuse1;

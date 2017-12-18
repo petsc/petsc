@@ -199,7 +199,6 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[1];
   PetscBool      terminate[1];
-  Vec            lambda[2],mu[2];
   PetscReal      delta,tmp[2],sensi[2];
 
   delta = 1e-8;
@@ -319,10 +318,6 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = MatDestroy(&Ap);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[1]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[1]);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -351,6 +346,8 @@ PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)
 
 /*TEST
 
+   build:
+      requires: !define(PETSC_USE_CXXCOMPLEX)
    test:
       args: -ts_event_tol 1e-9
 
