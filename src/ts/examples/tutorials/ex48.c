@@ -119,7 +119,7 @@ static void f0_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
   f0[0] = - poissonBracket(dim,psiDer, phi_n_Der) + poissonBracket(dim,logRefDenDer, ppsiDer);
   if (u_t) f0[0] += u_t[PSI];
-  //printf("ppsiDer = %20.15e %20.15e psi = %20.15e refPsiDer = %20.15e %20.15e refPsi = %20.15e \n",ppsiDer[0],ppsiDer[1],u[PSI],refPsiDer[0],refPsiDer[1],a[PSI]);
+  /*printf("ppsiDer = %20.15e %20.15e psi = %20.15e refPsiDer = %20.15e %20.15e refPsi = %20.15e \n",ppsiDer[0],ppsiDer[1],u[PSI],refPsiDer[0],refPsiDer[1],a[PSI]);*/
 }
 
 static void f1_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -251,7 +251,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   } else if (PetscPowReal(options->ky, 2) > options->Jop) {
     options->kx = PetscSqrtScalar(PetscPowScalar(options->ky,2)-options->Jop);
     options->DeltaPrime = -2.0*options->kx*options->a*PetscCoshReal(options->kx*options->a)/PetscSinhReal(options->kx*options->a);
-  } else { //they're equal (or there's a NaN), lim(x*cot(x))_x->0=1
+  } else { /*they're equal (or there's a NaN), lim(x*cot(x))_x->0=1*/
     options->kx = 0;
     options->DeltaPrime = -2.0;
   }
@@ -294,9 +294,9 @@ static PetscErrorCode PostStep(TS ts)
   {
     PetscDS          prob;
     DM               plex;
+    PetscScalar den, tt[5];
     ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
     ierr = DMGetDS(plex, &prob);CHKERRQ(ierr);
-    PetscScalar den, tt[5];
     ierr = PetscDSSetObjective(prob, 0, &f_n);CHKERRQ(ierr);
     ierr = DMPlexComputeIntegralFEM(plex,X,tt,ctx);CHKERRQ(ierr);
     den = tt[0];
@@ -435,11 +435,11 @@ static PetscErrorCode initialSolution_Omega(PetscInt dim, PetscReal time, const 
 static PetscErrorCode initialSolution_psi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *a_ctx)
 {
   AppCtx *ctx = (AppCtx*)a_ctx;
-  assert(ctx);
   PetscScalar r = ctx->eps*(PetscScalar) (rand()) / (PetscScalar) (RAND_MAX);
+  assert(ctx);
   if (x[0] == ctx->domain_lo[0] || x[0] == ctx->domain_hi[0]) r = 0;
   u[0] = r;
-  // PetscPrintf(PETSC_COMM_WORLD, "rand psi %lf\n",u[0]);
+  /* PetscPrintf(PETSC_COMM_WORLD, "rand psi %lf\n",u[0]); */
   return 0;
 }
 
@@ -485,8 +485,9 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   PetscErrorCode (*eqFuncs[3])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *) = {log_n_0, Omega_0, psi_0};
   Vec            eq;
   PetscErrorCode ierr;
-  AppCtx *ctxarr[3]={ctx,ctx,ctx}; //each variable could have a different context
+  AppCtx *ctxarr[3];
 
+  ctxarr[0] = ctxarr[1] = ctxarr[2] = ctx; /* each variable could have a different context */
   PetscFunctionBegin;
   ierr = DMCreateLocalVector(dmAux, &eq);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq);CHKERRQ(ierr);
@@ -606,8 +607,9 @@ int main(int argc, char **argv)
   PetscReal      t       = 0.0;
   PetscReal      L2error = 0.0;
   PetscErrorCode ierr;
-  AppCtx *ctxarr[]={&ctx,&ctx,&ctx,&ctx,&ctx}; //each variable could have a different context
+  AppCtx        *ctxarr[5];
 
+  ctxarr[0] = ctxarr[1] = ctxarr[2] = ctxarr[3] = ctxarr[4] = &ctx; /* each variable could have a different context */
   s_ctx = &ctx;
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
