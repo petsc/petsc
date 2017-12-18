@@ -201,8 +201,8 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
  Collective on MPI_Comm
 
  Input Parameter:
- .  comm - the communicator, should be PETSC_COMM_SELF
- .  n - the vector length
+ +  comm - the communicator, should be PETSC_COMM_SELF
+ -  n - the vector length
 
  Output Parameter:
  .  V - the vector
