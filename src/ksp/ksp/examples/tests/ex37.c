@@ -170,6 +170,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&subu);CHKERRQ(ierr);
   ierr = KSPDestroy(&subksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
 
