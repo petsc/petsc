@@ -208,3 +208,18 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+   test:
+      args: -ts_monitor
+
+   test:
+      suffix: 2
+      args: -ts_monitor_lg_solution -1
+      requires: x
+
+TEST*/

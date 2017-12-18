@@ -347,3 +347,12 @@ PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)
 
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -ts_event_tol 1e-9
+
+
+TEST*/
