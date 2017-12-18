@@ -1180,7 +1180,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   ierr   = VecGetArray(U,&u_vec);CHKERRQ(ierr);
   ierr   = VecGetArray(a,&a_vec);CHKERRQ(ierr);
   ierr   = VecGetLocalSize(U,&n);CHKERRQ(ierr);
-  minval = PetscAbsScalar(*h*1.01);
+  minval = PetscAbsScalar(*h)*PetscRealConstant(1.01);
   for (i=0; i<n; i++) {
     if (PetscRealPart(u_vec[i] + *h*a_vec[i]) <= 0.0) {
       val = PetscAbsScalar(u_vec[i]/a_vec[i]);
