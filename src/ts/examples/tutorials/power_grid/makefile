@@ -95,20 +95,10 @@ runex1_2:
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_2.tmp
 
-runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1f_1.tmp 2>&1;	  \
-	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex1f_1.tmp
-
 runex2:
 	-@${MPIEXEC} -n 1 ./ex2 -nox -ts_dt 10  > ex2_1.tmp 2>&1;  \
 	   ${DIFF} output/ex2_1.out ex2_1.tmp || printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex2_1.tmp
-
-runex2f:
-	-@${MPIEXEC} -n 1 ./ex2f -ts_max_steps 100 > ex2f_1.tmp 2>&1; \
-	  ${DIFF} output/ex2f_1.out ex2f_1.tmp || printf "${PWD}\nPossible problem with ex2f_1, diffs above\n=========================================\n"; \
-	  ${RM} -f ex2_1.tmp
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox  > ex3_1.tmp 2>&1;  \
@@ -139,32 +129,6 @@ runex3opt_fwd:
 	-@${MPIEXEC} -n 1 ./ex3opt_fwd -ts_type cn -pc_type lu -tao_monitor > ex3opt_fwd_1.tmp 2>&1;  \
 	   ${DIFF} output/ex3opt_fwd_1.out ex3opt_fwd_1.tmp || printf "${PWD}\nPossible problem with ex3opt_fwd_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3opt_fwd_1.tmp
-
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_1.tmp
-runex4_2:
-	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox > ex4_2.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_2.tmp
-runex4_3:
-	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox -nonlinear > ex4_3.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_3.tmp
-runex4_4:
-	-@${MPIEXEC} -n 3 ./ex4 -ts_view -nox -nonlinear > ex4_4.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_4, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4_4.tmp
-runex4_sundials:
-	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 -nonlinear > ex4.tmp 2>&1;  \
-	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex4_sundials, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex4.tmp
 
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;  \
