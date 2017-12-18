@@ -17,8 +17,7 @@ typedef struct {
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  PetscInt nfaces;
-  PetscInt  faces[3] = {1,1,1};
+  PetscInt dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -27,17 +26,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex      = PETSC_TRUE;
   options->interpolate  = PETSC_FALSE;
   options->filename[0]  = '\0';
-  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Zero-sized DMPlexGetCellFields Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-test", "Test to run", FILENAME, options->test, &options->test, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", FILENAME, options->dim, &options->dim, NULL);CHKERRQ(ierr);
   if (options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be <= 3", options->dim);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", FILENAME, options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", FILENAME, options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  nfaces = options->dim;
-  ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, faces, &nfaces, NULL);CHKERRQ(ierr);
-  if (nfaces) options->dim = nfaces;
-  ierr = PetscMemcpy(options->faces, faces, 3*sizeof(PetscInt));CHKERRQ(ierr);
+  options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
+  dim = options->dim;
+  ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
+  if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
