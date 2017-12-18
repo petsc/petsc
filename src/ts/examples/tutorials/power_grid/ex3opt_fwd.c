@@ -470,3 +470,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   return 0;
 }
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_type cn -pc_type lu -tao_monitor
+
+TEST*/

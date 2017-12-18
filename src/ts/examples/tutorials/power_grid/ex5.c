@@ -22,6 +22,10 @@ F*/
 Reference:
 Power System Modeling and Scripting - F. Milano
 */
+/*T
+
+T*/
+
 #include <petscts.h>
 
 #define freq 50
@@ -329,3 +333,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+
+
+TEST*/

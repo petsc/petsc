@@ -18,6 +18,7 @@ F*/
   Backward Euler method is used for time integration.
   The discontinuities are dealt with TSEvent, which is compatible with TSAdjoint.
  */
+
 #include <petscts.h>
 
 typedef struct {
@@ -397,3 +398,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -viewer_binary_skip_info -ts_type cn -pc_type lu
+
+TEST*/

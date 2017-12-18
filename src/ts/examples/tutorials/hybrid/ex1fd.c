@@ -18,9 +18,9 @@ static char help[] = "An example of hybrid system using TS event.\n";
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar lambda1;
-  PetscScalar lambda2;
-  PetscInt    mode;  /* mode flag*/
+  PetscReal lambda1;
+  PetscReal lambda2;
+  PetscInt  mode;  /* mode flag*/
 } AppCtx;
 
 PetscErrorCode FWDRun(TS, Vec, void *);

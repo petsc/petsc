@@ -353,3 +353,13 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   return 0;
 }
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_type cn -pc_type lu -tao_monitor -tao_gatol 1e-3
+
+TEST*/

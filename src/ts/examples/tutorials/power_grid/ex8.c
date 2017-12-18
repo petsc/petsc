@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
@@ -145,7 +145,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   DMDACoor2d     **coors;
   PetscScalar    **p;
   Vec            gc;
-  PetscInt       M,N,I,J;
+  PetscInt       M,N,Ir,J;
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
@@ -159,11 +159,11 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 
   /* Point mass at (mux,muy) */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",user->mux,user->muy);CHKERRQ(ierr);
-  ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&I,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&Ir,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
   user->PM_min = user->Pmax*PetscSinScalar(user->mux);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",user->mux,user->muy,user->PM_min,user->dx);CHKERRQ(ierr);
-  if (I > -1 && J > -1) {
-    p[J][I] = 1.0;
+  if (Ir > -1 && J > -1) {
+    p[J][Ir] = 1.0;
   }
 
   ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
@@ -375,9 +375,21 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   build:
+      requires: !complex x
+
+   test:
+      args: -ts_max_steps 1
+      localrunfiles: petscopt_ex8
+      timeoutfactor: 3
+
+TEST*/
