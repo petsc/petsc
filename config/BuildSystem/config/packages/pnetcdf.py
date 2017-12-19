@@ -4,7 +4,8 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/parallel-netcdf-1.9.0.pre1.tar.gz']
+    self.download         = ['http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/parallel-netcdf-1.9.0.pre1.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parallel-netcdf-1.9.0.pre1.tar.gz']
     self.functions        = ['ncmpi_create']
     self.includes         = ['pnetcdf.h']
     self.liblist          = [['libpnetcdf.a']]
