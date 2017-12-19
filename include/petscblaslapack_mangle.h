@@ -161,7 +161,7 @@
 
 /* Subroutine names that differ for real/complex data: */
 #if !defined(PETSC_USE_COMPLEX)
-# define LAPACKungqr_ PETSCBLAS(orgqr,ORGQR)
+# define LAPACKorgqr_ PETSCBLAS(orgqr,ORGQR)
 # define BLASdot_     PETSCBLAS(dot,DOT)
 # define BLASdotu_    PETSCBLAS(dot,DOT)
 
@@ -176,7 +176,7 @@
 # define LAPACKhetrf_ PETSCBLAS(hetrf,HETRF)
 # define LAPACKhetrs_ PETSCBLAS(hetrs,HETRS)
 # define LAPACKhetri_ PETSCBLAS(hetri,HETRI)
-# define LAPACKungqr_ PETSCBLAS(ungqr,UNGQR)
+# define LAPACKorgqr_ PETSCBLAS(ungqr,UNGQR)
    /* note: dot and dotu are handled separately for complex data */
 
 # define LAPACKsyev_  PETSCBLAS(heev,HEEV)  /* eigenvalues and eigenvectors of a symm matrix */

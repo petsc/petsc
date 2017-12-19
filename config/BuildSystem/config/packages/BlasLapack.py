@@ -479,7 +479,7 @@ class Configure(config.package.Package):
     routines = ['geev','gels','gelss','geqrf','gerfs','gesv','gesvd','getrf','getri','getrs','gges',
                 'hetrf','hetri','hetrs','hgeqz','hseqr','ormqr','potrf','potri','potrs','pttrf','pttrs',
                 'stebz','stein','steqr','syev','syevx','sygvx','sytrf','sytri','sytrs',
-                'tgsen','trsen','trtrs','ungqr']
+                'tgsen','trsen','trtrs','orgqr']
     self.libraries.saveLog()
     oldLibs = self.compilers.LIBS
     found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
