@@ -340,10 +340,11 @@ class generateExamples(Petsc):
     # Worry about alt files here -- see
     #   src/snes/examples/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
+    basefile,ext = os.path.splitext(subst['output_file'])
     for i in range(1,3):
-      altroot=defroot+"_alt"
+      altroot=basefile+"_alt"
       if i==2: altroot=altroot+"_2"
-      af="output/"+altroot+".out"
+      af=altroot+".out"
       srcaf=os.path.join(subst['srcdir'],af)
       fullaf=os.path.join(self.petsc_dir,srcaf)
       if os.path.isfile(fullaf): altlist.append(srcaf)
