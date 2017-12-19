@@ -197,6 +197,8 @@ cdef extern from * nogil:
     int MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
     int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
     int MatGetOwnershipIS(PetscMat,PetscIS*,PetscIS*)
+    int MatNestGetISs(PetscMat,PetscIS*,PetscIS*)
+    int MatNestGetSize(PetscMat,PetscInt*,PetscInt*)
 
     int MatEqual(PetscMat,PetscMat,PetscBool*)
     int MatLoad(PetscMat,PetscViewer)
