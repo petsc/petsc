@@ -21,5 +21,6 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--with-mpi="'+os.path.dirname(os.path.dirname(self.mpi.mpiexec))+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.flibs.lib)+'"')
     return args
