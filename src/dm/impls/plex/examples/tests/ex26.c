@@ -411,8 +411,8 @@ int main(int argc, char **argv) {
         cval[2] = cval[2] * sdim / cdimCoord;
         ierr = DMPlexVecSetClosure(dmS, NULL, S, cellID[cell], cval, INSERT_ALL_VALUES);CHKERRQ(ierr);
       }
-      ierr = DMPlexVecRestoreClosure(dmS, NULL, S, cellID[cell], &clSize, &cval);CHKERRQ(ierr);
-      ierr = DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID[cell], NULL, &xyz);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dmS, NULL, S, cellID[0], &clSize, &cval);CHKERRQ(ierr);
+      ierr = DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID[0], NULL, &xyz);CHKERRQ(ierr);
       ierr = ISRestoreIndices(cellIS, &cellID);CHKERRQ(ierr);
       ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
     }
