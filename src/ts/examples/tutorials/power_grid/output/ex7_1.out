@@ -16,7 +16,3 @@ sum(p)*dw*dtheta at t = 0.005000 = 1.000000
     0 SNES Function norm 2.064152232074e-03 
     1 SNES Function norm 1.472968437375e-11 
 sum(p)*dw*dtheta at t = 0.055000 = 1.000000
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-t0 value: 0.0
-Option left: name:-tmax value: 4.0

@@ -11,6 +11,3 @@ Corrected user->mux = 0.497570, user->muy = 1.000000 user->PM_min = 1.002313,use
     1 SNES Function norm 0.000000000000e+00 
 sum(p) at t = 0.010000 = 1.000000
 1 TS dt 0.01 time 0.01
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-t0 value: 0.0
