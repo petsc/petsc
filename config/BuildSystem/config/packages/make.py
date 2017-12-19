@@ -156,7 +156,6 @@ class Configure(config.package.GNUPackage):
     return
 
   def compute_make_test_np(self,i):
-    print 'xxxx',i
     if (i<=2):    return 1
     elif (i<=4):  return 2
     else:         return 4
