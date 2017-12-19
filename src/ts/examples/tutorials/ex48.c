@@ -21,6 +21,7 @@ F*/
 
 typedef struct {
   PetscInt       debug;             /* The debugging level */
+  PetscBool      plotRef;           /* Plot the reference fields */
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
   char           filename[2048];    /* The optional ExodusII file */
@@ -179,6 +180,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscInt       ii, bd;
   PetscFunctionBeginUser;
   options->debug               = 1;
+  options->plotRef             = PETSC_FALSE;
   options->dim                 = 2;
   options->filename[0]         = '\0';
   options->cell_simplex        = PETSC_FALSE;
@@ -205,6 +207,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   for (ii = 0; ii < options->dim; ++ii) options->cells[ii] = 4;
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex48.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine", "Hack to get refinement level for cylinder", "ex48.c", options->refine, &options->refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL);CHKERRQ(ierr);
@@ -492,7 +495,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   ierr = DMCreateLocalVector(dmAux, &eq);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) eq);CHKERRQ(ierr);
-  {  /* plot reference functions */
+  if (ctx->plotRef) {  /* plot reference functions */
     PetscViewer       viewer = NULL;
     PetscBool         isHDF5,isVTK;
     char              buf[256];
