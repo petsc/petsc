@@ -140,7 +140,7 @@ endif
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finished Test on $MACH ARCH `date`" >>& build.log
+echo "Finished Test on $MACH $ARCH `date`" >>& build.log
 if ( $err ) exit
 #
 # check analyzer
