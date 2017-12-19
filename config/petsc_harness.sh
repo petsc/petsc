@@ -107,7 +107,7 @@ function petsc_testrun() {
     if test "${filter:0:6}"=="Error:"; then
       job_control=false      # redirection error method causes job control probs
       filter=${filter##Error:}
-      cmd="$1 2>&1 | cat > $2 2> $3"
+      cmd="$1 2>&1 | cat > $2"
     fi
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
