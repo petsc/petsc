@@ -1020,8 +1020,8 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Ve
 
   PetscFunctionBegin;
   ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u);CHKERRQ(ierr);
-  if (*u_t) {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u_t);CHKERRQ(ierr);}
-  if (*a)   {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, a);CHKERRQ(ierr);}
+  if (locX_t) {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u_t);CHKERRQ(ierr);}
+  if (locA)   {ierr = DMRestoreWorkArray(dm, 0, MPIU_SCALAR, a);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
