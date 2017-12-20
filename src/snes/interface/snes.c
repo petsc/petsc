@@ -4103,14 +4103,15 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
         incall = PETSC_FALSE;
       }
       /* Adaptively refine the initial grid */
-      flg  = PETSC_FALSE;
-      ierr = PetscOptionsGetBool(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_initial", &flg, NULL);CHKERRQ(ierr);
+      num  = 1;
+      ierr = PetscOptionsGetInt(NULL, ((PetscObject) snes)->prefix, "-snes_adapt_initial", &num, &flg);CHKERRQ(ierr);
       if (flg) {
         DMAdaptor adaptor;
 
         incall = PETSC_TRUE;
         ierr = DMAdaptorCreate(PETSC_COMM_WORLD, &adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorSetSolver(adaptor, snes);CHKERRQ(ierr);
+        ierr = DMAdaptorSetSequenceLength(adaptor, num);CHKERRQ(ierr);
         ierr = DMAdaptorSetFromOptions(adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorSetUp(adaptor);CHKERRQ(ierr);
         ierr = DMAdaptorAdapt(adaptor, x, DM_ADAPTATION_INITIAL, &dm, &x);CHKERRQ(ierr);
