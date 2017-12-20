@@ -589,14 +589,8 @@ M*/
 /*
      Basic constants
 */
-#if defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_PI                 M_PIq
-#elif defined(M_PI)
-#define PETSC_PI                 M_PI
-#else
-#define PETSC_PI                 3.14159265358979323846264338327950288419716939937510582
-#endif
-#define PETSC_PHI                1.6180339887498948482
+#define PETSC_PI   PetscRealConstant(3.1415926535897932384626433832795029)
+#define PETSC_PHI  PetscRealConstant(1.6180339887498948482045868343656381)
 
 #if !defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_MAX_INT            2147483647
