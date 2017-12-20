@@ -1338,11 +1338,10 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
 
 .seealso: DMPlexComputeResidualFEM()
 @*/
-PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void *user)
+PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, void *user)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
-  PetscScalar   *cintegral;
-  PetscReal     *lintegral;
+  PetscScalar   *cintegral, *lintegral;
   PetscInt       Nf, f, cellHeight, cStart, cEnd, cEndInterior[4], cell;
   PetscErrorCode ierr;
 
@@ -1364,12 +1363,12 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
     const PetscInt c = cell - cStart;
 
     if (mesh->printFEM > 1) {ierr = DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c*Nf]);CHKERRQ(ierr);}
-    for (f = 0; f < Nf; ++f) lintegral[f] += PetscRealPart(cintegral[c*Nf+f]);
+    for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c*Nf+f];
   }
-  ierr = MPIU_Allreduce(lintegral, integral, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   if (mesh->printFEM) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Integral:");CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) {ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), " %g", integral[f]);CHKERRQ(ierr);}
+    for (f = 0; f < Nf; ++f) {ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), " %g", (double) PetscRealPart(integral[f]));CHKERRQ(ierr);}
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "\n");CHKERRQ(ierr);
   }
   ierr = PetscFree2(lintegral, cintegral);CHKERRQ(ierr);
