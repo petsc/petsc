@@ -115,5 +115,6 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
+    args: -t 4 -log2d 7 -log2n 10
 
 TEST*/
