@@ -113,14 +113,14 @@ static void f0_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   const PetscScalar *logRefDenDer= &a_x[aOff_x[DENSITY]];
   PetscScalar       psiDer[3];
   PetscScalar       phi_n_Der[3];
-  PetscInt           d;
+  PetscInt          d;
+  if (dim < 2) {MPI_Abort(MPI_COMM_WORLD,1); return;} /* this is needed so that the clang static analyzer does not generate a warning about variables used by not set */
   for (d = 0; d < dim; ++d) {
     psiDer[d]    = refPsiDer[d] + ppsiDer[d];
     phi_n_Der[d] = pphiDer[d]   - pnDer[d];
   }
   f0[0] = - poissonBracket(dim,psiDer, phi_n_Der) + poissonBracket(dim,logRefDenDer, ppsiDer);
   if (u_t) f0[0] += u_t[PSI];
-  /*printf("ppsiDer = %20.15e %20.15e psi = %20.15e refPsiDer = %20.15e %20.15e refPsi = %20.15e \n",ppsiDer[0],ppsiDer[1],u[PSI],refPsiDer[0],refPsiDer[1],a[PSI]);*/
 }
 
 static void f1_psi(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -209,6 +209,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex48.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  if (options->dim < 2 || options->dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Dim %D must be 2 or 3",options->dim);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine", "Hack to get refinement level for cylinder", "ex48.c", options->refine, &options->refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-eta", "eta", "ex48.c", options->eta, &options->eta, NULL);CHKERRQ(ierr);
