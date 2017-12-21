@@ -1128,6 +1128,12 @@ runex34:
 	   else printf "${PWD}\nPossible problem with ex34_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex34_1.tmp
 
+runex34_hyprestruct:
+	-@${MPIEXEC} -n 3 ./ex34 -ksp_type gmres -pc_type pfmg -dm_mat_type hyprestruct  -ksp_monitor -da_refine 3   > ex34_hyprestruct.tmp 2>&1;	  \
+	   if (${DIFF} output/ex34_hyprestruct.out ex34_hyprestruct.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex34_hyprestruct, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex34_hyprestruct.tmp
+
 runex34_2 :
 	-@${MPIEXEC} -n 2 ./ex34 -ksp_monitor_short -da_grid_x 50 -da_grid_y 50 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_ksp_rtol 1e-1 -ksp_ksp_monitor -ksp_type pipefgmres -ksp_gmres_restart 5 > ex34_2.tmp 2>&1; \
 	   if (${DIFF} output/ex34_2.out ex34_2.tmp) then true; \
@@ -1703,7 +1709,7 @@ TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_SPAI	                = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	                = ex49.PETSc runex49_hypre_nullspace ex49.rm
+TESTEXAMPLES_HYPRE	                = ex34.PETSc runex34_hyprestruct ex34.rm ex49.PETSc runex49_hypre_nullspace ex49.rm
 TESTEXAMPLES_PARMETIS	                =
 TESTEXAMPLES_HYPRE_DATAFILESPATH        = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_boomeramg_schwarz runex10_boomeramg_parasails runex10_boomeramg_pilut ex10.rm
 TESTEXAMPLES_LUSOL	                = ex10.PETSc runex10_13 ex10.rm

@@ -32,6 +32,7 @@ PetscErrorCode  DMFinalizePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 #endif
 
 /*@C
@@ -61,6 +62,7 @@ PetscErrorCode  DMInitializePackage(void)
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
+  ierr = MatRegister(MATHYPRESSTRUCT, MatCreate_HYPRESStruct);CHKERRQ(ierr);
 #endif
   ierr = PetscSectionSymRegister(PETSCSECTIONSYMLABEL,PetscSectionSymCreate_Label);CHKERRQ(ierr);
 
