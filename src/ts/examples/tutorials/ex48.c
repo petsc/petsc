@@ -476,7 +476,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
   ctx->initialFuncs[4] = initialSolution_jz;
   for (f = 0; f < 5; ++f) {
     ierr = PetscDSSetImplicit( prob, f, ctx->implicit);CHKERRQ(ierr);
-    ierr = PetscDSAddBoundary( prob, DM_BC_ESSENTIAL, "wall", "marker", f, 0, NULL, (void (*)()) ctx->initialFuncs[f], 1, &id, ctx);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary( prob, DM_BC_ESSENTIAL, "wall", "marker", f, 0, NULL, (void (*)(void)) ctx->initialFuncs[f], 1, &id, ctx);CHKERRQ(ierr);
   }
   ierr = PetscDSSetContext(prob, 0, ctx);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
