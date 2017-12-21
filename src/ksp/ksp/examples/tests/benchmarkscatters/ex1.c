@@ -131,3 +131,13 @@ PetscErrorCode  PetscLogView_VecScatter(PetscViewer viewer)
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   build:
+     requires: define(PETSC_USE_LOG)
+
+   test:
+     TODO: need to implement
+
+TEST*/
