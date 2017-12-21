@@ -2884,6 +2884,12 @@ PETSC_EXTERN PetscErrorCode PetscHeapUnstash(PetscHeap);
 PETSC_EXTERN PetscErrorCode PetscHeapDestroy(PetscHeap*);
 PETSC_EXTERN PetscErrorCode PetscHeapView(PetscHeap,PetscViewer);
 
+PETSC_EXTERN PetscErrorCode PetscProcessPlacementView(PetscViewer);
+typedef struct _n_PetscCommShared* PetscCommShared;
+PETSC_EXTERN PetscErrorCode PetscCommSharedGet(MPI_Comm,PetscCommShared*);
+PETSC_EXTERN PetscErrorCode PetscCommSharedGlobalToLocal(PetscCommShared,PetscMPIInt,PetscMPIInt*);
+PETSC_EXTERN PetscErrorCode PetscCommSharedGetComm(PetscCommShared,MPI_Comm*);
+
 /*S
    PetscSegBuffer - a segmented extendable buffer
 
@@ -2900,6 +2906,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,size_t*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
+
 
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as

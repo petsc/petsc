@@ -95,6 +95,47 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HWLOC)
+#include <petsc/private/petscimpl.h>
+#include <hwloc.h>
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscProcessPlacementView"
+/*@C
+     PetscProcessPlacementView - display the MPI process placement by core
 
+  Input Parameter:
+.   viewer - ASCII viewer to display the results on
+
+  Notes: Requires that PETSc be installed with hwloc, for example using --download-hwloc
+@*/
+PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
+{
+  PetscErrorCode   ierr;
+  PetscBool        isascii;
+  PetscMPIInt      rank;
+  hwloc_bitmap_t   set;
+  hwloc_topology_t topology;
+  int              err;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);
+  if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
+
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
+  hwloc_topology_init ( &topology);
+  hwloc_topology_load ( topology);
+  set = hwloc_bitmap_alloc();
+
+  err = hwloc_get_proc_cpubind(topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
+  if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
+  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set));CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  hwloc_bitmap_free(set);
+  hwloc_topology_destroy(topology);
+  PetscFunctionReturn(0);
+}
+#endif
 

@@ -246,6 +246,18 @@ prepend-path PATH %s
       # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
       self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'), log = self.log)
 
+    self.setCompilers.pushLanguage('C')
+    compiler = self.setCompilers.getCompiler()
+    if compiler.endswith('mpicc') or compiler.endswith('mpiicc'):
+      try:
+        output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+        compiler = output.split(' ')[0]
+        self.addDefine('MPICC_SHOW','"'+output.strip().replace('\n','\\\\n')+'"')
+      except:
+        self.addDefine('MPICC_SHOW','"Unavailable"')
+    else:
+      self.addDefine('MPICC_SHOW','"Unavailable"')
+    self.setCompilers.popLanguage()
 #-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
@@ -473,11 +485,11 @@ prepend-path PATH %s
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
+    fd.write('\"Using C compiler: %s %s \\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
+      fd.write('\"Using Fortran compiler: %s %s  %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')

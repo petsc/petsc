@@ -23,7 +23,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.cxx ex175.c ex180.c \
                 ex181.c ex182.c ex183.c ex300.c ex190.c ex191.c ex192.c ex193.c ex194.c ex195.c ex197.c ex198.c ex199.c ex200.c \
-                ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c ex210.c
+                ex202.c ex203.c ex205.c ex206.c ex207.c ex208.c ex209.c ex210.c ex211.c
 
 EXAMPLESF	 = ex16f90.F90 ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F90 ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F ex196f90.F90 ex201f.F
 
@@ -820,6 +820,10 @@ ex209: ex209.o chkopts
 ex210: ex210.o chkopts
 	-${CLINKER} -o ex210 ex210.o ${PETSC_MAT_LIB}
 	${RM} ex210.o
+
+ex211: ex211.o chkopts
+	-${CLINKER} -o ex211 ex211.o ${PETSC_MAT_LIB}
+	${RM} ex211.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -1627,6 +1631,12 @@ runex59_2:
 	   if (${DIFF} output/ex59_2.out ex59_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_2.tmp
+runex211:
+	-@${MPIEXEC} -n 3 ./ex211  > ex211_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex211_2.out ex211_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex211, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex211_2.tmp
+
 runex59_baij:
 	-@${MPIEXEC} -n 1 ./ex59 -mat_type baij > ex59_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_1_baij.out ex59_1.tmp) then true; \
@@ -2349,12 +2359,12 @@ runex132:
 	   ${RM} -f ex132_1.tmp
 
 runex134:
-	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular | ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex134 -mat_ignore_lower_triangular -vecscatter_mpi1| ${SED} 's,mem [0-9]\{4\},mem SKIP,' > ex134_1.tmp 2>&1; \
 	   ${DIFF} output/ex134_1.out ex134_1.tmp || printf "${PWD}\nPossible problem with ex134, diffs above\n=========================================\n"; \
 	   ${RM} -f ex134_1.tmp
 
 runex135:
-	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ascii::ascii_info_detail | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ascii::ascii_info_detail -vecscatter_mpi1 | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
 	   ${DIFF} output/ex135_1.out ex135_1.tmp || printf "${PWD}\nPossible problem with ex135, diffs above\n=========================================\n"; \
 	   ${RM} -f ex135_1.tmp
 

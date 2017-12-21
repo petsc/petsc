@@ -3,7 +3,7 @@
 #
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
 #  packages to run mpiexec
-#    Also use PETSCVALGRIND_OPTIONS from env
+#    Use PETSCVALGRIND_OPTIONS and MPI_BINDING from environment
 #
 if ($1 == '-h' | $1 == '--help') then
   echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
@@ -30,6 +30,13 @@ shift
 set np=$1
 shift
 
+set hosts=""
+if ( x$1 ==  x"-hosts" ) then
+  shift
+  set hosts="-hosts $1"
+  shift
+endif
+
 set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
 set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
 set run = `grep MPIEXEC ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables | grep -v "#MPIEXEC" | cut -f2 -d=`
@@ -47,6 +54,10 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 
 #echo $qrun $*
 
+if ! $?MPI_BINDING then
+  set MPI_BINDING=
+endif
+
 if ( ${valgrind} == "1" ) then
   if ! $?PETSCVALGRIND_OPTIONS then
     set PETSCVALGRIND_OPTIONS=
@@ -60,12 +71,12 @@ if ( ${valgrind} == "1" ) then
   if ( `uname` == 'Darwin') then
     set VALGRIND_OPTIONS="${VALGRIND_OPTIONS} --dsymutil=yes"
   endif
-  $qrun -n $np ${VALGRIND_CMD} ${VALGRIND_OPTIONS} $*
+  $qrun -n $np $hosts ${VALGRIND_CMD} ${VALGRIND_OPTIONS} $*
   if ( `uname` == 'Darwin') then
     rm -rf *.dSYM
     rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
   endif
 else
-  $qrun -n $np $*
+  $qrun -n $np $hosts ${MPI_BINDING} $*
 endif
 

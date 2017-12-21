@@ -43,6 +43,6 @@ int main(int argc,char **argv)
    test:
       nsize: 2
       args: -options_view -get_total_flops
-      filter: grep -v malloc | grep -v display | grep -v nox | grep -v "Total flops"  | grep -v saws_port_auto_select
+      filter: egrep -v \(malloc\|display\|nox\|"Total flops"\|saws_port_auto_select\|vecscatter_mpi1\|options_left\)
 
 TEST*/

@@ -1,0 +1,235 @@
+cd src/benchmarks/streams; /usr/bin/gmake  --no-print-directory PETSC_DIR=/home/bsmith/petsc PETSC_ARCH=arch-opt-mpich streams
+/home/bsmith/petsc/arch-opt-mpich/bin/mpicc -o MPIVersion.o -c -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -g -O   -I/home/bsmith/petsc/include -I/home/bsmith/petsc/arch-opt-mpich/include    `pwd`/MPIVersion.c
+Running streams with /home/bsmith/petsc/arch-opt-mpich/bin/mpiexec -hosts thing05 -bind-to core -map-by numa MPI rank 0 Process id: 49029 coreid 0
+Number of MPI processes 1 Processor names  thing05.ftm.alcf.anl.gov 
+Triad:        14778.4329   Rate (MB/s) 
+MPI rank 0 Process id: 49064 coreid 0
+MPI rank 1 Process id: 49065 coreid 9
+Number of MPI processes 2 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        28762.9968   Rate (MB/s) 
+MPI rank 0 Process id: 49100 coreid 0
+MPI rank 1 Process id: 49101 coreid 9
+MPI rank 2 Process id: 49102 coreid 18
+Number of MPI processes 3 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        41999.4288   Rate (MB/s) 
+MPI rank 0 Process id: 49137 coreid 0
+MPI rank 1 Process id: 49138 coreid 9
+MPI rank 2 Process id: 49139 coreid 18
+MPI rank 3 Process id: 49140 coreid 27
+Number of MPI processes 4 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        57341.6700   Rate (MB/s) 
+MPI rank 0 Process id: 49175 coreid 0
+MPI rank 1 Process id: 49176 coreid 9
+MPI rank 2 Process id: 49177 coreid 18
+MPI rank 3 Process id: 49178 coreid 27
+MPI rank 4 Process id: 49179 coreid 1
+Number of MPI processes 5 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        50717.0979   Rate (MB/s) 
+MPI rank 0 Process id: 49214 coreid 0
+MPI rank 1 Process id: 49215 coreid 9
+MPI rank 2 Process id: 49216 coreid 18
+MPI rank 3 Process id: 49217 coreid 27
+MPI rank 4 Process id: 49218 coreid 1
+MPI rank 5 Process id: 49219 coreid 10
+Number of MPI processes 6 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        60346.6851   Rate (MB/s) 
+MPI rank 0 Process id: 49254 coreid 0
+MPI rank 1 Process id: 49255 coreid 9
+MPI rank 2 Process id: 49256 coreid 18
+MPI rank 3 Process id: 49257 coreid 27
+MPI rank 4 Process id: 49258 coreid 1
+MPI rank 5 Process id: 49259 coreid 10
+MPI rank 6 Process id: 49260 coreid 19
+Number of MPI processes 7 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        70457.7653   Rate (MB/s) 
+MPI rank 0 Process id: 49295 coreid 0
+MPI rank 1 Process id: 49296 coreid 9
+MPI rank 2 Process id: 49297 coreid 18
+MPI rank 3 Process id: 49298 coreid 27
+MPI rank 4 Process id: 49299 coreid 1
+MPI rank 5 Process id: 49300 coreid 10
+MPI rank 6 Process id: 49301 coreid 19
+MPI rank 7 Process id: 49302 coreid 28
+Number of MPI processes 8 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        79996.6599   Rate (MB/s) 
+MPI rank 0 Process id: 49337 coreid 0
+MPI rank 1 Process id: 49338 coreid 9
+MPI rank 2 Process id: 49339 coreid 18
+MPI rank 3 Process id: 49340 coreid 27
+MPI rank 4 Process id: 49341 coreid 1
+MPI rank 5 Process id: 49342 coreid 10
+MPI rank 6 Process id: 49343 coreid 19
+MPI rank 7 Process id: 49344 coreid 28
+MPI rank 8 Process id: 49345 coreid 2
+Number of MPI processes 9 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        65526.2574   Rate (MB/s) 
+MPI rank 0 Process id: 49380 coreid 0
+MPI rank 1 Process id: 49381 coreid 9
+MPI rank 2 Process id: 49382 coreid 18
+MPI rank 3 Process id: 49383 coreid 27
+MPI rank 4 Process id: 49384 coreid 1
+MPI rank 5 Process id: 49385 coreid 10
+MPI rank 6 Process id: 49386 coreid 19
+MPI rank 7 Process id: 49387 coreid 28
+MPI rank 8 Process id: 49388 coreid 2
+MPI rank 9 Process id: 49389 coreid 11
+Number of MPI processes 10 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        72693.1536   Rate (MB/s) 
+MPI rank 0 Process id: 49424 coreid 0
+MPI rank 1 Process id: 49425 coreid 9
+MPI rank 2 Process id: 49426 coreid 18
+MPI rank 3 Process id: 49427 coreid 27
+MPI rank 4 Process id: 49428 coreid 1
+MPI rank 5 Process id: 49429 coreid 10
+MPI rank 6 Process id: 49430 coreid 19
+MPI rank 7 Process id: 49431 coreid 28
+MPI rank 8 Process id: 49432 coreid 2
+MPI rank 9 Process id: 49433 coreid 11
+MPI rank 10 Process id: 49434 coreid 20
+Number of MPI processes 11 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        80020.8843   Rate (MB/s) 
+MPI rank 0 Process id: 49469 coreid 0
+MPI rank 1 Process id: 49470 coreid 9
+MPI rank 2 Process id: 49471 coreid 18
+MPI rank 3 Process id: 49472 coreid 27
+MPI rank 4 Process id: 49473 coreid 1
+MPI rank 5 Process id: 49474 coreid 10
+MPI rank 6 Process id: 49475 coreid 19
+MPI rank 7 Process id: 49476 coreid 28
+MPI rank 8 Process id: 49477 coreid 2
+MPI rank 9 Process id: 49478 coreid 11
+MPI rank 10 Process id: 49479 coreid 20
+MPI rank 11 Process id: 49480 coreid 29
+Number of MPI processes 12 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        86824.1852   Rate (MB/s) 
+MPI rank 0 Process id: 49515 coreid 0
+MPI rank 1 Process id: 49516 coreid 9
+MPI rank 2 Process id: 49517 coreid 18
+MPI rank 3 Process id: 49518 coreid 27
+MPI rank 4 Process id: 49519 coreid 1
+MPI rank 5 Process id: 49520 coreid 10
+MPI rank 6 Process id: 49521 coreid 19
+MPI rank 7 Process id: 49522 coreid 28
+MPI rank 8 Process id: 49523 coreid 2
+MPI rank 9 Process id: 49524 coreid 11
+MPI rank 10 Process id: 49525 coreid 20
+MPI rank 11 Process id: 49526 coreid 29
+MPI rank 12 Process id: 49527 coreid 3
+Number of MPI processes 13 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        73181.4842   Rate (MB/s) 
+MPI rank 0 Process id: 49563 coreid 0
+MPI rank 1 Process id: 49564 coreid 9
+MPI rank 2 Process id: 49565 coreid 18
+MPI rank 3 Process id: 49566 coreid 27
+MPI rank 4 Process id: 49567 coreid 1
+MPI rank 5 Process id: 49568 coreid 10
+MPI rank 6 Process id: 49569 coreid 19
+MPI rank 7 Process id: 49570 coreid 28
+MPI rank 8 Process id: 49571 coreid 2
+MPI rank 9 Process id: 49572 coreid 11
+MPI rank 10 Process id: 49573 coreid 20
+MPI rank 11 Process id: 49574 coreid 29
+MPI rank 12 Process id: 49575 coreid 3
+MPI rank 13 Process id: 49576 coreid 12
+Number of MPI processes 14 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        78335.4853   Rate (MB/s) 
+MPI rank 0 Process id: 49611 coreid 0
+MPI rank 1 Process id: 49612 coreid 9
+MPI rank 2 Process id: 49613 coreid 18
+MPI rank 3 Process id: 49614 coreid 27
+MPI rank 4 Process id: 49615 coreid 1
+MPI rank 5 Process id: 49616 coreid 10
+MPI rank 6 Process id: 49617 coreid 19
+MPI rank 7 Process id: 49618 coreid 28
+MPI rank 8 Process id: 49619 coreid 2
+MPI rank 9 Process id: 49620 coreid 11
+MPI rank 10 Process id: 49621 coreid 20
+MPI rank 11 Process id: 49622 coreid 29
+MPI rank 12 Process id: 49623 coreid 3
+MPI rank 13 Process id: 49624 coreid 12
+MPI rank 14 Process id: 49625 coreid 21
+Number of MPI processes 15 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        83560.1955   Rate (MB/s) 
+MPI rank 0 Process id: 49660 coreid 0
+MPI rank 1 Process id: 49661 coreid 9
+MPI rank 2 Process id: 49662 coreid 18
+MPI rank 3 Process id: 49663 coreid 27
+MPI rank 4 Process id: 49664 coreid 1
+MPI rank 5 Process id: 49665 coreid 10
+MPI rank 6 Process id: 49666 coreid 19
+MPI rank 7 Process id: 49667 coreid 28
+MPI rank 8 Process id: 49668 coreid 2
+MPI rank 9 Process id: 49669 coreid 11
+MPI rank 10 Process id: 49670 coreid 20
+MPI rank 11 Process id: 49671 coreid 29
+MPI rank 12 Process id: 49672 coreid 3
+MPI rank 13 Process id: 49673 coreid 12
+MPI rank 14 Process id: 49674 coreid 21
+MPI rank 15 Process id: 49675 coreid 30
+Number of MPI processes 16 Processor names  thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov thing05.ftm.alcf.anl.gov 
+Triad:        88618.7609   Rate (MB/s) 
+------------------------------------------------
+np  speedup
+1 1.0
+2 1.95
+3 2.84
+4 3.88
+5 3.43
+6 4.08
+7 4.77
+8 5.41
+9 4.43
+10 4.92
+11 5.41
+12 5.88
+13 4.95
+14 5.3
+15 5.65
+16 6.0
+Estimation of possible speedup of MPI programs based on Streams benchmark.
+It appears you have 1 node(s)
+Unable to plot speedup to a file
+Machine (128GB total)
+  Socket L#0
+    NUMANode L#0 (P#0 32GB) + L3 L#0 (23MB)
+      L2 L#0 (256KB) + L1d L#0 (32KB) + Core L#0
+      L2 L#1 (256KB) + L1d L#1 (32KB) + Core L#1
+      L2 L#2 (256KB) + L1d L#2 (32KB) + Core L#2
+      L2 L#3 (256KB) + L1d L#3 (32KB) + Core L#3
+      L2 L#4 (256KB) + L1d L#4 (32KB) + Core L#4
+      L2 L#5 (256KB) + L1d L#5 (32KB) + Core L#5
+      L2 L#6 (256KB) + L1d L#6 (32KB) + Core L#6
+      L2 L#7 (256KB) + L1d L#7 (32KB) + Core L#7
+      L2 L#8 (256KB) + L1d L#8 (32KB) + Core L#8
+    NUMANode L#1 (P#1 32GB) + L3 L#1 (23MB)
+      L2 L#9 (256KB) + L1d L#9 (32KB) + Core L#9
+      L2 L#10 (256KB) + L1d L#10 (32KB) + Core L#10
+      L2 L#11 (256KB) + L1d L#11 (32KB) + Core L#11
+      L2 L#12 (256KB) + L1d L#12 (32KB) + Core L#12
+      L2 L#13 (256KB) + L1d L#13 (32KB) + Core L#13
+      L2 L#14 (256KB) + L1d L#14 (32KB) + Core L#14
+      L2 L#15 (256KB) + L1d L#15 (32KB) + Core L#15
+      L2 L#16 (256KB) + L1d L#16 (32KB) + Core L#16
+      L2 L#17 (256KB) + L1d L#17 (32KB) + Core L#17
+  Socket L#1
+    NUMANode L#2 (P#2 32GB) + L3 L#2 (23MB)
+      L2 L#18 (256KB) + L1d L#18 (32KB) + Core L#18
+      L2 L#19 (256KB) + L1d L#19 (32KB) + Core L#19
+      L2 L#20 (256KB) + L1d L#20 (32KB) + Core L#20
+      L2 L#21 (256KB) + L1d L#21 (32KB) + Core L#21
+      L2 L#22 (256KB) + L1d L#22 (32KB) + Core L#22
+      L2 L#23 (256KB) + L1d L#23 (32KB) + Core L#23
+      L2 L#24 (256KB) + L1d L#24 (32KB) + Core L#24
+      L2 L#25 (256KB) + L1d L#25 (32KB) + Core L#25
+      L2 L#26 (256KB) + L1d L#26 (32KB) + Core L#26
+    NUMANode L#3 (P#3 32GB) + L3 L#3 (23MB)
+      L2 L#27 (256KB) + L1d L#27 (32KB) + Core L#27
+      L2 L#28 (256KB) + L1d L#28 (32KB) + Core L#28
+      L2 L#29 (256KB) + L1d L#29 (32KB) + Core L#29
+      L2 L#30 (256KB) + L1d L#30 (32KB) + Core L#30
+      L2 L#31 (256KB) + L1d L#31 (32KB) + Core L#31
+      L2 L#32 (256KB) + L1d L#32 (32KB) + Core L#32
+      L2 L#33 (256KB) + L1d L#33 (32KB) + Core L#33
+      L2 L#34 (256KB) + L1d L#34 (32KB) + Core L#34
+      L2 L#35 (256KB) + L1d L#35 (32KB) + Core L#35
+Unable to open matplotlib to plot speedup

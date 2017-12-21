@@ -6,12 +6,14 @@ class CompilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.find('mpicc') >=0:
+    if compiler.endswith('mpicc') or compiler.endswith('mpiicc') :
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPICC_SHOW',"Unavailable")
 
     flags = []
     # GNU gcc
@@ -85,12 +87,14 @@ class CompilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
+    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx') or compiler.endswith('mpiicxx'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPICXX_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPICXX_SHOW',"Unavailable")
 
     flags = []
     # GNU g++
@@ -169,12 +173,14 @@ class CompilerOptions(config.base.Configure):
 
   def getFortranFlags(self, compiler, bopt):
 
-    if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
+    if compiler.endswith('mpif77') or compiler.endswith('mpif90') or compiler.endswith('mpifort'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
-        pass
+        self.framework.addMakeMacro('MPIFC_SHOW',"Unavailable")
+    else:
+      self.framework.addMakeMacro('MPIFC_SHOW',"Unavailable")
 
     flags = []
     if config.setCompilers.Configure.isGNU(compiler, self.log):
