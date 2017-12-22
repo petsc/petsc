@@ -586,3 +586,22 @@ PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
   ierr = PetscLogFlops(nx*ny*18);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -tao_type lmvm -tao_gttol 1.e-2
+
+   test:
+      suffix: 2
+      args: -tao_smonitor -tao_type ntl -tao_gttol 1.e-2
+
+   test:
+      suffix: 3
+      args: -tao_smonitor -tao_type ntr -tao_gttol 1.e-2
+
+TEST*/
