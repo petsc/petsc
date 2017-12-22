@@ -8,6 +8,10 @@
 
 */
 
+/*T
+   requires: !single
+T*/
+
 #include <petsctao.h>
 #include <mpi.h>
 
@@ -455,3 +459,12 @@ PetscErrorCode StopWorkers(AppCtx *user)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+
+TEST*/
