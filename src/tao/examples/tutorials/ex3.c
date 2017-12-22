@@ -392,6 +392,16 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&lb);CHKERRQ(ierr);
   ierr = VecDestroy(&ub);CHKERRQ(ierr);
   ierr = DestroyCtx(&user);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
+
+/*TEST
+
+    build:
+      requires: hdf5 !complex
+
+    test:
+      args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f meshes/mesh-1.h5
+
+TEST*/
