@@ -143,6 +143,7 @@ PetscLogEventFindName(PetscLogEvent eventid,
 }
 
 #if !defined(PETSC_USE_LOG)
+#undef PetscLogEventGetPerfInfo
 static PetscErrorCode
 PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 {
