@@ -1470,6 +1470,25 @@ cdef class Mat(Object):
         PetscINCREF(mat.obj)
         return mat
 
+    # Nest
+
+    def getNestSize(self):
+        cdef PetscInt nrows, ncols
+        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
+        return toInt(nrows), toInt(ncols)
+
+    def getNestISs(self):
+        cdef PetscInt i, nrows =0, ncols = 0
+        cdef PetscIS *cisrows = NULL
+        cdef PetscIS *ciscols = NULL
+        CHKERR( MatNestGetSize(self.mat, &nrows, &ncols) )
+        cdef object tmpr = oarray_p(empty_p(nrows), NULL, <void**>&cisrows)
+        cdef object tmpc = oarray_p(empty_p(ncols), NULL, <void**>&ciscols)
+        CHKERR( MatNestGetISs(self.mat, cisrows, ciscols) )
+        cdef object isetsrows = [ref_IS(cisrows[i]) for i from 0 <= i < nrows]
+        cdef object isetscols = [ref_IS(ciscols[i]) for i from 0 <= i < ncols]
+        return isetsrows, isetscols
+
     #
 
     property sizes:
