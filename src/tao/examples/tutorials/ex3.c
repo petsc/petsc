@@ -20,7 +20,7 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   space.
 
   Example meshes where the Riesz map is crucial can be downloaded from the
-  http://pefarrell.org/meshes.tar.gz .
+  http://people.maths.ox.ac.uk/~farrellp/meshes.tar.gz
 
   Contributed by: Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
@@ -402,6 +402,7 @@ int main(int argc, char **argv)
       requires: hdf5 !complex
 
     test:
-      args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f meshes/mesh-1.h5
+      args: -laplace_ksp_type cg -laplace_pc_type hypre -tao_h0_ksp_type cg -tao_h0_pc_type gamg -tao_h0_ksp_monitor_true_residual -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_order 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5 -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
+      requires: double datafilespath !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
