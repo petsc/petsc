@@ -1,0 +1,16 @@
+ 
+---- TOY Problem ----- 
+Solution should be f(1,1)=-2 
+iter =   1, Function value: 8.,  Residual: 24496.1 
+iter =   1, Function value: -5.43278,  Residual: 955.461 
+iter =   2, Function value: -1.91991,  Residual: 203.127 
+iter =   3, Function value: -1.89878,  Residual: 2.30255 
+iter =   4, Function value: -1.95114,  Residual: 0.143794 
+iter =   5, Function value: -1.99671,  Residual: 0.0248563 
+iter =   6, Function value: -1.99999,  Residual: 0.00206264 
+iter =   7, Function value: -2.,  Residual: 7.6949e-06 
+iter =   8, Function value: -2.,  Residual: 1.06901e-09 
+iter =   9, Function value: -2.,  Residual: 1.55827e-15 
+iter =  10, Function value: -2.,  Residual: 5.51013e-39 
+iter =  11, Function value: -2.,  Residual: 0. 
+TAO solve converged due to CONVERGED_GATOL iterations 12

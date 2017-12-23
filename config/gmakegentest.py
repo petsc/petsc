@@ -475,12 +475,20 @@ class generateExamples(Petsc):
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
       fullfile=os.path.join(root,lfile)
-      shutil.copy(fullfile,runscript_dir)
+      if os.path.isdir(fullfile):
+        if not os.path.isdir(os.path.join(runscript_dir,lfile)):
+          shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
+      else:
+        shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
     for stest in subst.get("subtests",[]):
       for lfile in testDict[stest].get('localrunfiles','').split():
         fullfile=os.path.join(root,lfile)
-        shutil.copy(fullfile,self.runscript_dir)
+        if os.path.isdir(fullfile):
+          if not os.path.isdir(os.path.join(runscript_dir,lfile)):
+            shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
+        else:
+          shutil.copy(fullfile,self.runscript_dir)
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)

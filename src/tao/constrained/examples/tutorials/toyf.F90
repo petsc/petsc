@@ -76,9 +76,6 @@
      &     0,ierr)
       CHKERRA(ierr)
 
-      call TaoSetTolerances(tao,0,0,0,ierr)
-      CHKERRA(ierr)
-
       call TaoSetFromOptions(tao,ierr)
       CHKERRA(ierr)
 
@@ -88,14 +85,10 @@
       call KSPGetPC(ksp,pc,ierr)
       CHKERRA(ierr)
 
-!      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU)
-!      CHKERRA(ierr)
-
-      call PetscOptionsSetValue(PETSC_NULL_OPTIONS,                      &
-     &              '-pc_factor_mat_solver_package','superlu',ierr)
+      call PCSetType(pc,PCLU,ierr)
       CHKERRA(ierr)
 
-      call PCSetType(pc,PCLU,ierr)
+      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU,ierr)
       CHKERRA(ierr)
 
       call KSPSetType(ksp,KSPPREONLY,ierr)
@@ -218,7 +211,7 @@
       PetscOffset x_i,g_i
 
 
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecGetArray(G,g_v,g_i,ierr)
       CHKERRQ(ierr)
@@ -226,7 +219,7 @@
      &       - 2.0*(x_v(x_i)+x_v(x_i+1))
       g_v(g_i) = 2.0*(x_v(x_i)-2.0) - 2.0
       g_v(g_i+1) = 2.0*(x_v(x_i+1)-2.0) - 2.0
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecRestoreArray(G,g_v,g_i,ierr)
       CHKERRQ(ierr)
@@ -261,16 +254,16 @@
       call TaoGetDualVariables(tao,DE,DI,ierr)
       CHKERRQ(ierr)
 
-      call VecGetArray(DE,de_v,de_i,ierr)
+      call VecGetArrayRead(DE,de_v,de_i,ierr)
       CHKERRQ(ierr)
-      call VecGetArray(DI,di_v,di_i,ierr)
+      call VecGetArrayRead(DI,di_v,di_i,ierr)
       CHKERRQ(ierr)
 
       val(1)=2.0d0 * (1.0d0 + de_v(de_i) + di_v(di_i) - di_v(di_i+1))
 
-      call VecRestoreArray(DE,de_v,de_i,ierr)
+      call VecRestoreArrayRead(DE,de_v,de_i,ierr)
       CHKERRQ(ierr)
-      call VecRestoreArray(DI,di_v,di_i,ierr)
+      call VecRestoreArrayRead(DI,di_v,di_i,ierr)
       CHKERRQ(ierr)
 
       call MatSetValues(H,1,zero,1,zero,val,INSERT_VALUES,ierr)
@@ -297,13 +290,13 @@
       PetscScalar    x_v(0:1),c_v(0:1)
       PetscOffset    x_i,c_i
 
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecGetArray(C,c_v,c_i,ierr)
       CHKERRQ(ierr)
       c_v(c_i) = x_v(x_i)*x_v(x_i) - x_v(x_i+1)
       c_v(c_i+1) = -x_v(x_i)*x_v(x_i) + x_v(x_i+1) + 1.0d0
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecRestoreArray(C,c_v,c_i,ierr)
       CHKERRQ(ierr)
@@ -322,12 +315,12 @@
       PetscErrorCode ierr
       PetscScalar    x_v(0:1),c_v(0:1)
       PetscOffset    x_i,c_i
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecGetArray(C,c_v,c_i,ierr)
       CHKERRQ(ierr)
       c_v(c_i) = x_v(x_i)*x_v(x_i) + x_v(x_i+1) - 2.0d0
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecRestoreArray(C,c_v,c_i,ierr)
       CHKERRQ(ierr)
@@ -351,7 +344,7 @@
       PetscScalar     vals(4),x_v(0:1)
       PetscOffset     x_i
 
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       rows(1)=0
       rows(2) = 1
@@ -362,7 +355,7 @@
       vals(3) = -2.0*x_v(x_i)
       vals(4) = 1.0d0
 
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call MatSetValues(JI,2,rows,2,cols,vals,INSERT_VALUES,ierr)
       CHKERRQ(ierr)
@@ -388,14 +381,14 @@
       PetscScalar     vals(4),x_v(0:1)
       PetscOffset     x_i
 
-      call VecGetArray(X,x_v,x_i,ierr)
+      call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       rows(1)=0
       rows(2) = 1
       vals(1) = 2.0*x_v(x_i)
       vals(2) = 1.0d0
 
-      call VecRestoreArray(X,x_v,x_i,ierr)
+      call VecRestoreArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call MatSetValues(JE,1,rows,2,rows,vals,INSERT_VALUES,ierr)
       CHKERRQ(ierr)
@@ -405,3 +398,12 @@
       CHKERRQ(ierr)
       ierr = 0
       end subroutine FormEqualityJacobian
+
+!/*TEST
+!
+!   test:
+!      requires: superlu !single
+!      args: -tao_monitor -tao_converged_reason
+!      filter: Error: grep -v IEEE_DENORMAL
+!
+!TEST*/
