@@ -39,7 +39,7 @@ iter =  34, Function value 1.49406, Residual: 2.23549e-05
 iter =  35, Function value 1.49406, Residual: 1.00507e-05 
 iter =  36, Function value 1.49406, Residual: 7.32074e-06 
 iter =  37, Function value 1.49406, Residual: 8.39813e-06 
-iter =  38, Function value 1.49406, Residual: 5.16667e-06 
+iter =  38, Function value 1.49406, Residual: 5.16668e-06 
 iter =  39, Function value 1.49406, Residual: 2.9402e-06 
 Tao Object: 3 MPI processes
   type: blmvm

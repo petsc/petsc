@@ -5,7 +5,7 @@ mx: 10     my: 10
 iter =   0, Function value 1.46076, Residual: 0.207785 
 iter =   0, Function value 1.43581, Residual: 0.187715 
 iter =   1, Function value 1.41867, Residual: 0.0159523 
-iter =   2, Function value 1.41847, Residual: 0.000148641 
+iter =   2, Function value 1.41847, Residual: 0.000149091 
 Tao Object: 2 MPI processes
   type: nls
       Rejected matrix updates: 0
@@ -19,7 +19,7 @@ Tao Object: 2 MPI processes
     type: stcg
   total KSP iterations: 30
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.01
-  Residual in Function/Gradient:=0.000148641
+  Residual in Function/Gradient:=0.000149091
   Objective value=1.41847
   total number of iterations=2,                          (max: 50)
   total number of function/gradient evaluations=9,      (max: 4000)

@@ -117,6 +117,7 @@
       <h4>TS:</h4>
       <h4>TAO:</h4>
       <ul>
+        <li>Changed TaoDefaultMonitor() to TaoMonitorDefault() to match other PETSc default monitor names, also now print with the same format as other monitors %3D Tao ....</li>
         <li>Added VecLock{Push|Pop} calls around user callbacks; use of VecGetArray in user callbacks is now prohibited.</li>
         <li>Added default matrix-free finite-differencing implementation for Hessian MatMult with TaoDefaultComputeHessianMFFD(). Can be selected with -tao_mf_hessian at command line.</li>
       </ul>

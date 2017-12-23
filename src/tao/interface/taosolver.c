@@ -458,7 +458,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDefaultMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-tao_smonitor","Use the short convergence monitor","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -1367,7 +1367,7 @@ $     int mymonitor(Tao tao,void *mctx)
 
 
    Options Database Keys:
-+    -tao_monitor        - sets TaoDefaultMonitor()
++    -tao_monitor        - sets TaoMonitorDefault()
 .    -tao_smonitor       - sets short monitor
 .    -tao_cmonitor       - same as smonitor plus constraint norm
 .    -tao_view_solution   - view solution at each iteration
@@ -1385,7 +1385,7 @@ $     int mymonitor(Tao tao,void *mctx)
 
    Level: intermediate
 
-.seealso: TaoDefaultMonitor(), TaoCancelMonitors(),  TaoSetDestroyRoutine()
+.seealso: TaoMonitorDefault(), TaoCancelMonitors(),  TaoSetDestroyRoutine()
 @*/
 PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *ctx,PetscErrorCode (*dest)(void**))
 {
@@ -1429,7 +1429,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoCancelMonitors(Tao tao)
 {
@@ -1448,7 +1448,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 }
 
 /*@
-   TaoDefaultMonitor - Default routine for monitoring progress of the
+   TaoMonitorDefault - Default routine for monitoring progress of the
    Tao solvers (default).  This monitor prints the function value and gradient
    norm at each iteration.  It can be turned on from the command line using the
    -tao_monitor option
@@ -1466,7 +1466,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 
 .seealso: TaoDefaultSMonitor(), TaoSetMonitor()
 @*/
-PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
+PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       its;
@@ -1478,7 +1478,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct);CHKERRQ(ierr);
   if (gnorm >= PETSC_INFINITY) {
     ierr=PetscViewerASCIIPrintf(viewer,"  Residual: Inf \n");CHKERRQ(ierr);
@@ -1490,7 +1490,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 
 /*@
    TaoDefaultSMonitor - Default routine for monitoring progress of the
-   solver. Same as TaoDefaultMonitor() except
+   solver. Same as TaoMonitorDefault() except
    it prints fewer digits of the residual as the residual gets smaller.
    This is because the later digits are meaningless and are often
    different on different machines; by using this routine different
@@ -1508,7 +1508,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 {
@@ -1537,7 +1537,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 }
 
 /*@
-   TaoDefaultCMonitor - same as TaoDefaultMonitor() except
+   TaoDefaultCMonitor - same as TaoMonitorDefault() except
    it prints the norm of the constraints function. It can be turned on
    from the command line using the -tao_cmonitor option
 
@@ -1552,7 +1552,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 
    Level: advanced
 
-.seealso: TaoDefaultMonitor(), TaoSetMonitor()
+.seealso: TaoMonitorDefault(), TaoSetMonitor()
 @*/
 PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 {
@@ -2420,7 +2420,7 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
-.seealso TaoGetConvergedReason(), TaoDefaultMonitor(), TaoSetMonitor()
+.seealso TaoGetConvergedReason(), TaoMonitorDefault(), TaoSetMonitor()
 
    Level: developer
 

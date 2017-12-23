@@ -6,7 +6,7 @@
   2 KSP preconditioned resid norm 6.425875116098e-05 true resid norm 2.387465990643e-05 ||r(i)||/||b|| 5.352887976127e-02
   3 KSP preconditioned resid norm 3.882453362225e-06 true resid norm 1.333731196314e-06 ||r(i)||/||b|| 2.990331050626e-03
   4 KSP preconditioned resid norm 2.691745079086e-07 true resid norm 9.093339038866e-08 ||r(i)||/||b|| 2.038798684243e-04
-iter =   0, Function value: 0.000320421,  Residual: 4.46096e-07 
+  0 TAO, Function value: 0.000320421,  Residual: 4.46096e-07 
   Residual norms for tao_h0_ solve.
   0 KSP preconditioned resid norm 8.624540181976e-02 true resid norm 2.258028033748e-05 ||r(i)||/||b|| 1.000000000000e+00
   1 KSP preconditioned resid norm 1.352104971124e-03 true resid norm 1.431490081582e-07 ||r(i)||/||b|| 6.339558500546e-03
@@ -60,7 +60,7 @@ iter =   0, Function value: 0.000320421,  Residual: 4.46096e-07
   2 KSP preconditioned resid norm 5.026386257146e-05 true resid norm 1.867479372832e-05 ||r(i)||/||b|| 5.353011253019e-02
   3 KSP preconditioned resid norm 3.036948157729e-06 true resid norm 1.043254436198e-06 ||r(i)||/||b|| 2.990422715225e-03
   4 KSP preconditioned resid norm 2.105515186947e-07 true resid norm 7.112949594793e-08 ||r(i)||/||b|| 2.038881916288e-04
-iter =   1, Function value: 0.000196057,  Residual: 3.48903e-07 
+  1 TAO, Function value: 0.000196057,  Residual: 3.48903e-07 
   Residual norms for tao_h0_ solve.
   0 KSP preconditioned resid norm 1.794505989606e-06 true resid norm 4.675623862979e-10 ||r(i)||/||b|| 1.000000000000e+00
   1 KSP preconditioned resid norm 3.010178904283e-08 true resid norm 3.895175319981e-12 ||r(i)||/||b|| 8.330814099104e-03
@@ -78,7 +78,7 @@ iter =   1, Function value: 0.000196057,  Residual: 3.48903e-07
   2 KSP preconditioned resid norm 2.847095176740e-06 true resid norm 1.113814454217e-06 ||r(i)||/||b|| 4.919059196624e-02
   3 KSP preconditioned resid norm 1.724709179939e-07 true resid norm 6.112477843888e-08 ||r(i)||/||b|| 2.699519676576e-03
   4 KSP preconditioned resid norm 1.219655607219e-08 true resid norm 4.180456654291e-09 ||r(i)||/||b|| 1.846260270148e-04
-iter =   2, Function value: 9.45086e-07,  Residual: 1.56682e-08 
+  2 TAO, Function value: 9.45086e-07,  Residual: 1.56682e-08 
   Residual norms for tao_h0_ solve.
   0 KSP preconditioned resid norm 1.206473615437e-04 true resid norm 2.776501348850e-08 ||r(i)||/||b|| 1.000000000000e+00
   1 KSP preconditioned resid norm 3.796066262424e-06 true resid norm 4.454153202218e-10 ||r(i)||/||b|| 1.604232320673e-02
@@ -97,7 +97,7 @@ iter =   2, Function value: 9.45086e-07,  Residual: 1.56682e-08
   2 KSP preconditioned resid norm 1.085000640832e-06 true resid norm 4.843666999811e-07 ||r(i)||/||b|| 4.015472804621e-02
   3 KSP preconditioned resid norm 7.008673846662e-08 true resid norm 2.686860020765e-08 ||r(i)||/||b|| 2.227447374814e-03
   4 KSP preconditioned resid norm 4.653011096026e-09 true resid norm 1.805357673452e-09 ||r(i)||/||b|| 1.496668668726e-04
-iter =   3, Function value: 3.57446e-07,  Residual: 6.04473e-09 
+  3 TAO, Function value: 3.57446e-07,  Residual: 6.04473e-09 
   Residual norms for tao_h0_ solve.
   0 KSP preconditioned resid norm 1.326760962168e-03 true resid norm 2.919956256277e-07 ||r(i)||/||b|| 1.000000000000e+00
   1 KSP preconditioned resid norm 4.150584172053e-05 true resid norm 4.934052329598e-09 ||r(i)||/||b|| 1.689769262465e-02
@@ -116,5 +116,5 @@ iter =   3, Function value: 3.57446e-07,  Residual: 6.04473e-09
   2 KSP preconditioned resid norm 1.419073451052e-06 true resid norm 3.235397277282e-07 ||r(i)||/||b|| 3.811494852694e-02
   3 KSP preconditioned resid norm 4.661830722265e-08 true resid norm 1.989809504516e-08 ||r(i)||/||b|| 2.344116667699e-03
   4 KSP preconditioned resid norm 2.793593335104e-09 true resid norm 1.054535560519e-09 ||r(i)||/||b|| 1.242307054259e-04
-iter =   4, Function value: 2.40781e-07,  Residual: 9.48627e-10 
+  4 TAO, Function value: 2.40781e-07,  Residual: 9.48627e-10 
 TAO solve converged due to CONVERGED_GATOL iterations 4
