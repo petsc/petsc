@@ -61,7 +61,6 @@ int main(int argc,char **argv)
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy      = 1;
-  /* ierr = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
   ierr        = PetscOptionsGetInt(NULL,NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
   ierr        = PetscOptionsGetReal(NULL,NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
@@ -157,7 +156,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 
 typedef struct {PetscScalar w,u;} Field;
@@ -188,8 +187,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localXdot);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
 
@@ -269,8 +267,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   PetscReal      hx,xx,r,sx;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx;
   sx = 1.0/(hx*hx);
@@ -307,7 +304,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
 /*TEST
 
    build:
-     requires: !complex
+     requires: !complex !single
 
    test:
      args: -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason  -ts_type beuler  -da_refine 5 -ts_dt 9.53674e-9 -ts_max_steps 50
