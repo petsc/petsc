@@ -467,6 +467,9 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       args: -tao_smonitor -mx 8 -my 12 -tao_type tron -tao_gttol 1.e-5
       requires: !single

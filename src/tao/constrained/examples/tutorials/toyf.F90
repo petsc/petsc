@@ -401,6 +401,9 @@
 
 !/*TEST
 !
+!   build:
+!      requires: !complex
+!
 !   test:
 !      requires: superlu !single
 !      args: -tao_monitor -tao_converged_reason

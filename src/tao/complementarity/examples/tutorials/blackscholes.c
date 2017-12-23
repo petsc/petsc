@@ -451,6 +451,9 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       args: -tao_monitor -tao_type ssils
       requires: !single

@@ -544,6 +544,9 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       args: -tao_monitor -tao_view -tao_type ssils
       requires: !single

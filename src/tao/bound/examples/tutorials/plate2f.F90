@@ -1070,6 +1070,9 @@
 !
 !/*TEST
 !
+!   build:
+!      requires: !complex
+! 
 !   test:
 !      args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type blmvm -tao_gttol 1.e-4
 !      filter: sort -b

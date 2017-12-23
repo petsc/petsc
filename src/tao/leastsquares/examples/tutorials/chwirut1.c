@@ -408,6 +408,9 @@ PetscErrorCode InitializeData(AppCtx *user)
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       args: -tao_smonitor -tao_max_it 100 -tao_type pounders
       requires: !single

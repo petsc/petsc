@@ -1266,6 +1266,9 @@ PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl
       requires: !single

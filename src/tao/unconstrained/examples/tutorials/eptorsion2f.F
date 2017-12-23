@@ -531,6 +531,9 @@
 
 !/*TEST
 !
+!   build:
+!      requires: !complex
+!
 !   test:
 !      args: -tao_smonitor -tao_type nls -tao_gttol 1.e-2
 !
