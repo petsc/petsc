@@ -196,13 +196,15 @@ class Configure(config.package.Package):
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       self.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
-      self.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
+      self.log.write('Files and directories in that directory:\n'+str(os.listdir(dir))+'\n')
 
       # Look for Multi-Threaded MKL for MKL_C/Pardiso
       useCPardiso=0
       usePardiso=0
       if self.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.argDB or 'with-mkl_cpardiso-lib' in self.argDB:
         useCPardiso=1
+        #  the free version of MKL on MacOS doesn't appear to have the blacs libraries
+        #  TODO: this is hardwared to blacs_intelmpi when it should also support blacs_mpich, but how to determine which one to use based on the MPI.
         mkl_blacs_64=['mkl_blacs_intelmpi_lp64']
         mkl_blacs_32=['mkl_blacs_intelmpi']
       elif self.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.argDB or 'with-mkl_pardiso-lib' in self.argDB:
@@ -216,7 +218,9 @@ class Configure(config.package.Package):
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
+            #  iomp5 is provided by the Intel compilers on MacOS. Run source /opt/intel/bin/compilervars.sh intel64 to have it added to LIBRARY_PATH
             yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread'])
+            #   mkl_gnu_thread does not exist on MacOS
             yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread'])
             yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread'])
             yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread'])
