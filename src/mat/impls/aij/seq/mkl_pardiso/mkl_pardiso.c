@@ -33,7 +33,7 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
 
 #if defined(PETSC_USE_64BIT_INDICES)
  #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-  #define INT_TYPE MKL_INT
+  #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit
  #else
@@ -42,7 +42,7 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
   #define MKL_PARDISO_INIT pardiso_64init
  #endif
 #else
- #define INT_TYPE MKL_INT
+ #define INT_TYPE int
  #define MKL_PARDISO pardiso
  #define MKL_PARDISO_INIT pardisoinit
 #endif
