@@ -1100,11 +1100,11 @@ PetscErrorCode  PetscFinalize(void)
   cublasStatus_t cberr;
 #endif
 
-  PetscFunctionBegin;
   if (!PetscInitializeCalled) {
     printf("PetscInitialize() must be called before PetscFinalize()\n");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
+    return(PETSC_ERR_ARG_WRONGSTATE);
   }
+  PetscFunctionBegin;
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

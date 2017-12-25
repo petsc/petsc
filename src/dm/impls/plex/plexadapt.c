@@ -551,6 +551,6 @@ PetscErrorCode DMAdaptMetric_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DM *
 #else
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
-  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
 #endif
 }
