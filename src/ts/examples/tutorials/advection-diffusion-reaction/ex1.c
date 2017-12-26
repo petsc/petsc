@@ -271,13 +271,13 @@ int main(int argc,char **argv)
 
    test:
      args: -ts_view
-     requires: dlsym
+     requires: dlsym define(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
    test:
      suffix: 2
      args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view
      requires: x
      output_file: output/ex1_1.out
-     requires: dlsym
+     requires: dlsym define(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
 TEST*/
