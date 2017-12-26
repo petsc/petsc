@@ -1557,17 +1557,21 @@ runex53:
 	${RM} -f ex53_1.tmp
 
 runex54:
-	-@for bs in ${MATBLOCKSIZE}; do \
+	-@touch ex54_1.tmp;\
+          for bs in ${MATBLOCKSIZE}; do \
 	    for matsize in ${MATSIZE}; do \
 	      for ov in ${OVERLAP}; do\
 	        for nd in ${NODOMAINS}; do \
 		  for np in ${NPROCS}; do \
-                    ${MPIEXEC} -n $$np ./ex54 -mat_block_size $$bs -ov $$ov -mat_size $$matsize -nd $$nd ;\
+                    ${MPIEXEC} -n $$np ./ex54 -mat_block_size $$bs -ov $$ov -mat_size $$matsize -nd $$nd >> ex54_1.tmp 2>&1;\
 		  done; \
 		done;\
 	      done;\
 	    done;\
-	done;
+	done;\
+        if (${DIFF} output/ex51_1.out ex54_1.tmp) then true; \
+	  else printf "${PWD}\nPossible problem with ex54_1, diffs above\n=========================================\n"; fi; \
+	  ${RM} -f ex54_1.tmp
 
 runex54_2:
 	-@${MPIEXEC} -n 1 ./ex54 -nd 2 -test_nd0 > ex54.tmp 2>&1;   \
