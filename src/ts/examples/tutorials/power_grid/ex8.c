@@ -76,8 +76,8 @@ int main(int argc, char **argv)
   ierr = DMSetUp(user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0,0);CHKERRQ(ierr);
-  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
-  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");
+  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");CHKERRQ(ierr);
 
   /* Get global vector x from DM  */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   user->dx = (user->xmax - user->xmin)/(M-1); user->dy = (user->ymax - user->ymin)/(N-1);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
@@ -234,11 +234,11 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscInt       i,j;
   PetscInt       xs,ys,xm,ym,M,N;
   Vec            localX,gc,localXdot;
-  PetscScalar    p_adv1,p_adv2,p_diff;
+  PetscScalar    p_adv1 = 0.0,p_adv2,p_diff;
   PetscScalar    diffuse1,gamma;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
@@ -293,7 +293,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   PetscScalar    c1,c3,c5,c1pos,c1neg,c3pos,c3neg;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
