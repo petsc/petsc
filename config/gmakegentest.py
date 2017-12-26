@@ -341,9 +341,9 @@ class generateExamples(Petsc):
     #   src/snes/examples/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
     basefile,ext = os.path.splitext(subst['output_file'])
-    for i in range(1,3):
+    for i in range(1,9):
       altroot=basefile+"_alt"
-      if i==2: altroot=altroot+"_2"
+      if i > 1: altroot=altroot+"_"+str(i)
       af=altroot+".out"
       srcaf=os.path.join(subst['srcdir'],af)
       fullaf=os.path.join(self.petsc_dir,srcaf)
