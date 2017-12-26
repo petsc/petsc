@@ -184,11 +184,11 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-     args: -ts_view -ts_max_time 1.e5
+     args: -ts_view -ts_max_time 2.e4
 
    test:
      suffix: 2
-     args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 1.e5
+     args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 2.e4
      requires: x
      output_file: output/ex2_1.out
 
