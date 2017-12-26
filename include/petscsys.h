@@ -3004,4 +3004,9 @@ M*/
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
 #endif
 
+/*
+    Returned from PETSc functions that are called from MPI, such as related to attributes
+*/
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
+
 #endif
