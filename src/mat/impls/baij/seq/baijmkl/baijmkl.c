@@ -101,9 +101,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A,MatType type,Mat
   if (baijmkl->sparse_optimized) {
     sparse_status_t stat;
     stat = mkl_sparse_destroy(baijmkl->bsrA);
-    if (stat != SPARSE_STATUS_SUCCESS) {
-      PetscFunctionReturn(PETSC_ERR_LIB);
-    }
+    if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
   }
 #ifndef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
    ierr = PetscFree(baijmkl->ai1);CHKERRQ(ierr);
@@ -129,9 +127,7 @@ PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
     if (baijmkl->sparse_optimized) {
       sparse_status_t stat = SPARSE_STATUS_SUCCESS;
       stat = mkl_sparse_destroy(baijmkl->bsrA);
-      if (stat != SPARSE_STATUS_SUCCESS) {
-        PetscFunctionReturn(PETSC_ERR_LIB);
-      }
+      if (stat != SPARSE_STATUS_SUCCESS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Intel MKL error: error in mkl_sparse_destroy");
     }
 #ifndef PETSC_MKL_SUPPORTS_BAIJ_ZERO_BASED
    ierr = PetscFree(baijmkl->ai1);CHKERRQ(ierr);
@@ -230,7 +226,7 @@ PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
   const PetscScalar  *x;
   PetscScalar        *y;
   PetscErrorCode     ierr;
-  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+  sparse_status_t    stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin; 
   /* If there are no nonzero entries, zero yy and return immediately. */
@@ -369,7 +365,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          n=a->nbs*A->rmap->bs;
   PetscInt          i;
   /* Variables not in MatMultTransposeAdd_SeqBAIJ. */
-  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+  sparse_status_t   stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin;
   /* If there are no nonzero entries, set zz = yy and return immediately. */
@@ -480,9 +476,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A,MatType type,Mat
   *newmat = B;
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
+
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   ierr = MatAssemblyEnd_SeqBAIJ(A, mode);CHKERRQ(ierr);
@@ -499,6 +497,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
+
 /*@C
    MatCreateSeqBAIJMKL - Creates a sparse matrix of type SEQBAIJMKL.
    This type inherits from BAIJ and is largely identical, but uses sparse BLAS 
@@ -570,6 +569,7 @@ PetscErrorCode  MatCreateSeqBAIJMKL(MPI_Comm comm,PetscInt bs,PetscInt m,PetscIn
 #endif
   PetscFunctionReturn(0);
 }
+
 PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A)
 {
   PetscErrorCode ierr;
