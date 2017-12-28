@@ -9,6 +9,7 @@
 !   your own FormJacobianLocal().
 
       program ex40f90
+
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdmda.h>
       use petscsnes
@@ -74,3 +75,10 @@
       return
       end
 
+!/*TEST
+!
+!   test:
+!     args: -snes_monitor_short -snes_view -da_refine 1 -pc_type mg -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin pmat
+!     requires: !single
+!
+!TEST*/

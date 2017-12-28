@@ -259,3 +259,10 @@
 
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!   test:
+!      args: -malloc_dump
+!
+!TEST*/

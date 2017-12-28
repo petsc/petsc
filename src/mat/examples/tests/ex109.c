@@ -92,3 +92,17 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -M 10 -N 10
+      output_file: output/ex109.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      output_file: output/ex109.out
+
+TEST*/

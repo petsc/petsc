@@ -159,3 +159,75 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      output_file: output/ex18_0.out
+
+   test:
+      suffix: 1
+      nsize: 2
+
+   test:
+      suffix: 10
+      nsize: 2
+      args: -bs 2 -nonlocal_bc
+
+   test:
+      suffix: 11
+      nsize: 7
+      args: -bs 2 -nonlocal_bc
+
+   test:
+      suffix: 12
+      args: -bs 2 -nonlocal_bc -mat_type baij
+
+   test:
+      suffix: 13
+      nsize: 2
+      args: -bs 2 -nonlocal_bc -mat_type baij
+
+   test:
+      suffix: 14
+      nsize: 7
+      args: -bs 2 -nonlocal_bc -mat_type baij
+
+   test:
+      suffix: 2
+      nsize: 7
+
+   test:
+      suffix: 3
+      args: -mat_type baij
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -mat_type baij
+
+   test:
+      suffix: 5
+      nsize: 7
+      args: -mat_type baij
+
+   test:
+      suffix: 6
+      args: -bs 2 -mat_type baij
+
+   test:
+      suffix: 7
+      nsize: 2
+      args: -bs 2 -mat_type baij
+
+   test:
+      suffix: 8
+      nsize: 7
+      args: -bs 2 -mat_type baij
+
+   test:
+      suffix: 9
+      args: -bs 2 -nonlocal_bc
+
+TEST*/

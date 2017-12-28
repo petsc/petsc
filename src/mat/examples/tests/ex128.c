@@ -74,11 +74,11 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(NULL,NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
   if (CHOLESKY) {
-    printf("Test CHOLESKY...\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Test CHOLESKY...\n");CHKERRQ(ierr);
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   } else {
-    printf("Test ICC...\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Test ICC...\n");CHKERRQ(ierr);
     info.levels = lf;
 
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
@@ -90,9 +90,9 @@ int main(int argc,char **args)
   if (CHOLESKY) {
     ierr = PetscOptionsHasName(NULL,NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
     if (TRIANGULAR) {
-      printf("Test MatForwardSolve...\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Test MatForwardSolve...\n");CHKERRQ(ierr);
       ierr = MatForwardSolve(sA,b,ytmp);CHKERRQ(ierr);
-      printf("Test MatBackwardSolve...\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Test MatBackwardSolve...\n");CHKERRQ(ierr);
       ierr = MatBackwardSolve(sA,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   if (lf == -1 && norm2 > tol) {
-    PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %D, residual %g\n",lf,(double)norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %D, residual %g\n",lf,(double)norm2);CHKERRQ(ierr);
   }
 
   /* Free data structures */
@@ -123,3 +123,15 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      output_file: output/ex128.out
+
+   test:
+      suffix: 2
+      args: -cholesky -triangular_solve
+
+TEST*/

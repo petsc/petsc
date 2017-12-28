@@ -47,3 +47,13 @@ int main(int argc,char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -n 1000 -mat_view ascii::ascii_info_detail -vecscatter_mpi1
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

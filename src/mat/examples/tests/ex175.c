@@ -41,3 +41,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+     requires: complex
+     output_file: output/ex175.out
+
+TEST*/

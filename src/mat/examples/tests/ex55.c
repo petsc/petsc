@@ -152,13 +152,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
 
+   test:
 
+   test:
+      suffix: 2
+      nsize: 3
 
-
-
-
-
-
-
-
+TEST*/

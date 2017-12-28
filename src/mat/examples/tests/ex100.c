@@ -63,3 +63,16 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: {{1 3}}
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/arco1 -dof {{1 2 3 4 5 6 8 9 16}} -viewer_binary_skip_info
+
+TEST*/

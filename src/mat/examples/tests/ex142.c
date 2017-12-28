@@ -126,7 +126,7 @@ int main(int argc,char **args)
     for (i=0; i<4; i++) {
       /* FFTW_FORWARD */
       fftw_execute(fplan);
-      
+
       /* FFTW_BACKWARD: destroys its input array 'y_array' even for out-of-place transforms! */
       fftw_execute(bplan);
     }
@@ -157,3 +157,14 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+     requires: fftw !complex
+
+   test:
+     output_file: output/ex142.out
+
+TEST*/

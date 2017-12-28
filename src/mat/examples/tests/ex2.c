@@ -123,3 +123,92 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+      suffix: 11_A
+      args: -mat_type seqaij -rectA
+      filter: grep -v "Mat Object"
+
+   test:
+      suffix: 12_A
+      args: -mat_type seqdense -rectA
+      filter: grep -v "Mat Object"
+
+   test:
+      suffix: 11_B
+      args: -mat_type seqaij -rectB
+      filter: grep -v "Mat Object"
+
+   test:
+      suffix: 12_B
+      args: -mat_type seqdense -rectB
+      filter: grep -v "Mat Object"
+
+   test:
+      suffix: 21
+      args: -mat_type mpiaij
+
+   test:
+      suffix: 22
+      args: -mat_type mpidense
+
+   test:
+      suffix: 23
+      nsize: 3
+      args: -mat_type mpiaij
+
+   test:
+      suffix: 24
+      nsize: 3
+      args: -mat_type mpidense
+
+   test:
+      suffix: 2_aijcusparse_1
+      args: -mat_type mpiaijcusparse
+      output_file: output/ex2_23.out
+      requires: veccudaa
+
+   test:
+      suffix: 2_aijcusparse_2
+      nsize: 3
+      args: -mat_type mpiaijcusparse
+      output_file: output/ex2_23_aijcusparse.out
+      requires: veccudaa
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -mat_type mpiaij -rectA
+
+   test:
+      suffix: 3_aijcusparse
+      nsize: 2
+      requires: cusparse
+      args: -mat_type mpiaijcusparse -rectA
+      requires: veccudaa
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -mat_type mpidense -rectA
+
+   test:
+      suffix: aijcusparse_1
+      requires: cusparse
+      args: -mat_type seqaijcusparse -rectA
+      filter: grep -v "Mat Object"
+      output_file: output/ex2_11_A_aijcusparse.out
+      requires: veccudaa
+
+   test:
+      suffix: aijcusparse_2
+      requires: cusparse
+      args: -mat_type seqaijcusparse -rectB
+      filter: grep -v "Mat Object"
+      output_file: output/ex2_11_B_aijcusparse.out
+      requires: veccudaa
+
+TEST*/

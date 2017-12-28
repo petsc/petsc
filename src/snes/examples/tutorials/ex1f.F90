@@ -2,10 +2,12 @@
 !
 !  Description: Uses the Newton method to solve a two-variable system.
 !
-!/*T
+!!/*T
 !  Concepts: SNES^basic uniprocessor example
 !  Processors: 1
 !T*/
+
+
 !
 ! -----------------------------------------------------------------------
 
@@ -314,3 +316,11 @@
       flag = PETSC_FALSE
       return
       end
+
+!/*TEST
+!
+!   test:
+!      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short
+!      requires: !single
+!
+!TEST*/

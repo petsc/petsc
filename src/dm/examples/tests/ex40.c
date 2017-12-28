@@ -53,3 +53,15 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 4
+      filter: grep -v "Vec Object"
+
+TEST*/

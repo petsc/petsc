@@ -184,3 +184,24 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: {{1 3}}
+      args: -mat_block_size {{1 2 3 4 5 6 7 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}} ; done
+      output_file: output/ex54.out
+
+   test:
+      suffix: 2
+      args: -nd 2 -test_nd0
+      output_file: output/ex54.out
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -nd 2 -test_nd0
+      output_file: output/ex54.out
+
+TEST*/

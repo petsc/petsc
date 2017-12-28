@@ -215,3 +215,36 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ov {{1 3}} -mat_block_size {{2 8}} -test_overlap -test_submat
+      output_file: output/ex92_1.out
+
+   test:
+      suffix: 2
+      nsize: {{3 4}}
+      args: -ov {{1 3}} -mat_block_size {{2 8}} -test_overlap -test_submat
+      output_file: output/ex92_1.out
+
+   test:
+      suffix: 3
+      nsize: {{3 4}}
+      args: -ov {{1 3}} -mat_block_size {{2 8}} -test_overlap -test_allcols
+      output_file: output/ex92_1.out
+
+   test:
+      suffix: 3_sorted
+      nsize: {{3 4}}
+      args: -ov {{1 3}} -mat_block_size {{2 8}} -test_overlap -test_allcols -test_sorted
+      output_file: output/ex92_1.out
+
+   test:
+      suffix: 4
+      nsize: {{3 4}}
+      args: -ov {{1 3}} -mat_block_size {{2 8}} -test_submat -test_allcols
+      output_file: output/ex92_1.out
+
+TEST*/

@@ -7,6 +7,8 @@ static const char help[] = "-Laplacian u = b as a nonlinear problem.\n\n";
    Processors: n
 T*/
 
+
+
 /*
 
     The linear and nonlinear versions of these should give almost identical results on this problem
@@ -319,3 +321,42 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -snes_monitor_short -snes_type nrichardson
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -snes_monitor_short -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -snes_monitor_short -snes_type ngmres
+
+   test:
+      suffix: 4
+      args: -snes_monitor_short -ksp_type gmres -ksp_monitor_short -pc_type none
+
+   test:
+      suffix: 5
+      args: -snes_monitor_short -snes_type ncg
+
+   test:
+      suffix: 6
+      args: -snes_monitor_short -ksp_type cg -ksp_monitor_short -pc_type none
+
+   test:
+      suffix: 7
+      args: -da_refine 2 -snes_monitor_short -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: 8
+      args: -da_refine 2 -snes_monitor_short -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas -snes_rtol 1.e-5
+
+TEST*/

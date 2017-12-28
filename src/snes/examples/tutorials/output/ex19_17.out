@@ -1,45 +1,5 @@
 lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
   0 SNES Function norm 0.239155 
-    0 SNES Residual norm 2.392e-01 KSP Residual norm 2.392e-01 
-    1 SNES Residual norm 3.968e-02 KSP Residual norm 3.969e-02 
-    2 SNES Residual norm 3.925e-03 KSP Residual norm 3.934e-03 
-    3 SNES Residual norm 7.368e-04 KSP Residual norm 7.139e-04 
-    4 SNES Residual norm 8.336e-05 KSP Residual norm 5.078e-05 
-    5 SNES Residual norm 6.709e-05 KSP Residual norm 7.330e-06 
-    6 SNES Residual norm 6.814e-05 KSP Residual norm 9.722e-07 
-    7 SNES Residual norm 6.825e-05 KSP Residual norm 1.742e-07 
-    8 SNES Residual norm 6.820e-05 KSP Residual norm 2.145e-08 
-    9 SNES Residual norm 6.820e-05 KSP Residual norm 2.805e-09 
-   10 SNES Residual norm 6.820e-05 KSP Residual norm 1.876e-10 
-   11 SNES Residual norm 6.820e-05 KSP Residual norm 5.095e-12 
-   12 SNES Residual norm 6.820e-05 KSP Residual norm 1.570e-13 
-  1 SNES Function norm 6.81968e-05 
-    0 SNES Residual norm 6.820e-05 KSP Residual norm 6.820e-05 
-    1 SNES Residual norm 2.908e-06 KSP Residual norm 2.908e-06 
-    2 SNES Residual norm 3.930e-07 KSP Residual norm 3.930e-07 
-    3 SNES Residual norm 5.116e-08 KSP Residual norm 5.116e-08 
-    4 SNES Residual norm 7.095e-09 KSP Residual norm 7.096e-09 
-    5 SNES Residual norm 7.465e-10 KSP Residual norm 7.444e-10 
-    6 SNES Residual norm 5.949e-11 KSP Residual norm 5.744e-11 
-    7 SNES Residual norm 8.204e-12 KSP Residual norm 8.441e-12 
-    8 SNES Residual norm 4.313e-12 KSP Residual norm 7.215e-13 
-    9 SNES Residual norm 4.245e-12 KSP Residual norm 9.267e-14 
-   10 SNES Residual norm 4.201e-12 KSP Residual norm 4.479e-15 
-   11 SNES Residual norm 4.202e-12 KSP Residual norm 1.379e-16 
-   12 SNES Residual norm 4.202e-12 KSP Residual norm 4.021e-18 
-  2 SNES Function norm < 1.e-11
-    0 SNES Residual norm 4.202e-12 KSP Residual norm 4.202e-12 
-    1 SNES Residual norm 2.173e-13 KSP Residual norm 2.173e-13 
-    2 SNES Residual norm 3.149e-14 KSP Residual norm 3.142e-14 
-    3 SNES Residual norm 7.814e-15 KSP Residual norm 7.753e-15 
-    4 SNES Residual norm 6.005e-16 KSP Residual norm 5.771e-16 
-    5 SNES Residual norm 4.635e-16 KSP Residual norm 1.080e-16 
-    6 SNES Residual norm 2.019e-16 KSP Residual norm 7.913e-18 
-    7 SNES Residual norm 2.019e-16 KSP Residual norm 7.075e-19 
-    8 SNES Residual norm 2.019e-16 KSP Residual norm 6.093e-20 
-    9 SNES Residual norm 2.019e-16 KSP Residual norm 4.950e-21 
-   10 SNES Residual norm 2.019e-16 KSP Residual norm 2.615e-22 
-   11 SNES Residual norm 2.019e-16 KSP Residual norm 1.367e-23 
-   12 SNES Residual norm 2.019e-16 KSP Residual norm 8.163e-25 
-  3 SNES Function norm < 1.e-11
-Number of SNES iterations = 3
+  1 SNES Function norm 6.8142e-05 
+  2 SNES Function norm 6.688e-10 
+Number of SNES iterations = 2

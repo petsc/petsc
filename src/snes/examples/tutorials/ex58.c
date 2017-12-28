@@ -1,3 +1,4 @@
+
 #include <petscsnes.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -583,3 +584,17 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -snes_type vinewtonrsls -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
+      requires: !single
+
+TEST*/

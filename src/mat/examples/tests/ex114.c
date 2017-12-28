@@ -112,3 +112,20 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      output_file: output/ex114.out
+
+   test:
+      suffix: 2
+      nsize: 2
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -mat_type baij
+
+TEST*/

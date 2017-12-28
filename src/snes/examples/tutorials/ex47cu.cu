@@ -180,3 +180,14 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
   return 0;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: cusp
+
+   test:
+      args: -snes_monitor_short -dm_vec_type cusp
+
+TEST*/

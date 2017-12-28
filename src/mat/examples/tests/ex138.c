@@ -50,3 +50,21 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      suffix: 1
+      nsize: 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_type aij
+      output_file: output/ex138.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size {{2 3}}
+      output_file: output/ex138.out
+
+TEST*/

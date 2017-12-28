@@ -5,6 +5,8 @@ static char help[] = "Newton's method for a two-variable system, sequential.\n\n
    Concepts: SNES^basic example
 T*/
 
+
+
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -42,7 +44,6 @@ int main(int argc,char **argv)
   Vec            x,r;          /* solution, residual vectors */
   Mat            J;            /* Jacobian matrix */
   PetscErrorCode ierr;
-  PetscInt       its;
   PetscMPIInt    size;
   PetscScalar    pfive = .5,*xx;
   PetscBool      flg;
@@ -131,7 +132,6 @@ int main(int argc,char **argv)
   */
 
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -139,7 +139,6 @@ int main(int argc,char **argv)
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -310,3 +309,47 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 }
 
 
+
+
+/*TEST
+
+   test:
+      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short
+      requires: !single
+
+   test:
+      suffix: 2
+      requires: !single
+      args:  -snes_monitor_short
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 3
+      args: -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab  -snes_monitor_short
+      requires: !single
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 4
+      args: -ksp_view_solution ascii:ex1_2_sol.tmp::append  -snes_monitor_short
+      requires: !single
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 5
+      args: -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append  -snes_monitor_short
+      requires: !single
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: 6
+      args: -ksp_view_solution ascii:ex1_2_sol.tmp:default:append  -snes_monitor_short
+      requires: !single
+      output_file: output/ex1_1.out
+
+   test:
+      suffix: X
+      args: -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short -snes_rtol 1.e-4
+      requires: !single x
+
+TEST*/

@@ -18,6 +18,8 @@ options are:\n\
    Processors: n
 T*/
 
+
+
 /*
 
     This example models the partial differential equation
@@ -1396,3 +1398,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   ierr = PetscLogFlops((41.0 + 8.0*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin pmat
+      requires: !single
+
+TEST*/

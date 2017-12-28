@@ -46,5 +46,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
+      output_file: output/ex107.out
 
+   test:
+      suffix: 2
+      args: -mat_type baij -mat_block_size 2 -m 10
+
+TEST*/
