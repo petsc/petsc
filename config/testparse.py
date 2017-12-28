@@ -44,8 +44,6 @@ import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 maintdir=os.path.join(os.path.join(os.path.dirname(thisscriptdir),'bin'),'maint')
 sys.path.insert(0,maintdir) 
-# Don't print out trace when raise Exceptions 
-sys.tracebacklimit = 0
 
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
