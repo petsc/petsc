@@ -350,6 +350,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} manconcepts LOC=${LOC}
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
+	-${OMAKE} manimplementations LOC=${LOC}
 	-${PYTHON} bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
