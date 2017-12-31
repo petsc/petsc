@@ -153,13 +153,13 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_Tmp_keyval,0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
     ierr = PetscMalloc1(1,&tagvalp);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
@@ -274,13 +274,13 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelTmpShared,&Petsc_WD_keyval,0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
     char filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
     ierr = PetscMalloc1(1,&tagvalp);CHKERRQ(ierr);
-    ierr = MPI_Attr_put(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscGetWorkingDirectory(filename,240);CHKERRQ(ierr);
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);

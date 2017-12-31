@@ -53,13 +53,13 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
     if (vlink && vlink->viewer == viewer) {
       if (vlink->next) {
-        ierr = MPI_Attr_put(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+        ierr = MPI_Comm_set_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
       } else {
-        ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval);CHKERRQ(ierr);
+        ierr = MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_keyval);CHKERRQ(ierr);
       }
       ierr = PetscFree(vlink);CHKERRQ(ierr);
     } else {
@@ -76,16 +76,16 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
-    ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (flg && aviewer == viewer) {
-      ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
+      ierr = MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
     }
   }
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
-    ierr = MPI_Attr_get(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval,(void**)&aviewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (flg && aviewer == viewer) {
-      ierr = MPI_Attr_delete(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
+      ierr = MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer),Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
