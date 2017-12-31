@@ -38,10 +38,10 @@ else
   set CONFIGURE_ARGS=""
 endif
 
-set ALTMACH=`hostname`
+set MACH=`hostname`
 cd $nPETSC_DIR
 rm -f build.log
-echo "Build on $MACH i.e $ALTMACH $ARCH $nPETSC_DIR `date` " > build.log
+echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 
 # Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
@@ -127,7 +127,7 @@ endif
 ${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finished Build on $MACH i.e $ALTMACH $PETSC_ARCH `date`" >>& build.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
 if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
 #
 # change PETSC_DIR/PETSC_ARCH for prefix install
@@ -140,7 +140,7 @@ endif
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finished Test on $MACH i.e $ALTMACH $ARCH `date`" >>& build.log
+echo "Finished Test on $MACH $ARCH `date`" >>& build.log
 if ( $err ) exit
 #
 # check analyzer
@@ -158,7 +158,7 @@ else
 endif
 #
 rm -f examples.log
-echo "Build on $MACH i.e $ALTMACH $ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
+echo "Build on $MACH $ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
 echo '******************************************************' >>& examples.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
@@ -177,7 +177,7 @@ if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
 
-echo "Finished Build on $MACH i.e $ALTMACH $ARCH $nPETSC_DIR `date`" >>& examples.log
+echo "Finished Build on $MACH $ARCH $nPETSC_DIR `date`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
 
 
