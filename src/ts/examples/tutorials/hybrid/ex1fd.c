@@ -347,8 +347,9 @@ PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)
 
    build:
       requires: !define(PETSC_USE_CXXCOMPLEX)
+
    test:
       args: -ts_event_tol 1e-9
-
+      timeoutfactor: 2
 
 TEST*/

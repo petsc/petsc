@@ -349,9 +349,4 @@ int main(int argc,char **argv)
    test:
       args: -ts_monitor -ts_adjoint_monitor
 
-   test:
-      suffix: 2
-      args: -ts_monitor_lg_solution -1 -ts_monitor -ts_adjoint_monitor -ts_event_tol 1e-9
-      requires: x
-
 TEST*/

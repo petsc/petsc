@@ -9,6 +9,9 @@ static char help[] = "Reaction Equation from Chemistry\n";
                  u_2_t =
                  u_3_t =
                  u_4_t =
+
+  -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 2.e4
+
 */
 
 
@@ -185,11 +188,6 @@ int main(int argc,char **argv)
 
    test:
      args: -ts_view -ts_max_time 2.e4
-
-   test:
-     suffix: 2
-     args: -ts_monitor_lg_error -ts_monitor_lg_solution  -ts_view -ts_max_time 2.e4
-     requires: x
-     output_file: output/ex2_1.out
+     timeoutfactor: 2
 
 TEST*/
