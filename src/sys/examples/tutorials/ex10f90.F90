@@ -19,7 +19,7 @@
          call PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,filename,PETSC_TRUE,ierr);CHKERRA(ierr)
       end if
       call PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRA(ierr)
-      call PetscOptionsGetUnused(PETSC_NULL_OPTIONS,n,ierr);CHKERRQ(ierr);
+      call PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr);CHKERRQ(ierr);
       Call PetscFinalize(ierr)
       end program ex10f90
 
