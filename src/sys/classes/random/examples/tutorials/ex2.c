@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
 void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
 {
   PetscInt       i;
-  PetscScalar    u1,u2,t;
+  PetscScalar    u1,u2;
+  PetscReal      t;
   PetscErrorCode ierr;
 
   for (i=0; i<numdim; i+=2) {
@@ -187,4 +188,15 @@ PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)
   return numit;
 }
 
+/*TEST
 
+   build:
+      requires: !comple
+      output_file: output/ex1_1.out
+
+   test:
+      nsize: 2
+      output_file: output/ex1_1.out
+      localrunfiles: ex2_stock.txt
+
+TEST*/

@@ -35,6 +35,8 @@ The command line options are:\n\
    Processors: n
 T*/
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -456,8 +458,39 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
   if (its == 100) {
-    TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS);
+    ierr = TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -mx 8 -my 12 -tao_type tron -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -tao_smonitor -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4
+      requires: !single
+
+   test:
+      suffix: 4
+      nsize: 2
+      args: -tao_smonitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 -test_getdiagonal
+      output_file: output/jbearing2_3.out
+      requires: !single
+
+TEST*/

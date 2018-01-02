@@ -56,7 +56,7 @@
       PetscErrorCode ierr
       PetscInt m,n,t,tmax,i,j
       PetscBool  flg
-      PetscMPIInt size,rank
+      PetscMPIInt size
       PetscReal  enorm
       PetscScalar cnorm
       PetscScalar,ALLOCATABLE :: userx(:,:)
@@ -81,13 +81,7 @@
         stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then
-         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_WORLD,1,' ')
-      endif
+      if (size .ne. 1) then SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only')
 
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.

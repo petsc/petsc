@@ -97,7 +97,7 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
-  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
+  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
   PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
   PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFEFaceGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
   PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscReal, PetscScalar[]);
@@ -351,7 +351,39 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe,
         compGradient[d] += x[f]*realSpaceDer[d];
       }
     }
-    for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
+    if (n) {
+      for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
+    } else {
+      for (d = 0; d < dim; ++d) interpolant[fc*dim+d] = compGradient[d];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE fe, const PetscScalar x[], PetscInt dim, const PetscReal invJ[], PetscInt q, PetscScalar interpolant[], PetscScalar interpolantGrad[])
+{
+  PetscReal     *basis, *basisDer;
+  PetscReal      realSpaceDer[3];
+  PetscInt       Nb, Nc, fc, f, d, g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, &basis, &basisDer, NULL);CHKERRQ(ierr);
+  for (fc = 0; fc < Nc; ++fc) {
+    interpolant[fc] = 0.0;
+    for (d = 0; d < dim; ++d) interpolantGrad[fc*dim+d] = 0.0;
+    for (f = 0; f < Nb; ++f) {
+      interpolant[fc] += x[f]*basis[(q*Nb + f)*Nc + fc];
+      for (d = 0; d < dim; ++d) {
+        realSpaceDer[d] = 0.0;
+        for (g = 0; g < dim; ++g) {
+          realSpaceDer[d] += invJ[dim*dim*q + g*dim+d]*basisDer[((q*Nb + f)*Nc + fc)*dim + g];
+        }
+        interpolantGrad[fc*dim+d] += x[f]*realSpaceDer[d];
+      }
+    }
   }
   PetscFunctionReturn(0);
 }

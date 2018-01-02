@@ -269,7 +269,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_THREADSAFETY)
   /*
@@ -314,7 +314,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
+  /* ignore this option if malloc is already set */
+  if (flg1 && !petscsetmallocvisited) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL);CHKERRQ(ierr);
@@ -388,7 +389,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-on_error_abort",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
-    ierr = MPI_Comm_set_errhandler(PETSC_COMM_WORLD,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_errhandler(comm,MPI_ERRORS_ARE_FATAL);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
@@ -435,18 +436,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program.
     */
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size > 2) {
       PetscMPIInt dummy = 0;
       MPI_Status  status;
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
+          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,comm);CHKERRQ(ierr);
         }
       }
       for (i=0; i<size; i++) {
         if (rank != i) {
-          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,comm,&status);CHKERRQ(ierr);
         }
       }
     }
@@ -525,7 +526,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }
 
-  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(comm,NULL,"-log_view",NULL,&format,&flg4);CHKERRQ(ierr);
   if (flg4) {
     if (format == PETSC_VIEWER_ASCII_XML){
       ierr = PetscLogNestedBegin();CHKERRQ(ierr);
@@ -536,6 +537,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
@@ -550,12 +552,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     for (device = 0; device < devCount; ++device) {
       err = cudaGetDeviceProperties(&prop, (int)device);
       if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "CUDA device %D: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
   if (!PetscCUDAInitialized) {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     if (size>1) {
       int         devCount;
       PetscInt    device;
@@ -575,7 +577,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
         if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
 
         /* next determine the rank and then set the device via a mod */
-        ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+        ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
         device = rank % devCount;
         err    = cudaSetDevice((int)device);
         if (err != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));

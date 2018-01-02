@@ -66,9 +66,8 @@ int main(int argc, char *argv[])
 
 
 /*TEST
-   
+
    test:
       nsize: 2
-      output_file: output/ex51_1.out
 
 TEST*/

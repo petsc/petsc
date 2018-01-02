@@ -190,6 +190,7 @@ typedef int MPI_Comm;
 #define MPI_COMM_NULL  0
 #define MPI_COMM_SELF  1
 #define MPI_COMM_WORLD 2
+#define MPI_COMM_TYPE_SHARED 1
 
 typedef int MPI_Info;
 #define MPI_INFO_NULL 0
@@ -224,6 +225,7 @@ typedef int MPI_Datatype;
 #define MPI_LONG               (4 << 20 | 1 << 8 | (int)sizeof(long))
 #define MPI_LONG_LONG          (4 << 20 | 1 << 8 | (int)sizeof(MPIUNI_INT64))
 #define MPI_LONG_LONG_INT      MPI_LONG_LONG
+#define MPI_INTEGER8           MPI_LONG_LONG
 
 #define MPI_UNSIGNED_SHORT     (5 << 20 | 1 << 8 | (int)sizeof(unsigned short))
 #define MPI_UNSIGNED           (5 << 20 | 1 << 8 | (int)sizeof(unsigned))
@@ -235,6 +237,11 @@ typedef int MPI_Datatype;
 #define MPI_LONG_INT           (12 << 20 | 1 << 8 | (int)(sizeof(long) + sizeof(int)))
 #define MPI_SHORT_INT          (13 << 20 | 1 << 8 | (int)(sizeof(short) + sizeof(int)))
 #define MPI_2INT               (14 << 20 | 1 << 8 | (int)(2*sizeof(int)))
+
+/* Fortran datatypes; Jed Brown says they should be defined here */
+#define MPI_INTEGER MPI_INT
+#define MPI_DOUBLE_PRECISION MPI_DOUBLE
+#define MPI_COMPLEX16 MPI_C_DOUBLE_COMPLEX
 
 #define MPI_ORDER_C            0
 #define MPI_ORDER_FORTRAN      1
@@ -878,6 +885,11 @@ typedef int MPI_Fint;
 #define MPI_Comm_split(comm,color,key,newcomm) \
      (MPIUNI_ARG(color),\
       MPIUNI_ARG(key),\
+      MPI_Comm_dup(comm,newcomm))
+#define MPI_Comm_split_type(comm,color,key,info,newcomm) \
+     (MPIUNI_ARG(color),\
+      MPIUNI_ARG(key),\
+      MPIUNI_ARG(info),\
       MPI_Comm_dup(comm,newcomm))
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1, MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm,size) (*(size)=1 ,MPI_SUCCESS)

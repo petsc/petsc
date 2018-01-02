@@ -34,10 +34,12 @@ struct _PetscDSOps {
 struct _p_PetscDS {
   PETSCHEADER(struct _PetscDSOps);
   void        *data;              /* Implementation object */
+  PetscDS     *subprobs;          /* The subspaces for each dimension */
   PetscBool    setup;             /* Flag for setup */
   PetscInt     Nf;                /* The number of solution fields */
-  PetscBool   *implicit;          /* Flag for implicit or explicit solve */
-  PetscBool   *adjacency;         /* Flag for variable influence */
+  PetscBool   *implicit;          /* Flag for implicit or explicit solve for each field */
+  PetscBool    defaultAdj[2];     /* [use cone() or support() first, use the transitive closure] for the case of no fields */
+  PetscBool   *adjacency;         /* Flags for defining variable influence (adjacency) for each field [use cone() or support() first, use the transitive closure] */
   PetscObject *disc;              /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscPointFunc   *obj;          /* Scalar integral (like an objective function) */
   PetscPointFunc   *f;            /* Weak form integrands for F, f_0, f_1 */
@@ -52,7 +54,7 @@ struct _p_PetscDS {
   PetscInt          numConstants; /* Number of constants passed to point functions */
   PetscScalar      *constants;    /* Array of constants passed to point functions */
   void       **ctx;               /* User contexts for each field */
-  PetscInt     dim;               /* The spatial dimension */
+  PetscInt     dimEmbed;          /* The real space coordinate dimension */
   /* Computed sizes */
   PetscInt     totDim;            /* Total system dimension */
   PetscInt     totComp;           /* Total field components */

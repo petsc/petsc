@@ -144,18 +144,17 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
-      output_file: output/ex6_1.out
-   
+
    test:
       suffix: 2
       nsize: 2
-   
+
    test:
       suffix: 4
       nsize: 4
-   
+
    test:
       suffix: 9
       nsize: 9

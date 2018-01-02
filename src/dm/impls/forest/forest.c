@@ -382,11 +382,14 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
 {
   DM_Forest      *forest, *adaptForest, *oldAdaptForest;
   DM             oldAdapt;
+  PetscBool      isForest;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  ierr = DMIsForest(dm, &isForest);CHKERRQ(ierr);
+  if (!isForest) PetscFunctionReturn(0);
   forest   = (DM_Forest*) dm->data;
   ierr     = DMForestGetAdaptivityForest(dm,&oldAdapt);CHKERRQ(ierr);
   if (adapt != NULL && dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adaptation forest after setup");
@@ -1535,7 +1538,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
 

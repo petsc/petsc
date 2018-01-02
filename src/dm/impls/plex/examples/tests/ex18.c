@@ -280,53 +280,54 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
+PetscErrorCode CreateQuad_2D(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       depth = 1, p;
-  PetscMPIInt    rank;
+  PetscInt       testNum = user->testNum, p;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (!rank) {
-    switch (testNum) {
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  switch (size) {
+  case 2:
+    switch (rank) {
     case 0:
-    {
-      PetscInt    numPoints[2]        = {6, 2};
-      PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {2, 3, 4, 5,  3, 6, 7, 4};
-      PetscInt    coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
-      PetscScalar vertexCoords[12]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
-      PetscInt    markerPoints[12]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1};
+      switch (testNum) {
+      case 0:
+      {
+        const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
+        const int      cells[4]  = {0, 1, 2, 3};
+        PetscReal      coords[6] = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0};
+        PetscInt       markerPoints[4*2] = {1, 1, 2, 1, 3, 1, 4, 1};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 6; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
-    }
-    break;
+      break;
+      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+      }
+      break;
     case 1:
-    {
-      PetscInt    numPoints[2]        = {5, 2};
-      PetscInt    coneSize[7]         = {4, 3, 0, 0, 0, 0, 0};
-      PetscInt    cones[7]            = {2, 3, 4, 5,  3, 6, 4};
-      PetscInt    coneOrientations[7] = {0, 0, 0, 0,  0, 0, 0};
-      PetscScalar vertexCoords[10]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0};
-      PetscInt    markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+      switch (testNum) {
+      case 0:
+      {
+        const PetscInt numCells  = 1, numVertices = 3, numCorners = 4;
+        const int      cells[4]  = {1, 4, 5, 2};
+        PetscReal      coords[6] = {-0.5, 1.0, 0.5, 0.0, 0.5, 1.0};
+        PetscInt       markerPoints[4*2] = {1, 1, 2, 1, 3, 1, 4, 1};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 5; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+        ierr = DMPlexCreateFromCellListParallel(comm, user->dim, numCells, numVertices, numCorners, user->interpolate, cells, user->dim, coords, NULL, dm);CHKERRQ(ierr);
+        for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
       }
+      break;
+      default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
+      }
+      break;
+    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-    default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %D", testNum);
-    }
-  } else {
-    PetscInt numPoints[2] = {0, 0};
-
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", size);
   }
   PetscFunctionReturn(0);
 }
@@ -422,7 +423,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       if (cellSimplex) {
         ierr = CreateSimplex_2D(comm, user, dm);CHKERRQ(ierr);
       } else {
-        ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+        ierr = CreateQuad_2D(comm, user, dm);CHKERRQ(ierr);
       }
       break;
     case 3:
@@ -493,5 +494,9 @@ int main(int argc, char **argv)
     suffix: 4
     nsize: 2
     args: -dim 3 -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: quad_0
+    nsize: 2
+    args: -cell_simplex 0 -interpolate -dm_view ascii::ascii_info_detail
 
 TEST*/

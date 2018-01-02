@@ -750,3 +750,58 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+     depends: pipeInterface.c pipeImpls.c
+
+   test:
+      args: -ts_monitor -case 1 -ts_max_steps 1 -nox
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ts_monitor -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox
+      output_file: output/pipes1_1.out
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -ts_monitor -case 1 -ts_max_steps 1 -petscpartitioner_type simple -nox
+      output_file: output/pipes1_1.out
+
+   test:
+      suffix: 4
+      args: -ts_monitor -case 0 -ts_max_steps 1 -nox
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -ts_monitor -case 0 -ts_max_steps 1 -petscpartitioner_type simple -nox
+      output_file: output/pipes1_4.out
+
+   test:
+      suffix: 6
+      nsize: 4
+      args: -ts_monitor -case 0 -ts_max_steps 1 -nox -petscpartitioner_type simple
+      output_file: output/pipes1_4.out
+
+   test:
+      suffix: 7
+      args: -ts_monitor -case 2 -ts_max_steps 1 -nox
+
+   test:
+      suffix: 8
+      nsize: 2
+      args: -ts_monitor -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox
+      output_file: output/pipes1_7.out
+
+   test:
+      suffix: 9
+      nsize: 4
+      args: -ts_monitor -case 2 -ts_max_steps 1 -petscpartitioner_type simple -nox
+      output_file: output/pipes1_7.out
+
+TEST*/

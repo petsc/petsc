@@ -21,6 +21,7 @@ class Configure(config.package.GNUPackage):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('MAKE', '-with-make-test-np=<np>',                      nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel tests'))
     help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
     help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     help.addArgument('MAKE', '-with-make-exec=<executable>',                 nargs.Arg(None, None, 'Make executable to look for'))
@@ -154,24 +155,38 @@ class Configure(config.package.GNUPackage):
     else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
     return
 
+  def compute_make_test_np(self,i):
+    if (i<=2):    return 1
+    elif (i<=4):  return 2
+    else:         return 4
+    return
+
   def configureMakeNP(self):
     '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
     try:
       import multiprocessing # python-2.6 feature
       cores = multiprocessing.cpu_count()
       make_np = self.compute_make_np(cores)
+      make_test_np = self.compute_make_test_np(cores)
       self.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
     except (ImportError), e:
       cores = 2
       make_np = 2
+      make_test_np = 1
       self.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
 
     if 'with-make-np' in self.argDB and self.argDB['with-make-np']:
         self.logPrint('using user-provided make_np = %d' % make_np)
         make_np = self.argDB['with-make-np']
 
+    if 'with-make-test-np' in self.argDB and self.argDB['with-make-test-np']:
+        self.logPrint('using user-provided make_test_np = %d' % make_test_np)
+        make_test_np = self.argDB['with-make-test-np']
+
     self.make_np = make_np
+    self.make_test_np = make_test_np
     self.addMakeMacro('MAKE_NP',str(make_np))
+    self.addMakeMacro('MAKE_TEST_NP',str(make_test_np))
     self.addMakeMacro('NPMAX',str(cores))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return

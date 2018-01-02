@@ -379,3 +379,33 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !single double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+
+   test:
+      args: -ksp_converged_reason
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -petscpartitioner_type simple -pc_type asm -sub_pc_type ilu -ksp_converged_reason
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -petscpartitioner_type simple -pc_type asm -sub_pc_type lu -sub_pc_factor_shift_type nonzero -ksp_converged_reason
+
+   test:
+      suffix: graphindex
+      args: -n 20 -vertex_global_section_view -edge_global_section_view
+
+   test:
+      suffix: graphindex_2
+      nsize: 2
+      args: -petscpartitioner_type simple -n 20 -vertex_global_section_view -edge_global_section_view
+
+TEST*/

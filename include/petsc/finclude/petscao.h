@@ -9,7 +9,6 @@
 
 #define AO PetscFortranAddr
 #define AOType character*(80)
-#define AOData2dGrid PetscFortranAddr
 
 #define AOBASIC           'basic'
 #define AOADVANCED        'advanced'

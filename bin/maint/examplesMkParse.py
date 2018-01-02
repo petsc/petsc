@@ -30,7 +30,7 @@ class makeParse(object):
     self.writeScripts=True
     #self.scriptsSubdir=""
     self.scriptsSubdir="from_makefile"
-    self.ptNaming=True
+    self.ptNaming=False
     self.insertIntoSrc=True
     self.verbosity=verbosity
     self.replaceSource=replaceSource

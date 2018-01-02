@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     if (appctx.aijpc) {
       Mat                    A,B;
 
-      ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
+      ierr = DMSetMatType(da,MATSELL);CHKERRQ(ierr);
       ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
       ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
       /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */

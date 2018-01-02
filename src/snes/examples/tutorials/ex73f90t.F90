@@ -142,10 +142,7 @@
       nfour = 4
       itwo = 2
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRA(ierr)
-      if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
-         if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then SETERRA(PETSC_COMM_SELF,1,'Lambda provided with -par is out of range')
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine

@@ -63,47 +63,5 @@ ex11: ex11.o  chkopts
 ex12: ex12.o  chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_SYS_LIB}
 	${RM} -f ex12.o
-#------------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1
-runex2:
-	-@${MPIEXEC} -n 1 ./ex2
-runex3:
-	-@${MPIEXEC} -n 1 ./ex3
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4
-runex4_db:
-	-@${MPIEXEC} -n 1 ./ex4 -draw_double_buffer 0
-runex4_dv:
-	-@${MPIEXEC} -n 1 ./ex4 -draw_virtual
-runex4_df:
-	-@${MPIEXEC} -n 1 ./ex4 -draw_fast
-runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap hue
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap gray
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap bone
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap jet
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap coolwarm
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap parula
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap viridis
-	-@${MPIEXEC} -n 1 ./ex6 -draw_cmap plasma
-runex7:
-	-@${MPIEXEC} -n 1 ./ex7
-runex9:
-	-@${MPIEXEC} -n 1 ./ex9
-runex10:
-	-@${MPIEXEC} -n 1 ./ex10
-runex11:
-	-@${MPIEXEC} -n 1 ./ex11
-runex12:
-	-@${MPIEXEC} -n 1 ./ex12
-
-TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
-                            ex4.PETSc runex4 runex4_db runex4_dv runex4_df ex4.rm \
-                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex9.PETSc runex9 ex9.rm \
-                            ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm
-TESTEXAMPLES_FORTRAN	  = ex4f.PETSc ex4f.rm ex5f.PETSc ex5f.rm
-TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc ex1.rm
-TESTEXAMPLES_13		  = ex9.PETSc ex9.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

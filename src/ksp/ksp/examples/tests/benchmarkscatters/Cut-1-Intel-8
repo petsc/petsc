@@ -1,0 +1,9 @@
+commit value of this commit
+
+                Time     Min to Max Range   Proportion of KSP
+VecScatterBegin 1.24e-03   - 35.7 %  17.7 %   2.40e+00 %
+VecScatterEnd   2.18e-03   - 35.5 %  50.5 %   4.21e+00 %
+
+>>> (2.58e-03+1.01e-02)/(1.24e-03+2.18e-03)
+3.7076023391812862
+

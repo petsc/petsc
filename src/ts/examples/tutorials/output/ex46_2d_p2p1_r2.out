@@ -18,7 +18,7 @@ Timestep: 0001 time = 0.1      	 L_2 Error: [0.00642, 0.382]
 1 TS dt 0.1 time 0.1
     0 SNES Function norm 0.131982 
       0 KSP Residual norm 2.1363 
-      1 KSP Residual norm 4.469e-11 
+      1 KSP Residual norm 4.468e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
     1 SNES Function norm 0.00332633 
       0 KSP Residual norm 0.0825763 
@@ -114,7 +114,7 @@ Timestep: 0007 time = 0.7      	 L_2 Error: [0.0157, 0.302]
 7 TS dt 0.1 time 0.7
     0 SNES Function norm 0.139783 
       0 KSP Residual norm 2.14737 
-      1 KSP Residual norm 4.807e-11 
+      1 KSP Residual norm 4.806e-11 
     Linear solve converged due to CONVERGED_RTOL iterations 1
     1 SNES Function norm 0.00338432 
       0 KSP Residual norm 0.0780847 

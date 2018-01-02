@@ -7,7 +7,7 @@
 !
 !  The C version of this code is test_chwirut1.c
 !
-!/*T
+!!/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
@@ -18,6 +18,8 @@
 !  Routines: TaoDestroy();
 !  Processors: 1
 !T*/
+
+
 !
 ! ----------------------------------------------------------------------
 !
@@ -59,12 +61,7 @@
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      if (size .ne. 1) then
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_SELF,1,' ')
-      endif
+      if (size .ne. 1) then SETERRA(PETSC_COMM_SELF,1,'This is a uniprocessor example only ')
 
 !  Initialize problem parameters
       m = 214
@@ -79,10 +76,8 @@
 !  The TAO code begins here
 
 !  Create TAO solver
-      call TaoCreate(PETSC_COMM_SELF,tao,ierr)
-      CHKERRA(ierr)
-      call TaoSetType(tao,TAOPOUNDERS,ierr)
-      CHKERRA(ierr)
+      call TaoCreate(PETSC_COMM_SELF,tao,ierr);CHKERRA(ierr)
+      call TaoSetType(tao,TAOPOUNDERS,ierr);CHKERRA(ierr)
 !  Set routines for function, gradient, and hessian evaluation
 
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
@@ -422,4 +417,13 @@
       return
       end
 
-
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!
+!   test:
+!      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+!      requires: !single
+!
+!TEST*/

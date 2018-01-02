@@ -82,7 +82,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 }
 
 /* This assumes that the DM has been cloned prior to the call */
-PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
 {
   PetscSection   section, sectionGlobal;
   PetscInt      *subIndices;
@@ -98,7 +98,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
   ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
   if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
   if (is) {
-    PetscInt bs = -1, bsLocal, bsMax, bsMin;
+    PetscInt bs = -1, bsLocal[2], bsMinMax[2];
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, pSubSize  = 0;
@@ -124,15 +124,10 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal = bs;
-    ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    bsLocal = bs < 0 ? bsMax : bs;
-    ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    if (bsMin != bsMax) {
-      bs = 1;
-    } else {
-      bs = bsMax;
-    }
+    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+    ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
+    if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+    else                            {bs = bsMinMax[0];}
     ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
@@ -158,7 +153,16 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       }
     }
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);
+    if (bs > 1) {
+      /* We need to check that the block size does not come from non-contiguous fields */
+      PetscInt i, j, set = 1;
+      for (i = 0; i < subSize; i += bs) {
+        for (j = 0; j < bs; ++j) {
+          if (subIndices[i+j] != subIndices[i]+j) {set = 0; break;}
+        }
+      }
+      if (set) {ierr = ISSetBlockSize(*is, bs);CHKERRQ(ierr);}
+    }
   }
   if (subdm) {
     PetscSection subsection;
@@ -220,5 +224,118 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
     ierr = DMPlexSetGlobalToNaturalPetscSF(*subdm, sfNatural);CHKERRQ(ierr);
   }
 #endif
+  PetscFunctionReturn(0);
+}
+
+/* This assumes that the DM has been cloned prior to the call */
+PetscErrorCode DMCreateSuperDM_Section_Private(DM dms[], PetscInt len, IS **is, DM *superdm)
+{
+  PetscSection  *sections, *sectionGlobals;
+  PetscInt      *Nfs, Nf = 0, *subIndices, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc3(len, &Nfs, len, &sections, len, &sectionGlobals);CHKERRQ(ierr);
+  for (i = 0 ; i < len; ++i) {
+    ierr = DMGetDefaultSection(dms[i], &sections[i]);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dms[i], &sectionGlobals[i]);CHKERRQ(ierr);
+    if (!sections[i]) SETERRQ(PetscObjectComm((PetscObject)dms[0]), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting fields");
+    if (!sectionGlobals[i]) SETERRQ(PetscObjectComm((PetscObject)dms[0]), PETSC_ERR_ARG_WRONG, "Must set default global section for DM before splitting fields");
+    ierr = PetscSectionGetNumFields(sections[i], &Nfs[i]);CHKERRQ(ierr);
+    Nf += Nfs[i];
+  }
+  if (is) {
+    PetscInt *offs, *globalOffs, iOff = 0;
+
+    ierr = PetscMalloc1(len, is);CHKERRQ(ierr);
+    ierr = PetscCalloc2(len+1, &offs, len+1, &globalOffs);CHKERRQ(ierr);
+    for (i = 0 ; i < len; ++i) {
+      ierr = PetscSectionGetConstrainedStorageSize(sectionGlobals[i], &offs[i]);CHKERRQ(ierr);
+      offs[len] += offs[i];
+    }
+    ierr = MPI_Scan(offs, globalOffs, len+1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dms[0]));CHKERRQ(ierr);
+    for (i = 0 ; i <= len; ++i) globalOffs[i] -= offs[i];
+    for (i = 0 ; i < len; ++i, iOff += offs[i-1]) {
+      PetscInt bs = -1, bsLocal[2], bsMinMax[2];
+      PetscInt subSize = 0, subOff = 0, gtoff = globalOffs[len] - globalOffs[i], pStart, pEnd, p;
+
+      ierr = PetscSectionGetChart(sectionGlobals[i], &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstrainedStorageSize(sectionGlobals[i], &subSize);CHKERRQ(ierr);
+      ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {
+        PetscInt gdof, gcdof, gtdof, goff, d;
+
+        ierr = PetscSectionGetDof(sectionGlobals[i], p, &gdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(sections[i], p, &gcdof);CHKERRQ(ierr);
+        gtdof = gdof-gcdof;
+        if (gdof > 0 && gtdof) {
+          if (bs < 0)           {bs = gtdof;}
+          else if (bs != gtdof) {bs = 1;}
+          ierr = PetscSectionGetOffset(sectionGlobals[i], p, &goff);CHKERRQ(ierr);
+          for (d = 0; d < gtdof; ++d, ++subOff) {
+            subIndices[subOff] = goff+gtoff+d+iOff;
+          }
+        }
+      }
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dms[0]), subSize, subIndices, PETSC_OWN_POINTER, &(*is)[i]);CHKERRQ(ierr);
+      /* Must have same blocksize on all procs (some might have no points) */
+      bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+      ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dms[0]), bsLocal, bsMinMax);CHKERRQ(ierr);
+      if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+      else                            {bs = bsMinMax[0];}
+      ierr = ISSetBlockSize((*is)[i], bs);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(offs, globalOffs);CHKERRQ(ierr);
+  }
+  if (superdm) {
+    PetscSection supersection;
+    PetscBool    haveNull = PETSC_FALSE;
+    PetscInt     field, f, nf = 0;
+
+    ierr = PetscSectionCreateSupersection(sections, len, &supersection);CHKERRQ(ierr);
+    ierr = DMSetDefaultSection(*superdm, supersection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&supersection);CHKERRQ(ierr);
+    for (i = 0, field = 0; i < len; ++i) {
+      for (f = 0; f < Nfs[i]; ++f, ++field) {
+        (*superdm)->nullspaceConstructors[field] = dms[i]->nullspaceConstructors[f];
+        if ((*superdm)->nullspaceConstructors[field]) {
+          haveNull = PETSC_TRUE;
+          nf       = field;
+        }
+      }
+    }
+    if (haveNull && is) {
+      MatNullSpace nullSpace;
+
+      ierr = (*(*superdm)->nullspaceConstructors[nf])(*superdm, nf, &nullSpace);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) (*is)[nf], "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+    }
+    if (len && dms[0]->prob) {
+      ierr = DMSetNumFields(*superdm, Nf);CHKERRQ(ierr);
+      for (i = 0, field = 0; i < len; ++i) {
+        for (f = 0; f < Nfs[i]; ++f, ++field) {
+          PetscObject disc;
+
+          ierr = DMGetField(dms[i], f, &disc);CHKERRQ(ierr);
+          ierr = DMSetField(*superdm, field, disc);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+#if 0
+  /* We need a way to filter the original SF for given fields:
+       - Keeping the original section around is too much I think
+       - We could keep the distributed section, and subset it
+   */
+  if (len && dms[0]->sfNatural) {
+    PetscSF sfNatural;
+
+    ierr = PetscSectionCreateSupersection(originalSections, len, &(*superdm)->originalSection);CHKERRQ(ierr);
+    ierr = DMPlexCreateGlobalToNaturalPetscSF(*superdm, &sfNatural);CHKERRQ(ierr);
+    ierr = DMPlexSetGlobalToNaturalPetscSF(*superdm, sfNatural);CHKERRQ(ierr);
+  }
+#endif
+  ierr = PetscFree3(Nfs, sections, sectionGlobals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -49,14 +49,14 @@ SNES Object: 5 MPI processes
                             Mat Object: 1 MPI processes
                               type: seqaij
                               rows=172, cols=172
-                              total: nonzeros=6010, allocated nonzeros=6010
+                              total: nonzeros=5584, allocated nonzeros=5584
                               total number of mallocs used during MatSetValues calls =0
                                 using I-node routines: found 65 nodes, limit used is 5
                           A10
                             Mat Object: 1 MPI processes
                               type: seqaij
                               rows=172, cols=105
-                              total: nonzeros=2316, allocated nonzeros=2316
+                              total: nonzeros=2370, allocated nonzeros=2370
                               total number of mallocs used during MatSetValues calls =0
                                 using I-node routines: found 62 nodes, limit used is 5
                           KSP of A00
@@ -123,7 +123,7 @@ SNES Object: 5 MPI processes
                             Mat Object: 1 MPI processes
                               type: seqaij
                               rows=105, cols=172
-                              total: nonzeros=2316, allocated nonzeros=2316
+                              total: nonzeros=2370, allocated nonzeros=2370
                               total number of mallocs used during MatSetValues calls =0
                                 using I-node routines: found 35 nodes, limit used is 5
                     FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)
@@ -221,14 +221,14 @@ SNES Object: 5 MPI processes
                                     Mat Object: 1 MPI processes
                                       type: seqaij
                                       rows=172, cols=172
-                                      total: nonzeros=6010, allocated nonzeros=6010
+                                      total: nonzeros=5584, allocated nonzeros=5584
                                       total number of mallocs used during MatSetValues calls =0
                                         using I-node routines: found 65 nodes, limit used is 5
                                   A10
                                     Mat Object: 1 MPI processes
                                       type: seqaij
                                       rows=172, cols=105
-                                      total: nonzeros=2316, allocated nonzeros=2316
+                                      total: nonzeros=2370, allocated nonzeros=2370
                                       total number of mallocs used during MatSetValues calls =0
                                         using I-node routines: found 62 nodes, limit used is 5
                                   KSP of A00
@@ -295,7 +295,7 @@ SNES Object: 5 MPI processes
                                     Mat Object: 1 MPI processes
                                       type: seqaij
                                       rows=105, cols=172
-                                      total: nonzeros=2316, allocated nonzeros=2316
+                                      total: nonzeros=2370, allocated nonzeros=2370
                                       total number of mallocs used during MatSetValues calls =0
                                         using I-node routines: found 35 nodes, limit used is 5
                             FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)
@@ -476,8 +476,8 @@ SNES Object: 5 MPI processes
     Mat Object: 5 MPI processes
       type: is
       rows=1154, cols=1154
-      total: nonzeros=87213, allocated nonzeros=112563
+      total: nonzeros=87213, allocated nonzeros=112347
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 2.08811e-08 [7.62942e-10, 2.08671e-08]
+L_2 Error: 3.01522e-08 [4.31539e-10, 3.01491e-08]

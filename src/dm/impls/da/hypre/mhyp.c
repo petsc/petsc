@@ -18,9 +18,9 @@
    Notes: Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
           be defined by a DMDA.
 
-          The matrix needs a DMDA associated with it by either a call to MatSetupDM() or if the matrix is obtained from DMCreateMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
 
-.seealso: MatCreate(), PCPFMG, MatSetupDM(), DMCreateMatrix()
+.seealso: MatCreate(), PCPFMG, MatSetDM(), DMCreateMatrix()
 M*/
 
 
@@ -32,7 +32,7 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   Mat_HYPREStruct   *ex     = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (PetscUnlikely(ncol >= 7)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D >= 7 too large",ncol);
+  if (PetscUnlikely(ncol > 7)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncol %D > 7 too large",ncol);
   for (i=0; i<nrow; i++) {
     for (j=0; j<ncol; j++) {
       stencil = icol[j] - irow[i];
@@ -101,16 +101,18 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
 {
   PetscErrorCode         ierr;
   Mat_HYPREStruct        *ex = (Mat_HYPREStruct*) mat->data;
-  PetscInt               dim,dof,sw[3],nx,ny,nz,ilower[3],iupper[3],ssize,i;
+  PetscInt               dim,dof,sw[6],nx,ny,nz,ilower[3],iupper[3],ssize,i;
   DMBoundaryType         px,py,pz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog;
+  DM                     da;
 
   PetscFunctionBegin;
+  ierr   = MatGetDM(mat,(DM*)&da);CHKERRQ(ierr);
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
 
@@ -135,8 +137,7 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   PetscStackCallStandard(HYPRE_StructGridSetExtents,(ex->hgrid,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper));
   PetscStackCallStandard(HYPRE_StructGridAssemble,(ex->hgrid));
 
-  sw[1] = sw[0];
-  sw[2] = sw[1];
+  sw[5] = sw[4] = sw[3] = sw[2] = sw[1] = sw[0];
   PetscStackCallStandard(HYPRE_StructGridSetNumGhost,(ex->hgrid,(HYPRE_Int *)sw));
 
   /* create the hypre stencil object and set its information */
@@ -189,13 +190,14 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  mat->preallocated = PETSC_TRUE;
 
   if (dim == 3) {
     mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
 
-    ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr);
+    /*        ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr); */
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
@@ -266,6 +268,9 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
   PetscStackCallStandard(HYPRE_StructMatrixDestroy,(ex->hmat));
   PetscStackCallStandard(HYPRE_StructVectorDestroy,(ex->hx));
   PetscStackCallStandard(HYPRE_StructVectorDestroy,(ex->hb));
+  ierr = PetscObjectDereference((PetscObject)ex->da);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(ex->hcomm));CHKERRQ(ierr);
+  ierr = PetscFree(ex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -286,11 +291,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
   B->ops->mult        = MatMult_HYPREStruct;
   B->ops->zeroentries = MatZeroEntries_HYPREStruct;
   B->ops->destroy     = MatDestroy_HYPREStruct;
+  B->ops->setup       = MatSetUp_HYPREStruct;
 
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,7 +313,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
           be defined by a DMDA.
 
-          The matrix needs a DMDA associated with it by either a call to MatSetupDM() or if the matrix is obtained from DMCreateMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
 
 M*/
 
@@ -331,8 +336,7 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
   ierr     = PetscMalloc1(7*nvars,&entries);CHKERRQ(ierr);
   ordering = ex->dofs_order;  /* ordering= 0   nodal ordering
                                            1   variable ordering */
-  /* stencil entries are orderer by variables: var0_stencil0, var0_stencil1, ..., var0_stencil6, var1_stencil0, var1_stencil1, ...  */
-
+  /* stencil entries are ordered by variables: var0_stencil0, var0_stencil1, ..., var0_stencil6, var1_stencil0, var1_stencil1, ...  */
   if (!ordering) {
     for (i=0; i<nrow; i++) {
       grid_rank= irow[i]/nvars;
@@ -517,7 +521,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 }
 
 
-static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
 {
   PetscErrorCode         ierr;
   Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
@@ -528,8 +532,10 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   PetscInt               nparts= 1;  /* assuming only one part */
   PetscInt               part  = 0;
   ISLocalToGlobalMapping ltog;
+  DM                     da;
 
   PetscFunctionBegin;
+  ierr   = MatGetDM(mat,(DM*)&da);CHKERRQ(ierr);
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
 
@@ -643,17 +649,18 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   /* set the global and local sizes of the matrix */
   ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->rmap,dof);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,dof);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  mat->preallocated = PETSC_TRUE;
 
   if (dim == 3) {
     mat->ops->setvalueslocal = MatSetValuesLocal_HYPRESStruct_3d;
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
 
-    ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr);
+    /* ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr); */
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
@@ -766,14 +773,20 @@ PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 
 PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
-  Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
-  PetscErrorCode   ierr;
+  Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
+  PetscErrorCode         ierr;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
+  ierr = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructGraphDestroy,(ex->ss_graph));
   PetscStackCallStandard(HYPRE_SStructMatrixDestroy,(ex->ss_mat));
   PetscStackCallStandard(HYPRE_SStructVectorDestroy,(ex->ss_x));
   PetscStackCallStandard(HYPRE_SStructVectorDestroy,(ex->ss_b));
+  ierr = PetscObjectDereference((PetscObject)ex->da);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(ex->hcomm));CHKERRQ(ierr);
+  ierr = PetscFree(ex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -794,11 +807,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
   B->ops->mult        = MatMult_HYPRESStruct;
   B->ops->zeroentries = MatZeroEntries_HYPRESStruct;
   B->ops->destroy     = MatDestroy_HYPRESStruct;
+  B->ops->setup       = MatSetUp_HYPRESStruct;
 
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

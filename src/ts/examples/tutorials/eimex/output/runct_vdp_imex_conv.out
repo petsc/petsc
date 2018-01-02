@@ -1,0 +1,36 @@
+order          dt               norm     final solution components 0 and 1
+(1,1) 0.00500000  0.000992529680445 -0.000246750489865 -0.000961368484149
+order          dt               norm     final solution components 0 and 1
+(1,1) 0.00100000  0.000198912459236 -0.000049667284487 -0.000192611856569
+order          dt               norm     final solution components 0 and 1
+(1,1) 0.00050000  0.000099481477296 -0.000024853383255 -0.000096326910392
+order          dt               norm     final solution components 0 and 1
+(2,1) 0.00500000  0.000497304270613 -0.000124140292195 -0.000481560718314
+order          dt               norm     final solution components 0 and 1
+(2,1) 0.00100000  0.000099497722842 -0.000024864225742 -0.000096340890223
+order          dt               norm     final solution components 0 and 1
+(2,1) 0.00050000  0.000049751109324 -0.000012434336895 -0.000048172192653
+order          dt               norm     final solution components 0 and 1
+(3,1) 0.00500000  0.000331767753812 -0.000082930663941 -0.000321235657186
+order          dt               norm     final solution components 0 and 1
+(3,1) 0.00100000  0.000066341040647 -0.000016582950475 -0.000064235032713
+order          dt               norm     final solution components 0 and 1
+(3,1) 0.00050000  0.000033169711397 -0.000008291257332 -0.000032116737163
+order          dt               norm     final solution components 0 and 1
+(2,2) 0.00500000  0.000005241918747 -0.000002861246864 -0.000004392149648
+order          dt               norm     final solution components 0 and 1
+(2,2) 0.00100000  0.000000211846479 -0.000000115781205 -0.000000177408126
+order          dt               norm     final solution components 0 and 1
+(2,2) 0.00050000  0.000000053030140 -0.000000028987364 -0.000000044406401
+order          dt               norm     final solution components 0 and 1
+(3,2) 0.00500000  0.000001757585918 -0.000000959190323 -0.000001472773636
+order          dt               norm     final solution components 0 and 1
+(3,2) 0.00100000  0.000000070698985 -0.000000038637986 -0.000000059206862
+order          dt               norm     final solution components 0 and 1
+(3,2) 0.00050000  0.000000017687175 -0.000000009668004 -0.000000014811005
+order          dt               norm     final solution components 0 and 1
+(3,3) 0.00500000  0.000000015454535 -0.000000008177431 -0.000000013113820
+order          dt               norm     final solution components 0 and 1
+(3,3) 0.00100000  0.000000000125342 -0.000000000066442 -0.000000000106284
+order          dt               norm     final solution components 0 and 1
+(3,3) 0.00050000  0.000000000015677 -0.000000000008310 -0.000000000013293

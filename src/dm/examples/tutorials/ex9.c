@@ -104,15 +104,19 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
 /*TEST
 
-   build:
-      requires: hdf5
+      build:
+         requires: hdf5
 
-   testset:
-      nsize: 4
       test:
+         nsize: 4
+
       test:
+         nsize: 4
+         suffix: 2
          args: -ndof 2
+         output_file: output/ex9_1.out
 
 TEST*/

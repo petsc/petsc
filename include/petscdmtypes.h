@@ -40,6 +40,24 @@ E*/
 typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
 
 /*E
+  DMBoundaryConditionType - indicates what type of boundary condition is to be imposed
+
+  Note: This flag indicates the type of function which will define the condition:
+$ DM_BC_ESSENTIAL       - A Dirichlet condition using a function of the coordinates
+$ DM_BC_ESSENTIAL_FIELD - A Dirichlet condition using a function of the coordinates and auxiliary field data
+$ DM_BC_NATURAL         - A Neumann condition using a function of the coordinates
+$ DM_BC_NATURAL_FIELD   - A Dirichlet condition using a function of the coordinates and auxiliary field data
+$ DM_BC_NATURAL_RIEMANN - A flux condition which determines the state in ghost cells
+The user can check whether a boundary condition is essential using (type & DM_BC_ESSENTIAL), and similarly for
+natural conditions (type & DM_BC_NATURAL)
+
+  Level: beginner
+
+.seealso: DMAddBoundary(), DMGetBoundary()
+E*/
+typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2, DM_BC_NATURAL_FIELD = 6, DM_BC_NATURAL_RIEMANN = 10} DMBoundaryConditionType;
+
+/*E
   DMPointLocationType - Describes the method to handle point location failure
 
   Level: beginner
@@ -53,6 +71,42 @@ typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUN
 E*/
 typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_REMOVE} DMPointLocationType;
 
+/*E
+  DMAdaptationStrategy - Describes the strategy used for adaptive solves
+
+  Level: beginner
+
+  DM_ADAPTATION_INITIAL will refine a mesh based on an initial guess. DM_ADAPTATION_SEQUENTIAL will refine the
+  mesh based on a sequence of solves, much like grid sequencing. DM_ADAPTATION_MULTILEVEL will use the sequence
+  of constructed meshes in a multilevel solve, much like the Systematic Upscaling of Brandt.
+
+.seealso: DMAdaptorSolve()
+E*/
+typedef enum {DM_ADAPTATION_INITIAL, DM_ADAPTATION_SEQUENTIAL, DM_ADAPTATION_MULTILEVEL} DMAdaptationStrategy;
+
+/*E
+  DMAdaptationCriterion - Describes the test used to decide whether to coarsen or refine parts of the mesh
+
+  Level: beginner
+
+  DM_ADAPTATION_REFINE will uniformly refine a mesh, much like grid sequencing. DM_ADAPTATION_LABEL will adapt
+  the mesh based upon a label of the cells filled with DMAdaptFlag markers. DM_ADAPTATION_METRIC will try to
+  mesh the manifold described by the input metric tensor uniformly. PETSc can also construct such a metric based
+  upon an input primal or a gradient field.
+
+.seealso: DMAdaptorSolve()
+E*/
+typedef enum {DM_ADAPTATION_NONE, DM_ADAPTATION_REFINE, DM_ADAPTATION_LABEL, DM_ADAPTATION_METRIC} DMAdaptationCriterion;
+
+/*E
+  DMAdaptFlag - Marker in the label prescribing adaptation
+
+  Level: beginner
+
+.seealso: DMAdaptLabel()
+E*/
+typedef enum {DM_ADAPT_DETERMINE = PETSC_DETERMINE, DM_ADAPT_KEEP = 0, DM_ADAPT_REFINE, DM_ADAPT_COARSEN, DM_ADAPT_RESERVED_COUNT} DMAdaptFlag;
+
 /*S
   PetscPartitioner - PETSc object that manages a graph partitioner
 
@@ -63,5 +117,14 @@ typedef enum {DM_POINTLOCATION_NONE, DM_POINTLOCATION_NEAREST, DM_POINTLOCATION_
 .seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
 S*/
 typedef struct _p_PetscPartitioner *PetscPartitioner;
+
+/*E
+  PetscUnit - The seven fundamental SI units
+
+  Level: beginner
+
+.seealso: DMPlexGetScale(), DMPlexSetScale()
+E*/
+typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 
 #endif

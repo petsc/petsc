@@ -37,8 +37,8 @@ typedef struct {
   int               cmapsize;         /* Number of allocated colors */
   PetscDrawXiPixVal foreground;       /* Foreground pixel */
   PetscDrawXiPixVal background;       /* Background pixel */
-  PetscDrawXiPixVal cmapping[256];    /* Map color -> pixel value */
-  unsigned char     cpalette[256][3]; /* Map color -> RGB value*/
+  PetscDrawXiPixVal cmapping[PETSC_DRAW_MAXCOLOR];    /* Map color -> pixel value */
+  unsigned char     cpalette[PETSC_DRAW_MAXCOLOR][3]; /* Map color -> RGB value*/
   int               x,y,w,h;          /* Location and size window */
 } PetscDraw_X;
 
@@ -49,7 +49,7 @@ PETSC_STATIC_INLINE void PetscDrawXiSetPixVal(PetscDraw_X *W,PetscDrawXiPixVal p
 
 #if defined(PETSC_USE_DEBUG)
 #define PetscDrawXiValidColor(W,color) \
-do { if (PetscUnlikely((color)<0||(color)>=256)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %D out of range [0..255]",(PetscInt)(color)); } while (0)
+  do { if (PetscUnlikely((color)<0||(color)>=PETSC_DRAW_MAXCOLOR)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %D out of range [0..%d]",(PetscInt)(color),PETSC_DRAW_MAXCOLOR-1); } while (0)
 #else
 #define PetscDrawXiValidColor(W,color) do {} while (0)
 #endif

@@ -327,3 +327,19 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex double define(PETSC_HAVE_ATTRIBUTEALIGNED)
+
+   test:
+      args: -ksp_monitor_short
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -petscpartitioner_type simple -ksp_converged_reason
+
+TEST*/

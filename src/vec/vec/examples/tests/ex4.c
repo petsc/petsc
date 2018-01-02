@@ -1,6 +1,10 @@
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
 
+/*T
+   requires: cusp veccuda x
+T*/
+
 #include <petscvec.h>
 
 int main(int argc,char **argv)
@@ -44,3 +48,38 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+
+
+   test:
+      suffix: cuda
+      args: -vec_type cuda
+      output_file: output/ex4_1.out
+      requires: veccuda
+
+   test:
+      suffix: cuda2
+      nsize: 2
+      args: -vec_type cuda
+      output_file: output/ex4_1.out
+      requires: veccuda
+
+   test:
+      suffix: cusp
+      args: -vec_type cusp
+      output_file: output/ex4_1.out
+      requires: cusp
+
+   test:
+      suffix: cusp2
+      nsize: 2
+      args: -vec_type cusp
+      output_file: output/ex4_1.out
+      requires: cusp
+
+TEST*/

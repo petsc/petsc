@@ -1,10 +1,10 @@
 
 ---- Minimum Surface Area Problem -----
 mx:4, my:4
-iter =   0, Function value: 0.210375,  Residual: 0.403597 
-iter =   1, Function value: 0.0110611,  Residual: 0.0197949 
-iter =   2, Function value: 4.46353e-05,  Residual: 8.72583e-05 
-iter =   3, Function value: 8.12611e-10,  Residual: 1.80227e-09 
+  0 TAO, Function value: 0.210375,  Residual: 0.403597 
+  1 TAO, Function value: 0.0110611,  Residual: 0.0197949 
+  2 TAO, Function value: 4.46353e-05,  Residual: 8.72583e-05 
+  3 TAO, Function value: 8.12611e-10,  Residual: 1.80227e-09 
 Tao Object: 1 MPI processes
   type: ssfls
   TaoLineSearch Object: 1 MPI processes

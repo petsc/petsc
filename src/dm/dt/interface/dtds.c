@@ -287,7 +287,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
 PetscErrorCode PetscDSSetUp(PetscDS prob)
 {
   const PetscInt Nf = prob->Nf;
-  PetscInt       dim, work, NcMax = 0, NqMax = 0, f;
+  PetscInt       dim, dimEmbed, work, NcMax = 0, NqMax = 0, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -295,6 +295,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   if (prob->setup) PetscFunctionReturn(0);
   /* Calculate sizes */
   ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  ierr = PetscDSGetCoordinateDimension(prob, &dimEmbed);CHKERRQ(ierr);
   prob->totDim = prob->totComp = 0;
   ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc2(Nf+1,&prob->off,Nf+1,&prob->offDer);CHKERRQ(ierr);
@@ -336,7 +337,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
   /* Allocate works space */
-  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dim,&prob->u_x,dim,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
+  ierr = PetscMalloc5(prob->totComp,&prob->u,prob->totComp,&prob->u_t,prob->totComp*dim,&prob->u_x,dimEmbed,&prob->x,work,&prob->refSpaceDer);CHKERRQ(ierr);
   ierr = PetscMalloc6(NqMax*NcMax,&prob->f0,NqMax*NcMax*dim,&prob->f1,NqMax*NcMax*NcMax,&prob->g0,NqMax*NcMax*NcMax*dim,&prob->g1,NqMax*NcMax*NcMax*dim,&prob->g2,NqMax*NcMax*NcMax*dim*dim,&prob->g3);CHKERRQ(ierr);
   if (prob->ops->setup) {ierr = (*prob->ops->setup)(prob);CHKERRQ(ierr);}
   prob->setup = PETSC_TRUE;
@@ -447,6 +448,13 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
 
   if (--((PetscObject)(*prob))->refct > 0) {*prob = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*prob))->refct = 0;
+  if ((*prob)->subprobs) {
+    PetscInt dim, d;
+
+    ierr = PetscDSGetSpatialDimension(*prob, &dim);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {ierr = PetscDSDestroy(&(*prob)->subprobs[d]);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree((*prob)->subprobs);CHKERRQ(ierr);
   ierr = PetscDSDestroyStructs_Static(*prob);CHKERRQ(ierr);
   for (f = 0; f < (*prob)->Nf; ++f) {
     ierr = PetscObjectDereference((*prob)->disc[f]);CHKERRQ(ierr);
@@ -501,8 +509,11 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
   p->Nf    = 0;
   p->setup = PETSC_FALSE;
-  p->numConstants = 0;
-  p->constants    = NULL;
+  p->numConstants  = 0;
+  p->constants     = NULL;
+  p->dimEmbed      = -1;
+  p->defaultAdj[0] = PETSC_FALSE;
+  p->defaultAdj[1] = PETSC_TRUE;
 
   *prob = p;
   PetscFunctionReturn(0);
@@ -533,7 +544,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 }
 
 /*@
-  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS, meaning the topological dimension of the discretizations
 
   Not collective
 
@@ -545,7 +556,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
   Level: beginner
 
-.seealso: PetscDSGetNumFields(), PetscDSCreate()
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetNumFields(), PetscDSCreate()
 @*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
@@ -565,6 +576,52 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
     else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
     else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSGetCoordinateDimension - Returns the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSSetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(dimEmbed, 2);
+  if (prob->dimEmbed < 0) SETERRQ(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONGSTATE, "No coordinate dimension set for this DS");
+  *dimEmbed = prob->dimEmbed;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscDSSetCoordinateDimension - Set the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- dimEmbed - The coordinate dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetCoordinateDimension(), PetscDSGetSpatialDimension(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  prob->dimEmbed = dimEmbed;
   PetscFunctionReturn(0);
 }
 
@@ -678,10 +735,12 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
     PetscClassId id;
 
     ierr = PetscObjectGetClassId(disc, &id);CHKERRQ(ierr);
-    if (id == PETSCFV_CLASSID) {
-      prob->implicit[f]      = PETSC_FALSE;
-      prob->adjacency[f*2+0] = PETSC_TRUE;
-      prob->adjacency[f*2+1] = PETSC_FALSE;
+    if (id == PETSCFE_CLASSID) {
+      ierr = PetscDSSetImplicit(prob, f, PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDSSetAdjacency(prob, f, PETSC_FALSE, PETSC_TRUE);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      ierr = PetscDSSetImplicit(prob, f, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscDSSetAdjacency(prob, f, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -781,11 +840,16 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(useCone, 3);
-  PetscValidPointer(useClosure, 4);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  *useCone    = prob->adjacency[f*2+0];
-  *useClosure = prob->adjacency[f*2+1];
+  if (useCone) PetscValidPointer(useCone, 3);
+  if (useClosure) PetscValidPointer(useClosure, 4);
+  if (f < 0) {
+    if (useCone)    *useCone    = prob->defaultAdj[0];
+    if (useClosure) *useClosure = prob->defaultAdj[1];
+  } else {
+    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+    if (useCone)    *useCone    = prob->adjacency[f*2+0];
+    if (useClosure) *useClosure = prob->adjacency[f*2+1];
+  }
   PetscFunctionReturn(0);
 }
 
@@ -810,9 +874,14 @@ PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
-  prob->adjacency[f*2+0] = useCone;
-  prob->adjacency[f*2+1] = useClosure;
+  if (f < 0) {
+    prob->defaultAdj[0] = useCone;
+    prob->defaultAdj[1] = useClosure;
+  } else {
+    if (f >= prob->Nf) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+    prob->adjacency[f*2+0] = useCone;
+    prob->adjacency[f*2+1] = useClosure;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2192,12 +2261,15 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (numConstants != prob->numConstants) {
     ierr = PetscFree(prob->constants);CHKERRQ(ierr);
-    prob->constants = NULL;
+    prob->numConstants = numConstants;
+    if (prob->numConstants) {
+      ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
+    } else {
+      prob->constants = NULL;
+    }
   }
-  prob->numConstants = numConstants;
   if (prob->numConstants) {
     PetscValidPointer(constants, 3);
-    ierr = PetscMalloc1(prob->numConstants, &prob->constants);CHKERRQ(ierr);
     ierr = PetscMemcpy(prob->constants, constants, prob->numConstants * sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2770,6 +2842,41 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
       ierr = PetscDSSetBdJacobian(newprob, f, g, g0Bd, g1Bd, g2Bd, g3Bd);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob)
+{
+  PetscInt       dim, Nf, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(subprob, 3);
+  if (height == 0) {*subprob = prob; PetscFunctionReturn(0);}
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  if (height > dim) SETERRQ2(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_OUTOFRANGE, "DS can only handle height in [0, %D], not %D", dim, height);
+  if (!prob->subprobs) {ierr = PetscCalloc1(dim, &prob->subprobs);CHKERRQ(ierr);}
+  if (!prob->subprobs[height-1]) {
+    PetscInt cdim;
+
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject) prob), &prob->subprobs[height-1]);CHKERRQ(ierr);
+    ierr = PetscDSGetCoordinateDimension(prob, &cdim);CHKERRQ(ierr);
+    ierr = PetscDSSetCoordinateDimension(prob->subprobs[height-1], cdim);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscFE      subfe;
+      PetscObject  obj;
+      PetscClassId id;
+
+      ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+      if (id == PETSCFE_CLASSID) {ierr = PetscFEGetHeightSubspace((PetscFE) obj, height, &subfe);CHKERRQ(ierr);}
+      else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %d", f);
+      ierr = PetscDSSetDiscretization(prob->subprobs[height-1], f, (PetscObject) subfe);CHKERRQ(ierr);
+    }
+  }
+  *subprob = prob->subprobs[height-1];
   PetscFunctionReturn(0);
 }
 

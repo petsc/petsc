@@ -2,16 +2,14 @@
 
 #include <petsc/private/petscfeimpl.h>
 
-static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscReal time, PetscFECellGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[],
+static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS prob, PetscReal time, PetscFECellGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[],
                                                   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs,
                                                   PetscScalar values[])
 {
-  PetscDS        prob;
   PetscInt       Nf, *Nc, f, totDim, spDim, d, v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
@@ -33,7 +31,7 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscReal time, PetscFE
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal time, Vec localU, Vec localA, PetscFECellGeom *fegeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
+static PetscErrorCode DMProjectPoint_Field_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscReal time, Vec localU, Vec localA, PetscFECellGeom *fegeom, PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
                                                    PetscReal **basisTab, PetscReal **basisDerTab, PetscReal **basisTabAux, PetscReal **basisDerTabAux,
                                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -41,7 +39,6 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
                                                                   PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void **ctxs,
                                                    PetscScalar values[])
 {
-  PetscDS            prob, probAux = NULL;
   PetscSection       section, sectionAux = NULL;
   PetscScalar       *u, *u_t = NULL, *u_x, *a = NULL, *a_t = NULL, *a_x = NULL, *refSpaceDer, *refSpaceDerAux = NULL, *bc;
   PetscScalar       *coefficients   = NULL, *coefficientsAux   = NULL;
@@ -49,12 +46,11 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   const PetscScalar *constants;
   PetscReal         *x;
   PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscInt           dim, dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
+  const PetscInt     dim = fegeom->dim, dimEmbed = fegeom->dimEmbed;
+  PetscInt           dimAux = 0, numConstants, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
   ierr = PetscDSGetComponents(prob, &Nc);CHKERRQ(ierr);
@@ -83,7 +79,6 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
       ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
       ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
     } else subp = p;
-    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
@@ -108,7 +103,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
         ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(quad, NULL, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
         for (q = 0; q < numPoints; ++q, ++tp) {
-          CoordinatesRefToReal(dim, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
+          CoordinatesRefToReal(dimEmbed, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
           EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, fegeom->invJ, coefficients, coefficients_t, u, u_x, u_t);
           if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
           (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, numConstants, constants, bc);
@@ -128,7 +123,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscReal time, Vec localU, Vec localA, PetscBool hasFE, PetscBool hasFV, PetscBool isFE[],
+static PetscErrorCode DMProjectPoint_Private(DM dm, PetscDS prob, DM dmAux, PetscDS probAux, PetscInt effectiveHeight, PetscReal time, Vec localU, Vec localA, PetscBool hasFE, PetscBool hasFV, PetscBool isFE[],
                                              PetscDualSpace sp[], PetscInt p, PetscInt Ncc, const PetscInt comps[],
                                              PetscReal **basisTab, PetscReal **basisDerTab, PetscReal **basisTabAux, PetscReal **basisDerTabAux,
                                              DMBoundaryConditionType type, void (**funcs)(void), void **ctxs, PetscBool fieldActive[], PetscScalar values[])
@@ -143,17 +138,17 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscR
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   if (hasFE) {
     ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, fegeom.v0, fegeom.J, fegeom.invJ, &fegeom.detJ);CHKERRQ(ierr);
-    fegeom.dim      = dim - h;
+    fegeom.dim      = dim - effectiveHeight;
     fegeom.dimEmbed = dimEmbed;
   }
   if (hasFV) {ierr = DMPlexComputeCellGeometryFVM(dm, p, &fvgeom.volume, fvgeom.centroid, NULL);CHKERRQ(ierr);}
   switch (type) {
   case DM_BC_ESSENTIAL:
   case DM_BC_NATURAL:
-    ierr = DMProjectPoint_Func_Private(dm, time, &fegeom, &fvgeom, isFE, sp, (PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *)) funcs, ctxs, values);CHKERRQ(ierr);break;
+    ierr = DMProjectPoint_Func_Private(dm, prob, time, &fegeom, &fvgeom, isFE, sp, (PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *)) funcs, ctxs, values);CHKERRQ(ierr);break;
   case DM_BC_ESSENTIAL_FIELD:
   case DM_BC_NATURAL_FIELD:
-    ierr = DMProjectPoint_Field_Private(dm, dmAux, time, localU, localA, &fegeom, sp, p, Ncc, comps,
+    ierr = DMProjectPoint_Field_Private(dm, prob, dmAux, probAux, time, localU, localA, &fegeom, sp, p, Ncc, comps,
                                         basisTab, basisDerTab, basisTabAux, basisDerTabAux,
                                         (void (**)(PetscInt, PetscInt, PetscInt,
                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -164,6 +159,37 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscR
   PetscFunctionReturn(0);
 }
 
+/*
+  This function iterates over a manifold, and interpolates the input function/field using the basis provided by the DS in our DM
+
+  There are several different scenarios:
+
+  1) Volumetric mesh with volumetric auxiliary data
+
+     Here minHeight=0 since we loop over cells.
+
+  2) Boundary mesh with boundary auxiliary data
+
+     Here minHeight=1 since we loop over faces. This normally happens since we hang cells off of our boundary meshes to facilitate computation.
+
+  3) Volumetric mesh with boundary auxiliary data
+
+     Here minHeight=1 and auxbd=PETSC_TRUE since we loop over faces and use data only supported on those faces. This is common when imposing Dirichlet boundary conditions.
+
+  The maxHeight is used to support enforcement of constraints in DMForest.
+
+  If localU is given and not equal to localX, we call DMPlexInsertBoundaryValues() to complete it.
+
+  If we are using an input field (DM_BC_ESSENTIAL_FIELD or DM_BC_NATURAL_FIELD), we need to evaluate it at all the quadrature points of the dual basis functionals.
+    - We use effectiveHeight to mean the height above our incoming DS. For example, if the DS is for a submesh then the effective height is zero, whereas if the DS
+      is for the volumetric mesh, but we are iterating over a surface, then the effective height is nonzero. When th effective height is nonzero, we need to extract
+      dual spaces for the boundary from our input spaces.
+    - After extracting all quadrature points, we tabulate the input fields and auxiliary fields on them.
+
+  We check that the #dof(closure(p)) == #dual basis functionals(p) for a representative p in the iteration
+
+  If we have a label, we iterate over those points. This will probably break the maxHeight functionality since we do not check the height of those points.
+*/
 static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
                                                   PetscInt Ncc, const PetscInt comps[], DMLabel label, PetscInt numIds, const PetscInt ids[],
                                                   DMBoundaryConditionType type, void (**funcs)(void), void **ctxs,
@@ -185,12 +211,15 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
-  if (!minHeight && dmAux) {
-    DMLabel spmap;
+  /* Auxiliary information can only be used with interpolation of field functions */
+  if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_NATURAL_FIELD) {
+    if (!minHeight && dmAux) {
+      DMLabel spmap;
 
-    /* If dmAux is a surface, then force the projection to take place over a surface */
-    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
-    if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+      /* If dmAux is a surface, then force the projection to take place over a surface */
+      ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+      if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+    }
   }
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
@@ -288,10 +317,12 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
   for (h = minHeight; h <= maxHeight; h++) {
     PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
+    PetscDS      probEff         = prob;
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
 
+    if (effectiveHeight) {ierr = PetscDSGetHeightSubspace(prob, effectiveHeight, &probEff);CHKERRQ(ierr);}
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
     if (!h) {
       PetscInt cEndInterior;
@@ -336,14 +367,14 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
 
           if ((point < pStart) || (point >= pEnd)) continue;
           ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
-          ierr = DMProjectPoint_Private(dm, dmAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
+          ierr = DMProjectPoint_Private(dm, probEff, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, point, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
             PetscErrorCode ierr2;
             ierr2 = DMRestoreWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr2);
             ierr2 = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr2);
             CHKERRQ(ierr);
           }
-          ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, values, mode);CHKERRQ(ierr);
+          ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, Ncc, comps, values, mode);CHKERRQ(ierr);
         }
         ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
         ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -351,14 +382,14 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     } else {
       for (p = pStart; p < pEnd; ++p) {
         ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
-        ierr = DMProjectPoint_Private(dm, dmAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
+        ierr = DMProjectPoint_Private(dm, probEff, dmAux, probAux, effectiveHeight, time, localU, localA, hasFE, hasFV, isFE, sp, p, Ncc, comps, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {
           PetscErrorCode ierr2;
           ierr2 = DMRestoreWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr2);
           ierr2 = DMRestoreWorkArray(dm, Nf, MPI_INT, &fieldActive);CHKERRQ(ierr2);
           CHKERRQ(ierr);
         }
-        ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, p, values, mode);CHKERRQ(ierr);
+        ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, p, Ncc, comps, values, mode);CHKERRQ(ierr);
       }
     }
     ierr = DMRestoreWorkArray(dm, numValues, MPIU_SCALAR, &values);CHKERRQ(ierr);

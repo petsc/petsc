@@ -5,6 +5,7 @@ native DMDADirection
 native DMDAInterpolationType
 native DMDAElementType
 native DMBoundaryType
+native DMAdaptationStrategy
 native PetscDrawMarkerType
 native ISGlobalToLocalMappingMode
 native ISColoringType
@@ -154,6 +155,7 @@ nativeptr TSMonitorLGCtx
 nativeptr TSMonitorSPEigCtx
 nativeptr VecScatterCUSPIndices_PtoP
 nativeptr VecScatterCUSPIndices_StoS
+nativeptr PetscSFNode
 # the following are old PETSc types - they might be requird for older versions
 # of PETSc
 nativeptr AOData

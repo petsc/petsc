@@ -199,6 +199,8 @@ PETSC_EXTERN PetscErrorCode TaoGetIterationNumber(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetIterationNumber(Tao, PetscInt);
 PETSC_EXTERN PetscErrorCode TaoGetTotalIterationNumber(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetTotalIterationNumber(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoGetResidualNorm(Tao,PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoGetObjective(Tao,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
@@ -215,7 +217,7 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao,PetscReal*,PetscReal*,P
 PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
-PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoMonitorDefault(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);
 PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(Tao, void*);

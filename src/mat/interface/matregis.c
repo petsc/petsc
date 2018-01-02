@@ -39,8 +39,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat);
-PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
 
 #if defined PETSC_HAVE_CUSP
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);
@@ -137,9 +137,9 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATBLOCKMAT,       MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegister(MATNEST,           MatCreate_Nest);CHKERRQ(ierr);
 
-  ierr = MatRegisterBaseName(MATELL,MATSEQELL,MATMPIELL);CHKERRQ(ierr);
-  ierr = MatRegister(MATMPIELL,         MatCreate_MPIELL);CHKERRQ(ierr);
-  ierr = MatRegister(MATSEQELL,         MatCreate_SeqELL);CHKERRQ(ierr);
+  ierr = MatRegisterBaseName(MATSELL,MATSEQSELL,MATMPISELL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPISELL,         MatCreate_MPISELL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQSELL,         MatCreate_SeqSELL);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_CUSP
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);

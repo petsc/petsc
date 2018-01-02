@@ -217,7 +217,7 @@ PetscSF Object: 8 MPI processes
   [7] Number of roots=7, leaves=0, remote ranks=0
 DM Object: Simplicial Mesh 8 MPI processes
   type: plex
-Mesh 'Simplicial Mesh':
+Simplicial Mesh in 2 dimensions:
 orientation is missing
 cap --> base:
 [0] Max sizes cone: 3 support: 4

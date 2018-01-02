@@ -34,7 +34,7 @@
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
       PetscBool  flg
-      PetscMPIInt size,rank
+      PetscMPIInt size
       PetscScalar      none,one,value(3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,21 +47,14 @@
         stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then
-         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0) then
-            write(6,*) 'This is a uniprocessor example only!'
-         endif
-         SETERRA(PETSC_COMM_WORLD,1,' ')
-      endif
+      if (size .ne. 1) then SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only')
       none = -1.0
       one  = 1.0
       n    = 10
       i1 = 1
       i2 = 2
       i3 = 3
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define

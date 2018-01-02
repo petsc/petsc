@@ -129,3 +129,24 @@ int main(int argc,char **argv)
 
 
 
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+
+   test:
+      suffix: 3
+      nsize: 3
+
+   test:
+      suffix: 4
+      nsize: 3
+      args: -ao_type basic
+      output_file: output/ex1_3.out
+
+TEST*/

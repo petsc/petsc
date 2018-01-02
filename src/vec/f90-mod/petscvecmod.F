@@ -151,3 +151,18 @@
 #include <../src/vec/f90-mod/ftn-auto-interfaces/petscvec.h90>
         end interface
         end module
+
+      subroutine F90ArraySFNodeCreate(array,n,ptr)
+      implicit none
+#include <../src/sys/f90-mod/petscsys.h>
+#include <../src/vec/f90-mod/petscis.h>
+      PetscInt n,array(2*n)
+      type(PetscSFNode), pointer :: ptr(:)
+      PetscInt i
+      allocate(ptr(n))
+      do i=1,n
+        ptr(i)%rank  = array(2*i-1)
+        ptr(i)%index = array(2*i)
+      enddo
+
+      end subroutine

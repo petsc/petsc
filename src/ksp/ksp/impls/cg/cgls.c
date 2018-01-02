@@ -58,11 +58,14 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   ierr = MatMultTranspose(A,r,p);CHKERRQ(ierr); /* p_0 = A^T * r_0    */
   ierr = VecCopy(p,ss);CHKERRQ(ierr);           /* s_0 = p_0          */
   ierr = VecNorm(ss,NORM_2,&gamma);CHKERRQ(ierr);
+  ksp->rnorm = gamma;
+  ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   gamma = gamma*gamma;                          /* gamma = norm2(s)^2 */
-  
+
   do {
     ierr = MatMult(A,p,q);CHKERRQ(ierr);           /* q = A * p               */
     ierr = VecNorm(q,NORM_2,&alpha);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,alpha);
     alpha = alpha*alpha;                           /* alpha = norm2(q)^2      */
     alpha = gamma / alpha;                         /* alpha = gamma / alpha   */
     ierr = VecAXPY(x,alpha,p);CHKERRQ(ierr);       /* x += alpha * p          */
@@ -70,12 +73,15 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
     ierr = MatMultTranspose(A,r,ss);CHKERRQ(ierr); /* ss = A^T * r            */
     oldgamma = gamma;                              /* oldgamma = gamma        */
     ierr = VecNorm(ss,NORM_2,&gamma);CHKERRQ(ierr);
+    KSPCheckNorm(ksp,gamma);
+    ksp->its++;
+    ksp->rnorm = gamma;
+    ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     gamma = gamma*gamma;                           /* gamma = norm2(s)^2      */
     beta = gamma/oldgamma;                         /* beta = gamma / oldgamma */
     ierr = VecAYPX(p,beta,ss);CHKERRQ(ierr);       /* p = s + beta * p        */
-    ksp->its ++;
-    ksp->rnorm = gamma;
-  } while (ksp->its<ksp->max_it);
+  } while (ksp->its<ksp->max_it && !ksp->reason);
   
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1,b);CHKERRQ(ierr);

@@ -156,17 +156,16 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       nsize: 3
       args: -mat_view
-      output_file: output/ex3_1.out
-   
+
    test:
       suffix: 2
       nsize: 3
       args: -mat_view -dim 2
-   
+
    test:
       suffix: 3
       nsize: 3

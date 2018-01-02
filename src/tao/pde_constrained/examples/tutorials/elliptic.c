@@ -18,6 +18,8 @@
    Processors: n
 T*/
 
+
+
 typedef struct {
   PetscInt n; /* Number of total variables */
   PetscInt m; /* Number of constraints */
@@ -1306,3 +1308,20 @@ PetscErrorCode EllipticMonitor(Tao tao, void *ptr)
 }
 
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_cmonitor -ns 1 -tao_type lcl -tao_gatol 1.e-3
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -tao_cmonitor -tao_type lcl -tao_max_it 10 -use_ptap -use_lrc -ns 1 -tao_gttol 1.e-5
+      requires: !single
+
+TEST*/

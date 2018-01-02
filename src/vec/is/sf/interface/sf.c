@@ -15,7 +15,7 @@ PetscLogEvent PETSCSF_SetGraph, PETSCSF_BcastBegin, PETSCSF_BcastEnd, PETSCSF_Re
 
 const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",0};
 
-/*@C
+/*@
    PetscSFCreate - create a star forest communication context
 
    Not Collective
@@ -185,7 +185,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscSFSetFromOptions - set PetscSF options using the options database
 
    Logically Collective
@@ -246,7 +246,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscSFSetGraph - Set a parallel star forest
 
    Collective
@@ -261,6 +261,8 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
 -  remotemode - copy mode for iremote
 
    Level: intermediate
+
+   Notes: In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFGetGraph()
 @*/

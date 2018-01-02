@@ -23,6 +23,19 @@ typedef struct _p_PetscSF* PetscSF;
 
   Concepts: indexing, stride, distribution
 
+  Sample Usage:
+$      PetscSFNode    *remote;
+$    ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+$    for (i=0; i<size; i++) {
+$      remote[i].rank = i;
+$      remote[i].index = rank;
+$    }
+
+  Sample Fortran Usage:
+$     type(PetscSFNode) remote(6)
+$      remote(1)%rank  = modulo(rank+size-1,size)
+$      remote(1)%index = 1 * stride
+
 .seealso: PetscSFSetGraph()
 S*/
 typedef struct {

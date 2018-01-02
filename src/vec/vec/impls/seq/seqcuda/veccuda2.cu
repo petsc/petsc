@@ -1028,6 +1028,7 @@ PetscErrorCode VecDestroy_SeqCUDA(Vec v)
   if (v->spptr) {
     if (((Vec_CUDA*)v->spptr)->GPUarray_allocated) {
       err = cudaFree(((Vec_CUDA*)v->spptr)->GPUarray_allocated);CHKERRCUDA(err);
+      ((Vec_CUDA*)v->spptr)->GPUarray_allocated = NULL;
     }
     if (((Vec_CUDA*)v->spptr)->stream) {
       err = cudaStreamDestroy(((Vec_CUDA*)v->spptr)->stream);CHKERRCUDA(err);

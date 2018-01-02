@@ -140,7 +140,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
 {
   PetscSection   coordSection;
   Vec            coordsLocal;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   const PetscInt faces[24] = {0, 3, 2, 1,  5, 4, 7, 6,  3, 0, 4, 5,
                               1, 2, 6, 7,  3, 5, 6, 2,  0, 1, 7, 4};
   PetscBool      found = PETSC_TRUE;

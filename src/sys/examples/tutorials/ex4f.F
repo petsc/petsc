@@ -64,7 +64,6 @@
       call  MPI_Finalize(ierr)
       end
 
-!
 !/*TEST
 !
 !   test:

@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for 2d DMDAs.\n\n";
 
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
@@ -71,12 +72,11 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      requires: x
-      output_file: output/ex5_1.out
+     requires: x
 
    test:
-      suffix: 2
-      nsize: 2
-      requires: x
+     suffix: 2
+     nsize: 2
+     requires: x
 
 TEST*/

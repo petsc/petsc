@@ -1,3 +1,7 @@
+/*T
+   requires: cusp veccuda
+T*/
+
 #include <petscvec.h>
 
 static char help[] = "Tests vecScatter Sequential to Sequential for (CUSP) vectors\n\
@@ -135,3 +139,17 @@ int main(int argc, char * argv[]) {
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -vec_type cusp
+      requires: cusp
+
+   test:
+      suffix: cuda
+      args: -vec_type cuda
+      requires: veccuda
+
+TEST*/

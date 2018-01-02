@@ -108,6 +108,9 @@ runex13f90:
 	   ${RM} -f ex13f90.tmp
 
 
-TESTEXAMPLES_F90_NOCOMPLEX= ex13f90.PETSc runex13f90 ex13f90.rm
+
+ex65dm: ex65dm.o  chkopts
+	-${CLINKER} -o ex65dm ex65dm.o ${PETSC_SNES_LIB}
+	${RM} ex65dm.o
 
 include ${PETSC_DIR}/lib/petsc/conf/test

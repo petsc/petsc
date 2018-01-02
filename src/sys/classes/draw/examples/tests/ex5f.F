@@ -18,6 +18,7 @@
       PetscScalar       xd,yd
       PetscReal         ten
       PetscInt          i,n,w,h
+      PetscInt          one
 
       n      = 15
       x      = 0
@@ -25,6 +26,7 @@
       w      = 400
       h      = 300
       ten    = 10.0
+      one    = 1
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -46,7 +48,7 @@
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
-      call PetscDrawLGCreate(draw,1,lg,ierr)
+      call PetscDrawLGCreate(draw,one,lg,ierr)
       call PetscDrawLGGetAxis(lg,axis,ierr)
       call PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED, &
      &     PETSC_DRAW_BLUE,ierr)
@@ -69,3 +71,12 @@
       call PetscFinalize(ierr)
       end
 
+!/*TEST
+!
+!   build:
+!     requires: x
+!
+!   test:
+!     output_file: output/ex1_1.out
+!
+!TEST*/

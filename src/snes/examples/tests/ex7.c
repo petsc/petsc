@@ -193,3 +193,18 @@ PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short
+      requires: x
+
+   test:
+      suffix: 2
+      args: -variant -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short
+      output_file: output/ex7_1.out
+      requires: x
+
+TEST*/
