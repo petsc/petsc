@@ -1141,53 +1141,42 @@ int main(int argc,char **args)
 
 /*TEST
 
- test:
+ testset:
    nsize: 4
    suffix: bddc_fetidp_1
    args: -nex 7 -physical_pc_bddc_coarse_eqs_per_proc 3 -physical_pc_bddc_switch_static
 
- test:
+ testset:
    nsize: 4
-   suffix: bddc_fetidp_2
    args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10
    requires: !single
+   test:
+     suffix: bddc_fetidp_2
+   test:
+     suffix: bddc_fetidp_3
+     args: -npz 1 -nez 1
+   test:
+     suffix: bddc_fetidp_4
+     args: -npz 1 -nez 1 -physical_pc_bddc_use_change_of_basis -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg
 
- test:
-   nsize: 4
-   suffix: bddc_fetidp_3
-   args: -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10
-   requires: !single
-
- test:
-   nsize: 4
-   suffix: bddc_fetidp_4
-   args: -npx 2 -npy 2 -npz 1 -nex 6 -ney 6 -nez 1 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_pc_bddc_use_change_of_basis -physical_pc_bddc_use_deluxe_scaling -physical_pc_bddc_deluxe_singlemat -fluxes_fetidp_ksp_type cg
-   requires: !single
-
- test:
+ testset:
    nsize: 8
    suffix: bddc_fetidp_approximate
    args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -fluxes_ksp_max_it 20 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
 
- test:
+ testset:
    nsize: 4
-   suffix: bddc_fetidp_ml_1
-   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 1
+   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1
    filter: grep -v "variant HERMITIAN"
    requires: !single
-
- test:
-   nsize: 4
-   suffix: bddc_fetidp_ml_2
-   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 2 -mat_partitioning_type average
-   filter: grep -v "variant HERMITIAN"
-   requires: !single
-
- test:
-   nsize: 4
-   suffix: bddc_fetidp_ml_3
-   args: -npx 2 -npy 2 -nex 6 -ney 6 -fluxes_ksp_max_it 10 -physical_ksp_max_it 10 -physical_ksp_view -physical_pc_bddc_levels 1 -physical_pc_bddc_coarsening_ratio 4
-   filter: grep -v "variant HERMITIAN"
-   requires: !single
+   test:
+     suffix: bddc_fetidp_ml_1
+     args: -physical_pc_bddc_coarsening_ratio 1
+   test:
+     suffix: bddc_fetidp_ml_2
+     args: -physical_pc_bddc_coarsening_ratio 2 -mat_partitioning_type average
+   test:
+     suffix: bddc_fetidp_ml_3
+     args: -physical_pc_bddc_coarsening_ratio 4
 
 TEST*/
