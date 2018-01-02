@@ -340,10 +340,11 @@ class generateExamples(Petsc):
     # Worry about alt files here -- see
     #   src/snes/examples/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
-    for i in range(1,3):
-      altroot=defroot+"_alt"
-      if i==2: altroot=altroot+"_2"
-      af="output/"+altroot+".out"
+    basefile,ext = os.path.splitext(subst['output_file'])
+    for i in range(1,9):
+      altroot=basefile+"_alt"
+      if i > 1: altroot=altroot+"_"+str(i)
+      af=altroot+".out"
       srcaf=os.path.join(subst['srcdir'],af)
       fullaf=os.path.join(self.petsc_dir,srcaf)
       if os.path.isfile(fullaf): altlist.append(srcaf)
@@ -797,9 +798,15 @@ class generateExamples(Petsc):
                 if exfile in srcs[lang]:
                     ex='$(TESTDIR)/'+os.path.splitext(exfile)[0]
                     exfo='$(TESTDIR)/'+os.path.splitext(exfile)[0]+'.o'
-                    for dep in srcs[lang][exfile]:
-                        fd.write(exfile+": $(TESTDIR)/"+ dep+'\n')
-                        fd.write(ex    +": "+exfo+" $(TESTDIR)/"+dep +'\n')
+                    deps = [os.path.join('$(TESTDIR)', dep) for dep in srcs[lang][exfile]]
+                    if deps:
+                        # The executable literally depends on the object file because it is linked
+                        fd.write(ex   +": " + " ".join(deps) +'\n')
+                        # The object file containing 'main' does not normally depend on other object
+                        # files, but it does when it includes their modules.  This dependency is
+                        # overly blunt and could be reduced to only depend on object files for
+                        # modules that are used, like "*f90aux.o".
+                        fd.write(exfo +": " + " ".join(deps) +'\n')
 
     return self.gendeps
 

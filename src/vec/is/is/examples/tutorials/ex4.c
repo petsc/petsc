@@ -9,6 +9,8 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
     and then destroys it.
 T*/
 
+
+
 #include <petscis.h>
 #include <petscviewer.h>
 
@@ -58,4 +60,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
+
+   test:
+      suffix: 2
+      args: -islocaltoglobalmapping_type hash
+
+TEST*/

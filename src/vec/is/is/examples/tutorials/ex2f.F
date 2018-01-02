@@ -66,3 +66,9 @@
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!   test:
+!
+!TEST*/

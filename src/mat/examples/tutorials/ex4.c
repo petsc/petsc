@@ -1,5 +1,4 @@
 /*
- * ex4.c
  *
  *  Created on: Sep 25, 2017
  *      Author: Fande Kong

@@ -18,9 +18,9 @@ static char help[] = "An example of hybrid system using TS event.\n";
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar lambda1;
-  PetscScalar lambda2;
-  PetscInt    mode;  /* mode flag*/
+  PetscReal lambda1;
+  PetscReal lambda2;
+  PetscInt  mode;  /* mode flag*/
 } AppCtx;
 
 PetscErrorCode FWDRun(TS, Vec, void *);
@@ -66,7 +66,6 @@ PetscErrorCode ShiftGradients(TS ts,Vec U,AppCtx *actx)
     A2[0] = 110.*u[1]*(-u[0])/denorm2;
     A2[1] = -110.*u[0]*(-u[0])/denorm2;
   } else {
-    denorm1 = -actx->lambda2*(u[0]-100.*u[1])+1.*(10.*u[0]+u[1]);
     denorm2 = -actx->lambda2*(u[0]+10.*u[1])+1.*(-100.*u[0]+u[1]);
     A1[0][0] = 110.*u[1]*(-actx->lambda1)/denorm2+1;
     A1[0][1] = -110.*u[0]*(-actx->lambda1)/denorm2;
@@ -199,7 +198,6 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[1];
   PetscBool      terminate[1];
-  Vec            lambda[2],mu[2];
   PetscReal      delta,tmp[2],sensi[2];
 
   delta = 1e-8;
@@ -319,10 +317,6 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = MatDestroy(&Ap);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda[1]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&mu[1]);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -347,3 +341,15 @@ PetscErrorCode FWDRun(TS ts, Vec U0, void *ctx0)
 
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !define(PETSC_USE_CXXCOMPLEX)
+
+   test:
+      args: -ts_event_tol 1e-9
+      timeoutfactor: 2
+
+TEST*/

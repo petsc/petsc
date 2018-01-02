@@ -30,9 +30,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
+      nsize: 3
+      output_file: output/ex1_1.out
 
-
-
-
-
+TEST*/
