@@ -71,3 +71,4 @@ PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
   *ierr = MPI_Barrier(comm);
 
 }
+

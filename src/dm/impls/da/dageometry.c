@@ -18,7 +18,7 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Static(DM dm, PetscSection s
   }
   if (csize) *csize = size;
   if (array) {
-    ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &a);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, size, MPIU_SCALAR, &a);CHKERRQ(ierr);
     for (i = 0, k = 0; i < nP; ++i) {
       const PetscInt p = points[i];
 
@@ -65,7 +65,7 @@ PETSC_STATIC_INLINE PetscErrorCode GetPointArray_Private(DM dm,PetscInt n,PetscI
   PetscFunctionBegin;
   if (rn) *rn = n;
   if (rpoints) {
-    ierr     = DMGetWorkArray(dm,n,PETSC_INT,&work);CHKERRQ(ierr);
+    ierr     = DMGetWorkArray(dm,n,MPIU_INT,&work);CHKERRQ(ierr);
     ierr     = PetscMemcpy(work,points,n*sizeof(PetscInt));CHKERRQ(ierr);
     *rpoints = work;
   }
@@ -80,7 +80,7 @@ PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,
   if (rn) *rn = 0;
   if (rpoints) {
     /* note the second argument to DMRestoreWorkArray() is always ignored */
-    ierr = DMRestoreWorkArray(dm,0, PETSC_INT, (void*) rpoints);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm,0, MPIU_INT, (void*) rpoints);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -127,7 +127,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt yf = c + yfStart;
 
       *closureSize = 9;
-      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, MPIU_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = yf; (*closure)[2] = xf+1; (*closure)[3] = yf+nyF; (*closure)[4] = xf+0; (*closure)[5] = v+0; (*closure)[6]= v+1; (*closure)[7] = v+nVx+1; (*closure)[8] = v+nVx+0;
     } else {
       /* 6 faces, 12 edges, 8 vertices
@@ -149,14 +149,14 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt yf = c + yfStart;
 
       *closureSize = 26;
-      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, MPIU_INT, closure);CHKERRQ(ierr);}
 #endif
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
     }
   } else if ((p >= vStart) || (p < vEnd)) {
     /* Vertex */
     *closureSize = 1;
-    if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+    if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, MPIU_INT, closure);CHKERRQ(ierr);}
     (*closure)[0] = p;
   } else if ((p >= fStart) || (p < fStart + nXF)) {
     /* X Face */
@@ -166,7 +166,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt f = p - xfStart;
 
       *closureSize = 3;
-      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, MPIU_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = f; (*closure)[2] = f+nVx;
     } else if (dim == 3) {
       /* 4 vertices */
@@ -180,7 +180,7 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
       PetscInt f = p - yfStart;
 
       *closureSize = 3;
-      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, MPIU_INT, closure);CHKERRQ(ierr);}
       (*closure)[0] = p; (*closure)[1] = f; (*closure)[2]= f+1;
     } else if (dim == 3) {
       /* 4 vertices */
@@ -203,7 +203,7 @@ PetscErrorCode DMDARestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useClos
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, closure);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, MPIU_INT, closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -449,7 +449,7 @@ PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section, PetscInt p,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(values, 6);
-  ierr  = DMRestoreWorkArray(dm, csize ? *csize : 0, PETSC_SCALAR, (void*) values);CHKERRQ(ierr);
+  ierr  = DMRestoreWorkArray(dm, csize ? *csize : 0, MPIU_SCALAR, (void*) values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

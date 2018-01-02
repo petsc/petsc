@@ -2416,7 +2416,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
           PetscScalar *pMatIn, *pMatModified;
           PetscInt numPoints,*points;
 
-          ierr = DMGetWorkArray(coarse,numRowIndices * numRowIndices,PETSC_SCALAR,&pMatIn);CHKERRQ(ierr);
+          ierr = DMGetWorkArray(coarse,numRowIndices * numRowIndices,MPIU_SCALAR,&pMatIn);CHKERRQ(ierr);
           for (i = 0; i < numRowIndices; i++) { /* initialize to the identity */
             for (j = 0; j < numRowIndices; j++) {
               pMatIn[i * numRowIndices + j] = (i == j) ? 1. : 0.;
@@ -2469,9 +2469,9 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
               }
             }
           }
-          ierr = DMRestoreWorkArray(coarse,numRowIndices * numColIndices,PETSC_SCALAR,&pMatModified);CHKERRQ(ierr);
+          ierr = DMRestoreWorkArray(coarse,numRowIndices * numColIndices,MPIU_SCALAR,&pMatModified);CHKERRQ(ierr);
           ierr = DMPlexRestoreTransitiveClosure(coarse, p, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-          ierr = DMRestoreWorkArray(coarse,numRowIndices * numColIndices,PETSC_SCALAR,&pMatIn);CHKERRQ(ierr);
+          ierr = DMRestoreWorkArray(coarse,numRowIndices * numColIndices,MPIU_SCALAR,&pMatIn);CHKERRQ(ierr);
           if (numFields) {
             for (f = 0; f < numFields; f++) {
               pInd[numColIndices + f]             = offsets[f+1];
@@ -2495,7 +2495,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             if (numFields) {ierr = PetscSectionRestoreFieldPointSyms(localCoarse,f,numPoints,points,&perms[f],&flips[f]);CHKERRQ(ierr);}
             else           {ierr = PetscSectionRestorePointSyms(localCoarse,numPoints,points,&perms[f],&flips[f]);CHKERRQ(ierr);}
           }
-          ierr = DMRestoreWorkArray(coarse,numPoints,PETSC_SCALAR,&points);CHKERRQ(ierr);
+          ierr = DMRestoreWorkArray(coarse,numPoints,MPIU_SCALAR,&points);CHKERRQ(ierr);
         }
       }
       else if (matSize) {
@@ -2504,8 +2504,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
 
         numRowIndices = matSize / numColIndices;
         if (numRowIndices != dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Miscounted dofs");
-        ierr = DMGetWorkArray(coarse,numRowIndices,PETSC_INT,&rowIndices);CHKERRQ(ierr);
-        ierr = DMGetWorkArray(coarse,numColIndices,PETSC_INT,&colIndices);CHKERRQ(ierr);
+        ierr = DMGetWorkArray(coarse,numRowIndices,MPIU_INT,&rowIndices);CHKERRQ(ierr);
+        ierr = DMGetWorkArray(coarse,numColIndices,MPIU_INT,&colIndices);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(cSec,p,&cOff);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
@@ -2570,8 +2570,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
             DMPlexGetIndicesPoint_Internal(localCoarse,anchor,gOff < 0 ? -(gOff + 1) : gOff,newOffsets,PETSC_FALSE,NULL,pInd);CHKERRQ(ierr);
           }
         }
-        ierr = DMRestoreWorkArray(coarse,numColIndices,PETSC_INT,&colIndices);CHKERRQ(ierr);
-        ierr = DMRestoreWorkArray(coarse,numRowIndices,PETSC_INT,&rowIndices);CHKERRQ(ierr);
+        ierr = DMRestoreWorkArray(coarse,numColIndices,MPIU_INT,&colIndices);CHKERRQ(ierr);
+        ierr = DMRestoreWorkArray(coarse,numRowIndices,MPIU_INT,&rowIndices);CHKERRQ(ierr);
       }
       else {
         PetscInt gOff;
@@ -2647,7 +2647,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
     ierr = PetscLayoutGetRange(colMap,&colStart,&colEnd);CHKERRQ(ierr);
     ierr = PetscSectionGetMaxDof(globalFine,&maxDof);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(leafIndicesSec,&leafStart,&leafEnd);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     for (p = leafStart; p < leafEnd; p++) {
       PetscInt    gDof, gcDof, gOff;
       PetscInt    numColIndices, pIndOff, *pInd;
@@ -2967,7 +2967,7 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
       }
     }
     ierr = DMPlexReferenceTreeRestoreChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
-    ierr = DMRestoreWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
     ierr = PetscFree(pointWork);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3166,8 +3166,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = DMPlexRestoreTransitiveClosure(refTree,parentCell,PETSC_TRUE,&numClosure,&closure);CHKERRQ(ierr);
       }
 
-      ierr = DMGetWorkArray(refTree, numSelfDof * numChildDof, PETSC_SCALAR,&pointMat);CHKERRQ(ierr);
-      ierr = DMGetWorkArray(refTree, numSelfDof + numChildDof, PETSC_INT,&matRows);CHKERRQ(ierr);
+      ierr = DMGetWorkArray(refTree, numSelfDof * numChildDof, MPIU_SCALAR,&pointMat);CHKERRQ(ierr);
+      ierr = DMGetWorkArray(refTree, numSelfDof + numChildDof, MPIU_INT,&matRows);CHKERRQ(ierr);
       matCols = matRows + numSelfDof;
       for (i = 0; i < numSelfDof; i++) {
         matRows[i] = selfOff + i;
@@ -3316,8 +3316,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       }
       /* Insert pointMat into mat */
       ierr = MatSetValues(mat,numSelfDof,matRows,numChildDof,matCols,pointMat,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = DMRestoreWorkArray(refTree, numSelfDof + numChildDof, PETSC_INT,&matRows);CHKERRQ(ierr);
-      ierr = DMRestoreWorkArray(refTree, numSelfDof * numChildDof, PETSC_SCALAR,&pointMat);CHKERRQ(ierr);
+      ierr = DMRestoreWorkArray(refTree, numSelfDof + numChildDof, MPIU_INT,&matRows);CHKERRQ(ierr);
+      ierr = DMRestoreWorkArray(refTree, numSelfDof * numChildDof, MPIU_SCALAR,&pointMat);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree6(v0,v0parent,vtmp,J,Jparent,invJ);CHKERRQ(ierr);
@@ -4170,8 +4170,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
     PetscScalar  *pointWork;
 
     ierr = PetscSectionGetMaxDof(globalFine,&maxDof);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(fine,maxDof,PETSC_SCALAR,&pointWork);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(fine,maxDof,MPIU_SCALAR,&pointWork);CHKERRQ(ierr);
     ierr = DMPlexGetReferenceTree(fine,&refTree);CHKERRQ(ierr);
     ierr = DMGetDS(fine,&ds);CHKERRQ(ierr);
     ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
@@ -4277,8 +4277,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
       }
     }
     ierr = DMPlexReferenceTreeRestoreChildrenMatrices(refTree,&refPointFieldMats,&refPointFieldN);CHKERRQ(ierr);
-    ierr = DMRestoreWorkArray(fine,maxDof,PETSC_INT,&rowIndices);CHKERRQ(ierr);
-    ierr = DMRestoreWorkArray(fine,maxDof,PETSC_SCALAR,&pointWork);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(fine,maxDof,MPIU_INT,&rowIndices);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(fine,maxDof,MPIU_SCALAR,&pointWork);CHKERRQ(ierr);
   }
   ierr = PetscFree(leafValues);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafValuesSec);CHKERRQ(ierr);

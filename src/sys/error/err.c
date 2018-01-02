@@ -313,8 +313,8 @@ static void PetscCxxErrorThrow() {
    Input Parameters:
 +  comm - communicator over which error occurred.  ALL ranks of this communicator MUST call this routine
 .  line - the line number of the error (indicated by __LINE__)
+.  func - the function name in which the error was detected
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - PETSC_ERROR_INITIAL indicates the error was initially detected, PETSC_ERROR_REPEAT indicates this is a traceback from a previously detected error
 -  mess - formatted message string - aka printf
@@ -341,7 +341,7 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), PetscErrorMessage()
 @*/
-PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
+PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
   va_list        Argp;
   size_t         fullLength;

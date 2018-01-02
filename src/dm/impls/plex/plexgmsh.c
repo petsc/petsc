@@ -256,23 +256,17 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscMalloc1(numVertices*3, &coordsIn);CHKERRQ(ierr);
     if (binary) {
-      size_t   doubleSize, intSize;
-      PetscInt elementSize;
-      char     *buffer;
-      double   *baseptr;
-      ierr = PetscDataTypeGetSize(PETSC_ENUM, &intSize);CHKERRQ(ierr);
-      ierr = PetscDataTypeGetSize(PETSC_DOUBLE, &doubleSize);CHKERRQ(ierr);
-      elementSize = (intSize + 3*doubleSize);
-      ierr = PetscMalloc1(elementSize*numVertices, &buffer);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, buffer, elementSize*numVertices, NULL, PETSC_CHAR);CHKERRQ(ierr);
-      if (bswap) ierr = PetscByteSwap(buffer, PETSC_CHAR, elementSize*numVertices);CHKERRQ(ierr);
+      int      tInt;
+      double   tDouble[3];
+
       for (v = 0; v < numVertices; ++v) {
-        baseptr = ((double*)(buffer+v*elementSize+intSize));
-        coordsIn[v*3+0] = (PetscReal) baseptr[0];
-        coordsIn[v*3+1] = (PetscReal) baseptr[1];
-        coordsIn[v*3+2] = (PetscReal) baseptr[2];
+        ierr = PetscViewerRead(viewer, &tInt, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        ierr = PetscViewerRead(viewer, tDouble, 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
+        if (bswap) {ierr = PetscByteSwap(tDouble, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
+        coordsIn[v*3+0] = (PetscReal) tDouble[0];
+        coordsIn[v*3+1] = (PetscReal) tDouble[1];
+        coordsIn[v*3+2] = (PetscReal) tDouble[2];
       }
-      ierr = PetscFree(buffer);CHKERRQ(ierr);
     } else {
       for (v = 0; v < numVertices; ++v) {
         ierr = PetscViewerRead(viewer, &i, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);

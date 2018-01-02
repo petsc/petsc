@@ -81,3 +81,11 @@
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!     test:
+!       nsize: 3
+!       filter:  grep -v "MPI processes" 
+!
+!TEST*/

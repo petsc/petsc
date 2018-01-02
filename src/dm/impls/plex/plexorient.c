@@ -29,8 +29,8 @@ PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
 
   PetscFunctionBegin;
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &revcone);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxConeSize, MPIU_INT, &revconeO);CHKERRQ(ierr);
   /* Reverse cone, and reverse orientations of faces */
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
@@ -57,8 +57,8 @@ PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
       ierr = DMPlexInsertConeOrientation(dm, support[sp], cp, coneO[cp] >= 0 ? -(faceSize-coneO[cp]) : faceSize+coneO[cp]);CHKERRQ(ierr);
     }
   }
-  ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &revcone);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, maxConeSize, MPIU_INT, &revconeO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

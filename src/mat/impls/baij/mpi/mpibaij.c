@@ -3904,7 +3904,9 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*mat,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*mat,bs);CHKERRQ(ierr);
+  ierr = MatSetUp(*mat);CHKERRQ(ierr);
   ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
   ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
