@@ -146,7 +146,6 @@ function petsc_testrun() {
     cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
     echo "$cmd" >> ${tlabel}.sh
     eval "$cmd"
-    let cmd_res+=$?
   fi
 
   # Report errors
