@@ -60,6 +60,9 @@ endif
 ifeq ($(REPLACE),1)
   TESTFLAGS += -m    # Replace results by passing -m to petscdiff
 endif
+ifeq ($(ALT),1)
+  TESTFLAGS += -M    # Replace alt files by passing -M to petscdiff
+endif
 ifeq ($(DIFF_NUMBERS),1)
   TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
 endif
@@ -294,10 +297,11 @@ help-test:
 	-@echo
 	-@echo "Options:"
 	-@echo "  NO_RM=1           Do not remove the executables after running"
-	-@echo "  REPLACE=1         Replace the output in the PETSC_DIR source tree (-m to test scripts)"
+	-@echo "  REPLACE=1         Replace the output in PETSC_DIR source tree (-m to test scripts)"
+	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
-	-@echo "  TESTDIR='tests'   Subdirectory where the tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
+	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
 	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"

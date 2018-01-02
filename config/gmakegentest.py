@@ -381,7 +381,7 @@ class generateExamples(Petsc):
           af=subst['altfiles'][i]
           cmd+=af+' '+rf+' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
           if i!=len(subst['altfiles'])-1:
-            cmd+=' || ${diff_exe} '
+            cmd+=' && ${diff_exe} '
           else:
             cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
             cmd+=subst['label_suffix']+' ""'  # Quotes are painful

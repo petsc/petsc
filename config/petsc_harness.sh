@@ -32,6 +32,7 @@ OPTIONS
   -j ................ Pass -j to petscdiff (just use diff)
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
+  -M ................ Update alt files using petscdiff
   -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
@@ -48,7 +49,7 @@ cleanup=false
 debugger=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mn:t:vV" arg
+while getopts "a:cde:fhjJ:mMn:t:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -61,6 +62,7 @@ do
     j ) diff_flags="-j"      ;;  
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
+    M ) diff_flags="-M"      ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  

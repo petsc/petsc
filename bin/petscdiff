@@ -13,6 +13,7 @@ Replaces floating point numbers with XXX and then does a diff
 
 OPTIONS
   -m ................ mv file2 to file1 after diffing
+  -M ................ mv file2 to file1 after diffing if it is an alt file
   -j ................ just use diff without modifying numbers
   -h ................ print this message
 EOF
@@ -21,14 +22,16 @@ EOF
 
 # parse options -- using getopts because it is so easily extensible
 mvfile=false
+mvfile_ifalt=false
 justdiff=false
 diffargs=""
-while getopts "hjJ:m" opt
+while getopts "hjJ:mM" opt
 do
   case $opt in
     j ) justdiff=true ;;
     J ) justdiff=true;  diffargs=$OPTARG;;
     m ) mvfile=true;;
+    M ) mvfile_ifalt=true;;
     h ) print_usage 0;;
   esac
 done
@@ -58,6 +61,14 @@ else
   else
     echo Error! file1 check failed: "${1}"
     exit 1
+  fi
+  if ${mvfile_ifalt}; then
+    echo "mvfile_ifalt"
+    if echo $1 | grep '_alt.out'; then 
+      echo "mv'ing $2 --> $1"
+      mv "$2" "$1"
+      exit 0
+    fi
   fi
 fi
 
@@ -95,6 +106,12 @@ fi
 if ${mvfile}; then
   echo "mv'ing $file2 --> $file1"
   mv "$file2" "$file1"
+fi
+if ${mvfile_ifalt}; then
+  if echo $file1 | grep '_alt.out'; then 
+    echo "mv'ing $file2 --> $file1"
+    mv "$file2" "$file1"
+  fi
 fi
 
 exit ${err};
