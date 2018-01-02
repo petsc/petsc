@@ -13,11 +13,12 @@
          PetscObjectSetName((PetscObject)mat,name);
 -  name - the name to give obj
 
+   Notes: If this routine is not called then the object may end up being name by PetscObjectName().
    Level: advanced
 
    Concepts: object name^setting
 
-.seealso: PetscObjectGetName()
+.seealso: PetscObjectGetName(), PetscObjectName()
 @*/
 PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 {

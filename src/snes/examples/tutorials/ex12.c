@@ -1676,6 +1676,7 @@ int main(int argc, char **argv)
     suffix: quad_q1_adapt_0
     requires: p4est
     args: -run_type exact -dim 2 -simplex 0 -dm_plex_convert_type p4est -bc_type dirichlet -interpolate 1 -petscspace_order 1 -variable_coefficient circle -snes_converged_reason ::ascii_info_detail -pc_type lu -dm_forest_initial_refinement 4   -snes_adapt_initial -dm_view
+    filter: grep -v DM_
 
   test:
     suffix: amr_0
