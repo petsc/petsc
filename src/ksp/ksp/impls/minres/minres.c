@@ -210,6 +210,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)
   minres->haptol = 1.e-100;
+#elif defined(PETSC_USE_REAL_SINGLE)
+  minres->haptol = 1.e-25;
 #else
   minres->haptol = 1.e-50;
 #endif

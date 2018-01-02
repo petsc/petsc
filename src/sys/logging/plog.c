@@ -1558,7 +1558,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
                             name, maxCt, ratCt, maxt, ratt, maxf, ratf, totm, totml, totr,
                             100.0*fracTime, 100.0*fracFlops, 100.0*fracMess, 100.0*fracMessLen, 100.0*fracRed,
                             100.0*fracStageTime, 100.0*fracStageFlops, 100.0*fracStageMess, 100.0*fracStageMessLen, 100.0*fracStageRed,
-                            PetscAbsReal(flopr/1.0e6));CHKERRQ(ierr);
+                            PetscAbs(flopr)/1.0e6);CHKERRQ(ierr);
       }
     }
   }

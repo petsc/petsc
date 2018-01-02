@@ -115,3 +115,30 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -mat_type mpibaij -mat_block_size 3
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -mat_type mpiaij -keep_nonzero_pattern
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 4
+      nsize: 3
+      args: -keep_nonzero_pattern -mat_type mpibaij -mat_block_size 3
+      filter: grep -v "MPI processes"
+
+TEST*/

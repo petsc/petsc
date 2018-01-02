@@ -7,11 +7,13 @@
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
 !
-!/*T
+!!/*T
 !  Concepts: SNES^parallel Bratu example
 !  Concepts: DMDA^using distributed arrays;
 !  Processors: n
 !T*/
+
+
 !
 !  --------------------------------------------------------------------------
 !
@@ -104,8 +106,7 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &
-     &     DM_BOUNDARY_NONE,                                            &
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,      &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMSetFromOptions(da,ierr)
@@ -125,10 +126,8 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,ierr)
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
-     &     PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,             &
-     &     PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
@@ -145,10 +144,8 @@
 
 !  Set function evaluation routine and vector
 
-      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,            &
-     &                              0,ierr)
-      call DMDASNESSetJacobianLocal(da,FormJacobianLocal,                          &
-     &                              0,ierr)
+      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,0,ierr)
+      call DMDASNESSetJacobianLocal(da,FormJacobianLocal,0,ierr)
       call SNESSetDM(snes,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -283,12 +280,10 @@
       do 20 j=ys,ye
          temp = (min(j-1,my-j))*hy
          do 10 i=xs,xe
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *                                          &
-     &          sqrt(min(min(i-1,mx-i)*hx,(temp)))
+              x(i,j) = temp1 * sqrt(min(min(i-1,mx-i)*hx,(temp)))
             endif
  10      continue
  20   continue
@@ -351,13 +346,11 @@
 
       do 20 j=ys,ye
          do 10 i=xs,xe
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j)
-               uxx = hydhx * (two*u                                     &
-     &                - x(i-1,j) - x(i+1,j))
+               uxx = hydhx * (two*u - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
             endif
@@ -453,19 +446,16 @@
          do 10 i=xs,xe
             row = row + 1
 !           boundary points
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
 !       Some f90 compilers need 4th arg to be of same type in both calls
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,i1,row,i1,col,v,                &
-     &                           INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac,i1,row,i1,col,v,INSERT_VALUES,ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy)                               &
-     &                  - sc*lambda*exp(x(i,j))
+               v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
                col(1) = row - gxm
@@ -473,8 +463,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,i1,row,i5,col,v,                &
-     &                                INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac,i1,row,i5,col,v, INSERT_VALUES,ierr)
             endif
  10      continue
  20   continue
@@ -487,3 +476,24 @@
       return
       end
 
+!/*TEST
+!
+!   build:
+!      requires: !complex !single
+!
+!   test:
+!      nsize: 4
+!      args: -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 2
+!      nsize: 4
+!      args: -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 3
+!      nsize: 3
+!      args: -snes_fd -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!
+!TEST*/

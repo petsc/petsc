@@ -197,3 +197,32 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -mat_ordering -display_matrices -nox
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 2
+      args: -mat_ordering -display_matrices -nox -lu
+
+   test:
+      suffix: 3
+      args: -mat_ordering -lu -triangular_solve
+
+   test:
+      suffix: 4
+
+   test:
+      suffix: 5
+      args: -lu
+
+   test:
+      suffix: 6
+      args: -lu -triangular_solve
+      output_file: output/ex30_3.out
+
+TEST*/

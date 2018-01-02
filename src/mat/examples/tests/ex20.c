@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_IMPL);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -59,3 +59,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -conv_mat_type seqaij
+
+TEST*/

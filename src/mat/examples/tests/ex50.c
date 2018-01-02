@@ -1,4 +1,8 @@
 
+/*T
+   requires: !complex
+T*/
+
 #include <petscmat.h>
 
 #if !defined(PETSC_USE_64BIT_INDICES)
@@ -72,3 +76,11 @@ int main(int argc,char **args)
 #endif
 }
 
+
+
+/*TEST
+
+   test:
+     TODO: need to provide ASCII matrix to read in
+
+TEST*/

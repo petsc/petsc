@@ -1,6 +1,7 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, interlaces state and adjoint variables.\n\n";
 
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
@@ -305,3 +306,13 @@ PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat A,Mat B,void *ctx)
   ierr = MatMFFDSetBase(A,x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view
+      requires: !single
+
+TEST*/

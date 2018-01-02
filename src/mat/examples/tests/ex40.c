@@ -69,7 +69,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
   }
 
   /* Free allocated memory */
@@ -87,3 +87,22 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: 3
+      requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) !complex
+      args: -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2
+
+   test:
+      suffix: 2
+      nsize: 3
+      requires: double !define(PETSC_USE_64BIT_INDICES) !complex
+      args: -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2
+
+TEST*/

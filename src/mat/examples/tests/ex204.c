@@ -7,7 +7,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt rank,size;
 
-  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -25,7 +25,7 @@ int main(int argc,char **args)
     for(i=0;i<m;++i){
       for(cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A_vcl,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);
+        ierr = MatSetValue(A_vcl,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A_vcl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
     for(i=0;i<m;++i){
       for(cnt = 0; cnt<nz; ++cnt){
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A,i,j,(PetscScalar) (0.3 * i + j),INSERT_VALUES);
+        ierr = MatSetValue(A,i,j,(PetscScalar) (0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **args)
     for(i=0;i<m;++i) {
       for(cnt = 0; cnt<nz; ++cnt){
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);
+        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = PetscObjectSetName((PetscObject)A,"MPI CPU Matrix");CHKERRQ(ierr);
-    
+
     ierr = MatCreateVecs(A,&v,&r);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)r,"MPI CPU result vector");CHKERRQ(ierr);
     ierr = VecSet(v,val);CHKERRQ(ierr);
@@ -213,14 +213,14 @@ int main(int argc,char **args)
     for(i=rlow;i<rhigh;++i){
       for(cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % N;
-        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);
+        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = PetscObjectSetName((PetscObject)A,"MPI CPU Matrix");CHKERRQ(ierr);
-    
+
     ierr = MatCreateVecs(A,&v,&r);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)r,"MPI CPU result vector");CHKERRQ(ierr);
     ierr = VecSet(v,val);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ int main(int argc,char **args)
 
     ierr = VecDuplicate(r_vcl,&d_vcl);CHKERRQ(ierr);
     ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
-    ierr = VecAXPY(d_vcl,-1.0,r);
+    ierr = VecAXPY(d_vcl,-1.0,r);CHKERRQ(ierr);
     ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
     if (dnorm > tol) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
@@ -248,7 +248,22 @@ int main(int argc,char **args)
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 
 }
+
+/*TEST
+
+   build:
+      requires: viennacl
+
+   test:
+      output_file: output/ex204.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      output_file: output/ex204.out
+
+TEST*/

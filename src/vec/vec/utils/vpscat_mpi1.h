@@ -63,7 +63,7 @@ PetscErrorCode PETSCMAP1(VecScatterBeginMPI1)(VecScatter ctx,Vec xin,Vec yin,Ins
   else yv = xv;
 
   if (!(mode & SCATTER_LOCAL)) {
-    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {
+    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv && !to->use_window) {
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }

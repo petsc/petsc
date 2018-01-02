@@ -33,6 +33,7 @@ solu
 0 1.0
 */
 
+
 #include <petscmat.h>
 
 int main(int argc,char **args)
@@ -156,3 +157,15 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex
+
+   test:
+      args: -Ain ${DATAFILESPATH}/matrices/indefinite/afiro_A.dat
+
+
+TEST*/

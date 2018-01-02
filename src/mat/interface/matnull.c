@@ -258,7 +258,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     for (i=0; i<n; i++) {
       PetscReal norm;
       ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
-      if (PetscAbsReal(norm - 1.0) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
+      if (PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {

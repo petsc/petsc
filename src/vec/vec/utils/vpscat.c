@@ -1,5 +1,4 @@
 
-
 /*
     Defines parallel vector scatters.
 */
@@ -43,7 +42,6 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %D\n",(int)(lensend_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %D\n",(int)(lenrecv_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
-
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  VecScatter Blocksize %D\n",to->bs);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
@@ -138,11 +136,9 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter scatter,VecScatter_Seq
   if (!n_nonmatching) {
     to->nonmatching_computed = PETSC_TRUE;
     to->n_nonmatching        = from->n_nonmatching = 0;
-
     ierr = PetscInfo1(scatter,"Reduced %D to 0\n", n);CHKERRQ(ierr);
   } else if (n_nonmatching == n) {
     to->nonmatching_computed = PETSC_FALSE;
-
     ierr = PetscInfo(scatter,"All values non-matching\n");CHKERRQ(ierr);
   } else {
     to->nonmatching_computed= PETSC_TRUE;
@@ -286,7 +282,6 @@ PetscErrorCode VecScatterDestroy_PtoP_MPI3(VecScatter ctx)
   ierr = PetscFree(to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* --------------------------------------------------------------------------------------*/
 /*
@@ -2260,7 +2255,6 @@ PetscErrorCode VecScatterCreate_PtoS_MPI3(PetscInt nx,const PetscInt *inidx,Pets
   MPI_Win                sharedoffsetwin;           /* Window that owns sharedspaceoffset */
   PetscInt               *sharedspaceoffset;
 
-
   PetscFunctionBegin;
   ierr   = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   ierr   = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -2331,7 +2325,7 @@ PetscErrorCode VecScatterCreate_PtoS_MPI3(PetscInt nx,const PetscInt *inidx,Pets
   }
 
   /*  wait on receives; this is everyone who we need to deliver data to */
-  ierr = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
+  ierr  = PetscCommSharedGet(comm,&scomm);CHKERRQ(ierr);
   count = nrecvs;
   slen  = 0;
   nrecvshared = 0;
@@ -2353,21 +2347,21 @@ PetscErrorCode VecScatterCreate_PtoS_MPI3(PetscInt nx,const PetscInt *inidx,Pets
   if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
 
   /* allocate entire send scatter context */
-  ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
-  to->sharedwin       = MPI_WIN_NULL;
-  to->n = nrecvs-nrecvshared;
+  ierr          = PetscNewLog(ctx,&to);CHKERRQ(ierr);
+  to->sharedwin = MPI_WIN_NULL;
+  to->n         = nrecvs-nrecvshared;
 
-  ierr  = PetscMalloc1(nrecvs-nrecvshared,&to->requests);CHKERRQ(ierr);
-  ierr  = PetscMalloc4(bs*(slen-slenshared),&to->values,slen-slenshared,&to->indices,nrecvs-nrecvshared+1,&to->starts,nrecvs-nrecvshared,&to->procs);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(PetscMax(to->n,nsends),&to->sstatus,PetscMax(to->n,nsends),&to->rstatus);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs-nrecvshared,&to->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc4(bs*(slen-slenshared),&to->values,slen-slenshared,&to->indices,nrecvs-nrecvshared+1,&to->starts,nrecvs-nrecvshared,&to->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(to->n,nsends),&to->sstatus,PetscMax(to->n,nsends),&to->rstatus);CHKERRQ(ierr);
 
   ierr = PetscCommSharedGetComm(scomm,&mscomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mscomm,&to->msize);CHKERRQ(ierr);
-  ierr  = PetscMalloc1(slenshared,&to->sharedspaceindices);CHKERRQ(ierr);
-  ierr  = PetscCalloc1(to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(slenshared,&to->sharedspaceindices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(to->msize+1,&to->sharedspacestarts);CHKERRQ(ierr);
 
-  ctx->todata   = (void*)to;
-  to->starts[0] = 0;
+  ctx->todata              = (void*)to;
+  to->starts[0]            = 0;
   to->sharedspacestarts[0] = 0;
 
     /* Allocate shared memory space for shared memory partner communication */
@@ -2579,7 +2573,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
 #endif
 
   if (to->use_alltoallv) {
-
     ierr       = PetscMalloc2(size,&to->counts,size,&to->displs);CHKERRQ(ierr);
     ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     for (i=0; i<to->n; i++) to->counts[to->procs[i]] = bs*(to->starts[i+1] - to->starts[i]);
@@ -2730,7 +2723,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
       if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     }
-
     ctx->ops->copy = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
@@ -2793,7 +2785,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   default:
     ctx->ops->begin = VecScatterBegin_bs;
     ctx->ops->end   = VecScatterEnd_bs;
-
   }
   ctx->ops->view = VecScatterView_MPI;
   /* Check if the local scatter is actually a copy; important special case */
@@ -2802,8 +2793,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
   }
   PetscFunctionReturn(0);
 }
-
-
 
 /* ------------------------------------------------------------------------------------*/
 /*
@@ -2829,7 +2818,6 @@ PetscErrorCode VecScatterCreate_StoP_MPI3(PetscInt nx,const PetscInt *inidx,Pets
 
   from->sstatus = 0;
   from->rstatus = 0;
-
   waits              = from->rev_requests;
   from->rev_requests = from->requests;
   from->requests     = waits;
@@ -2973,7 +2961,6 @@ PetscErrorCode VecScatterCreate_PtoP_MPI3(PetscInt nx,const PetscInt *inidx,Pets
   /*
      should sort and remove duplicates from local_inidx,local_inidy
   */
-
 #if defined(do_it_slow)
   /* sort on the from index */
   ierr  = PetscSortIntWithArray(slen,local_inidx,local_inidy);CHKERRQ(ierr);

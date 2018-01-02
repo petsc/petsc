@@ -1,6 +1,10 @@
 
 static char help[] = "Tests various DM routines.\n\n";
 
+/*T
+   requires: cusp x
+T*/
+
 #include <petscdm.h>
 #include <petscdmda.h>
 
@@ -53,3 +57,26 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -nox
+      filter: grep -v -i Object
+
+   test:
+      suffix: cusp1
+      requires: cusp
+      args: -dm_vec_type cusp -nox
+      filter: grep -v -i Object
+
+   test:
+      suffix: cusp2
+      nsize: 2
+      requires: cusp
+      args: -dm_vec_type cusp -nox
+      filter: grep -v -i Object
+
+TEST*/

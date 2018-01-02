@@ -1,4 +1,5 @@
 #include <petsc/private/fortranimpl.h>
+#include <petsc/private/f90impl.h>
 #include <petscmat.h>
 #include <petscviewer.h>
 
@@ -11,6 +12,7 @@
 #define matsetvalues1n_                  MATSETVALUES1N
 #define matsetvaluesn1_                  MATSETVALUESN1
 #define matsetvaluesblocked0_            MATSETVALUESBLOCKED0
+#define matsetvaluesblocked2_            MATSETVALUESBLOCKED2
 #define matsetvaluesblocked11_           MATSETVALUESBLOCKED11
 #define matsetvaluesblocked111_          MATSETVALUESBLOCKED111
 #define matsetvaluesblocked1n_           MATSETVALUESBLOCKED1N
@@ -98,6 +100,7 @@
 #define matsetvalueslocaln1_             matsetvalueslocaln1
 #define matsetvaluesblocked_             matsetvaluesblocked
 #define matsetvaluesblocked0_            matsetvaluesblocked0
+#define matsetvaluesblocked2_            matsetvaluesblocked2
 #define matsetvaluesblocked11_           matsetvaluesblocked11
 #define matsetvaluesblocked111_          matsetvaluesblocked111
 #define matsetvaluesblocked1n_           matsetvaluesblocked1n
@@ -209,6 +212,12 @@ PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize01_(Mat *mat,PetscInt *m,PetscIn
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
   *ierr = MatSetValuesBlocked(*mat,*m,idxm,*n,idxn,v,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked2_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], F90Array2d *y,InsertMode *addv, int *ierr PETSC_F90_2PTR_PROTO(ptrd)){
+  PetscScalar *fa;
+  *ierr = F90Array2dAccess(y,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,fa,addv,ierr);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){

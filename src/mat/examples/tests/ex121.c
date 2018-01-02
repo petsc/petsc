@@ -4,6 +4,7 @@ static char help[] = "Test sequential FFTW convolution\n\n";
   Compiling the code:
     This code uses the complex numbers, so configure must be given --with-scalar-type=complex to enable this
 */
+
 #include <petscmat.h>
 
 PetscInt main(PetscInt argc,char **args)
@@ -134,3 +135,15 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: fftw complex
+
+   test:
+      output_file: output/ex121.out
+      TODO: Example or FFTW interface is broken
+
+TEST*/

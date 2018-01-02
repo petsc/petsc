@@ -79,12 +79,27 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
+      nsize: 2
+      args: -nox
+      filter: grep -v "MPI processes"
+      output_file: output/ex2_1.out
+      requires: x
 
+   test:
+      suffix: 2
+      nsize: 3
+      args: -wrap none -local_print -nox
+      filter: grep -v "Vec Object: Vec"
+      requires: x
 
+   test:
+      suffix: 3
+      nsize: 3
+      args: -wrap ghosted -local_print -nox
+      filter: grep -v "Vec Object: Vec"
+      requires: x
 
-
-
-
-
-
+TEST*/

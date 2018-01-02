@@ -294,3 +294,25 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: complex
+
+   test:
+
+   test:
+      suffix: 2
+      args: -test_zheevx
+
+   test:
+      suffix: 3
+      args: -test_zhegv
+
+   test:
+      suffix: 4
+      args: -test_zhegvx
+
+TEST*/

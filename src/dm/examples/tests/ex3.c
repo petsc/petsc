@@ -1,6 +1,10 @@
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
@@ -110,7 +114,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+    test:
+      nsize: 3
+      args: -time 50 -nox
+      requires: x
 
-
-
+TEST*/

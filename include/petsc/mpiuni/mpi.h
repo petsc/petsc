@@ -518,7 +518,7 @@ typedef int MPI_Fint;
       MPI_SUCCESS)
 #define MPI_Comm_group(comm,group) \
      (MPIUNI_ARG(comm),\
-      MPIUNI_ARG(group),\
+      *group = 1,\
       MPI_SUCCESS)
 #define MPI_Group_incl(group,n,ranks,newgroup) \
      (MPIUNI_ARG(group),\

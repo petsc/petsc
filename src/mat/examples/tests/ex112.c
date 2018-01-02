@@ -115,3 +115,30 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires:  fftw complex
+
+   test:
+      args: -mat_fftw_plannerflags FFTW_ESTIMATE
+      output_file: output/ex112.out
+
+   test:
+      suffix: 2
+      args: -mat_fftw_plannerflags FFTW_MEASURE
+      output_file: output/ex112.out
+
+   test:
+      suffix: 3
+      args: -mat_fftw_plannerflags FFTW_PATIENT
+      output_file: output/ex112.out
+
+   test:
+      suffix: 4
+      args: -mat_fftw_plannerflags FFTW_EXHAUSTIVE
+      output_file: output/ex112.out
+
+TEST*/

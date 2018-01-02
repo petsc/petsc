@@ -348,7 +348,7 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
     if (match && PetscDrawImageSaveTable[k].SaveImage) PetscFunctionReturn(0);
   }
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm",*ext);
-  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
@@ -374,7 +374,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigne
     }
   }
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Image extension %s not supported, use .ppm",ext);
-  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
