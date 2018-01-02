@@ -306,10 +306,11 @@ int main(int argc,char **args)
    test:
       args:
       requires: !complex double
+
    test:
       suffix: 2
-      requires: triangle double
+      requires: triangle double !complex
       args: -mode 1
-      requires: !complex double
+      filter: grep -v DM_
 
 TEST*/
