@@ -304,14 +304,30 @@ See Section \ref{sec_debugging} for more information on debugging PETSc programs
 \section{Running PETSc Tests}
 \label{sec_runningtests}
 
+\subsection{Quick start with the tests}
+
+For testing builds, the general invocation from the PETSC_DIR is:
+\begin{bashlisting}
+   make -f gmakefile.test test PETSC_ARCH=<PETSC_ARCH>
+\end{bashlisting}
+
+For testing installs, the general invocation from the installation (prefix)
+directory is:
+\begin{bashlisting}
+   make -f share/petsc/examples/gmakefile.test test
+\end{bashlisting}
+
+For a full list of options, use
+\begin{bashlisting}
+   make -f gmakefile.test help
+\end{bashlisting}
+
+\subsection{Understanding test output}
+
 As discussed in Section~\ref{sec_running}, 
 the users should set \trl{PETSC_DIR} and \trl{PETSC_ARCH} before running
 the tests.
 
-To run the tests, the general invocation is:
-\begin{bashlisting}
-   make test PETSC_ARCH=<PETSC_ARCH>
-\end{bashlisting}
 The test reporting system classifies them according to the Test Anywhere
 Protocal (TAP): See \url{https://testanything.org/tap-specification.html}
 In brief, the categories are
@@ -334,6 +350,8 @@ system.  The tests are run in
 \trl{${PETSC_DIR}/${PETSC_ARCH}/tests}
 with the same directory as the source tree underneath 
 (See ~\ref{sec_directory}).  
+For testing installs, the default location is:
+\trl{${PREFIX_DIR}/tests} but this can be changed with the TESTDIR location.
 A label is used to denote where it can be found within the source tree.
 For example, test \trl{vec_vec_tutorials_runex6} denotes the shell
 script:
@@ -357,27 +375,38 @@ wildcards, but rather whether the string is within the arguments.
 
 Some examples are:
 \begin{bashlisting}
-      make -f gmakefile search='ts\%' testsearch  # Run all ts examples
+      make -f gmakefile.test search='ts\%' test  # Run all ts examples
 \end{bashlisting}
 \begin{bashlisting}
-      make -f gmakefile searchin='tutorials' testsearch  # Run all tutorials
+      make -f gmakefile.test searchin='tutorials' test  # Run all tutorials
 \end{bashlisting}
 \begin{bashlisting}
-      make -f gmakefile argsearch='cuda' testsearch  # Run examples with cuda in arguments
+      make -f gmakefile.test argsearch='cuda' test  # Run examples with cuda in arguments
 \end{bashlisting}
 
 Finally, it is useful before invoking the tests to see what targets will
-be run.  The \trl{echo_testsearch} is useful for this:
+be run.  The \trl{print-test} is useful for this:
 \begin{bashlisting}
-      make -f gmakefile argsearch='cuda' echo_testsearch
+      make -f gmakefile.test argsearch='cuda' print-test
 \end{bashlisting}
 Finally, to see all of the test targets, this command can be used:
 \begin{bashlisting}
-      make -f gmakefile echo_test
+      make -f gmakefile.test print-test
 \end{bashlisting}
+
+For testing in install directories, some examples are:
+\begin{bashlisting}
+  cd ${PREFIX_DIR}; make -f gmakefile.test test TESTDIR=mytests
+\end{bashlisting}
+or
+\begin{bashlisting}
+  cd ${PREFIX_DIR}/share/petsc/examples; make -f gmakefile.test test TESTDIR=$PWD/mytests
+\end{bashlisting}
+where the latter is needed to make have it run in the local directory instead of
+\trl{$PREFIX_DIR}
+
 To learn more about the test system details, one can look at the
 Developer's Guide.
-
 
 %-----------------------------------------------------------------------------
 \section{Writing PETSc Programs}

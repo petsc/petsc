@@ -385,10 +385,10 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
 #else
     ierr = PetscStrncpy(fname,"",m);CHKERRQ(ierr);
 #endif
-    type = PETSC_CHAR;
-    pp   = (char*)fname;
+    wtype = PETSC_CHAR;
+    pp    = (char*)fname;
 #if !defined(PETSC_WORDS_BIGENDIAN)
-    ptmp = (void*)fname;
+    ptmp  = (void*)fname;
 #endif
   }
 

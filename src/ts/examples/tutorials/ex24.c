@@ -254,3 +254,12 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
   }
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -pc_type lu -ts_dt 1e-5 -ts_final_time 1e5 -n 50 -monitor_short
+      requires: !single
+      TODO: broken
+
+TEST*/

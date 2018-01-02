@@ -264,3 +264,18 @@ PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,PetscViewerA
   ierr = SNESMonitorDefaultShort(snes,its,fnorm,vf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -ts_max_steps 5
+
+    test:
+      suffix: 2
+      args: -ts_max_steps 5  -snes_mf_operator
+
+    test:
+      suffix: 3
+      args: -ts_max_steps 5  -snes_mf
+
+TEST*/

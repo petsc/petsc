@@ -532,7 +532,7 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix * result)
 /*
    spbas_mergesort
 
-      mergesort for an array of intergers and an array of associated
+      mergesort for an array of integers and an array of associated
       reals
 
       on output, icol[0..nnz-1] is increasing;

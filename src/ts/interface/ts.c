@@ -535,7 +535,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
 Note: This routine should be called after all TS options have been set
 
-    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and 
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and
    MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
@@ -2334,9 +2334,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 /*@
-   TSGetSolutionComponents - Returns any solution components at the present 
-   timestep, if available for the time integration method being used. 
-   Solution components are quantities that share the same size and 
+   TSGetSolutionComponents - Returns any solution components at the present
+   timestep, if available for the time integration method being used.
+   Solution components are quantities that share the same size and
    structure as the solution vector.
 
    Not Collective, but Vec returned is parallel if TS is parallel
@@ -2344,9 +2344,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
 .  n - If v is PETSC_NULL, then the number of solution components is
-       returned through n, else the n-th solution component is 
+       returned through n, else the n-th solution component is
        returned in v.
-.  v - the vector containing the n-th solution component 
+.  v - the vector containing the n-th solution component
        (may be PETSC_NULL to use this function to find out
         the number of solutions components).
 
@@ -2363,21 +2363,21 @@ PetscErrorCode  TSGetSolutionComponents(TS ts,PetscInt *n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->getsolutioncomponents) *n = 0;
-  else { 
-    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr); 
+  else {
+    ierr = (*ts->ops->getsolutioncomponents)(ts,n,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@
-   TSGetAuxSolution - Returns an auxiliary solution at the present 
+   TSGetAuxSolution - Returns an auxiliary solution at the present
    timestep, if available for the time integration method being used.
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
    Parameters :
 .  ts - the TS context obtained from TSCreate() (input parameter).
-.  v - the vector containing the auxiliary solution 
+.  v - the vector containing the auxiliary solution
 
    Level: intermediate
 
@@ -2425,7 +2425,7 @@ PetscErrorCode  TSGetTimeError(TS ts,PetscInt n,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->ops->gettimeerror) {
-    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->gettimeerror)(ts,n,v);CHKERRQ(ierr);
   } else {
     ierr = VecZeroEntries(*v);CHKERRQ(ierr);
   }
@@ -2457,7 +2457,7 @@ PetscErrorCode  TSSetTimeError(TS ts,Vec v)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetUp() first");
   if (ts->ops->settimeerror) {
-    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr); 
+    ierr = (*ts->ops->settimeerror)(ts,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3597,10 +3597,10 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
   Level: intermediate
 
   Note:
-  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling 
-  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep() 
-  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step 
-  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step 
+  Semantically, TSSetPostEvaluate() differs from TSSetPostStep() since the function it sets is called before event-handling
+  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, TSPostStep()
+  may be passed a different solution, possibly changed by the event handler. TSPostEvaluate() is called after the next step
+  solution is evaluated allowing to modify it, if need be. The solution can be obtained with TSGetSolution(), the time step
   with TSGetTimeStep(), and the time at the start of the step is available via TSGetTime()
 
 .keywords: TS, timestep
@@ -3821,7 +3821,7 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      identical;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   for (i=0; i<ts->numbermonitors;i++) {
@@ -4411,17 +4411,17 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 /*@
  TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
- 
+
  Collective on TS
- 
+
  Input Arguments:
  .  ts - time stepping context
- 
+
  Level: advanced
- 
+
  Notes:
  This function cannot be called until TSAdjointStep() has been completed.
- 
+
  .seealso: TSAdjointSolve(), TSAdjointStep
  @*/
 PetscErrorCode TSAdjointCostIntegral(TS ts)
@@ -6252,7 +6252,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec U,Vec Y,PetscReal *norm,Pet
   PetscReal         max,gmax,maxa,gmaxa,maxr,gmaxr;
   PetscReal         tol,tola,tolr,diff;
   PetscReal         err_loc[3],err_glb[3];
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,2);

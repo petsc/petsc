@@ -24,9 +24,9 @@ FILE *gfilepointer_data,*gfilepointer_info;
 PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 {
   PetscFunctionBegin;
-  U=0.4*sin(200*pi*t);
+  * U = 0.4*PetscSinReal(200*PETSC_PI*t);
   PetscFunctionReturn(0);
-  }*/
+}
 
 
 /*
@@ -175,3 +175,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+    build:
+      requires: !single !complex
+    test:
+
+TEST*/

@@ -632,6 +632,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
 }
 
 
+/*TEST
 
+    test:
+      args: -nox -ts_dt 10 -mymonitor
+      nsize: 2
+      requires: !single
+
+TEST*/
 
 

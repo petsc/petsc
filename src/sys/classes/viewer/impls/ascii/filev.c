@@ -596,7 +596,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     va_list     Argp;
     size_t      fullLength;
 
-    ierr       = PetscCalloc1(QUEUESTRINGSIZE, &string);CHKERRQ(ierr);
+    ierr = PetscCalloc1(QUEUESTRINGSIZE, &string);CHKERRQ(ierr);
     va_start(Argp,format);
     ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);

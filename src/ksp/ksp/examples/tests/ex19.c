@@ -215,3 +215,15 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 
   return 0;
 }
+
+/*TEST
+
+    test:
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short -ksp_type gmres 
+
+    test:
+      suffix: 2
+      nsize: 3
+      args: -ksp_monitor_short
+
+TEST*/

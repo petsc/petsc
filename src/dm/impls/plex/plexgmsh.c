@@ -499,7 +499,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscSectionSetDof(coordSection, v, embedDim);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldDof(coordSection, v, 0, embedDim);CHKERRQ(ierr);
   }
-  if (periodicMap) {
+  if (!rank && periodicMap) {
     ierr = PetscBTCreate(trueNumCells, &periodicC);CHKERRQ(ierr);
     for (cell = 0, c = 0; c < numCells; ++c) {
       if (gmsh_elem[c].dim == dim) {

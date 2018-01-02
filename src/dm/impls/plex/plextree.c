@@ -1090,7 +1090,7 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
 }
 
 /*@
-  DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the Sieve DAG)
+  DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
 + dm - the DMPlex object
@@ -1137,7 +1137,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
 }
 
 /*@C
-  DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the Sieve DAG)
+  DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
 + dm - the DMPlex object

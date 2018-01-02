@@ -175,4 +175,9 @@
 #define MatCUSPStorageFormat PetscEnum
 #define MatCUSPFormatOperation PetscEnum
 
+!
+! sparsity reducing ordering for STRUMPACK
+!
+#define MatSTRUMPACKReordering PetscEnum
+
 #endif

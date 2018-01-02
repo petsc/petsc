@@ -1703,9 +1703,24 @@ PETSC_EXTERN PetscErrorCode MatSuperluDistGetDiagU(Mat,PetscScalar*);
    PETSc interface to STRUMPACK
 */
 #ifdef PETSC_HAVE_STRUMPACK
-PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSRelCompTol(Mat,PetscReal);
-PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMinSize(Mat,PetscInt);
+/*E
+    MatSTRUMPACKReordering - sparsity reducing ordering to be used in STRUMPACK
+
+    Level: intermediate
+E*/
+typedef enum {MAT_STRUMPACK_NATURAL=0,
+              MAT_STRUMPACK_METIS=1,
+              MAT_STRUMPACK_PARMETIS=2,
+              MAT_STRUMPACK_SCOTCH=3,
+              MAT_STRUMPACK_PTSCOTCH=4,
+              MAT_STRUMPACK_RCM=5} MatSTRUMPACKReordering;
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetReordering(Mat,MatSTRUMPACKReordering);
 PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetColPerm(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat,PetscInt);
 #endif
 
 

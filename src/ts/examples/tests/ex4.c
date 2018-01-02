@@ -9,7 +9,7 @@
              u = exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0))) at t=0
 
        This program tests the routine of computing the Jacobian by the
-       finite difference method as well as PETSc with SUNDIALS.
+       finite difference method as well as PETSc.
 
 */
 
@@ -55,10 +55,6 @@ int main(int argc,char **argv)
   SNES           snes;
   KSP            ksp;
   PC             pc;
-  PetscViewer    viewer;
-  char           pcinfo[120],tsinfo[120];
-  TSType         tstype;
-  PetscBool      sundials;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -83,11 +79,7 @@ int main(int argc,char **argv)
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,Monitor,&data,NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSSetType(ts,TSSUNDIALS);CHKERRQ(ierr);
-#else
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
-#endif
   dt             = 0.1;
   ftime_original = data.tfinal = 1.0;
 
@@ -185,19 +177,6 @@ int main(int argc,char **argv)
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewfile);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
-  }
-
-  /* display solver info for Sundials */
-  ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
-  if (sundials) {
-    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
-    ierr = PCView(pc,viewer);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",size,tsinfo,pcinfo);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* free the memories */
@@ -487,3 +466,44 @@ PetscErrorCode PostStep(TS ts)
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+    test:
+      args: -ts_fd -ts_type beuler
+      output_file: output/ex4.out
+
+    test:
+      suffix: 2
+      args: -ts_fd -ts_type beuler
+      nsize: 2
+      output_file: output/ex4.out
+
+    test:
+      suffix: 3
+      args: -ts_fd -ts_type cn
+
+    test:
+      suffix: 4
+      args: -ts_fd -ts_type cn
+      output_file: output/ex4_3.out
+      nsize: 2
+
+    test:
+      suffix: 5
+      args: -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl
+      output_file: output/ex4.out
+
+    test:
+      suffix: 6
+      args: -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl
+      output_file: output/ex4.out
+      nsize: 2
+
+    test:
+      suffix: 7
+      requires: !single
+      args: -ts_fd -ts_type beuler -test_PostStep -ts_dt .1
+
+TEST*/
+

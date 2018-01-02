@@ -406,3 +406,11 @@
 
       call VecRestoreArray(X,xx,ixx,ierr)
       end subroutine
+
+!/*TEST
+!
+!    test:
+!      args: -da_grid_x 200 -ts_arkimex_type 4
+!      requires: !single 
+!
+!TEST*/

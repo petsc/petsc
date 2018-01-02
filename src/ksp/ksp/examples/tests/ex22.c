@@ -229,3 +229,19 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+
+    test:
+      suffix: 2
+      nsize: 2
+
+    test:
+      suffix: 3
+      nsize: 2
+      args: -ksp_monitor_short -ksp_type bicg
+      requires: !single
+
+TEST*/

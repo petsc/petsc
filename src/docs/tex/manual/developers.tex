@@ -15,7 +15,7 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.7}}
+{\rm This document is intended for use with PETSc 3.8}}
 {}{April 2016}
 
 \newpage
@@ -151,6 +151,9 @@ instead of
 PetscScalar a;
 PetscInt i,j; /* Incorrect */
 \end{lstlisting}
+
+\item Assignment operations, i.e. \lstinline{x = 22.0} should have single spaces are around the \lstinline{=}, this is also true for comparison operations such as \lstinline{x < 22.0}. This is true even when assignments are given directly in a line that declares the variable such as \lstinline{PetscReal r = 22.3}. The exception is when these symbols are used in a for loop when there should be no spaces, for example, for \lstinline{(i=0; i<m; i++)}. Comparisons in \lstinline{while()} constructs should have the space.
+\item When declaring variables there should be no space between multiple variables, that is it should be \lstinline{PetscReal a,b,c} not \lstinline{PetscReal a, b, c}.
 \item The prototypes for functions should not include the names of the variables; for example write
 \begin{lstlisting}
 PetscErrorCode MyFunction(PetscInt);
@@ -1199,6 +1202,7 @@ logging and reporting features.
 
 \end{quote}
 
+Details on using the harness may be found in the main PETSc manual.
 
 \section{PETSc Test description language%
   \label{petsc-test-description-language}%
