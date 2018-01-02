@@ -762,11 +762,11 @@ class generateExamples(Petsc):
     #print "action", action
     # Goal of action is to fill this dictionary
     dataDict={}
-    for root, dirs, files in os.walk(top, topdown=False):
+    for root, dirs, files in os.walk(top, topdown=True):
       if not "examples" in root: continue
-      if not os.path.isfile(os.path.join(root,"makefile")): continue
+      if "dSYM" in root: continue
+      if os.path.basename(root.rstrip("/")) == 'output': continue
       if self.verbose: print(root)
-      bname=os.path.basename(root.rstrip("/"))
       self.genPetscTests(root,dirs,files,dataDict)
     # Now summarize this dictionary
     self.genPetscTests_summarize(dataDict)
