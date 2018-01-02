@@ -87,6 +87,7 @@
         <li><a href="#no-x">Can I install PETSc to not use X windows (either under Unix or Windows with gcc, the gnu compiler)?</a></li>
         <li><a href="#use-mpi">Why do you use MPI</a>?</li> <li><a href="#mpi-compilers">What do I do if my MPI compiler wrappers are invalid</a>?</li>
         <li><a href="#with-64-bit-indices">When should/can I use the ./configure option --with-64-bit-indices</a>?</li>
+        <li><a href="#compilererror">What if I get an internal compiler error?</a></li>
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
         <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
@@ -587,6 +588,16 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
         pointers. You do not need to use this option if you are using 64 bit
         pointers unless the two conditions above hold.
       </p>
+
+      <h3><a name="compilererror">What if I get an internal compiler error?</a></h3>
+
+      You can rebuild the offending file individually with a lower optimization level. Then make sure to complain to the
+      compiler vendor and file a bug report. For example, if the compiler chokes on
+      src/mat/impls/baij/seq/baijsolvtrannat.c you can run
+
+      <p>make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o</p>
+
+      and then invoke 'make all' again.
 
       <h3><a name="install-petsc4py-dev">How do I install petsc4py with the development PETSc?</a></h3>
 
@@ -1842,7 +1853,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         </li>
 
         <li>
-          You are running with the -log, -log_mpe, or -log_all option. He a great
+          You are running with the -log, -log_mpe, or -log_all option. With these options, a great
           deal of logging information is stored in memory until the conclusion of
           the run.
         </li>
@@ -1863,7 +1874,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
           track memory that is allocated and not later freed. Use the commands
           PetscMallocGetCurrentUsage() and PetscMemoryGetCurrentUsage() to
           monitor memory allocated and PetscMallocGetMaximumUsage() and PetscMemoryGetMaximumUsage()
-          for total memory used ass the code progresses.
+          for total memory used as the code progresses.
         </li>
 
         <li>This is just the way Unix works and is harmless.</li>

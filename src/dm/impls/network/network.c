@@ -1256,6 +1256,7 @@ PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, Pet
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h>
 PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
@@ -1291,19 +1292,19 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     ierr = PetscSectionGetConstrainedStorageSize(network->edge.GlobalDofSection,&eDof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstrainedStorageSize(network->vertex.GlobalDofSection,&vDof);CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD, &j11);CHKERRQ(ierr);
+    ierr = MatCreate(comm, &j11);CHKERRQ(ierr);
     ierr = MatSetSizes(j11, eDof, eDof, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j11, MATMPIAIJ);CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD, &j12);CHKERRQ(ierr);
+    ierr = MatCreate(comm, &j12);CHKERRQ(ierr);
     ierr = MatSetSizes(j12, eDof, vDof, PETSC_DETERMINE ,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j12, MATMPIAIJ);CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD, &j21);CHKERRQ(ierr);
+    ierr = MatCreate(comm, &j21);CHKERRQ(ierr);
     ierr = MatSetSizes(j21, vDof, eDof, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j21, MATMPIAIJ);CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD, &j22);CHKERRQ(ierr);
+    ierr = MatCreate(comm, &j22);CHKERRQ(ierr);
     ierr = MatSetSizes(j22, vDof, vDof, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j22, MATMPIAIJ);CHKERRQ(ierr);
 
@@ -1325,7 +1326,7 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     ierr = MatSetUp(j21);CHKERRQ(ierr);
     ierr = MatSetUp(j22);CHKERRQ(ierr);
 
-    ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,&bA[0][0],J);CHKERRQ(ierr);
+    ierr = MatCreateNest(comm,2,NULL,2,NULL,&bA[0][0],J);CHKERRQ(ierr);
     ierr = MatSetUp(*J);CHKERRQ(ierr);
     ierr = MatNestSetVecType(*J,VECNEST);CHKERRQ(ierr);
     ierr = MatDestroy(&j11);CHKERRQ(ierr);

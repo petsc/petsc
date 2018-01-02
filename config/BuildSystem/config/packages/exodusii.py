@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '208a03eae9b1f384e199e78c765a5300aa2d4873'
+    self.gitcommit         = '840b0e38a7390ecd53614f68b9b5def6b4a3fbd2'
     self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
@@ -14,9 +14,10 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.netcdf = framework.require('config.packages.netcdf', self)
-    self.hdf5   = framework.require('config.packages.hdf5', self)
-    self.deps   = [self.netcdf, self.hdf5]
+    self.pnetcdf = framework.require('config.packages.pnetcdf', self)
+    self.netcdf  = framework.require('config.packages.netcdf', self)
+    self.hdf5    = framework.require('config.packages.hdf5', self)
+    self.deps = [self.hdf5,self.netcdf,self.pnetcdf]
     return
 
   def configureLibrary(self):
@@ -54,7 +55,9 @@ class Configure(config.package.CMakePackage):
     args.append('-DSEACASProj_SKIP_FORTRANCINTERFACE_VERIFY_TEST:BOOL=ON')
     args.append('-DTPL_ENABLE_Matio:BOOL=OFF')
     args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
-    args.append('-DTPL_ENABLE_MPI=OFF')
+    args.append('-DTPL_ENABLE_Pnetcdf:BOOL=ON')
+    args.append('-DTPL_Netcdf_Enables_PNetcdf:BOOL=ON')
+    args.append('-DTPL_ENABLE_MPI=ON')
     args.append('-DTPL_ENABLE_Pamgen=OFF')
     args.append('-DTPL_ENABLE_CGNS:BOOL=OFF')
     args.append('-DNetCDF_DIR:PATH='+self.netcdf.directory)

@@ -33,7 +33,6 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
 
 #if defined(PETSC_USE_64BIT_INDICES)
  #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-  /* sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
   #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit
@@ -109,9 +108,10 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse
   }
   if (bs == 1) { /* already in the correct format */
     *v    = aa->a;
-    *r    = aa->i;
-    *c    = aa->j;
-    *nnz  = aa->nz;
+    /* though PetscInt and INT_TYPE are of the same size since they are defined differently the Intel compiler requires a cast */
+    *r    = (INT_TYPE*)aa->i;
+    *c    = (INT_TYPE*)aa->j;
+    *nnz  = (INT_TYPE)aa->nz;
     *free = PETSC_FALSE;
   } else {
     SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Conversion from SeqSBAIJ to MKL Pardiso format still need to be implemented");
@@ -134,9 +134,9 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,P
   PetscFunctionBegin;
   if (!sym) { /* already in the correct format */
     *v    = aa->a;
-    *r    = aa->i;
-    *c    = aa->j;
-    *nnz  = aa->nz;
+    *r    = (INT_TYPE*)aa->i;
+    *c    = (INT_TYPE*)aa->j;
+    *nnz  = (INT_TYPE)aa->nz;
     *free = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -167,9 +167,9 @@ PetscErrorCode MatMKLPardiso_Convert_seqaij(Mat A,PetscBool sym,MatReuse reuse,P
       row[i+1]    = row[i] + rl;
     }
     *v    = vals;
-    *r    = row;
-    *c    = col;
-    *nnz  = nz;
+    *r    = (INT_TYPE*)row;
+    *c    = (INT_TYPE*)col;
+    *nnz  = (INT_TYPE)nz;
     *free = PETSC_TRUE;
   } else {
     PetscScalar *vv;
@@ -837,7 +837,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_PARDISO(Mat F,Mat A,IS r,IS c,const Ma
 }
 
 #if !defined(PETSC_USE_COMPLEX)
-PetscErrorCode MatGetInertia_MKL_PARDISO(Mat F,int *nneg,int *nzero,int *npos)
+PetscErrorCode MatGetInertia_MKL_PARDISO(Mat F,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
 {
   Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)F->data;
 

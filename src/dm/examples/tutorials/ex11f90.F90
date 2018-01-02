@@ -156,6 +156,6 @@
 !     requires: !complex
 !
 !   test:
-!     filter: grep -v "Vec Object"
+!     filter: Error: grep -v "Vec Object" | grep -v "Warning: ieee_inexact is signaling" | grep -v "FORTRAN STOP"
 !
 !TEST*/

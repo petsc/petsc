@@ -13,7 +13,7 @@ PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
 
-static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
+PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -63,7 +63,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscBool      preload;
 #endif
 
@@ -75,7 +75,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES) || !defined(PETSC_USE_SHARED_LIBRARIES)
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES) || !defined(PETSC_USE_SHARED_LIBRARIES)
   /*
       This just initializes the most basic PETSc stuff.
 

@@ -105,7 +105,7 @@ int main(int argc,char **args)
   ierr = PCShellSetApply(pc,PCShellApply_Matinv);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* Sove preconditioned system A*x = b */
+  /* Solve preconditioned system A*x = b */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 

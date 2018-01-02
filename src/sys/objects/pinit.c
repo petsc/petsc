@@ -38,6 +38,7 @@ MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
 PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Shared_keyval    = MPI_KEYVAL_INVALID;
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -367,6 +368,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt ke
   ierr = PetscInfo1(0,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
+
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm,PetscMPIInt,void *,void *);
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -720,6 +723,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_CUDA)
   cublasStatus_t cberr;
 #endif
+#if defined(PETSC_HAVE_HWLOC)
+  PetscViewer    viewer;
+#endif
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -912,6 +918,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelShared,&Petsc_Shared_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database
@@ -996,6 +1003,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
+#if defined(PETSC_HAVE_HWLOC)
+  ierr   = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,"-process_view",&viewer,NULL,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscProcessPlacementView(viewer);CHKERRQ(ierr);
+  }
+#endif
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -1087,11 +1100,11 @@ PetscErrorCode  PetscFinalize(void)
   cublasStatus_t cberr;
 #endif
 
-  PetscFunctionBegin;
   if (!PetscInitializeCalled) {
     printf("PetscInitialize() must be called before PetscFinalize()\n");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
+    return(PETSC_ERR_ARG_WRONGSTATE);
   }
+  PetscFunctionBegin;
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -1499,6 +1512,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
+  ierr = MPI_Keyval_free(&Petsc_Shared_keyval);CHKERRQ(ierr);
 
   ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockOpen);CHKERRQ(ierr);
   ierr = PetscSpinlockDestroy(&PetscViewerASCIISpinLockStdout);CHKERRQ(ierr);

@@ -24,28 +24,28 @@
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
-#define PetscRoundReal(a)   round(a)
-#define PetscSqrtReal(a)    sqrt(a)
-#define PetscExpReal(a)     exp(a)
-#define PetscLogReal(a)     log(a)
-#define PetscLog10Real(a)   log10(a)
+#define PetscRoundReal(a)   roundf(a)
+#define PetscSqrtReal(a)    sqrtf(a)
+#define PetscExpReal(a)     expf(a)
+#define PetscLogReal(a)     logf(a)
+#define PetscLog10Real(a)   log10f(a)
 #ifdef PETSC_HAVE_LOG2
-#define PetscLog2Real(a)    log2(a)
+#define PetscLog2Real(a)    log2f(a)
 #endif
-#define PetscSinReal(a)     sin(a)
-#define PetscCosReal(a)     cos(a)
-#define PetscTanReal(a)     tan(a)
-#define PetscAsinReal(a)    asin(a)
-#define PetscAcosReal(a)    acos(a)
-#define PetscAtanReal(a)    atan(a)
-#define PetscAtan2Real(a,b) atan2(a,b)
-#define PetscSinhReal(a)    sinh(a)
-#define PetscCoshReal(a)    cosh(a)
-#define PetscTanhReal(a)    tanh(a)
-#define PetscPowReal(a,b)   pow(a,b)
-#define PetscCeilReal(a)    ceil(a)
-#define PetscFloorReal(a)   floor(a)
-#define PetscFmodReal(a,b)  fmod(a,b)
+#define PetscSinReal(a)     sinf(a)
+#define PetscCosReal(a)     cosf(a)
+#define PetscTanReal(a)     tanf(a)
+#define PetscAsinReal(a)    asinf(a)
+#define PetscAcosReal(a)    acosf(a)
+#define PetscAtanReal(a)    atanf(a)
+#define PetscAtan2Real(a,b) atan2f(a,b)
+#define PetscSinhReal(a)    sinhf(a)
+#define PetscCoshReal(a)    coshf(a)
+#define PetscTanhReal(a)    tanhf(a)
+#define PetscPowReal(a,b)   powf(a,b)
+#define PetscCeilReal(a)    ceilf(a)
+#define PetscFloorReal(a)   floorf(a)
+#define PetscFmodReal(a,b)  fmodf(a,b)
 #define PetscTGamma(a)      tgammaf(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
@@ -589,14 +589,8 @@ M*/
 /*
      Basic constants
 */
-#if defined(PETSC_USE_REAL___FLOAT128)
-#define PETSC_PI                 M_PIq
-#elif defined(M_PI)
-#define PETSC_PI                 M_PI
-#else
-#define PETSC_PI                 3.14159265358979323846264338327950288419716939937510582
-#endif
-#define PETSC_PHI                1.6180339887498948482
+#define PETSC_PI   PetscRealConstant(3.1415926535897932384626433832795029)
+#define PETSC_PHI  PetscRealConstant(1.6180339887498948482045868343656381)
 
 #if !defined(PETSC_USE_64BIT_INDICES)
 #define PETSC_MAX_INT            2147483647

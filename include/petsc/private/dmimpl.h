@@ -53,6 +53,7 @@ struct _DMOps {
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
   PetscErrorCode (*createsubdm)(DM,PetscInt,const PetscInt*,IS*,DM*);
+  PetscErrorCode (*createsuperdm)(DM*,PetscInt,IS**,DM*);
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
@@ -230,6 +231,7 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_Lo
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,const PetscInt[],IS*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateSuperDM_Section_Private(DM[],PetscInt,IS**,DM*);
 
 /*
 

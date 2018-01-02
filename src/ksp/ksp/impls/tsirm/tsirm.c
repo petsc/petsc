@@ -16,7 +16,11 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   
   PetscFunctionBegin;
   /* Initialization */
-  tsirm->tol_ls     = 1e-40;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tsirm->tol_ls     = 1e-25;
+#else
+  tsirm->tol_ls     = 1e-50;
+#endif
   tsirm->size_ls    = 12;
   tsirm->maxiter_ls = 15;
   tsirm->cgls       = 0;

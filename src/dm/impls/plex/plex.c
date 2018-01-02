@@ -705,7 +705,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       if (PetscUnlikely(dof > 3)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"coordSection vertex %D has dof %D > 3",v,dof);
       for (d = 0; d < dof; ++d) {
         tcoords[d] = (double) (scale*PetscRealPart(coords[off+d]));
-        tcoords[d] = PetscAbsReal(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
+        tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
       }
       /* Rotate coordinates since PGF makes z point out of the page instead of up */
       if (dim == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
@@ -745,7 +745,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
         for (d = 0; d < dof; ++d) {
           tcoords[d] = (double) (scale*PetscRealPart(coords[offA+d]+coords[offB+d]));
-          tcoords[d] = PetscAbsReal(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
+          tcoords[d] = PetscAbs(tcoords[d]) < 1e-10 ? 0.0 : tcoords[d];
         }
         /* Rotate coordinates since PGF makes z point out of the page instead of up */
         if (dim == 3) {PetscReal tmp = tcoords[1]; tcoords[1] = tcoords[2]; tcoords[2] = -tmp;}
@@ -1103,7 +1103,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   if (!isShell) {
     PetscSection subSection;
     PetscBool    fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
-    PetscInt    *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin, *ltogidx, lsize;
+    PetscInt    *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *ltogidx, lsize;
     PetscInt     pStart, pEnd, p, dof, cdof;
 
     /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work (it also creates the local matrices in case of MATIS) */
@@ -1138,13 +1138,11 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal = bs;
-    ierr = MPIU_Allreduce(&bsLocal, &bsMax, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    bsLocal = bs < 0 ? bsMax : bs;
-    ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-    if (bsMin != bsMax) {bs = 1;}
-    else                {bs = bsMax;}
-    bs   = bs < 0 ? 1 : bs;
+    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+    ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
+    if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
+    else                            {bs = bsMinMax[0];}
+    bs = bs < 0 ? 1 : bs;
     if (isMatIS) {
       PetscInt l;
       /* Must reduce indices by blocksize */
@@ -2139,6 +2137,16 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, const PetscInt fiel
   PetscFunctionBegin;
   if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
   ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateSuperDM_Plex(DM dms[], PetscInt len, IS **is, DM *superdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (superdm) {ierr = DMClone(dms[0], superdm);CHKERRQ(ierr);}
+  ierr = DMCreateSuperDM_Section_Private(dms, len, is, superdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4005,11 +4013,38 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 + dm - The DM
 . section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
-- point - The point in the DM
+. point - The point in the DM
+. csize - The size of the input values array, or NULL
+- values - An array to use for the values, or NULL to have it allocated automatically
 
   Output Parameters:
-+ csize - The number of values in the closure, or NULL
-- values - The array of values, which is a borrowed array and should not be freed
++ csize - The number of values in the closure
+- values - The array of values. If the user provided NULL, it is a borrowed array and should not be freed
+
+$ Note that DMPlexVecGetClosure/DMPlexVecRestoreClosure only allocates the values array if it set to NULL in the
+$ calling function. This is because DMPlexVecGetClosure() is typically called in the inner loop of a Vec or Mat
+$ assembly function, and a user may already have allocated storage for this operation.
+$
+$ A typical use could be
+$
+$  values = NULL;
+$  ierr = DMPlexVecGetClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$  for (cl = 0; cl < clSize; ++cl) {
+$    <Compute on closure>
+$  }
+$  ierr = DMPlexVecRestoreClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$
+$ or
+$
+$  PetscMalloc1(clMaxSize, &values);
+$  for (p = pStart; p < pEnd; ++p) {
+$    clSize = clMaxSize;
+$    ierr = DMPlexVecGetClosure(dm, NULL, v, p, &clSize, &values);CHKERRQ(ierr);
+$    for (cl = 0; cl < clSize; ++cl) {
+$      <Compute on closure>
+$    }
+$  }
+$  PetscFree(values);
 
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
@@ -4094,6 +4129,8 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 . csize - The number of values in the closure, or NULL
 - values - The array of values, which is a borrowed array and should not be freed
 
+  Note that the array values are discarded and not copied back into v. In order to copy values back to v, use DMPlexVecSetClosure()
+
   Fortran Notes:
   Since it returns an array, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
@@ -4112,6 +4149,7 @@ PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, Petsc
   PetscFunctionBegin;
   /* Should work without recalculating size */
   ierr = DMRestoreWorkArray(dm, size, MPIU_SCALAR, (void*) values);CHKERRQ(ierr);
+  *values = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -4432,7 +4470,8 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, Pets
 . v - The local vector
 . point - The point in the DM
 . values - The array of values
-- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+- mode - The insert mode. One of INSERT_ALL_VALUES, ADD_ALL_VALUES, INSERT_VALUES, ADD_VALUES, INSERT_BC_VALUES, and ADD_BC_VALUES,
+         where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions.
 
   Fortran Notes:
   This routine is only available in Fortran 90, and you must include petsc.h90 in your code.
@@ -6522,7 +6561,6 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 
   PetscFunctionBegin;
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-  if (!numFields) PetscFunctionReturn(0);
   /* FE and FV boundary conditions are handled slightly differently */
   ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
@@ -6541,6 +6579,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
+  if (!numFields && numBd) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
   for (bd = 0; bd < numBd; ++bd) {
     PetscInt                field;
     DMBoundaryConditionType type;

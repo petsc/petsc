@@ -98,6 +98,8 @@ PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-dir
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 testlangs := c cu cxx F F90
+$(foreach lang, $(testlangs), $(eval \
+  testexe.$(lang) = $(foreach pkg, $(pkgs), $(testsrcs-$(pkg).$(lang):%.$(lang)=$(TESTDIR)/%))))
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
 testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
@@ -142,14 +144,14 @@ PETSC_TEST_LIB = $(C_SH_LIB_PATH) $(PETSC_EXTERNAL_LIB_BASIC)
 endif
 
 # Test executables
-$(TESTDIR)/%f : $(TESTDIR)/%f.o $$^ $(libpetscall)
+$(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 
-$(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $$^ $(libpetscall)
-	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
-
-$(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+$(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+
+$(testexe.cxx) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,CXX) -o $@ $^ $(PETSC_TEST_LIB)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
 $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)

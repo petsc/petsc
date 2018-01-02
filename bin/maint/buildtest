@@ -140,7 +140,7 @@ endif
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
-echo "Finished Test on $MACH $PETSC_ARCH `date`" >>& build.log
+echo "Finished Test on $MACH $ARCH `date`" >>& build.log
 if ( $err ) exit
 #
 # check analyzer
@@ -158,7 +158,8 @@ else
 endif
 #
 rm -f examples.log
-echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
+echo "Build on $MACH $ARCH $nPETSC_DIR TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
+echo '******************************************************' >>& examples.log
 git log --pretty=format:"commit: %H%nsubject: %s%n" -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ./config/builder2.py regression >>& examples.log
@@ -176,7 +177,7 @@ if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
 
-echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& examples.log
+echo "Finished Build on $MACH $ARCH $nPETSC_DIR `date`" >>& examples.log
 echo 'X******************************************************X' >>& examples.log
 
 

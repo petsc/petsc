@@ -790,9 +790,15 @@ class generateExamples(Petsc):
                 if exfile in srcs[lang]:
                     ex='$(TESTDIR)/'+os.path.splitext(exfile)[0]
                     exfo='$(TESTDIR)/'+os.path.splitext(exfile)[0]+'.o'
-                    for dep in srcs[lang][exfile]:
-                        fd.write(exfile+": $(TESTDIR)/"+ dep+'\n')
-                        fd.write(ex    +": "+exfo+" $(TESTDIR)/"+dep +'\n')
+                    deps = [os.path.join('$(TESTDIR)', dep) for dep in srcs[lang][exfile]]
+                    if deps:
+                        # The executable literally depends on the object file because it is linked
+                        fd.write(ex   +": " + " ".join(deps) +'\n')
+                        # The object file containing 'main' does not normally depend on other object
+                        # files, but it does when it includes their modules.  This dependency is
+                        # overly blunt and could be reduced to only depend on object files for
+                        # modules that are used, like "*f90aux.o".
+                        fd.write(exfo +": " + " ".join(deps) +'\n')
 
     return self.gendeps
 

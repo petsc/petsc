@@ -37,8 +37,9 @@ PthreadVersion: PthreadVersion.o  chkopts
 
 # make streams [NPMAX=integer_number_of_MPI_processes_to_use] [MPI_BINDING='binding options']
 stream:  MPIVersion
+	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes> [MPI_BINDING='-bind-to core -map-by numa']\n or       [I_MPI_PIN_PROCESSOR_LIST=:map=scatter] [PETSC_OPTIONS=-process_view] make streams NPMAX=<integer number of MPI processes>\n"; exit 1 ; fi
 	-@printf "" > scaling.log
-	-@echo "Running streams with '${MPIEXEC} ${MPI_BINDING}' using 'NPMAX=${NPMAX}' "
+	-@printf "Running streams with '${MPIEXEC} ${MPI_BINDING}' using 'NPMAX=${NPMAX}' "
 	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
 	  ${MPIEXEC} ${MPI_BINDING} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done

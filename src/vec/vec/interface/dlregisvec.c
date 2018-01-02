@@ -191,7 +191,7 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecLoad",          VEC_CLASSID,&VEC_Load);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecScatterBarrie", VEC_CLASSID,&VEC_ScatterBarrier);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecScatterBegin",  VEC_CLASSID,&VEC_ScatterBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatterEnd",    VEC_CLASSID,&VEC_ScatterEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecScatterEnd  ",    VEC_CLASSID,&VEC_ScatterEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecSetRandom",     VEC_CLASSID,&VEC_SetRandom);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecReduceArith",   VEC_CLASSID,&VEC_ReduceArithmetic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecReduceBarrier", VEC_CLASSID,&VEC_ReduceBarrier);CHKERRQ(ierr);

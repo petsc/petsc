@@ -63,7 +63,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   else yv = xv;
 
   if (!(mode & SCATTER_LOCAL)) {
-    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {
+    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv && !to->use_window) {
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
@@ -92,6 +92,17 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         ierr = MPI_Startall_isend(to->starts[to->n],nsends,swaits);CHKERRQ(ierr);
       }
     } else {
+      if (to->sharedspace) {
+        /* Pack the send data into my shared memory buffer  --- this is the normal forward scatter */
+        PETSCMAP1(Pack)(to->sharedcnt,to->sharedspaceindices,xv,to->sharedspace,bs);
+      } else {
+        /* Pack the send data into receivers shared memory buffer -- this is the normal backward scatter */
+        for (i=0; i<to->msize; i++) {
+          if (to->sharedspacesoffset && to->sharedspacesoffset[i] > -1) {
+            PETSCMAP1(Pack)(to->sharedspacestarts[i+1] - to->sharedspacestarts[i],to->sharedspaceindices + to->sharedspacestarts[i],xv,&to->sharedspaces[i][bs*to->sharedspacesoffset[i]],bs);
+          }
+        }
+      }
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
         PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
@@ -168,6 +179,9 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv,bs);CHKERRQ(ierr);
   } else if (!to->use_alltoallw) {
+    PetscMPIInt i;
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+
     /* unpack one at a time */
     count = nrecvs;
     while (count) {
@@ -181,6 +195,19 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
       ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
       count--;
     }
+    /* handle processes that share the same shared memory communicator */
+    if (from->sharedspace) {
+      /* unpack the data from my shared memory buffer  --- this is the normal backward scatter */
+      PETSCMAP1(UnPack)(from->sharedcnt,from->sharedspace,from->sharedspaceindices,yv,addv,bs);
+    } else {
+      /* unpack the data from each of my sending partners shared memory buffers --- this is the normal forward scatter */ 
+      for (i=0; i<from->msize; i++) {
+        if (from->sharedspacesoffset && from->sharedspacesoffset[i] > -1) {
+          ierr = PETSCMAP1(UnPack)(from->sharedspacestarts[i+1] - from->sharedspacestarts[i],&from->sharedspaces[i][bs*from->sharedspacesoffset[i]],from->sharedspaceindices + from->sharedspacestarts[i],yv,addv,bs);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = MPI_Barrier(PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
   }
   if (from->use_readyreceiver) {
     if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}

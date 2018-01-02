@@ -373,6 +373,17 @@
       Interface MatSetValuesBlocked
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
+        subroutine MatSetValuesBlocked2(a,b,c,d,e,f,g,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar, pointer :: f (:,:)
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
         subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
           use petscmatdef
           Mat a ! Mat

@@ -706,11 +706,11 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   sctx->newshift = PETSC_FALSE;
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
-      ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
+      ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
       fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
       fact->factorerror_zeropivot_row   = row;
-    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
+    } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g\n",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
 }
