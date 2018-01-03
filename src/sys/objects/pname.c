@@ -47,6 +47,9 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
           PETSC_VIEWER_ASCII_MATRIXMARKET then don't print header information
           as these formats can't process it.
 
+   Developer Note: The flag donotPetscObjectPrintClassNamePrefixType is useful to prevent double printing of the information when recursion is used
+                   to actually print the object.
+
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
@@ -60,6 +63,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (obj->donotPetscObjectPrintClassNamePrefixType) PetscFunctionReturn(0);
   if (!flg) PetscFunctionReturn(0);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
