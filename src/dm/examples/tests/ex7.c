@@ -1,10 +1,6 @@
 
 static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
-/*T
-   requires: x   TODO: Need to determine if deprecated
-T*/
-
 #include <petscdmda.h>
 
 int main(int argc,char **argv)

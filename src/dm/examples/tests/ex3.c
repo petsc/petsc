@@ -1,10 +1,6 @@
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
-/*T
-   requires: x
-T*/
-
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>

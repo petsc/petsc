@@ -1558,6 +1558,9 @@ int main(int argc,char *argv[])
 
 /*TEST
 
+   build:
+      requires: c99
+
    test:
       args: -M 6 -P 4 -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type icc
       requires: !single

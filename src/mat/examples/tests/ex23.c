@@ -486,6 +486,9 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
 
 /*TEST
 
+   build:
+      requires: c99
+
    test:
       args: -test_trans
 

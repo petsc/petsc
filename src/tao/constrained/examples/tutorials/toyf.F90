@@ -73,12 +73,13 @@
       use petsctao
       implicit none
 #include "toyf.h"
-      PetscReal zero,minus1,two
+      PetscReal zero,minus1,two,one
       PetscErrorCode ierr
       n = 2
       zero = 0
       minus1 = -1
       two= 2
+      one = 1
 
       call VecCreateSeq(PETSC_COMM_SELF,n,x0,ierr);CHKERRQ(ierr)
       call VecDuplicate(x0,xl,ierr);CHKERRQ(ierr)
@@ -99,7 +100,7 @@
       call MatSetFromOptions(Ai,ierr);CHKERRQ(ierr)
 
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL_INTEGER,Hess,ierr);CHKERRQ(ierr)
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,one,PETSC_NULL_INTEGER,Hess,ierr);CHKERRQ(ierr)
       call MatSetFromOptions(Hess,ierr);CHKERRQ(ierr)
       ierr = 0
       end subroutine InitializeProblem
@@ -162,7 +163,7 @@
 
       PetscScalar      de_v(0:1),di_v(0:1)
       PetscOffset      de_i,di_i
-      PetscInt         zero(1)
+      PetscInt         zero(1),ones
       PetscInt         one(1)
       PetscScalar      two(1)
       PetscScalar      val(1)
@@ -170,6 +171,7 @@
       zero(1) = 0
       one(1) = 1
       two(1) = 2.0d0
+      ones = 1
 
 
       ! fix indices on matsetvalues
@@ -183,8 +185,8 @@
       call VecRestoreArrayRead(DE,de_v,de_i,ierr);CHKERRQ(ierr)
       call VecRestoreArrayRead(DI,di_v,di_i,ierr);CHKERRQ(ierr)
 
-      call MatSetValues(H,1,zero,1,zero,val,INSERT_VALUES,ierr);CHKERRQ(ierr)
-      call MatSetValues(H,1,one,1,one,two,INSERT_VALUES,ierr);CHKERRQ(ierr)
+      call MatSetValues(H,ones,zero,ones,zero,val,INSERT_VALUES,ierr);CHKERRQ(ierr)
+      call MatSetValues(H,ones,one,ones,one,two,INSERT_VALUES,ierr);CHKERRQ(ierr)
 
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
@@ -244,11 +246,12 @@
       PetscInt        dummy
       PetscErrorCode  ierr
 
-      PetscInt        rows(2)
+      PetscInt        rows(2),two
       PetscInt        cols(2)
       PetscScalar     vals(4),x_v(0:1)
       PetscOffset     x_i
 
+      two = 2
       call VecGetArrayRead(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       rows(1)=0
@@ -261,7 +264,7 @@
       vals(4) = 1
 
       call VecRestoreArrayRead(X,x_v,x_i,ierr);CHKERRQ(ierr)
-      call MatSetValues(JI,2,rows,2,cols,vals,INSERT_VALUES,ierr);CHKERRQ(ierr)
+      call MatSetValues(JI,two,rows,two,cols,vals,INSERT_VALUES,ierr);CHKERRQ(ierr)
       call MatAssemblyBegin(JI,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       call MatAssemblyEnd(JI,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       ierr = 0
@@ -278,10 +281,12 @@
       PetscInt        dummy
       PetscErrorCode  ierr
 
-      PetscInt        rows(2)
+      PetscInt        rows(2),one,two
       PetscScalar     vals(4),x_v(0:1)
       PetscOffset     x_i
-
+      one = 1
+      two = 2
+      
       call VecGetArrayRead(X,x_v,x_i,ierr);CHKERRQ(ierr)
       rows(1)=0
       rows(2) = 1
@@ -289,7 +294,7 @@
       vals(2) = 1
 
       call VecRestoreArrayRead(X,x_v,x_i,ierr);CHKERRQ(ierr)
-      call MatSetValues(JE,1,rows,2,rows,vals,INSERT_VALUES,ierr);CHKERRQ(ierr)
+      call MatSetValues(JE,one,rows,two,rows,vals,INSERT_VALUES,ierr);CHKERRQ(ierr)
       call MatAssemblyBegin(JE,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       call MatAssemblyEnd(JE,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       ierr = 0

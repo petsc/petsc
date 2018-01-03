@@ -236,7 +236,7 @@ int main(int argc,char **args)
         }
       }
     }
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);CHKERRQ(ierr);
     if (!nfact) {
       ierr = MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
     } else {

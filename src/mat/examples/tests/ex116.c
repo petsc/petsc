@@ -12,7 +12,7 @@ e.g. ./ex116 -f $DATAFILESPATH/matrices/small  \n\n";
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-int main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,A_dense;
   Vec            *evecs;

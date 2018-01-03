@@ -70,8 +70,8 @@ int main(int argc,char **args)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
-  ierr = MatEqual(A, Atrans, &flg);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
+  ierr = MatEqual(A, Atrans, &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 

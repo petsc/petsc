@@ -264,7 +264,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
 /*TEST
 
    build:
-      requires: !complex
+      requires: !complex !define(PETSC_USE_CXX)
 
    test:
       requires: superlu

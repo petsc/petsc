@@ -787,7 +787,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D bs %D mem %D\n",rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,mat->rmap->bs,(PetscInt)info.memory);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D bs %D mem %g\n",rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,mat->rmap->bs,(double)info.memory);CHKERRQ(ierr);
       ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used);CHKERRQ(ierr);
       ierr = MatGetInfo(baij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
