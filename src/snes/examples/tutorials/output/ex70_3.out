@@ -1,6 +1,6 @@
- residual u = 2.02582e-05
- residual p = 3.58002e-07
- residual [u,p] = 2.02613e-05
- discretization error u = 0.000185354
- discretization error p = 0.248971
- discretization error [u,p] = 0.248971
+ residual u = 1.21152e-05
+ residual p = 1.43241e-07
+ residual [u,p] = 1.2116e-05
+ discretization error u = 0.000184746
+ discretization error p = 0.248976
+ discretization error [u,p] = 0.248976

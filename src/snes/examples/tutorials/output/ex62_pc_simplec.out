@@ -3,7 +3,7 @@ Nonlinear solve did not converge due to DIVERGED_LINEAR_SOLVE iterations 0
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=0
   total number of function evaluations=1
   norm schedule ALWAYS
@@ -19,7 +19,7 @@ SNES Object: 1 MPI processes
       restart=100, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       happy breakdown tolerance 1e-30
     maximum iterations=5, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-25, divergence=10000.
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
@@ -35,13 +35,13 @@ SNES Object: 1 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
             out-of-place factorization
-            tolerance for zero pivot 1.19209e-05
+            tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 3.45047
               Factored matrix follows:
@@ -63,7 +63,7 @@ SNES Object: 1 MPI processes
         KSP Object: (fieldsplit_pressure_upper_) 1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-25, divergence=10000.
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (fieldsplit_pressure_upper_) 1 MPI processes
@@ -81,7 +81,7 @@ SNES Object: 1 MPI processes
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-10, absolute=1e-25, divergence=10000.
+          tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_pressure_) 1 MPI processes
@@ -111,7 +111,7 @@ SNES Object: 1 MPI processes
                 KSP Object: (fieldsplit_pressure_inner_) 1 MPI processes
                   type: preonly
                   maximum iterations=5, initial guess is zero
-                  tolerances:  relative=1e-09, absolute=1e-25, divergence=10000.
+                  tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
                   left preconditioning
                   using NONE norm type for convergence test
                 PC Object: (fieldsplit_pressure_inner_) 1 MPI processes
