@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscBool      reorder=PETSC_FALSE;
   MatInfo        minfo1,minfo2;
-  PetscReal      norm1,norm2,tol=1.e-10;
+  PetscReal      norm1,norm2,tol=10*PETSC_SMALL;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

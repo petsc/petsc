@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d
-    requires: triangle
+    requires: triangle !single
     args: -dim 2 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
   test:
     suffix: 3d_tetgen
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     args: -dim 3 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
   test:
     suffix: 3d_ctetgen
-    requires: ctetgen !complex
+    requires: ctetgen !complex !single
     args: -dim 3 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
 
 TEST*/

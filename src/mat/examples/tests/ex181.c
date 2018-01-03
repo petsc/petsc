@@ -80,7 +80,6 @@ int main(int argc,char **args)
    test:
       nsize: 2
       filter: grep -v "Mat Object"
-      output_file: output/ex175.out
       requires: !complex
 
    test:

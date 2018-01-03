@@ -13,7 +13,7 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscRandom    rand;
   Vec            xx,s1,s2;
-  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscReal      s1norm,s2norm,rnorm,tol = 10*PETSC_SMALL;
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;

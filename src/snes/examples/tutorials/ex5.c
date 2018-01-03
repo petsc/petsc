@@ -871,6 +871,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
    test:
      suffix: 5_fas
      args: -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6
+     requires: !single
 
    test:
      suffix: 5_fas_additive
@@ -879,6 +880,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
    test:
      suffix: 5_fas_monitor
      args: -da_refine 1 -snes_type fas -snes_fas_monitor
+     requires: !single
 
    test:
      suffix: 5_ls
@@ -897,11 +899,13 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      suffix: 5_newton_asm_dmda
      nsize: 4
      args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type newtonls -pc_type asm -pc_asm_dm_subdomains -malloc_dump
+     requires: !single
 
    test:
      suffix: 5_newton_gasm_dmda
      nsize: 4
      args: -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 -snes_type newtonls -pc_type gasm -malloc_dump
+     requires: !single
 
    test:
      suffix: 5_ngmres

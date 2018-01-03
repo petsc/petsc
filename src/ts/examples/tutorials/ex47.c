@@ -376,12 +376,12 @@ int main(int argc, char **argv)
 
   test:
     suffix: 2d_p1p1_sor_r1
-    requires: triangle
+    requires: triangle !single
     args: -dm_refine 1 -phi_petscspace_order 1 -vel_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -ksp_rtol 1.0e-9 -pc_type sor -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ts_monitor
 
   test:
     suffix: 2d_p1p1_mg_r1
-    requires: triangle
+    requires: triangle !single
     args: -dm_refine_hierarchy 1 -phi_petscspace_order 1 -vel_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -ksp_type fgmres -ksp_rtol 1.0e-9 -pc_type mg -pc_mg_levels 2 -snes_monitor_short -snes_converged_reason -snes_view -ksp_monitor_true_residual -ts_monitor
 
 TEST*/

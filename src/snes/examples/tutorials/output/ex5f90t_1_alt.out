@@ -1,0 +1,5 @@
+  0 SNES Function norm 0.207564 
+  1 SNES Function norm 0.0149741 
+  2 SNES Function norm 0.000121355 
+  3 SNES Function norm < 1.e-11
+Number of SNES iterations =     3

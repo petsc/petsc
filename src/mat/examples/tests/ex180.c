@@ -2,7 +2,7 @@ static char help[] = "Tests MatLoad() with blocksize set in in program\n\n";
 
 #include <petscmat.h>
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A;
   PetscViewer    fd;
@@ -49,7 +49,7 @@ PetscInt main(PetscInt argc,char **args)
          requires: !complex double !define(PETSC_USE_64BIT_INDICES)
 
       test:
-         suffix: 4
+         suffix: 4more
          nsize: 2
          args: -mat_type baij -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
          output_file: output/ex180_1.out
