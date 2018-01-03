@@ -311,7 +311,7 @@ int main(int argc, char **argv)
 /*TEST
 
   build:
-    requires: !complex
+    requires: !complex triangle
 
   test:
     suffix: 0
