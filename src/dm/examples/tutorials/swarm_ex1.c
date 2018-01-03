@@ -511,27 +511,35 @@ int main(int argc,char **argv)
 
    test:
       args: -test_mode 1
+
    test:
       suffix: 2
       args: -test_mode 2
+
    test:
       suffix: 3
       args: -test_mode 3
+      TODO: broken
+
    test:
       suffix: 4
       args: -test_mode 4
+
    test:
       suffix: 5
       nsize: 4
       args: -test_mode 1
+
    test:
       suffix: 6
       nsize: 4
       args: -test_mode 2
+
    test:
       suffix: 7
       nsize: 4
       args: -test_mode 3
+
    test:
       suffix: 8
       nsize: 4

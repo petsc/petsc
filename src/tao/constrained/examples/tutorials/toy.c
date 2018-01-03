@@ -263,6 +263,9 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
 
 /*TEST
 
+   build:
+      requires: !complex
+
    test:
       requires: superlu
       args: -tao_converged_reason
