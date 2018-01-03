@@ -111,6 +111,7 @@ class generateExamples(Petsc):
     needs to convey the srcdir and srcfile.  There are two ways of doing this.
     """
     if self.ptNaming:
+      if srcfile.startswith('run'): srcfile=re.sub('^run','',srcfile) 
       cdir=srcdir.split('src')[1].lstrip("/").rstrip("/")
       prefix=cdir.replace('/examples/','_').replace("/","_")+"-"
       nameString=prefix+srcfile
@@ -379,9 +380,10 @@ class generateExamples(Petsc):
         cmd=diffindnt+example_template.difftest.split('@')[0]
         for i in range(len(subst['altfiles'])):
           af=subst['altfiles'][i]
-          cmd+=af+' '+rf+' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
+          cmd+=af+' '+rf
           if i!=len(subst['altfiles'])-1:
-            cmd+=' && ${diff_exe} '
+            cmd+=' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
+            cmd+=' || ${diff_exe} '
           else:
             cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
             cmd+=subst['label_suffix']+' ""'  # Quotes are painful
