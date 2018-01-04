@@ -38,9 +38,6 @@ in current balance form using rectangular coordiantes.\n\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-/*T
-   requires: define(PETSC_USE_REAL_DOUBLE) !define(USE_64BIT_INDICES)
-T*/
 
 #include <petscts.h>
 #include <petscdm.h>
@@ -1248,22 +1245,22 @@ int main(int argc,char **argv)
 
 /*TEST
 
+   build:
+      requires: double !complex !define(USE_64BIT_INDICES)
+
    test:
       suffix: implicit
       args: -ts_monitor -snes_monitor_short
       localrunfiles: petscoptions X.bin Ybus.bin
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: semiexplicit
       args: -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a
       localrunfiles: petscoptions X.bin Ybus.bin
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: steprestart
       args: -ts_monitor -snes_monitor_short -ts_type arkimex
       localrunfiles: petscoptions X.bin Ybus.bin
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/

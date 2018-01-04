@@ -935,9 +935,11 @@ int main(int argc,char **argv)
 
 /*TEST
 
+   build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
    test:
       args: -viewer_binary_skip_info
       localrunfiles: petscoptions X.bin Ybus.bin
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/

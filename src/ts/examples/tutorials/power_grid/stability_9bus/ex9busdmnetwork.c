@@ -1155,16 +1155,17 @@ int main(int argc,char ** argv)
 
 /*TEST
 
+   build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
    test:
       args: -ts_monitor -snes_converged_reason -alg_snes_converged_reason
       localrunfiles: X.bin Ybus.bin ex9busnetworkops
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: 2
       nsize: 2
       args: -ts_monitor -snes_converged_reason -alg_snes_converged_reason
       localrunfiles: X.bin Ybus.bin ex9busnetworkops
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
