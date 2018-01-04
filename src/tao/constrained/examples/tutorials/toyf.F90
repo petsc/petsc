@@ -74,12 +74,14 @@
       implicit none
 #include "toyf.h"
       PetscReal zero,minus1,two,one
+      PetscInt done
       PetscErrorCode ierr
       n = 2
       zero = 0
       minus1 = -1
       two= 2
       one = 1
+      done = 1
 
       call VecCreateSeq(PETSC_COMM_SELF,n,x0,ierr);CHKERRQ(ierr)
       call VecDuplicate(x0,xl,ierr);CHKERRQ(ierr)
@@ -100,7 +102,7 @@
       call MatSetFromOptions(Ai,ierr);CHKERRQ(ierr)
 
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,one,PETSC_NULL_INTEGER,Hess,ierr);CHKERRQ(ierr)
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,done,PETSC_NULL_INTEGER,Hess,ierr);CHKERRQ(ierr)
       call MatSetFromOptions(Hess,ierr);CHKERRQ(ierr)
       ierr = 0
       end subroutine InitializeProblem
