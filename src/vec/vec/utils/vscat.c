@@ -179,7 +179,9 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
     } else {
       if (scat->work2) yvt = scat->work2;
       else {
-        ierr        = PetscMalloc1(xx_n,&yvt);CHKERRQ(ierr);
+        PetscInt xx_nt;
+        ierr = MPI_Allreduce(&xx_n,&xx_nt,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)y));CHKERRQ(ierr);
+        ierr        = PetscMalloc1(xx_nt,&yvt);CHKERRQ(ierr);
         scat->work2 = yvt;
       }
       ierr = MPI_Scatterv((PetscScalar*)xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
