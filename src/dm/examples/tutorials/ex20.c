@@ -13,7 +13,7 @@ Options: \n\
 PetscErrorCode pic_insert_DMDA(PetscInt dim)
 {
   PetscErrorCode ierr;
-  DM             celldm,swarm;
+  DM             celldm = NULL,swarm;
   PetscInt       dof,stencil_width;
   PetscReal      min[3],max[3];
   PetscInt       ndir[3];
@@ -85,7 +85,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
 PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
 {
   PetscErrorCode ierr;
-  DM             celldm,swarm,distributedMesh = NULL;
+  DM             celldm = NULL,swarm,distributedMesh = NULL;
   const  char    *fieldnames[] = {"viscosity"};
 
   PetscFunctionBegin;
@@ -306,6 +306,7 @@ int main(int argc,char **args)
    test:
       args:
       requires: !complex double
+      filter: grep -v DM_
 
    test:
       suffix: 2

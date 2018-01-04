@@ -4,7 +4,6 @@ DM Object: 1 MPI processes
   type: da
 Processor [0] M 25 N 13 m 1 n 1 w 1 s 1
 X range of indices: 0 25, Y range of indices: 0 13
-DM Object: DM_0x84000000_0 1 MPI processes
   type: swarm
 DataBucketView: 
   L                  = 3492 

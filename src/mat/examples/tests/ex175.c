@@ -45,8 +45,10 @@ int main(int argc,char **args)
 
 /*TEST
 
-   test:
+   build:
      requires: complex
+
+   test:
      output_file: output/ex175.out
 
 TEST*/

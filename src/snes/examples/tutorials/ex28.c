@@ -480,6 +480,9 @@ int main(int argc, char *argv[])
 
 /*TEST
 
+   build:
+      requires: c99
+
    test:
       suffix: 0
       nsize: 3

@@ -38,11 +38,11 @@ solu
 
 int main(int argc,char **args)
 {
-  Mat            A;
-  Vec            b,u,u_tmp;
+  Mat            A = NULL;
+  Vec            b,u = NULL,u_tmp;
   char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
-  int            m,n,nz,dummy; /* these are fscaned so kept as int */
+  int            m,n = 0,nz,dummy; /* these are fscaned so kept as int */
   PetscInt       i,col,row,shift = 1,sizes[3],nsizes;
   PetscScalar    val;
   PetscReal      res_norm;
