@@ -127,6 +127,12 @@
           integer z
         end subroutine
 
+        subroutine MatCreateSchurComplement(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a,b,c,d,e,f
+          integer z
+        end subroutine
+
         subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
           use petscmatdef
           MPI_Comm a
@@ -657,6 +663,15 @@
          IS row
 #include "../src/mat/f90-mod/petscmatfactorinfosize.h"
          MatFactorInfo info(MAT_FACTORINFO_SIZE)
+         PetscErrorCode ierr
+         end subroutine
+      End Interface
+
+      Interface
+         subroutine MatGetGetNullSpace(A,n,ierr)
+         use petscmatdef
+         Mat  A
+         MatNullSpace n
          PetscErrorCode ierr
          end subroutine
       End Interface

@@ -83,6 +83,9 @@
 #define matgetlocalsize00_               MATGETLOCALSIZE00
 #define matgetlocalsize10_               MATGETLOCALSIZE10
 #define matgetlocalsize01_               MATGETLOCALSIZE01
+#define matgetnullspace_                 MATGETNULLSPACE
+#define matsetnullspace_                 MATSETNULLSPACE
+#define matgetownershiprange_            MATGETOWNERSHIPRANGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
 #define matsetvaluesnnnn_                matsetvaluesnnnn
@@ -164,7 +167,34 @@
 #define matgetlocalsize00_               matgetlocalsize00
 #define matgetlocalsize10_               matgetlocalsize10
 #define matgetlocalsize01_               matgetlocalsize01
+#define matgetnullspace_                 matgetnullspace
+#define matsetnullspace_                 matsetnullspace
+#define matgetownershiprange_            matgetownershiprange
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL matsetnullspace_(Mat *mat, MatNullSpace *nullsp, int *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(nullsp);
+  *ierr = MatSetNullSpace(*mat,*nullsp);
+}
+
+PETSC_EXTERN void PETSC_STDCALL matgetnullspace_(Mat *mat, MatNullSpace *nullsp, int *ierr)
+{
+  MatNullSpace sp;
+  *ierr = MatGetNullSpace(*mat,&sp);if (*ierr) return;
+  if (!sp) {
+    *nullsp = (MatNullSpace) -1;
+  } else {
+    *nullsp = sp;
+  }
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRange(*mat,m,n);
+}
 
 PETSC_EXTERN void PETSC_STDCALL  matgetsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
 {
@@ -663,6 +693,7 @@ PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,char* prefix PETSC
 
 PETSC_EXTERN void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLOBJECT(*sp)
   *ierr = MatNullSpaceRemove(*sp,*vec);
 }
 
