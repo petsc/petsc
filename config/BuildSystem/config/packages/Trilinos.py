@@ -58,7 +58,7 @@ class Configure(config.package.CMakePackage):
     if self.chaco.found:
       raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
     if self.exodusii.found:
-      raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains Exodusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
 
   def configureLibrary(self):
     self.checkTrilinosDuplicates()
