@@ -137,10 +137,11 @@ else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 #   This is a hack to fix a broken gfortran.
-	@echo "$(@): \\" > $(@:%.o=%.dtemp)
-	@grep "\.h " $(@:%.o=%.d) | grep -v : >> $(@:%.o=%.dtemp)
-	@grep "\.F90 " $(@:%.o=%.d) | sed 's/.$$//' >> $(@:%.o=%.dtemp)
-	@mv $(@:%.o=%.dtemp) $(@:%.o=%.d)
+	-@if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
+	      echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
+	      tail -n +2  $(@:%.o=%.d) | grep -v '\.mod: \\' >> $(@:%.o=%.dtemp) ; \
+	      mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+      fi
 
 # link line constructed differently for gmakefile vs gmakefile.test invocation
 ifeq ($(libpetscall),)
