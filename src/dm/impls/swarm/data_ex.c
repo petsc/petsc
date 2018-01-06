@@ -294,8 +294,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   Mat               A;
   PetscInt          i,j,nc;
   PetscInt          n_, *proc_neighbours_;
-  PetscInt          rank_i_;
-  PetscMPIInt       size,  rank_i;
+  PetscInt          rank_;
+  PetscMPIInt       size,  rank;
   PetscScalar       *vals;
   const PetscInt    *cols;
   const PetscScalar *red_vals;
@@ -309,8 +309,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
     proc_neighbours_[i] = proc_neighbours[i];
   }
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank_i);CHKERRQ(ierr);
-  rank_i_ = rank_i;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  rank_ = rank;
 
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   for (i = 0; i < n_; ++i) {
     vals[i] = 1.0;
   }
-  ierr = MatSetValues( A, 1,&rank_i_, n_,proc_neighbours_, vals, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = MatSetValues( A, 1,&rank_, n_,proc_neighbours_, vals, INSERT_VALUES );CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   /* Now force all other connections if they are not already there */
@@ -331,7 +331,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   for (i = 0; i < n_; ++i) {
     vals[i] = 2.0;
   }
-  ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_i_, vals, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_, vals, INSERT_VALUES );CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 /*
@@ -340,13 +340,13 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 */
   if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
-    ierr = MatGetRow(A, rank_i_, &nc, &cols, &red_vals);CHKERRQ(ierr);
+    ierr = MatGetRow(A, rank_, &nc, &cols, &red_vals);CHKERRQ(ierr);
     _n_new = (PetscMPIInt) nc;
     ierr = PetscMalloc1(_n_new, &_proc_neighbours_new);CHKERRQ(ierr);
     for (j = 0; j < nc; ++j) {
       _proc_neighbours_new[j] = (PetscMPIInt)cols[j];
     }
-    ierr = MatRestoreRow( A, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
+    ierr = MatRestoreRow( A, rank_, &nc, &cols, &red_vals );CHKERRQ(ierr);
     *n_new               = (PetscMPIInt)_n_new;
     *proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
   }

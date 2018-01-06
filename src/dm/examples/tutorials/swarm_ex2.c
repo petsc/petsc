@@ -80,5 +80,7 @@ int main(int argc,char **argv)
    test:
       requires: !complex double
       nsize: 3
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
 TEST*/

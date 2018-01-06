@@ -511,39 +511,55 @@ int main(int argc,char **argv)
 
    test:
       args: -test_mode 1
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 2
       args: -test_mode 2
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 3
       args: -test_mode 3
+      filter: grep -v atomic
+      filter_output: grep -v atomic
       TODO: broken
 
    test:
       suffix: 4
       args: -test_mode 4
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 5
       nsize: 4
       args: -test_mode 1
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 6
       nsize: 4
       args: -test_mode 2
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 7
       nsize: 4
       args: -test_mode 3
+      filter: grep -v atomic
+      filter_output: grep -v atomic
       TODO: broken
 
    test:
       suffix: 8
       nsize: 4
       args: -test_mode 4
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 
 TEST*/

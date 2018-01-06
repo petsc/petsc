@@ -266,5 +266,6 @@ int main(int argc,char **argv)
       requires: double !complex
 
    test:
-
+      filter: grep -v atomic
+      filter_output: grep -v atomic
 TEST*/

@@ -306,12 +306,14 @@ int main(int argc,char **args)
    test:
       args:
       requires: !complex double
-      filter: grep -v DM_
+      filter: grep -v DM_ | grep -v atomic
+      filter_output: grep -v atomic
 
    test:
       suffix: 2
       requires: triangle double !complex
       args: -mode 1
-      filter: grep -v DM_
+      filter: grep -v DM_ | grep -v atomic
+      filter_output: grep -v atomic
 
 TEST*/
