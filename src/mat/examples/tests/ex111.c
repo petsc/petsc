@@ -95,7 +95,7 @@ int main(int argc,char **args)
    test:
       args: -fA ${DATAFILESPATH}/matrices/matmatmult/K2.gz -fP ${DATAFILESPATH}/matrices/matmatmult/V2.gz
       output_file: output/ex111.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) datafilespath
       timeoutfactor: 2
 
    test:
@@ -103,16 +103,15 @@ int main(int argc,char **args)
       nsize: 4
       args: -fA ${DATAFILESPATH}/matrices/matmatmult/K2.gz -fP ${DATAFILESPATH}/matrices/matmatmult/V2.gz
       output_file: output/ex111.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) datafilespath
       timeoutfactor: 2
 
    test:
       suffix: 3
       nsize: 4
-      requires: datafilespath
       args: -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith -fP ${DATAFILESPATH}/matrices/matmatmult/P4.BGriffith
       output_file: output/ex111.out
-      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) datafilespath
       timeoutfactor: 2
 
 TEST*/
