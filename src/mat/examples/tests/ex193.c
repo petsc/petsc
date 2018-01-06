@@ -98,5 +98,6 @@ int main(int argc,char **args)
       nsize: 4
       args: -mat_partitioning_hierarchical_Nfineparts 2
       requires: parmetis
+      TODO: cannot run because parmetis does reproduce across all machines, probably due to nonportable random number generator
 
 TEST*/
