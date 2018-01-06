@@ -2,10 +2,6 @@
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
-/*T
-   requires: x veccuda   TODO: Need to determine if deprecated
-T*/
-
 #include <petscmat.h>
 
 int main(int argc,char **args)
