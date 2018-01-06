@@ -1246,7 +1246,7 @@ int main(int argc,char **argv)
 /*TEST
 
    build:
-      requires: double !complex !define(USE_64BIT_INDICES)
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
    test:
       suffix: implicit
