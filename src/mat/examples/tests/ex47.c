@@ -119,6 +119,6 @@ int main(int argc,char **args)
 
    test:
       args: -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5
-      requires: !complex double datafilespath !define(PETSC_HAVE_64BIT_INDICES)
+      requires: !complex double datafilespath !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
