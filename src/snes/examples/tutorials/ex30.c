@@ -1465,5 +1465,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
    test:
       filter: grep -v Destination
+      requires: !single
 
 TEST*/

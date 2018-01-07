@@ -87,7 +87,6 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(Afile);
   }
 
@@ -104,7 +103,6 @@ int main(int argc,char **args)
     }
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(bfile);
   }
 
@@ -121,7 +119,6 @@ int main(int argc,char **args)
     }
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(ufile);
   }
 
@@ -157,8 +154,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
 /*TEST
 
    build:
@@ -166,6 +161,5 @@ int main(int argc,char **args)
 
    test:
       args: -Ain ${DATAFILESPATH}/matrices/indefinite/afiro_A.dat
-
 
 TEST*/
