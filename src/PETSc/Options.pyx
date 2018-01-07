@@ -123,6 +123,13 @@ cdef class Options:
     def getString(self, name, default=None):
         return getopt(self.opt, OPT_STRING, self.prefix, name, default)
 
+    #
+
+    def insertString(self, string):
+        cdef const_char *cstring = NULL
+        string = str2bytes(string, &cstring)
+        CHKERR( PetscOptionsInsertString(self.opt, cstring) )
+
     def getAll(self):
         cdef char *allopts = NULL
         CHKERR( PetscOptionsGetAll(self.opt, &allopts) )
