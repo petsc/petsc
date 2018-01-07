@@ -57,17 +57,17 @@ int main(int argc, char *argv[])
 
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  fread(vtxdist, sizeof(idx_t), size+1, fp);
+  (void)fread(vtxdist, sizeof(idx_t), size+1, fp);
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
   ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
-  fread(xadj, sizeof(idx_t), ni+1, fp);
+  (void)fread(xadj, sizeof(idx_t), ni+1, fp);
 
   ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
-  for (i=0; i<ni; i++) fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
+  for (i=0; i<ni; i++) (void)fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
 
-  fread(xyz, sizeof(real_t), ndims*ni, fp);
+  (void)fread(xyz, sizeof(real_t), ndims*ni, fp);
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
   vwgt = NULL;
