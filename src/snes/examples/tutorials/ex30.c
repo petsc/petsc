@@ -1250,7 +1250,8 @@ PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *u
 #if defined(PETSC_HAVE_ERF)
   return (PetscReal)(erf((double)PetscRealPart(z*param->L/2.0/param->skt)));
 #else
-  SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
+  (*PetscErrorPrintf)("erf() not available on this machine\n");
+  MPI_Abort(PETSC_COMM_SELF,1);
 #endif
 }
 
@@ -1460,7 +1461,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 /*TEST
 
    build:
-      requires: !complex
+      requires: !complex erf
 
    test:
       filter: grep -v Destination
