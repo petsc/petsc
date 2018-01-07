@@ -42,7 +42,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (flg) {
     amat = mat;
-    PetscObjectReference((PetscObject)amat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)amat);CHKERRQ(ierr);
   } else {
     /* bs indicates if the converted matrix is "reduced" from the original and hence the
        resulting partition results need to be stretched to match the original matrix */
