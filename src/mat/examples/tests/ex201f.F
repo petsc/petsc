@@ -263,6 +263,8 @@
 !/*TEST
 !
 !   test:
-!      args: -malloc_dump
+!     args: -malloc_dump
+!     filter: sort -b
+!     filter_output: sort -b
 !
 !TEST*/
