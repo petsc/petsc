@@ -65,8 +65,8 @@ int main(int argc,char **args)
 /*TEST
 
     test:
-      args: -fin $DATAFILESPATH/matrices/small -fout joe -start 2 -m 4
-      requires: datafilespath double !complex 
+      args: -fin ${DATAFILESPATH}/matrices/small -fout joe -start 2 -m 4
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
 
- TEST*/
- 
+TEST*/
+
