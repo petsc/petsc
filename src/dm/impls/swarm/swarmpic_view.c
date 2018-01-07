@@ -6,9 +6,9 @@
 
 PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm,const char filename[],PetscViewer *v)
 {
-  long int *bytes;
+  long int       *bytes;
   PetscContainer container;
-  PetscViewer viewer;
+  PetscViewer    viewer;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -24,20 +24,20 @@ PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm,const char filename[
   ierr = PetscObjectCompose((PetscObject)viewer,"XDMFViewerContext",(PetscObject)container);CHKERRQ(ierr);
   
   /* write xdmf header */
-  PetscViewerASCIIPrintf(viewer,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-  PetscViewerASCIIPrintf(viewer,"<Xdmf xmlns:xi=\"http://www.w3.org/2001/XInclude\" Version=\"2.99\">\n");
+  ierr = PetscViewerASCIIPrintf(viewer,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Xdmf xmlns:xi=\"http://www.w3.org/2001/XInclude\" Version=\"2.99\">\n");CHKERRQ(ierr);
   /* write xdmf domain */
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<Domain>\n");
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Domain>\n");CHKERRQ(ierr);
   *v = viewer;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
 {
-  PetscViewer viewer;
-  DM dm = NULL;
-  long int *bytes;
+  PetscViewer    viewer;
+  DM             dm = NULL;
+  long int       *bytes;
   PetscContainer container = NULL;
   PetscErrorCode ierr;
   
@@ -47,14 +47,14 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
   
   ierr = PetscObjectQuery((PetscObject)viewer,"DMSwarm",(PetscObject*)&dm);CHKERRQ(ierr);
   if (dm) {
-    PetscViewerASCIIPrintf(viewer,"</Grid>\n");
-    PetscViewerASCIIPopTab(viewer);
+    ierr = PetscViewerASCIIPrintf(viewer,"</Grid>\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   
   /* close xdmf header */
-  PetscViewerASCIIPrintf(viewer,"</Domain>\n");
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</Xdmf>\n");
+  ierr = PetscViewerASCIIPrintf(viewer,"</Domain>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</Xdmf>\n");CHKERRQ(ierr);
   
   ierr = PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
@@ -70,8 +70,8 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
 
 PetscErrorCode private_CreateDataFileNameXDMF(const char filename[],char dfilename[])
 {
-  char *ext;
-  PetscBool flg;
+  char           *ext;
+  PetscBool      flg;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -79,7 +79,7 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[],char dfilena
   ierr = PetscStrcmp("xmf",ext,&flg);CHKERRQ(ierr);
   if (flg) {
     size_t len;
-    char viewername_minus_ext[PETSC_MAX_PATH_LEN];
+    char    viewername_minus_ext[PETSC_MAX_PATH_LEN];
     
     ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     ierr = PetscSNPrintf(viewername_minus_ext,len-3,"%s",filename);CHKERRQ(ierr);
@@ -91,15 +91,15 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[],char dfilena
 
 PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
 {
-  PetscBool isswarm = PETSC_FALSE;
-  const char *viewername;
-  char datafile[PETSC_MAX_PATH_LEN];
-  PetscViewer fviewer;
-  PetscInt k,ng,dim;
-  Vec dvec;
-  long int *bytes = NULL;
+  PetscBool      isswarm = PETSC_FALSE;
+  const char     *viewername;
+  char           datafile[PETSC_MAX_PATH_LEN];
+  PetscViewer    fviewer;
+  PetscInt       k,ng,dim;
+  Vec            dvec;
+  long int       *bytes = NULL;
   PetscContainer container = NULL;
-  const char *dmname;
+  const char     *dmname;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -113,15 +113,15 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   
   ierr = PetscObjectCompose((PetscObject)viewer,"DMSwarm",(PetscObject)dm);CHKERRQ(ierr);
   
-  PetscViewerASCIIPushTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm,&dmname);CHKERRQ(ierr);
   if (!dmname) {
     ierr = DMGetOptionsPrefix(dm,&dmname);CHKERRQ(ierr);
   }
   if (!dmname) {
-    PetscViewerASCIIPrintf(viewer,"<Grid Name=\"DMSwarm\" GridType=\"Uniform\">\n");
+    ierr = PetscViewerASCIIPrintf(viewer,"<Grid Name=\"DMSwarm\" GridType=\"Uniform\">\n");CHKERRQ(ierr);
   } else {
-    PetscViewerASCIIPrintf(viewer,"<Grid Name=\"DMSwarm[%s]\" GridType=\"Uniform\">\n",dmname);
+    ierr = PetscViewerASCIIPrintf(viewer,"<Grid Name=\"DMSwarm[%s]\" GridType=\"Uniform\">\n",dmname);CHKERRQ(ierr);
   }
   
   /* create a sub-viewer for topology, geometry and all data fields */
@@ -139,17 +139,17 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   ierr = DMSwarmGetSize(dm,&ng);CHKERRQ(ierr);
   
   /* write topology header */
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<Topology Dimensions=\"%D\" TopologyType=\"Mixed\">\n",ng);
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Dimensions=\"%D\" Seek=\"%D\">\n",ng*3,bytes[0]);
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"%s\n",datafile);
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</DataItem>\n");
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</Topology>\n");
-  PetscViewerASCIIPopTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Topology Dimensions=\"%D\" TopologyType=\"Mixed\">\n",ng);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Dimensions=\"%D\" Seek=\"%D\">\n",ng*3,bytes[0]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</Topology>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   
   /* write topology data */
   for (k=0; k<ng; k++) {
@@ -163,28 +163,28 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   bytes[0] += sizeof(PetscInt) * ng * 3;
   
   /* write geometry header */
-  PetscViewerASCIIPushTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   switch (dim) {
     case 1:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for 1D");
       break;
     case 2:
-      PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XY\">\n");
+      ierr = PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XY\">\n");CHKERRQ(ierr);
       break;
     case 3:
-      PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XYZ\">\n");
+      ierr = PetscViewerASCIIPrintf(viewer,"<Geometry Type=\"XYZ\">\n");CHKERRQ(ierr);
       break;
   }
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",ng,dim,bytes[0]);
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"%s\n",datafile);
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</DataItem>\n");
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</Geometry>\n");
-  PetscViewerASCIIPopTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",ng,dim,bytes[0]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</Geometry>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   
   /* write geometry data */
   ierr = DMSwarmCreateGlobalVectorFromField(dm,DMSwarmPICField_coor,&dvec);CHKERRQ(ierr);
@@ -199,14 +199,14 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
 
 PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
 {
-  long int *bytes = NULL;
+  long int       *bytes = NULL;
   PetscContainer container = NULL;
-  const char *viewername;
-  char datafile[PETSC_MAX_PATH_LEN];
-  PetscViewer fviewer;
-  PetscInt N,bs;
-  const char *vecname;
-  char fieldname[PETSC_MAX_PATH_LEN];
+  const char     *viewername;
+  char           datafile[PETSC_MAX_PATH_LEN];
+  PetscViewer    fviewer;
+  PetscInt       N,bs;
+  const char     *vecname;
+  char           fieldname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -238,21 +238,21 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   }
   
   /* write data header */
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname);
-  PetscViewerASCIIPushTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   if (bs == 1) {
-    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]);
+    ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]);CHKERRQ(ierr);
   } else {
-    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);
+    ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);CHKERRQ(ierr);
   }
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"%s\n",datafile);
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</DataItem>\n");
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</Attribute>\n");
-  PetscViewerASCIIPopTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</Attribute>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   
   /* write data */
   ierr = VecView(x,fviewer);CHKERRQ(ierr);
@@ -265,14 +265,14 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
 
 PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 {
-  long int *bytes = NULL;
+  long int       *bytes = NULL;
   PetscContainer container = NULL;
-  const char *viewername;
-  char datafile[PETSC_MAX_PATH_LEN];
-  PetscViewer fviewer;
-  PetscInt N,bs;
-  const char *vecname;
-  char fieldname[PETSC_MAX_PATH_LEN];
+  const char     *viewername;
+  char           datafile[PETSC_MAX_PATH_LEN];
+  PetscViewer    fviewer;
+  PetscInt       N,bs;
+  const char     *vecname;
+  char           fieldname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -304,21 +304,21 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   }
   
   /* write data header */
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname);
-  PetscViewerASCIIPushTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"<Attribute Center=\"Node\" Name=\"%s\" Type=\"None\">\n",fieldname);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   if (bs == 1) {
-    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]);
+    ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D\" Seek=\"%D\">\n",N,bytes[0]);CHKERRQ(ierr);
   } else {
-    PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);
+    ierr = PetscViewerASCIIPrintf(viewer,"<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Int\" Precision=\"4\" Dimensions=\"%D %D\" Seek=\"%D\">\n",N,bs,bytes[0]);CHKERRQ(ierr);
   }
-  PetscViewerASCIIPushTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"%s\n",datafile);
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</DataItem>\n");
-  PetscViewerASCIIPopTab(viewer);
-  PetscViewerASCIIPrintf(viewer,"</Attribute>\n");
-  PetscViewerASCIIPopTab(viewer);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s\n",datafile);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</DataItem>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"</Attribute>\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   
   /* write data */
   ierr = ISView(is,fviewer);CHKERRQ(ierr);
@@ -350,16 +350,16 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],PetscInt nfields,const char *field_name_list[])
 {
   PetscErrorCode ierr;
-  Vec dvec;
-  PetscInt f,N;
-  PetscViewer viewer;
+  Vec            dvec;
+  PetscInt       f,N;
+  PetscViewer    viewer;
   
   PetscFunctionBegin;
   ierr = private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm),filename,&viewer);CHKERRQ(ierr);
   ierr = private_DMSwarmView_XDMF(dm,viewer);CHKERRQ(ierr);
   ierr = DMSwarmGetLocalSize(dm,&N);CHKERRQ(ierr);
   for (f=0; f<nfields; f++) {
-    void *data;
+    void          *data;
     PetscDataType type;
 
     ierr = DMSwarmGetField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
@@ -407,11 +407,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  Vec dvec;
-  PetscInt f;
-  PetscViewer viewer;
+  Vec            dvec;
+  PetscInt       f;
+  PetscViewer    viewer;
   
   PetscFunctionBegin;
   ierr = private_PetscViewerCreate_XDMF(PetscObjectComm((PetscObject)dm),filename,&viewer);CHKERRQ(ierr);
@@ -427,10 +427,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
       ierr = private_VecView_Swarm_XDMF(dvec,viewer);CHKERRQ(ierr);
       ierr = DMSwarmDestroyGlobalVectorFromField(dm,field->name,&dvec);CHKERRQ(ierr);
     } else if (field->petsc_type == PETSC_INT) {
-      IS is;
-      PetscInt N;
+      IS             is;
+      PetscInt       N;
       const PetscInt *idx;
-      void *data;
+      void           *data;
       
       ierr = DMSwarmGetLocalSize(dm,&N);CHKERRQ(ierr);
       ierr = DMSwarmGetField(dm,field->name,NULL,NULL,&data);CHKERRQ(ierr);

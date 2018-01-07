@@ -183,7 +183,6 @@ PetscErrorCode ex3_1(void)
     ierr = DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array);CHKERRQ(ierr);
     cnt = 0;
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(rand,PETSCRAND48);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(rand,-1.0,1.0);CHKERRQ(ierr);
     for (p=0; p<nlocal; p++) {
       PetscReal px,py,rx,ry,r2;
