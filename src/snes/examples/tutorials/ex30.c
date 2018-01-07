@@ -925,7 +925,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",(double)param->lid_depth*param->L,(double)param->fault_depth*param->L);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)grid->dx*param->L,(double)(grid->dz*param->L));CHKERRQ(ierr);

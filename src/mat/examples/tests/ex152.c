@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
   MPI_Comm       comm;
   FILE           *fp;
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
+  size_t         red;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -57,17 +58,19 @@ int main(int argc, char *argv[])
 
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  (void)fread(vtxdist, sizeof(idx_t), size+1, fp);
+  red = fread(vtxdist, sizeof(idx_t), size+1, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
   ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
-  (void)fread(xadj, sizeof(idx_t), ni+1, fp);
+  red = fread(xadj, sizeof(idx_t), ni+1, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
-  for (i=0; i<ni; i++) (void)fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
+  for (i=0; i<ni; i++) {
+    red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  }
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
@@ -76,7 +79,8 @@ int main(int argc, char *argv[])
 
   ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
 
-  (void)fread(xyz, sizeof(real_t), ndims*ni, fp);
+  red = fread(xyz, sizeof(real_t), ndims*ni, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 
   vwgt = NULL;
