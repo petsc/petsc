@@ -6,15 +6,15 @@
 
       type tMat
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMat
       type tMatNullSpace
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatNullSpace
       type tMatFDColoring
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatFDColoring
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(-1)

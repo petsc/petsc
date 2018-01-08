@@ -4,13 +4,13 @@
 #include "petsc/finclude/petscts.h"
 
       type tTS
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tTS
       type tTSAdapt
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tTSAdapt
       type tTSTrajectory
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tTSTrajectory
 
       TS, parameter :: PETSC_NULL_TS = tTS(-1)

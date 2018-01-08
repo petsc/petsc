@@ -4,11 +4,11 @@
 #include "petsc/finclude/petscsnes.h"
 
       type tSNES
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tSNES
 
       type tPetscConvEst
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPetscConvEst
 
       SNES, parameter :: PETSC_NULL_SNES = tSNES(-1)

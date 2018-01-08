@@ -86,6 +86,7 @@
 #define matgetnullspace_                 MATGETNULLSPACE
 #define matsetnullspace_                 MATSETNULLSPACE
 #define matgetownershiprange_            MATGETOWNERSHIPRANGE
+#define matgetownershiprangecolumn_      MATGETOWNERSHIPRANGECOLUMN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
 #define matsetvaluesnnnn_                matsetvaluesnnnn
@@ -170,6 +171,7 @@
 #define matgetnullspace_                 matgetnullspace
 #define matsetnullspace_                 matsetnullspace
 #define matgetownershiprange_            matgetownershiprange
+#define matgetownershiprangecolumn_      matgetownershiprangecolumn
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL matsetnullspace_(Mat *mat, MatNullSpace *nullsp, int *ierr)
@@ -194,6 +196,13 @@ PETSC_EXTERN void PETSC_STDCALL  matgetownershiprange_(Mat *mat,PetscInt *m,Pets
   CHKFORTRANNULLINTEGER(m);
   CHKFORTRANNULLINTEGER(n);
   *ierr = MatGetOwnershipRange(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetownershiprangecolumn_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetOwnershipRangeColumn(*mat,m,n);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matgetsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )

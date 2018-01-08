@@ -6425,7 +6425,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
    this processor. (The columns of the "diagonal block")
 
@@ -8145,7 +8145,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
    Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatSetNullSpace()
-C@*/
+@*/
 PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
@@ -8189,7 +8189,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
    Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
-C@*/
+@*/
 PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;

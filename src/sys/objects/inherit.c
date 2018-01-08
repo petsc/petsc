@@ -502,7 +502,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
    Level: advanced
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
-C@*/
+@*/
 PetscErrorCode  PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
@@ -528,7 +528,7 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
    Level: advanced
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
-C@*/
+@*/
 PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 {
   PetscFunctionBegin;
@@ -554,7 +554,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
    Level: advanced
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
-C@*/
+@*/
 PetscErrorCode  PetscObjectDereference(PetscObject obj)
 {
   PetscErrorCode ierr;

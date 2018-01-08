@@ -192,7 +192,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement(),
           MatSchurComplementGetPmat()
 
-C@*/
+@*/
 PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,Mat *S)
 {
   PetscErrorCode ierr;

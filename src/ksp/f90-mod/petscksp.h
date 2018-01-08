@@ -8,7 +8,7 @@
 !  CG Types
 !
       type tKSP
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tKSP
 
       KSP, parameter :: PETSC_NULL_KSP = tKSP(-1)
