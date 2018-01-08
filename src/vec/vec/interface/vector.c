@@ -1146,7 +1146,7 @@ PetscErrorCode  VecPointwiseMult(Vec w, Vec x,Vec y)
    Concepts: random^vector
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
-C@*/
+@*/
 PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
