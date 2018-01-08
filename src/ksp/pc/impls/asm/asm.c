@@ -303,7 +303,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscInt m;
 
-      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is_local, &osm->lis);CHKERRQ(ierr);
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
       ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
       ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
