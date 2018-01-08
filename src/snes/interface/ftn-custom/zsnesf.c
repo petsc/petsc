@@ -219,6 +219,7 @@ PETSC_EXTERN void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,vo
 {
   CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,NULL,NULL); if (*ierr) return;
+  if (func == PETSC_NULL_FUNCTION_Fortran) return;
   *ierr = PetscObjectGetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function,NULL,ctx);
 }
 

@@ -62,7 +62,7 @@
       PetscErrorCode ierr
       PetscReal      lambda_max,lambda_min
       PetscBool      flg
-
+      external       MySNESConverged
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
@@ -97,6 +97,14 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+
+!  Set convergence test routine if desired
+
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_snes_convergence',flg,ierr)
+      if (flg) then
+        call SNESSetConvergenceTest(snes,MySNESConverged,0,PETSC_NULL_FUNCTION,ierr)
+      endif
+!
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
@@ -476,6 +484,26 @@
       return
       end
 
+!
+!     Simple convergence test based on the infinity norm of the residual being small
+!
+      subroutine MySNESConverged(snes,it,xnorm,snorm,fnorm,reason,dummy,ierr)
+      use petscsnes
+      implicit none
+
+      SNES snes
+      PetscInt it,dummy
+      PetscReal xnorm,snorm,fnorm,nrm
+      SNESConvergedReason reason
+      Vec f
+      PetscErrorCode ierr
+
+      call SNESGetFunction(snes,f,PETSC_NULL_FUNCTION,dummy,ierr)
+      call VecNorm(f,NORM_INFINITY,nrm,ierr)
+      print*,it,nrm
+      if (nrm .le. 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
+
+      end
 !/*TEST
 !
 !   build:
