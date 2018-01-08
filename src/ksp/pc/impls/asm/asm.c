@@ -303,7 +303,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscInt m;
 
-      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
+      ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is_local, &osm->lis);CHKERRQ(ierr);
       ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
       ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF, m, &osm->lx);CHKERRQ(ierr);
@@ -808,6 +808,7 @@ static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
   PC_ASM *osm = (PC_ASM *) pc->data;
 
   PetscFunctionBegin;
+  if (type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
   osm->loctype = type;
   PetscFunctionReturn(0);
 }
