@@ -6,62 +6,93 @@ static char help[] = "Tests for parallel mesh loading\n\n";
 
 Triangle
 --------
-Test 0:
+Test 0 (2 ranks):
 Two triangles sharing a face
 
-        4
+        2
       / | \
      /  |  \
     /   |   \
-   2  0 | 1  5
+   0  0 | 1  3
     \   |   /
      \  |  /
       \ | /
-        3
+        1
 
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
 
 Test 1 (3 ranks):
 Four triangles partitioned across 3 ranks
 
-   4 _______ 7
+   0 _______ 3
    | \     / |
    |  \ 1 /  |
    |   \ /   |
-   | 0  6  2 |
+   | 0  2  2 |
    |   / \   |
    |  / 3 \  |
    | /     \ |
-   5 ------- 8
+   1 ------- 4
 
-Partition: {0: [0,  4, 5], 1: [1,  6, 7], 2: [2, 3,  8]}
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3
+    rank 2: 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+    rank 2: 2 3
 
 Tetrahedron
 -----------
 Test 0:
 Two tets sharing a face
 
- cell   5 _______    cell
- 0    / | \      \       1
+ cell   3 _______    cell
+ 0    / | \      \   1
      /  |  \      \
     /   |   \      \
-   2----|----4-----6
+   0----|----4-----2
     \   |   /      /
-     \  |  /     /
+     \  |  /      /
       \ | /      /
-        3-------
+        1-------
+   y
+   | x
+   |/
+   *----z
+
+  vertex distribution:
+    rank 0: 0 1
+    rank 1: 2 3 4
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
 
 Quadrilateral
 -------------
-Test 0:
+Test 0 (2 ranks):
 Two quads sharing a face
 
-   5-------4-------7
+   3-------2-------5
    |       |       |
    |   0   |   1   |
    |       |       |
-   2-------3-------6
+   0-------1-------4
 
-Test 1:
+  vertex distribution:
+    rank 0: 0 1 2
+    rank 1: 3 4 5
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+
+TODO Test 1:
 A quad and a triangle sharing a face
 
    5-------4
@@ -72,7 +103,7 @@ A quad and a triangle sharing a face
 
 Hexahedron
 ----------
-Test 0:
+TODO Test 0 (2 ranks):
 Two hexes sharing a face
 
 cell   9-------------8-------------13 cell
