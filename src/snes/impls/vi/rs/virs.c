@@ -732,7 +732,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
       SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
++   -snes_type <vinewtonssls,vinewtonrsls> - a semi-smooth solver, a reduced space active set method
 -   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
    Level: beginner

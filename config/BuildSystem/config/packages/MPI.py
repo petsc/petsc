@@ -214,6 +214,22 @@ class Configure(config.package.Package):
     self.logWrite(self.framework.restoreLog())
     return
 
+  def configureMPI3(self):
+    '''Check for functions added to the interface in MPI-3'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Comm scomm; if (MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &scomm));\n'):
+      self.haveMPISharedComm = 1
+      self.addDefine('HAVE_MPI_SHARED_COMM', 1)
+    else: self.haveMPISharedComm = 0
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    return
+
   def configureConversion(self):
     '''Check for the functions which convert communicators between C and Fortran
        - Define HAVE_MPI_COMM_F2C and HAVE_MPI_COMM_C2F if they are present
@@ -496,6 +512,7 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureMPI2)
+    self.executeTest(self.configureMPI3)
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.configureMissingPrototypes)

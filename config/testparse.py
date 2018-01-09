@@ -44,8 +44,6 @@ import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 maintdir=os.path.join(os.path.join(os.path.dirname(thisscriptdir),'bin'),'maint')
 sys.path.insert(0,maintdir) 
-# Don't print out trace when raise Exceptions 
-sys.tracebacklimit = 0
 
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
@@ -405,20 +403,12 @@ def parseTestFile(srcfile,verbosity):
   ## Start with doing the tests
   #
   fsplit=fileStr.split("/*TEST\n")[1:]
-  if len(fsplit)==0: 
-    if debug: print("No test found in: "+srcfile)
-    os.chdir(curdir)
-    return {}
   fstart=len(fileStr.split("/*TEST\n")[0].split("\n"))+1
   # Allow for multiple "/*TEST" blocks even though it really should be
   # one
   srcTests=[]
   for t in fsplit: srcTests.append(t.split("TEST*/")[0])
   testString=" ".join(srcTests)
-  if len(testString.strip())==0:
-    print("No test found in: "+srcfile)
-    os.chdir(curdir)
-    return {}
   flen=len(testString.split("\n"))
   fend=fstart+flen-1
   fileNums=range(fstart,fend)

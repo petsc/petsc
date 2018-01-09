@@ -368,6 +368,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelShared(MPI_Comm comm,PetscMPIInt keyval
 @*/
 PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
 {
+#ifdef PETSC_HAVE_MPI_SHARED_COMM
   PetscErrorCode   ierr;
   MPI_Group        group,sgroup;
   PetscMPIInt      *sranks,i,flg;
@@ -401,6 +402,9 @@ PetscErrorCode  PetscCommSharedGet(MPI_Comm comm,PetscCommShared *scomm)
   }
   ierr = MPI_Attr_put(comm,Petsc_Shared_keyval,*scomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "Shared communicators need MPI-3 package support.\nPlease upgrade your MPI or reconfigure with --download-mpich.");
+#endif
 }
 
 #undef  __FUNCT__

@@ -22,6 +22,13 @@ class Configure(config.package.Package):
     help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
 
+  def configureLibrary(self):
+    import os
+    config.package.Package.configureLibrary(self)
+    if self.found:
+      self.libDir = os.path.join(self.directory,'lib')
+    return
+
   def Install(self):
     import os
 

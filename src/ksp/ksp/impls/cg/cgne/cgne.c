@@ -218,7 +218,7 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    iterations (see Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992). If you intend
    to solve least squares problems, use KSPLSQR.
 
-   This is NOT a different algorithm then used with KSPCG, it merely uses that algorithm with the
+   This is NOT a different algorithm than used with KSPCG, it merely uses that algorithm with the
    matrix defined by A^t*A and preconditioner defined by B^t*B where B is the preconditioner for A.
 
    This method requires that one be able to apply the transpose of the preconditioner and operator

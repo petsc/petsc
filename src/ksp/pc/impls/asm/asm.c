@@ -808,6 +808,7 @@ static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
   PC_ASM *osm = (PC_ASM *) pc->data;
 
   PetscFunctionBegin;
+  if (type != PC_COMPOSITE_ADDITIVE && type != PC_COMPOSITE_MULTIPLICATIVE) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Only supports additive or multiplicative as the local type");
   osm->loctype = type;
   PetscFunctionReturn(0);
 }
