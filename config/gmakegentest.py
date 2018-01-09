@@ -601,13 +601,12 @@ class generateExamples(Petsc):
     return srcDict['SKIP'] == []
 
 
-  def _isRun(self,testDict):
+  def _isRun(self,testDict, debug=False):
     """
     Based on the requirements listed in the src file and the petscconf.h
     info, determine whether this test should be run or not.
     """
     indent="  "
-    debug=False
 
     if 'SKIP' not in testDict:
       testDict['SKIP'] = []
@@ -752,8 +751,9 @@ class generateExamples(Petsc):
       #if not exfile.startswith("new_"+"ex"): continue
       #if not exfile.startswith("ex"): continue
 
-      # Ignore emacs files
-      if exfile.startswith("#") or exfile.startswith(".#"): continue
+      # Ignore emacs and other temporary files
+      if exfile.startswith("."): continue
+      if exfile.startswith("#"): continue
 
       # Convenience
       fullex=os.path.join(root,exfile)

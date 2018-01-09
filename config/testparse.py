@@ -363,7 +363,8 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
   newTestStr=_stripIndent(testStr,srcfile,entireBlock=True,fileNums=fileNums)
   if verbosity>2: print(srcfile)
 
-  ## Check and see if we have build reuqirements
+  ## Check and see if we have build requirements
+  addToRunRequirements=None
   if "\nbuild:" in newTestStr:
     testDict['build']={}
     # The file info is already here and need to append
@@ -373,6 +374,14 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
       if bkey+":" in fileInfo:
         testDict['build'][bkey]=fileInfo.split(bkey+":")[1].split("\n")[0].strip()
         #if verbosity>1: bkey+": "+testDict['build'][bkey]
+      # If a runtime requires are put into build, push them down to all run tests
+      # At this point, we are working with strings and not lists
+      if 'requires' in testDict['build']:
+         if 'datafilespath' in testDict['build']['requires']: 
+             newreqs=re.sub('datafilespath','',testDict['build']['requires'])
+             testDict['build']['requires']=newreqs.strip()
+             addToRunRequirements='datafilespath'
+
 
   # Now go through each test.  First elem in split is blank
   for test in re.split("\ntest(?:set)?:",newTestStr)[1:]:
@@ -380,6 +389,12 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
     for i in range(len(testnames)):
       if testDict.has_key(testnames[i]):
         raise RuntimeError("Multiple test names specified: "+testnames[i]+" in file: "+srcfile)
+      # Add in build requirements that need to be moved
+      if addToRunRequirements:
+          if 'requires' in subdicts[i]:
+              subdicts[i]['requires']+=addToRunRequirements
+          else:
+              subdicts[i]['requires']=addToRunRequirements
       testDict[testnames[i]]=subdicts[i]
 
   return testDict
