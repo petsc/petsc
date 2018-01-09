@@ -72,7 +72,7 @@ int main(int argc,char **args)
       suffix: 2
       nsize: 3
       requires: datafilespah !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -fA ${DATAFILESPATH}/matrices/matmatmatmult/A.bin -fB ${DATAFILESPATH}/matrices/matmatmatmult/B.bin -fC ${DATAFILESPATH}/matrices/matmatmatmult/C.bi
+      args: -fA ${DATAFILESPATH}/matrices/matmatmatmult/A.bin -fB ${DATAFILESPATH}/matrices/matmatmatmult/B.bin -fC ${DATAFILESPATH}/matrices/matmatmatmult/C.bin
       output_file: output/ex198.out
 
 TEST*/
