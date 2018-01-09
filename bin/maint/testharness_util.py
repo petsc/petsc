@@ -30,7 +30,7 @@ def get_datafiles(args):
     return mylist
 
 
-def walktree(top, action):
+def walktree(top, action, datafilespath=None):
     """
     Walk a directory tree, starting from 'top'
     """
@@ -62,11 +62,29 @@ def walktree(top, action):
                                     args = d[root][exfile][test][s]['args']
                                     alldatafiles += get_datafiles(args)
 
+    # Make unique and sort
     alldatafiles = list(set(alldatafiles))
     alldatafiles.sort()
 
+    if datafilespath:
+        action = 'gen_dl_path'
     if action == 'print_datafiles':
         print('\n'.join(alldatafiles))
+    if action == 'gen_dl_path':
+        ftproot='http://ftp.mcs.anl.gov/pub/petsc/Datafiles/'
+        for dfile in alldatafiles:
+           fulldfile=os.path.join(datafilespath,dfile)
+           if not os.path.exists(fulldfile):
+              dl_dir=os.path.dirname(fulldfile)
+              if not os.path.isdir(dl_dir):
+                  try:
+                     os.mkdir(dl_dir)
+                  except:
+                     os.mkdir(os.path.dirname(os.path.dirname(dl_dir)))
+                     os.mkdir(os.path.dirname(dl_dir))
+                     os.mkdir(dl_dir)
+              dl_dfile=ftproot+dfile
+              print('cd '+dl_dir+' && wget '+dl_dfile+'\n')
 
     return
 
@@ -76,8 +94,11 @@ def main():
     parser.add_option('-s', '--startdir', dest='startdir',
                       help='Where to start the recursion',
                       default='')
+    parser.add_option('-d', '--datafilespath', dest='datafilespath',
+                      help='Location of datafilespath for action gen_dl_script',
+                      default=None)
     parser.add_option('-a', '--action', dest='action',
-                      help='action to take from traversing examples',
+                      help='action to take from traversing examples: print_datafiles, gen_dl_script',
                       default=None)
     parser.add_option('-p', '--petsc_dir', dest='petsc_dir',
                       help='Location of petsc_dir',
@@ -104,7 +125,7 @@ def main():
     # Do actual work
 
     action = 'print_datafiles' if not options.action else options.action
-    walktree(startdir, action)
+    walktree(startdir, action, datafilespath=options.datafilespath)
 
 
 if __name__ == "__main__":
