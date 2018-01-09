@@ -529,5 +529,10 @@ int main(int argc, char **argv)
     suffix: quad_0
     nsize: 2
     args: -cell_simplex 0 -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: quad_1
+    nsize: 2
+    TODO: true
+    args: -cell_simplex 0 -dim 3 -interpolate -dm_view ascii::ascii_info_detail
 
 TEST*/
