@@ -130,6 +130,7 @@ int main(int argc,char **args)
       suffix: 2
       args: -mat_fftw_plannerflags FFTW_MEASURE
       output_file: output/ex112.out
+      requires: !define(PETSC_USE_CXXCOMPLEX)
 
    test:
       suffix: 3
