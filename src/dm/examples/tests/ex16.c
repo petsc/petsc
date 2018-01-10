@@ -119,3 +119,19 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: 3
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -gather_add
+
+TEST*/

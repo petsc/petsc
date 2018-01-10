@@ -3,7 +3,6 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 
 #include <petscmat.h>
 
-
 int main(int argc,char **argv)
 {
   Mat            A,B;
@@ -48,7 +47,7 @@ int main(int argc,char **argv)
 
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
 
-  ierr = MatEqual(A,B,&equal);
+  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
 
   eq[0] = "not equal";
   eq[1] = "equal";
@@ -63,3 +62,8 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+    test:
+
+TEST*/

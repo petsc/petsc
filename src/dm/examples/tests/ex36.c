@@ -628,3 +628,46 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: 1d
+      args: -mx 10 -nl 6 -dim 1
+
+   test:
+      suffix: 2d
+
+      test:
+         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 0
+
+      test:
+         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 1
+
+      test:
+         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 2
+
+      test:
+         args: -mx 10 -my 10 -nl 6 -dim 2 -cmap 3
+
+   test:
+      suffix: 2dp1
+      nsize: 32
+      args: -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 4
+
+   test:
+      suffix: 2dp2
+      nsize: 32
+      args: -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 1
+
+   test:
+      suffix: 3d
+      args: -mx 5 -my 5 -mz 5 -nl 4 -dim 3 -cmap 3
+
+   test:
+      suffix: 3dp1
+      nsize: 32
+      args: -mx 5 -my 5 -mz 5 -nl 3 -dim 3 -cmap 1 -da_refine_x 1 -da_refine_y 3 -da_refine_z 4
+
+TEST*/

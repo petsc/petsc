@@ -98,3 +98,38 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 2
+      nsize: 3
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 3
+      args: -mat_type baij -mat_block_size 1
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 4
+      args: -mat_type baij -mat_block_size 2
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -mat_type baij -mat_block_size 1
+      filter: grep -v "MPI processes"
+
+   test:
+      suffix: 6
+      nsize: 2
+      args: -mat_type baij -mat_block_size 2
+      filter: grep -v "MPI processes"
+
+TEST*/

@@ -722,7 +722,9 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
     }
 
+    ((PetscObject)natural)->donotPetscObjectPrintClassNamePrefixType = PETSC_TRUE;
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
+    ((PetscObject)natural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
 
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
       MPI_Comm    comm;

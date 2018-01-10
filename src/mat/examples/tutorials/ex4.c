@@ -1,5 +1,4 @@
 /*
- * ex4.c
  *
  *  Created on: Sep 25, 2017
  *      Author: Fande Kong
@@ -50,3 +49,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      suffix: 1
+
+   test:
+      suffix: 2
+      nsize: 2
+
+TEST*/

@@ -31,6 +31,8 @@ The command line options are:\n\
    Processors: n
 T*/
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient()
@@ -770,3 +772,34 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gttol 1.e-2
+      requires: !single
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -tao_smonitor -tao_type nls -ksp_max_it 15 -tao_gttol 1.e-2
+      filter: grep -v "nls ksp"
+      requires: !single
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -tao_smonitor -tao_type cg -tao_cg_type fr -mx 10 -my 10 -tao_gttol 1.e-2
+      requires: !single
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -tao_smonitor -tao_type bmrm -mx 10 -my 8 -tao_gttol 1.e-2
+      requires: !single
+
+TEST*/

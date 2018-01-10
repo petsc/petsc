@@ -130,7 +130,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       lambda[2] = lmax;
       break;
     case 2:
-      h = user->hmax*PetscAbsReal(1-PetscExpReal(-PetscAbsScalar(pcoords[0]-(PetscReal)0.5))) + user->hmin;
+      h = user->hmax*PetscAbsReal(((PetscReal) 1.0)-PetscExpReal(-PetscAbsScalar(pcoords[0]-(PetscReal)0.5))) + user->hmin;
       lbd = 1/(h*h);
       lmax = 1/(user->hmax*user->hmax);
       lambda[0] = lbd;

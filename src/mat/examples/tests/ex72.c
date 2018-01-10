@@ -1,4 +1,8 @@
 
+/*T
+   requires: define(PETSC_USE_REAL_DOUBLE) !define(USE_64BIT_INDICES)
+T*/
+
 #include <petscmat.h>
 
 static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only the lower triangle). \n\
@@ -92,3 +96,15 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires:  !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+      args: -fin ${PETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout outputfile
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

@@ -368,3 +368,19 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat AA,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -pc_type mg -da_refine 2  -ts_view  -ts_monitor -ts_max_time .3
+      requires: double
+
+   test:
+     suffix: 2
+     args:  -pc_type mg -da_refine 2  -ts_view  -ts_monitor_draw_solution -ts_monitor -ts_max_time .3
+     requires: x
+     output_file: output/ex3_1.out
+     requires: double
+
+TEST*/

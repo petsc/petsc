@@ -128,9 +128,15 @@ PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
   PetscFunctionReturn(0);
 }
 
+/*
+    This code is horrible, who let it get into master.
+
+    Should be printing to a viewer, should not be using PETSC_COMM_WORLD
+
+*/
 PetscErrorCode DataExView(DataEx d)
 {
-  PetscMPIInt p;
+  PetscMPIInt    p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -142,20 +148,23 @@ PetscErrorCode DataExView(DataEx d)
 
   if (d->topology_status == DEOBJECT_FINALIZED) {
     ierr = PetscPrintf( PETSC_COMM_WORLD, "  Topology:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] neighbours: %d \n", (int)d->rank, (int)d->n_neighbour_procs );CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", (int)d->rank, (int)d->n_neighbour_procs );CHKERRQ(ierr);
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d]   neighbour[%D] = %d \n", (int)d->rank, p, (int)d->neighbour_procs[p]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d]   neighbour[%D] = %d \n", (int)d->rank, p, (int)d->neighbour_procs[p]);CHKERRQ(ierr);
     }
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   }
+
   if (d->message_lengths_status == DEOBJECT_FINALIZED) {
     ierr = PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] atomic size: %ld \n", (int)d->rank, (long int)d->unit_message_size );CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] atomic size: %ld \n", (int)d->rank, (long int)d->unit_message_size );CHKERRQ(ierr);
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] >>>>> ( %D units :: tag = %d ) >>>>> [%d] \n", (int)d->rank, d->messages_to_be_sent[p], d->send_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %D units :: tag = %d ) >>>>> [%d] \n", (int)d->rank, d->messages_to_be_sent[p], d->send_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
     }
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscPrintf( PETSC_COMM_SELF, "    [%d] <<<<< ( %D units :: tag = %d ) <<<<< [%d] \n", (int)d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %D units :: tag = %d ) <<<<< [%d] \n", (int)d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], (int)d->neighbour_procs[p] );CHKERRQ(ierr);
     }
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   }
   if (d->packer_status == DEOBJECT_FINALIZED) {}
   if (d->communication_status == DEOBJECT_FINALIZED) {}
@@ -205,7 +214,7 @@ PetscErrorCode DataExTopologyInitialize(DataEx d)
 PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
 {
   PetscMPIInt    n,found;
-  PetscMPIInt    nproc;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -215,8 +224,8 @@ PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
   /* error on ranks larger than number of procs in communicator */
-  ierr = MPI_Comm_size(d->comm,&nproc);CHKERRQ(ierr);
-  if (proc_id >= nproc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank >= nproc");
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
+  if (proc_id >= size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour %d with a rank >= size %d",proc_id,size);
   if (d->n_neighbour_procs == 0) {ierr = PetscMalloc1(1, &d->neighbour_procs);CHKERRQ(ierr);}
   /* check for proc_id */
   found = 0;
@@ -285,8 +294,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   Mat               A;
   PetscInt          i,j,nc;
   PetscInt          n_, *proc_neighbours_;
-  PetscInt          rank_i_;
-  PetscMPIInt       size,  rank_i;
+  PetscInt          rank_;
+  PetscMPIInt       size,  rank;
   PetscScalar       *vals;
   const PetscInt    *cols;
   const PetscScalar *red_vals;
@@ -300,8 +309,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
     proc_neighbours_[i] = proc_neighbours[i];
   }
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank_i);CHKERRQ(ierr);
-  rank_i_ = rank_i;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  rank_ = rank;
 
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size);CHKERRQ(ierr);
@@ -314,7 +323,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   for (i = 0; i < n_; ++i) {
     vals[i] = 1.0;
   }
-  ierr = MatSetValues( A, 1,&rank_i_, n_,proc_neighbours_, vals, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = MatSetValues( A, 1,&rank_, n_,proc_neighbours_, vals, INSERT_VALUES );CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   /* Now force all other connections if they are not already there */
@@ -322,7 +331,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   for (i = 0; i < n_; ++i) {
     vals[i] = 2.0;
   }
-  ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_i_, vals, INSERT_VALUES );CHKERRQ(ierr);
+  ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_, vals, INSERT_VALUES );CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 /*
@@ -331,13 +340,13 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 */
   if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
-    ierr = MatGetRow(A, rank_i_, &nc, &cols, &red_vals);CHKERRQ(ierr);
+    ierr = MatGetRow(A, rank_, &nc, &cols, &red_vals);CHKERRQ(ierr);
     _n_new = (PetscMPIInt) nc;
     ierr = PetscMalloc1(_n_new, &_proc_neighbours_new);CHKERRQ(ierr);
     for (j = 0; j < nc; ++j) {
       _proc_neighbours_new[j] = (PetscMPIInt)cols[j];
     }
-    ierr = MatRestoreRow( A, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
+    ierr = MatRestoreRow( A, rank_, &nc, &cols, &red_vals );CHKERRQ(ierr);
     *n_new               = (PetscMPIInt)_n_new;
     *proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
   }
@@ -353,7 +362,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   PetscMPIInt    symm_nn;
   PetscMPIInt   *symm_procs;
   PetscMPIInt    r0,n,st,rt;
-  PetscMPIInt    nprocs;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -376,12 +385,12 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   if (!d->send_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->send_tags);CHKERRQ(ierr);}
   if (!d->recv_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags);CHKERRQ(ierr);}
   /* compute message tags */
-  ierr = MPI_Comm_size(d->comm,&nprocs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(d->comm,&size);CHKERRQ(ierr);
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];
 
-    _get_tags( d->instance, nprocs, r0,r1, &st, &rt );
+    _get_tags( d->instance, size, r0,r1, &st, &rt );
     d->send_tags[n] = (int)st;
     d->recv_tags[n] = (int)rt;
   }

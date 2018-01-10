@@ -7,17 +7,17 @@
 -D 0.0
 -Pmax 2.1
 -PM_min 1.0
--t0 0.0
+#-t0 0.0
 
 #-ymin 0.98
 #-ymax 1.02
 #-xmin 0.25
 #-xmax 0.4
--da_grid_x 1730
--da_grid_y 3201
+#-da_grid_x 1730
+#-da_grid_y 3201
 
-#-da_grid_x 200
-#-da_grid_y 201
+-da_grid_x 200
+-da_grid_y 201
 #-da_grid_x 400
 #-da_grid_y 402
 -draw_coordinates 0.46,0.98,0.54,1.02

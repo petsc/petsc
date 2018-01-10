@@ -94,3 +94,24 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 8
+      args: -dof 3 -stencil_width 2 -M 50 -N 50 -periodic
+
+   test:
+      suffix: 2
+      nsize: 8
+      args: -dof 3 -stencil_width 2 -M 50 -N 50 -periodic -grid2d
+      output_file: output/ex7_1.out
+
+   test:
+      suffix: 3
+      nsize: 8
+      args: -dof 3 -stencil_width 2 -M 50 -N 50 -periodic -grid3d
+      output_file: output/ex7_1.out
+
+TEST*/

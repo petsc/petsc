@@ -1032,10 +1032,7 @@ int main(int argc,char ** argv)
 
   /* for parallel options: Network partitioning and distribution of data */
   if (size > 1) {
-    DM distnetworkdm;
-    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
-    networkdm = distnetworkdm;
+    ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
@@ -1155,3 +1152,20 @@ int main(int argc,char ** argv)
   ierr = PetscFinalize();
   return ierr;
  }
+
+/*TEST
+
+   build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+      args: -ts_monitor -snes_converged_reason -alg_snes_converged_reason
+      localrunfiles: X.bin Ybus.bin ex9busnetworkops
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ts_monitor -snes_converged_reason -alg_snes_converged_reason
+      localrunfiles: X.bin Ybus.bin ex9busnetworkops
+
+TEST*/

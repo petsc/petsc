@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
@@ -408,3 +408,29 @@ PetscErrorCode Parameter_settings(AppCtx *user)
 
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_max_steps 2
+      localrunfiles: petscopt_ex7
+
+   test:
+      suffix: 2
+      args: -ts_max_steps 2 -snes_mf_operator
+      output_file: output/ex7_1.out
+      localrunfiles: petscopt_ex7
+      timeoutfactor: 2
+
+   test:
+      suffix: 3
+      args: -ts_max_steps 2 -snes_mf
+      output_file: output/ex7_1.out
+      localrunfiles: petscopt_ex7
+      timeoutfactor: 2
+
+TEST*/

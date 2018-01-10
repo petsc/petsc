@@ -169,3 +169,19 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -nox
+      filter: grep -v -i Object
+      requires: x
+
+   test:
+      suffix: 2
+      args: -testorder -nox
+      requires: x
+
+TEST*/

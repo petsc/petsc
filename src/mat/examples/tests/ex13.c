@@ -41,3 +41,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      filter: grep -v "MPI processes"
+
+TEST*/

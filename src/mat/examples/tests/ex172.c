@@ -54,3 +54,52 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      output_file: output/ex172.out
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -different
+      output_file: output/ex172.out
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -skip
+      output_file: output/ex172.out
+
+   test:
+      suffix: 4
+      nsize: 4
+      args: -different -skip
+      output_file: output/ex172.out
+
+   test:
+      suffix: baij
+      args: -mat_type baij> ex172.tmp 2>&1
+      output_file: output/ex172.out
+
+   test:
+      suffix: mpibaij
+      nsize: 4
+      args: -mat_type baij> ex172.tmp 2>&1
+      output_file: output/ex172.out
+
+   test:
+      suffix: mpisbaij
+      nsize: 4
+      args: -mat_type sbaij> ex172.tmp 2>&1
+      output_file: output/ex172.out
+
+   test:
+      suffix: sbaij
+      args: -mat_type sbaij> ex172.tmp 2>&1
+      output_file: output/ex172.out
+
+TEST*/

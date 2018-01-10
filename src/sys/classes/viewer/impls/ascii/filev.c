@@ -658,11 +658,13 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 PetscErrorCode  PetscViewerFileSetName(PetscViewer viewer,const char name[])
 {
   PetscErrorCode ierr;
+  char           b[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscTryMethod(viewer,"PetscViewerFileSetName_C",(PetscViewer,const char[]),(viewer,name));CHKERRQ(ierr);
+  ierr = PetscStrreplace(PetscObjectComm((PetscObject)viewer),name,b,sizeof(b));CHKERRQ(ierr);
+  ierr = PetscTryMethod(viewer,"PetscViewerFileSetName_C",(PetscViewer,const char[]),(viewer,b));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

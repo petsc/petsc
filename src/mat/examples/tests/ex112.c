@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec            x,y,z;
   PetscScalar    s;
   PetscRandom    rdm;
-  PetscReal      enorm;
+  PetscReal      enorm, tol = PETSC_SMALL;
   PetscInt       func;
   FuncType       function = RANDOM;
   PetscBool      view     = PETSC_FALSE;
@@ -80,7 +80,7 @@ int main(int argc,char **args)
       if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-11) {
+      if (enorm > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
       }
     }
@@ -100,7 +100,7 @@ int main(int argc,char **args)
       if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-11) {
+      if (enorm > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of new |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
       }
     }
@@ -115,3 +115,31 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires:  fftw complex
+
+   test:
+      args: -mat_fftw_plannerflags FFTW_ESTIMATE
+      output_file: output/ex112.out
+
+   test:
+      suffix: 2
+      args: -mat_fftw_plannerflags FFTW_MEASURE
+      output_file: output/ex112.out
+      requires: !define(PETSC_USE_CXXCOMPLEX)
+
+   test:
+      suffix: 3
+      args: -mat_fftw_plannerflags FFTW_PATIENT
+      output_file: output/ex112.out
+
+   test:
+      suffix: 4
+      args: -mat_fftw_plannerflags FFTW_EXHAUSTIVE
+      output_file: output/ex112.out
+
+TEST*/

@@ -293,3 +293,27 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void
   ierr = DMRestoreLocalVector(da,&localUold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -ts_max_steps 10 -ts_monitor
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -ts_max_steps 10 -ts_monitor
+      output_file: output/ex6_1.out
+
+   test:
+      suffix: 3
+      args: -ts_max_steps 10 -ts_monitor -useLaxWendroff false
+
+   test:
+      suffix: 4
+      nsize: 3
+      args: -ts_max_steps 10 -ts_monitor -useLaxWendroff false
+      output_file: output/ex6_3.out
+
+TEST*/

@@ -4,7 +4,7 @@ Options:\n\
   -fin  <mat>  : input matrix file\n\
   -fout <mat>  : output marrix file\n\
   -start <row> : the row from where the submat should be extracted\n\
-  -size  <sx>  : the size of the submatrix\n";
+  -m  <sx>  : the size of the submatrix\n";
 
 #include <petscmat.h>
 #include <petscvec.h>
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Mat            A,*B;
   PetscErrorCode ierr;
   PetscInt       start=0;
-  PetscMPIInt    size;
+  PetscInt       m;
   IS             isrow,iscol;
   PetscBool      flg;
 
@@ -36,18 +36,18 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fdin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fdin);CHKERRQ(ierr);
 
-  ierr  = MatGetSize(A,&size,&size);CHKERRQ(ierr);
-  size /= 2;
+  ierr  = MatGetSize(A,&m,&m);CHKERRQ(ierr);
+  m /= 2;
   ierr  = PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-size",&size,NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
 
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&isrow);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&iscol);CHKERRQ(ierr);
   ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatView(B[0],fdout);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,PETSC_DECIDE,size);CHKERRQ(ierr);
+  ierr = VecSetSizes(b,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = MatView(B[0],fdout);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fdout);CHKERRQ(ierr);
@@ -61,4 +61,12 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+    test:
+      args: -fin ${DATAFILESPATH}/matrices/small -fout joe -start 2 -m 4
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/
 

@@ -3,6 +3,7 @@
 !   This program demonstrates use of MatSeqAIJGetArrayF90()
 !
       program main
+
 #include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
@@ -38,6 +39,10 @@
       call PetscFinalize(ierr)
       end
 
-
-
-
+!/*TEST
+!
+!   test:
+!      args: -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
+!      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
+!
+!TEST*/

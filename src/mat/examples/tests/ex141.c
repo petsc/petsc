@@ -81,13 +81,9 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
 
+   test:
+     output_file: output/ex141.out
 
-
-
-
-
-
-
-
-
+TEST*/

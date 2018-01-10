@@ -45,6 +45,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vc);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatLoad(C,vc);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&vc);CHKERRQ(ierr);
 
@@ -111,3 +112,13 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5
+      requires: !complex double datafilespath !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

@@ -19,6 +19,8 @@ The flow can be driven with the lid or with bouyancy or both:\n\
    Concepts: multicomponent
    Processors: n
 T*/
+
+
 /*F-----------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization within this example code.
@@ -643,3 +645,379 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full
+      requires: !single
+
+   test:
+      suffix: 10
+      nsize: 3
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type symmetric_multiplicative -snes_view -da_refine 1 -ksp_type fgmres
+      requires: !single
+
+   test:
+      suffix: 11
+      nsize: 4
+      requires: pastix
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres
+
+   test:
+      suffix: 12
+      nsize: 12
+      requires: pastix
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5 -da_refine 4 -ksp_type fgmres
+
+   test:
+      suffix: 13
+      nsize: 3
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres -snes_mf_operator
+      requires: !single
+
+   test:
+      suffix: 14
+      nsize: 4
+      args: -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres
+      requires: !single
+
+   test:
+      suffix: 14_ds
+      nsize: 4
+      args: -snes_converged_reason -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds
+      output_file: output/ex19_2.out
+      requires: !single
+
+   test:
+      suffix: 17
+      args: -snes_monitor_short -ksp_pc_side right
+      requires: !single
+
+   test:
+      suffix: 18
+      args: -ksp_monitor_snes_lg -ksp_pc_side right
+      requires: x !single
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds
+      requires: !single
+
+   test:
+      suffix: 2_bcols1
+      nsize: 4
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1> ex19_1.tmp 2>&1
+      output_file: output/ex19_2.out
+      requires: !single
+
+   test:
+      suffix: 3
+      nsize: 4
+      requires: mumps
+      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2
+
+   test:
+      suffix: 4
+      nsize: 12
+      requires: mumps
+      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5
+      output_file: output/ex19_3.out
+
+   test:
+      suffix: 6
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -ksp_type fgmres -da_refine 1
+      requires: !single
+
+   test:
+      suffix: 7
+      nsize: 3
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view -da_refine 1 -ksp_type fgmres
+
+      requires: !single
+   test:
+      suffix: 8
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view -fieldsplit_pc_type lu -da_refine 1 -ksp_type fgmres
+      requires: !single
+
+   test:
+      suffix: 9
+      nsize: 3
+      args: -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_type multiplicative -snes_view -da_refine 1 -ksp_type fgmres
+      requires: !single
+
+   test:
+      suffix: aspin
+      nsize: 4
+      args: -da_refine 3 -da_overlap 2 -snes_monitor_short -snes_type aspin -grashof 4e4 -lidvelocity 100 -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: bcgsl
+      nsize: 2
+      args: -ksp_type bcgsl -ksp_monitor_short -da_refine 2 -ksp_bcgsl_ell 3 -snes_view
+      requires: !single
+
+   test:
+      suffix: bcols1
+      nsize: 2
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -mat_fd_coloring_bcols 1
+      output_file: output/ex19_1.out
+      requires: !single
+
+   test:
+      suffix: bjacobi
+      nsize: 4
+      args: -da_refine 4 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 2 -sub_ksp_type gmres -sub_ksp_max_it 2 -sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_type ilu -snes_monitor_short
+      requires: !single
+
+   test:
+      suffix: cgne
+      args: -da_refine 2 -pc_type lu -ksp_type cgne -ksp_monitor_short -ksp_converged_reason -ksp_view -ksp_norm_type unpreconditioned
+      filter: grep -v HERMITIAN
+      requires: !single
+
+   test:
+      suffix: cgs
+      args: -da_refine 1 -ksp_monitor_short -ksp_type cgs
+      requires: !single
+
+   test:
+      suffix: composite_fieldsplit
+      args: -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,none -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: composite_fieldsplit_bjacobi
+      args: -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: composite_fieldsplit_bjacobi_2
+      nsize: 4
+      args: -ksp_type fgmres -pc_type composite -pc_composite_type MULTIPLICATIVE -pc_composite_pcs fieldsplit,bjacobi -sub_0_pc_fieldsplit_block_size 4 -sub_0_pc_fieldsplit_type additive -sub_0_pc_fieldsplit_0_fields 0,1,2 -sub_0_pc_fieldsplit_1_fields 3 -sub_1_pc_bjacobi_blocks 16 -sub_1_sub_pc_type lu -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: composite_gs_newton
+      nsize: 2
+      args: -da_refine 3 -grashof 4e4 -lidvelocity 100 -snes_monitor_short -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses ngs,newtonls -sub_0_snes_max_it 20 -sub_1_pc_type mg
+      requires: !single
+
+   test:
+      suffix: cusp
+      requires: cusp !single
+      args: -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
+
+   test:
+      suffix: draw
+      args: -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin pmat -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd
+      requires: x !single
+
+   test:
+      suffix: drawports
+      args: -snes_monitor_solution draw::draw_ports -da_refine 1
+      output_file: output/ex19_draw.out
+      requires: x !single
+
+   test:
+      suffix: fas
+      args: -da_refine 4 -snes_monitor_short -snes_type fas -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3 -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100
+      requires: !single
+
+   test:
+      suffix: fas_full
+      args: -da_refine 4 -snes_monitor_short -snes_type fas -snes_fas_type full -snes_fas_full_downsweep -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3 -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100
+      requires: !single
+
+   test:
+      suffix: fdcoloring_ds
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds
+      output_file: output/ex19_2.out
+      requires: !single
+
+   test:
+      suffix: fdcoloring_ds_baij
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -dm_mat_type baij
+      output_file: output/ex19_2.out
+      requires: !single
+
+   test:
+      suffix: fdcoloring_ds_bcols1
+      args: -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1
+      output_file: output/ex19_2.out
+      requires: !single
+
+   test:
+      suffix: fdcoloring_wp
+      args: -da_refine 3 -snes_monitor_short -pc_type mg
+      requires: !single
+
+   test:
+      suffix: fdcoloring_wp_baij
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -dm_mat_type baij
+      output_file: output/ex19_fdcoloring_wp.out
+      requires: !single
+
+   test:
+      suffix: fdcoloring_wp_bcols1
+      args: -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_coloring_bcols 1
+      output_file: output/ex19_fdcoloring_wp.out
+      requires: !single
+
+   test:
+      suffix: fieldsplit_2
+      args: -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: fieldsplit_3
+      args: -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type additive -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: fieldsplit_4
+      args: -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: fieldsplit_hypre
+      nsize: 2
+      requires: hypre mumps
+      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short
+
+   test:
+      suffix: fieldsplit_mumps
+      nsize: 2
+      requires: mumps
+      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps
+      output_file: output/ex19_fieldsplit_5.out
+
+   test:
+      suffix: greedy_coloring
+      nsize: 2
+      args: -da_refine 3 -snes_monitor_short -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_weight_type lf -mat_coloring_view> ex19_greedy_coloring.tmp 2>&1
+      requires: !single
+
+   test:
+      suffix: hypre
+      nsize: 2
+      requires: hypre
+      args: -da_refine 3 -snes_monitor_short -pc_type hypre
+
+   test:
+      suffix: ibcgs
+      nsize: 2
+      args: -ksp_type ibcgs -ksp_monitor_short -da_refine 2 -snes_view
+      requires: !complex !single
+
+   test:
+      suffix: kaczmarz
+      nsize: 2
+      args: -pc_type kaczmarz -ksp_monitor_short -snes_monitor_short -snes_view
+      requires: !single
+
+   test:
+      suffix: klu
+      requires: suitesparse
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: klu_2
+      requires: suitesparse
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu -mat_klu_ordering PETSC
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: klu_3
+      requires: suitesparse
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu -mat_klu_use_btf 0
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: ml
+      nsize: 2
+      requires: ml
+      args: -da_refine 3 -snes_monitor_short -pc_type ml
+
+   test:
+      suffix: ngmres_fas
+      args: -da_refine 4 -snes_monitor_short -snes_type ngmres -npc_fas_levels_snes_type ngs -npc_fas_levels_snes_ngs_sweeps 3 -npc_fas_levels_snes_ngs_atol 0.0 -npc_fas_levels_snes_ngs_stol 0.0 -npc_snes_type fas -npc_fas_levels_snes_type ngs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6 -lidvelocity 100 -grashof 4e4
+      requires: !single
+
+   test:
+      suffix: ngmres_fas_gssecant
+      args: -da_refine 3 -snes_monitor_short -snes_type ngmres -npc_snes_type fas -npc_fas_levels_snes_type ngs -npc_fas_levels_snes_max_it 6 -npc_fas_levels_snes_ngs_secant -npc_fas_levels_snes_ngs_max_it 1 -npc_fas_coarse_snes_max_it 1 -lidvelocity 100 -grashof 4e4
+      requires: !single
+
+   test:
+      suffix: ngmres_fas_ms
+      nsize: 2
+      args: -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1
+      requires: !single
+
+   test:
+      suffix: ngmres_nasm
+      nsize: 4
+      args: -da_refine 4 -da_overlap 2 -snes_monitor_short -snes_type ngmres -snes_max_it 10 -npc_snes_type nasm -npc_snes_nasm_type basic -grashof 4e4 -lidvelocity 100
+      requires: !single
+
+   test:
+      suffix: ngs
+      args: -ksp_monitor_short -snes_type ngs -snes_view -snes_monitor -snes_rtol 1e-4
+      requires: !single
+
+   test:
+      suffix: ngs_fd
+      args: -ksp_monitor_short -snes_type ngs -snes_ngs_secant -snes_view -snes_monitor -snes_rtol 1e-4
+      requires: !single
+
+   test:
+      suffix: parms
+      nsize: 2
+      requires: parms
+      args: -pc_type parms -ksp_monitor_short -snes_view
+
+   test:
+      suffix: superlu
+      requires: superlu
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu
+
+   test:
+      suffix: superlu_dist
+      requires: superlu
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: superlu_dist_2
+      nsize: 2
+      requires: superlu
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
+      output_file: output/ex19_superlu.out
+
+   test:
+      suffix: superlu_equil
+      requires: superlu
+      args: -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil
+
+   test:
+      suffix: tcqmr
+      args: -da_refine 1 -ksp_monitor_short -ksp_type tcqmr
+      requires: !single
+
+   test:
+      suffix: tfqmr
+      args: -da_refine 1 -ksp_monitor_short -ksp_type tfqmr
+      requires: !single
+
+   test:
+      suffix: umfpack
+      requires: suitesparse
+      args: -da_refine 2 -pc_type lu -pc_factor_mat_solver_package umfpack -snes_view -snes_monitor_short -ksp_monitor_short
+
+TEST*/

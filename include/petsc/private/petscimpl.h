@@ -130,6 +130,7 @@ typedef struct _p_PetscObject {
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
   PetscOptions         options;         /* options database used, NULL means default */
+  PetscBool            donotPetscObjectPrintClassNamePrefixType;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

@@ -43,3 +43,14 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      args: -dm_mat_type baij -dim 2
+
+TEST*/

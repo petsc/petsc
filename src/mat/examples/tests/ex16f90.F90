@@ -76,3 +76,12 @@
       call PetscFinalize(ierr)
       end
 
+
+!/*TEST
+!
+!   test:
+!      nsize: 2
+!      filter: sort -b
+!      filter_output: sort -b
+!
+!TEST*/
