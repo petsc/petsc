@@ -7,6 +7,9 @@ TIMEOUT=60
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
 fi
+if test -d "${rundir}" && test -n "${rundir}"; then
+  rm ${rundir}/*.tmp ${rundir}/*.err ${rundir}/*.out
+fi
 mkdir -p ${rundir}
 if test -d "${runfiles}"; then
   cp -r ${runfiles} ${rundir}
