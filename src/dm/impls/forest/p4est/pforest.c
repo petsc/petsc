@@ -200,7 +200,7 @@ typedef struct {
 }
 DM_Forest_geometry_pforest;
 
-#define GeometryMapping_pforest _append_pforest(Geometry)
+#define GeometryMapping_pforest _append_pforest(GeometryMapping)
 static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which_tree, const double abc[3], double xyz[3])
 {
   DM_Forest_geometry_pforest *geom_pforest = (DM_Forest_geometry_pforest*)geom->user;
@@ -3767,11 +3767,11 @@ static PetscErrorCode DMPforestMapCoordinates(DM dm, DM plex)
       }
       for (i = 0; i < nCoords; i++) {
         PetscScalar *coord              = &coords[off + i * coordDim];
-        double      coordP4est[3]       = {0.};
-        double      coordP4estMapped[3] = {0.};
+        PetscReal   coordP4est[3]       = {0.};
+        PetscReal   coordP4estMapped[3] = {0.};
         PetscInt    j;
 
-        for (j = 0; j < p4estCoordDim; j++) coordP4est[j] = (double) PetscRealPart(coord[j]);
+        for (j = 0; j < p4estCoordDim; j++) coordP4est[j] = PetscRealPart(coord[j]);
         ierr = (map)(base,coarsePoint,p4estCoordDim,coordP4est,coordP4estMapped,mapCtx);CHKERRQ(ierr);
         for (j = 0; j < p4estCoordDim; j++) coord[j] = (PetscScalar) coordP4estMapped[j];
       }
