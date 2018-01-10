@@ -121,6 +121,13 @@ cell   7-------------6-------------11 cell
    |/            |/            |/
    0-------------1-------------8
 
+  vertex distribution:
+    rank 0: 0 1 2 3 4 5
+    rank 1: 6 7 8 9 10 11
+  cell distribution:
+    rank 0: 0
+    rank 1: 1
+
 */
 
 typedef struct {
