@@ -488,7 +488,7 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 }
 
 /*@
-   PCMGSetCycleTypeOnLevel - Sets the number of cycles to run on this level.
+   PCMGSetCycleTypeOnLevel - Sets the type of cycle (aka cycle index) to run on the specified level.
 
    Logically Collective on PC
 

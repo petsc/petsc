@@ -8,6 +8,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petscoptionsallused_               PETSCOPTIONSALLUSED
 #define petscoptionsgetenumprivate_        PETSCOPTIONSGETENUMPRIVATE
 #define petscoptionsgetbool_               PETSCOPTIONSGETBOOL
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
@@ -27,6 +28,7 @@
 #define petscoptionsleft_                  PETSCOPTIONSLEFT
 #define petscobjectviewfromoptions_        PETSCOBJECTVIEWFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscoptionsallused_               petscoptionsallused
 #define petscoptionsgetenumprivate_        petscoptionsgetenumprivate
 #define petscoptionsgetbool_               petscoptionsgetbool
 #define petscoptionssetvalue_              petscoptionssetvalue
@@ -109,6 +111,12 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionshasname_(PetscOptions *options,char*
   *ierr = PetscOptionsHasName(*options,c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscoptionsallused_(PetscOptions *opt,PetscInt *n,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(opt);
+  *ierr = PetscOptionsAllUsed(*opt,n);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscoptionsgetint_(PetscOptions *opt,char* pre PETSC_MIXED_LEN(len1),char* name PETSC_MIXED_LEN(len2),

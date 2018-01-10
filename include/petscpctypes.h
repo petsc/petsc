@@ -170,7 +170,7 @@ $  PC_COMPOSITE_ADDITIVE - results from application of all preconditioners are a
 $  PC_COMPOSITE_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
 $                                computed after the previous preconditioner application
 $  PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
-$                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditions)
+$                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditioners)
 $  PC_COMPOSITE_SPECIAL - This is very special for a matrix of the form alpha I + R + S
 $                         where first preconditioner is built from alpha I + S and second from
 $                         alpha I + R

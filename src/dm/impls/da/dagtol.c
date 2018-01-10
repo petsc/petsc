@@ -264,7 +264,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Output Parameter:
 .  l  - the global values in the PETSc DMDA ordering
 
-   Level: intermediate
+   Level: advanced
 
    Notes:
    The global and local vectors used here need not be the same as those
