@@ -63,39 +63,28 @@ int main(int argc,char **args)
 
 /*TEST
 
-   test:
-      nsize: 3
+   testset:
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info
+      test:
+        nsize: 3
+      test:
+        suffix: 2
+        nsize: 5
+      test:
+        suffix: 3
+        nsize: 7
 
-   test:
-      suffix: 2
-      nsize: 5
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info
-
-   test:
-      suffix: 3
-      nsize: 7
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info
-
-   test:
-      suffix: 4
-      nsize: 3
+   testset:
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -mat_type baij
-
-   test:
-      suffix: 5
-      nsize: 5
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -mat_type baij
-
-   test:
-      suffix: 6
-      nsize: 7
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -mat_type baij> ex136_6.tmp 2>&1
-
+      test:
+        suffix: 4
+        nsize: 3
+      test:
+        suffix: 5
+        nsize: 5
+      test:
+        suffix: 5
+        nsize: 7
 TEST*/
