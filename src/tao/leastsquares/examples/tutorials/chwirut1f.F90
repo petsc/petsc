@@ -7,7 +7,7 @@
 !
 !  The C version of this code is test_chwirut1.c
 !
-!/*T
+!!/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
@@ -18,6 +18,8 @@
 !  Routines: TaoDestroy();
 !  Processors: 1
 !T*/
+
+
 !
 ! ----------------------------------------------------------------------
 !
@@ -415,4 +417,13 @@
       return
       end
 
-
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!
+!   test:
+!      args: -tao_smonitor -tao_max_it 100 -tao_type pounders
+!      requires: !single
+!
+!TEST*/

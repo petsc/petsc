@@ -25,6 +25,8 @@ The command line options are:\n\
 T*/
 
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
@@ -538,3 +540,19 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_monitor -tao_view -tao_type ssils
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -tao_monitor -tao_view -tao_type ssfls
+
+TEST*/

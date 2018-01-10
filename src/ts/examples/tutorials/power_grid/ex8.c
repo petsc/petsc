@@ -71,13 +71,13 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.da);CHKERRQ(ierr);
   ierr = DMSetUp(user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0,0);CHKERRQ(ierr);
-  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
-  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");
+  ierr = DMDASetCoordinateName(user.da,0,"X - the angle");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");CHKERRQ(ierr);
 
   /* Get global vector x from DM  */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
@@ -145,12 +145,12 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   DMDACoor2d     **coors;
   PetscScalar    **p;
   Vec            gc;
-  PetscInt       M,N,I,J;
+  PetscInt       M,N,Ir,J;
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   user->dx = (user->xmax - user->xmin)/(M-1); user->dy = (user->ymax - user->ymin)/(N-1);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
@@ -159,11 +159,11 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
 
   /* Point mass at (mux,muy) */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",user->mux,user->muy);CHKERRQ(ierr);
-  ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&I,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&Ir,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
   user->PM_min = user->Pmax*PetscSinScalar(user->mux);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",user->mux,user->muy,user->PM_min,user->dx);CHKERRQ(ierr);
-  if (I > -1 && J > -1) {
-    p[J][I] = 1.0;
+  if (Ir > -1 && J > -1) {
+    p[J][Ir] = 1.0;
   }
 
   ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
@@ -234,10 +234,11 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   PetscInt       i,j;
   PetscInt       xs,ys,xm,ym,M,N;
   Vec            localX,gc,localXdot;
-  PetscScalar    p_adv1,p_adv2,p_diff;
+  PetscScalar    p_adv1 = 0.0,p_adv2 = 0.0,p_diff = 0;
+  PetscScalar    diffuse1,gamma;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
@@ -256,7 +257,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   ierr = DMDAVecGetArrayRead(user->da,localXdot,&pdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
-  PetscScalar diffuse1,gamma;
   gamma = user->D*user->ws/(2*user->H);
   diffuse1 = user->lambda*user->lambda*user->q/(user->lambda*gamma+1)*(1.0 - PetscExpScalar(-t*(gamma+1.0)/user->lambda));
   user->disper_coe = user->ws*user->ws/(4*user->H*user->H)*diffuse1;
@@ -293,7 +293,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   PetscScalar    c1,c3,c5,c1pos,c1neg,c3pos,c3neg;
 
   PetscFunctionBeginUser;
-  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
@@ -375,9 +375,21 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,NULL,"-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   build:
+      requires: !complex x
+
+   test:
+      args: -ts_max_steps 1
+      localrunfiles: petscopt_ex8
+      timeoutfactor: 3
+
+TEST*/

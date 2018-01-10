@@ -1,0 +1,62 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+    0 KSP Residual norm 0.244212 
+    1 KSP Residual norm 0.0263811 
+    2 KSP Residual norm 0.001012 
+    3 KSP Residual norm 0.000219671 
+    4 KSP Residual norm 8.29849e-06 
+    5 KSP Residual norm 1.63718e-06 
+    0 KSP Residual norm 2.82102e-05 
+    1 KSP Residual norm 1.6263e-05 
+    2 KSP Residual norm 4.62586e-06 
+    3 KSP Residual norm 1.28852e-06 
+    4 KSP Residual norm 4.10527e-08 
+    5 KSP Residual norm 4.85244e-09 
+    6 KSP Residual norm 2.845e-10 
+    7 KSP Residual norm 1.573e-11 
+SNES Object: 2 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=12
+  total number of function evaluations=3
+  norm schedule ALWAYS
+  SNESLineSearch Object: 2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 2 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 2 MPI processes
+    type: parms
+      global preconditioner: Restricted Additive Schwarz
+      local preconditioner: ARMS
+      non-zero elements/original non-zero entries: 0.75
+      Tolerance for local solve: 0.01
+      Number of levels: 10
+      Using nonsymmetric permutation
+      Block size: 250
+      Tolerance for independent sets: 0.4
+      Inner Krylov dimension: 0
+      Maximum number of inner iterations: 0
+      amount of fill-in for ilut, iluk and arms: 20
+      amount of fill-in for schur: 20
+      amount of fill-in for ILUT L and U: 20
+      drop tolerance for L, U, L^{-1}F and EU^{-1}: 1e-05
+      drop tolerance for schur complement at each level: 0.001
+      drop tolerance for ILUT in last level schur complement: 0.001
+    linear system matrix = precond matrix:
+    Mat Object: 2 MPI processes
+      type: mpiaij
+      rows=64, cols=64, bs=4
+      total: nonzeros=1024, allocated nonzeros=1024
+      total number of mallocs used during MatSetValues calls =0
+Number of SNES iterations = 2

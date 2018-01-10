@@ -49,3 +49,12 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      args: -col 7
+
+TEST*/

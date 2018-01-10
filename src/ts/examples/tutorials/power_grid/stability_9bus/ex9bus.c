@@ -38,6 +38,7 @@ in current balance form using rectangular coordiantes.\n\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -1241,3 +1242,25 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+      suffix: implicit
+      args: -ts_monitor -snes_monitor_short
+      localrunfiles: petscoptions X.bin Ybus.bin
+
+   test:
+      suffix: semiexplicit
+      args: -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a
+      localrunfiles: petscoptions X.bin Ybus.bin
+
+   test:
+      suffix: steprestart
+      args: -ts_monitor -snes_monitor_short -ts_type arkimex
+      localrunfiles: petscoptions X.bin Ybus.bin
+
+TEST*/

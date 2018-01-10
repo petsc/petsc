@@ -13,7 +13,7 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscRandom    rand;
   Vec            xx,s1,s2;
-  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscReal      s1norm,s2norm,rnorm,tol = 10*PETSC_SMALL;
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -25,6 +25,7 @@ int main(int argc,char **args)
   /* create a SeqBAIJ matrix A */
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
@@ -69,12 +70,13 @@ int main(int argc,char **args)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
-  ierr = MatEqual(A, Atrans, &flg);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
+  ierr = MatEqual(A, Atrans, &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 
   /* create a SeqSBAIJ matrix sA (= A) */
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
 
   /* Test sA==A through MatMult() */
@@ -205,3 +207,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ov 2
+
+TEST*/

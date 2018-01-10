@@ -2,6 +2,7 @@
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !
       program main
+
 #include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
@@ -25,7 +26,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
-     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & '${PETSC_DIR}/share/petsc/datafiles/matrices/' //                       &
      & 'ns-real-int32-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
@@ -79,6 +80,12 @@
       call PetscFinalize(ierr)
       end
 
-
-
-
+!/*TEST
+!
+!     build:
+!       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+!
+!     test:
+!        args: -binary_read_double -options_left false
+!
+!TEST*/

@@ -32,8 +32,4 @@ biharmonic3: biharmonic3.o  chkopts
 	-${CLINKER} -o biharmonic3 biharmonic3.o  ${PETSC_TS_LIB}
 	${RM} biharmonic3.o
 
-
-TESTEXAMPLES_C		  = potentials.PETSc potentials.rm  biharmonic.PETSc biharmonic.rm biharmonic2.PETSc biharmonic2.rm
-TESTEXAMPLES_C_X	  =
-
 include ${PETSC_DIR}/lib/petsc/conf/test

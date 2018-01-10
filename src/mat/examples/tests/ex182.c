@@ -40,3 +40,47 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   test:
+      requires: define(PETSC_USE_INFO)
+      args: -info
+      filter: grep malloc | sort -b
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: define(PETSC_USE_INFO)
+      args: -info ex182info
+      filter: grep -h malloc "ex182info.*" | sort -b
+      TODO: get ex182info.* to work correctly inside harness
+
+   test:
+      suffix: 3
+      requires: define(PETSC_USE_INFO)
+      args: -info -mat_type baij
+      filter: grep malloc | sort -b
+
+   test:
+      suffix: 4
+      nsize: 2
+      requires: define(PETSC_USE_INFO)
+      args: -info ex182info -mat_type baij
+      filter: grep -h malloc "ex182info.*" | sort -b
+      TODO: get ex182info.* to work correctly inside harness
+
+   test:
+      suffix: 5
+      requires: define(PETSC_USE_INFO)
+      args: -info -mat_type sbaij
+      filter: grep malloc | sort  -b
+
+   test:
+      suffix: 6
+      nsize: 2
+      requires: define(PETSC_USE_INFO)
+      args: -info ex182info -mat_type sbaij
+      filter: grep -h malloc "ex182info.*" | sort -b
+      TODO: get ex182info.* to work correctly inside harness
+
+TEST*/

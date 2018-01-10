@@ -6,7 +6,7 @@ Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
    mpiexec -n <np> ./ex103 -mat_type elemental -mat_view
    mpiexec -n <np> ./ex103 -mat_type aij 
 */
-    
+
 #include <petscmat.h>
 
 int main(int argc, char** argv)
@@ -94,3 +94,27 @@ int main(int argc, char** argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: elemental
+
+   test:
+      nsize: 6
+      output_file: output/ex103.out
+
+   test:
+      suffix: 1
+      nsize: 6
+      args: -mat_type aij
+      output_file: output/ex103.out
+
+   test:
+      suffix: 2
+      nsize: 6
+      args: -mat_type elemental
+      output_file: output/ex103.out
+
+TEST*/

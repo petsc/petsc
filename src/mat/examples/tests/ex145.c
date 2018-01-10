@@ -279,3 +279,18 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   build:
+      requires: elemental
+
+   test:
+      nsize: 2
+      output_file: output/ex145.out
+
+   test:
+      suffix: 2
+      nsize: 6
+      output_file: output/ex145.out
+
+TEST*/

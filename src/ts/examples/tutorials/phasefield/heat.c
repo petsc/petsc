@@ -9,20 +9,20 @@ static char help[] = "Solves heat equation in 1d.\n";
 
 Evolve the  heat equation:
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5 -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type cn  -da_refine 5 -mymonitor
 
 Evolve the  Allen-Cahn equation:
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -mymonitor
 
 Evolve the  Allen-Cahn equation: zoom in on part of the domain
 ---------------
-./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45 -wait  -mymonitor
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type cn  -da_refine 5   -allen-cahn -kappa .001 -ts_final_time 5  -zoom .25,.45  -mymonitor
 
 
 The option -square_initial indicates it should use a square wave initial condition otherwise it loads the file InitialSolution.heat as the initial solution. You should run with
 ./heat -square_initial -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
-to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain the initial solution file
+to generate InitialSolution.heat
 
 */
 #include <petscdm.h>
@@ -40,33 +40,29 @@ int main(int argc,char **argv)
 {
   TS             ts;                           /* time integrator */
   Vec            x,r;                          /* solution, residual vectors */
-  Mat            J;                            /* Jacobian matrix */
   PetscInt       steps,Mx;
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
-  PetscReal      vbounds[] = {-1.1,1.1};
-  PetscBool      wait;
   UserCtx        ctx;
   PetscBool      mymonitor;
+  PetscViewer    viewer;
+  PetscBool      flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ctx.kappa     = 1.0;
-  ierr          = PetscOptionsGetReal(NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
+  ierr          = PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL);CHKERRQ(ierr);
   ctx.allencahn = PETSC_FALSE;
-  ierr          = PetscOptionsHasName(NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
-  ierr          = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
-
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+  ierr          = PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 10,1,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Heat equation: u");CHKERRQ(ierr);
@@ -117,26 +113,25 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  wait = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-wait",&wait,NULL);CHKERRQ(ierr);
-  if (wait) {
-    ierr = PetscSleep(-1);CHKERRQ(ierr);
-  }
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr  = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr  = VecView(x,viewer);CHKERRQ(ierr);
+    ierr  = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return ierr;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -163,8 +158,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
 
@@ -209,7 +203,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,xs,xm,Mx,scale,N;
+  PetscInt          i,xs,xm,Mx,scale=1,N;
   PetscScalar       *u;
   const PetscScalar *f;
   PetscReal         hx,x,r;
@@ -218,8 +212,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)Mx;
 
@@ -235,17 +228,8 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 
   /*  InitialSolution is obtained with
       ./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason    -ts_type cn  -da_refine 9 -ts_final_time 1.e-4 -ts_dt .125e-6 -snes_atol 1.e-25 -snes_rtol 1.e-25  -ts_max_steps 15
-   */
-
-  /* ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution",FILE_MODE_READ,&viewer);CHKERRQ(ierr); */
-  /* ierr = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr); */
-  /* ierr = VecLoad(finesolution,viewer);CHKERRQ(ierr); */
-  /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
-  /* ierr = VecGetSize(finesolution,&N);CHKERRQ(ierr); */
-  /* scale = N/Mx; */
-  /* ierr = VecGetArrayRead(finesolution,&f);CHKERRQ(ierr); */
-
-  ierr = PetscOptionsHasName(NULL,"-square_initial",&flg);CHKERRQ(ierr);
+  */
+  ierr = PetscOptionsHasName(NULL,NULL,"-square_initial",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr  = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"InitialSolution.heat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr  = VecCreate(PETSC_COMM_WORLD,&finesolution);CHKERRQ(ierr);
@@ -275,8 +259,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
     ierr = VecDestroy(&finesolution);CHKERRQ(ierr);
   }
-  /* ierr = VecRestoreArrayRead(finesolution,&f);CHKERRQ(ierr);
-   ierr = VecDestroy(&finesolution);CHKERRQ(ierr);*/
 
   /*
      Restore vectors
@@ -303,13 +285,14 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   const char*const   legend[] = {"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"};
   PetscDrawAxis      axis;
   PetscDrawViewPorts *ports;
-
+  PetscReal          vbounds[] = {-1.1,1.1};
 
   PetscFunctionBegin;
+  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
@@ -377,7 +360,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   */
   ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
-  ierr = PetscDrawLGReset(lg);
+  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
   x    = hx*xs;
   ierr = PetscDrawLGSetLimits(lg,x,x+(xm-1)*hx,-1.1,1.1);CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
@@ -425,3 +408,15 @@ PetscErrorCode  MyDestroy(void **ptr)
   ierr = PetscDrawViewPortsDestroy(ctx->ports);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   test:
+     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 2 -square_initial
+
+   test:
+     suffix: 2
+     args: -ts_monitor -snes_monitor  -pc_type lu  -snes_converged_reason   -ts_type cn  -da_refine 5 -mymonitor -square_initial -allen-cahn -kappa .001
+     requires: x
+
+TEST*/

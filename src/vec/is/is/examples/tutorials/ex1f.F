@@ -75,7 +75,10 @@
       call PetscFinalize(ierr)
       end
 
-
-
-
-
+!/*TEST
+!
+!   test:
+!      filter: sort -b
+!      filter_output: sort -b
+!
+!TEST*/

@@ -534,9 +534,7 @@ PetscErrorCode DataFieldCopyPoint(const PetscInt pid_x,const DataField field_x,
   if (pid_y >= field_y->L) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"(OUT) index must be < %D",field_y->L);
   if( field_y->atomic_size != field_x->atomic_size ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"atomic size must match");
 #endif
-  ierr = PetscMemcpy(__DATATFIELD_point_access(field_y->data,pid_y,field_y->atomic_size),
-                     __DATATFIELD_point_access(field_x->data,pid_x,field_x->atomic_size),
-                     field_y->atomic_size);CHKERRQ(ierr);
+  ierr = PetscMemcpy(__DATATFIELD_point_access(field_y->data,pid_y,field_y->atomic_size),__DATATFIELD_point_access(field_x->data,pid_x,field_x->atomic_size),field_y->atomic_size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -595,8 +593,8 @@ PetscErrorCode DataBucketRemovePoint(DataBucket db)
 
 PetscErrorCode DataBucketView_stdout(MPI_Comm comm,DataBucket db)
 {
-  PetscInt f;
-  double memory_usage_total,memory_usage_total_local = 0.0;
+  PetscInt       f;
+  double         memory_usage_total,memory_usage_total_local = 0.0;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -675,12 +673,12 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
 
 PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
-  PetscMPIInt nproc;
+  PetscMPIInt size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
-  if (nproc == 1) {
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
     ierr = DataBucketView_SEQ(comm,db,filename,type);CHKERRQ(ierr);
   } else {
     ierr = DataBucketView_MPI(comm,db,filename,type);CHKERRQ(ierr);

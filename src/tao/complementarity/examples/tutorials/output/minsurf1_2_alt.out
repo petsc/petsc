@@ -1,0 +1,22 @@
+
+---- Minimum Surface Area Problem -----
+mx:4, my:4
+  0 TAO, Function value: 0.210376,  Residual: 0.403597 
+  1 TAO, Function value: 0.0110611,  Residual: 0.019795 
+  2 TAO, Function value: 4.46413e-05,  Residual: 8.72658e-05 
+Tao Object: 1 MPI processes
+  type: ssfls
+  TaoLineSearch Object: 1 MPI processes
+    type: armijo
+  KSP Object: 1 MPI processes
+    type: gmres
+  total KSP iterations: 9
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-06,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=8.72658e-05
+  convergence tolerances: function minimum=0.0001
+  Objective value=4.46413e-05
+  total number of iterations=2,                          (max: 2000)
+  total number of constraint function evaluations=5
+  total number of Jacobian evaluations=3
+  Solution converged:    Minf --  f < fmin

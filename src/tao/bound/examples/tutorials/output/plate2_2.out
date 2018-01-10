@@ -28,7 +28,7 @@ iter =  23, Function value 1.60115, Residual: 3.38004e-05
 iter =  24, Function value 1.60115, Residual: 1.26118e-05 
 iter =  25, Function value 1.60115, Residual: 6.70402e-06 
 iter =  26, Function value 1.60115, Residual: 5.15928e-06 
-iter =  27, Function value 1.60115, Residual: 3.3138e-06 
+iter =  27, Function value 1.60115, Residual: 3.31375e-06 
 Tao Object: 2 MPI processes
   type: blmvm
       Gradient steps: 0
@@ -36,7 +36,7 @@ Tao Object: 2 MPI processes
     type: more-thuente
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=1e-05
-  Residual in Function/Gradient:=3.3138e-06
+  Residual in Function/Gradient:=3.31375e-06
   Objective value=1.60115
   total number of iterations=27,                          (max: 2000)
   total number of function/gradient evaluations=32,      (max: 4000)

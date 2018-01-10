@@ -7,7 +7,7 @@
 !
 !  The C version of this code is rosenbrock1.c
 !
-!/*T
+!!/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
@@ -18,6 +18,8 @@
 !  Routines: TaoDestroy();
 !  Processors: 1
 !T*/
+
+
 !
 
 ! ----------------------------------------------------------------------
@@ -272,3 +274,15 @@
 
 
 
+
+!
+!/*TEST
+!
+!   build:
+!      requires: !complex
+!
+!   test:
+!      args: -tao_smonitor -tao_type ntr
+!      requires: !single
+!
+!TEST*/

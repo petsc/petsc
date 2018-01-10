@@ -1,5 +1,6 @@
 
       program ex5f90
+
 #include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
@@ -16,3 +17,10 @@
       call PetscViewerDestroy(viewer,ierr);CHKERRA(ierr)
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!   test:
+!      output_file: output/ex1_1.out
+!
+!TEST*/

@@ -116,3 +116,42 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 3
+      args: -view_info
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -nsubcomms 2 -view_mat -psubcomm_type interlaced
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -nsubcomms 2 -view_mat -psubcomm_type contiguous
+
+   test:
+      suffix: 3_baij
+      nsize: 3
+      args: -mat_type baij -nsubcomms 2 -view_mat
+
+   test:
+      suffix: 3_sbaij
+      nsize: 3
+      args: -mat_type sbaij -nsubcomms 2 -view_mat
+
+   test:
+      suffix: 4_baij
+      nsize: 3
+      args: -mat_type baij -nsubcomms 2 -view_mat -psubcomm_type interlaced
+
+   test:
+      suffix: 4_sbaij
+      nsize: 3
+      args: -mat_type sbaij -nsubcomms 2 -view_mat -psubcomm_type interlaced
+
+TEST*/

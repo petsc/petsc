@@ -259,3 +259,12 @@
 
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!   test:
+!     args: -malloc_dump
+!     filter: sort -b
+!     filter_output: sort -b
+!
+!TEST*/

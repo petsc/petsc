@@ -111,10 +111,10 @@ int main(int argc,char **argv)
 
 
 /*TEST
-
+   
    test:
+      requires: x
       nsize: 2
       args: -nox
-      TODO: Need to develop comparison test
 
 TEST*/

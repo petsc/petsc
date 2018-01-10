@@ -9,6 +9,7 @@ static char help[] = "Tests MatPermute() in parallel.\n\n";
    - mpibaij:  correct permutation
    - mpisbaij: permutation not supported for this MATTYPE
  */
+
 #include <petscmat.h>
 
 int main(int argc,char **argv)
@@ -74,3 +75,34 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -view_sparse
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -view_sparse
+
+   test:
+      suffix: 2b
+      nsize: 2
+      args: -mat_type baij -view_sparse
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -view_sparse
+
+   test:
+      suffix: 3b
+      nsize: 3
+      args: -mat_type baij -view_sparse
+
+TEST*/

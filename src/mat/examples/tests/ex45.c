@@ -91,4 +91,8 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
   if ((size_t) write(fd,a,m*sizeof(double)) != (size_t) m*sizeof(double)) abort();
 }
 
+/*TEST
 
+   test:
+
+TEST*/

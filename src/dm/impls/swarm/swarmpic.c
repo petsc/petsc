@@ -40,20 +40,20 @@
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal min[],PetscReal max[],PetscInt npoints[],InsertMode mode)
 {
-  PetscErrorCode ierr;
-  PetscReal gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt i,j,k,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
-  Vec coorlocal;
+  PetscErrorCode    ierr;
+  PetscReal         gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal         gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt          i,j,k,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
+  Vec               coorlocal;
   const PetscScalar *_coor;
-  DM celldm;
-  PetscReal dx[3];
-  PetscInt _npoints[] = { 0, 0, 1 };
-  Vec pos;
-  PetscScalar *_pos;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
-  PetscSF sfcell = NULL;
+  DM                celldm;
+  PetscReal         dx[3];
+  PetscInt          _npoints[] = { 0, 0, 1 };
+  Vec               pos;
+  PetscScalar       *_pos;
+  PetscReal         *swarm_coor;
+  PetscInt          *swarm_cellid;
+  PetscSF           sfcell = NULL;
   const PetscSFNode *LA_sfcell;
   
   PetscFunctionBegin;
@@ -118,7 +118,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
     for (j=0; j<_npoints[1]; j++) {
       for (i=0; i<_npoints[0]; i++) {
         PetscReal xp[] = {0.0,0.0,0.0};
-        PetscInt ijk[3];
+        PetscInt  ijk[3];
         PetscBool point_inside = PETSC_TRUE;
         
         ijk[0] = i;
@@ -212,23 +212,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,PetscReal coor[],PetscBool redundant,InsertMode mode)
 {
-  PetscErrorCode ierr;
-  PetscReal gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
-  PetscReal gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
-  PetscInt i,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
-  Vec coorlocal;
+  PetscErrorCode    ierr;
+  PetscReal         gmin[] = {PETSC_MAX_REAL ,PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscReal         gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
+  PetscInt          i,N,bs,b,n_estimate,n_curr,n_new_est,p,n_found;
+  Vec               coorlocal;
   const PetscScalar *_coor;
-  DM celldm;
-  Vec pos;
-  PetscScalar *_pos;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
-  PetscSF sfcell = NULL;
+  DM                celldm;
+  Vec               pos;
+  PetscScalar       *_pos;
+  PetscReal         *swarm_coor;
+  PetscInt          *swarm_cellid;
+  PetscSF           sfcell = NULL;
   const PetscSFNode *LA_sfcell;
-  PetscReal *my_coor;
-  PetscInt my_npoints;
-  PetscMPIInt rank;
-  MPI_Comm comm;
+  PetscReal         *my_coor;
+  PetscInt          my_npoints;
+  PetscMPIInt       rank;
+  MPI_Comm          comm;
   
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
@@ -384,8 +384,8 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM,DM,DMSwarmP
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm,DMSwarmPICLayoutType layout_type,PetscInt fill_param)
 {
   PetscErrorCode ierr;
-  DM celldm;
-  PetscBool isDA,isPLEX;
+  DM             celldm;
+  PetscBool      isDA,isPLEX;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
@@ -432,8 +432,8 @@ $    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm,PetscInt npoints,PetscReal xi[])
 {
   PetscErrorCode ierr;
-  DM celldm;
-  PetscBool isDA,isPLEX;
+  DM             celldm;
+  PetscBool      isDA,isPLEX;
   
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
@@ -489,13 +489,13 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,Petsc
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const char *fieldnames[],Vec **fields,PetscBool reuse)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  DataField *gfield;
-  DM celldm;
-  PetscBool isDA,isPLEX;
-  Vec *vecs;
-  PetscInt f,nvecs;
-  PetscInt project_type = 0;
+  DM_Swarm        *swarm = (DM_Swarm*)dm->data;
+  DataField       *gfield;
+  DM              celldm;
+  PetscBool       isDA,isPLEX;
+  Vec             *vecs;
+  PetscInt        f,nvecs;
+  PetscInt        project_type = 0;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -585,7 +585,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncell
     ierr = PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isplex);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)celldm,DMSHELL,&isshell);CHKERRQ(ierr);
     if (isda) {
-      PetscInt _nel,_npe;
+      PetscInt       _nel,_npe;
       const PetscInt *_element;
       
       ierr = DMDAGetElements(celldm,&_nel,&_npe,&_element);CHKERRQ(ierr);

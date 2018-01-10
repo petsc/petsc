@@ -482,3 +482,29 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: c99
+
+   test:
+      args: -test_trans
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -matis_convert_local_nest -nr 3 -nc 4
+
+   test:
+      suffix: 3
+      nsize: 5
+      args: -m 11 -n 10 -matis_convert_local_nest -nr 2 -nc 1
+
+   test:
+      suffix: 4
+      nsize: 6
+      args: -m 9 -n 12 -test_trans -nr 2 -nc 7
+
+TEST*/

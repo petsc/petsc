@@ -18,6 +18,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -48,5 +49,9 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
 
+   test:
+     TODO: cannot test with socket viewer
 
+TEST*/

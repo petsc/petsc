@@ -36,7 +36,7 @@
 !  in them
 !
 
-      module f90module
+      module f90modulet
 #include <petsc/finclude/petscdm.h>
       use petscdmdef
       type userctx
@@ -119,16 +119,16 @@
 !      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
       return
       end subroutine formfunction
-      end module f90module
+      end module f90modulet
 
-      module f90moduleinterfaces
-        use f90module
+      module f90moduleinterfacest
+        use f90modulet
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnes.h>
         use petscsnes
-        use f90module
+        use f90modulet
           type(tSNES)    snesIn
           type(userctx) ctx
           PetscErrorCode ierr
@@ -139,13 +139,13 @@
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnes.h>
         use petscsnes
-        use f90module
+        use f90modulet
           type(tSNES)     snesIn
           type(userctx), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESGetApplicationContext
-      end module f90moduleinterfaces
+      end module f90moduleinterfacest
 
       program main
 #include <petsc/finclude/petscdm.h>
@@ -153,8 +153,8 @@
       use petscdmda
       use petscdm
       use petscsnes
-      use f90module
-      use f90moduleinterfaces
+      use f90modulet
+      use f90moduleinterfacest
       implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -348,8 +348,8 @@
       subroutine FormInitialGuess(mysnes,X,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
-      use f90module
-      use f90moduleinterfaces
+      use f90modulet
+      use f90moduleinterfacest
 !  Input/output variables:
       type(tSNES)     mysnes
       type(userctx), pointer:: puser
@@ -400,7 +400,7 @@
       subroutine InitialGuessLocal(user,x,ierr)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use f90module
+      use f90modulet
 !  Input/output variables:
       type (userctx)         user
       PetscScalar  x(user%xs:user%xe,user%ys:user%ye)
@@ -451,7 +451,7 @@
       subroutine FormFunctionLocal(x,f,user,ierr)
 #include <petsc/finclude/petscsys.h>
       use petscsys
-      use f90module
+      use f90modulet
 !  Input/output variables:
       type (userctx) user
       PetscScalar  x(user%gxs:user%gxe,user%gys:user%gye)
@@ -537,7 +537,7 @@
       subroutine FormJacobian(mysnes,X,jac,jac_prec,user,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
-      use f90module
+      use f90modulet
 !  Input/output variables:
       type(tSNES)     mysnes
       type(tVec)      X
@@ -625,7 +625,7 @@
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
 #include <petsc/finclude/petscmat.h>
       use petscmat
-      use f90module
+      use f90modulet
 !  Input/output variables:
       type (userctx) user
       PetscScalar    x(user%gxs:user%gxe,user%gys:user%gye)
@@ -689,5 +689,10 @@
       return
       end
 
-
-
+!/*TEST
+!
+!   test:
+!      nsize: 4
+!      args: -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!TEST*/

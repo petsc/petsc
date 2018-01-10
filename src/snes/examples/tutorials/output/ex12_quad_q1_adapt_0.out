@@ -1,8 +1,4 @@
 DM Object: 1 MPI processes
   type: p4est
-Forest DM_0x84000000_0 in 2 dimensions:
-DM Object: DM_0x84000000_0 1 MPI processes
-  type: p4est
-Forest DM_0x84000000_0 in 2 dimensions:
-L_2 Error: 0.397987
+L_2 Error: 2.16795
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1

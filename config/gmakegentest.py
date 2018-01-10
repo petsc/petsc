@@ -341,10 +341,11 @@ class generateExamples(Petsc):
     # Worry about alt files here -- see
     #   src/snes/examples/tutorials/output/ex22*.out
     altlist=[subst['output_file']]
-    for i in range(1,3):
-      altroot=defroot+"_alt"
-      if i==2: altroot=altroot+"_2"
-      af="output/"+altroot+".out"
+    basefile,ext = os.path.splitext(subst['output_file'])
+    for i in range(1,9):
+      altroot=basefile+"_alt"
+      if i > 1: altroot=altroot+"_"+str(i)
+      af=altroot+".out"
       srcaf=os.path.join(subst['srcdir'],af)
       fullaf=os.path.join(self.petsc_dir,srcaf)
       if os.path.isfile(fullaf): altlist.append(srcaf)
@@ -477,12 +478,20 @@ class generateExamples(Petsc):
     #Handle runfiles
     for lfile in subst.get('localrunfiles','').split():
       fullfile=os.path.join(root,lfile)
-      shutil.copy(fullfile,runscript_dir)
+      if os.path.isdir(fullfile):
+        if not os.path.isdir(os.path.join(runscript_dir,lfile)):
+          shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
+      else:
+        shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
     for stest in subst.get("subtests",[]):
       for lfile in testDict[stest].get('localrunfiles','').split():
         fullfile=os.path.join(root,lfile)
-        shutil.copy(fullfile,self.runscript_dir)
+        if os.path.isdir(fullfile):
+          if not os.path.isdir(os.path.join(runscript_dir,lfile)):
+            shutil.copytree(fullfile,os.path.join(runscript_dir,lfile))
+        else:
+          shutil.copy(fullfile,self.runscript_dir)
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
@@ -594,13 +603,12 @@ class generateExamples(Petsc):
     return srcDict['SKIP'] == []
 
 
-  def _isRun(self,testDict):
+  def _isRun(self,testDict, debug=False):
     """
     Based on the requirements listed in the src file and the petscconf.h
     info, determine whether this test should be run or not.
     """
     indent="  "
-    debug=False
 
     if 'SKIP' not in testDict:
       testDict['SKIP'] = []
@@ -745,8 +753,9 @@ class generateExamples(Petsc):
       #if not exfile.startswith("new_"+"ex"): continue
       #if not exfile.startswith("ex"): continue
 
-      # Ignore emacs files
-      if exfile.startswith("#") or exfile.startswith(".#"): continue
+      # Ignore emacs and other temporary files
+      if exfile.startswith("."): continue
+      if exfile.startswith("#"): continue
 
       # Convenience
       fullex=os.path.join(root,exfile)

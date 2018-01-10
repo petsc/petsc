@@ -126,3 +126,26 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      requires: elemental
+      args: -mat_type elemental -m 2 -n 3
+
+   test:
+      suffix: 2
+      nsize: 6
+      requires: elemental
+      args: -mat_type elemental -m 2 -n 2
+
+   test:
+      suffix: 3
+      nsize: 6
+      requires: elemental
+      args: -mat_type elemental -m 2 -n 2 -test_matmatmult
+      output_file: output/ex38_2.out
+
+TEST*/

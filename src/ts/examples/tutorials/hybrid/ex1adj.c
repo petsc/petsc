@@ -339,3 +339,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -ts_monitor -ts_adjoint_monitor
+
+TEST*/

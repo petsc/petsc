@@ -6,6 +6,8 @@ static char help[] = "Large-deformation Elasticity Buckling Example";
    Processors: n
 T*/
 
+
+
 /*F-----------------------------------------------------------------------
 
     This example solves the 3D large deformation elasticity problem
@@ -1051,3 +1053,23 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short -snes_max_it 9
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short -snes_max_it 2
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -da_refine 1 -da_overlap 3 -da_local_subdomains 4 -snes_type aspin -rad 10.0 -young 10. -ploading 0.0 -loading -0.5 -snes_monitor_short -ksp_monitor_short -npc_sub_snes_rtol 1e-2 -ksp_rtol 1e-2 -ksp_max_it 14 -snes_converged_reason -snes_max_linear_solve_fail 100 -snes_max_it 4 
+      requires: !single
+
+TEST*/

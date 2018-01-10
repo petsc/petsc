@@ -34,3 +34,12 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: 3
+      nsize: 3
+
+TEST*/

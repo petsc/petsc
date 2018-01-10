@@ -46,6 +46,7 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
@@ -885,3 +886,47 @@ x     Restore vector
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON
+      requires: !single
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -precheck 1
+      requires: !single
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1
+      requires: !single
+
+   test:
+      suffix: 4
+      args: -snes_monitor_short -snes_type newtonls -npc_snes_type ngs -snes_npc_side left -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_monitor_short
+      requires: !single
+
+   test:
+      suffix: lag_jac
+      nsize: 4
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists
+      requires: !single
+
+   test:
+      suffix: lag_pc
+      nsize: 4
+      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists
+      requires: !single
+
+   test:
+      suffix: nleqerr
+      args: -snes_monitor_short -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr
+      requires: !single
+
+TEST*/

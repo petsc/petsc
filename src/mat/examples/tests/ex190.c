@@ -34,3 +34,25 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+      test:
+         nsize: 2
+         args: -mat_type aij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+         requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+      test:
+         suffix: 2
+         nsize: 2
+         args: -mat_type baij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+         requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+      test:
+         suffix: 3
+         nsize: 2
+         args: -mat_type sbaij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64
+         requires: double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/

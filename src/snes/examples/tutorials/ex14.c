@@ -12,6 +12,8 @@ The command line options include:\n\
    Processors: n
 T*/
 
+
+
 /* ------------------------------------------------------------------------
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -499,3 +501,33 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   PetscFunctionReturn(0);
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -fdcoloring -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3_ds
+      nsize: 4
+      args: -fdcoloring -fdcoloring_ds -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 4
+      nsize: 4
+      args: -fdcoloring_local -fdcoloring -ksp_monitor_short -da_refine 1
+      requires: !single
+
+TEST*/

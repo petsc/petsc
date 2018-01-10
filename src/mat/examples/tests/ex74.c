@@ -362,3 +362,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8}}
+
+TEST*/
