@@ -141,7 +141,7 @@ endif
 #   This is a hack to fix a broken gfortran.
 	-@if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
 	      echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
-	      tail -n +2  $(@:%.o=%.d) | grep -v '\.mod: \\' >> $(@:%.o=%.dtemp) ; \
+	      cat $(@:%.o=%.d) | tr '\n' '@' | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
 	      mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
       fi
 
