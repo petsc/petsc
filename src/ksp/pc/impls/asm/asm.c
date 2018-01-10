@@ -35,6 +35,7 @@ typedef struct {
   Mat       *lmats;               /* submatrices for overlapping multiplicative (process) subdomain */
   Vec        lx, ly;              /* work vectors */
   IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
+  VecScatter *lprolongation;      /* mapping from subregion to overlapping process subdomain */
 } PC_ASM;
 
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
@@ -302,7 +303,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
       PetscInt m;
-
       ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
       ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
       ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
@@ -346,6 +346,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->is_local && (osm->type == PC_ASM_INTERPOLATE || osm->type == PC_ASM_NONE )) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains()"); 
     if (osm->is_local && osm->type == PC_ASM_RESTRICT) {ierr = PetscMalloc1(osm->n_local,&osm->localization);CHKERRQ(ierr);}
     ierr = PetscMalloc1(osm->n_local,&osm->prolongation);CHKERRQ(ierr);
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE)
+      ierr = PetscMalloc1(osm->n_local,&osm->lprolongation);CHKERRQ(ierr);
+    
     ierr = PetscMalloc1(osm->n_local,&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->y);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->y_local);CHKERRQ(ierr);
@@ -384,6 +387,28 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         osm->prolongation[i] = osm->restriction[i];
         ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       }
+      
+      if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE && i < osm->n_local_true - 1) {
+        ISLocalToGlobalMapping ltog;
+        IS                     isll;
+        const PetscInt         *idx_is;
+        PetscInt               *idx_lis,nout;
+
+        ierr = ISLocalToGlobalMappingCreateIS(osm->lis,&ltog);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
+        ierr = ISGetIndices(osm->is[i], &idx_is);CHKERRQ(ierr);
+        ierr = PetscMalloc1(m,&idx_lis);CHKERRQ(ierr);
+        ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m,idx_is,&nout,idx_lis);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
+        if (nout != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is not a subset of lis");
+        ierr = ISRestoreIndices(osm->is[i], &idx_is);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx_lis,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
+        ierr = VecScatterCreate(osm->ly,isll,osm->y[i],isl,&osm->lprolongation[i]);CHKERRQ(ierr);
+        ierr = ISDestroy(&isll);CHKERRQ(ierr);
+        ierr = ISDestroy(&isl);CHKERRQ(ierr);
+      }    
+      
     }
     for (i=osm->n_local_true; i<osm->n_local; i++) {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&osm->x[i]);CHKERRQ(ierr);
@@ -496,13 +521,10 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     break;
   case PC_COMPOSITE_MULTIPLICATIVE:
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
+    ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
     /* do the local solves */
     for (i = 0; i < n_local_true; ++i) {
-      if (i > 0) {
-        /* Update rhs */
-        ierr = VecScatterBegin(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->restriction[i], osm->lx, osm->x[i], INSERT_VALUES, forward);CHKERRQ(ierr);
-      } else {
+      if (i == 0) {
         ierr = VecZeroEntries(osm->x[i]);CHKERRQ(ierr);
       }
       ierr = VecScatterBegin(osm->restriction[i], x, osm->x[i], ADD_VALUES, forward);CHKERRQ(ierr);
@@ -515,13 +537,11 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
       ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
       ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], y, ADD_VALUES, reverse);CHKERRQ(ierr);
       if (i < n_local_true-1) {
-        ierr = VecSet(osm->ly, 0.0);CHKERRQ(ierr);
-        ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
-        ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
-        ierr = MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]);CHKERRQ(ierr);
-        ierr = VecScatterBegin(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
-        ierr = VecScatterEnd(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
+	ierr = VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, reverse);CHKERRQ(ierr);
+	ierr = VecCopy(osm->ly, osm->lx);CHKERRQ(ierr);
+        ierr = VecScale(osm->lx, -1.0);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmats[i+1], osm->lx, osm->x[i+1]);CHKERRQ(ierr);
       }
     }
     /* handle the rest of the scatters that do not have local solves */
@@ -608,6 +628,9 @@ static PetscErrorCode PCReset_ASM(PC pc)
       ierr = VecScatterDestroy(&osm->restriction[i]);CHKERRQ(ierr);
       if (osm->localization) {ierr = VecScatterDestroy(&osm->localization[i]);CHKERRQ(ierr);}
       ierr = VecScatterDestroy(&osm->prolongation[i]);CHKERRQ(ierr);
+      if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE && i < osm->n_local_true - 1){
+	ierr = VecScatterDestroy(&osm->lprolongation[i]);CHKERRQ(ierr);
+      }
       ierr = VecDestroy(&osm->x[i]);CHKERRQ(ierr);
       ierr = VecDestroy(&osm->y[i]);CHKERRQ(ierr);
       ierr = VecDestroy(&osm->y_local[i]);CHKERRQ(ierr);
@@ -615,6 +638,9 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = PetscFree(osm->restriction);CHKERRQ(ierr);
     if (osm->localization) {ierr = PetscFree(osm->localization);CHKERRQ(ierr);}
     ierr = PetscFree(osm->prolongation);CHKERRQ(ierr);
+    if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE){
+      ierr = PetscFree(osm->lprolongation);CHKERRQ(ierr);
+    }
     ierr = PetscFree(osm->x);CHKERRQ(ierr);
     ierr = PetscFree(osm->y);CHKERRQ(ierr);
     ierr = PetscFree(osm->y_local);CHKERRQ(ierr);
@@ -1288,6 +1314,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   osm->restriction       = 0;
   osm->localization      = 0;
   osm->prolongation      = 0;
+  osm->lprolongation     = 0;
   osm->x                 = 0;
   osm->y                 = 0;
   osm->y_local           = 0;
