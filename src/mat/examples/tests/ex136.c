@@ -85,6 +85,6 @@ int main(int argc,char **args)
         suffix: 5
         nsize: 5
       test:
-        suffix: 5
+        suffix: 6
         nsize: 7
 TEST*/
