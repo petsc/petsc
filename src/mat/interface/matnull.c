@@ -346,7 +346,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
    Collective on MatNullSpace
 
    Input Parameters:
-+  sp - the null space context
++  sp - the null space context (if this is NULL then no null space is removed)
 -  vec - the vector from which the null space is to be removed
 
    Level: advanced
@@ -362,6 +362,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
 
