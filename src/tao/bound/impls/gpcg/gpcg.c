@@ -157,7 +157,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   if (gpcg->Free_Local) {
       ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
   }
-  ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&gpcg->Free_Local);CHKERRQ(ierr);
+  ierr = VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local);CHKERRQ(ierr);
 
   /* Project the gradient and calculate the norm */
   ierr = VecCopy(tao->gradient,gpcg->G_New);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       ierr = VecNorm(gpcg->PG, NORM_2, &gnorm);CHKERRQ(ierr);
       f=f_new;
       ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
-      ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&gpcg->Free_Local);CHKERRQ(ierr);
+      ierr = VecWhichInactive(tao->XL,tao->solution,tao->gradient,tao->XU,PETSC_TRUE,&gpcg->Free_Local);CHKERRQ(ierr);
     } else {
       actred = 0; gpcg->step=1.0;
       /* if there were no free variables, no cg method */
@@ -277,7 +277,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
     actred_max = PetscMax(actred_max,-(f_new - gpcg->f));
     gpcg->f = f_new;
     ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
-    ierr = VecWhichBetween(XL,X,XU,&gpcg->Free_Local);CHKERRQ(ierr);
+    ierr = VecWhichInactive(XL,X,tao->gradient,XU,PETSC_TRUE,&gpcg->Free_Local);CHKERRQ(ierr);
   }
 
   gpcg->gnorm=gtg;
