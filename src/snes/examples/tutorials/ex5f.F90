@@ -500,7 +500,6 @@
 
       call SNESGetFunction(snes,f,PETSC_NULL_FUNCTION,dummy,ierr)
       call VecNorm(f,NORM_INFINITY,nrm,ierr)
-      print*,it,nrm
       if (nrm .le. 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
 
       end
@@ -522,6 +521,11 @@
 !      suffix: 3
 !      nsize: 3
 !      args: -snes_fd -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 6
+!      nsize: 1
+!      args: -snes_monitor_short -my_snes_convergence
 !
 !
 !TEST*/
