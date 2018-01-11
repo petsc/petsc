@@ -19,7 +19,7 @@
 # if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Real single precision without character string arguments. */
 #  define LAPACKgeqrf_ SGEQRF
-#  define LAPACKungqr_ SORGQR
+#  define LAPACKorgqr_ SORGQR
 #  define LAPACKgetrf_ SGETRF
 #  define LAPACKgetri_ SGETRI
 #  define BLASdot_     SDOT
@@ -98,7 +98,7 @@ PETSC_EXTERN void PETSC_STDCALL SHSEQR(const char*,int,const char*,int,PetscBLAS
 # else
 /* Real double precision without character string arguments. */
 #  define LAPACKgeqrf_ DGEQRF
-#  define LAPACKungqr_ DORGQR
+#  define LAPACKorgqr_ DORGQR
 #  define LAPACKgetrf_ DGETRF
 #  define LAPACKgetri_ DGETRI
 #  define BLASdot_     DDOT
@@ -177,7 +177,7 @@ PETSC_EXTERN void PETSC_STDCALL DHSEQR(const char*,int,const char*,int,PetscBLAS
 # if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Complex single precision without character string arguments. */
 #  define LAPACKgeqrf_ CGEQRF
-#  define LAPACKungqr_ CUNGQR
+#  define LAPACKorgqr_ CUNGQR
 #  define LAPACKgetrf_ CGETRF
 #  define LAPACKgetri_ CGETRI
 /* #  define BLASdot_     CDOTC */
@@ -258,7 +258,7 @@ PETSC_EXTERN void PETSC_STDCALL CHSEQR(const char*,int,const char*,int,PetscBLAS
 # else
 /* Complex double precision without character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
-#  define LAPACKungqr_ ZUNGQR
+#  define LAPACKorgqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
 #  define LAPACKgetri_ ZGETRI
 /* #  define BLASdot_     ZDOTC */
@@ -342,7 +342,7 @@ PETSC_EXTERN void PETSC_STDCALL ZHSEQR(const char*,int,const char*,int,PetscBLAS
 PETSC_EXTERN void PETSC_STDCALL LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-PETSC_EXTERN void PETSC_STDCALL LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void PETSC_STDCALL LAPACKorgqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKpttrf_(PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKstein_(PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKgesv_(const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
