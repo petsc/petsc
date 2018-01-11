@@ -63,6 +63,22 @@ int MPIUNI_Memcpy(void *a,const void *b,int n)
   return MPI_SUCCESS;
 }
 
+static int classcnt = 0;
+static int codecnt = 0;
+
+int MPI_Add_error_class(int *cl)
+{
+  *cl = classcnt++;
+  return MPI_SUCCESS;
+}
+
+int MPI_Add_error_code(int cl,int *co)
+{
+  if (cl >= classcnt) return MPI_FAILURE;
+  *co = codecnt++;
+  return MPI_SUCCESS;
+}
+
 int MPI_Type_get_envelope(MPI_Datatype datatype,int *num_integers,int *num_addresses,int *num_datatypes,int *combiner)
 {
   int comb = datatype >> 28;
@@ -125,7 +141,7 @@ static int Keyval_setup(void)
   return MPI_SUCCESS;
 }
 
-int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
+int MPI_Comm_create_keyval(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
   if (num_attr >= MAX_ATTR) return MPIUni_Abort(MPI_COMM_WORLD,1);
 
