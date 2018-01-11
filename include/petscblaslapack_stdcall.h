@@ -40,8 +40,6 @@
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_(a,b,c,d,e)                   SPOTRF((a),1,(b),(c),(d),(e))
 PETSC_EXTERN void PETSC_STDCALL SPOTRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKpotri_(a,b,c,d,e)                   SPOTRI((a),1,(b),(c),(d),(e))
-PETSC_EXTERN void PETSC_STDCALL SPOTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotrs_(a,b,c,d,e,f,g,h)             SPOTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
 PETSC_EXTERN void PETSC_STDCALL SPOTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotri_(a,b,c,d,e)                   SPOTRI((a),1,(b),(c),(d),(e))
@@ -121,8 +119,6 @@ PETSC_EXTERN void PETSC_STDCALL SHSEQR(const char*,int,const char*,int,PetscBLAS
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_(a,b,c,d,e)                   DPOTRF((a),1,(b),(c),(d),(e))
 PETSC_EXTERN void PETSC_STDCALL DPOTRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKpotri_(a,b,c,d,e)                   DPOTRI((a),1,(b),(c),(d),(e))
-PETSC_EXTERN void PETSC_STDCALL DPOTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotrs_(a,b,c,d,e,f,g,h)             DPOTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
 PETSC_EXTERN void PETSC_STDCALL DPOTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotri_(a,b,c,d,e)                   DPOTRI((a),1,(b),(c),(d),(e))
@@ -201,8 +197,6 @@ PETSC_EXTERN void PETSC_STDCALL DHSEQR(const char*,int,const char*,int,PetscBLAS
 /* Complex single precision with character string arguments. */
 #  define LAPACKpotrf_(a,b,c,d,e)                   CPOTRF((a),1,(b),(c),(d),(e))
 PETSC_EXTERN void PETSC_STDCALL CPOTRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKpotri_(a,b,c,d,e)                   CPOTRI((a),1,(b),(c),(d),(e))
-PETSC_EXTERN void PETSC_STDCALL CPOTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotrs_(a,b,c,d,e,f,g,h)             CPOTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
 PETSC_EXTERN void PETSC_STDCALL CPOTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotri_(a,b,c,d,e)                   CPOTRI((a),1,(b),(c),(d),(e))
@@ -284,8 +278,6 @@ PETSC_EXTERN void PETSC_STDCALL CHSEQR(const char*,int,const char*,int,PetscBLAS
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_(a,b,c,d,e)                   ZPOTRF((a),1,(b),(c),(d),(e))
 PETSC_EXTERN void PETSC_STDCALL ZPOTRF(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKpotri_(a,b,c,d,e)                   ZPOTRI((a),1,(b),(c),(d),(e))
-PETSC_EXTERN void PETSC_STDCALL ZPOTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotrs_(a,b,c,d,e,f,g,h)             ZPOTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
 PETSC_EXTERN void PETSC_STDCALL ZPOTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKpotri_(a,b,c,d,e)                   ZPOTRI((a),1,(b),(c),(d),(e))
