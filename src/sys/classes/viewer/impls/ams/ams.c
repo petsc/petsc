@@ -39,14 +39,14 @@ PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Viewer_SAWs_keyval,0);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_SAWS_",__FILE__,1,PETSC_ERROR_INITIAL," "); viewer = NULL;}
   }
-  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);
+  ierr = MPI_Comm_get_attr(ncomm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);
   if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_SAWS_",__FILE__,1,PETSC_ERROR_INITIAL," "); viewer = NULL;}
   if (!flag) { /* PetscViewer not yet created */
     ierr = PetscViewerSAWsOpen(comm,&viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_SAWS_",__FILE__,1,PETSC_ERROR_INITIAL," "); viewer = NULL;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_SAWS_",__FILE__,1,PETSC_ERROR_INITIAL," "); viewer = NULL;}
-    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_SAWs_keyval,(void*)viewer);
+    ierr = MPI_Comm_set_attr(ncomm,Petsc_Viewer_SAWs_keyval,(void*)viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_SAWS_",__FILE__,1,PETSC_ERROR_INITIAL," "); viewer = NULL;}
   }
   ierr = PetscCommDestroy(&ncomm);
@@ -66,10 +66,10 @@ PetscErrorCode PetscViewer_SAWS_Destroy(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) PetscFunctionReturn(0);
 
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Viewer_SAWs_keyval,(void**)&viewer,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_SAWs_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_delete_attr(comm,Petsc_Viewer_SAWs_keyval);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -285,7 +285,7 @@ PetscErrorCode  VecFinalizePackage(void)
   ierr = MPI_Op_free(&MPIU_MAXINDEX_OP);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MININDEX_OP);CHKERRQ(ierr);
   if (Petsc_Reduction_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_free(&Petsc_Reduction_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Reduction_keyval);CHKERRQ(ierr);
   }
   VecPackageInitialized = PETSC_FALSE;
   VecRegisterAllCalled  = PETSC_FALSE;

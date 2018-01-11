@@ -284,7 +284,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
     ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void**)&mengine,(int*)&flg);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Matlab_Engine_keyval,(void**)&mengine,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
@@ -296,7 +296,7 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)mengine);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
-    ierr = MPI_Attr_put(comm,Petsc_Matlab_Engine_keyval,mengine);
+    ierr = MPI_Comm_set_attr(comm,Petsc_Matlab_Engine_keyval,mengine);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," "); mengine = 0;}
   }
   PetscFunctionReturn(mengine);

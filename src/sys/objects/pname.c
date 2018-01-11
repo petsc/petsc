@@ -126,7 +126,7 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscValidHeader(obj,1);
   if (!obj->name) {
     union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
-    ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
     ucomm.ptr = NULL;
     ucomm.comm = obj->comm;
