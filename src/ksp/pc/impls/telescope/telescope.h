@@ -49,6 +49,6 @@ typedef struct {
  PetscErrorCode PCApply_Telescope_dmda(PC,Vec,Vec);
 PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason);
 PetscErrorCode PCReset_Telescope_dmda(PC);
-PetscErrorCode DMView_DMDAShort(DM,PetscViewer);
+PetscErrorCode DMView_DA_Short(DM,PetscViewer);
 
 #endif

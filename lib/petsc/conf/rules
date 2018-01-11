@@ -687,6 +687,28 @@ manconcepts:
               ${RM} ltmp; \
           done
 
+#
+#    Goes through all manual pages adding links to implementations of the method,
+# at the end of the file. For these purposes, we use git grep to look for
+# functions with a single underscore following the function's name, in paths
+# including /impls/ . We exclude any line with a semicolon to avoid matching
+# prototypes.
+#
+manimplementations:
+	-@for i in docs/manualpages/*/*.html; do \
+          functionName=`basename $$i .html`; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?PetscErrorCode $${functionName}_[^_]*(" -- */impls/* | grep -v ";" > impls.html ; \
+          if [ -s impls.html ] ; then \
+            printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
+            sed "s?\(.*\.c\).*\($${functionName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" impls.html >> $$i ; \
+            grep -v /BODY $$i > tmp; \
+            printf "</BODY></HTML>" >> tmp; \
+            mv tmp $$i ; \
+            ${RM} tmp ; \
+          fi ; \
+          ${RM} impls.html ; \
+          done
+
 getexlist:
 	-@${PETSC_DIR}/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
 	-@${RM} -f logfile.txt

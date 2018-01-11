@@ -1055,7 +1055,7 @@ PetscErrorCode PCReset_Telescope_dmda(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_DMDAShort_3d(DM dm,PetscViewer v)
+PetscErrorCode DMView_DA_Short_3d(DM dm,PetscViewer v)
 {
   PetscInt       M,N,P,m,n,p,ndof,nsw;
   MPI_Comm       comm;
@@ -1074,7 +1074,7 @@ PetscErrorCode DMView_DMDAShort_3d(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_DMDAShort_2d(DM dm,PetscViewer v)
+PetscErrorCode DMView_DA_Short_2d(DM dm,PetscViewer v)
 {
   PetscInt       M,N,m,n,ndof,nsw;
   MPI_Comm       comm;
@@ -1093,7 +1093,7 @@ PetscErrorCode DMView_DMDAShort_2d(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_DMDAShort(DM dm,PetscViewer v)
+PetscErrorCode DMView_DA_Short(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscInt       dim;
@@ -1101,9 +1101,9 @@ PetscErrorCode DMView_DMDAShort(DM dm,PetscViewer v)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   switch (dim) {
-  case 2: ierr = DMView_DMDAShort_2d(dm,v);CHKERRQ(ierr);
+  case 2: ierr = DMView_DA_Short_2d(dm,v);CHKERRQ(ierr);
     break;
-  case 3: ierr = DMView_DMDAShort_3d(dm,v);CHKERRQ(ierr);
+  case 3: ierr = DMView_DA_Short_3d(dm,v);CHKERRQ(ierr);
     break;
   }
   PetscFunctionReturn(0);
