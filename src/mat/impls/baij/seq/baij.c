@@ -15,6 +15,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat,const MatType,MatReuse,Mat*);
 #endif
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
@@ -1223,6 +1224,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3046,6 +3048,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_baij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqbaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

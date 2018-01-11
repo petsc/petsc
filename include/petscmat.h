@@ -1031,8 +1031,6 @@ PETSC_EXTERN PetscErrorCode MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
-PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetLDA(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatDenseGetLocalMatrix(Mat,Mat*);
 
@@ -1570,6 +1568,10 @@ PETSC_EXTERN PetscErrorCode MatShellSetManageScalingShifts(Mat);
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
 PETSC_EXTERN PetscErrorCode MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
+
+PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
+PETSC_EXTERN PetscErrorCode MatISStoreL2L(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);

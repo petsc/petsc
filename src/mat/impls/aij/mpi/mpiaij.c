@@ -1138,6 +1138,8 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMatMult_transpose_mpiaij_mpiaij_C",NULL);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_is_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPtAP_is_mpiaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5432,6 +5434,7 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /*
     Computes (B'*A')' since computing B*A directly is untenable
@@ -5574,6 +5577,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_mpiaij_mpiaij_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_mpiaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

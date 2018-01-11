@@ -1126,6 +1126,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatResetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatReorderForNonzeroDiagonal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_is_seqaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3919,6 +3920,7 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAP_IS_XAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 /*@C
    MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
@@ -4063,6 +4065,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqdense_seqaij_C",MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaij_C",MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_is_seqaij_C",MatPtAP_IS_XAIJ);CHKERRQ(ierr);
   ierr = MatCreate_SeqAIJ_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetTypeFromOptions(B);CHKERRQ(ierr);  /* this allows changing the matrix subtype to say MATSEQAIJPERM */
