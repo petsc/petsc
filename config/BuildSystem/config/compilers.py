@@ -464,8 +464,10 @@ class Configure(config.base.Configure):
     '''Determines the libraries needed to link with C++'''
     skipcxxlibraries = 1
     self.setCompilers.saveLog()
+    includes = '#include <iostream>'
+    body   = '''try  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }'''
     try:
-      self.setCompilers.checkCompiler('Cxx',linkLanguage='C')
+      self.setCompilers.checkCompiler('Cxx',linkLanguage='C',includes=includes,body=body)
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('C++ libraries are not needed when using C linker')
     except RuntimeError, e:
@@ -476,7 +478,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.saveLog()
       try:
-        self.setCompilers.checkCompiler('Cxx',linkLanguage='FC')
+        self.setCompilers.checkCompiler('Cxx',linkLanguage='FC',includes=includes,body=body)
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('C++ libraries are not needed when using Fortran linker')
       except RuntimeError, e:
