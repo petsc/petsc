@@ -432,17 +432,21 @@ PetscErrorCode InitializeData(AppCtx *user)
 
      test:
        args:  -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05
+       requires: !single !complex
 
      test:
        suffix: 2
        args: -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders -tao_pounders_delta 0.05
+       requires: !single !complex
 
      test:
        suffix: 3
        args: -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders -tao_pounders_delta 0.05
+       requires: !single !complex
 
      test:
        suffix: 4
        args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -pounders_subsolver_tao_type blmvm
+       requires: !single !complex
 
  TEST*/
