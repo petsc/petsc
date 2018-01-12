@@ -2427,7 +2427,7 @@ PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
   if (mat->erroriffailure) {ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);}
   MatCheckPreallocated(mat,1);
 
-  if (!mat->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
+  if (!mat->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply transpose defined");
   ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
