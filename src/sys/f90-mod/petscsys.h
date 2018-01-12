@@ -250,7 +250,7 @@
         PetscFortranAddr:: v
       end type tPetscRandom
 
-      PetscRandom, parameter :: PETSC_NULL_RANDOM                      &
+      PetscRandom, parameter :: PETSC_NULL_RANDOM                                  &
      &             = tPetscRandom(-1)
 !
 #define PETSCRAND 'rand'
