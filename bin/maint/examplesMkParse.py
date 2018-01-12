@@ -842,6 +842,7 @@ class makeParse(object):
         srcList.append(self.nameSpace(srcfile,srcdir))
       elif exmpl.startswith("run"): 
         testList.append(self.nameSpace(exmpl,srcdir))
+        print exmpl
         parseDict[srcfile].append(exmpl)
       elif exmpl.endswith(".rm"): 
         removeList.append(exmpl) # Can remove later if needed

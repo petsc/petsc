@@ -25,7 +25,10 @@ parameters include:\n\
 /*T
    Concepts: KSP^Additive Schwarz Method (ASM) with user-defined subdomains
    Processors: n
+   requires: x   TODO: Need to determine if deprecated
 T*/
+
+
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
@@ -289,3 +292,12 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: 1
+      args: -print_error
+
+TEST*/

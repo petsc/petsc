@@ -12,6 +12,8 @@ also uses multiple profiling stages.  Input arguments are\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -334,3 +336,76 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol .000001
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_lg_residualnorm -ksp_monitor_lg_true_residualnorm
+
+   test:
+      suffix: asm
+      nsize: 4
+      args: -pc_type asm
+
+   test:
+      suffix: asm_baij
+      nsize: 4
+      args: -pc_type asm -mat_type baij
+      output_file: output/ex5_asm.out
+
+   test:
+      suffix: redundant_0
+      args: -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi
+
+   test:
+      suffix: redundant_1
+      nsize: 5
+      args: -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi
+
+   test:
+      suffix: redundant_2
+      nsize: 5
+      args: -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi
+
+   test:
+      suffix: redundant_3
+      nsize: 5
+      args: -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi
+
+   test:
+      suffix: redundant_4
+      nsize: 5
+      args: -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -psubcomm_type interlaced
+
+   test:
+      suffix: superlu_dist
+      nsize: 15
+      requires: superlu
+      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat
+
+   test:
+      suffix: superlu_dist_2
+      nsize: 15
+      requires: superlu
+      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
+      output_file: output/ex5_superlu_dist.out
+
+   test:
+      suffix: superlu_dist_3
+      nsize: 15
+      requires: superlu
+      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
+      output_file: output/ex5_superlu_dist.out
+
+TEST*/

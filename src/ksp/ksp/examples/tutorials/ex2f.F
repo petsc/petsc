@@ -372,5 +372,15 @@
 
       end
 
-
-
+!/*TEST
+!
+!   test:
+!      nsize: 2
+!      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!
+!   test:
+!      suffix: 2
+!      nsize: 2
+!      args: -pc_type jacobi -my_ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+!
+!TEST*/

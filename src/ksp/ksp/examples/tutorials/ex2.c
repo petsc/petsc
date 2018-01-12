@@ -13,6 +13,8 @@ Input parameters include:\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -237,12 +239,105 @@ int main(int argc,char **args)
 
 /*TEST
 
-     test:
-       suffix: chebyest_1
-       args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_monitor_short
+   build:
+      requires: !complex !single
 
-     test:
-       suffix: chebyest_2
-       args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short 
+   test:
+      suffix: chebyest_1
+      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_monitor_short
 
- TEST*/
+   test:
+      suffix: chebyest_2
+      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short 
+
+   test:
+      args: -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 3
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 4
+      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 5
+      nsize: 2
+      args: -ksp_monitor_short -m 5 -n 5 -mat_view draw -ksp_gmres_cgs_refinement_type refine_always -nox
+      output_file: output/ex2_2.out
+
+   test:
+      suffix: bjacobi
+      nsize: 4
+      args: -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres
+
+   test:
+      suffix: bjacobi_2
+      nsize: 4
+      args: -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres -ksp_view
+
+   test:
+      suffix: bjacobi_3
+      nsize: 4
+      args: -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres
+
+   test:
+      suffix: fbcgs
+      args: -ksp_type fbcgs -pc_type ilu
+
+   test:
+      suffix: fbcgs_2
+      nsize: 3
+      args: -ksp_type fbcgsr -pc_type bjacobi
+
+   test:
+      suffix: groppcg
+      args: -ksp_monitor_short -ksp_type groppcg -m 9 -n 9
+
+   test:
+      suffix: mkl_pardiso_cholesky
+      requires: mkl_pardiso
+      args: -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mkl_pardiso
+
+   test:
+      suffix: mkl_pardiso_lu
+      requires: mkl_pardiso
+      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso
+
+   test:
+      suffix: pipebcgs
+      args: -ksp_monitor_short -ksp_type pipebcgs -m 9 -n 9
+
+   test:
+      suffix: pipecg
+      args: -ksp_monitor_short -ksp_type pipecg -m 9 -n 9
+
+   test:
+      suffix: pipecgrr
+      args: -ksp_monitor_short -ksp_type pipecgrr -m 9 -n 9
+
+   test:
+      suffix: pipecr
+      args: -ksp_monitor_short -ksp_type pipecr -m 9 -n 9
+
+   test:
+      suffix: sell
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type sell
+
+   test:
+      suffix: telescope
+      nsize: 4
+      args: -m 100 -n 100 -ksp_converged_reason -pc_type telescope -pc_telescope_reduction_factor 4 -telescope_pc_type bjacobi
+
+   test:
+      suffix: umfpack
+      requires: suitesparse
+      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack
+
+TEST*/

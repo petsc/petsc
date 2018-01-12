@@ -11,6 +11,8 @@ structures throughout the process.  Note the various stages of event logging.\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -426,3 +428,11 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
   return 0;
 }
 
+
+
+/*TEST
+
+   test:
+      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+
+TEST*/
