@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TESTS=(
+snes_tutorials-runex12_43
+snes_tutorials-runex12_44
+snes_tutorials-runex12_tri_bddc_parmetis
+snes_tutorials-runex12_p4est_test_q2_conformal_parallel_parmetis
+snes_tutorials-runex12_p4est_test_q2_nonconformal_parallel_parmetis
+snes_tutorials-runex12_p4est_exact_q2_conformal_parallel_parmetis
+snes_tutorials-runex12_p4est_exact_q2_nonconformal_parallel_parmetis
+snes_tutorials-runex62_20_parmetis
+snes_tutorials-runex77_2_par
+)
+
+TESTS=${TESTS[@]}
+
+make -f gmakefile.test test EXTRA_OPTIONS="-petscpartitioner_type matpartitioning -mat_partitioning_type parmetis"  search="$TESTS"
