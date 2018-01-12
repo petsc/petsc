@@ -167,3 +167,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_error_if_not_converged
+
+TEST*/

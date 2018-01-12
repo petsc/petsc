@@ -11,7 +11,10 @@ Input parameters include:\n\
    Concepts: KSP^Laplacian, 2d
    Concepts: Laplacian, 2d
    Processors: n
+   requires: elemental
 T*/
+
+
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
@@ -200,3 +203,17 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 6
+      args: -pc_type none
+
+   test:
+      suffix: 2
+      nsize: 6
+      args: -pc_type lu -pc_factor_mat_solver_package elemental
+
+TEST*/
