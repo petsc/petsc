@@ -33,7 +33,7 @@
       call MatGetNullSpace(A,sp,ierr)
       if (sp .ne. PETSC_NULL_MATNULLSPACE) then SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not exist")
 
-      call MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL_VEC,sp,ierr)
+      call MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,zero,PETSC_NULL_VEC,sp,ierr)
       call MatSetNullSpace(A,sp,ierr)
       call MatGetNullSpace(A,sp1,ierr)
       if (sp1 .eq. PETSC_NULL_MATNULLSPACE) then SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix null space should not be null")
