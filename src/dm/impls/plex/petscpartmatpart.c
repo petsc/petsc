@@ -123,7 +123,6 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   ierr = MatPartitioningApply(p->mp, &is1);CHKERRQ(ierr);
 
   /* construct the PetscSection */
-  /* TODO: impl. ISPartitioningToNumberingAndSection */
   {
     PetscInt v;
     const PetscInt *assignment_arr;
