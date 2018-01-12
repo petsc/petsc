@@ -1,6 +1,10 @@
 
 static char help[] = "Tests SeqSBAIJ factorizations for different block sizes\n\n";
 
+/*T
+   requires: !single
+T*/
+
 #include <petscksp.h>
 
 int main(int argc,char **args)
@@ -121,3 +125,11 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8 9 10 11 12}} -pc_type cholesky
+
+TEST*/
