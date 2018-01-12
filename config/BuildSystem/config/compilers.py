@@ -830,7 +830,12 @@ class Configure(config.base.Configure):
     skipfortranlibraries = 1
     self.setCompilers.saveLog()
     try:
-      self.setCompilers.checkCompiler('FC',linkLanguage='C')
+      import platform
+      if platform.system() == 'Darwin':
+        # on Apple with shared libraries the linker must be able to resolve the Fortran MPI_Init since it is in the shared library
+        self.setCompilers.checkCompiler('FC',linkLanguage='C',body='      integer a\n      call MPI_Init(a);')
+      else:
+        self.setCompilers.checkCompiler('FC',linkLanguage='C')
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Fortran libraries are not needed when using C linker')
     except RuntimeError, e:
@@ -841,7 +846,11 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        self.setCompilers.checkCompiler('FC',linkLanguage='Cxx')
+        import platform
+        if platform.system() == 'Darwin':
+          self.setCompilers.checkCompiler('FC',linkLanguage='Cxx',body='      integer a\n      call MPI_Init(a);')
+        else:
+          self.setCompilers.checkCompiler('FC',linkLanguage='C')
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Fortran libraries are not needed when using CXX linker')
       except RuntimeError, e:

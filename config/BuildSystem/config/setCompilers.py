@@ -452,17 +452,17 @@ class Configure(config.base.Configure):
       self.LIBS = ''
     return
 
-  def checkCompiler(self, language, linkLanguage=None):
+  def checkCompiler(self, language, linkLanguage=None,includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
-    if not self.checkCompile():
+    if not self.checkCompile(includes, body, cleanup, codeBegin, codeEnd):
       msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
     if language == 'CUDA': # do not check CUDA linker since it is never used (and is broken on Mac with -m64)
       self.popLanguage()
       return
-    if not self.checkLink(linkLanguage=linkLanguage):
+    if not self.checkLink(linkLanguage=linkLanguage,body=body):
       msg = 'Cannot compile/link '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
