@@ -57,6 +57,10 @@
       end module assert_mod
 
       program tpetsc
+!/*T
+!   TODO: Need to determine if deprecated
+!T*/
+
 #include <petsc/finclude/petsc.h>
       use assert_mod
       use omp_module
@@ -324,3 +328,11 @@
        call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
 
        end program tpetsc
+
+!/*TEST
+!
+!   test:
+!      output_file: output/ex61f_1.out
+!      TODO: Need to determine if deprecated
+!
+!TEST*/

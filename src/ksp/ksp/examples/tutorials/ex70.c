@@ -1569,3 +1569,9 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
   ierr = BCApplyZero_WEST(dm_stokes,0,A,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   test:
+
+TEST*/

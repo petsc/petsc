@@ -21,11 +21,13 @@
 !  -Ny <npy>, where <npy> = number of processors in the y-direction
 !  -mf use matrix free for matrix vector product
 !
-!/*T
+!!/*T
 !   Concepts: KSP^writing a user-defined nonlinear solver
 !   Concepts: DMDA^using distributed arrays
 !   Processors: n
 !T*/
+
+
 !  ------------------------------------------------------------------------
 !
 !    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -569,7 +571,7 @@
       subroutine  MyMult(J,X,F,ierr)
       use petscksp
       implicit none
-      
+
       Mat     J,B
       Vec     X,F
       PetscErrorCode ierr
@@ -586,7 +588,11 @@
       return
       end
 
-
-
-
-
+!/*TEST
+!
+!   test:
+!      args: -no_output -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex14_1.out
+!      requires: !single
+!
+!TEST*/

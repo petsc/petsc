@@ -10,6 +10,7 @@
 !   This uses multigrid to solve the linear system
 
       program main
+
 #include <petsc/finclude/petscksp.h>
       use petscdmda
       use petscksp
@@ -162,3 +163,12 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return
       end
+
+!/*TEST
+!
+!   test:
+!      args: -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type preconditioned -pc_type mg -da_refine 2 -ksp_type fgmres
+!      requires: !single
+!      output_file: output/ex22_1.out
+!
+!TEST*/

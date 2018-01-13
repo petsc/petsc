@@ -1,11 +1,13 @@
 !
 !  Description: Solves a complex linear system in parallel with KSP (Fortran code).
 !
-!/*T
+!!/*T
 !  Concepts: KSP^solving a Helmholtz equation
 !  Concepts: complex numbers
 !  Processors: n
 !T*/
+
+
 !
 !  The model problem:
 !     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
@@ -232,3 +234,15 @@
 
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   build:
+!      requires: complex
+!
+!   test:
+!      args: -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex11f_1.out
+!
+!TEST*/

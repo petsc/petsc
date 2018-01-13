@@ -48,3 +48,9 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+     test:
+       TODO: Need to figure out how to test examples that use sockets
+
+TEST*/

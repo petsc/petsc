@@ -4,6 +4,8 @@
    Processors: n
 T*/
 
+
+
 /*
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
@@ -636,3 +638,26 @@ PetscErrorCode InitializeOptions(UserContext* user)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: moab
+
+   test:
+      args: -levels 0 -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: hdf5
+      args: -levels 3 -nu .01 -n 2 -mg -ksp_converged_reason
+
+   test:
+      suffix: 3
+      nsize: 2
+      requires: hdf5
+      args: -problem 3 -file data/ex35_mesh.h5m -mg -levels 1 -ksp_converged_reason
+
+TEST*/

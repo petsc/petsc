@@ -367,3 +367,12 @@
 
       return
       end
+
+!
+!/*TEST
+!
+!   test:
+!      args: -m 19 -n 20 -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex13f90_1.out
+!
+!TEST*/

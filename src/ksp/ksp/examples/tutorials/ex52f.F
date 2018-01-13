@@ -190,3 +190,14 @@
 !  Always call PetscFinalize() before exiting a program.
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      suffix: mumps
+!      nsize: 3
+!      requires: mumps
+!      output_file: output/ex52f_1.out
+!
+!TEST*/

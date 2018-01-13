@@ -100,3 +100,10 @@
       call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       return
       end
+
+!/*TEST
+!
+!   test:
+!      args: -ksp_converged_reason
+!
+!TEST*/

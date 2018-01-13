@@ -181,3 +181,22 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -mat_type aij
+      output_file: output/ex58.out
+
+   test:
+      suffix: baij
+      args: -mat_type baij
+      output_file: output/ex58.out
+
+   test:
+      suffix: sbaij
+      args: -mat_type sbaij
+      output_file: output/ex58.out
+
+TEST*/

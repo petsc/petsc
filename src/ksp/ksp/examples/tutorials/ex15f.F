@@ -4,11 +4,14 @@
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
 !
-!/*T
+!!/*T
 !   Concepts: KSP^basic parallel example
 !   Concepts: PC^setting a user-defined shell preconditioner
 !   Processors: n
+!!   TODO: Need to determine if deprecated
 !T*/
+
+
 !
 !  -------------------------------------------------------------------------
 
@@ -359,3 +362,14 @@
       call VecDestroy(diag,ierr)
 
       end
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 2
+!      args: -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex15f_1.out
+!      TODO: Need to determine if deprecated
+!
+!TEST*/

@@ -29,6 +29,8 @@ Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -87,6 +89,8 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
   ierr = AssembleMatrix(A,m,n);CHKERRQ(ierr);
 
   /*
@@ -313,3 +317,53 @@ PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)
 
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      suffix: 2D_1
+      args: -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains
+
+   test:
+      suffix: 2D_2
+      nsize: 2
+      args: -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains
+
+   test:
+      suffix: 2D_3
+      nsize: 3
+      args: -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains
+
+   test:
+      suffix: hp
+      nsize: 4
+      requires: superlu_dist
+      args: -M 7 -N 9 -pc_gasm_overlap 1 -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist -ksp_monitor -print_error -pc_gasm_total_subdomains 2 -pc_gasm_use_hierachical_partitioning 1
+      output_file: output/ex62.out
+      TODO: bug, triggers New nonzero at (0,15) caused a malloc in MatCreateSubMatrices_MPIAIJ_SingleIS_Local
+
+   test:
+      suffix: superlu_dist_1
+      requires: superlu
+      args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 1 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
+
+   test:
+      suffix: superlu_dist_2
+      nsize: 2
+      requires: superlu
+      args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 1 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
+
+   test:
+      suffix: superlu_dist_3
+      nsize: 3
+      requires: superlu
+      args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 2 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
+
+   test:
+      suffix: superlu_dist_4
+      nsize: 4
+      requires: superlu
+      args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 2 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
+
+TEST*/

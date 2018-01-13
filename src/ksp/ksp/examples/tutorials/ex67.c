@@ -7,6 +7,8 @@ static char help[] = "Krylov methods to solve u''  = f in parallel with periodic
    Processors: n
 T*/
 
+
+
 /*
 
    This tests solving singular inconsistent systems with GMRES
@@ -242,3 +244,31 @@ PetscErrorCode FormMatrix(Mat jac,void *ctx)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      suffix: nonsymmetric_left
+      args: -symmetric false -ksp_view -ksp_converged_reason -pc_type jacobi -mat_no_inode -ksp_monitor_true_residual -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side left
+      filter: sed 's/ATOL/RTOL/g'
+      requires: !single
+
+   test:
+      suffix: nonsymmetric_right
+      args: -symmetric false -ksp_view -ksp_converged_reason -pc_type jacobi -mat_no_inode -ksp_monitor_true_residual -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side right
+      filter: sed 's/ATOL/RTOL/g'
+      requires: !single
+
+   test:
+      suffix: symmetric_left
+      args: -ksp_view -ksp_converged_reason -pc_type sor -mat_no_inode -ksp_monitor_true_residual -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side left
+      requires: !single
+
+   test:
+      suffix: symmetric_right
+      args: -ksp_view -ksp_converged_reason -pc_type sor -mat_no_inode -ksp_monitor_true_residual -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side right
+      filter: sed 's/ATOL/RTOL/g'
+      requires: !single
+
+TEST*/

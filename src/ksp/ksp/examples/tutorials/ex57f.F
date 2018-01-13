@@ -32,15 +32,19 @@
 !  However, local vector data can be easily accessed via VecGetArray().
 !  See the Fortran section of the PETSc users manual for details.
 !
+#ifdef PETSC_HAVE_MUMPS
+      PetscInt        icntl,ival
+      Mat             F
+#endif
       PetscReal       norm,zero
-      PetscInt i,j,II,JJ,m,n,its,icntl,ival
+      PetscInt i,j,II,JJ,m,n,its
       PetscInt Istart,Iend,ione
       PetscErrorCode  ierr
       PetscMPIInt     rank,size
       PetscBool       flg
       PetscScalar     v,one,neg_one
       Vec             x,b,u
-      Mat             A,F
+      Mat             A
       KSP             ksp
       PetscRandom     rctx
       PC              pc
@@ -91,6 +95,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
@@ -341,5 +346,9 @@
 
       end
 
-
+!/*TEST
+!
+!     test:
+!
+!TEST*/
 

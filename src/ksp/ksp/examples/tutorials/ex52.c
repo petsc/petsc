@@ -387,3 +387,79 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      requires: mumps
+      args: -use_petsc_lu
+      output_file: output/ex52_2.out
+
+   test:
+      suffix: mumps
+      nsize: 3
+      requires: mumps
+      args: -use_mumps_lu
+      output_file: output/ex52_1.out
+
+   test:
+      suffix: mumps_2
+      nsize: 3
+      requires: mumps
+      args: -use_mumps_ch
+      output_file: output/ex52_1.out
+
+   test:
+      suffix: mumps_3
+      nsize: 3
+      requires: mumps
+      args: -use_mumps_ch -mat_type sbaij
+      output_file: output/ex52_1.out
+
+   test:
+      suffix: strumpack
+      requires: strumpack
+      args: -use_strumpack_lu 
+      output_file: output/ex52_3.out
+
+   test:
+      suffix: strumpack_2
+      nsize: 2
+      requires: strumpack
+      args: -use_strumpack_lu
+      output_file: output/ex52_3.out
+
+   test:
+      suffix: strumpack_ilu
+      requires: strumpack
+      args: -use_strumpack_ilu
+      output_file: output/ex52_3.out
+
+   test:
+      suffix: strumpack_ilu_2
+      nsize: 2
+      requires: strumpack
+      args: -use_strumpack_ilu
+      output_file: output/ex52_3.out
+
+   test:
+      suffix: superlu
+      requires: superlu
+      args: -use_superlu_lu
+      output_file: output/ex52_2.out
+
+   test:
+      suffix: superlu_dist
+      nsize: 2
+      requires: superlu
+      args: -use_superlu_lu
+      output_file: output/ex52_2.out
+
+   test:
+      suffix: superlu_ilu
+      requires: superlu
+      args: -use_superlu_ilu
+      output_file: output/ex52_2.out
+
+TEST*/

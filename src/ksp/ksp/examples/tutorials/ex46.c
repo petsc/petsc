@@ -10,6 +10,8 @@ Compare this to ex2 which solves the same problem without a DM.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
@@ -194,3 +196,18 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: aijcusp
+      requires: cusp
+      args: -dm_mat_type aijcusp -dm_vec_type cusp -random_exact_sol
+
+   test:
+      suffix: aijcusparse
+      requires: cusparse veccuda
+      args: -dm_mat_type aijcusparse -dm_vec_type cuda -random_exact_sol -pc_type ilu -pc_factor_mat_solver_package cusparse
+
+TEST*/

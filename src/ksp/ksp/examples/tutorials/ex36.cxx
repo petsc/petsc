@@ -4,6 +4,8 @@
    Processors: n
 T*/
 
+
+
 /*
 Inhomogeneous Laplacian in 3-D. Modeled by the partial differential equation
 
@@ -611,3 +613,20 @@ PetscErrorCode InitializeOptions(UserContext* user)
   user->VPERE  = (user->usetet ? 4 : 8);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: moab
+
+   test:
+      args: -levels 1 -nu .01 -n 4 -mg -ksp_converged_reason
+
+   test:
+      suffix: 2
+      nsize: 2
+      requires: hdf5
+      args: -levels 2 -nu .01 -n 2 -mg -ksp_converged_reason
+
+TEST*/
