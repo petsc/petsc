@@ -28,29 +28,9 @@ Input parameters include:\n";
 typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
-  PetscBool imex;
   PetscReal next_output;
 };
 
-/*
-*  User-defined routines
-*/
-static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
-{
-  PetscErrorCode    ierr;
-  User              user = (User)ctx;
-  PetscScalar       *f;
-  const PetscScalar *x;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = (user->imex ? x[1] : 0.0);
-  f[1] = 0.0;
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
@@ -63,7 +43,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0] - (user->imex ? 0 : x[1]);
+  f[0] = xdot[0] - x[1];
   f[1] = xdot[1] - user->mu*((1.0-x[0]*x[0])*x[1] - x[0]);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
@@ -81,7 +61,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   PetscFunctionBeginUser;
   ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;     J[0][1] = (user->imex ? 0 : -1.0);
+  J[0][0] = a;     J[0][1] = -1.0;
   J[1][0] = user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = a - user->mu*(1.0-x[0]*x[0]);
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -118,7 +98,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
   user.mu          = 1.0e6;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);
@@ -140,7 +119,6 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
 

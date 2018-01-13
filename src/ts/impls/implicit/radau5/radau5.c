@@ -98,23 +98,7 @@ void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,
   MatDestroy(&mat);
   VecDestroy(&yydot);
   VecResetArray(cvode->work);
-
-  /*  DFY[0]=0.0; 
-  DFY[1]=(-2.0*Y[0]*Y[1]-1.0)/(*RPAR);
-  DFY[2]=1.0;
-   DFY[3]=(1.0-Y[0]*Y[0])/(*RPAR); */
 }
-
-#ifdef foo
-void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,PetscScalar *RPAR,void *IPAR)
-{
-  DFY[0]=0.0;
-  DFY[1]=(-2.0*Y[0]*Y[1]-1.0)/(*RPAR);
-  DFY[2]=1.0;
-  DFY[3]=(1.0-Y[0]*Y[0])/(*RPAR);
-}
-#endif
-
 
 void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,int *N,double *RPAR,void *IPAR,int *IRTRN)
 {
@@ -125,7 +109,6 @@ void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,i
   ts->time_step = *X - *XOLD;
   TSMonitor(ts,*NR-1,*X,cvode->work);
   VecResetArray(cvode->work);
-  PetscPrintf(PETSC_COMM_SELF,"X = %g Y = %g %g NSTEP = %d dt = %g\n",*X,Y[0],Y[1],*NR-1,*X - *XOLD);
 }
 
 
