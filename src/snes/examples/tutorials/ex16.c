@@ -1061,6 +1061,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
       nsize: 2
       args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short -snes_max_it 9
       requires: !single
+      timeoutfactor: 3
 
    test:
       suffix: 2
