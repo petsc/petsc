@@ -158,3 +158,13 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return(ierr);
 }
+
+/*TEST
+
+    build:
+      requires: double !complex !define(PETSC_USE_64BIT_INDICES) radau5
+
+    test:
+      args: -ts_monitor_solution -ts_type radau5
+
+TEST*/
