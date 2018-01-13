@@ -45,7 +45,6 @@
       call MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY,ierr)
       call MatCreateSchurComplement(C,C,C,C,PETSC_NULL_MAT,SC,ierr)
       call MatGetOwnershipRange(SC,PETSC_NULL_INTEGER,rend,ierr)
-      print*, rend
       call VecCreateSeq(PETSC_COMM_SELF,one,x,ierr)
       call VecDuplicate(x,y,ierr)
       call VecSetValues(x,one,zero,sone,INSERT_VALUES,ierr)
