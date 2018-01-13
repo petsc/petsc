@@ -11,7 +11,6 @@ Input parameters include:\n\
    Concepts: KSP^Laplacian, 2d
    Concepts: Laplacian, 2d
    Processors: n
-   requires: elemental
 T*/
 
 
@@ -210,10 +209,12 @@ int main(int argc,char **args)
    test:
       nsize: 6
       args: -pc_type none
+      requires: elemental
 
    test:
       suffix: 2
       nsize: 6
       args: -pc_type lu -pc_factor_mat_solver_package elemental
+      requires: elemental
 
 TEST*/
