@@ -43,6 +43,7 @@ typedef const char* TSType;
 #define TSEIMEX           "eimex"
 #define TSMIMEX           "mimex"
 #define TSBDF             "bdf"
+#define TSRADAU5          "radau5"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
