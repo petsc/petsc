@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   Vec            x;             /* solution, residual vectors */
   Mat            A;             /* Jacobian matrix */
   PetscInt       steps;
-  PetscReal      ftime   = 0.5;
+  PetscReal      ftime   = 2;
   PetscScalar    *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2.0;   x_ptr[1] = -6.6e-01;
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,.001);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,.000001);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options

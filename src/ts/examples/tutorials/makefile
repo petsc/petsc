@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex28.c ex31.c ex34.c ex35.cxx extchem.c\
                 ex16adj.c ex16opt_p.c ex16opt_ic.c  \
                 ex20adj.c ex20opt_p.c ex20opt_ic.c  \
-                ex40.c ex41.c ex42.c ex48.c
+                ex40.c ex41.c ex42.c ex48.c ex49.c
 EXAMPLESF       = ex1f.F ex22f.F ex22f_mf.F90
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex power_grid network
@@ -233,5 +233,9 @@ ex44: ex44.o chkopts
 ex48: ex48.o chkopts
 	-${CLINKER} -o ex48 ex48.o ${PETSC_TS_LIB}
 	${RM} ex48.o
+
+ex49: ex49.o chkopts
+	-${CLINKER} -o ex49 ex49.o ${PETSC_TS_LIB}
+	${RM} ex49.o
 
 include ${PETSC_DIR}/lib/petsc/conf/test

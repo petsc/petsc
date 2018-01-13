@@ -110,24 +110,20 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   /* C --- INITIAL VALUES*/
   X = ts->ptime;
   /* C --- ENDPOINT OF INTEGRATION */
-  XEND= ts->max_time;
+  XEND = ts->max_time;
   /* C --- REQUIRED TOLERANCE */
   RTOL=1.0e-4;
   ATOL=1.0*RTOL;
   ITOL=0;
   /* C --- INITIAL STEP SIZE */
-  H=1.0E-6;
+  H = ts->time_step;
 
   /* output MUJAC MLMAS IDID */
 
-  Y[0]=2.0;
-  Y[1]=-0.66;
-  XEND = 2.;
-    
   CHKMEMQ;
   radau5_(&ND,FVPOL,&X,Y,&XEND,&H,&RTOL,&ATOL,&ITOL,JVPOL,&IJAC,&MLJAC,&MUJAC,FVPOL,&IMAS,&MLMAS,&MUMAS,SOLOUT,&IOUT,WORK,&LWORK,IWORK,&LIWORK,&RPAR,(void*)ts,&IDID);
   CHKMEMQ;
-  
+
   ierr = PetscFree(WORK);CHKERRQ(ierr);
   ierr = PetscFree(IWORK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
