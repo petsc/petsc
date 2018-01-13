@@ -5,7 +5,7 @@
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec work;
+  Vec work,workf;
 } TS_Radau5;
 
 #ifdef foo
@@ -51,9 +51,42 @@ int TSFunction_Radau5(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 
 void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
 {
+  TS          ts = (TS) IPAR;
+  TS_Radau5   *cvode = (TS_Radau5*)ts->data;
+  DM          dm;
+  DMTS        tsdm;
+  TSIFunction ifunction;
+
+  VecPlaceArray(cvode->work,Y);
+  VecPlaceArray(cvode->workf,F);
+
+  /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
+  TSGetDM(ts,&dm);
+  DMGetDMTS(dm,&tsdm);
+  DMTSGetIFunction(dm,&ifunction,NULL);
+  if (!ifunction) {
+    TSComputeRHSFunction(ts,*X,cvode->work,cvode->workf);
+  } else {                      /* If rhsfunction is also set, this computes both parts and shifts them to the right */
+    Vec yydot;
+
+    VecDuplicate(cvode->work,&yydot);
+    VecZeroEntries(yydot);
+    TSComputeIFunction(ts,*X,cvode->work,yydot,cvode->workf,PETSC_FALSE);
+    VecScale(cvode->workf,-1.);
+    VecDestroy(&yydot);
+  }
+
+  VecResetArray(cvode->work);
+  VecResetArray(cvode->workf);
+}
+
+#ifdef foo
+void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
+{
   F[0]=Y[1];
   F[1]=((1-Y[0]*Y[0])*Y[1]-Y[0])/(*RPAR);
 }
+#endif
 
 void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,PetscScalar *RPAR,void *IPAR)
 {
@@ -90,6 +123,7 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   ierr = VecGetArray(ts->vec_sol,&Y);CHKERRQ(ierr);
   ierr = VecGetSize(ts->vec_sol,&ND);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->work);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,ND,NULL,&cvode->workf);CHKERRQ(ierr);
 
   LWORK  = 4*ND*ND+12*ND+20;
   LIWORK = 3*ND+20;
@@ -112,8 +146,8 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   /* C --- ENDPOINT OF INTEGRATION */
   XEND = ts->max_time;
   /* C --- REQUIRED TOLERANCE */
-  RTOL = ts->rtol; //1.0e-4;
-  ATOL = ts->atol; // 1.0*RTOL;
+  RTOL = ts->rtol;
+  ATOL = ts->atol;
   ITOL=0;
   /* C --- INITIAL STEP SIZE */
   H = ts->time_step;
@@ -136,6 +170,7 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
 
   PetscFunctionBegin;
   ierr = VecDestroy(&cvode->work);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->workf);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
