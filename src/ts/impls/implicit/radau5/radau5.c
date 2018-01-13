@@ -112,8 +112,8 @@ PetscErrorCode TSSolve_Radau5(TS ts)
   /* C --- ENDPOINT OF INTEGRATION */
   XEND = ts->max_time;
   /* C --- REQUIRED TOLERANCE */
-  RTOL=1.0e-4;
-  ATOL=1.0*RTOL;
+  RTOL = ts->rtol; //1.0e-4;
+  ATOL = ts->atol; // 1.0*RTOL;
   ITOL=0;
   /* C --- INITIAL STEP SIZE */
   H = ts->time_step;
