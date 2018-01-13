@@ -80,14 +80,32 @@ void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
   VecResetArray(cvode->workf);
 }
 
-#ifdef foo
-void FVPOL(int *N,double *X,double *Y,double *F,double *RPAR,void *IPAR)
+void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,PetscScalar *RPAR,void *IPAR)
 {
-  F[0]=Y[1];
-  F[1]=((1-Y[0]*Y[0])*Y[1]-Y[0])/(*RPAR);
-}
-#endif
+  TS          ts = (TS) IPAR;
+  TS_Radau5   *cvode = (TS_Radau5*)ts->data;
+  Vec         yydot;
+  Mat         mat;
+  PetscInt    n;
 
+  VecPlaceArray(cvode->work,Y);
+  VecDuplicate(cvode->work,&yydot);
+  VecGetSize(yydot,&n);
+  MatCreateSeqDense(PETSC_COMM_SELF,n,n,DFY,&mat);
+  VecZeroEntries(yydot);
+  TSComputeIJacobian(ts,*X,cvode->work,yydot,0,mat,mat,PETSC_FALSE);
+  MatScale(mat,-1.0);
+  MatDestroy(&mat);
+  VecDestroy(&yydot);
+  VecResetArray(cvode->work);
+
+  /*  DFY[0]=0.0; 
+  DFY[1]=(-2.0*Y[0]*Y[1]-1.0)/(*RPAR);
+  DFY[2]=1.0;
+   DFY[3]=(1.0-Y[0]*Y[0])/(*RPAR); */
+}
+
+#ifdef foo
 void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,PetscScalar *RPAR,void *IPAR)
 {
   DFY[0]=0.0;
@@ -95,6 +113,8 @@ void JVPOL(PetscInt *N,PetscScalar *X,PetscScalar *Y,PetscScalar *DFY,int *LDFY,
   DFY[2]=1.0;
   DFY[3]=(1.0-Y[0]*Y[0])/(*RPAR);
 }
+#endif
+
 
 void SOLOUT(int *NR,double *XOLD,double *X, double *Y,double *CONT,double *LRC,int *N,double *RPAR,void *IPAR,int *IRTRN)
 {
