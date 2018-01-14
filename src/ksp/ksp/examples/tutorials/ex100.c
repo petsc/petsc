@@ -21,7 +21,7 @@ PetscErrorCode RunTest(void)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATPYTHON);CHKERRQ(ierr);
-  ierr = MatPythonSetType(A,"example1.py:Laplace1D");CHKERRQ(ierr);
+  ierr = MatPythonSetType(A,"example100.py:Laplace1D");CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
@@ -29,11 +29,11 @@ PetscErrorCode RunTest(void)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPYTHON);CHKERRQ(ierr);
-  ierr = KSPPythonSetType(ksp,"example1.py:ConjGrad");CHKERRQ(ierr);
+  ierr = KSPPythonSetType(ksp,"example100.py:ConjGrad");CHKERRQ(ierr);
 
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCPYTHON);CHKERRQ(ierr);
-  ierr = PCPythonSetType(pc,"example1.py:Jacobi");CHKERRQ(ierr);
+  ierr = PCPythonSetType(pc,"example100.py:Jacobi");CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -86,4 +86,11 @@ int main(int argc, char *argv[])
   return ierr;
 }
 
-/* ------------------------------------------------------- */
+/*TEST
+
+    test:
+      args: -ksp_monitor_short
+      requires: petsc4py
+      localrunfiles: example100.py
+
+TEST*/

@@ -1,7 +1,7 @@
 def RunTest():
 
     from petsc4py import PETSc
-    import example1
+    import example100
 
     OptDB = PETSc.Options()
     N     = OptDB.getInt('N', 100)
@@ -11,7 +11,7 @@ def RunTest():
     A.create(comm=PETSc.COMM_WORLD)
     A.setSizes([N,N])
     A.setType(PETSc.Mat.Type.PYTHON)
-    A.setPythonContext(example1.Laplace1D())
+    A.setPythonContext(example100.Laplace1D())
     A.setUp()
 
     x, b = A.getVecs()
@@ -20,11 +20,11 @@ def RunTest():
     ksp = PETSc.KSP()
     ksp.create(comm=PETSc.COMM_WORLD)
     ksp.setType(PETSc.KSP.Type.PYTHON)
-    ksp.setPythonContext(example1.ConjGrad())
+    ksp.setPythonContext(example100.ConjGrad())
 
     pc = ksp.getPC()
     pc.setType(PETSc.PC.Type.PYTHON)
-    pc.setPythonContext(example1.Jacobi())
+    pc.setPythonContext(example100.Jacobi())
 
     ksp.setOperators(A, A)
     ksp.setFromOptions()

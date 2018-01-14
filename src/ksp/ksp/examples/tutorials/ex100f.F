@@ -1,9 +1,6 @@
       program main
-#include "petsc/finclude/petscsys.h"
-#include "petsc/finclude/petscvec.h"
-#include "petsc/finclude/petscmat.h"
-#include "petsc/finclude/petscpc.h"
 #include "petsc/finclude/petscksp.h"
+      use petscksp
 
       PetscInt       N
       PetscBool      draw, flg
@@ -37,7 +34,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N,ierr)
       call MatSetType(A,'python',ierr)
-      call MatPythonSetType(A,'example1.py:Laplace1D',ierr)
+      call MatPythonSetType(A,'example100.py:Laplace1D',ierr)
       call MatSetUp(A,ierr)
 
       call MatCreateVecs(A,x,b,ierr)
@@ -45,11 +42,11 @@
 
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPSetType(ksp,'python',ierr)
-      call KSPPythonSetType(ksp,'example1.py:ConjGrad',ierr)
+      call KSPPythonSetType(ksp,'example100.py:ConjGrad',ierr)
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,'python',ierr)
-      call PCPythonSetType(pc,'example1.py:Jacobi',ierr)
+      call PCPythonSetType(pc,'example100.py:Jacobi',ierr)
 
       call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
@@ -74,3 +71,11 @@
 
       call PetscFinalize(ierr)
       end
+
+!/*TEST
+!
+!    test:
+!      requires: petsc4py
+!      localrunfiles: example100.py
+!
+!TEST*/

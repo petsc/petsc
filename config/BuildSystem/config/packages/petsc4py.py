@@ -62,6 +62,7 @@ class Configure(config.package.Package):
       import sys
       self.pyexe = sys.executable
 
+    self.addDefine('HAVE_PETSC4PY',1)
     self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
