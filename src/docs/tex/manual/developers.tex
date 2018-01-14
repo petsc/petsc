@@ -1400,7 +1400,8 @@ With this background, these keywords are are:
       \item The tests are run under \lstinline{PETSC_ARCH/tests}, but
             some tests require runtime files that are maintained in the
             source tree.  Files in this (space-delimited) list will be
-            copied over.
+            copied over. If you list a directory instead of files it will copy the
+            entire directory (this is limited currently to a single directory)
 
       \item The copying is done by the file generator and not by
             creating makefile dependencies.

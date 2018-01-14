@@ -101,7 +101,7 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  if (norm > PETSC_SMALL) {
+  if (norm > 100*PETSC_SMALL) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs);CHKERRQ(ierr);
   }
 

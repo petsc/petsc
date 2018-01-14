@@ -659,5 +659,6 @@ PetscErrorCode InitializeOptions(UserContext* user)
       nsize: 2
       requires: hdf5
       args: -problem 3 -file data/ex35_mesh.h5m -mg -levels 1 -ksp_converged_reason
+      localrunfiles: data
 
 TEST*/

@@ -222,8 +222,10 @@ int main(int argc,char **args)
 
 /*TEST
 
+   build:
+      requires: complex
+
    test:
       args: -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
-      requires: complex
 
 TEST*/

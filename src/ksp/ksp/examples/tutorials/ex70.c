@@ -1573,5 +1573,6 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
 /*TEST
 
    test:
+     requires: !complex
 
 TEST*/
