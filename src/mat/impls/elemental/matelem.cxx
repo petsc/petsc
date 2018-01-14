@@ -1286,7 +1286,7 @@ static struct _MatOps MatOps_Values = {
 
   Use ./configure --download-elemental to install PETSc to use Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_package elemental to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package elemental to use this direct solver
 
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()

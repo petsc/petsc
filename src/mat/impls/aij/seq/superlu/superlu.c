@@ -518,7 +518,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
 
-  Use -pc_type lu -pc_factor_mat_solver_package superlu to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package superlu to use this direct solver
 
   Options Database Keys:
 + -mat_superlu_equil <FALSE>            - Equil (None)

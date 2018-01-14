@@ -975,7 +975,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
   Works with MATSEQAIJ matrices
 
-  Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to use this direct solver
 
   Options Database Keys:
 + -mat_mkl_pardiso_65 - Number of threads to use within MKL_PARDISO

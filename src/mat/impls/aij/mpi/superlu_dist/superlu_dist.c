@@ -745,7 +745,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 
   Use ./configure --download-superlu_dist --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with SuperLU_DIST
 
-  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package superlu_dist to use this direct solver
 
    Works with AIJ matrices
 

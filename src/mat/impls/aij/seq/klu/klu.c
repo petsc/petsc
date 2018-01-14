@@ -270,7 +270,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 
   ./configure --download-suitesparse to install PETSc to use KLU
 
-  Use -pc_type lu -pc_factor_mat_solver_package klu to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package klu to use this direct solver
 
   Consult KLU documentation for more information on the options database keys below.
 
