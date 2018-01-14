@@ -35,6 +35,7 @@
 #ifdef PETSC_HAVE_MUMPS
       PetscInt        icntl,ival
       Mat             F
+      PC              pc
 #endif
       PetscReal       norm,zero
       PetscInt i,j,II,JJ,m,n,its
@@ -47,7 +48,6 @@
       Mat             A
       KSP             ksp
       PetscRandom     rctx
-      PC              pc
 
 !  These variables are not currently used.
 !      PC          pc
