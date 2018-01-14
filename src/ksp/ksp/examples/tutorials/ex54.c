@@ -224,6 +224,7 @@ int main(int argc,char **args)
       suffix: geo
       nsize: 4
       args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -ksp_monitor_short -mg_levels_esteig_ksp_type cg
+      requires: triangle
       output_file: output/ex54_0.out
 
 TEST*/
