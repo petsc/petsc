@@ -114,7 +114,6 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-      call assert(ierr.eq.0,'PetscInitialize return ',ierr)
 
       nrow = n*n
       ncol = nrow
@@ -274,7 +273,7 @@
 !        ------------
 !        check answer
 !        ------------
-         err(icase) = maxval(abs(x(:)-1.0d0))
+         err(icase) = maxval(abs(x(:)-1))
 
 !$omp    critical
          call VecResetArray(col_f_vecx,ierr)
@@ -331,8 +330,11 @@
 
 !/*TEST
 !
+!   build:
+!      requires: !define(PETSC_USE_64BIT_INDICES)
+!
 !   test:
 !      output_file: output/ex61f_1.out
-!      TODO: Need to determine if deprecated
+!      TODO: Need to determine how to test OpenMP code
 !
 !TEST*/
