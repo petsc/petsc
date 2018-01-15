@@ -1477,8 +1477,8 @@ int main(int argc, char **argv)
 
   # Full solve simplex: BDDC
   test:
-    suffix: tri_bddc !single
-    requires: triangle
+    suffix: tri_bddc
+    requires: triangle !single
     nsize: 5
     args: -run_type full -petscpartitioner_type simple -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason ::ascii_info_detail -ksp_converged_reason -snes_view -show_solution 0
 
