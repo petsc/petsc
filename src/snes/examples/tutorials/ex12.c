@@ -1684,7 +1684,7 @@ int main(int argc, char **argv)
   test:
     suffix: p4est_solve_bddc
     requires: p4est
-    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    args: -run_type full -variable_coefficient nonlinear -nonzero_initial_guess 1 -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -ksp_monitor -snes_linesearch_type bt -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -pc_bddc_detect_disconnected
     nsize: 4
 
   test:
