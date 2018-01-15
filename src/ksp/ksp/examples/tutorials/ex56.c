@@ -986,6 +986,7 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
       suffix: ml
       nsize: 8
       args: -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_levels_esteig_ksp_type cg
+      requires: ml
 
    test:
       suffix: nns
