@@ -35,8 +35,8 @@
 #ifdef PETSC_HAVE_MUMPS
       PetscInt        icntl,ival
       Mat             F
-      PC              pc
 #endif
+      PC              pc
       PetscReal       norm,zero
       PetscInt i,j,II,JJ,m,n,its
       PetscInt Istart,Iend,ione
@@ -203,10 +203,10 @@
 
       call KSPSetOperators(ksp,A,A,ierr)
 
-#ifdef PETSC_HAVE_MUMPS
       call KSPSetType(ksp,KSPPREONLY,ierr);
       call KSPGetPC(ksp,pc,ierr);
       call PCSetType(pc,PCCHOLESKY,ierr);
+#ifdef PETSC_HAVE_MUMPS
       call PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS,ierr);
       call PCFactorSetUpMatSolverPackage(pc,ierr);
       call PCFactorGetMatrix(pc,F,ierr);
