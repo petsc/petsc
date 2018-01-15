@@ -241,14 +241,9 @@
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (rank .eq. 0) then
-        if (norm .gt. 1.e-12) then
-           write(6,100) norm,its
-        else
-           write(6,110) its
-        endif
+         write(6,100) norm,its
       endif
   100 format('Norm of error ',e11.4,' iterations ',i5)
-  110 format('Norm of error < 1.e-12,iterations ',i5)
   120 format('Matrix A is non-symmetric ')
 
 !  Free work space.  All PETSc objects should be destroyed when they
