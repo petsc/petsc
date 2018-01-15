@@ -117,10 +117,8 @@
          do 10 i=1,m
             rho(i,j)      = x
             solution(i,j) = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
-            userb(i,j)    = -2.*PETSC_PI*cos(2.*PETSC_PI*x)*              &
-     &                sin(2.*PETSC_PI*y) +                                &
-     &                8*PETSC_PI*PETSC_PI*x*                              &
-     &                sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
+            userb(i,j)    = -2.*PETSC_PI*cos(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y) +                                &
+     &                      8*PETSC_PI*PETSC_PI*x*sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
            x = x + hx
  10      continue
          y = y + hy
@@ -141,8 +139,7 @@
          cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-              cnorm = cnorm +                                              &
-     &    PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
+              cnorm = cnorm + PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)

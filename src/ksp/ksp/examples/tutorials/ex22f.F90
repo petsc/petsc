@@ -33,11 +33,9 @@
       i3 = 3
       i1 = 1
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &
-     &    DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                               &
-     &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
-     &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
-     &                PETSC_NULL_INTEGER,da,ierr)
+      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                 &
+     &                  DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
+     &                  PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMSetFromOptions(da,ierr)
       call DMSetUp(da,ierr)
       call KSPSetDM(ksp,da,ierr)
@@ -66,12 +64,9 @@
       PetscInt     ctx
 
       call KSPGetDM(ksp,da,ierr)
-      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       h    = 1.0/real((mx-1)*(my-1)*(mz-1))
 
       call VecSet(b,h,ierr)
@@ -97,12 +92,9 @@
       i1 = 1
       i7 = 7
       call KSPGetDM(ksp,da,ierr)
-      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
-     &               PETSC_NULL_INTEGER,ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
 
       Hx = 1.0 / real(mx-1)
       Hy = 1.0 / real(my-1)
@@ -118,11 +110,9 @@
           row(MatStencil_i) = i
           row(MatStencil_j) = j
           row(MatStencil_k) = k
-          if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.         &
-     &         j.eq.my-1 .or. k.eq.mz-1) then
+          if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 .or. k.eq.mz-1) then
             v(1) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
-            call MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,    &
-     &                               ierr)
+            call MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,ierr)
           else
             v(1) = -HxHydHz
              col(MatStencil_i,1) = i
@@ -152,8 +142,7 @@
              col(MatStencil_i,7) = i
              col(MatStencil_j,7) = j
              col(MatStencil_k,7) = k+1
-      call MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,               &
-     &                               ierr)
+      call MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,ierr)
           endif
  30       continue
  20     continue

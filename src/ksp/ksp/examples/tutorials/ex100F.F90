@@ -23,13 +23,10 @@
         print*,'PetscInitialize failed'
         stop
       endif
-      call PetscPythonInitialize(PETSC_NULL_CHARACTER,                  &
-     &     PETSC_NULL_CHARACTER,ierr)
+      call PetscPythonInitialize(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,ierr)
 
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                        '-N', N,flg,ierr)
-      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,  &
-     &                         '-draw',draw,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-N', N,flg,ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-draw',draw,flg,ierr)
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N,ierr)

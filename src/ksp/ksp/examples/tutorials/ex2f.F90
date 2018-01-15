@@ -80,10 +80,8 @@
       one  = 1.0
       neg_one = -1.0
       ione    = 1
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
@@ -173,8 +171,7 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
-     &             '-random_exact_sol',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-random_exact_sol',flg,ierr)
       if (flg) then
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
@@ -187,8 +184,7 @@
 
 !  View the exact solution vector if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
-     &             '-view_exact_sol',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-view_exact_sol',flg,ierr)
       if (flg) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
@@ -222,23 +218,18 @@
 !      ptype = PCJACOBI
 !      call PCSetType(pc,ptype,ierr)
 !      tol = 1.e-7
-!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,
-!     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Set user-defined monitoring routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
-     &                         '-my_ksp_monitor',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_monitor',flg,ierr)
       if (flg) then
-        call KSPMonitorSet(ksp,MyKSPMonitor,0,                            &
-     &        PETSC_NULL_FUNCTION,ierr)
+        call KSPMonitorSet(ksp,MyKSPMonitor,0,PETSC_NULL_FUNCTION,ierr)
 !
 !     Also use the default KSP monitor routine showing how it may be used from Fortran
 !
-        call PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,      &
-     &          PETSC_VIEWER_DEFAULT,vf,ierr)
-        call KSPMonitorSet(ksp,KSPMonitorDefault,vf,                    &
-     &                     PetscViewerAndFormatDestroy,ierr)
+        call PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr)
+        call KSPMonitorSet(ksp,KSPMonitorDefault,vf,PetscViewerAndFormatDestroy,ierr)
       endif
 
 
@@ -252,11 +243,9 @@
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
-     &                         '-my_ksp_convergence',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_convergence',flg,ierr)
       if (flg) then
-        call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
-     &          0,PETSC_NULL_FUNCTION,ierr)
+        call KSPSetConvergenceTest(ksp,MyKSPConverged,0,PETSC_NULL_FUNCTION,ierr)
       endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

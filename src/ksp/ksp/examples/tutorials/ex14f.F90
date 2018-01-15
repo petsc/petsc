@@ -96,15 +96,12 @@
 !
       mx = 4
       my = 4
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-my',my,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       N = mx*my
 
       nooutput = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                         '-no_output',nooutput,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_output',nooutput,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
@@ -121,13 +118,10 @@
 !
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                        '-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                         '-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,             &
-     &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                           &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,          &
+     &                  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMSetFromOptions(da,ierr)
       call DMSetUp(da,ierr)
 !
@@ -155,8 +149,7 @@
 !     for preallocating matrix memory.
 !
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,         &
-     &     PETSC_NULL_INTEGER,B,ierr)
+      call MatCreateAIJ(comm,m,m,N,N,ifive,PETSC_NULL_INTEGER,ithree,PETSC_NULL_INTEGER,B,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     if usemf is on then matrix vector product is done via matrix free
@@ -167,8 +160,7 @@
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
       usemf = .false.
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
-     &                         '-mf',usemf,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
       if (usemf) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
@@ -236,8 +228,7 @@
          call VecNorm(X,NORM_2,xnorm,ierr)
          call KSPGetIterationNumber(ksp,lin_its,ierr)
          if (.not. nooutput) then
-           print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
-     &         xnorm,' ynorm = ',ynorm
+           print*,'linear solve iterations = ',lin_its,' xnorm = ',xnorm,' ynorm = ',ynorm
          endif
 
 !  Evaluate nonlinear function at new location
@@ -322,8 +313,7 @@
 !    xs, ys   - starting grid indices (no ghost points)
 !    xm, ym   - widths of local grid (no ghost points)
 
-       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
-     &      PETSC_NULL_INTEGER,ierr)
+       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -331,8 +321,7 @@
         temp = (min(j,my-j-1))*hy
         do 40 i=xs,xs+xm-1
           row = i - xs + (j - ys)*xm + 1
-          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
-     &        j .eq. my-1) then
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or. j .eq. my-1) then
             xx(idx+row) = 0.0
             continue
           endif
@@ -398,10 +387,8 @@
 
 !  Get local grid boundaries
 
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
-     &     PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
-     &     PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
 
 !  Compute function over the locally owned part of the grid
       rowf = 0
@@ -412,8 +399,7 @@
           row  = row + 1
           rowf = rowf + 1
 
-          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or.              &
-     &        j .eq. my-1) then
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or. j .eq. my-1) then
             ff(idf+rowf) = xx(idx+row)
             goto 60
           endif
@@ -497,10 +483,8 @@
 
 !  Get local grid boundaries
 
-      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
-     &     PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
-     &                        PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
+      call DMDAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
 
@@ -523,10 +507,8 @@
         do 20 i=xs,xs+xm-1
           row = row + 1
           grow(1) = ltog(idltog+row)
-          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or.            &
-     &        j .eq. (my-1)) then
-             call MatSetValues(jac,ione,grow,ione,grow,one,             &
-     &                         INSERT_VALUES,ierr)
+          if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or. j .eq. (my-1)) then
+             call MatSetValues(jac,ione,grow,ione,grow,one,INSERT_VALUES,ierr)
              go to 20
           endif
           v(1)   = -hxdhy
@@ -539,8 +521,7 @@
           col(4) = ltog(idltog+row + 1)
           v(5)   = -hxdhy
           col(5) = ltog(idltog+row + gxm)
-          call MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,       &
-     &                      ierr)
+          call MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,ierr)
  20     continue
  10   continue
 

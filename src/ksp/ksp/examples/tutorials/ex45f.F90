@@ -20,20 +20,15 @@
          stop
        endif
        call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-       call DMDACreate2D(MPI_COMM_WORLD, DM_BOUNDARY_NONE,              &
-     &    DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,              &
-     &    PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,        &
-     &    PETSC_NULL_INTEGER, dm, ierr)
+       call DMDACreate2D(MPI_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,three,three,              &
+     &                   PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, dm, ierr)
        call DMSetFromOptions(dm,ierr)
        call DMSetUp(dm,ierr)
        call KSPSetDM(ksp,dm,ierr)
-       call KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,             &
-     &                                0,ierr)
+       call KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,0,ierr)
        call KSPSetComputeRHS(ksp,ComputeRHS,0,ierr)
-       call KSPSetComputeOperators(ksp,ComputeMatrix,                   &
-     &      0,ierr)
-       call DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,             &
-     &                     PETSC_NULL_INTEGER,ierr)
+       call KSPSetComputeOperators(ksp,ComputeMatrix,0,ierr)
+       call DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,PETSC_NULL_INTEGER,ierr)
        call KSPSetFromOptions(ksp,ierr)
        call KSPSetUp(ksp,ierr)
        call KSPSolve(ksp,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr)
@@ -69,12 +64,9 @@
        DM dm
 
        call KSPGetDM(ksp,dm,ierr)
-       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &                     PETSC_NULL_INTEGER,ierr)
+       call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
 
        Hx = 1.0 / real(mx-1)
        Hy = 1.0 / real(my-1)
@@ -100,27 +92,22 @@
       i1 = 1
       i5 = 5
       call KSPGetDM(ksp,dm,ierr)
-      call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,  &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,ierr)
+      call DMDAGetInfo(dm,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
 
       Hx = 1.0 / real(mx-1)
       Hy = 1.0 / real(my-1)
       HxdHy = Hx/Hy
       HydHx = Hy/Hx
-      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,            &
-     &     PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
       do 10,j=ys,ys+ym-1
         do 20,i=xs,xs+xm-1
           row(MatStencil_i) = i
           row(MatStencil_j) = j
           if (i.eq.0 .or. j.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 ) then
             v(1) = 2.0*(HxdHy + HydHx)
-            call MatSetValuesStencil(B,i1,row,i1,row,v,                 &
-     &           INSERT_VALUES,ierr)
+            call MatSetValuesStencil(B,i1,row,i1,row,v,INSERT_VALUES,ierr)
           else
             v(1) = -HxdHy
             col(MatStencil_i,1) = i
@@ -137,8 +124,7 @@
             v(5) = -HxdHy
             col(MatStencil_i,5) = i
             col(MatStencil_j,5) = j+1
-            call MatSetValuesStencil(B,i1,row,i5,col,v,                 &
-     &           INSERT_VALUES,ierr)
+            call MatSetValuesStencil(B,i1,row,i5,col,v,INSERT_VALUES,ierr)
             endif
  20      continue
  10   continue

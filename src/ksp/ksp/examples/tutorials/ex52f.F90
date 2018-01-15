@@ -43,10 +43,8 @@
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
-     &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,8 +55,7 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,            &
-     &                     PETSC_NULL_INTEGER,ierr)
+      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
       call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
@@ -113,8 +110,7 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPSetOperators(ksp,A,A,ierr)
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                       &
-     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Test MUMPS
 #if defined(PETSC_HAVE_MUMPS)

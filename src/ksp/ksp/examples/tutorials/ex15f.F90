@@ -1,12 +1,14 @@
 !
 !   Solves a linear system in parallel with KSP.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
+!      -user_defined_pc : Activate a user-defined preconditioner
 !
 !
 !!/*T
 !   Concepts: KSP^basic parallel example
 !   Concepts: PC^setting a user-defined shell preconditioner
 !   Processors: n
+!!   TODO: Need to determine if deprecated
 !T*/
 
 
@@ -37,20 +39,20 @@
       KSP              ksp
       PetscScalar      v,one,neg_one
       PetscReal norm,tol
-      PetscInt i,j,II,JJ,Istart
-      PetscInt Iend,m,n,its,ione
-      PetscMPIInt rank
-      PetscBool  flg
       PetscErrorCode ierr
+      PetscInt   i,j,II,JJ,Istart
+      PetscInt   Iend,m,n,i1,its,five
+      PetscMPIInt rank
+      PetscBool  user_defined_pc,flg
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
-      external SampleShellPCSetUp,SampleShellPCApply
+      external SampleShellPCSetUp, SampleShellPCApply
+      external  SampleShellPCDestroy
 
 !  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC jacobi,sor
-      Vec work
+      common /myshellpc/ diag
+      Vec    diag
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -63,13 +65,12 @@
       endif
       one     = 1.0
       neg_one = -1.0
+      i1 = 1
       m       = 8
       n       = 7
-      ione    = 1
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
-     &                        '-n',n,flg,ierr)
+      five    = 5
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,8 +85,10 @@
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
+      call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
-      call MatSetUp(A,ierr)
+      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,PETSC_NULL_INTEGER,ierr)
+      call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
@@ -107,22 +110,22 @@
         j = II - i*n
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,ione,II,ione,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -172,23 +175,30 @@
 
       call KSPGetPC(ksp,pc,ierr)
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                           &
-     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !
-!  Set a user-defined shell preconditioner
+!  Set a user-defined shell preconditioner if desired
 !
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-user_defined_pc',user_defined_pc,ierr)
+
+      if (user_defined_pc) then
 
 !  (Required) Indicate to PETSc that we are using a shell preconditioner
-      call PCSetType(pc,PCSHELL,ierr)
+         call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
-      call PCShellSetApply(pc,SampleShellPCApply,ierr)
+         call PCShellSetApply(pc,SampleShellPCApply,ierr)
 
 !  (Optional) Do any setup required for the preconditioner
-!     Note: if you use PCShellSetSetUp, this will be done for your
-      call SampleShellPCSetUp(pc,x,ierr)
+         call PCShellSetSetUp(pc,SampleShellPCSetUp,ierr)
 
+!  (Optional) Frees any objects we created for the preconditioner
+         call PCShellSetDestroy(pc,SampleShellPCDestroy,ierr)
+
+      else
+         call PCSetType(pc,PCJACOBI,ierr)
+      endif
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
@@ -224,7 +234,6 @@
   100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
-
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
@@ -233,12 +242,6 @@
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-
-! Free up PCShell data
-      call PCDestroy(sor,ierr)
-      call PCDestroy(jacobi,ierr)
-      call VecDestroy(work,ierr)
-
 
 !  Always call PetscFinalize() before exiting a program.
 
@@ -254,8 +257,7 @@
 !   preconditioner context.
 !
 !   Input Parameters:
-!   pc    - preconditioner object
-!   x     - vector
+!   pc - preconditioner object
 !
 !   Output Parameter:
 !   ierr  - error code (nonzero if error has been detected)
@@ -266,34 +268,26 @@
 !   of the diagonal of the preconditioner matrix; this vector is then
 !   used within the routine SampleShellPCApply().
 !
-      subroutine SampleShellPCSetUp(pc,x,ierr)
-      use petscpc
+      subroutine SampleShellPCSetUp(pc,ierr)
+      use petscksp
       implicit none
 
       PC      pc
-      Vec     x
       Mat     pmat
-      PetscErrorCode ierr
+      integer ierr
 
 !  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC jacobi,sor
-      Vec work
+!  Normally we would recommend storing all the work data (like diag) in
+!  the context set with PCShellSetContext()
+
+      common /myshellpc/ diag
+      Vec    diag
 
       pmat = tMat(0)
       call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
-      call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
-      call PCSetType(jacobi,PCJACOBI,ierr)
-      call PCSetOperators(jacobi,pmat,pmat,ierr)
-      call PCSetUp(jacobi,ierr)
-
-      call PCCreate(PETSC_COMM_WORLD,sor,ierr)
-      call PCSetType(sor,PCSOR,ierr)
-      call PCSetOperators(sor,pmat,pmat,ierr)
-!      call PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr)
-      call PCSetUp(sor,ierr)
-
-      call VecDuplicate(x,work,ierr)
+      call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
+      call MatGetDiagonal(pmat,diag,ierr)
+      call VecReciprocal(diag,ierr)
 
       end
 
@@ -311,36 +305,66 @@
 !   ierr  - error code (nonzero if error has been detected)
 !
 !   Notes:
-!   This code implements the Jacobi preconditioner plus the
-!   SOR preconditioner
-!
-! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
-! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
+!   This code implements the Jacobi preconditioner, merely as an
+!   example of working with a PCSHELL.  Note that the Jacobi method
+!   is already provided within PETSc.
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use petscpc
+      use petscksp
       implicit none
 
       PC      pc
       Vec     x,y
-      PetscErrorCode ierr
-      PetscScalar  one
+      integer ierr
 
 !  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC  jacobi,sor
-      Vec work
+      common /myshellpc/ diag
+      Vec    diag
 
-      one = 1.0
-      call PCApply(jacobi,x,y,ierr)
-      call PCApply(sor,x,work,ierr)
-      call VecAXPY(y,one,work,ierr)
+      call VecPointwiseMult(y,x,diag,ierr)
 
       end
 
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
+
+!
+!   SampleShellPCDestroy - This routine destroys (frees the memory of) any
+!      objects we made for the preconditioner
+!
+!   Input Parameters:
+!   pc - for this example we use the actual PC as our shell context
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+
+      subroutine SampleShellPCDestroy(pc,ierr)
+      use petscksp
+      implicit none
+
+      PC      pc
+      PetscErrorCode ierr
+
+!  Common block to store data for user-provided preconditioner
+!  Normally we would recommend storing all the work data (like diag) in
+!  the context set with PCShellSetContext()
+
+      common /myshellpc/ diag
+      Vec    diag
+
+      call VecDestroy(diag,ierr)
+
+      end
+
+!
 !/*TEST
 !
 !   test:
-!     requires: !single
+!      nsize: 2
+!      args: -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always
+!      output_file: output/ex15f_1.out
+!      TODO: Need to determine if deprecated
 !
 !TEST*/

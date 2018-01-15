@@ -72,10 +72,8 @@
       czero  = 0.0
       cone   = PETSC_i
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
-     &                         '-sigma1',sigma1,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sigma1',sigma1,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,15 +103,13 @@
 !     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
-      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
-     &                         '-norandom',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
       if (flg) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i
       else
          use_random = .true.
-         call PetscRandomCreate(PETSC_COMM_WORLD,                       &
-     &        rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
          call PetscRandomSetInterval(rctx,czero,cone,ierr)
       endif
@@ -140,8 +136,7 @@
           JJ = II + 1
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
-        if (use_random) call PetscRandomGetValue(rctx,                          &
-     &                        sigma2,ierr)
+        if (use_random) call PetscRandomGetValue(rctx,sigma2,ierr)
         v = 4.0 - sigma1*h2 + sigma2*h2
         call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  10   continue
