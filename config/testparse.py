@@ -196,7 +196,7 @@ def genTestsSeparateTestvars(intests,indicts):
         # No errors means we are good to go
         for val in kvals.split():
           kvardict=sdict.copy()
-          gensuffix="_"+kvar+"-"+val
+          gensuffix="_"+kvar+"-"+val.replace(',','.')
           newtestnm=testname+gensuffix
           if sdict.has_key('suffix'):
             kvardict['suffix']=sdict['suffix']+gensuffix
