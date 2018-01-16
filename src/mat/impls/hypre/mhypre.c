@@ -1423,6 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->rmap->bs   = 1;
   B->assembled  = PETSC_FALSE;
 
+  ierr = PetscMemzero(B->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->mult            = MatMult_HYPRE;
   B->ops->multtranspose   = MatMultTranspose_HYPRE;
   B->ops->setup           = MatSetUp_HYPRE;
