@@ -33,15 +33,6 @@ static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatISContainerDestroyArray_Private(void *ptr)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscFree(ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIAIJ             *aij  = (Mat_MPIAIJ*)A->data;
@@ -128,7 +119,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
 
     ierr = PetscContainerCreate(PETSC_COMM_SELF,&c);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(c,ptrs[i]);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(c,MatISContainerDestroyArray_Private);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(c,PetscContainerUserDestroyDefault);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)lA,names[i],(PetscObject)c);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
   }
