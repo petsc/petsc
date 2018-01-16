@@ -1249,8 +1249,7 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
       will get a different convergence rate due to the default option of -pc_gasm_type restrict. Use
       -pc_gasm_type basic to use the standard GASM.
 
-   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
-     than one processor. Defaults to one block per processor.
+   Notes: Blocks can be shared by multiple processes.
 
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
