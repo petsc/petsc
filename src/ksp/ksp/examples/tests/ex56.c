@@ -342,3 +342,12 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   build:
+     requires:  define(PETSC_HAVE_MPI_WIN_ALLOCATE_SHARED) define(PETSC_HAVE_MPI_WIN_SHARED_QUERY)
+
+    test:
+
+TEST*/

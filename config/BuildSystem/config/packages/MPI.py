@@ -228,6 +228,26 @@ class Configure(config.package.Package):
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Win win; if (MPI_Win_allocate_shared(100,10,MPI_INFO_NULL,MPI_COMM_WORLD, 0, &win));\n'):
+      self.addDefine('HAVE_MPI_WIN_ALLOCATE_SHARED', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Win_shared_query(MPI_WIN_NULL,0,0,0,0));\n'):
+      self.addDefine('HAVE_MPI_WIN_SHARED_QUERY', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
     return
 
   def configureConversion(self):
