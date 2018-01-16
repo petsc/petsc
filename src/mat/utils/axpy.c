@@ -23,6 +23,7 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
+  PetscBool      sametype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_CLASSID,3);
@@ -32,8 +33,9 @@ PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
+  ierr = PetscStrcmp(((PetscObject)X)->type_name,((PetscObject)Y)->type_name,&sametype);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-  if (Y->ops->axpy) {
+  if (Y->ops->axpy && sametype) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
