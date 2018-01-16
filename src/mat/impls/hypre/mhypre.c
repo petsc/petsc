@@ -652,7 +652,8 @@ static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
 
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat P,PetscReal fill,Mat *C)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr                   = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
   ierr                   = MatSetType(*C,MATAIJ);CHKERRQ(ierr);

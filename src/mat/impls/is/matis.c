@@ -19,7 +19,7 @@ static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
   PetscInt         i;
   PetscErrorCode   ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   for (i=0;i<lf->nr;i++) {
     ierr = ISDestroy(&lf->rf[i]);CHKERRQ(ierr);
   }
@@ -57,7 +57,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
   PetscInt               lc,dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
   PetscErrorCode         ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (!aij->garray) SETERRQ(comm,PETSC_ERR_SUP,"garray not present");
 
@@ -177,7 +177,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
   PetscBool              convert,lreuse,*istrans;
   PetscErrorCode         ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr   = MatNestGetSubMats(A,&nr,&nc,&nest);CHKERRQ(ierr);
   lreuse = PETSC_FALSE;
   rnest  = NULL;
@@ -433,8 +433,10 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
         stl  += lc[i];
       }
       ierr = MatCreateNest(PETSC_COMM_SELF,nr,islrow,nc,islcol,snest,&lA);CHKERRQ(ierr);
-      if (istrans[i]) {
-        ierr = MatDestroy(&snest[i]);CHKERRQ(ierr);
+      for (i=0;i<nr*nc;i++) {
+        if (istrans[i]) {
+          ierr = MatDestroy(&snest[i]);CHKERRQ(ierr);
+        }
       }
       ierr = MatISSetLocalMat(*newmat,lA);CHKERRQ(ierr);
       ierr = MatDestroy(&lA);CHKERRQ(ierr);
