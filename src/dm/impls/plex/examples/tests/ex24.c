@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 
   /* repartition distributed DM dmdist2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = DMPlexGetPartitioner(dmdist2, &part2);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"dp2_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)part2,"dp2_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING);CHKERRQ(ierr);
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(mp, MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
