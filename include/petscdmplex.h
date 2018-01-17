@@ -117,6 +117,9 @@ PETSC_EXTERN PetscErrorCode DMPlexRestoreTransitiveClosure(DM, PetscInt, PetscBo
 
 /* Mesh Generation */
 PETSC_EXTERN PetscErrorCode DMPlexGenerate(DM, const char [], PetscBool , DM *);
+PETSC_EXTERN PetscErrorCode DMPlexGenerateRegister(const char[],PetscErrorCode (*)(DM,PetscBool,DM*),PetscErrorCode (*)(DM,double*,DM*),PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexGenerateRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMPlexGenerateRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexCreateDoublet(MPI_Comm, PetscInt, PetscBool, PetscBool, PetscBool, PetscReal, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSquareBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);

@@ -130,6 +130,8 @@ PetscErrorCode  DMInitializePackage(void)
       ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
   }
+  ierr = DMPlexGenerateRegisterAll();CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(DMPlexGenerateRegisterDestroy);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
