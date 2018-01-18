@@ -14,7 +14,8 @@
       use petscsys
       implicit none
       PetscErrorCode ierr
-      PetscMPIInt    rank, size
+      PetscMPIInt    rank, size,grank
+      PetscReal globalrank
 
 !     We must call MPI_Init() first, making us, not PETSc, responsible
 !     for MPI
@@ -44,7 +45,11 @@
 
 
 !     Here we would like to print only one message that represents all
-!     the processes in the group.
+!     the processes in the group. Sleep so that IO from different ranks
+!     don't get mixed up. Note this is not an ideal solution
+      call MPI_Comm_rank(MPI_COMM_WORLD,grank,ierr)
+      globalrank = grank
+      call PetscSleep(globalrank,ierr)
       if (rank .eq. 0) write(6,100) size,rank
  100  format('No of Procs = ',i4,' rank = ',i4)
 
