@@ -214,11 +214,12 @@ int main(int argc, char **argv)
     requires: parmetis ctetgen
     args: -faces 7,11,5
   test:
-    TODO: why this fails?
+    # first use parmetis to partition, then scotch to repartition
+    TODO: This fails due to inconsistent results of scotch. Its inputs are identical.
     suffix: 6
     nsize: 4
-    requires: ptscotch ctetgen
-    args: -options_left -faces 7,11,5 -p1_petscpartitioner_type ptscotch -p1_petscpartitioner_ptscotch_strategy BALANCE -p1_petscpartitioner_ptscotch_imbalance 0.001 -p1_petscpartitioner_view -p2_petscpartitioner_type matpartitioning -p2_mat_partitioning_type ptscotch -p2_mat_partitioning_ptscotch_strategy BALANCE -p2_mat_partitioning_ptscotch_imbalance 0.001 -p2_petscpartitioner_view
+    requires: parmetis ptscotch ctetgen
+    args: -options_left -faces 2,3,2 -p1_petscpartitioner_type parmetis -p2_petscpartitioner_type parmetis -dp1_petscpartitioner_type ptscotch -dp1_petscpartitioner_ptscotch_strategy BALANCE -dp1_petscpartitioner_ptscotch_imbalance 0.001 -dp1_petscpartitioner_view -dp2_petscpartitioner_type matpartitioning -dp2_mat_partitioning_type ptscotch -dp2_mat_partitioning_ptscotch_strategy BALANCE -dp2_mat_partitioning_ptscotch_imbalance 0.001 -dp2_petscpartitioner_view
 
 TEST*/
 
