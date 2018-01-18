@@ -263,20 +263,20 @@ int main(int argc,char **args)
 
    test:
       suffix: superlu_dist
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1
 
    test:
       suffix: superlu_dist_2
       nsize: 3
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
       args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1
       output_file: output/ex125_superlu_dist.out
 
    test:
       suffix: superlu_dist_complex
       nsize: 3
-      requires: datafilespath superlu complex double
+      requires: datafilespath superlu_dist complex double
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_package 1
       output_file: output/ex125_superlu_dist.out
 
