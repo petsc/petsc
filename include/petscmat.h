@@ -396,6 +396,8 @@ PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDensePlaceArray(Mat,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatDenseResetArray(Mat);
+PETSC_EXTERN PetscErrorCode MatDenseGetArrayRead(Mat,const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreArrayRead(Mat,const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);

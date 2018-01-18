@@ -1698,14 +1698,13 @@ static PetscErrorCode MatDenseGetArray_SeqDense(Mat A,PetscScalar *array[])
 static PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
-  *array = 0; /* user cannot accidently use the array later */
   PetscFunctionReturn(0);
 }
 
 /*@C
    MatDenseGetArray - gives access to the array where the data for a SeqDense matrix is stored
 
-   Not Collective
+   Logically Collective on Mat
 
    Input Parameter:
 .  mat - a MATSEQDENSE or MATMPIDENSE matrix
@@ -1715,7 +1714,7 @@ static PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar *array[])
 
    Level: intermediate
 
-.seealso: MatDenseRestoreArray()
+.seealso: MatDenseRestoreArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead()
 @*/
 PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 {
@@ -1729,6 +1728,54 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 /*@C
    MatDenseRestoreArray - returns access to the array where the data for a dense matrix is stored obtained by MatDenseGetArray()
 
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - a MATSEQDENSE or MATMPIDENSE matrix
+.  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatDenseGetArray(), MatDenseGetArrayRead(), MatDenseRestoreArrayRead()
+@*/
+PetscErrorCode  MatDenseRestoreArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatDenseRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  if (array) *array = NULL;
+  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseGetArrayRead - gives access to the array where the data for a SeqDense matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQDENSE or MATMPIDENSE matrix
+
+   Output Parameter:
+.   array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatDenseRestoreArray(), MatDenseGetArray(), MatDenseRestoreArrayRead()
+@*/
+PetscErrorCode  MatDenseGetArrayRead(Mat A,const PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatDenseGetArrayRead_C",(Mat,const PetscScalar**),(A,array));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseRestoreArrayRead - returns access to the array where the data for a dense matrix is stored obtained by MatDenseGetArray()
+
    Not Collective
 
    Input Parameters:
@@ -1737,14 +1784,15 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatDenseGetArray()
+.seealso: MatDenseGetArray(), MatDenseGetArrayRead(), MatDenseRestoreArray()
 @*/
-PetscErrorCode  MatDenseRestoreArray(Mat A,PetscScalar **array)
+PetscErrorCode  MatDenseRestoreArrayRead(Mat A,const PetscScalar **array)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscUseMethod(A,"MatDenseRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,"MatDenseRestoreArrayRead_C",(Mat,const PetscScalar**),(A,array));CHKERRQ(ierr);
+  if (array) *array = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2569,8 +2617,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   b->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetArray_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDensePlaceArray_C",MatDensePlaceArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseResetArray_C",MatDenseResetArray_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseGetArrayRead_C",MatDenseGetArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatDenseRestoreArray_C",MatDenseRestoreArray_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqaij_C",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ELEMENTAL)
