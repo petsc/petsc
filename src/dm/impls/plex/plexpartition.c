@@ -407,8 +407,8 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   if (part->ops->destroy) {
     ierr              = (*part->ops->destroy)(part);CHKERRQ(ierr);
-    part->ops->destroy = NULL;
   }
+  ierr = PetscMemzero(part->ops, sizeof(struct _PetscPartitionerOps));CHKERRQ(ierr);
   ierr = (*r)(part);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject) part, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
