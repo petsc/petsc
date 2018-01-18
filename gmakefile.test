@@ -139,10 +139,12 @@ else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 #   This is a hack to fix a broken gfortran.
-	-@if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
+	-@if test -e "$(@:%.o=%.dtemp)" ; then \
+	    if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
 	      echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
 	      cat $(@:%.o=%.d) | tr '\n' '@' | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
 	      mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+        fi; \
       fi
 
 # link line constructed differently for gmakefile vs gmakefile.test invocation
