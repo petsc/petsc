@@ -48,6 +48,10 @@ class Configure(config.package.Package):
     if self.defaultPrecision == '__fp16': return 'h'
     return 'Unknown precision'
 
+  def getType(self):
+    if self.defaultPrecision == 'single': return 'float'
+    return self.defaultPrecision
+
   def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
     if foundBlas is None:
       foundBlas = self.foundBlas
@@ -553,11 +557,12 @@ class Configure(config.package.Package):
     '''Determines if BLAS/LAPACK routines use 32 or 64 bit integers'''
     self.log.write('Checking if BLAS/LAPACK routines use 32 or 64 bit integers')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
-    body     = '''extern double '''+self.mangleBlasNoPrefix('ddot')+'''(const int*,const double*,const int *,const double*,const int*);
-                  double x1mkl[4] = {3.0,5.0,7.0,9.0};
+    t = self.getType()
+    body     = '''extern '''+t+''' '''+self.mangleBlas('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+                  '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
-                  double dotresultmkl = 0;
-                  dotresultmkl = '''+self.mangleBlasNoPrefix('ddot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  '''+t+''' dotresultmkl = 0;
+                  dotresultmkl = '''+self.mangleBlas('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "  '--known-64-bit-blas-indices=%d',\\n",(int)(dotresultmkl != 34));'''
     result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
     if result:
@@ -575,7 +580,7 @@ class Configure(config.package.Package):
                   int one1 = 1;
                   long long int ione1 = 1;
                   float sdotresult = 0;
-                  int blasint64 = '''+str(self.has64bitindices)+''';\n'
+                  int blasint64 = '''+str(self.has64bitindices)+''';\n
                   if (!blasint64) {
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''(&one1,x1,&one1,x1,&one1);
                      } else {
