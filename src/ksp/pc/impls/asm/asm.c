@@ -188,6 +188,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
+    PetscInt m;
 
     if (!osm->type_set) {
       ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
@@ -301,7 +302,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       }
     }
        
-    PetscInt m;
     ierr = ISConcatenate(PETSC_COMM_SELF, osm->n_local_true, osm->is, &osm->lis);CHKERRQ(ierr);
     ierr = ISSortRemoveDups(osm->lis);CHKERRQ(ierr);
     ierr = ISGetLocalSize(osm->lis, &m);CHKERRQ(ierr);
