@@ -431,25 +431,6 @@ int main(int argc,char **args)
       output_file: output/ex94_1.out
 
    test:
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      suffix: axpy_seqaij
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY
-      output_file: output/ex94_1.out
-
-   test:
-      suffix: axpy_seqbaij
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type baij
-      output_file: output/ex94_1.out
-      timeoutfactor: 3
-
-   test:
-      suffix: axpy_seqsbaij
-      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type sbaij
-      output_file: output/ex94_1.out
-
-   test:
       suffix: matmatmult
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info
