@@ -655,11 +655,13 @@ int main(int argc,char **argv)
       suffix: 2dp1
       nsize: 32
       args: -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 4
+      timeoutfactor: 2
 
    test:
       suffix: 2dp2
       nsize: 32
       args: -mx 10 -my 10 -nl 4 -dim 2 -cmap 3 -da_refine_x 3 -da_refine_y 1
+      timeoutfactor: 2
 
    test:
       suffix: 3d

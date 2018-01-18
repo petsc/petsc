@@ -441,6 +441,7 @@ int main(int argc,char **args)
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type baij
       output_file: output/ex94_1.out
+      timeoutfactor: 3
 
    test:
       suffix: axpy_seqsbaij
