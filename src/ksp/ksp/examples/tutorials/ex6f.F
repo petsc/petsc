@@ -24,7 +24,7 @@
 !  x, b, u - approx solution, RHS, exact solution vectors
 !
       Vec     x,u,b
-      Mat     A
+      Mat     A,A2
       KSP    ksp
       PetscInt i,j,II,JJ,m,n
       PetscInt Istart,Iend
@@ -125,7 +125,7 @@
 !  Solve several linear systems in succession
 
       do 100 i=1,nsteps
-         call solve1(ksp,A,x,b,u,i,nsteps,ierr)
+         call solve1(ksp,A,x,b,u,i,nsteps,A2,ierr)
  100  continue
 
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -142,7 +142,7 @@
 
 ! -----------------------------------------------------------------------
 !
-      subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
+      subroutine solve1(ksp,A,x,b,u,count,nsteps,A2,ierr)
       use petscksp
       implicit none
 
@@ -166,7 +166,7 @@
       Mat              A2
       PetscMPIInt      rank
       PetscBool        pflag
-      common /my_data/ A2,pflag,rank
+      common /my_data/ pflag,rank
 
       one = 1
 ! First time thorough: Create new matrix to define the linear system
