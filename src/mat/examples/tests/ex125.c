@@ -276,7 +276,7 @@ int main(int argc,char **args)
    test:
       suffix: superlu_dist_complex
       nsize: 3
-      requires: datafilespath superlu_dist complex double
+      requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_package 1
       output_file: output/ex125_superlu_dist.out
 
