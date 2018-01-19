@@ -215,11 +215,11 @@ PETSC_EXTERN void PETSC_STDCALL snessetupdate_(SNES *snes,void (PETSC_STDCALL *f
 /* ---------------------------------------------------------*/
 
 /* the func argument is ignored */
-PETSC_EXTERN void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES,Vec,Vec,void*),void **ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,NULL,NULL); if (*ierr) return;
-  if (func == PETSC_NULL_FUNCTION_Fortran) return;
+  if ((PetscVoidFunction)func == (PetscVoidFunction)PETSC_NULL_FUNCTION_Fortran) return;
   *ierr = PetscObjectGetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,_cb.function,NULL,ctx);
 }
 

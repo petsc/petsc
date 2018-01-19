@@ -69,6 +69,7 @@
 
       external FormInitialGuess
       external FormFunctionLocal,FormJacobianLocal
+      external MySNESConverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
