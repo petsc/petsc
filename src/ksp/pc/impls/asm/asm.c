@@ -357,15 +357,15 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     
     
     for (i=0; i<osm->n_local_true; ++i) {
-      ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
-      ierr = MatCreateVecs(osm->pmat[i],&osm->x[i],NULL);CHKERRQ(ierr);
-      ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
-      
       ISLocalToGlobalMapping ltog;
       IS                     isll;
       const PetscInt         *idx_is;
       PetscInt               *idx_lis,nout;
 
+      ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
+      ierr = MatCreateVecs(osm->pmat[i],&osm->x[i],NULL);CHKERRQ(ierr);
+      ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
+      
       /* generate a scatter from ly to y[i] picking all the overlapping is[i] entries */
       ierr = ISLocalToGlobalMappingCreateIS(osm->lis,&ltog);CHKERRQ(ierr);
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
