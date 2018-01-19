@@ -1477,7 +1477,16 @@ For loops are supported within nsize and args.  An example would be:
 
 In this case, two execution lines would be addded with two different
 arguments.  Associated \lstinline{diff} lines would be added as well
-automatically.  See examples below for how it works in practice.
+automatically.
+
+In this case, it assumed that the output for each
+\lstinline{matload_block_size} will give the same output so
+that only one diff file is needed.  If the variables
+produced different output, then the \lstinline{separate
+output} option would be added.  In this case, each loop
+variable and value become a separate script.
+
+See examples below for how it works in practice.
 
 \end{itemize}
 

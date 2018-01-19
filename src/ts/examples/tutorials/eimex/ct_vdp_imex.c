@@ -244,7 +244,6 @@ static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
    test:
      suffix: loop
      args: -ts_type eimex  -ts_adapt_type none  -pc_type lu -ts_dt {{0.005 0.001 0.0005}separate output} -ts_max_steps {{100 500 1000}separate output} -ts_eimex_row_col {{1,1 2,1 3,1 2,2 3,2 3,3}separate output}
-     output_file: output/runct_vdp_imex_conv.out
      requires: x
 
  TEST*/
