@@ -164,7 +164,7 @@ extern PetscFunctionList DMPlexGenerateList;
 
 struct _n_PetscFunctionList {
   PetscErrorCode    (*generate)(DM, PetscBool, DM*);
-  PetscErrorCode    (*refine)(DM,double*, DM*);
+  PetscErrorCode    (*refine)(DM,PetscReal*, DM*);
   char              *name;               /* string to identify routine */
   PetscInt          dim;
   PetscFunctionList next;                /* next pointer */
@@ -178,7 +178,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
   char              genname[1024], *name = NULL;
   PetscBool         flg, localized;
   PetscErrorCode    ierr;
-  PetscErrorCode    (*refine)(DM,double*,DM*);
+  PetscErrorCode    (*refine)(DM,PetscReal*,DM*);
   PetscFunctionList fl;
   PetscReal         *maxVolumes;
   PetscInt          c;
@@ -232,17 +232,7 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-#if !defined(PETSC_USE_REAL_DOUBLE)
-      {
-        double *mvols;
-        ierr = PetscMalloc1(cEnd - cStart,&mvols);CHKERRQ(ierr);
-        for (c = 0; c < cEnd-cStart; ++c) mvols[c] = (double)maxVolumes[c];
-        ierr = (*refine)(dm, mvols, dmRefined);CHKERRQ(ierr);
-        ierr = PetscFree(mvols);CHKERRQ(ierr);
-      }
-#else
       ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#endif
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
     break;
   case 3:

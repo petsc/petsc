@@ -192,7 +192,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
+PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes, DM *dmRefined)
 {
   MPI_Comm             comm;
   PetscInt             dim       = 2;
@@ -203,6 +203,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM 
   PetscInt             vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
+  double               *maxVolumes;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -241,6 +242,13 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM 
 
   in.numberofcorners   = 3;
   in.numberoftriangles = cEnd - cStart;
+
+#if !defined(PETSC_USE_REAL_DOUBLE)
+  ierr = PetscMalloc1(cEnd - cStart,&maxVolumes);CHKERRQ(ierr);
+  for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = (double)inmaxVolumes[c];
+#else
+  maxVolumes = inmaxVolumes;
+#endif
 
   in.trianglearealist  = (double*) maxVolumes;
   if (in.numberoftriangles > 0) {
@@ -325,5 +333,8 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM 
   ierr = DMPlexCopyHoles(*dm, boundary);CHKERRQ(ierr);
 #endif
   ierr = FiniOutput_Triangle(&out);CHKERRQ(ierr);
+#if !defined(PETSC_USE_REAL_DOUBLE)
+  ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
