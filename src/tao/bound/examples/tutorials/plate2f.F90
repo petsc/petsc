@@ -25,9 +25,21 @@
 !   Processors: n
 !T*/
 
+      module mymodule
+#include "petsc/finclude/petscdmda.h"
+#include "petsc/finclude/petsctao.h"
+      use petscdmda
+      use petsctao
 
+      Vec              localX, localV
+      Vec              Top, Left
+      Vec              Right, Bottom
+      DM               dm
+      PetscReal      bheight
+      PetscInt         bmx, bmy
+      PetscInt         mx, my, Nx, Ny, N
+      end module
 
-#include "plate2f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -38,6 +50,8 @@
 !    Nx, Ny           number of processors in x- and y- directions
 !    mx, my           number of grid points in x,y directions
 !    N    global dimension of vector
+      use mymodule
+      implicit none
 
       PetscErrorCode   ierr          ! used to check for functions returning nonzeros
       Vec              x             ! solution vector
@@ -225,8 +239,9 @@
 
 
       subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
-#include "plate2f.h"
-
+      use mymodule
+      implicit none
+      
 ! Input/output variables
 
       Tao        tao
@@ -491,7 +506,8 @@
 !           by calling MatSetValuesLocal()
 
       subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Tao     tao
       Vec            X
@@ -738,7 +754,8 @@
 !*/
 
       subroutine MSA_BoundaryConditions(ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       PetscErrorCode   ierr
       PetscInt         i,j,k,limit,maxits
@@ -907,7 +924,8 @@
 !*/
 
       subroutine MSA_Plate(tao,xl,xu,dummy,ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Tao        tao
       Vec              xl,xu
@@ -981,7 +999,8 @@
 !*/
 
       subroutine MSA_InitialPoint(X, ierr)
-#include "plate2f.h"
+      use mymodule
+      implicit none
 
       Vec               X
       PetscErrorCode    ierr

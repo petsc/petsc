@@ -73,7 +73,7 @@
 
 !  Store parameters in common block
 
-      common /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common /params/ lambda,mx,my,fd_coloring
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -129,7 +129,7 @@
 !     context that provides application-specific data for the
 !     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_VEC,ierr)
+      call SNESSetFunction(snes,r,FormFunction,fdcoloring,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -172,7 +172,7 @@
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
-        call MatFDColoringSetFunction(fdcoloring,FormFunction,0,ierr)
+        call MatFDColoringSetFunction(fdcoloring,FormFunction,fdcoloring,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
         call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
@@ -326,9 +326,8 @@
 !  Common blocks:
       PetscReal   lambda
       PetscInt     mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common      /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common      /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar x(mx,my)
@@ -381,22 +380,21 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormFunction(snes,X,F,dummy,ierr)
+      subroutine FormFunction(snes,X,F,fdcoloring,ierr)
       use petscsnes
       implicit none
 
 !  Input/output variables:
       SNES              snes
       Vec               X,F
-      PetscFortranAddr  dummy
       PetscErrorCode          ierr
+      MatFDColoring fdcoloring
 
 !  Common blocks:
       PetscReal         lambda
       PetscInt          mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common            /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common            /params/ lambda,mx,my,fd_coloring
 
 !  Declarations for use with local arrays:
       PetscScalar       lx_v(0:1),lf_v(0:1)
@@ -460,9 +458,8 @@
 !  Common blocks:
       PetscReal      lambda
       PetscInt        mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common         /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common         /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar    x(mx,my),f(mx,my)
@@ -538,9 +535,8 @@
 !  Common blocks:
       PetscReal     lambda
       PetscInt       mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common        /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common        /params/ lambda,mx,my,fd_coloring
 
 !  Declarations for use with local array:
       PetscScalar   lx_v(0:1)
@@ -590,9 +586,8 @@
 !  Common blocks:
       PetscReal    lambda
       PetscInt      mx,my
-      MatFDColoring     fdcoloring
       PetscBool         fd_coloring
-      common       /params/ lambda,mx,my,fdcoloring,fd_coloring
+      common       /params/ lambda,mx,my,fd_coloring
 
 !  Input/output variables:
       PetscScalar  x(mx,my)
