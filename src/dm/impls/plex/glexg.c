@@ -28,7 +28,9 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM, double*, DM*);
 @*/
 PetscErrorCode  DMPlexGenerateRegisterAll(void)
 {
+#if defined(PETSC_HAVE_TRIANGLE) || defined(PETSC_HAVE_CTETGEN) || defined(PETSC_HAVE_TETGEN)
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
   if (DMPlexGenerateRegisterAllCalled) PetscFunctionReturn(0);
