@@ -136,7 +136,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
     char buf[1024];
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
     err = pclose(fd);
-    if (err = ECHILD) err = 0;   /* not an error if child status is missing */ 
+    if (err == ECHILD) err = 0;   /* not an error if child status is missing */ 
     if (rval) *rval = err;
     else if (err) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed with error code %d, errno %d",err,errno);
   }
