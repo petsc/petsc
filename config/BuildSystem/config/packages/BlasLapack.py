@@ -42,11 +42,18 @@ class Configure(config.package.Package):
     return
 
   def getPrefix(self):
-    if self.defaultPrecision == 'single': return 's'
-    if self.defaultPrecision == 'double': return 'd'
-    if self.defaultPrecision == '__float128': return 'q'
-    if self.defaultPrecision == '__fp16': return 'h'
-    return 'Unknown precision'
+    if self.compilers.fortranMangling == 'caps':
+      if self.defaultPrecision == 'single': return 'S'
+      if self.defaultPrecision == 'double': return 'D'
+      if self.defaultPrecision == '__float128': return 'Q'
+      if self.defaultPrecision == '__fp16': return 'H'
+      return 'Unknown precision'
+    else:
+      if self.defaultPrecision == 'single': return 's'
+      if self.defaultPrecision == 'double': return 'd'
+      if self.defaultPrecision == '__float128': return 'q'
+      if self.defaultPrecision == '__fp16': return 'h'
+      return 'Unknown precision'
 
   def getType(self):
     if self.defaultPrecision == 'single': return 'float'
