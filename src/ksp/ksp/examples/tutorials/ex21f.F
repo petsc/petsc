@@ -10,10 +10,15 @@
 !T*/
 !
 !  -------------------------------------------------------------------------
-
-      program main
+      module mymodule
 #include <petsc/finclude/petscksp.h>
       use petscksp
+      PC jacobi,sor
+      Vec work
+      end module
+
+      program main
+      use mymodule
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,11 +49,6 @@
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external SampleShellPCSetUp,SampleShellPCApply
-
-!  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC jacobi,sor
-      Vec work
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -265,7 +265,7 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,x,ierr)
-      use petscpc
+      use mymodule
       implicit none
 
       PC      pc
@@ -273,12 +273,6 @@
       Mat     pmat
       PetscErrorCode ierr
 
-!  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC jacobi,sor
-      Vec work
-
-      pmat = tMat(0)
       call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)
@@ -316,18 +310,13 @@
 ! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use petscpc
+      use mymodule
       implicit none
 
       PC      pc
       Vec     x,y
       PetscErrorCode ierr
       PetscScalar  one
-
-!  Common block to store data for user-provided preconditioner
-      common /mypcs/ jacobi,sor,work
-      PC  jacobi,sor
-      Vec work
 
       one = 1.0
       call PCApply(jacobi,x,y,ierr)

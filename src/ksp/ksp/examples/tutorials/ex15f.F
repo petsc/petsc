@@ -10,11 +10,18 @@
 !   Processors: n
 !T*/
 !
-!  -------------------------------------------------------------------------
-
-      program main
+!     -------------------------------------------------------------------------
+!
+!     Module contains diag needed by shell preconditioner
+!
+      module mymodule
 #include <petsc/finclude/petscksp.h>
       use petscksp
+      Vec    diag
+      end module
+
+      program main
+      use mymodule
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,10 +53,6 @@
 
       external SampleShellPCSetUp, SampleShellPCApply
       external  SampleShellPCDestroy
-
-!  Common block to store data for user-provided preconditioner
-      common /myshellpc/ diag
-      Vec    diag
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -271,6 +274,7 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,ierr)
+      use mymodule
       use petscksp
       implicit none
 
@@ -278,14 +282,6 @@
       Mat     pmat
       integer ierr
 
-!  Common block to store data for user-provided preconditioner
-!  Normally we would recommend storing all the work data (like diag) in
-!  the context set with PCShellSetContext()
-
-      common /myshellpc/ diag
-      Vec    diag
-
-      pmat = tMat(0)
       call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
       call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
       call MatGetDiagonal(pmat,diag,ierr)
@@ -312,16 +308,12 @@
 !   is already provided within PETSc.
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use petscksp
+      use mymodule
       implicit none
 
       PC      pc
       Vec     x,y
       integer ierr
-
-!  Common block to store data for user-provided preconditioner
-      common /myshellpc/ diag
-      Vec    diag
 
       call VecPointwiseMult(y,x,diag,ierr)
 
@@ -343,18 +335,14 @@
 !
 
       subroutine SampleShellPCDestroy(pc,ierr)
-      use petscksp
+      use mymodule
       implicit none
 
       PC      pc
       PetscErrorCode ierr
 
-!  Common block to store data for user-provided preconditioner
 !  Normally we would recommend storing all the work data (like diag) in
 !  the context set with PCShellSetContext()
-
-      common /myshellpc/ diag
-      Vec    diag
 
       call VecDestroy(diag,ierr)
 
