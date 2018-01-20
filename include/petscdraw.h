@@ -158,7 +158,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawTensorContour(PetscDraw,int,int,const Petsc
 PETSC_EXTERN PetscErrorCode PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawStringCentered(PetscDraw,PetscReal,PetscReal,int,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawStringBoxed(PetscDraw,PetscReal,PetscReal,int,int,const char[],PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscDrawStringBoxedSize(PetscDraw,const char[],PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);

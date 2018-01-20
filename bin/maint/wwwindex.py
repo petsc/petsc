@@ -175,7 +175,7 @@ def modifylevel(filename,secname):
       # and also add the bold format.
       tmpbuf = re_level.sub('',buf)
       re_loc = re.compile('(<FONT COLOR="#CC3333">Location:</FONT>)')
-      tmpbuf = re_loc.sub('<P><B><FONT COLOR="#CC3333">Level:</FONT></B>' + level + r'\n<BR>\1',tmpbuf)
+      tmpbuf = re_loc.sub('</B><H3><FONT COLOR="#CC3333">Level</FONT></H3>' + level + r'<BR>\n<H3><FONT COLOR="#CC3333">Location</FONT></H3>\n',tmpbuf)
 
       # Modify .c#,.h# to .c.html#,.h.html
       re_loc = re.compile('.c#')

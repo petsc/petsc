@@ -548,11 +548,12 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 +   n - the number of local columns being perturbed
 -   cols - the column indices, in global numbering
 
-   Level: intermediate
+   Level: advanced
 
    Fortran Note:
    This routine has a different interface for Fortran
-$          use petscisdef
+$     #include <petsc/finclude/petscmat.h>
+$          use petscmat
 $          PetscInt, pointer :: array(:)
 $          PetscErrorCode  ierr
 $          MatFDColoring   i

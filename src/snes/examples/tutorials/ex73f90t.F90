@@ -46,8 +46,9 @@
 !
       module petsc_kkt_solver
 #include <petsc/finclude/petscdm.h>
-      use petscdmdef
-      use petscmatdef
+#include <petsc/finclude/petscmat.h>
+      use petscdm
+      use petscmat
       type petsc_kkt_solver_type
         DM::da
 !     temp A block stuff

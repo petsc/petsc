@@ -107,6 +107,8 @@ PetscErrorCode  PetscMemmove(void *a,void *b,size_t n)
   Input Parameter:
 .   viewer - ASCII viewer to display the results on
 
+  Level: intermediate
+
   Notes: Requires that PETSc be installed with hwloc, for example using --download-hwloc
 @*/
 PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
