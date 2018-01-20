@@ -1570,5 +1570,6 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
 
    test:
      requires: !complex
+     filter: grep -v atomic
 
 TEST*/
