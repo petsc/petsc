@@ -558,11 +558,11 @@ class Configure(config.package.Package):
     self.log.write('Checking if BLAS/LAPACK routines use 32 or 64 bit integers')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     t = self.getType()
-    body     = '''extern '''+t+''' '''+self.mangleBlas('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+    body     = '''extern '''+t+''' '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
-                  dotresultmkl = '''+self.mangleBlas('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "  '--known-64-bit-blas-indices=%d',\\n",(int)(dotresultmkl != 34));'''
     result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
     if result:
