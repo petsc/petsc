@@ -196,7 +196,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat,Vec,Vec);
 
 /*static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDIS(default)","Natural","NESDIS(small=20000)","NESDIS(small=4,no constrained)","NESDIS()"};*/
 
-static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
+static PetscErrorCode MatView_Info_CHOLMOD(Mat F,PetscViewer viewer)
 {
   Mat_CHOLMOD          *chol = (Mat_CHOLMOD*)F->data;
   const cholmod_common *c    = chol->common;
@@ -263,7 +263,7 @@ PETSC_INTERN PetscErrorCode  MatView_CHOLMOD(Mat F,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_CHOLMOD(F,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_CHOLMOD(F,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

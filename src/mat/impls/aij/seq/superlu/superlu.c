@@ -58,7 +58,7 @@ typedef struct {
 /*
     Utility function
 */
-static PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_SuperLU(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU       *lu= (Mat_SuperLU*)A->data;
   PetscErrorCode    ierr;
@@ -431,7 +431,7 @@ static PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_SuperLU(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -208,7 +208,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorInfo_KLU(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_KLU(Mat A,PetscViewer viewer)
 {
   Mat_KLU       *lu= (Mat_KLU*)A->data;
   klu_K_numeric *Numeric=(klu_K_numeric*)lu->Numeric;
@@ -250,7 +250,7 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_KLU(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_KLU(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

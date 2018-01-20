@@ -491,7 +491,7 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST       *lu=(Mat_SuperLU_DIST*)A->data;
   superlu_dist_options_t options;
@@ -556,7 +556,7 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_SuperLU_DIST(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_SuperLU_DIST(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

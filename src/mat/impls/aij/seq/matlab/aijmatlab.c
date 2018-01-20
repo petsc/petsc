@@ -236,7 +236,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
 
 /* --------------------------------------------------------------------------------*/
 
-PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_Info_Matlab(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -257,7 +257,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      ierr = MatFactorInfo_Matlab(A,viewer);
+      ierr = MatView_Info_Matlab(A,viewer);
     }
   }
   PetscFunctionReturn(0);

@@ -263,7 +263,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_Info_UMFPACK(Mat A,PetscViewer viewer)
 {
   Mat_UMFPACK    *lu= (Mat_UMFPACK*)A->data;
   PetscErrorCode ierr;
@@ -313,7 +313,7 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_UMFPACK(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_UMFPACK(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

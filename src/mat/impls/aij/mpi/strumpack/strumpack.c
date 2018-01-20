@@ -381,8 +381,8 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_STRUMPACK"
-static PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_Info_STRUMPACK"
+static PetscErrorCode MatView_Info_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode  ierr;
 
@@ -406,7 +406,7 @@ static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = MatFactorInfo_STRUMPACK(A,viewer);CHKERRQ(ierr);
+      ierr = MatView_Info_STRUMPACK(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
