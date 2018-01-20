@@ -946,8 +946,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = DMSetDimension(dms_quadrature,2);CHKERRQ(ierr);
   
   /* Register fields for viscosity and density on the quadrature points */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_quadrature);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(dms_quadrature,nel_local * GAUSS_POINTS,0);CHKERRQ(ierr);
   
@@ -966,8 +966,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = DMSwarmSetCellDM(dms_mpoint,dm_coeff);CHKERRQ(ierr);
   
   /* Register fields for viscosity and density */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_mpoint);CHKERRQ(ierr);
   
   ierr = PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL);CHKERRQ(ierr);
