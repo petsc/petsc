@@ -345,25 +345,25 @@ PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)
 
    test:
       suffix: superlu_dist_1
-      requires: superlu
+      requires: superlu_dist
       args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 1 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
 
    test:
       suffix: superlu_dist_2
       nsize: 2
-      requires: superlu
+      requires: superlu_dist
       args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 1 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
 
    test:
       suffix: superlu_dist_3
       nsize: 3
-      requires: superlu
+      requires: superlu_dist
       args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 2 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
 
    test:
       suffix: superlu_dist_4
       nsize: 4
-      requires: superlu
+      requires: superlu_dist
       args: -M 7 -N 9 -print_error -pc_gasm_total_subdomains 2 -pc_gasm_print_subdomains -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist
 
 TEST*/
