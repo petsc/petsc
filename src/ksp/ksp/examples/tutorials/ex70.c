@@ -1569,7 +1569,7 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
 /*TEST
 
    test:
-     requires: !complex
+     requires: !complex double
      filter: grep -v atomic
      filter_output: grep -v atomic
 
