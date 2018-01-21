@@ -716,10 +716,12 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   nz   = adj->nz;
+  if (adj->i[m] != nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nz %D not correct i[m] %d",nz,adj->i[m]);
   ierr = MPI_Allreduce(&nz,&NZ,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+
   ierr = PetscMPIIntCast(nz,&mnz);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,size,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = PetscCalloc2(size,&allnz,size,&dispnz);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnz,1,MPI_INT,allnz,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   dispnz[0] = 0; for (i=1; i<size; i++) dispnz[i] = dispnz[i-1]+ allnz[i-1];
   if (adj->values) {
     ierr = PetscMalloc1(NZ,&Values);CHKERRQ(ierr);
@@ -735,7 +737,7 @@ PetscErrorCode  MatMPIAdjToSeq_MPIAdj(Mat A,Mat *B)
   ierr = PetscMalloc1(M+1,&II);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(m,&mm);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,&allm,size,&dispm);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mm,1,MPI_INT,allm,size,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mm,1,MPI_INT,allm,1,MPI_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   dispm[0] = 0; for (i=1; i<size; i++) dispm[i] = dispm[i-1]+ allm[i-1];
   ierr = MPI_Allgatherv(adj->i,mm,MPIU_INT,II,allm,dispm,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   ierr = PetscFree2(allm,dispm);CHKERRQ(ierr);

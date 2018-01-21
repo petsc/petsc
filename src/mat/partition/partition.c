@@ -249,7 +249,7 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,NULL,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)matp)->options,((PetscObject)matp)->prefix,"-mat_partitioning_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)matp),&viewer);CHKERRQ(ierr);

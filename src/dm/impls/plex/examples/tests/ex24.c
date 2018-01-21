@@ -10,6 +10,7 @@ typedef struct {
   PetscBool simplex;                      /* Use simplices or hexes */
   PetscBool interpolate;                  /* Interpolate mesh */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  char      partitioning[64];
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -31,6 +32,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
   dim = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
+  ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGCURRENT,64);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,64,NULL);CHKERRQ(ierr);
   if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -80,7 +83,7 @@ int main(int argc, char **argv)
   /* partition dm1 using PETSCPARTITIONERPARMETIS */
   ierr = DMPlexGetPartitioner(dm1, &part1);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part1, PETSCPARTITIONERPARMETIS);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(part1, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
   ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
@@ -90,7 +93,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part2,"p2_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING);CHKERRQ(ierr);
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(mp, MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+  ierr = MatPartitioningSetType(mp, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
   ierr = PetscPartitionerPartition(part2, dm2, s2, &is2);CHKERRQ(ierr);
@@ -101,14 +104,14 @@ int main(int argc, char **argv)
     ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
     ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
     ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "ISs are not equal.\n");
+    if (!flg) PetscPrintf(comm, "ISs are not equal with type %s.\n",user.partitioning);
     ierr = ISDestroy(&is1g);CHKERRQ(ierr);
     ierr = ISDestroy(&is2g);CHKERRQ(ierr);
   }
 
   /* compare the two PetscSections */
   ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "PetscSections are not equal.\n");
+  if (!flg) PetscPrintf(comm, "PetscSections are not equal with %.\n",user.partitioning);
 
   /* distribute both DMs */
   ierr = DMPlexDistribute(dm1, 0, NULL, &dmdist1);CHKERRQ(ierr);
@@ -127,7 +130,7 @@ int main(int argc, char **argv)
 
   /* compare the two distributed DMs */
   ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Distributed DMs are not equal.\n");
+  if (!flg) PetscPrintf(comm, "Distributed DMs are not equal %s.\n",user.partitioning);
 
   /* repartition distributed DM dmdist1 using PETSCPARTITIONERPARMETIS */
   ierr = DMPlexGetPartitioner(dmdist1, &part1);CHKERRQ(ierr);
@@ -153,14 +156,14 @@ int main(int argc, char **argv)
     ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
     ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
     ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Distributed ISs are not equal.\n");
+    if (!flg) PetscPrintf(comm, "Distributed ISs are not equal, with %s.\n",user.partitioning);
     ierr = ISDestroy(&is1g);CHKERRQ(ierr);
     ierr = ISDestroy(&is2g);CHKERRQ(ierr);
   }
 
   /* compare the two PetscSections */
   ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal.\n");
+  if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s.\n",user.partitioning);
 
   /* redistribute both distributed DMs */
   ierr = DMPlexDistribute(dmdist1, 0, NULL, &dm1);CHKERRQ(ierr);
@@ -168,7 +171,7 @@ int main(int argc, char **argv)
 
   /* compare the two distributed DMs */
   ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal.\n");
+  if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s.\n",user.partitioning);
 
   /* cleanup */
   ierr = PetscSectionDestroy(&s1);CHKERRQ(ierr);
@@ -229,11 +232,12 @@ int main(int argc, char **argv)
     requires: parmetis ptscotch ctetgen
     args: -options_left -faces 2,3,2 -p1_petscpartitioner_type parmetis -p2_petscpartitioner_type parmetis -dp1_petscpartitioner_type ptscotch -dp1_petscpartitioner_ptscotch_strategy BALANCE -dp1_petscpartitioner_ptscotch_imbalance 0.001 -dp1_petscpartitioner_view -dp2_petscpartitioner_type matpartitioning -dp2_mat_partitioning_type ptscotch -dp2_mat_partitioning_ptscotch_strategy BALANCE -dp2_mat_partitioning_ptscotch_imbalance 0.001 -dp2_petscpartitioner_view
   test:
-    # partition sequential mesh generated by ctetgen using chaco
+
+    # partition mesh generated by ctetgen using chaco
     suffix: 4
     nsize: 2
-    requires: chaco ctetgen
-    args: -faces 2,3,2 -p1_petscpartitioner_type chaco -p2_petscpartitioner_type matpartitioning -p2_mat_partitioning_type chaco
+    requires: chaco parmetis ptscotch ctetgen
+    args: -faces 2,3,2 -partitioning {{chaco parmetis ptscotch}}}
 
 TEST*/
 
