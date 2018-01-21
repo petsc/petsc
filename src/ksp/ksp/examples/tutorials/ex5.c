@@ -391,20 +391,20 @@ int main(int argc,char **args)
    test:
       suffix: superlu_dist
       nsize: 15
-      requires: superlu
+      requires: superlu_dist
       args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat
 
    test:
       suffix: superlu_dist_2
       nsize: 15
-      requires: superlu
+      requires: superlu_dist
       args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
       output_file: output/ex5_superlu_dist.out
 
    test:
       suffix: superlu_dist_3
       nsize: 15
-      requires: superlu
+      requires: superlu_dist
       args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
       output_file: output/ex5_superlu_dist.out
 
