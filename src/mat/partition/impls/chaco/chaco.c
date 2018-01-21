@@ -83,16 +83,19 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   ierr       = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr       = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (size>1) {
-    if (flg) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
-    ierr   = PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
-    ierr   = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-    ierr   = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
-    ierr   = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-    ierr   = MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-    ierr   = ISDestroy(&isrow);CHKERRQ(ierr);
-    ierr   = ISDestroy(&iscol);CHKERRQ(ierr);
-    matSeq = *A;
-    ierr   = PetscFree(A);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatMPIAdjToSeq(mat,&matSeq);CHKERRQ(ierr);
+    } else {
+      ierr   = PetscInfo(part,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+      ierr   = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+      ierr   = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
+      ierr   = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
+      ierr   = MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+      ierr   = ISDestroy(&isrow);CHKERRQ(ierr);
+      ierr   = ISDestroy(&iscol);CHKERRQ(ierr);
+      matSeq = *A;
+      ierr   = PetscFree(A);CHKERRQ(ierr);
+    }
   } else {
     ierr   = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
     matSeq = mat;

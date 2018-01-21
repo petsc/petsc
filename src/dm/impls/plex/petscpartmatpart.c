@@ -100,8 +100,8 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  if (numVertices < 0) SETERRQ(comm, PETSC_ERR_PLIB, "number of vertices must be specified");
   ierr = PetscObjectGetComm((PetscObject)part, &comm);CHKERRQ(ierr);
+  if (numVertices < 0) SETERRQ(comm, PETSC_ERR_PLIB, "number of vertices must be specified");
 
   /* TODO: MatCreateMPIAdj should maybe take global number of ROWS */
   /* TODO: And vertex distribution in PetscPartitionerPartition_ParMetis should be done using PetscSplitOwnership */
