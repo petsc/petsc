@@ -1,5 +1,5 @@
 ALL:
-+
+
 CFLAGS		 =
 FFLAGS		 =
 CPPFLAGS         =
