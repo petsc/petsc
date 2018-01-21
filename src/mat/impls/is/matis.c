@@ -111,11 +111,13 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT,IS *cis)
   } else SETERRQ1(comm,PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)(PT))->type_name);
 
   /* identify any null columns in Pd or Po */
+  /* We use a tolerance comparison since it may happen that, with geometric multigrid,
+     some of the columns are not really zero, but very close to */
   zo = zd = NULL;
   if (Po) {
-    ierr = MatFindNonzeroRowsOrCols_Basic(Po,PETSC_TRUE,&zo);CHKERRQ(ierr);
+    ierr = MatFindNonzeroRowsOrCols_Basic(Po,PETSC_TRUE,PETSC_SMALL,&zo);CHKERRQ(ierr);
   }
-  ierr = MatFindNonzeroRowsOrCols_Basic(Pd,PETSC_TRUE,&zd);CHKERRQ(ierr);
+  ierr = MatFindNonzeroRowsOrCols_Basic(Pd,PETSC_TRUE,PETSC_SMALL,&zd);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(PT,NULL,&dc);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(PT,&stc,NULL);CHKERRQ(ierr);
