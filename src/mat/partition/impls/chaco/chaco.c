@@ -165,13 +165,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
 
   /* creation of the index set */
-  nb_locals = mat->rmap->N / size;
-  locals    = parttab + rank*nb_locals;
-  if (rank < mat->rmap->N % size) {
-    nb_locals++;
-    locals += rank;
-  } else locals += mat->rmap->N % size;
-
+  nb_locals = mat->rmap->n;
+  locals    = parttab + mat->rmap->rstart;
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),nb_locals,locals,PETSC_COPY_VALUES,partitioning);CHKERRQ(ierr);
 
   /* clean up */

@@ -512,7 +512,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
   ierr = PetscObjectTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (part->setupcalled) {
+  if (part->ops->destroy) {
     ierr =  (*part->ops->destroy)(part);CHKERRQ(ierr);
 
     part->ops->destroy = NULL;
