@@ -569,7 +569,7 @@ class Configure(config.package.Package):
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
-                  fprintf(output, "%g",dotresultmkl);'''
+                  fprintf(output, "%g",(double)dotresultmkl);'''
     result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
     if result:
       self.log.write('Checking for 64 bit blas indices: result' +str(result)+'\n')
@@ -583,7 +583,7 @@ class Configure(config.package.Package):
                   int one1mkl = 1,nmkl = 2;
                   double dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
-                  fprintf(output, "%g",dotresultmkl);'''
+                  fprintf(output, "%g",(double)dotresultmkl);'''
           result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
           result = int(result)
       if not result == 34:
@@ -607,7 +607,7 @@ class Configure(config.package.Package):
                      } else {
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
-                  fprintf(output, "%g",sdotresult);\n'''
+                  fprintf(output, "%g",(double)sdotresult);\n'''
     result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
     if result:
       self.log.write('Checking for sdot return double: result' +str(result)+'\n')
@@ -630,7 +630,7 @@ class Configure(config.package.Package):
                      } else {
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
-                  fprintf(output, "%g",normresult);\n'''
+                  fprintf(output, "%g",(double)normresult);\n'''
     result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
     if result:
       self.log.write('Checking for snrm2 return double: result' +str(result)+'\n')
