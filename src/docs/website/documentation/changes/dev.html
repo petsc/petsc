@@ -124,12 +124,19 @@
       <h4>DM/DA:</h4>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
-         PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.
+      <ul>
+        PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.
+      </ul>
       <h4>SYS:</h4>
+      <ul>
+        PetscPClose() no longer returns error code from pclose() because some systems cannot reliably deliver it
+      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-      The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.
+      <ul>
+        The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.
+      </ul>
     </div>
 
     <!--end-->

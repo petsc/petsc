@@ -113,9 +113,6 @@ static char PetscPOpenMachine[128] = "";
 +   comm - MPI communicator, only processor zero runs the program
 -   fp - the file pointer where program input or output may be read or NULL if don't care
 
-   Output Parameters:
-.   rval - return value from pclose() or NULL to raise an error on failure
-
    Level: intermediate
 
    Notes:
@@ -124,7 +121,7 @@ static char PetscPOpenMachine[128] = "";
 .seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
 
 @*/
-PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
+PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -135,10 +132,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
-    err = pclose(fd);
-    if (err == ECHILD) err = 0;   /* not an error if child status is missing */ 
-    if (rval) *rval = err;
-    else if (err) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed with error code %d, errno %d",err,errno);
+    (void) pclose(fd);
   }
   PetscFunctionReturn(0);
 }

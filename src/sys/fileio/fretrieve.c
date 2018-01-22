@@ -349,9 +349,6 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
   PetscMPIInt    rank;
   size_t         len = 0;
   PetscBool      flg1,flg2,flg3,flg4,download,compressed = PETSC_FALSE;
-#if defined(PETSC_HAVE_POPEN)
-  int            rval;
-#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -409,7 +406,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrcat(buffer,localname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -448,7 +445,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrcat(buffer,name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,NULL,buffer,"r",&fp);CHKERRQ(ierr);
-      ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
