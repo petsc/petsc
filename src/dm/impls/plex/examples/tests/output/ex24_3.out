@@ -2,21 +2,7 @@ PTScotch Graph Partitioner:
   using partitioning strategy BALANCE
   using load imbalance ratio 0.001
 MatPartitioning Graph Partitioner:
-  MatPartitioning Object: (p2_) 4 MPI processes
+  MatPartitioning Object: (dp2_) 2 MPI processes
     type: ptscotch
       Strategy=Enforce load balance
       Load imbalance ratio=0.001
-#PETSc Option Table entries:
--faces 7,11,5
--options_left
--p1_petscpartitioner_ptscotch_imbalance 0.001
--p1_petscpartitioner_ptscotch_strategy BALANCE
--p1_petscpartitioner_type ptscotch
--p1_petscpartitioner_view
--p2_mat_partitioning_ptscotch_imbalance 0.001
--p2_mat_partitioning_ptscotch_strategy BALANCE
--p2_mat_partitioning_type ptscotch
--p2_petscpartitioner_type matpartitioning
--p2_petscpartitioner_view
-#End of PETSc Option Table entries
-There are no unused options.
