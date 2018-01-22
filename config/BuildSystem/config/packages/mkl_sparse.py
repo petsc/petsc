@@ -31,7 +31,7 @@ class Configure(config.package.Package):
     temp2 = self.compilers.CPPFLAGS
     self.compilers.LIBS = self.libraries.toString(self.dlib)+' -lm '+self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.dinclude)
-    result = self.blasLapack.runTimeTest('known-mklspblas-supports-zero-based',includes,body)
+    result = self.framework.runTimeTestBatch('known-mklspblas-supports-zero-based',includes,body)
     self.compilers.LIBS = temp1
     self.compilers.CPPFLAGS = temp2
     if result:
