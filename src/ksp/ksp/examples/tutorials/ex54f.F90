@@ -42,7 +42,7 @@
       PetscReal, external :: ex54_psi
       PetscReal::theta,eps,h,x,y,xsj
       PetscReal::coord(2,4),dd(2,2),ev(3),blb(2)
-      real(8)::r1,r2
+
       common /ex54_theta/ theta
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -168,10 +168,7 @@
             endif               ! BC
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
-            r1 = -100*((x+h/2)-blb(1))**2
-            r2 = -100*((y+h/2)-blb(2))**2
-            r1 = h*h*exp(r1)*exp(r2)
-            val = r1
+            val = h*h*exp(-100*((x+h/2)-blb(1))**2)*exp(-100*((y+h/2)-blb(2))**2)
             call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
