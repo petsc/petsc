@@ -33,14 +33,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->faces[0] = 1; options->faces[1] = 1; options->faces[2] = 1;
   dim = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
-  ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGCURRENT,64);CHKERRQ(ierr);
-  ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGCURRENT,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,64,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None",options->repartitioning, options->repartitioning,64,NULL);CHKERRQ(ierr);
   if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_PTSCOTCH)
+extern void _SCOTCHintRandSeed(int);
+#endif
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -85,6 +89,10 @@ int main(int argc, char **argv)
   ierr = CreateMesh(comm, &user, &dm1);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &dm2);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_PTSCOTCH)
+  _SCOTCHintRandSeed(1);
+#endif
+  
   /* partition dm1 using PETSCPARTITIONERPARMETIS */
   ierr = DMPlexGetPartitioner(dm1, &part1);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_");CHKERRQ(ierr);
@@ -92,6 +100,10 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
   ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_PTSCOTCH)
+  _SCOTCHintRandSeed(1);
+#endif
 
   /* partition dm2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = DMPlexGetPartitioner(dm2, &part2);CHKERRQ(ierr);
