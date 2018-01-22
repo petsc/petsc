@@ -522,6 +522,6 @@ int main(int argc, char **argv)
   test:
     suffix: 11
     requires: exodusii
-    args: -dim 3 -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail
+    args: -dim 3 -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -dm_view ascii::ascii_info_detail
 
 TEST*/

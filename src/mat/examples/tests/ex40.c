@@ -103,6 +103,6 @@ int main(int argc,char **args)
       suffix: 2
       nsize: 3
       requires: double !define(PETSC_USE_64BIT_INDICES) !complex
-      args: -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2
 
 TEST*/

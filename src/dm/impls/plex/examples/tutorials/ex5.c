@@ -79,11 +79,11 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: exodusii broken
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
   test:
     suffix: 1
     requires: exodusii broken
     nsize: 2
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
 
 TEST*/

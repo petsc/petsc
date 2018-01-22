@@ -104,7 +104,7 @@ int main(int argc,char **args)
       requires:  !define(PETSC_USE_64BIT_INDICES)
 
    test:
-      args: -fin ${PETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout outputfile
+      args: -fin ${wPETSC_DIR}/share/petsc/datafiles/matrices/amesos2_test_mat0.mtx -fout outputfile
       requires: double !complex !define(PETSC_USE_64BIT_INDICES)
 
 TEST*/
