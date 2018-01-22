@@ -551,10 +551,9 @@ class Configure(config.package.Package):
         self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.libraries.toString(lib)+' '+self.compilers.LIBS
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
-        out  = f.read()
+        result  = f.read()
         f.close()
         os.remove(filename)
-        result = out.split("=")[1].split("'")[0]
       self.popLanguage()
       if lib:
         self.compilers.LIBS = oldLibs
@@ -570,16 +569,31 @@ class Configure(config.package.Package):
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
-                  fprintf(output, "  '--known-64-bit-blas-indices=%d',\\n",(int)(dotresultmkl != 34));'''
+                  fprintf(output, "%g",dotresultmkl);'''
     result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
     if result:
+      self.log.write('Checking for 64 bit blas indices: result' +str(result)+'\n')
       result = int(result)
-      if result:
+      if not result == 34:
+        if self.defaultPrecision == 'single':
+          self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
+          # On Apple single precision sdot() returns a double so we need to test that case
+          body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+                  '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
+                  int one1mkl = 1,nmkl = 2;
+                  double dotresultmkl = 0;
+                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  fprintf(output, "%g",dotresultmkl);'''
+          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
+          result = int(result)
+      if not result == 34:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
+        self.log.write('Checking for 64 bit blas indices: result not equal to 34 so assuming 64 bit blas indices\n')
     else:
       self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
       self.has64bitindices = 1
+      self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
     self.log.write('Checking if sdot() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
@@ -593,11 +607,16 @@ class Configure(config.package.Package):
                      } else {
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
-                  fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
+                  fprintf(output, "%g",sdotresult);\n'''
     result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
     if result:
+      self.log.write('Checking for sdot return double: result' +str(result)+'\n')
       result = int(result)
-      if result: self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+      if not result == 9:
+        self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+        self.log.write('Checking sdot(): Program did return with not 9 for output so assume returns double\n')
+    else:
+      self.log.write('Checking sdot(): Program did not return with output so assume returns single\n')
     self.log.write('Checking if snrm() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     body     = '''extern float '''+self.mangleBlasNoPrefix('snrm2')+'''(const int*,const float*,const int*);
@@ -611,8 +630,13 @@ class Configure(config.package.Package):
                      } else {
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
-                  fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
+                  fprintf(output, "%g",normresult);\n'''
     result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
     if result:
+      self.log.write('Checking for snrm2 return double: result' +str(result)+'\n')
       result = int(result)
-      if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+      if not result == 3:
+        self.log.write('Checking sdot(): Program did not return with 9 for output so assume returns double\n')
+        self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+    else:
+      self.log.write('Checking snrm(): Program did not return with output so assume returns single\n')
