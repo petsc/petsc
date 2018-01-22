@@ -32,7 +32,7 @@
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
-      PetscInt f2,f9,f6, one
+      PetscInt f2,f9,f6,one
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
       PetscMPIInt size,rank
@@ -42,7 +42,7 @@
       PetscReal, external :: ex54_psi
       PetscReal::theta,eps,h,x,y,xsj
       PetscReal::coord(2,4),dd(2,2),ev(3),blb(2)
-
+      real(8)::r1,r2
       common /ex54_theta/ theta
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -54,6 +54,7 @@
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      one = 1
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
 !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,9 +168,10 @@
             endif               ! BC
          endif                  ! add element
          if ( qj > 0 ) then      ! set rhs
-
-            val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*exp(-100*((y+h/2)-blb(2))**2)
-            one = 1
+            r1 = -100*((x+h/2)-blb(1))**2
+            r2 = -100*((y+h/2)-blb(2))**2
+            r1 = h*h*exp(r1)*exp(r2)
+            val = r1
             call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
