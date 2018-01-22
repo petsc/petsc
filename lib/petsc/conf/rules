@@ -694,13 +694,17 @@ manconcepts:
 # including /impls/ . We exclude any line with a semicolon to avoid matching
 # prototypes.
 #
+# Efficiency note: this runs git grep for each man page. It may be more efficient
+#  to run it once for all possible implementation functions and store the results, 
+#  sorted, in a temporary file.
+#
 manimplementations:
 	-@for i in docs/manualpages/*/*.html; do \
           functionName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?PetscErrorCode $${functionName}_[^_]*(" -- */impls/* | grep -v ";" > impls.html ; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(extern \)\?PetscErrorCode\s\+$${functionName}_.*(" -- */impls/* | grep -v ";" > impls.html ; \
           if [ -s impls.html ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
-            sed "s?\(.*\.c\).*\($${functionName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" impls.html >> $$i ; \
+            sed "s?\(.*\.cx*\).*\($${functionName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" impls.html >> $$i ; \
             grep -v /BODY $$i > tmp; \
             printf "</BODY></HTML>" >> tmp; \
             mv tmp $$i ; \
