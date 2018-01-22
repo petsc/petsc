@@ -11,6 +11,7 @@ typedef struct {
   PetscBool interpolate;                  /* Interpolate mesh */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   char      partitioning[64];
+  char      repartitioning[64];
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -33,7 +34,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   dim = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
   ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGCURRENT,64);CHKERRQ(ierr);
+  ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGCURRENT,64);CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,64,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None",options->repartitioning, options->repartitioning,64,NULL);CHKERRQ(ierr);
   if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -137,7 +140,7 @@ int main(int argc, char **argv)
   /* repartition distributed DM dmdist1 using PETSCPARTITIONERPARMETIS */
   ierr = DMPlexGetPartitioner(dmdist1, &part1);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"dp1_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part1, PETSCPARTITIONERPARMETIS);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(part1, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
   ierr = PetscPartitionerPartition(part1, dmdist1, s1, &is1);CHKERRQ(ierr);
@@ -147,7 +150,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part2,"dp2_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING);CHKERRQ(ierr);
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(mp, MATPARTITIONINGPARMETIS);CHKERRQ(ierr);
+  ierr = MatPartitioningSetType(mp, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
   ierr = PetscPartitionerPartition(part2, dmdist2, s2, &is2);CHKERRQ(ierr);
