@@ -130,8 +130,17 @@ int main(int argc, char **argv)
   ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
   if (!flg) PetscPrintf(comm, "PetscSections are not equal with % with size %d.\n",user.partitioning,size);
 
+#if defined(PETSC_HAVE_PTSCOTCH)
+  _SCOTCHintRandSeed(1);
+#endif
+
   /* distribute both DMs */
   ierr = DMPlexDistribute(dm1, 0, NULL, &dmdist1);CHKERRQ(ierr);
+
+  #if defined(PETSC_HAVE_PTSCOTCH)
+  _SCOTCHintRandSeed(1);
+#endif
+
   ierr = DMPlexDistribute(dm2, 0, NULL, &dmdist2);CHKERRQ(ierr);
 
   /* cleanup */
