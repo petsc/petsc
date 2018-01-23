@@ -82,7 +82,7 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[],char dfilena
     char    viewername_minus_ext[PETSC_MAX_PATH_LEN];
     
     ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(viewername_minus_ext,len-3,"%s",filename);CHKERRQ(ierr);
+    ierr = PetscStrncpy(viewername_minus_ext,filename,len-2);CHKERRQ(ierr);
     ierr = PetscSNPrintf(dfilename,PETSC_MAX_PATH_LEN-1,"%s_swarm_fields.pbin",viewername_minus_ext);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"File extension must by .xmf");
 
