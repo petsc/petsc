@@ -216,7 +216,7 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked_(Mat *mat,PetscInt *m, Pets
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked2_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], F90Array2d *y,InsertMode *addv, int *ierr PETSC_F90_2PTR_PROTO(ptrd)){
   PetscScalar *fa;
-  *ierr = F90Array2dAccess(y,MPIU_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array2dAccess(y,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   matsetvaluesblocked_(mat,m,idxm,n,idxn,fa,addv,ierr);
 }
 
