@@ -1034,7 +1034,6 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(r,PETSCRAND48);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh);CHKERRQ(ierr);
     ierr = PetscRandomSetSeed(r,(unsigned long)rank);CHKERRQ(ierr);
     ierr = PetscRandomSeed(r);CHKERRQ(ierr);

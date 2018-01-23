@@ -96,6 +96,6 @@ int main(int argc,char **args)
       suffix: 6
       nsize: 7
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -mat_type baij> ex136_6.tmp 2>&1
+      args: -f ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -mat_type baij
 
 TEST*/

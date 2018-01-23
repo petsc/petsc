@@ -65,7 +65,7 @@ int main(int argc,char **args)
    test:
       nsize: 4
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
 
 
 TEST*/
