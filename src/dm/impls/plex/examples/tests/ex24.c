@@ -182,14 +182,14 @@ int main(int argc, char **argv)
     ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
     ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
     ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.partitioning,size);
+    if (!flg) PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.repartitioning,size);
     ierr = ISDestroy(&is1g);CHKERRQ(ierr);
     ierr = ISDestroy(&is2g);CHKERRQ(ierr);
   }
 
   /* compare the two PetscSections */
   ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.partitioning,size);
+  if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);
 
   /* redistribute both distributed DMs */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 
   /* compare the two distributed DMs */
   ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.partitioning,size);
+  if (!flg) PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);
 
   /* cleanup */
   ierr = PetscSectionDestroy(&s1);CHKERRQ(ierr);
