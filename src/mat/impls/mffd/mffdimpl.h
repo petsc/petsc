@@ -26,7 +26,8 @@ struct _MFOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,MatMFFD);
 };
 
-struct _p_MatMFFD {    /* context for default matrix-free SNES */
+/* context for default matrix-free SNES */
+struct _p_MatMFFD {
   PETSCHEADER(struct _MFOps);
   Vec            w;                                     /* work vector */
   PetscReal      error_rel;                             /* square root of relative error in computing function */
