@@ -333,7 +333,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 
   Use ./configure --download-suitesparse to install PETSc to use UMFPACK
 
-  Use -pc_type lu -pc_factor_mat_solver_package umfpack to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package umfpack to use this direct solver
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.

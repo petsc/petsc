@@ -75,7 +75,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const 
 
   Use ./configure --download-elemental to have PETSc installed with Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_package sparseelemental to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package sparseelemental to use this direct solver
 
   This is currently not supported.
 

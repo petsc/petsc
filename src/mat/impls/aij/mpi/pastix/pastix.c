@@ -483,7 +483,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
   Use ./configure --download-pastix --download-ptscotch  to have PETSc installed with PasTiX
 
-  Use -pc_type lu -pc_factor_mat_solver_package pastix to us this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_package pastix to use this direct solver
 
   Options Database Keys:
 + -mat_pastix_verbose   <0,1,2>   - print level

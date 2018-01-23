@@ -2066,7 +2066,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 
   Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with MUMPS
 
-  Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to us this direct solver
+  Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to use this direct solver
 
   Options Database Keys:
 +  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages 
