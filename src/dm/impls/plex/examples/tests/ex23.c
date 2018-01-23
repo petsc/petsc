@@ -103,7 +103,7 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DM *subdm, AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = DMLabelCreate("sub", &label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   ierr = DMPlexCreateSubmesh(dm, label, 1, subdm);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&label);CHKERRQ(ierr);

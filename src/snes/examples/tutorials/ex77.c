@@ -353,7 +353,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
     ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
     if (is) {
       PetscReal faceCoord;

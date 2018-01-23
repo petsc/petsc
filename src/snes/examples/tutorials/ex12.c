@@ -481,7 +481,7 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscFunctionBeginUser;
   ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
   ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -540,7 +540,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
   } else if (user->bcType == DIRICHLET) {
     PetscBool hasLabel;
 
