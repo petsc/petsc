@@ -740,7 +740,7 @@
 !/*TEST
 !
 !   build:
-!      requires: !single !libpgf90
+!      requires: !single !libpgf90 !complex
 !
 !   test:
 !      nsize: 4
