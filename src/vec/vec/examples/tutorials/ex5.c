@@ -75,9 +75,11 @@ int main(int argc,char **args)
 
      test:
        nsize: 1
+       requires: mpiio
 
      test:
        suffix: 2
        nsize: 2
+       requires: mpiio
 
 TEST*/

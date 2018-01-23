@@ -254,5 +254,6 @@ int main(int argc,char **args)
       nsize: 6
       args: -usempiio
       output_file: output/ex46_2_p6.out
+      requires: mpiio
 
 TEST*/
