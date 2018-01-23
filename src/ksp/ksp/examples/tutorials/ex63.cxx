@@ -229,10 +229,12 @@ int main(int argc, char *argv[]) {
    test:
       requires: superlu
       args: --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLU --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu -ksp_view -ksp_converged_reason
+      filter: egrep -v "(Teuchos|Amesos2)"
 
    test:
       suffix: 2
       requires: superlu_dist
       args: --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLUDist --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu_dist -ksp_view -ksp_converged_reason
+      filter: egrep -v "(Teuchos|Amesos2)"
 
 TEST*/
