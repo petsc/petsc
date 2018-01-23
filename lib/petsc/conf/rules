@@ -688,9 +688,11 @@ manconcepts:
           done
 
 #
-#    Goes through all manual pages adding links to implementations of the method,
-# at the end of the file. For these purposes, we use git grep to look for
-# functions with a single underscore following the function's name, in paths
+#    Goes through all manual pages adding links to implementations of the method
+# or class, at the end of the file. 
+# 
+# To find functions implementing methods, we use git grep to look for
+# functions with a single underscore following the items's name, in paths
 # including /impls/ . We exclude any line with a semicolon to avoid matching
 # prototypes.
 #
@@ -698,20 +700,34 @@ manconcepts:
 #  to run it once for all possible implementation functions and store the results, 
 #  sorted, in a temporary file.
 #
+# To find class implementations, we populate implsClassAll.txt with candidates,
+# and then match any lines similar to "struct _p_itemName {", not containing a semicolon,
+# which likely define data for class itemName.
+#
 manimplementations:
-	-@for i in docs/manualpages/*/*.html; do \
-          functionName=`basename $$i .html`; \
-          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(extern \)\?PetscErrorCode\s\+$${functionName}_.*(" -- */impls/* | grep -v ";" > impls.html ; \
-          if [ -s impls.html ] ; then \
+	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.c *.h *.cxx | grep -v ";" | grep -v "/examples/" > implsClassAll.txt ; \
+  for i in docs/manualpages/*/*.html; do \
+          itemName=`basename $$i .html`; \
+          git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(extern \)\?PetscErrorCode\s\+$${itemName}_.*(" -- */impls/* | grep -v ";" > implsFunc.txt ; \
+          grep "_p_$${itemName}\b" implsClassAll.txt > implsClass.txt ; \
+          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
-            sed "s?\(.*\.cx*\).*\($${functionName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" impls.html >> $$i ; \
+          fi ; \
+          if [ -s implsFunc.txt ] ; then \
+            sed "s?\(.*\.cx*\).*\($${itemName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
+          fi ; \
+          if [ -s implsClass.txt ] ; then \
+            sed "s?\(.*\.[ch]x*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
+          fi ; \
+          if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             grep -v /BODY $$i > tmp; \
             printf "</BODY></HTML>" >> tmp; \
             mv tmp $$i ; \
             ${RM} tmp ; \
           fi ; \
-          ${RM} impls.html ; \
-          done
+          ${RM} implsFunc.txt implsClass.txt; \
+  done ; \
+  ${RM} implsClassAll.txt
 
 getexlist:
 	-@${PETSC_DIR}/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
