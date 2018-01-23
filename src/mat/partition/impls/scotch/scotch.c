@@ -232,14 +232,10 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   PetscMPIInt              rank;
   Mat                      mat  = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj*)mat->data;
-  PetscBool                flg;
-  PetscInt                 i,j,wgtflag=0,bs=1,nold;
+  PetscBool                flg,distributed;
+  PetscInt                 i,j,p,wgtflag=0,bs=1,nold;
   PetscReal                *vwgttab,deltval;
   SCOTCH_Num               *locals,*velotab,*veloloctab,*edloloctab,vertlocnbr,edgelocnbr,nparts=part->n;
-  SCOTCH_Arch              archdat;
-  SCOTCH_Dgraph            grafdat;
-  SCOTCH_Dmapping          mappdat;
-  SCOTCH_Strat             stradat;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
@@ -269,32 +265,62 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
   ierr = PetscFree(vwgttab);CHKERRQ(ierr);
 
-  ierr = SCOTCH_dgraphInit(&grafdat,PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
-
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
   veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights : NULL;
   edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values : NULL;
 
-  ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
-                            NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
+  /* detect whether all vertices are located at the same process in original graph */
+  for (p = 0; !mat->rmap->range[p+1] && p < nparts; ++p);
+  distributed = (mat->rmap->range[p+1] == mat->rmap->N) ? PETSC_FALSE : PETSC_TRUE;
+
+  if (distributed) {
+    SCOTCH_Arch              archdat;
+    SCOTCH_Dgraph            grafdat;
+    SCOTCH_Dmapping          mappdat;
+    SCOTCH_Strat             stradat;
+
+    ierr = SCOTCH_dgraphInit(&grafdat,PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
+    ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
+                              NULL,edgelocnbr,edgelocnbr,adj->j,NULL,edloloctab);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
+    ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
 #endif
 
-  ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
-  ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
-  ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
+    ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
+    ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
+    ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
 
-  ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
-  ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
-  ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
+    ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+    ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
+    ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
 
-  SCOTCH_dgraphMapExit (&grafdat,&mappdat);
-  SCOTCH_archExit(&archdat);
-  SCOTCH_stratExit(&stradat);
-  SCOTCH_dgraphExit(&grafdat);
+    SCOTCH_dgraphMapExit(&grafdat,&mappdat);
+    SCOTCH_archExit(&archdat);
+    SCOTCH_stratExit(&stradat);
+    SCOTCH_dgraphExit(&grafdat);
+
+  } else if (rank == p) {
+    SCOTCH_Graph   grafdat;
+    SCOTCH_Strat   stradat;
+
+    ierr = SCOTCH_graphInit(&grafdat);CHKERRQ(ierr);
+    ierr = SCOTCH_graphBuild(&grafdat,0,vertlocnbr,adj->i,adj->i+1,veloloctab,NULL,edgelocnbr,adj->j,edloloctab);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG)
+    ierr = SCOTCH_graphCheck(&grafdat);CHKERRQ(ierr);
+#endif
+
+    ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
+    ierr = SCOTCH_stratGraphMapBuild(&stradat,scotch->strategy,nparts,scotch->imbalance);CHKERRQ(ierr);
+
+    ierr = SCOTCH_graphPart(&grafdat,nparts,&stradat,locals);CHKERRQ(ierr);
+
+    SCOTCH_stratExit(&stradat);
+    SCOTCH_graphExit(&grafdat);
+  }
+
   ierr = PetscFree(velotab);CHKERRQ(ierr);
 
   if (bs > 1) {
