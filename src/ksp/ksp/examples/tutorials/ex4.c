@@ -202,5 +202,6 @@ int main(int argc, char **argv)
    test:
       args: -pc_type none
       requires: cusp
+      TODO: Broken MatSetValuesBatch_SeqAIJCUSP()
 
 TEST*/

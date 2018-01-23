@@ -108,6 +108,5 @@ int main(int argc,char **args)
    test:
       suffix: 2
       args: -reverse -pc_type cholesky
-      output_file: output/ex51_1.out
 
 TEST*/
