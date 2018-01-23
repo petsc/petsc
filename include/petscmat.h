@@ -1376,7 +1376,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning,P
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning,PetscBool);
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool);
 
-typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
+typedef enum { MP_PTSCOTCH_DEFAULT,MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
 PETSC_EXTERN const char *const MPPTScotchStrategyTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);

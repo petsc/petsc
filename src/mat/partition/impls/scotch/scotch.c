@@ -99,6 +99,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 +  part - the partitioning context
 -  strategy - the strategy, one of
 .vb
+     MP_PTSCOTCH_DEFAULT     - Default behavior
      MP_PTSCOTCH_QUALITY     - Prioritize quality over speed
      MP_PTSCOTCH_SPEED       - Prioritize speed over quality
      MP_PTSCOTCH_BALANCE     - Enforce load balance
@@ -138,6 +139,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
   case MP_PTSCOTCH_BALANCE:     scotch->strategy = SCOTCH_STRATBALANCE; break;
   case MP_PTSCOTCH_SAFETY:      scotch->strategy = SCOTCH_STRATSAFETY; break;
   case MP_PTSCOTCH_SCALABILITY: scotch->strategy = SCOTCH_STRATSCALABILITY; break;
+  default:                      scotch->strategy = SCOTCH_STRATDEFAULT; break;
   }
   PetscFunctionReturn(0);
 }
@@ -179,6 +181,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
   case SCOTCH_STRATBALANCE:     *strategy = MP_PTSCOTCH_BALANCE; break;
   case SCOTCH_STRATSAFETY:      *strategy = MP_PTSCOTCH_SAFETY; break;
   case SCOTCH_STRATSCALABILITY: *strategy = MP_PTSCOTCH_SCALABILITY; break;
+  default:                      *strategy = MP_PTSCOTCH_DEFAULT; break;
   }
   PetscFunctionReturn(0);
 }
@@ -199,6 +202,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
     case SCOTCH_STRATBALANCE:     str = "Enforce load balance"; break;
     case SCOTCH_STRATSAFETY:      str = "Avoid methods that may fail"; break;
     case SCOTCH_STRATSCALABILITY: str = "Favor scalability as much as possible"; break;
+    default:                      str = "Default behavior"; break;
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Strategy=%s\n",str);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Load imbalance ratio=%g\n",scotch->imbalance);CHKERRQ(ierr);
@@ -380,7 +384,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   part->data = (void*)scotch;
 
   scotch->imbalance = 0.01;
-  scotch->strategy  = SCOTCH_STRATQUALITY;
+  scotch->strategy  = SCOTCH_STRATDEFAULT;
 
   part->ops->apply          = MatPartitioningApply_PTScotch;
   part->ops->view           = MatPartitioningView_PTScotch;
