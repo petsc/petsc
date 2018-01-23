@@ -14,8 +14,7 @@ struct _DMAdaptorOps {
   PetscErrorCode (*computeerrorindicator)(DMAdaptor,PetscInt,PetscInt,const PetscScalar*,const PetscScalar*,const PetscFVCellGeom*,PetscReal*,void*);
 };
 
-struct _p_DMAdaptor
-{
+struct _p_DMAdaptor {
   PETSCHEADER(struct _DMAdaptorOps);
   /* Inputs */
   DM                 idm;  /* Initial grid */
