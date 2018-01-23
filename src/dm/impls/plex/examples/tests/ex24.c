@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 
   /* compare the two PetscSections */
   ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "PetscSections are not equal with % with size %d.\n",user.partitioning,size);
+  if (!flg) PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);
 
   /* distribute both DMs */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
