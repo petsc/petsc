@@ -445,20 +445,20 @@ int main(int argc,char **args)
 
    test:
       suffix: superlu
-      requires: superlu
+      requires: superlu superlu_dist
       args: -use_superlu_lu
       output_file: output/ex52_2.out
 
    test:
       suffix: superlu_dist
       nsize: 2
-      requires: superlu
+      requires: superlu superlu_dist
       args: -use_superlu_lu
       output_file: output/ex52_2.out
 
    test:
       suffix: superlu_ilu
-      requires: superlu
+      requires: superlu superlu_dist
       args: -use_superlu_ilu
       output_file: output/ex52_2.out
 
