@@ -452,23 +452,23 @@ class Configure(config.base.Configure):
       self.LIBS = ''
     return
 
-  def checkCompiler(self, language):
+  def checkCompiler(self, language, linkLanguage=None,includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
-    if not self.checkCompile():
+    if not self.checkCompile(includes, body, cleanup, codeBegin, codeEnd):
       msg = 'Cannot compile '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
     if language == 'CUDA': # do not check CUDA linker since it is never used (and is broken on Mac with -m64)
       self.popLanguage()
       return
-    if not self.checkLink():
+    if not self.checkLink(linkLanguage=linkLanguage,includes=includes,body=body):
       msg = 'Cannot compile/link '+language+' with '+self.getCompiler()+'.'
       self.popLanguage()
       raise RuntimeError(msg)
     oldlibs = self.LIBS
     self.LIBS += ' -lpetsc-ufod4vtr9mqHvKIQiVAm'
-    if self.checkLink():
+    if self.checkLink(linkLanguage=linkLanguage):
       msg = language + ' compiler ' + self.getCompiler()+ ''' is broken! It is returning a zero error when the linking failed! Either
  1) switch to another compiler suite or
  2) report this entire error message to your compiler/linker suite vendor and ask for fix for this issue.'''
@@ -477,7 +477,7 @@ class Configure(config.base.Configure):
       raise RuntimeError(msg)
     self.LIBS = oldlibs
     if not self.argDB['with-batch']:
-      if not self.checkRun():
+      if not self.checkRun(linkLanguage=linkLanguage):
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
         if self.isIntel(self.getCompiler(), self.log):
           msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
