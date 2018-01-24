@@ -702,6 +702,9 @@ class generateExamples(Petsc):
       for stest in testDict['subtests']:
         if 'requires' in testDict[stest]:
           testDict['requires']+=" "+testDict[stest]['requires']
+        if 'nsize' in testDict[stest]:
+          if testDict[stest].get('nsize',1)>1 and 'MPI_IS_MPIUNI' in self.conf:
+            testDict['SKIP'].append("Parallel test with serial build")
 
 
     # Now go through all requirements
