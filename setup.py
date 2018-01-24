@@ -239,7 +239,7 @@ def version():
         'major'  : re.compile(r"#define\s+PETSC_VERSION_MAJOR\s+(\d+)"),
         'minor'  : re.compile(r"#define\s+PETSC_VERSION_MINOR\s+(\d+)"),
         'micro'  : re.compile(r"#define\s+PETSC_VERSION_SUBMINOR\s+(\d+)"),
-        'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
+        'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+([-]*\d+)"),
         }
     petscversion_h = os.path.join('include','petscversion.h')
     data = open(petscversion_h, 'r').read()
@@ -247,7 +247,7 @@ def version():
     minor = int(version_re['minor'].search(data).groups()[0])
     micro = int(version_re['micro'].search(data).groups()[0])
     release = int(version_re['release'].search(data).groups()[0])
-    if release:
+    if release > 0 :
         v = "%d.%d.%d" % (major, minor, micro)
     else:
         v = "%d.%d.0.dev%d" % (major, minor+1, 0)
