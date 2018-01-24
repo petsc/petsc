@@ -302,8 +302,6 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should
 actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} cast in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
-\item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
-  call \lstinline{PetscLogFlops()} directly when needed.
 \item Do not use \lstinline{if (rank == 0)} or \lstinline{if (v == NULL)} or \lstinline{if (flg == PETSC_TRUE)} or \lstinline{if (flg == PETSC_FALSE)}.
 Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg)} or \lstinline{if (!flg)}.
 \item Do not use \lstinline{#ifdef} or \lstinline{#ifndef}. Rather, use \lstinline{#if defined(...} or \lstinline{#if !defined(...}
@@ -354,6 +352,8 @@ ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. 
   For example, one should not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it. 
   One should use \lstinline{MPI_Allreduce()} directly in the code.
+\item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
+  call \lstinline{PetscLogFlops()} directly when needed.
 \item \label{styleitem:petscextern} Library functions should be declared \lstinline{PETSC_INTERN} if they are intended to be visible only within a single shared library. 
 They should be declared \lstinline{PETSC_EXTERN} if intended to be visible across shared libraries. 
 Note that PETSc can be configured to build a separate shared library for each top-level class (\lstinline{Mat}, \lstinline{Vec}, \lstinline{KSP}, etc.) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may be marked \lstinline{PETSC_EXTERN}.
