@@ -714,10 +714,10 @@ manimplementations:
             printf "<P><H3><FONT COLOR=\"CC3333\">Implementations</FONT></H3>" >> $$i; \
           fi ; \
           if [ -s implsFunc.txt ] ; then \
-            sed "s?\(.*\.cx*\).*\($${itemName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
+            sed "s?\(.*\.cx*u*\).*\($${itemName}.*\)(.*)?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsFunc.txt >> $$i ; \
           fi ; \
           if [ -s implsClass.txt ] ; then \
-            sed "s?\(.*\.[ch]x*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
+            sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
           fi ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
             grep -v /BODY $$i > tmp; \
