@@ -3214,6 +3214,28 @@ PetscErrorCode  SNESSetForceIteration(SNES snes,PetscBool force)
   PetscFunctionReturn(0);
 }
 
+/*@
+   SNESGetForceIteration - Whether or not to force SNESSolve() take at least one iteration regardless of the initial residual norm
+
+   Logically Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameter:
+.  force - PETSC_TRUE requires at least one iteration.
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetForceIteration(), SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
+@*/
+PetscErrorCode  SNESGetForceIteration(SNES snes,PetscBool *force)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  *force = snes->forceiteration;
+  PetscFunctionReturn(0);
+}
 
 /*@
    SNESSetTolerances - Sets various parameters used in convergence tests.
