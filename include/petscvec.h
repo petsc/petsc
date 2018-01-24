@@ -532,6 +532,7 @@ PETSC_EXTERN PetscErrorCode VecScatterCreateToZero(Vec,VecScatter*,Vec*);
 PETSC_EXTERN PetscErrorCode ISComplementVec(IS,Vec,IS*);
 PETSC_EXTERN PetscErrorCode VecPow(Vec, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode VecWhichInactive(Vec, Vec, Vec, Vec, PetscBool, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
