@@ -165,7 +165,10 @@ We use several conventions:
 \item Function names in structures are the same as the base application
       function name without the object prefix, and are in small letters.
       For example, \lstinline{MatMultTranspose()} has a structure name of
-      \lstinline{multtranspose()}.
+      \lstinline{multtranspose}.
+\item Names of Implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example \lstinline{KSPSolve_GMRES()}.
+\item Each application usable function begins with the name of the class object, followed by any subclass name,
+  for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
