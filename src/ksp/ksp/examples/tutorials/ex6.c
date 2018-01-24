@@ -87,3 +87,22 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -ksp_view
+      output_file: output/ex6_0.out
+
+   test:
+      suffix: 1
+      nsize: 4
+      args: -ksp_view
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -user_subdomains -ksp_view ${ARGS}
+
+TEST*/

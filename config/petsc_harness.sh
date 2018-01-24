@@ -163,7 +163,12 @@ function petsc_testrun() {
     else
       printf "not ok $tlabel\n" | tee -a ${testlogfile}
     fi
-    awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+    # We've had tests fail but stderr->stdout. Fix with this test.
+    if test -s $3; then
+       awk '{print "#\t" $0}' < $3 | tee -a ${testlogfile}
+    else
+       awk '{print "#\t" $0}' < $2 | tee -a ${testlogfile}
+    fi
     let failed=$failed+1
     failures="$failures $tlabel"
   fi

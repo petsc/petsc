@@ -156,58 +156,87 @@ def _getSeparateTestvars(testDict):
 
   return sepvars
 
+def _getNewArgs(args):
+  """
+  Given: String that has args that might have loops in them
+  Return:  All of the arguments/values that do not have 
+             for 'separate output' in for loops
+  """
+  newargs=''
+  if not args.strip(): return args
+  for varset in re.split('-(?=[a-zA-Z])',args):
+    if not varset.strip(): continue
+    if '{{' not in varset:
+      if 'separate' not in varset:
+        newargs+="-"+varset.strip()+" "
+
+  return newargs
+
 def _getVarVals(findvar,testDict):
   """
   Given: variable that is either nsize or in args
-  Return:  Values to loop over
+  Return:  Values to loop over and the other arguments
+    Note that we keep the other arguments even if they have
+    for loops to enable stepping through all of the for lops
   """
-  vals=None
-  newargs=''
+  save_vals=None
   if findvar=='nsize':
     varset=testDict[findvar]
-    keynm,vals,ftype=parseLoopArgs('nsize '+varset)
+    keynm,save_vals,ftype=parseLoopArgs('nsize '+varset)
   else:
     varlist=[]
     for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
       if not varset.strip(): continue
-      if '{{' in varset:
-        keyvar,vals,ftype=parseLoopArgs(varset)
-        if keyvar!=findvar: 
-          newargs+="-"+varset.strip()+" "
-          continue
-      else:
-        newargs+="-"+varset.strip()+" "
+      if '{{' not in varset: continue
+      keyvar,vals,ftype=parseLoopArgs(varset)
+      if keyvar==findvar: 
+        save_vals=vals
 
-  if not vals: raise StandardError("Could not find separate_testvar: "+findvar)
-  return vals,newargs
+  if not save_vals: raise StandardError("Could not find separate_testvar: "+findvar)
+  return save_vals
 
 def genTestsSeparateTestvars(intests,indicts):
   """
   Given: testname, sdict with 'separate_testvars
   Return: testnames,sdicts: List of generated tests
+    The tricky part here is the {{ ... }separate output}
+    that can be used multiple times
   """
   testnames=[]; sdicts=[]
   for i in range(len(intests)):
     testname=intests[i]; sdict=indicts[i]; i+=1
     separate_testvars=_getSeparateTestvars(sdict)
     if len(separate_testvars)>0:
+      sep_dicts=[sdict.copy()]
+      if 'args' in sep_dicts[0]:
+        sep_dicts[0]['args']=_getNewArgs(sdict['args'])
+      sep_testnames=[testname]
       for kvar in separate_testvars:
-        kvals,newargs=_getVarVals(kvar,sdict)
-        # No errors means we are good to go
+        kvals=_getVarVals(kvar,sdict)
+
+        # Have to do loop over previous var/val combos as well
+        # and accumulate as we go
+        val_testnames=[]; val_dicts=[]
         for val in kvals.split():
-          kvardict=sdict.copy()
-          gensuffix="_"+kvar+"-"+val
-          newtestnm=testname+gensuffix
-          if sdict.has_key('suffix'):
-            kvardict['suffix']=sdict['suffix']+gensuffix
-          else:
-            kvardict['suffix']=gensuffix
-          if kvar=='nsize':
-            kvardict[kvar]=val
-          else:
-            kvardict['args']=newargs+"-"+kvar+" "+val
-          testnames.append(newtestnm)
-          sdicts.append(kvardict)
+          gensuffix="_"+kvar+"-"+val.replace(',','__')
+          for kvaltestnm in sep_testnames:
+            val_testnames.append(kvaltestnm+gensuffix)
+          for kv in sep_dicts:
+            kvardict=kv.copy()
+            # If the last var then we have the final version
+            if 'suffix' in sdict:
+              kvardict['suffix']+=gensuffix
+            else:
+              kvardict['suffix']=gensuffix
+            if kvar=='nsize':
+              kvardict[kvar]=val
+            else:
+              kvardict['args']+="-"+kvar+" "+val+" "
+            val_dicts.append(kvardict)
+        sep_testnames=val_testnames
+        sep_dicts=val_dicts
+      testnames+=sep_testnames
+      sdicts+=sep_dicts
     else:
       testnames.append(testname)
       sdicts.append(sdict)

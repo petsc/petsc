@@ -48,3 +48,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+     build:
+       requires: define(PETSC_USE_SOCKET_VIEWER)
+
+     test:
+       TODO: Need to figure out how to test examples that use sockets
+
+TEST*/

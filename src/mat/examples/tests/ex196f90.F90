@@ -42,7 +42,7 @@
 !/*TEST
 !
 !   test:
-!      args: -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
+!      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump
 !      requires: !complex double !define(PETSC_USE_64BIT_INDICES)
 !
 !TEST*/

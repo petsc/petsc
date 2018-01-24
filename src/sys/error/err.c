@@ -59,14 +59,13 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
   char           command[PETSC_MAX_PATH_LEN];
   const char     *pdir;
   FILE           *fp;
-  int            rval;
 
   PetscFunctionBegin;
   ierr = PetscGetPetscDir(&pdir);if (ierr) PetscFunctionReturn(ierr);
   sprintf(command,"cd %s; emacsclient --no-wait +%d %s\n",pdir,line,file);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);if (ierr) PetscFunctionReturn(ierr);
-  ierr = PetscPClose(MPI_COMM_WORLD,fp,&rval);if (ierr) PetscFunctionReturn(ierr);
+  ierr = PetscPClose(MPI_COMM_WORLD,fp);if (ierr) PetscFunctionReturn(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

@@ -989,14 +989,14 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
 
    test:
       suffix: superlu_dist
-      requires: superlu
+      requires: superlu_dist
       args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
       output_file: output/ex19_superlu.out
 
    test:
       suffix: superlu_dist_2
       nsize: 2
-      requires: superlu
+      requires: superlu_dist
       args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
       output_file: output/ex19_superlu.out
 

@@ -132,3 +132,19 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
   PetscFunctionReturn(0);
 }
 
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -pc_type mg -pc_mg_type full -ksp_monitor_short -da_refine 3 -mg_coarse_pc_type svd -ksp_view
+
+   test:
+      suffix: 2
+      nsize: 4
+      args: -pc_type mg -pc_mg_type full -ksp_monitor_short -da_refine 3 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view
+
+TEST*/

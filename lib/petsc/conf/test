@@ -356,7 +356,7 @@ alltests:
           else \
             ALLTESTSLOG=alltests.log ;\
           fi; \
-          ${OMAKE} allgtest alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          ${OMAKE} allgtest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
           if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
             cat $${ALLTESTSLOG} | sed -e '1d' -e '$$d' | \
             grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
@@ -369,32 +369,6 @@ allgtest-tap:
 allgtest:
 	-@cd ${PETSC_DIR}; ${OMAKE} -k -f gmakefile.test -j ${MAKE_TEST_NP} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
 
-alltest:
-	-@date
-	-@for i in ${TEST_RUNS} ; do \
-          echo "******* Testing: ${TESTMODE}_$$i *******"; \
-	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
-	  if [ ${ALLTESTS_PRINT_PROGRESS}foo = dotfoo ] ; then printf "\n"; fi; \
-	done
-	-@date
 
-#
-#  parallel make of examples by directory
-#  The MAKEFLAGS= MFLAGS=  are so that the sub make processes don't know about the parallel make server of the main make process
-#  split the larger test directories up for more parallelism
-SUBDIRS =    src/ts/examples/tutorials src/snes/examples/tutorials src/ksp/ksp/examples/tutorials src/dm src/sys src/mat src/vec src/ksp/ksp/examples/tests src/ksp/ksp/examples/tests src/ts/examples/tests src/ksp/pc
-
-$(SUBDIRS)::
-	MAKEFLAGS= MFLAGS= $(OMAKE) -j 1 -C $@ alltest  > $@/alltests.log  2>&1 
-
-palltests:
-	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@${OMAKE} -j ${MAKE_NP} $(SUBDIRS)
-	-@cat src/*/alltests.log src/*/examples/*/alltests.log  src/ksp/pc/alltests.log  > ${PETSC_ARCH}/lib/petsc/conf/alltests.log
-
-
-tests_DATAFILESPATH:
-	${OMAKE} ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
 
 

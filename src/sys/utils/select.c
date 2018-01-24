@@ -68,7 +68,7 @@ PetscErrorCode  PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *t
   }
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(comm,machine,buffer,"r",&fp);CHKERRQ(ierr);
-  ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *fd;

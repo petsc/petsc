@@ -70,3 +70,54 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: veccuda
+
+   test:
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format ell -vec_type cuda -pc_type ilu
+
+   test:
+      suffix: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format hyb -vec_type cuda -ksp_type cg -pc_type icc
+
+   test:
+      suffix: 3
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu
+
+   test:
+      suffix: 4
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_package cusparse -mat_cusparse_storage_format csr -vec_type cuda -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd
+
+   test:
+      suffix: 5
+      nsize: 2
+      requires: datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda
+
+   test:
+      suffix: 6
+      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -pc_type none -vec_type seqcusp
+
+   test:
+      suffix: 7
+      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -mat_cusp_mult_storage_format ell -pc_type none -vec_type seqcusp
+
+
+   test:
+      suffix: 8
+      nsize: 2
+      requires: cusp datafilespath double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusp -pc_type none -vec_type mpicusp
+
+
+TEST*/

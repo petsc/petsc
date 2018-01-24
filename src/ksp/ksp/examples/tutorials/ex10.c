@@ -453,9 +453,6 @@ int main(int argc,char **args)
       args:  -ksp_type bicg
       test:
          suffix: 2
-      test:
-         suffix: 3
-         args: -pc_type asm
 
    testset:
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES)

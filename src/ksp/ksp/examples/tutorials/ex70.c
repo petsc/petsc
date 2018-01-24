@@ -946,8 +946,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = DMSetDimension(dms_quadrature,2);CHKERRQ(ierr);
   
   /* Register fields for viscosity and density on the quadrature points */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"eta_q",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_quadrature,"rho_q",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_quadrature);CHKERRQ(ierr);
   ierr = DMSwarmSetLocalSizes(dms_quadrature,nel_local * GAUSS_POINTS,0);CHKERRQ(ierr);
   
@@ -966,8 +966,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
   ierr = DMSwarmSetCellDM(dms_mpoint,dm_coeff);CHKERRQ(ierr);
   
   /* Register fields for viscosity and density */
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"eta",1,PETSC_REAL);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dms_mpoint,"rho",1,PETSC_REAL);CHKERRQ(ierr);
   ierr = DMSwarmFinalizeFieldRegister(dms_mpoint);CHKERRQ(ierr);
   
   ierr = PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL);CHKERRQ(ierr);
@@ -1034,7 +1034,6 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-    ierr = PetscRandomSetType(r,PETSCRAND48);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r,-randomize_fac*dh,randomize_fac*dh);CHKERRQ(ierr);
     ierr = PetscRandomSetSeed(r,(unsigned long)rank);CHKERRQ(ierr);
     ierr = PetscRandomSeed(r);CHKERRQ(ierr);
@@ -1214,20 +1213,16 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     ierr = VecStrideMin(X,0,NULL,&vx[0]);CHKERRQ(ierr);
     ierr = VecStrideMin(X,1,NULL,&vy[0]);CHKERRQ(ierr);
     
-    dt = 1.0e-6;
     max_v_step = PetscMax(vx[0],vx[1]);
     max_v_step = PetscMax(max_v_step,vy[0]);
     max_v_step = PetscMax(max_v_step,vy[1]);
     max_v = PetscMax(max_v,max_v_step);
-    
-    dt = 0.5 * (dh / max_v_step);
-    dt_max = PetscMax(dt_max,dt);
+
     dt_max = 2.0;
+    dt = 0.5 * (dh / max_v_step);
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... max v %1.4e , dt %1.4e : [total] max v %1.4e , dt_max %1.4e\n",(double)max_v_step,(double)dt,(double)max_v,(double)dt_max);CHKERRQ(ierr);
-    if (dt > dt_max) {
-      dt = dt_max;
-    }
-    
+    dt = PetscMin(dt_max,dt);
+ 
     /* advect */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... advect\n");CHKERRQ(ierr);
     ierr = MaterialPoint_AdvectRK1(dm_stokes,X,dt,dms_mpoint);CHKERRQ(ierr);
@@ -1238,7 +1233,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
     
     /* update cell population */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... populate cells\n");CHKERRQ(ierr);
-    ierr = MaterialPoint_PopulateCell(dm_stokes,dms_mpoint);
+    ierr = MaterialPoint_PopulateCell(dm_stokes,dms_mpoint);CHKERRQ(ierr);
     
     /* update coefficients on quadrature points */
     ierr = PetscPrintf(PETSC_COMM_WORLD,".... project\n");CHKERRQ(ierr);
@@ -1569,3 +1564,12 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes,Mat A,Vec f)
   ierr = BCApplyZero_WEST(dm_stokes,0,A,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*TEST
+
+   test:
+     requires: !complex double
+     filter: grep -v atomic
+     filter_output: grep -v atomic
+
+TEST*/

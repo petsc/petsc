@@ -18,6 +18,8 @@ linear solvers on the individual blocks.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -228,3 +230,50 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ksp_view
+
+   test:
+      suffix: mpiaijcusp
+      requires: cusp cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp
+
+   test:
+      suffix: mpiaijcusp_2
+      nsize: 2
+      requires: cusp cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp
+
+   test:
+      suffix: mpiaijcusp_simple
+      requires: cusp cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusp_simple_2
+      nsize: 2
+      requires: cusp cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+
+   test:
+      suffix: mpiaijcusparse
+      requires: cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse -vec_type mpicuda
+
+   test:
+      suffix: mpiaijcusparse_2
+      nsize: 2
+      requires: cusparse
+      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse -vec_type mpicuda
+
+TEST*/

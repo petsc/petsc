@@ -1,0 +1,6 @@
+First matrix
+KSPSetUp() failed due to DIVERGED_PCSETUP_FAILED
+PC reason is FACTOR_NUMERIC_ZEROPIVOT
+Second matrix
+Success!
+PC reason is FACTOR_NOERROR

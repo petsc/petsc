@@ -10,6 +10,8 @@ Input parameters include:\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -318,3 +320,19 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
 
   return 0;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      nsize: 2
+      args: -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: tsirm
+      args: -m 600 -n 600 -ksp_type tsirm -pc_type ksp -ksp_monitor_short -ksp_ksp_type fgmres -ksp_ksp_rtol 1e-10 -ksp_pc_type mg -ksp_ksp_max_it 30
+
+TEST*/

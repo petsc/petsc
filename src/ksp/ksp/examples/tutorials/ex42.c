@@ -2019,3 +2019,16 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type lu
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -stokes_ksp_monitor_short -stokes_ksp_converged_reason -stokes_pc_type redundant -stokes_redundant_pc_type lu
+
+TEST*/

@@ -197,3 +197,11 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_coarse_pc_factor_shift_type nonzero
+
+TEST*/

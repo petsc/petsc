@@ -489,3 +489,12 @@ for Scientists and Engineers" by David A. Kopriva.
   *qp   = Lnp1p - Lnm1p;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -ksp_monitor_short
+
+TEST*/
