@@ -435,11 +435,13 @@ PetscErrorCode InitializeData(AppCtx *user)
      test:
        args:  -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05
        requires: !single
+       TODO: produces different output for many different systems
 
      test:
        suffix: 2
        args: -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders -tao_pounders_delta 0.05
        requires: !single
+       TODO: produces different output for many different systems
 
      test:
        suffix: 3
@@ -451,5 +453,6 @@ PetscErrorCode InitializeData(AppCtx *user)
        suffix: 4
        args: -tao_smonitor -tao_max_it 100 -tao_type pounders -tao_pounders_delta 0.05 -pounders_subsolver_tao_type blmvm
        requires: !single
+       TODO: produces different output for many different systems
 
  TEST*/
