@@ -157,14 +157,31 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
   PetscFunctionReturn(0);
 }
 
+/*
+   Contains the list of registered DMPlexGenerators routines
+*/
+extern PetscFunctionList DMPlexGenerateList;
+
+struct _n_PetscFunctionList {
+  PetscErrorCode    (*generate)(DM, PetscBool, DM*);
+  PetscErrorCode    (*refine)(DM,PetscReal*, DM*);
+  char              *name;               /* string to identify routine */
+  PetscInt          dim;
+  PetscFunctionList next;                /* next pointer */
+};
+
 PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
 {
-  PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
-  PetscReal        refinementLimit;
-  PetscInt         dim, cStart, cEnd;
-  char             genname[1024], *name = NULL;
-  PetscBool        isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg, localized;
-  PetscErrorCode   ierr;
+  PetscErrorCode    (*refinementFunc)(const PetscReal [], PetscReal *);
+  PetscReal         refinementLimit;
+  PetscInt          dim, cStart, cEnd;
+  char              genname[1024], *name = NULL;
+  PetscBool         flg, localized;
+  PetscErrorCode    ierr;
+  PetscErrorCode    (*refine)(DM,PetscReal*,DM*);
+  PetscFunctionList fl;
+  PetscReal         *maxVolumes;
+  PetscInt          c;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
@@ -175,18 +192,31 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_generator", genname, 1024, &flg);CHKERRQ(ierr);
   if (flg) name = genname;
-  if (name) {
-    ierr = PetscStrcmp(name, "triangle", &isTriangle);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "tetgen",   &isTetgen);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "ctetgen",  &isCTetgen);CHKERRQ(ierr);
-  }
-  switch (dim) {
-  case 2:
-    if (!name || isTriangle) {
-#if defined(PETSC_HAVE_TRIANGLE)
-      PetscReal *maxVolumes;
-      PetscInt  c;
 
+  fl = DMPlexGenerateList;
+  if (name) {
+    while (fl) {
+      ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
+      if (flg) {
+        refine = fl->refine;
+        goto gotit;
+      }
+      fl = fl->next;
+    }
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Grid refiner %g not registered",name);CHKERRQ(ierr);
+  } else {
+    while (fl) {
+      if (dim-1 == fl->dim) {
+        refine = fl->refine;
+        goto gotit;
+      }
+      fl = fl->next;
+    }
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No grid refiner of dimension %D registered",dim);CHKERRQ(ierr);
+  }
+
+  gotit: switch (dim) {
+  case 2:
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       if (adaptLabel) {
         ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
@@ -202,28 +232,10 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-#if !defined(PETSC_USE_REAL_DOUBLE)
-      {
-        double *mvols;
-        ierr = PetscMalloc1(cEnd - cStart,&mvols);CHKERRQ(ierr);
-        for (c = 0; c < cEnd-cStart; ++c) mvols[c] = (double)maxVolumes[c];
-        ierr = DMPlexRefine_Triangle(dm, mvols, dmRefined);CHKERRQ(ierr);
-        ierr = PetscFree(mvols);CHKERRQ(ierr);
-      }
-#else
-      ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#endif
+      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");
-#endif
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 2D mesh generation package %s", name);
     break;
   case 3:
-    if (!name || isCTetgen || isTetgen) {
-      PetscReal *maxVolumes;
-      PetscInt   c;
-
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       if (adaptLabel) {
         ierr = DMPlexLabelToVolumeConstraint(dm, adaptLabel, cStart, cEnd, PETSC_DEFAULT, maxVolumes);CHKERRQ(ierr);
@@ -237,29 +249,8 @@ PetscErrorCode DMPlexRefine_Internal(DM dm, DMLabel adaptLabel, DM *dmRefined)
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-      if (!name) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with '--download-ctetgen' or '--with-clanguage=cxx --download-tetgen'.");
-#endif
-      } else if (isCTetgen) {
-#if defined(PETSC_HAVE_CTETGEN)
-        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
-#endif
-      } else {
-#if defined(PETSC_HAVE_TETGEN)
-        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
-#else
-        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --download-tetgen.");
-#endif
-      }
+      ierr = (*refine)(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 3D mesh generation package %s", name);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);

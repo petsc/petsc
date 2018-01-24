@@ -249,18 +249,6 @@ PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, DMLabel, DM *);
-#if defined(PETSC_HAVE_TRIANGLE)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_Triangle(DM, double[], DM *);
-#endif
-#if defined(PETSC_HAVE_TETGEN)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_Tetgen(DM, double[], DM *);
-#endif
-#if defined(PETSC_HAVE_CTETGEN)
-PETSC_INTERN PetscErrorCode DMPlexGenerate_CTetgen(DM, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexRefine_CTetgen(DM, PetscReal[], DM *);
-#endif
 
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in
