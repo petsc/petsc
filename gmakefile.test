@@ -7,25 +7,25 @@ CONFIGDIR := config
 mkfile_path := $(abspath $(MAKEFILE_LIST))
 TESTSRCDIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
-# If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
-include $(PETSC_ARCH)/lib/petsc/conf/petscvariables
-include ./lib/petsc/conf/variables
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+include $(PETSC_DIR)/lib/petsc/conf/variables
 
-ifeq ($(TESTDIR),)  # Default
-TESTDIR := $(PETSC_ARCH)/tests
+ifeq ($(TESTBASE),)  # Default
+TESTDIR := $(PETSC_DIR)/$(PETSC_ARCH)/tests
 gmakegentest_opts=
 else
-gmakegentest_opts="-t $(TESTDIR)"
-TESTDIR := $(TESTDIR)
+TESTDIR := $(PETSC_DIR)/$(PETSC_ARCH)/$(TESTBASE)
+gmakegentest_opts=-t $(TESTDIR)
 endif
-MODDIR := $(PETSC_ARCH)/include
-TESTLOGFILE = $(TESTDIR)/examples-$(PETSC_ARCH).log
+MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
+TESTLOGFILE = $(TESTDIR)/examples_$(PETSC_ARCH).log
+EXAMPLESDIR := .
 
 pkgs := sys vec mat dm ksp snes ts tao
 
-petscconf      := $(PETSC_ARCH)/include/petscconf.h
-petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
-generatedtest  := $(PETSC_ARCH)/lib/petsc/conf/testfiles
+petscconf      := $(PETSC_DIR)/$(PETSC_ARCH)/include/petscconf.h
+petscvariables := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
+generatedtest  := $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/testfiles
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -84,7 +84,7 @@ endif
 
 
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
-	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-arch=$(PETSC_ARCH) $(gmakegentest_opts)
+	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) $(gmakegentest_opts)
 
 -include $(generatedtest)
 
@@ -112,38 +112,38 @@ testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 $(generatedtest) : $(testsrcs)
 $(testsrcs) :
 
-$(TESTDIR)/%.o : %.c | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
 # Test modules go in a different directory
 $(TESTDIR)/%.o : MODDIR = $(@D)
 FCMOD = cd
-$(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) -I$(dir $<) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
-$(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) -I$(dir $<) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) -I$(dir $<) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 #   This is a hack to fix a broken gfortran.
-	-@if test -e "$(@:%.o=%.dtemp)" ; then \
+	-@if test -e "$(@:%.o=%.d)" ; then \
 	    if test "`head -1 $(@:%.o=%.d) | grep : 2> /dev/null`" == ""; then \
 	      echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
 	      cat $(@:%.o=%.d) | tr '\n' '@' | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
-	      mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
+	      cp $(@:%.o=%.dtemp) $(@:%.o=%.d); \
         fi; \
       fi
 
@@ -311,9 +311,7 @@ help-test:
 	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
-	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
-	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
-	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
+	-@echo "  TESTBASE='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"
 	-@echo "  EXTRA_OPTIONS='<args>'  Add options to scripts (-e to test scripts)"
 	-@echo
