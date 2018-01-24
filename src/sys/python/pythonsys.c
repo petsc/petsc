@@ -21,13 +21,11 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
+static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
 {
-  const char     cmdline[] = "-c 'import sys; print(sys.exec_prefix); print(sys.version[:3])'";
-  char           command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline)+1];
-  char           prefix[PETSC_MAX_PATH_LEN],version[8],sep[2]={PETSC_DIR_SEPARATOR, 0},*eol;
+  const char     cmdline[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var('LIBPYTHON'))";
+  char           command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline)+1],*eol;
   FILE           *fp = NULL;
-  char           path[PETSC_MAX_PATH_LEN+1];
   PetscBool      found = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -43,47 +41,16 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   ierr = PetscStrcat(command,cmdline);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp);CHKERRQ(ierr);
-  if (!fgets(prefix,sizeof(prefix),fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
-  if (!fgets(version,sizeof(version),fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
+  if (!fgets(pythonlib,PETSC_MAX_PATH_LEN,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
   ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,1,"Python: Aborted due to missing popen()");
 #endif
   /* remove newlines */
-  ierr = PetscStrchr(prefix,'\n',&eol);CHKERRQ(ierr);
+  ierr = PetscStrchr(pythonlib,'\n',&eol);CHKERRQ(ierr);
   if (eol) eol[0] = 0;
-  ierr = PetscStrchr(version,'\n',&eol);CHKERRQ(ierr);
-  if (eol) eol[0] = 0;
-
-  /* test for $prefix/lib64/libpythonX.X[.so]*/
-  ierr = PetscStrcpy(pythonlib,prefix);CHKERRQ(ierr);
-  ierr = PetscStrcat(pythonlib,sep);CHKERRQ(ierr);
-  ierr = PetscStrcat(pythonlib,"lib64");CHKERRQ(ierr);
-  ierr = PetscTestDirectory(pythonlib,'r',&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscStrcat(pythonlib,sep);CHKERRQ(ierr);
-    ierr = PetscStrcat(pythonlib,"libpython");CHKERRQ(ierr);
-    ierr = PetscStrcat(pythonlib,version);CHKERRQ(ierr);
-    ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF,pythonlib,path,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-    if (found) PetscFunctionReturn(0);
-  }
-
-  /* test for $prefix/lib/libpythonX.X[.so]*/
-  ierr = PetscStrcpy(pythonlib,prefix);CHKERRQ(ierr);
-  ierr = PetscStrcat(pythonlib,sep);CHKERRQ(ierr);
-  ierr = PetscStrcat(pythonlib,"lib");CHKERRQ(ierr);
-  ierr = PetscTestDirectory(pythonlib,'r',&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscStrcat(pythonlib,sep);CHKERRQ(ierr);
-    ierr = PetscStrcat(pythonlib,"libpython");CHKERRQ(ierr);
-    ierr = PetscStrcat(pythonlib,version);CHKERRQ(ierr);
-    ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF,pythonlib,path,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-    if (found) PetscFunctionReturn(0);
-  }
-
-  /* nothing good found */
-  ierr = PetscMemzero(pythonlib,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscInfo(0,"Python dynamic library not found\n");CHKERRQ(ierr);
+  ierr = PetscTestFile(pythonlib,'r',&found);CHKERRQ(ierr);
+  ierr = PetscInfo2(0,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
