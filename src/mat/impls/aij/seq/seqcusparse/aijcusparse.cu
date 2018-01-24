@@ -33,10 +33,10 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
 
 static PetscErrorCode CsrMatrix_Destroy(CsrMatrix**);
-static PetscErrorCode Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(Mat_SeqAIJCUSPARSETriFactorStruct**);
-static PetscErrorCode Mat_SeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMultStruct**,MatCUSPARSEStorageFormat);
-static PetscErrorCode Mat_SeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors**);
-static PetscErrorCode Mat_SeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE**);
+static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSETriFactorStruct**);
+static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMultStruct**,MatCUSPARSEStorageFormat);
+static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors**);
+static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE**);
 
 PetscErrorCode MatCUSPARSESetStream(Mat A,const cudaStream_t stream)
 {
@@ -1192,7 +1192,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
       /* copy values only */
       matrix->values->assign(a->a, a->a+a->nz);
     } else {
-      Mat_SeqAIJCUSPARSEMultStruct_Destroy(&matstruct,cusparsestruct->format);
+      MatSeqAIJCUSPARSEMultStruct_Destroy(&matstruct,cusparsestruct->format);
       try {
         cusparsestruct->nonzerorow=0;
         for (int j = 0; j<m; j++) cusparsestruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
@@ -1645,10 +1645,10 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   PetscFunctionBegin;
   if (A->factortype==MAT_FACTOR_NONE) {
     if (A->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-      ierr = Mat_SeqAIJCUSPARSE_Destroy((Mat_SeqAIJCUSPARSE**)&A->spptr);CHKERRQ(ierr);
+      ierr = MatSeqAIJCUSPARSE_Destroy((Mat_SeqAIJCUSPARSE**)&A->spptr);CHKERRQ(ierr);
     }
   } else {
-    ierr = Mat_SeqAIJCUSPARSETriFactors_Destroy((Mat_SeqAIJCUSPARSETriFactors**)&A->spptr);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSETriFactors_Destroy((Mat_SeqAIJCUSPARSETriFactors**)&A->spptr);CHKERRQ(ierr);
   }
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1802,15 +1802,15 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void)
 }
 
 
-static PetscErrorCode Mat_SeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestruct)
+static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestruct)
 {
   cusparseStatus_t stat;
   cusparseHandle_t handle;
 
   PetscFunctionBegin;
   if (*cusparsestruct) {
-    Mat_SeqAIJCUSPARSEMultStruct_Destroy(&(*cusparsestruct)->mat,(*cusparsestruct)->format);
-    Mat_SeqAIJCUSPARSEMultStruct_Destroy(&(*cusparsestruct)->matTranspose,(*cusparsestruct)->format);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*cusparsestruct)->mat,(*cusparsestruct)->format);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*cusparsestruct)->matTranspose,(*cusparsestruct)->format);
     delete (*cusparsestruct)->workVector;
     if (handle = (*cusparsestruct)->handle) {
       stat = cusparseDestroy(handle);CHKERRCUDA(stat);
@@ -1834,7 +1834,7 @@ static PetscErrorCode CsrMatrix_Destroy(CsrMatrix **mat)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(Mat_SeqAIJCUSPARSETriFactorStruct **trifactor)
+static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSETriFactorStruct **trifactor)
 {
   cusparseStatus_t stat;
   PetscErrorCode   ierr;
@@ -1850,7 +1850,7 @@ static PetscErrorCode Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(Mat_SeqAIJCUSPAR
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Mat_SeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMultStruct **matstruct,MatCUSPARSEStorageFormat format)
+static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMultStruct **matstruct,MatCUSPARSEStorageFormat format)
 {
   CsrMatrix        *mat;
   cusparseStatus_t stat;
@@ -1877,17 +1877,17 @@ static PetscErrorCode Mat_SeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMul
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Mat_SeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors** trifactors)
+static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors** trifactors)
 {
   cusparseHandle_t handle;
   cusparseStatus_t stat;
 
   PetscFunctionBegin;
   if (*trifactors) {
-    Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(&(*trifactors)->loTriFactorPtr);
-    Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(&(*trifactors)->upTriFactorPtr);
-    Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(&(*trifactors)->loTriFactorPtrTranspose);
-    Mat_SeqAIJCUSPARSETriFactorStruct_Destroy(&(*trifactors)->upTriFactorPtrTranspose);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*trifactors)->loTriFactorPtr);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*trifactors)->upTriFactorPtr);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*trifactors)->loTriFactorPtrTranspose);
+    MatSeqAIJCUSPARSEMultStruct_Destroy(&(*trifactors)->upTriFactorPtrTranspose);
     delete (*trifactors)->rpermIndices;
     delete (*trifactors)->cpermIndices;
     delete (*trifactors)->workVector;
