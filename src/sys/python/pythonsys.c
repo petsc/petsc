@@ -21,25 +21,21 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
+/*
+    Python does not appear to have a universal way to indicate the location of Python dynamic library so try several possibilities
+*/
+static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[PETSC_MAX_PATH_LEN],const char attempt[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN],PetscBool *found)
 {
-  const char     cmdline1[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
-  const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
-  char           command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline2)+1],*eol;
+  char           command[2*PETSC_MAX_PATH_LEN];
   FILE           *fp = NULL;
-  PetscBool      found = PETSC_FALSE;
+  char           *eol;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_PYTHON_LIB)
-  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-#endif
-
   /* call Python to find out the name of the Python dynamic library */
   ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscStrcat(command," ");CHKERRQ(ierr);
-  ierr = PetscStrcat(command,cmdline1);CHKERRQ(ierr);
+  ierr = PetscStrcat(command,attempt);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp);CHKERRQ(ierr);
   if (!fgets(pythonlib,PETSC_MAX_PATH_LEN,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
@@ -50,22 +46,27 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH
   /* remove newlines */
   ierr = PetscStrchr(pythonlib,'\n',&eol);CHKERRQ(ierr);
   if (eol) eol[0] = 0;
-  ierr = PetscTestFile(pythonlib,'r',&found);CHKERRQ(ierr);
-  if (!found) {
-    ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    ierr = PetscStrcat(command," ");CHKERRQ(ierr);
-    ierr = PetscStrcat(command,cmdline2);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fp);CHKERRQ(ierr);
-    if (!fgets(pythonlib,PETSC_MAX_PATH_LEN,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe);
-    ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
-#else
-    SETERRQ(PETSC_COMM_SELF,1,"Python: Aborted due to missing popen()");
+  ierr = PetscTestFile(pythonlib,'r',found);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
+{
+  const char     cmdline1[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var(\"LIBPYTHON\"))'";
+  const char     cmdline2[] = "-c 'import os;from distutils import sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
+  PetscBool      found = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_PYTHON_LIB)
+  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 #endif
-    /* remove newlines */
-    ierr = PetscStrchr(pythonlib,'\n',&eol);CHKERRQ(ierr);
-    if (eol) eol[0] = 0;
-    ierr = PetscTestFile(pythonlib,'r',&found);CHKERRQ(ierr);
+
+  ierr = PetscPythonFindLibraryName(pythonexe,cmdline1,pythonlib,&found);CHKERRQ(ierr);
+  if (!found) {
+    ierr = PetscPythonFindLibraryName(pythonexe,cmdline2,pythonlib,&found);CHKERRQ(ierr);
   }
   ierr = PetscInfo2(0,"Python library  %s found %d\n",pythonlib,found);CHKERRQ(ierr);
   PetscFunctionReturn(0);
