@@ -121,3 +121,27 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: {{1 2 3 4}}
+      args: one -dof {{1 2 3}} -stencil_type {{0 1}}
+
+   test:
+      suffix: 3
+      nsize: {{1 2 3 4}}
+      args: two -dof {{1 2 3}} -stencil_type {{0 1}}
+
+   test:
+      suffix: 4
+      nsize: {{1 2 3 4}}
+      args: three -dof {{1 2 3}} -stencil_type {{0 1}}
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -two -native
+
+TEST*/
