@@ -2739,7 +2739,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Ma
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[],const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
-  PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
+  PetscInt       i,j,dlen,olen,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
   const PetscInt *JJ    =0;
   PetscScalar    *values=0;
   PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
@@ -2762,26 +2762,23 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
     nz_max = PetscMax(nz_max,nz);
+    dlen   = 0;
+    olen   = 0;
     JJ     = jj + ii[i];
     for (j=0; j<nz; j++) {
-      if (*JJ >= cstart) break;
+      if (*JJ < cstart || *JJ >= cend) olen++;
+      else dlen++;
       JJ++;
     }
-    d = 0;
-    for (; j<nz; j++) {
-      if (*JJ++ >= cend) break;
-      d++;
-    }
-    d_nnz[i] = d;
-    o_nnz[i] = nz - d;
+    d_nnz[i] = dlen;
+    o_nnz[i] = olen;
   }
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   values = (PetscScalar*)V;
   if (!values) {
-    ierr = PetscMalloc1(bs*bs*nz_max,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(bs*bs*nz_max,&values);CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {
     PetscInt          row    = i + rstart;
