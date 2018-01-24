@@ -30,7 +30,6 @@ int main(int argc, char **argv)
   PetscPartitioner part;
   AppCtx         user;
   PetscViewer    v;
-  PetscSF        pointSF;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -41,12 +40,11 @@ int main(int argc, char **argv)
   ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part, "orig_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, 0, &pointSF, &dmdist);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
   if (dmdist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmdist;
   }
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
 
