@@ -23,7 +23,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
 
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[PETSC_MAX_PATH_LEN],char pythonlib[PETSC_MAX_PATH_LEN])
 {
-  const char     cmdline[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var('LIBPYTHON'))";
+  const char     cmdline[] = "-c 'from distutils import sysconfig; print(sysconfig.get_config_var('LIBPYTHON'))'";
   char           command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline)+1],*eol;
   FILE           *fp = NULL;
   PetscBool      found = PETSC_FALSE;
