@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--download-openblas',
-  '--download-openblas-64-bit-blas-indices=1',
+  '--with-blaslapack-lib=-L/soft/com/packages/intel/17/u2/mkl/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl'
   ]
 
 if __name__ == '__main__':

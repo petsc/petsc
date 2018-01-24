@@ -83,6 +83,9 @@ if __name__ == '__main__':
     '--known-sdot-returns-double=0',
     '--known-snrm2-returns-double=0',
     '--known-has-attribute-aligned=1',
+    '--known-snrm2-returns-double=0',
+    '--known-sdot-returns-double=0',
+    '--known-64-bit-blas-indices=0',
     '--with-batch=1',
   ]
   configure.petsc_configure(configure_options)

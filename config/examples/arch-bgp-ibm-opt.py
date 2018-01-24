@@ -38,6 +38,9 @@ configure_options = [
   '--known-level1-dcache-assoc=0',
   '--known-level1-dcache-linesize=32',
   '--known-level1-dcache-size=32768',
+  '--known-snrm2-returns-double=0',
+  '--known-sdot-returns-double=0',
+  '--known-64-bit-blas-indices=0',
 
   '--download-hypre=1',
   '--download-cmake=1',
