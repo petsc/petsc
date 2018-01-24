@@ -55,9 +55,8 @@ def summarize_results(directory,make):
       fail_targets=(
           re.sub('(?<=[0-9]_\w)_.*','',
           re.sub('_1 ',' ',
-          re.sub('-','-run',
           re.sub('cmd-','',
-          re.sub('diff-','',failstr+' ')))))
+          re.sub('diff-','',failstr+' '))))
           )
       # Need to make sure we have a unique list
       fail_targets=' '.join(list(set(fail_targets.split())))

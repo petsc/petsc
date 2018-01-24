@@ -7,6 +7,9 @@ TIMEOUT=60
 if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
 fi
+if test -d "${rundir}" && test -n "${rundir}"; then
+  rm -f ${rundir}/*.tmp ${rundir}/*.err ${rundir}/*.out
+fi
 mkdir -p ${rundir}
 if test -d "${runfiles}"; then
   cp -r ${runfiles} ${rundir}
@@ -34,6 +37,7 @@ OPTIONS
   -j ................ Pass -j to petscdiff (just use diff)
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
+  -M ................ Update alt files using petscdiff
   -t ................ Override the default timeout (default=$TIMEOUT sec)
   -V ................ run Valgrind
   -v ................ Verbose: Print commands
@@ -50,7 +54,7 @@ cleanup=false
 debugger=false
 force=false
 diff_flags=""
-while getopts "a:cde:fhjJ:mn:t:vV" arg
+while getopts "a:cde:fhjJ:mMn:t:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -63,6 +67,7 @@ do
     j ) diff_flags="-j"      ;;  
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
+    M ) diff_flags="-M"      ;;  
     t ) TIMEOUT=$OPTARG      ;;  
     V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
@@ -109,7 +114,7 @@ function petsc_testrun() {
     if test "${filter:0:6}"=="Error:"; then
       job_control=false      # redirection error method causes job control probs
       filter=${filter##Error:}
-      cmd="$1 2>&1 | cat > $2 2> $3"
+      cmd="$1 2>&1 | cat > $2"
     fi
   fi
   echo "$cmd" > ${tlabel}.sh; chmod 755 ${tlabel}.sh
@@ -146,7 +151,6 @@ function petsc_testrun() {
     cmd="cat $2 | $filter > $2.tmp 2>> $3 && mv $2.tmp $2"
     echo "$cmd" >> ${tlabel}.sh
     eval "$cmd"
-    let cmd_res+=$?
   fi
 
   # Report errors
