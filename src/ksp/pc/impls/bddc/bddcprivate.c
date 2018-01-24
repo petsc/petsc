@@ -8270,6 +8270,7 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS g
   ierr = VecSet(gwork,0.0);CHKERRQ(ierr);
   ierr = VecSet(lwork,0.0);CHKERRQ(ierr);
   if (idxs) { /* multilevel guard */
+    ierr = VecSetOption(gwork,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
     ierr = VecSetValues(gwork,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(gwork);CHKERRQ(ierr);

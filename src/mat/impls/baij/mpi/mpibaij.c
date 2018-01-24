@@ -3698,9 +3698,13 @@ PetscErrorCode  MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
 
 PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
-  Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIBAIJ matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;

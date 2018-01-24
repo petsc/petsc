@@ -1146,10 +1146,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     /* matrices for deluxe scaling and adaptive selection */
     if (compute_Stilda) {
       if (!sub_schurs->sum_S_Ej_tilda_all) {
-        ierr = MatDuplicate(sub_schurs->sum_S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
+        ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
       }
       if (!sub_schurs->sum_S_Ej_inv_all && deluxe) {
-        ierr = MatDuplicate(sub_schurs->sum_S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
+        ierr = MatDuplicate(sub_schurs->S_Ej_all,MAT_SHARE_NONZERO_PATTERN,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
       }
     }
 

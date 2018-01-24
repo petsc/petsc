@@ -50,7 +50,11 @@ int main(int argc,char **argv)
 
     ierr = ISDestroy(&irow);CHKERRQ(ierr);
     ierr = ISDestroy(&icol);CHKERRQ(ierr);
+
+    /* test getting a reference on a submat */
+    ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
     ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
+    ierr = MatDestroy(&submat);CHKERRQ(ierr);
   }
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
@@ -68,7 +72,9 @@ int main(int argc,char **argv)
   ierr = MatView(submat,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
   ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
+  ierr = MatDestroy(&submat);CHKERRQ(ierr);
 
   /* Form submatrix with rows 2-4 and all columns */
   ierr   = ISDestroy(&icol);CHKERRQ(ierr);
@@ -90,7 +96,9 @@ int main(int argc,char **argv)
 
   ierr = ISDestroy(&irow);CHKERRQ(ierr);
   ierr = ISDestroy(&icol);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
   ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
+  ierr = MatDestroy(&submat);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
