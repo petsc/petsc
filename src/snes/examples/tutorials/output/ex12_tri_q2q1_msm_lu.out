@@ -1,24 +1,16 @@
   0 SNES Function norm 8.32828 
-    0 KSP Residual norm 8.68517 
-    1 KSP Residual norm 3.35825 
-    2 KSP Residual norm 0.742036 
-    3 KSP Residual norm 0.0818961 
-    4 KSP Residual norm 0.00856061 
-    5 KSP Residual norm 0.000756889 
-    6 KSP Residual norm 4.03552e-05 
-    7 KSP Residual norm 7.49654e-06 
-    8 KSP Residual norm 6.30883e-07 
-    9 KSP Residual norm 7.41773e-08 
-   10 KSP Residual norm 2.96224e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 10
-  1 SNES Function norm 1.26116e-08 
-L_2 Error: 0.00131794
+    0 KSP Residual norm 11.1016 
+    1 KSP Residual norm 0.209365 
+    2 KSP Residual norm 5.25351e-05 
+    3 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=10
+  total number of linear solver iterations=3
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
