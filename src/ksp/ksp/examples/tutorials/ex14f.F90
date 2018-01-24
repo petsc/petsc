@@ -46,7 +46,7 @@
 !    The SNES version of this problem is:  snes/examples/tutorials/ex5f.F
 !
 !  -------------------------------------------------------------------------
-      module mymodule
+      module mymoduleex14f
 #include <petsc/finclude/petscksp.h>
       use petscdmda
       use petscksp
@@ -57,7 +57,7 @@
       end module
 
       program main
-      use mymodule
+      use mymoduleex14f
       implicit none
 
       MPI_Comm comm
@@ -286,7 +286,7 @@
 !   X - vector
 !
       subroutine FormInitialGuess(X,ierr)
-      use mymodule
+      use mymoduleex14f
       implicit none
 
       PetscErrorCode    ierr
@@ -347,7 +347,7 @@
 !.  F - function vector
 !
       subroutine  ComputeFunction(X,F,ierr)
-      use mymodule
+      use mymoduleex14f
       implicit none
 
       Vec              X,F
@@ -434,7 +434,7 @@
 !   uniprocessor grid!
 !
       subroutine ComputeJacobian(X,jac,ierr)
-      use mymodule
+      use mymoduleex14f
       implicit none
 
       Vec         X
@@ -544,7 +544,7 @@
 !.  F - function vector
 !
       subroutine  MyMult(J,X,F,ierr)
-      use mymodule
+      use mymoduleex14f
       implicit none
       
       Mat     J

@@ -18,6 +18,7 @@
    16 KSP Residual norm 1.70104e-09 
   Linear solve converged due to CONVERGED_RTOL iterations 16
   1 SNES Function norm 2.77701e-09 
+L_2 Error: 0.00131794
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls

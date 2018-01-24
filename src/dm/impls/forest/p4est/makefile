@@ -5,7 +5,7 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   = ${P4EST_INCLUDE}
 FFLAGS   =
-SOURCEC  = dmp4est.c dmp8est.c petsc_p4est_package.c pforest.c
+SOURCEC  = dmp4est.c dmp8est.c petsc_p4est_package.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples
