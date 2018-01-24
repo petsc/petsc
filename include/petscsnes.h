@@ -129,6 +129,7 @@ PETSC_EXTERN PetscErrorCode SNESSetDivergenceTolerance(SNES,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetDivergenceTolerance(SNES,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESSetTrustRegionTolerance(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESGetForceIteration(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetIterationNumber(SNES,PetscInt);
