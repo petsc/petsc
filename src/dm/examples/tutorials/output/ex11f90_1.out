@@ -1,14 +1,10 @@
   type: seq
-  type: mpi
-Process [0]
 0.
 1.
 2.
 3.
 4.
   type: seq
-  type: mpi
-Process [0]
 0.
 1.
 2.
@@ -40,8 +36,6 @@ Process [0]
 8.
 9.
   type: seq
-  type: mpi
-Process [0]
 0.
 1.
 2.
@@ -163,8 +157,6 @@ Process [0]
 11.
 12.
   type: seq
-  type: mpi
-Process [0]
 0.
 0.
 1.
@@ -176,8 +168,6 @@ Process [0]
 4.
 -4.
   type: seq
-  type: mpi
-Process [0]
 0.
 0.
 1.
@@ -239,8 +229,6 @@ Process [0]
 9.
 -9.
   type: seq
-  type: mpi
-Process [0]
 0.
 0.
 0.

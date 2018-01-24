@@ -308,17 +308,21 @@ int main(int argc, char **argv)
   return ierr;
 }
 
-/*NOTEST
+/*TEST
 
-  # 2D 0-2 Dual solution
+  build:
+    requires: !complex triangle
+
   test:
     suffix: 0
     args: -run_type test -dmsnes_check -potential_petscspace_order 2 -charge_petscspace_order 1 -multiplier_petscspace_order 1
+
   test:
     suffix: 1
-    args: -potential_petscspace_order 2 -charge_petscspace_order 1 -multiplier_petscspace_order 1 -snes_monitor -snes_converged_reason -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1.0e-10 -fieldsplit_1_pc_type lu -sol_vec_view
+    args: -potential_petscspace_order 2 -charge_petscspace_order 1 -multiplier_petscspace_order 1 -snes_monitor -snes_converged_reason -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -sol_vec_view
+
   test:
     suffix: 2
-    args: -potential_petscspace_order 2 -charge_petscspace_order 1 -multiplier_petscspace_order 1 -snes_monitor -snes_converged_reason -snes_fd -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1.0e-10 -fieldsplit_1_pc_type lu -sol_vec_view
+    args: -potential_petscspace_order 2 -charge_petscspace_order 1 -multiplier_petscspace_order 1 -snes_monitor -snes_converged_reason -snes_fd -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -sol_vec_view
 
-NOTEST*/
+TEST*/

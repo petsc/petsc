@@ -34,8 +34,7 @@ int main(int argc,char **args)
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
   if (!data_provided) { /* get matrices from PETSc distribution */
-    sprintf(file,PETSC_DIR);
-    ierr = PetscStrcat(file,"/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
+    ierr = PetscStrcpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
     if (symm) {
 #if defined (PETSC_USE_COMPLEX)
       ierr = PetscStrcat(file,"hpd-complex-");CHKERRQ(ierr);
@@ -123,7 +122,7 @@ int main(int argc,char **args)
   }
   size_schur = (PetscInt)(sratio*m);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %d, sym %d, herm %d, size schur %d, size mat %d\n",solver,nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, sym %d, herm %d, size schur %D, size mat %D\n",solver,nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
 
   /* Test LU/Cholesky Factorization */
   use_lu = PETSC_FALSE;
@@ -204,9 +203,9 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
         ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
         if (nsolve) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatSolve error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatSolve error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         }
       }
       ierr = VecSetRandom(xschur,rand);CHKERRQ(ierr);
@@ -231,13 +230,13 @@ int main(int argc,char **args)
         ierr = VecAXPY(uschur,-1.0,bschur);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
         ierr = VecNorm(uschur,NORM_2,&resi);CHKERRQ(ierr);
         if (nsolve) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatFactorSolveSchurComplement error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatFactorSolveSchurComplement error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %d, s %d) MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %D, s %D) MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,norm,resi);CHKERRQ(ierr);
         }
       }
     }
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);CHKERRQ(ierr);
     if (!nfact) {
       ierr = MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
     } else {
@@ -292,3 +291,38 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      suffix: mkl_pardiso
+      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
+      args: -solver 1
+
+   test:
+      suffix: mkl_pardiso_1
+      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
+      args: -symmetric_solve -solver 1
+
+   test:
+      suffix: mkl_pardiso_3
+      requires: mkl_pardiso double !complex !define(PETSC_USE_64BIT_INDICES) 
+      args: -symmetric_solve -hermitian_solve -solver 1
+
+   test:
+      suffix: mumps
+      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -solver 0
+
+   test:
+      suffix: mumps_2
+      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -symmetric_solve -solver 0
+
+   test:
+      suffix: mumps_3
+      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+      args: -symmetric_solve -hermitian_solve -solver 0
+
+TEST*/

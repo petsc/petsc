@@ -9,9 +9,15 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscobjectcompose_        PETSCOBJECTCOMPOSE
 #define petscobjectquery_          PETSCOBJECTQUERY
+#define petscobjectreference_      PETSCOBJECTREFERENCE
+#define petscobjectdereference_    PETSCOBJECTDEREFERENCE
+#define petscobjectgetreference_   PETSCOBJECTGETREFERENCE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscobjectcompose_        petscobjectcompose
 #define petscobjectquery_          petscobjectquery
+#define petscobjectreference_      petscobjectreference
+#define petscobjectdereference_    petscobjectdereference
+#define petscobjectgetreference_   petscobjectgetreference
 #endif
 
 /* ---------------------------------------------------------------------*/
@@ -33,4 +39,19 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectquery_(PetscObject *obj, char *name P
   FIXCHAR(name,len,n1);
   *ierr = PetscObjectQuery(*obj, n1, ptr);
   FREECHAR(name,n1);
+}
+
+PETSC_EXTERN void  petscobjectreference_(PetscObject *obj,PetscErrorCode *ierr)
+{
+  *ierr = PetscObjectReference(*obj);
+}
+
+PETSC_EXTERN void  petscobjectdereference_(PetscObject *obj,PetscErrorCode *ierr)
+{
+  *ierr = PetscObjectDereference(*obj);
+}
+
+PETSC_EXTERN void  petscobjectgetreference_(PetscObject *obj,PetscInt *ref,PetscErrorCode *ierr)
+{
+  *ierr = PetscObjectGetReference(*obj,ref);
 }

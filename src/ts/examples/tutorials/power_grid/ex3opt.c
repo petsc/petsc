@@ -15,6 +15,7 @@ F*/
   The problem features discontinuities and a cost function in integral form.
   The gradient is computed with the discrete adjoint of an implicit theta method, see ex3adj.c for details.
 */
+
 #include <petsctao.h>
 #include <petscts.h>
 
@@ -451,3 +452,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   return 0;
 }
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -viewer_binary_skip_info -ts_type cn -pc_type lu -tao_monitor
+
+TEST*/

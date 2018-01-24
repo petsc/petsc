@@ -6425,7 +6425,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
    this processor. (The columns of the "diagonal block")
 
@@ -6460,7 +6460,7 @@ PetscErrorCode MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
    n1 rows on the first processor, the next n2 rows on the second, etc.
@@ -8131,7 +8131,7 @@ PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatGetNullSpace - retrieves the null space to a matrix.
 
    Logically Collective on Mat and MatNullSpace
@@ -8150,13 +8150,12 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidPointer(nullsp,2);
   *nullsp = mat->nullsp;
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatSetNullSpace - attaches a null space to a matrix.
 
    Logically Collective on Mat and MatNullSpace
@@ -8197,9 +8196,7 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   if (nullsp) PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
-  MatCheckPreallocated(mat,1);
   if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
   mat->nullsp = nullsp;

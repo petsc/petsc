@@ -6,20 +6,22 @@
 
       type tMat
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMat
       type tMatNullSpace
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatNullSpace
       type tMatFDColoring
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tMatFDColoring
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(-1)
       MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING               &
      &               = tMatFDColoring(-1)
+      MatNullSpace, parameter :: PETSC_NULL_MATNULLSPACE                 &
+     &               = tMatNullSpace(-1)
 !
 !  Flag for matrix assembly
 !

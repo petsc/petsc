@@ -6131,8 +6131,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscBLASIntCast(max_constraints,&Blas_K);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
       if (Blas_K>Blas_M) Blas_K=Blas_M; /* adjust just for computing optimal work */
-      PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
-      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to UNGQR Lapack routine %d",(int)lierr);
+      PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
+      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to ORGQR/UNGQR Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work);CHKERRQ(ierr);
       ierr = PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t),&gqr_work);CHKERRQ(ierr);
       /* array to store rhs and solution of triangular solver */
@@ -6200,8 +6200,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
-          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in UNGQR Lapack routine %d",(int)lierr);
+          PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
+          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in ORGQR/UNGQR Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
 
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints

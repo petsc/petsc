@@ -18,7 +18,12 @@
             logical matfdcoloringnotequal
             type(tMatFDColoring), intent(in) :: A,B
           end function
-        end interface operator (.ne.)
+          function matnullspacenotequal(A,B)
+            use petscmatdefdummy
+            logical matnullspacenotequal
+            type(tMatNullSpace), intent(in) :: A,B
+            end function
+      end interface operator (.ne.)
         interface operator(.eq.)
           function matequals(A,B)
             use petscmatdefdummy
@@ -30,7 +35,12 @@
             logical matfdcoloringequals
             type(tMatFDColoring), intent(in) :: A,B
           end function
-        end interface operator (.eq.)
+           function matnullspaceequals(A,B)
+            use petscmatdefdummy
+            logical matnullspaceequals
+            type(tMatNullSpace), intent(in) :: A,B
+            end function
+          end interface operator (.eq.)
         end module
 
         function matnotequal(A,B)
@@ -59,6 +69,20 @@
           logical matfdcoloringequals
           type(tMatFDColoring), intent(in) :: A,B
           matfdcoloringequals = (A%v .eq. B%v)
+        end function
+
+        function matnullspacenotequal(A,B)
+          use petscmatdefdummy
+          logical matnullspacenotequal
+          type(tMatNullSpace), intent(in) :: A,B
+          matnullspacenotequal = (A%v .ne. B%v)
+        end function
+
+        function matnullspaceequals(A,B)
+          use petscmatdefdummy
+          logical matnullspaceequals
+          type(tMatNullSpace), intent(in) :: A,B
+          matnullspaceequals = (A%v .eq. B%v)
         end function
 
         module petscmat

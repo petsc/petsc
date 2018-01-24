@@ -124,9 +124,6 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #if !defined(OMPI_SKIP_MPICXX)
 #  define OMPI_SKIP_MPICXX 1
 #endif
-#if !defined(OMPI_WANT_MPI_INTERFACE_WARNING)
-#  define OMPI_WANT_MPI_INTERFACE_WARNING 0
-#endif
 #include <mpi.h>
 
 /*
@@ -2958,6 +2955,8 @@ PETSC_EXTERN PetscErrorCode PetscGoogleDriveUpload(MPI_Comm,const char[],const c
 PETSC_EXTERN PetscErrorCode PetscBoxAuthorize(MPI_Comm,char[],char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscBoxRefresh(MPI_Comm,const char[],char[],char[],size_t);
 
+PETSC_EXTERN PetscErrorCode PetscGlobusGetTransfers(MPI_Comm,const char[],char[],size_t);
+
 PETSC_EXTERN PetscErrorCode PetscTextBelt(MPI_Comm,const char[],const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscTellMyCell(MPI_Comm,const char[],const char[],PetscBool*);
 
@@ -3003,5 +3002,10 @@ M*/
 #else
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
 #endif
+
+/*
+    Returned from PETSc functions that are called from MPI, such as related to attributes
+*/
+PETSC_EXTERN PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 
 #endif

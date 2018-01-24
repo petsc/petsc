@@ -328,6 +328,8 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Wtime         Petsc_MPI_Wtime
 #define MPI_Type_get_envelope Petsc_MPI_Type_get_envelope
 #define MPI_Type_get_contents Petsc_MPI_Type_get_contents
+#define MPI_Add_error_class   Petsc_MPI_Add_error_class
+#define MPI_Add_error_code    Petsc_MPI_Add_error_code
 
 /* identical C bindings */
 #define MPI_Comm_copy_attr_function   MPI_Copy_function
@@ -338,6 +340,7 @@ typedef int (MPI_Delete_function)(MPI_Comm,int,void *,void *);
 #define MPI_Comm_free_keyval          Petsc_MPI_Keyval_free
 #define MPI_Comm_get_attr             Petsc_MPI_Attr_get
 #define MPI_Comm_set_attr             Petsc_MPI_Attr_put
+#define MPI_Comm_delete_attr          Petsc_MPI_Attr_delete
 
 MPIUni_PETSC_EXTERN int    MPIUni_Abort(MPI_Comm,int);
 MPIUni_PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
@@ -359,6 +362,8 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
 
 MPIUni_PETSC_EXTERN int MPI_Type_get_envelope(MPI_Datatype,int*,int*,int*,int*);
 MPIUni_PETSC_EXTERN int MPI_Type_get_contents(MPI_Datatype,int,int,int,int*,MPI_Aint*,MPI_Datatype*);
+MPIUni_PETSC_EXTERN int MPI_Add_error_class(int*);
+MPIUni_PETSC_EXTERN int MPI_Add_error_code(int,int*);
 
 /*
     Routines we have replace with macros that do nothing

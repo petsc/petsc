@@ -165,3 +165,21 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: complex
+
+   test:
+      args: -n 1000
+      output_file: output/ex127.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -n 1000
+      output_file: output/ex127.out
+
+TEST*/

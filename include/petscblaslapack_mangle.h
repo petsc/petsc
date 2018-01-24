@@ -30,40 +30,44 @@
 # endif
 #endif
 
-/* complex/real and single/double/quad precision prefixes: */
+/* complex/real and single/double/quad/half precision prefixes: */
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_BLASLAPACK_CAPS)
 #  if defined(PETSC_USE_REAL_SINGLE)
 #   define PETSC_BLASLAPACK_PREFIX_ S
-#   define PETSC_BLASLAPACK_PREFIX_REAL S
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX C
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ D
-#   define PETSC_BLASLAPACK_PREFIX_REAL D
-#  else
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX Z
+#  elif defined(PETSC_USE_REAL___FLOAT128)
 #   define PETSC_BLASLAPACK_PREFIX_ Q
-#   define PETSC_BLASLAPACK_PREFIX_REAL Q
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX W
+#  else
+#   define PETSC_BLASLAPACK_PREFIX_ H
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX K
 #  endif
 # else
 #  if defined(PETSC_USE_REAL_SINGLE)
 #   define PETSC_BLASLAPACK_PREFIX_ s
-#   define PETSC_BLASLAPACK_PREFIX_REAL s
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX c
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ d
-#   define PETSC_BLASLAPACK_PREFIX_REAL d
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX z
 #  elif defined(PETSC_USE_REAL___FLOAT128)
 #   define PETSC_BLASLAPACK_PREFIX_ q
-#   define PETSC_BLASLAPACK_PREFIX_REAL q
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX w
 #  else
-#   define PETSC_BLASLAPACK_PREFIX_REAL h
 #   define PETSC_BLASLAPACK_PREFIX_ h
+#   define PETSC_BLASLAPACK_PREFIX_COMPLEX k
 #  endif
 # endif
 # define PETSC_BLASLAPACK_RPREFIX_ PETSC_BLASLAPACK_PREFIX_
+# define PETSC_BLASLAPACK_PREFIX_REAL PETSC_BLASLAPACK_PREFIX_
 #else
 # if defined(PETSC_BLASLAPACK_CAPS)
 #  if defined(PETSC_USE_REAL_SINGLE)
 #   define PETSC_BLASLAPACK_PREFIX_ C
-#   define PETSC_BLASLAPACK_PREFIX_REAL s
+#   define PETSC_BLASLAPACK_PREFIX_REAL S
 #   define PETSC_BLASLAPACK_RPREFIX_ SC
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ Z
@@ -74,9 +78,9 @@
 #   define PETSC_BLASLAPACK_PREFIX_REAL Q
 #   define PETSC_BLASLAPACK_RPREFIX_ QW
 #  else
-#   define PETSC_BLASLAPACK_PREFIX_ HK
+#   define PETSC_BLASLAPACK_PREFIX_ K
 #   define PETSC_BLASLAPACK_PREFIX_REAL H
-#   define PETSC_BLASLAPACK_RPREFIX_ K
+#   define PETSC_BLASLAPACK_RPREFIX_ HK
 #  endif
 # else
 #  if defined(PETSC_USE_REAL_SINGLE)
@@ -92,11 +96,12 @@
 #   define PETSC_BLASLAPACK_PREFIX_REAL q
 #   define PETSC_BLASLAPACK_RPREFIX_ qw
 #  else
-#   define PETSC_BLASLAPACK_PREFIX_ hk
+#   define PETSC_BLASLAPACK_PREFIX_ k
 #   define PETSC_BLASLAPACK_PREFIX_REAL h
-#   define PETSC_BLASLAPACK_RPREFIX_ k
+#   define PETSC_BLASLAPACK_RPREFIX_ hk
 #  endif
 # endif
+# define PETSC_BLASLAPACK_PREFIX_COMPLEX PETSC_BLASLAPACK_PREFIX_
 #endif
 
 /* define macros PETSCBLAS to mangle BLAS/LAPACK subroutine names, and
@@ -104,10 +109,12 @@
 #if defined(PETSC_BLASLAPACK_CAPS)
 #  define PETSCBLAS(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
 #  define PETSCBLASREAL(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, X, PETSC_BLASLAPACK_SUFFIX_)
+#  define PETSCBLASCOMPLEX(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_COMPLEX, X, PETSC_BLASLAPACK_SUFFIX_)
 #  define PETSCBLASR(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_RPREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
 #else
 #  define PETSCBLAS(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
 #  define PETSCBLASREAL(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_REAL, x, PETSC_BLASLAPACK_SUFFIX_)
+#  define PETSCBLASCOMPLEX(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_PREFIX_COMPLEX, x, PETSC_BLASLAPACK_SUFFIX_)
 #  define PETSCBLASR(x,X) PETSC_PASTE3(PETSC_BLASLAPACK_RPREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
 #endif
 
@@ -155,13 +162,13 @@
 #define LAPACKhseqr_ PETSCBLAS(hseqr,HSEQR)
 #define LAPACKgges_  PETSCBLAS(gges,GGES)
 #define LAPACKtrsen_ PETSCBLAS(trsen,TRSEN)
-#define LAPACKormqr_ PETSCBLAS(ormqr,ORMQR)
 #define LAPACKhgeqz_ PETSCBLAS(hgeqz,HGEQZ)
 #define LAPACKtrtrs_ PETSCBLAS(trtrs,TRTRS)
 
 /* Subroutine names that differ for real/complex data: */
 #if !defined(PETSC_USE_COMPLEX)
-# define LAPACKungqr_ PETSCBLAS(orgqr,ORGQR)
+# define LAPACKorgqr_ PETSCBLAS(orgqr,ORGQR)
+# define LAPACKormqr_ PETSCBLAS(ormqr,ORMQR)
 # define BLASdot_     PETSCBLAS(dot,DOT)
 # define BLASdotu_    PETSCBLAS(dot,DOT)
 
@@ -176,7 +183,8 @@
 # define LAPACKhetrf_ PETSCBLAS(hetrf,HETRF)
 # define LAPACKhetrs_ PETSCBLAS(hetrs,HETRS)
 # define LAPACKhetri_ PETSCBLAS(hetri,HETRI)
-# define LAPACKungqr_ PETSCBLAS(ungqr,UNGQR)
+# define LAPACKorgqr_ PETSCBLAS(ungqr,UNGQR)
+# define LAPACKormqr_ PETSCBLAS(unmqr,UNMQR)
    /* note: dot and dotu are handled separately for complex data */
 
 # define LAPACKsyev_  PETSCBLAS(heev,HEEV)  /* eigenvalues and eigenvectors of a symm matrix */

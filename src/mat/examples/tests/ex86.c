@@ -66,3 +66,21 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 3
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -mat_type baij
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -mat_type baij -bs 2
+
+TEST*/

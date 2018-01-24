@@ -1066,11 +1066,11 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
-    ierr = MPI_Keyval_free(&Petsc_Elemental_keyval);CHKERRQ(ierr);
+    ierr = MPI_Comm_free_keyval(&Petsc_Elemental_keyval);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
@@ -1319,11 +1319,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);CHKERRQ(ierr);
-    /* ierr = MPI_Comm_create_Keyval(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); -- new version? */
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);CHKERRQ(ierr);
   }
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscNewLog(A,&commgrid);CHKERRQ(ierr);
 
@@ -1340,7 +1339,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
       /* printf("new commgrid->grid = %p\n",commgrid->grid);  -- memory leak revealed by valgrind? */
     }
     commgrid->grid_refct = 1;
-    ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
+    ierr = MPI_Comm_set_attr(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
 
     a->pivoting    = 1; 
     ierr = PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL);CHKERRQ(ierr);

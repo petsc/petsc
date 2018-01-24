@@ -79,3 +79,11 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+      filter: grep -v "MPI processes"
+
+TEST*/

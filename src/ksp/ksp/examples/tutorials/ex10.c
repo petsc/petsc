@@ -439,10 +439,12 @@ int main(int argc,char **args)
       suffix: 1
       nsize: 2
       args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@
+      requires: !__float128
 
    testset:
       suffix: 1a
       args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@
+      requires: !__float128
 
    testset:
       nsize: 2

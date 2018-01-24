@@ -73,3 +73,20 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      filter: grep -v "Mat Object"
+      requires: !complex
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -detect_bug
+      filter: grep -v "Mat Object"
+      requires: !complex
+
+TEST*/

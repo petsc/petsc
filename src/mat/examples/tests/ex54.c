@@ -13,7 +13,7 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscRandom    rdm;
   Vec            xx,s1,s2;
-  PetscReal      s1norm,s2norm,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal      s1norm,s2norm,rnorm,tol = 100*PETSC_SMALL;
   PetscBool      flg,test_nd0=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -184,3 +184,24 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: {{1 3}}
+      args: -mat_block_size {{1 2 3 4 5 6 7 8}} -ov {{1 3}} -mat_size {{11 13}} -nd {{7}} ; done
+      output_file: output/ex54.out
+
+   test:
+      suffix: 2
+      args: -nd 2 -test_nd0
+      output_file: output/ex54.out
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -nd 2 -test_nd0
+      output_file: output/ex54.out
+
+TEST*/

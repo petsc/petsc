@@ -43,7 +43,7 @@
 
 BLAS_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-BLAS_EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+BLAS_EXTERN void LAPACKorgqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SNRM2_RETURNS_DOUBLE)
 BLAS_EXTERN double BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
@@ -77,7 +77,7 @@ BLAS_EXTERN void BLAStrmv_(const char*,const char*,const char*,PetscBLASInt*,Pet
 BLAS_EXTERN void BLASgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 BLAS_EXTERN void BLASsymm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 BLAS_EXTERN void BLAStrsm_(const char*,const char*,const char*,const char*,const PetscBLASInt*,const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
-BLAS_EXTERN void LAPACKormqr_(const char *,const char *t,PetscBLASInt * ,PetscBLASInt *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscBLASInt *);
+BLAS_EXTERN void LAPACKormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKREALsteqr_(const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 BLAS_EXTERN void LAPACKhgeqz_(const char *,const char *,const char *,PetscBLASInt *,PetscBLASInt *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscScalar *,PetscScalar *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscScalar *,PetscBLASInt *,PetscBLASInt *);

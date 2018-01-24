@@ -6,7 +6,7 @@
 
       type tPC
         sequence
-        PetscFortranAddr:: v
+        PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE
       end type tPC
 
       PC, parameter :: PETSC_NULL_PC = tPC(-1)

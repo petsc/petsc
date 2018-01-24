@@ -33,15 +33,16 @@ solu
 0 1.0
 */
 
+
 #include <petscmat.h>
 
 int main(int argc,char **args)
 {
-  Mat            A;
-  Vec            b,u,u_tmp;
+  Mat            A = NULL;
+  Vec            b,u = NULL,u_tmp;
   char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
-  int            m,n,nz,dummy; /* these are fscaned so kept as int */
+  int            m,n = 0,nz,dummy; /* these are fscaned so kept as int */
   PetscInt       i,col,row,shift = 1,sizes[3],nsizes;
   PetscScalar    val;
   PetscReal      res_norm;
@@ -86,7 +87,6 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(Afile);
   }
 
@@ -103,7 +103,6 @@ int main(int argc,char **args)
     }
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(bfile);
   }
 
@@ -120,7 +119,6 @@ int main(int argc,char **args)
     }
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-    fflush(stdout);
     fclose(ufile);
   }
 
@@ -156,3 +154,12 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+   build:
+      requires:  !define(PETSC_USE_64BIT_INDICES) double !complex datafilespath
+
+   test:
+      args: -Ain ${DATAFILESPATH}/matrices/indefinite/afiro_A.dat
+
+TEST*/

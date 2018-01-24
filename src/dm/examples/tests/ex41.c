@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            global,local;
   PetscScalar    ****vglobal;
+  PetscViewer    sview;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
@@ -43,10 +44,10 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = VecView(local,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
+  ierr = VecView(local,sview);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
@@ -56,6 +57,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+
+   test:
+     TODO: need mirror support in 3d
+
+TEST*/
 
 
 

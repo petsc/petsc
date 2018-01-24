@@ -11,6 +11,7 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
     -implicitform - provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used
     -aijpc        - set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL)
  */
+
 #include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
@@ -596,3 +597,66 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -da_grid_x 16 -da_grid_y 16
+      output_file: output/ex5adj_1.out
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 16 -da_grid_y 16 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
+
+   test:
+      suffix: 3
+      nsize: 2
+      args: -ts_max_steps 10 -ts_dt 10 -ts_adjoint_monitor_draw_sensi
+
+   test:
+      suffix: knl
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -malloc_hbw -ts_trajectory_use_dram 1
+      output_file: output/ex5adj_3.out
+      requires: knl
+
+   test:
+      suffix: sell
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type none
+      output_file: output/ex5adj_sell_1.out
+
+   test:
+      suffix: sell2
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
+      output_file: output/ex5adj_sell_2.out
+
+   test:
+      suffix: sell3
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      output_file: output/ex5adj_sell_3.out
+
+   test:
+      suffix: sell4
+      nsize: 4
+      args: -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      output_file: output/ex5adj_sell_4.out
+
+   test:
+      suffix: sell5
+      nsize: 4
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -aijpc
+      output_file: output/ex5adj_sell_5.out
+
+   test:
+      suffix: sell6
+      args: -ts_max_steps 10 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ts_trajectory_solution_only 0 -dm_mat_type sell -pc_type jacobi
+      output_file: output/ex5adj_sell_6.out
+
+TEST*/

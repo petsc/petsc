@@ -211,3 +211,31 @@ int main(int argc, char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 2
+      args: -total_subdomains 1
+      output_file: output/ex183_2_1.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      args: -total_subdomains 2
+      output_file: output/ex183_3_2.out
+
+   test:
+      suffix: 3
+      nsize: 4
+      args: -total_subdomains 2
+      output_file: output/ex183_4_2.out
+
+   test:
+      suffix: 4
+      nsize: 6
+      args: -total_subdomains 2
+      output_file: output/ex183_6_2.out
+
+TEST*/

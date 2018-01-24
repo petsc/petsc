@@ -153,3 +153,19 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: fftw complex
+
+   test:
+      output_file: output/ex143.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      output_file: output/ex143.out
+
+TEST*/

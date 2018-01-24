@@ -101,7 +101,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
+    ierr = MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN,MPI_COMM_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
   *addr_local_comm = local_comm;
 
-  ierr = MPI_Attr_put(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_set_attr(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void**)&addr_local_comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm,Petsc_Seq_keyval,(void**)&addr_local_comm,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
   local_comm = *addr_local_comm;
 
@@ -152,7 +152,7 @@ PetscErrorCode  PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 
   ierr = PetscFree(addr_local_comm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
-  ierr = MPI_Attr_delete(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
+  ierr = MPI_Comm_delete_attr(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -110,7 +110,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+    test:
+      nsize: 3
+      args: -time 50 -nox
+      requires: x
 
-
-
+TEST*/

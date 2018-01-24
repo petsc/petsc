@@ -309,11 +309,14 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  # 2D 0-1
+  build:
+    requires: !complex
+
   test:
     suffix: 0
     requires: triangle
     args: -run_type test -dmsnes_check -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2
+
   test:
     suffix: 1
     requires: triangle

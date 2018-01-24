@@ -96,3 +96,30 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      args: -mat_type aij
+
+   test:
+      suffix: 2
+      args: -mat_type dense
+
+   test:
+      suffix: 3
+      nsize: 3
+      args: -mat_type aij
+
+   test:
+      suffix: 4
+      nsize: 3
+      args: -mat_type dense
+
+   test:
+      suffix: 5
+      nsize: 3
+      args: -mat_type aij -test_all
+
+TEST*/

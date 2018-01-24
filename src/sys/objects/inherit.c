@@ -488,7 +488,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 }
 
 
-/*@
+/*@C
    PetscObjectReference - Indicates to any PetscObject that it is being
    referenced by another PetscObject. This increases the reference
    count for that object by one.
@@ -512,7 +512,7 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectGetReference - Gets the current reference count for
    any PETSc object.
 
@@ -538,7 +538,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    PetscObjectDereference - Indicates to any PetscObject that it is being
    referenced by one less PetscObject. This decreases the reference
    count for that object by one.
@@ -677,6 +677,7 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
+  if (obj == ptr) SETERRQ(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot compose object with itself");
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

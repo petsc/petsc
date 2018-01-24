@@ -424,14 +424,6 @@ runex2_bjacobi_3:
 	   if (${DIFF} output/ex2_bjacobi_3.out ex2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_bjacobi_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2.tmp
-runex2_chebyest_1:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_monitor_short > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_chebyest_1.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_chebyest_1, diffs above\n=========================================\n"; \
-           ${RM} -f ex2.tmp
-runex2_chebyest_2:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_chebyest_2.out ex2.tmp || printf "${PWD}\nPossible problem with ex2_chebyest_2, diffs above\n=========================================\n"; \
-           ${RM} -f ex2.tmp
 runex2_umfpack:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
@@ -1655,7 +1647,7 @@ runex67_nonsymmetric_right:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_pipebcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
+                                 runex2_fbcgs runex2_pipebcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
                                  ex3.PETSc runex3_1 ex3.rm \
                                  ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 runex5_asm runex5_asm_baij ex5.rm \

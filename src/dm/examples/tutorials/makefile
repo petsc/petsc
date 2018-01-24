@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c ex15.c ex51.c ex65dm.c swarm_ex1.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex9.c ex10.c ex12.c ex15.c ex19.c ex20.c ex51.c swarm_ex1.c swarm_ex2.c swarm_ex3.c
 EXAMPLESF       = ex11f90.F90 ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
@@ -99,6 +99,15 @@ ex21: ex21.o   chkopts
 ex51: ex51.o  chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
 	${RM} ex51.o
+
+#-----------------------------------------------------------------
+runex13f90:
+	-@${MPIEXEC} -n 4 ./ex13f90  > ex13f90.tmp 2>&1;   \
+	   if (${DIFF} output/ex13f90_1.out ex13f90.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex13f90, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex13f90.tmp
+
+
 
 ex65dm: ex65dm.o  chkopts
 	-${CLINKER} -o ex65dm ex65dm.o ${PETSC_SNES_LIB}

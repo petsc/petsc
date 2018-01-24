@@ -31,6 +31,7 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+
 #include <petscts.h>
 
 typedef struct {
@@ -396,3 +397,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex !single
+
+   test:
+      args: -ts_type cn -pc_type lu
+
+TEST*/

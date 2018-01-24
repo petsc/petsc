@@ -1297,11 +1297,11 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = MatInodeGetInodeSizes(aij->A,NULL,(PetscInt**)&inodes,NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
       if (!inodes) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %D, not using I-node routines\n",
-                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %g, not using I-node routines\n",
+                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(double)info.memory);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %D, using I-node routines\n",
-                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D mem %g, using I-node routines\n",
+                                                  rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(double)info.memory);CHKERRQ(ierr);
       }
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used);CHKERRQ(ierr);

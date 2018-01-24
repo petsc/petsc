@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            global,local;
   PetscScalar    **vglobal;
+  PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
@@ -34,9 +35,10 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = VecView(local,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = VecView(local,sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -47,7 +49,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
 
+   test:
 
+   test:
+      suffix: 2
+      nsize: 2
+      filter: grep -v "Vec Object"
 
-
+TEST*/

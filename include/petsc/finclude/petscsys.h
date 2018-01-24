@@ -220,7 +220,7 @@
 #endif
 #endif
 
-#define PetscRandom PetscFortranAddr
+#define PetscRandom type(tPetscRandom)
 #define PetscRandomType character*(80)
 #define PetscBinarySeekType PetscEnum
 

@@ -18,6 +18,8 @@
    Processors: 1
 T*/
 
+
+
 typedef struct {
   PetscInt n; /*  Number of variables */
   PetscInt m; /*  Number of constraints */
@@ -1260,3 +1262,16 @@ PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
   ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%g ||y-yt||=%g\n",(double)unorm,(double)ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_cmonitor -tao_max_funcs 10 -tao_type lcl
+      requires: !single
+
+
+TEST*/

@@ -173,7 +173,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       break;
     case PC_FIELDSPLIT_SCHUR_PRE_SELFP:
       ierr = MatSchurComplementGetAinvType(jac->schur,&atype);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's %sdiagonal's inverse\n",atype == MAT_SCHUR_COMPLEMENT_AINV_DIAG ? "" : (MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG ? "block " : "lumped "));CHKERRQ(ierr);break;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's %sdiagonal's inverse\n",atype == MAT_SCHUR_COMPLEMENT_AINV_DIAG ? "" : (atype == MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG ? "block " : "lumped "));CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_A11:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from A11\n");CHKERRQ(ierr);
       break;

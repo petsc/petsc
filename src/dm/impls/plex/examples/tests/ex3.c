@@ -821,7 +821,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   Vec             iu, fu, scaling;
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
-  PetscReal       error, errorDer, tol = 1.0e-10;
+  PetscReal       error, errorDer, tol = PETSC_SMALL;
   PetscBool       isPlex, isDA;
   PetscErrorCode  ierr;
 
@@ -1158,19 +1158,19 @@ int main(int argc, char **argv)
   # 2D P_3 on a triangle
   test:
     suffix: p3_2d_0
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -convergence
   test:
     suffix: p3_2d_1
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 1
   test:
     suffix: p3_2d_2
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 2
   test:
     suffix: p3_2d_3
-    requires: triangle
+    requires: triangle !single
     args: -petscspace_order 3 -qorder 3 -porder 3
   test:
     suffix: p3_2d_4
@@ -1284,7 +1284,7 @@ int main(int argc, char **argv)
     args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_2_hi
-    requires: triangle
+    requires: triangle !single
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -dm_plex_max_projection_height 1 -petscspace_order 4 -qorder 4
   test:

@@ -7,13 +7,21 @@
 #define kspsetoptionsprefix_       KSPSETOPTIONSPREFIX
 #define kspbuildsolution_          KSPBUILDSOLUTION
 #define kspbuildresidual_          KSPBUILDRESIDUAL
+#define matcreateschurcomplement_  MATCREATESCHURCOMPLEMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspappendoptionsprefix_    kspappendoptionsprefix
 #define kspsetoptionsprefix_       kspsetoptionsprefix
 #define kspbuildsolution_          kspbuildsolution
 #define kspbuildresidual_          kspbuildresidual
+#define matcreateschurcomplement_  matcreateschurcomplement
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL matcreateschurcomplement_(Mat *A00,Mat *Ap00,Mat *A01,Mat *A10,Mat *A11,Mat *S,int *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(A11);
+  *ierr = MatCreateSchurComplement(*A00,*Ap00,*A01,*A10,*A11,S);
+}
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {

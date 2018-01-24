@@ -6,6 +6,8 @@ static char help[] = "Partition a tiny grid using hierarchical partitioning.\n\n
    Processors: 4
 T*/
 
+
+
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -76,7 +78,7 @@ int main(int argc,char **args)
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISBuildTwoSided(is,&isrows);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
   ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
@@ -92,3 +94,13 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      requires: parmetis
+      TODO: tests cannot use parmetis because it produces different results on different machines
+
+TEST*/

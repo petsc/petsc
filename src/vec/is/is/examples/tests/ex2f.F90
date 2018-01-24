@@ -55,9 +55,9 @@
       call PetscFinalize(ierr)
       end
 
-
-
-
-
-
-
+!/*TEST
+!
+!   test:
+!     output_file: output/ex1_1.out
+!
+!TEST*/

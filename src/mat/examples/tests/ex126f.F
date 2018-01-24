@@ -112,3 +112,13 @@
       call PetscFinalize(ierr)
       end
 
+!/*TEST
+!
+!   test:
+!
+!   test:
+!     suffix: 2
+!     args: -use_mumps
+!     requires: mumps
+!
+!TEST*/

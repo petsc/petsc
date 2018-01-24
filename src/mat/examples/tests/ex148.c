@@ -1,5 +1,6 @@
 static char help[]="This program illustrates the use of PETSc-fftw interface for real 2D DFT.\n\
                     See ~petsc/src/mat/examples/tests/ex158.c for general cases. \n\n";
+
 #include <petscmat.h>
 
 int main(int argc,char **args)
@@ -76,3 +77,19 @@ int main(int argc,char **args)
 
 
 
+
+
+/*TEST
+
+   build:
+      requires: fftw !complex
+
+   test:
+      output_file: output/ex148.out
+
+   test:
+      suffix: 2
+      nsize: 3
+      output_file: output/ex148.out
+
+TEST*/

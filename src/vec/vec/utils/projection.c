@@ -527,7 +527,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   Notes: GP may be the same vector as G
 
   Level: advanced
-C@*/
+@*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
 

@@ -6,6 +6,8 @@ static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
@@ -188,3 +190,11 @@ int main(int argc,char **args)
   return ierr;
 }
 
+/*TEST
+
+   test:
+      nsize: 3
+      requires: parmetis datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -viewer_binary_skip_info
+
+TEST*/

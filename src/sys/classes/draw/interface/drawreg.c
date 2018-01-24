@@ -237,6 +237,7 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_virtual",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_fast",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(NULL,NULL,"-draw_ports",NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,NULL,"-draw_coordinates",NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"tikz",&flg);CHKERRQ(ierr);
     if (!flg) type = PETSC_DRAW_NULL;
   }

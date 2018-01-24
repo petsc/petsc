@@ -187,3 +187,14 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      nsize: 2
+
+TEST*/

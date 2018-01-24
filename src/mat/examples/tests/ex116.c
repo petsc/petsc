@@ -12,7 +12,7 @@ e.g. ./ex116 -f $DATAFILESPATH/matrices/small  \n\n";
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,A_dense;
   Vec            *evecs;
@@ -253,3 +253,21 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small
+      output_file: output/ex116_1.out
+
+   test:
+      suffix: 2
+      requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
+      args: -f ${DATAFILESPATH}/matrices/small -test_syev -check_symmetry
+
+TEST*/

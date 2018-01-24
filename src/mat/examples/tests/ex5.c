@@ -146,3 +146,129 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+
+   test:
+      suffix: 11_A
+      args: -mat_type seqaij -rectA
+
+   test:
+      args: -mat_type seqdense -rectA
+      suffix: 12_A
+
+   test:
+      args: -mat_type seqaij -rectB
+      suffix: 11_B
+
+   test:
+      args: -mat_type seqdense -rectB
+      suffix: 12_B
+
+   test:
+      suffix: 21
+      args: -mat_type mpiaij
+
+   test:
+      suffix: 22
+      args: -mat_type mpidense
+
+   test:
+      suffix: 23
+      nsize: 3
+      args: -mat_type mpiaij
+
+   test:
+      suffix: 24
+      nsize: 3
+      args: -mat_type mpidense
+
+   test:
+      suffix: 2_aijcusparse_1
+      requires: cusparse
+      args: -mat_type mpiaijcusparse -vec_type cuda
+      output_file: output/ex5_21.out
+      requires: veccuda
+
+   test:
+      suffix: 2_aijcusparse_2
+      nsize: 3
+      requires: cusparse
+      args: -mat_type mpiaijcusparse -vec_type cuda
+      output_file: output/ex5_23.out
+      requires: veccuda
+
+   test:
+      suffix: 31
+      args: -mat_type mpiaij -test_diagonalscale
+
+   test:
+      suffix: 32
+      args: -mat_type mpibaij -test_diagonalscale
+      filter: grep -v Mat_
+
+   test:
+      suffix: 33
+      nsize: 3
+      args: -mat_type mpiaij -test_diagonalscale
+
+   test:
+      suffix: 34
+      nsize: 3
+      args: -mat_type mpibaij -test_diagonalscale
+      filter: grep -v Mat_
+
+   test:
+      suffix: 3_aijcusparse_1
+      requires: cusparse
+      args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
+      output_file: output/ex5_31.out
+      requires: veccuda
+
+   test:
+      suffix: 3_aijcusparse_2
+      nsize: 3
+      requires: cusparse
+      args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
+      output_file: output/ex5_33.out
+      requires: veccuda
+
+   test:
+      suffix: aijcusparse_1
+      requires: cusparse
+      args: -mat_type seqaijcusparse -vec_type cuda -rectA
+      output_file: output/ex5_11_A.out
+      requires: veccuda
+
+   test:
+      suffix: aijcusparse_2
+      requires: cusparse
+      args: -mat_type seqaijcusparse -vec_type cuda -rectB
+      output_file: output/ex5_11_B.out
+      requires: veccuda
+
+   test:
+      suffix: sell_1
+      args: -mat_type sell
+      output_file: output/ex5_41.out
+
+   test:
+      suffix: sell_2
+      nsize: 3
+      args: -mat_type sell
+      output_file: output/ex5_43.out
+
+   test:
+      suffix: sell_3
+      args: -mat_type sell -test_diagonalscale
+      output_file: output/ex5_51.out
+
+   test:
+      suffix: sell_4
+      nsize: 3
+      args: -mat_type sell -test_diagonalscale
+      output_file: output/ex5_53.out
+
+TEST*/

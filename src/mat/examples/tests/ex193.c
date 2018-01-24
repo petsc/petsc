@@ -76,7 +76,7 @@ int main(int argc,char **args)
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISBuildTwoSided(is,&isrows);CHKERRQ(ierr);
+  ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
   ierr = ISView(isrows,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = ISDestroy(&coarseparts);CHKERRQ(ierr);
@@ -90,3 +90,14 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -mat_partitioning_hierarchical_Nfineparts 2
+      requires: parmetis
+      TODO: cannot run because parmetis does reproduce across all machines, probably due to nonportable random number generator
+
+TEST*/

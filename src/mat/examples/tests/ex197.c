@@ -55,3 +55,16 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   build:
+      requires: complex
+   test:
+
+   test:
+      suffix: 2
+      nsize: 2
+
+TEST*/

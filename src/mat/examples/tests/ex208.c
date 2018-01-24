@@ -47,3 +47,23 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      nsize: 3
+
+   test:
+      suffix: baij
+      args: -mat_type baij
+
+   test:
+      suffix: baij_2
+      nsize: 3
+      args: -mat_type baij
+
+TEST*/

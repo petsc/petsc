@@ -39,6 +39,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, '', 'Dialect under which to compile C++ sources (e.g., C++11)'))
+    help.addArgument('Compilers', '-with-fortran-type-initialize=<bool>',   nargs.ArgBool(None, 0, 'Initialize PETSc objects in Fortran'))
 
     return
 
@@ -1141,6 +1142,17 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
+  def checkFortranTypeInitialize(self):
+    '''Determines if PETSc objects in Fortran are initialized by default (doesn't work with common blocks)'''
+    if self.argDB['with-fortran-type-initialize']:
+      self.addDefine('HAVE_FORTRAN_TYPE_INITIALIZE', 1)
+      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' = 1')
+      self.logPrint('Initializing Fortran objects')
+    else:
+      self.addDefine('FORTRAN_TYPE_INITIALIZE', ' ')
+      self.logPrint('Not initializing Fortran objects')
+    return
+
   def checkFortranTypeStar(self):
     '''Determine whether the Fortran compiler handles type(*)'''
     self.pushLanguage('FC')
@@ -1524,6 +1536,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranModuleInclude)
       self.executeTest(self.checkFortranModuleOutput)
       self.executeTest(self.checkFortranTypeStar)
+      self.executeTest(self.checkFortranTypeInitialize)
     self.no_configure()
     return
 

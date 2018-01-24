@@ -25,6 +25,8 @@ The command line options are:\n\
    Processors: 1
 T*/
 
+
+
 /*
    User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient()
@@ -592,3 +594,25 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   build:
+      requires: !complex
+
+   test:
+      args: -tao_smonitor -tao_type nls -mx 10 -my 8
+      requires: !single
+
+   test:
+      suffix: 2
+      args: -tao_smonitor -tao_type bmrm -mx 10 -my 8 -tao_gttol 1.e-5
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -tao_smonitor -tao_type lmvm -mx 10 -my 8 -tao_gttol 1.e-5
+      requires: !single
+
+TEST*/

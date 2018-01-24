@@ -10,13 +10,13 @@
 */
 PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataEx de;
-  PetscInt p,npoints,*rankval,n_points_recv;
-  PetscMPIInt rank,nrank;
-  void *point_buffer,*recv_points;
-  size_t sizeof_dmswarm_point;
+  DataEx         de;
+  PetscInt       p,npoints,*rankval,n_points_recv;
+  PetscMPIInt    rank,nrank;
+  void           *point_buffer,*recv_points;
+  size_t         sizeof_dmswarm_point;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -98,16 +98,16 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 
 PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove_sent_points,PetscInt *npoints_prior_migration)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  PetscErrorCode ierr;
-  DataEx de;
-  PetscInt r,p,npoints,*rankval,n_points_recv;
-  PetscMPIInt rank,_rank;
+  DM_Swarm          *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode    ierr;
+  DataEx            de;
+  PetscInt          r,p,npoints,*rankval,n_points_recv;
+  PetscMPIInt       rank,_rank;
   const PetscMPIInt *neighbourranks;
-  void *point_buffer,*recv_points;
-  size_t sizeof_dmswarm_point;
-  PetscInt nneighbors;
-  PetscMPIInt mynneigh,*myneigh;
+  void              *point_buffer,*recv_points;
+  size_t            sizeof_dmswarm_point;
+  PetscInt          nneighbors;
+  PetscMPIInt       mynneigh,*myneigh;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -184,21 +184,21 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
 
 PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  PetscErrorCode ierr;
-  PetscInt p,npoints,npointsg=0,npoints2,npoints2g,*rankval,npoints_prior_migration;
-  PetscSF sfcell = NULL;
+  DM_Swarm          *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode    ierr;
+  PetscInt          p,npoints,npointsg=0,npoints2,npoints2g,*rankval,npoints_prior_migration;
+  PetscSF           sfcell = NULL;
   const PetscSFNode *LA_sfcell;
-  DM dmcell;
-  Vec pos;
-  PetscBool error_check = swarm->migrate_error_on_missing_point;
-  PetscMPIInt commsize,rank;
+  DM                dmcell;
+  Vec               pos;
+  PetscBool         error_check = swarm->migrate_error_on_missing_point;
+  PetscMPIInt       size,rank;
 
   PetscFunctionBegin;
   ierr = DMSwarmGetCellDM(dm,&dmcell);CHKERRQ(ierr);
   if (!dmcell) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
 #if 1
@@ -246,7 +246,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
 
-  if (commsize > 1) {
+  if (size > 1) {
     ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
   } else {
     DataField PField;
@@ -313,8 +313,8 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 
   { /* this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points */
     PetscScalar *LA_coor;
-    PetscInt npoints_from_neighbours,bs;
-    DataField PField;
+    PetscInt    npoints_from_neighbours,bs;
+    DataField   PField;
     
     npoints_from_neighbours = npoints2 - npoints_prior_migration;
     
@@ -382,13 +382,13 @@ PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points)
 */
 PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  DM_Swarm       *swarm = (DM_Swarm*)dm->data;
   PetscErrorCode ierr;
-  DataEx de;
-  PetscInt p,npoints,*rankval,n_points_recv;
-  PetscMPIInt rank,nrank,negrank;
-  void *point_buffer,*recv_points;
-  size_t sizeof_dmswarm_point;
+  DataEx         de;
+  PetscInt       p,npoints,*rankval,n_points_recv;
+  PetscMPIInt    rank,nrank,negrank;
+  void           *point_buffer,*recv_points;
+  size_t         sizeof_dmswarm_point;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -448,22 +448,22 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 
 typedef struct {
   PetscMPIInt owner_rank;
-  PetscReal min[3],max[3];
+  PetscReal   min[3],max[3];
 } CollectBBox;
 
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize)
 {
-  DM_Swarm *swarm = (DM_Swarm*)dm->data;
-  PetscErrorCode ierr;
-  DataEx de;
-  PetscInt p,pk,npoints,*rankval,n_points_recv,n_bbox_recv,dim,neighbour_cells;
-  PetscMPIInt rank,nrank;
-  void *point_buffer,*recv_points;
-  size_t sizeof_dmswarm_point,sizeof_bbox_ctx;
-  PetscBool isdmda;
-  CollectBBox *bbox,*recv_bbox;
+  DM_Swarm *        swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode    ierr;
+  DataEx            de;
+  PetscInt          p,pk,npoints,*rankval,n_points_recv,n_bbox_recv,dim,neighbour_cells;
+  PetscMPIInt       rank,nrank;
+  void              *point_buffer,*recv_points;
+  size_t            sizeof_dmswarm_point,sizeof_bbox_ctx;
+  PetscBool         isdmda;
+  CollectBBox       *bbox,*recv_bbox;
   const PetscMPIInt *dmneighborranks;
-  DM dmcell;
+  DM                dmcell;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -538,10 +538,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_bbox_recv,(void**)&recv_bbox);CHKERRQ(ierr);
+  /*  Wrong, should not be using PETSC_COMM_WORLD */
   for (p=0; p<n_bbox_recv; p++) {
-    PetscPrintf(PETSC_COMM_SELF,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
-           (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
+           (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]);CHKERRQ(ierr);
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
   /* of course this is stupid as this "generic" function should have a better way to know what the coordinates are called */
   ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
   for (pk=0; pk<n_bbox_recv; pk++) {
@@ -615,23 +617,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   PetscErrorCode ierr;
   DataEx         de;
   PetscInt       p,r,npoints,n_points_recv;
-  PetscMPIInt    commsize,rank;
+  PetscMPIInt    size,rank;
   void           *point_buffer,*recv_points;
   void           *ctxlist;
   PetscInt       *n2collect,**collectlist;
   size_t         sizeof_dmswarm_point;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
   *globalsize = npoints;
   /* Broadcast user context */
-  PetscMalloc(ctx_size*commsize,&ctxlist);
+  PetscMalloc(ctx_size*size,&ctxlist);
   ierr = MPI_Allgather(ctx,ctx_size,MPI_CHAR,ctxlist,ctx_size,MPI_CHAR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-  ierr = PetscMalloc1(commsize,&n2collect);CHKERRQ(ierr);
-  ierr = PetscMalloc1(commsize,&collectlist);CHKERRQ(ierr);
-  for (r=0; r<commsize; r++) {
+  ierr = PetscMalloc1(size,&n2collect);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&collectlist);CHKERRQ(ierr);
+  for (r=0; r<size; r++) {
     PetscInt _n2collect;
     PetscInt *_collectlist;
     void     *_ctx_r;
@@ -648,7 +650,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   ierr = DataExCreate(PetscObjectComm((PetscObject)dm),0,&de);CHKERRQ(ierr);
   /* Define topology */
   ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
-  for (r=0; r<commsize; r++) {
+  for (r=0; r<size; r++) {
     if (n2collect[r] > 0) {
       ierr = DataExTopologyAddNeighbour(de,(PetscMPIInt)r);CHKERRQ(ierr);
     }
@@ -656,7 +658,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
   /* Define send counts */
   ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
-  for (r=0; r<commsize; r++) {
+  for (r=0; r<size; r++) {
     if (n2collect[r] > 0) {
       ierr = DataExAddToSendCount(de,r,n2collect[r]);CHKERRQ(ierr);
     }
@@ -665,7 +667,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   /* Pack data */
   ierr = DataBucketCreatePackedArray(swarm->db,&sizeof_dmswarm_point,&point_buffer);CHKERRQ(ierr);
   ierr = DataExPackInitialize(de,sizeof_dmswarm_point);CHKERRQ(ierr);
-  for (r=0; r<commsize; r++) {
+  for (r=0; r<size; r++) {
     for (p=0; p<n2collect[r]; p++) {
       ierr = DataBucketFillPackedArray(swarm->db,collectlist[r][p],point_buffer);CHKERRQ(ierr);
       /* insert point buffer into the data exchanger */
@@ -686,7 +688,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
     ierr = DataBucketInsertPackedArray(swarm->db,npoints+p,data_p);CHKERRQ(ierr);
   }
   /* Release memory */
-  for (r=0; r<commsize; r++) {
+  for (r=0; r<size; r++) {
     if (collectlist[r]) PetscFree(collectlist[r]);
   }
   ierr = PetscFree(collectlist);CHKERRQ(ierr);

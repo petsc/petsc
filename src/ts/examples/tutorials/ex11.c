@@ -2589,6 +2589,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: adv_2d_quad_1
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+    timeoutfactor: 3
   test:
     suffix: adv_2d_quad_p4est_0
     requires: p4est
@@ -2597,10 +2598,12 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: adv_2d_quad_p4est_1
     requires: p4est
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+    timeoutfactor: 3
   test:
     suffix: adv_2d_quad_p4est_adapt_0
     requires: p4est
     args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.005,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares -ts_final_time 0.01
+    timeoutfactor: 3
   test:
     suffix: adv_2d_tri_0
     requires: triangle
@@ -2617,7 +2620,8 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
   test:
     suffix: shock_0
-    requires: p4est
+    requires: p4est !single
     args: -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 -ts_final_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -ufv_vtk_basename ${PETSC_DIR}/ex11
+    timeoutfactor: 3
 
 TEST*/

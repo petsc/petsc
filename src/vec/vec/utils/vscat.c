@@ -2534,7 +2534,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 
    Level: intermediate
 
-C@*/
+@*/
 PetscErrorCode  VecScatterView(VecScatter ctx,PetscViewer viewer)
 {
   PetscErrorCode ierr;

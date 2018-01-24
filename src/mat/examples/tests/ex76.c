@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],block, row,Ii,J,n1,lvl;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscReal      norm2,tol=1.e-10,err[10];
+  PetscReal      norm2,tol=PETSC_SMALL,err[10];
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm,cperm;
   PetscRandom    rdm;
@@ -303,3 +303,15 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+   test:
+      args: -bs {{1 2 3 4 5 6 7 8}}
+
+   test:
+      suffix: 3
+      args: -testaij
+      output_file: output/ex76_1.out
+
+TEST*/

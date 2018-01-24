@@ -26,6 +26,21 @@
             type(tPetscViewer), intent(in) :: A,B
           end function
         end interface operator (.eq.)
+
+        interface operator(.ne.)
+        function petscrandomnotequal(A,B)
+          use petscsysdefdummy
+          logical petscrandomnotequal
+          type(tPetscRandom), intent(in) :: A,B
+        end function
+        end interface operator (.ne.)
+        interface operator(.eq.)
+        function petscrandomequals(A,B)
+          use petscsysdefdummy
+          logical petscrandomequals
+          type(tPetscRandom), intent(in) :: A,B
+        end function
+        end interface operator (.eq.)
         end module
 
         function petscviewernotequal(A,B)
@@ -34,12 +49,24 @@
           type(tPetscViewer), intent(in) :: A,B
           petscviewernotequal = (A%v .ne. B%v)
         end function
-
         function petscviewerequals(A,B)
           use petscsysdefdummy
           logical petscviewerequals
           type(tPetscViewer), intent(in) :: A,B
           petscviewerequals = (A%v .eq. B%v)
+        end function
+
+        function petscrandomnotequal(A,B)
+          use petscsysdefdummy
+          logical petscrandomnotequal
+          type(tPetscRandom), intent(in) :: A,B
+          petscrandomnotequal = (A%v .ne. B%v)
+        end function
+        function petscrandomequals(A,B)
+          use petscsysdefdummy
+          logical petscrandomequals
+          type(tPetscRandom), intent(in) :: A,B
+          petscrandomequals = (A%v .eq. B%v)
         end function
 
         module petscsys

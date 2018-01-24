@@ -107,3 +107,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar
   }
   PetscFunctionReturn(0);
 }
+
+
+/*TEST
+
+   test:
+      args: -pc_type mg -da_refine 1 -ksp_type fgmres
+
+   test:
+      suffix: 2
+      nsize: 2
+      args: -pc_type mg -da_refine 1 -ksp_type fgmres
+
+TEST*/

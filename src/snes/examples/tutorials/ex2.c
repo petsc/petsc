@@ -8,6 +8,8 @@ This example employs a user-defined monitoring routine.\n\n";
    Processors: 1
 T*/
 
+
+
 /*
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -349,3 +351,20 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2
+      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontr -snes_view
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -nox -snes_monitor_cancel -snes_monitor_short -malloc no -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+
+TEST*/

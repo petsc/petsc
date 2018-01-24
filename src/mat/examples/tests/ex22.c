@@ -112,3 +112,10 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,I
 }
 
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

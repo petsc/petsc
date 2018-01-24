@@ -49,3 +49,22 @@ int main(int argc,char **args)
 }
 
 
+
+
+/*TEST
+
+   test:
+
+   test:
+      suffix: 2
+      args: -mat_type seqbaij -mat_block_size 5
+
+   test:
+      suffix: 3
+      args: -keep_nonzero_pattern
+
+   test:
+      suffix: 4
+      args: -keep_nonzero_pattern -mat_type seqbaij -mat_block_size 5
+
+TEST*/
