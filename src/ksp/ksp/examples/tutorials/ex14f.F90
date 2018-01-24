@@ -46,23 +46,27 @@
 !    The SNES version of this problem is:  snes/examples/tutorials/ex5f.F
 !
 !  -------------------------------------------------------------------------
-
-      program main
+      module mymodule
 #include <petsc/finclude/petscksp.h>
       use petscdmda
       use petscksp
+      Vec      localX
+      PetscInt mx,my
+      Mat B
+      DM da
+      end module
+
+      program main
+      use mymodule
       implicit none
 
       MPI_Comm comm
-      Vec      X,Y,F,localX
-      Mat      J,B
-      DM       da
+      Vec      X,Y,F
+      Mat      J
       KSP      ksp
 
-      PetscInt  Nx,Ny,N,mx,my,ifive,ithree
+      PetscInt  Nx,Ny,N,ifive,ithree
       PetscBool  flg,nooutput,usemf
-      common   /mycommon/ mx,my,B,localX,da
-!
 !
 !      This is the routine to use for matrix-free approach
 !
@@ -157,7 +161,7 @@
 !     we still use the actual formed matrix, but in reality one would
 !     provide their own subroutine that would directly do the matrix
 !     vector product and not call MatMult()
-!     Note: we put B into a common block so it will be visible to the
+!     Note: we put B into a module so it will be visible to the
 !     mymult() routine
       usemf = .false.
       call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
@@ -282,20 +286,17 @@
 !   X - vector
 !
       subroutine FormInitialGuess(X,ierr)
-      use petscksp
+      use mymodule
       implicit none
 
       PetscErrorCode    ierr
       PetscOffset      idx
-      Vec       X,localX
-      PetscInt  i,j,row,mx
-      PetscInt  my, xs,ys,xm
+      Vec       X
+      PetscInt  i,j,row
+      PetscInt  xs,ys,xm
       PetscInt  ym
       PetscReal one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(2)
-      DM               da
-      Mat              B
-      common   /mycommon/ mx,my,B,localX,da
 
       one    = 1.0
       lambda = 6.0
@@ -346,21 +347,18 @@
 !.  F - function vector
 !
       subroutine  ComputeFunction(X,F,ierr)
-      use petscksp
+      use mymodule
       implicit none
 
-      Vec              X,F,localX
+      Vec              X,F
       PetscInt         gys,gxm,gym
       PetscOffset      idx,idf
       PetscErrorCode ierr
-      PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs
+      PetscInt i,j,row,xs,ys,xm,ym,gxs
       PetscInt rowf
       PetscReal two,one,lambda,hx
       PetscReal hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(2),ff(2)
-      DM               da
-      Mat              B
-      common   /mycommon/ mx,my,B,localX,da
 
       two    = 2.0
       one    = 1.0
@@ -436,27 +434,23 @@
 !   uniprocessor grid!
 !
       subroutine ComputeJacobian(X,jac,ierr)
-      use petscksp
+      use mymodule
       implicit none
 
       Vec         X
       Mat         jac
-      Vec         localX
-      DM          da
       PetscInt     ltog(2)
       PetscOffset idltog,idx
       PetscErrorCode ierr
       PetscInt xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
       PetscInt grow(1),i,j
-      PetscInt row,mx,my,ione
+      PetscInt row,ione
       PetscInt col(5),ifive
       PetscScalar two,one,lambda
       PetscScalar v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(2)
-      Mat         B
       ISLocalToGlobalMapping ltogm
-      common   /mycommon/ mx,my,B,localX,da
 
       ione   = 1
       ifive  = 5
@@ -550,17 +544,12 @@
 !.  F - function vector
 !
       subroutine  MyMult(J,X,F,ierr)
-      use petscksp
+      use mymodule
       implicit none
-
-      Mat     J,B
+      
+      Mat     J
       Vec     X,F
       PetscErrorCode ierr
-      PetscInt mx,my
-      DM      da
-      Vec     localX
-
-      common   /mycommon/ mx,my,B,localX,da
 !
 !       Here we use the actual formed matrix B; users would
 !     instead write their own matrix vector product routine

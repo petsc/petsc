@@ -7,11 +7,19 @@
 !      -1 <= x1,x2 <= 2
 !----------------------------------------------------------------------
 
-      program toyf
-#include <petsc/finclude/petsctao.h>
+      module toymodule
+#include "petsc/finclude/petsctao.h"
       use petsctao
+
+      Vec x0,xl,xu
+      Vec ce,ci,bl,bu
+      Mat Ae,Ai,Hess
+      PetscInt n,ne,ni
+      end module
+
+      program toyf
+      use toymodule
       implicit none
-#include "toyf.h"
 
       PetscErrorCode       ierr
       Tao                  tao
@@ -70,9 +78,8 @@
 
 
       subroutine InitializeProblem(ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
       PetscReal zero,minus1,two,one
       PetscInt done
       PetscErrorCode ierr
@@ -109,9 +116,8 @@
 
 
       subroutine DestroyProblem(ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
 
       PetscErrorCode ierr
 
@@ -128,9 +134,8 @@
       end subroutine DestroyProblem
 
       subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
 
       PetscErrorCode ierr
       PetscInt dummy
@@ -153,9 +158,8 @@
 
 
       subroutine FormHessian(tao,X,H,Hpre,dummy,ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
 
       Tao        tao
       Vec              X
@@ -197,9 +201,9 @@
       end subroutine FormHessian
 
       subroutine FormInequalityConstraints(tao,X,C,dummy,ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
+
       Tao      tao
       Vec            X,C
       PetscInt       dummy
@@ -219,9 +223,9 @@
 
 
       subroutine FormEqualityConstraints(tao,X,C,dummy,ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
+
       Tao      tao
       Vec            X,C
       PetscInt       dummy
@@ -238,9 +242,8 @@
 
 
       subroutine FormInequalityJacobian(tao,X,JI,JIpre,dummy,ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
 
       Tao       tao
       Vec             X
@@ -273,9 +276,8 @@
       end subroutine FormInequalityJacobian
 
       subroutine FormEqualityJacobian(tao,X,JE,JEpre,dummy,ierr)
-      use petsctao
+      use toymodule
       implicit none
-#include "toyf.h"
 
       Tao       tao
       Vec             X
