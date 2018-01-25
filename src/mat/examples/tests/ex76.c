@@ -133,7 +133,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
   if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
   /* Vectors */
@@ -289,7 +289,7 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, error: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
     err[i] -= norm2;
-    if (err[i] > tol) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER," level: %d, err: %g\n", lvl,(double)err[i]);
+    if (err[i] > tol) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER," level: %D, err: %g\n", lvl,(double)err[i]);
   }
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
