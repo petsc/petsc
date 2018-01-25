@@ -5,18 +5,62 @@
 % A common preamble shared between the dev manual and the manual
 \input{manualpreamble.tex}
 
-\pagestyle{fancy}
-\rhead{PETSc Developer's Manual \today}
+\def\shortintro{false}
 
-\makeindex
+\usepackage{fancyhdr,lastpage}
+\pagestyle{fancy}
+\rhead{PETSc 3.8 \today}
 
 \begin{document}
 
-\ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
-http://www.mcs.anl.gov/petsc
-\vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.8}}
-{}{April 2016}
+\pagestyle{empty}
+\hspace{-.65in}\includegraphics{ArgonneLogo}
+\hfill  {\large {\bf ANL-18/XX Rev 3.8}}
+
+\vspace*{2in}
+\noindent {\huge{\bf PETSc Developers Guide}}
+\vspace*{8pt}
+\hrule
+\vspace*{8pt}
+\noindent {\Large{\it Revision 3.8}}
+
+\vspace*{1in}
+\noindent \\
+{\Large {\bf Mathematics and Computer Science Division}}
+
+\vspace*{10pt}
+\vspace*{20pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\centerline{\includegraphics{ArgonneReportTemplatePage2}}
+\newpage
+
+\hfill {\large {\bf ANL-18/XX Rev 3.8}}
+
+\vspace*{2in}
+\noindent {\LARGE{\bf PETSc Devlopers Manual}}
+\vspace*{8pt}
+\hrule
+\vspace*{8pt}
+\noindent {\Large{\it Revision 3.8}}
+
+\vspace*{0.5in}
+\noindent Prepared by \\
+{ S. Krugger\textsuperscript{1} and B. Smith\textsuperscript{2}}\\
+\\
+\textsuperscript{1}TechX Corporation \\
+\textsuperscript{2}Mathematics and Computer Science Division, Argonne National Laboratory \\
+
+\vspace*{30pt}
+\noindent January 2018
+
+\vspace*{20pt}
+\noindent This work was supported by the Office of Advanced Scientific Computing Research, \\
+Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
+
 
 \newpage
 
@@ -1482,8 +1526,7 @@ automatically.
 In this case, it assumed that the output for each
 \lstinline{matload_block_size} will give the same output so
 that only one diff file is needed.  If the variables
-produced different output, then the \lstinline{separate
-output} option would be added.  In this case, each loop
+produced different output, then the \lstinline{separate output} option would be added.  In this case, each loop
 variable and value become a separate script.
 
 See examples below for how it works in practice.
@@ -1848,5 +1891,11 @@ To modify the test harness,  one can modify this file
 
 \bibliographystyle{plain}
 \bibliography{../petsc}
+
+\pagestyle{empty}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{ArgonneReportTemplateLastPage.pdf}}
+\caption{}
+\end{figure*}
 
 \end{document}
