@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],block, row,Ii,J,n1,lvl;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscReal      norm2,err[10];
+  PetscReal      norm2;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm,cperm;
   PetscRandom    rdm;
@@ -193,7 +193,6 @@ int main(int argc,char **args)
       if (displ) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
-      err[i++] = norm2;
     }
   }
 
@@ -228,7 +227,6 @@ int main(int argc,char **args)
       if (displ) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
       }
-      err[i++] = norm2;
     }
   }
 
@@ -286,7 +284,6 @@ int main(int argc,char **args)
     if (displ) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  lvl: %D, residual: %g\n", lvl,(double)norm2);CHKERRQ(ierr);
     }
-    err[i] = norm2;
   }
 
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
