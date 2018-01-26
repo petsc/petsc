@@ -135,13 +135,13 @@ to such inquiries please follow the guidelines given below.
 
 \chapter{Style Guide}\label{chapter:styleguide}
 
-The PETSc team uses certain conventions to make our source code consistent. Groups
+The PETSc team uses certain conventions to make the source code consistent and hence easier to maintain. Groups
 developing code compatible with PETSc are, of course, free to organize their
 own source code anyway they like.
 
 \section{Names}\label{sec:stylenames}
 Consistency of names for variables, functions, etc. is extremely
-important in making the package both usable and maintainable.
+important.
 We use several conventions:
 \begin{enumerate}
 \item All function names and enum types consist of acronyms or words, each of
@@ -163,24 +163,25 @@ We use several conventions:
       of a particular file are declared \lstinline{static}. 
       Also see item \ref{styleitem:petscextern} in Section \ref{sec:stylepetsc}.
 \item Function names in structures are the same as the base application
-      function name without the object prefix, and all are in small letters.
+      function name without the object prefix, and are in small letters.
       For example, \lstinline{MatMultTranspose()} has a structure name of
       \lstinline{multtranspose()}.
-\item Each application usable function begins with the name of the class object, followed by any subclass name,
-  for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
+\item Each application usable function begins with the name of the class object, followed by any subclass name,
+  for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Options database keys are lower case, have an underscore between words, and match the function name associated with the option without the word ``set'' or ``get''.
 For example, \trl{-ksp_gmres_restart}.
-\item \lstinline{XXXTypes} (for example \lstinline{KSPType}) do not have an underscore in them, unless they refer to another package that uses an underscore, for example \lstinline{MATSOLVERSUPERLU_DIST}.
+\item Specific \lstinline{XXXType} values (for example \lstinline{MatSolverType}) do not have an underscore in them, unless they refer to another package that uses an underscore, for example \lstinline{MATSOLVERSUPERLU_DIST}.
 \end{enumerate}
 
 \section{Coding Conventions and Style}
 Within the PETSc source code, we adhere to the following guidelines
-so that the code is uniform and easily maintainable.
+so that the code is uniform and easily maintained.
 
 \subsection{C Formatting}
 \begin{enumerate}
-  \item All PETSc function bodies are indented two characters. {\em No literal tabs} should be used.
+\item {\em No} tabs are allowed in {\em any} of the source code.
+\item All PETSc function bodies are indented two characters.
 \item Each additional level of loops, \lstinline{if} statements, etc. is indented
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
@@ -220,7 +221,6 @@ PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); /* Incorrect */
 \item There {\em must} be a single blank line
       between the local variable declarations and the body of the function.
 \item Indentation for \lstinline{if} statements {\em must}  be done  as
-as
 \begin{lstlisting}
 if ( ) {
   ....
@@ -259,7 +259,6 @@ if ( ) {
 }
 \end{lstlisting}
 \item Always have a space between \lstinline{if} or \lstinline{for} and the following \lstinline{()}.
-\item {\em No} tabs are allowed in {\em any} of the source code.
 \item \label{styleitem:bracesameline} The open brace should be on the same line as the \lstinline{if ( )} test, \lstinline{for ( )}, etc., never on its own line.  For example
 \begin{lstlisting}
  } else {
@@ -288,12 +287,10 @@ ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \item Do not include a  space before or after a comma in lists.
 That is, do not write
 \begin{lstlisting}
-int a,b,c;
 ierr = func(a, 22.0);CHKERRQ(ierr); /* Incorrect */
 \end{lstlisting}
 but instead write
 \begin{lstlisting}
-int a,b,c;
 ierr = func(a,22.0);CHKERRQ(ierr);
 \end{lstlisting}
 \end{enumerate}
@@ -316,8 +313,8 @@ Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg
 \label{sec:stylepetsc}
 \begin{enumerate}
 \item Public PETSc includes, \trl{petsc*.h}, should not include private PETSc \trl{petsc/private/*impl.h} includes.
-\item Public and private PETSc includes cannot include include files in the PETSc source tree.
-\item The first line of the executable statements in a function must be \lstinline{PetscFunctionBegin;}
+\item Public and private PETSc includes cannot include include files located in the PETSc source tree.
+\item The first line of the executable statements in functions must be \lstinline{PetscFunctionBegin;}
 \item Use \lstinline{PetscFunctionReturn(returnvalue);} not \lstinline{return(returnvalue);}
 \item {\em Never} put a function call in a \lstinline{return} statement; do not do
 \begin{lstlisting}
@@ -325,7 +322,7 @@ PetscFunctionReturn( somefunction(...) ); /* Incorrect */
 \end{lstlisting}
 \item Do {\em not} put a blank line immediately after \lstinline{PetscFunctionBegin;} or
   a blank line immediately before \lstinline{PetscFunctionReturn(0);}.
-\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, etc. directly in PETSc source code or examples. 
+\item Do not use \lstinline{sqrt()}, \lstinline{pow()}, \lstinline{sin()}, etc. directly in PETSc C/C++ source code or examples (usage is fine in Fortran source code). 
   Rather, use \lstinline{PetscSqrtScalar()}, \lstinline{PetscSqrtReal()}, etc., depending on the context. 
   See \trl{petscmath.h} for expressions to use.
 \item \trl{assert.h} should not be included in PETSc source and \lstinline{assert()} should not be used. It doesn't play well in the parallel MPI world.
@@ -370,7 +367,7 @@ For example,
 
 \section{Formatted Comments}
 
-PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing2}, \cite{gropp1993sowing} to generate documentation (manual pages) and the Fortran interfaces. 
+PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing}, \cite{gropp1993sowing2} to generate documentation (manual pages) and the Fortran interfaces. 
 Documentation for Sowing and the formatting may be found at \href{http://wgropp.cs.illinois.edu/projects/software/sowing/}{http://wgropp.cs.illinois.edu/projects/software/sowing/}; in particular, see the documentation for \trl{doctext}.
 
 \begin{itemize}
@@ -379,24 +376,22 @@ Documentation for Sowing and the formatting may be found at \href{http://wgropp.
         both documentation and a Fortran interface.
     \item
       \trl{/*@C}\\    a formatted comment of a function that will be used only for
-        documentation, not to generate a Fortran interface, in general such labeled C functions should have a custom Fortran interface provided.
+        documentation, not to generate a Fortran interface, in general such labeled C functions should have a custom Fortran interface provided. Functions that take \trl{char*} or function pointer arguments must have the \trl{C} symbol. 
     \item
       \trl{/*E}\\     a formatted comment of an enum used for documentation only, note that
         each of these needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as
         a native and defined in the corresponding
         \trl{include/petsc/finclude/petscxxx.h} fortran include file and the values
-        set as parameters in the file \trl{include/petsc/finclude/petscxxx.h}
+        set as parameters in the file \trl{src/SECTION/f90-mod/petscSUBSECTION.h}, for example, \trl{src/vec/f90-mod/petscis.h}.
     \item
       \trl{/*S}\\     a formatted comment for a data type such as \lstinline{KSP}, note that each of these
         needs to be listed in \trl{lib/petsc/conf/bfort-petsc.txt} as a \trl{nativeptr}.
     \item
-      \trl{/*M}\\     a formatted comment of a CPP macro used for both documentation and
-        a Fortran interface.
     \item
-      \trl{/*MC}\\    a formatted comment of a CPP macro for documentation.
+      \trl{/*MC}\\    a formatted comment of a CPP macro or enum value for documentation.
 \end{itemize}
 
-Functions that take \trl{char*} or function pointer arguments must have the \trl{C} symbol. 
+
 The Fortran interface generator cannot handle them, so the Fortran interface for them must be created manually.
 
 The Fortran interface files go into the three directories depending on how they are created: \trl{ftn-auto}, \trl{ftn-custom}, \trl{ftn-f90}.
