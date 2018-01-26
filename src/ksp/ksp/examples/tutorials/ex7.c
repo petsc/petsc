@@ -246,34 +246,34 @@ int main(int argc,char **args)
    test:
       suffix: mpiaijcusp
       requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp
 
    test:
       suffix: mpiaijcusp_2
       nsize: 2
       requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp
 
    test:
       suffix: mpiaijcusp_simple
       requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusp_simple_2
       nsize: 2
       requires: cusp cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_package cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor_short -mat_type mpiaijcusp -sub_pc_factor_mat_solver_type cusparse -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse
       requires: cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse -vec_type mpicuda
+      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type mpicuda
 
    test:
       suffix: mpiaijcusparse_2
       nsize: 2
       requires: cusparse
-      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_package cusparse -vec_type mpicuda
+      args: -ksp_monitor_short -mat_type mpiaijcusparse -sub_pc_factor_mat_solver_type cusparse -vec_type mpicuda
 
 TEST*/

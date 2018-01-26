@@ -283,7 +283,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   /*
   KSP                    kspnew;
   PC                     pcnew;
-  const MatSolverPackage stype;
+  const MatSolverType stype;
 
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&kspnew);CHKERRQ(ierr);
@@ -295,8 +295,8 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
   ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
   ierr = PCSetOperators(kspnew->pc,Amat,Pmat);CHKERRQ(ierr);
-  ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
-  ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverType(snesksp->pc,&stype);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverType(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)kspnew);CHKERRQ(ierr);

@@ -107,6 +107,10 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+      <ul>
+        <li>MatSolverPackage is replaced with MatSolverType.</li>
+        <li>mat_solver_package is replaced with mat_solver_type.</li>
+      </ul>
       <h4>PC:</h4>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
@@ -125,17 +129,17 @@
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <ul>
-        PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.
+        <li>PetscViewerVTKFWrite() now takes a MPI_Datatype instead of a PetscDataType argument.</li>
       </ul>
       <h4>SYS:</h4>
       <ul>
-        PetscPClose() no longer returns error code from pclose() because some systems cannot reliably deliver it
+        <li>PetscPClose() no longer returns error code from pclose() because some systems cannot reliably deliver it</li>
       </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
       <ul>
-        The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.
+        <li>The F90Array routines now take a MPI_Datatype argument instead of a PetscDataType. This should not affect user code.</li>
       </ul>
     </div>
 

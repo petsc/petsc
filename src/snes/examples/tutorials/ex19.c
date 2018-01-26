@@ -664,13 +664,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: 11
       nsize: 4
       requires: pastix
-      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres
 
    test:
       suffix: 12
       nsize: 12
       requires: pastix
-      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5 -da_refine 4 -ksp_type fgmres
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -pc_redundant_number 5 -da_refine 4 -ksp_type fgmres
 
    test:
       suffix: 13
@@ -718,13 +718,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: 3
       nsize: 4
       requires: mumps
-      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2
+      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_type mumps -pc_redundant_number 2
 
    test:
       suffix: 4
       nsize: 12
       requires: mumps
-      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5
+      args: -da_refine 3 -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_type mumps -pc_redundant_number 5
       output_file: output/ex19_3.out
 
    test:
@@ -887,13 +887,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: fieldsplit_hypre
       nsize: 2
       requires: hypre mumps
-      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short
+      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_0_pc_factor_mat_solver_type mumps -fieldsplit_1_pc_type hypre -fieldsplit_1_pc_hypre_type boomeramg -snes_monitor_short -ksp_monitor_short
 
    test:
       suffix: fieldsplit_mumps
       nsize: 2
       requires: mumps
-      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -fieldsplit_0_pc_factor_mat_solver_package mumps -fieldsplit_1_pc_factor_mat_solver_package mumps
+      args: -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short -fieldsplit_0_pc_factor_mat_solver_type mumps -fieldsplit_1_pc_factor_mat_solver_type mumps
       output_file: output/ex19_fieldsplit_5.out
 
    test:
@@ -923,19 +923,19 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: klu
       requires: suitesparse
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type klu
       output_file: output/ex19_superlu.out
 
    test:
       suffix: klu_2
       requires: suitesparse
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu -mat_klu_ordering PETSC
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type klu -mat_klu_ordering PETSC
       output_file: output/ex19_superlu.out
 
    test:
       suffix: klu_3
       requires: suitesparse
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu -mat_klu_use_btf 0
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type klu -mat_klu_use_btf 0
       output_file: output/ex19_superlu.out
 
    test:
@@ -985,25 +985,25 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: superlu
       requires: superlu
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu
 
    test:
       suffix: superlu_dist
       requires: superlu_dist
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist
       output_file: output/ex19_superlu.out
 
    test:
       suffix: superlu_dist_2
       nsize: 2
       requires: superlu_dist
-      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu_dist
+      args: -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_type superlu_dist
       output_file: output/ex19_superlu.out
 
    test:
       suffix: superlu_equil
       requires: superlu
-      args: -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_equil
+      args: -da_grid_x 20 -da_grid_y 20 -{snes,ksp}_monitor_short -pc_type lu -pc_factor_mat_solver_type superlu -mat_superlu_equil
 
    test:
       suffix: tcqmr
@@ -1018,6 +1018,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
    test:
       suffix: umfpack
       requires: suitesparse
-      args: -da_refine 2 -pc_type lu -pc_factor_mat_solver_package umfpack -snes_view -snes_monitor_short -ksp_monitor_short
+      args: -da_refine 2 -pc_type lu -pc_factor_mat_solver_type umfpack -snes_view -snes_monitor_short -ksp_monitor_short
 
 TEST*/

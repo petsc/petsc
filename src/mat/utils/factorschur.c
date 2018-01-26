@@ -4,7 +4,7 @@
 PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
 {
   Mat              St, S = F->schur;
-  MatSolverPackage solvertype;
+  MatSolverType solvertype;
   MatFactorInfo    info;
   PetscErrorCode   ierr;
 

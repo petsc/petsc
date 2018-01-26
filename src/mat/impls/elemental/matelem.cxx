@@ -740,7 +740,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,co
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_elemental_elemental(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERELEMENTAL;
@@ -762,18 +762,18 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERELEMENTAL,&B->solvertype);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_elemental_elemental);CHKERRQ(ierr);
   *F            = B;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_LU,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_CHOLESKY,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_LU,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_CHOLESKY,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1074,7 +1074,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1286,7 +1286,7 @@ static struct _MatOps MatOps_Values = {
 
   Use ./configure --download-elemental to install PETSc to use Elemental
 
-  Use -pc_type lu -pc_factor_mat_solver_package elemental to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type elemental to use this direct solver
 
    Options Database Keys:
 + -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()

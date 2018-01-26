@@ -182,7 +182,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMATLAB;
@@ -216,7 +216,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
-  ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factortype = ftype;
   ierr = PetscFree((*F)->solvertype);CHKERRQ(ierr);
@@ -225,12 +225,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
 }
 
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +271,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   Works with MATSEQAIJ matrices.
 
   Options Database Keys:
-. -pc_factor_mat_solver_package matlab - selects MATLAB to do the sparse factorization
+. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
 
   Notes: You must ./configure with the options --with-matlab --with-matlab-engine
 
@@ -279,6 +279,6 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 .seealso: PCLU
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCFactorSetMatSolverType(), MatSolverType
 M*/
 

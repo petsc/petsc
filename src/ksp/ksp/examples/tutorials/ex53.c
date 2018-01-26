@@ -65,7 +65,7 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
   if (size > 1) {
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
   }
 #endif
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

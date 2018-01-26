@@ -1210,12 +1210,12 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
    If it's not provided, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
    Options for the pressure solver can be prefixed with -fetidp_fielsplit_p_, E.g.
 .vb
-      -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_package mumps
+      -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
 .ve
    In order to use the deluxe version of FETI-DP, you must customize the inner BDDC operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
    non-redundant multipliers, i.e. -ksp_fetidp_fullyredundant false. Options for the scaling solver are prefixed by -fetidp_bddelta_, E.g.
 .vb
-      -fetidp_bddelta_pc_factor_mat_solver_package mumps -my_fetidp_bddelta_pc_type lu
+      -fetidp_bddelta_pc_factor_mat_solver_type mumps -my_fetidp_bddelta_pc_type lu
 .ve
 
    Some of the basic options such as maximum number of iterations and tolerances are automatically passed from this KSP to the inner KSP that actually performs the iterations.

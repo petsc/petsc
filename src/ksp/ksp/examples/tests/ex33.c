@@ -2,7 +2,7 @@ static char help[] = "Test MatGetInertia().\n\n";
 
 /*
   Examples of command line options:
-  ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1
+  ./ex33 -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1
   ./ex33 -sigma <shift> -fA <matrix_file>
 */
 
@@ -132,20 +132,20 @@ int main(int argc,char **args)
 
     test:
       suffix: mumps
-      args: -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
+      args: -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
       requires: mumps !complex
       output_file: output/ex33.out
 
     test:
       suffix: mumps_2
-      args: -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
+      args: -sigma 2.0 -pc_factor_mat_solver_type mumps -mat_mumps_icntl_13 1 -mat_mumps_icntl_24 1
       requires: mumps !complex
       nsize: 3
       output_file: output/ex33.out
 
     test:
       suffix: mkl_pardiso
-      args: -sigma 2.0 -pc_factor_mat_solver_package mkl_pardiso
+      args: -sigma 2.0 -pc_factor_mat_solver_type mkl_pardiso
       requires: mkl_pardiso
       output_file: output/ex33.out
 

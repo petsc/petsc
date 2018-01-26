@@ -16,7 +16,7 @@
 #define MatCoarsen PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
-#define MatSolverPackage character*(80)
+#define MatSolverType character*(80)
 #define MatOption PetscEnum
 #define MatCreateSubMatrixOption PetscEnum
 #define MPChacoGlobalType PetscEnum
@@ -145,7 +145,7 @@
 #define MATMFFD_WP 'wp'
 
 !
-! MatSolverPackages
+! MatSolverTypes
 !
 #define MATSOLVERSUPERLU         'superlu'
 #define MATSOLVERSUPERLU_DIST    'superlu_dist'

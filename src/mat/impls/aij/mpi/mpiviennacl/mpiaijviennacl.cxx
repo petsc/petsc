@@ -137,7 +137,7 @@ PetscErrorCode  MatCreateAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    MATAIJVIENNACL - MATMPIAIJVIENNACL= "aijviennacl" = "mpiaijviennacl" - A matrix type to be used for sparse matrices.
 
    A matrix type (CSR format) whose data resides on GPUs.

@@ -3655,15 +3655,15 @@ To use these solvers, one may:
 \trl{--download-mumps} \trl{--download-scalapack} (MUMPS requires ScaLAPACK).
 \item Build the PETSc libraries.
 \item Use the runtime option: \trl{-ksp_type preonly} \trl{-pc_type <pctype>}
-\trl{-pc_factor_mat_solver_package <packagename>}.
-For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package superlu_dist}.
+\trl{-pc_factor_mat_solver_type <packagename>}.
+For eg: \trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_type superlu_dist}.
 \end{enumerate}
 
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{llll}
-{\bf MatType}  & {\bf PCType} & {\bf MatSolverPackage} & {\bf Package} \\
-               &              &                        & (\trl{-pc_factor_mat_solver_package)}\\
+{\bf MatType}  & {\bf PCType} & {\bf MatSolverType} & {\bf Package} \\
+               &              &                        & (\trl{-pc_factor_mat_solver_type)}\\
 \hline
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERESSL|            & \trl{essl}          \\
   \trl{seqaij}       & \trl{lu}           &  \lstinline|MATSOLVERLUSOL|           & \trl{lusol}         \\
@@ -3711,12 +3711,12 @@ As an alternative to using runtime flags to employ these external
 packages,
 procedural calls are provided for some packages. For example, the following procedural calls
 are equivalent to runtime options
-\trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_package mumps} \trl{-mat_mumps_icntl_7 2}:
+\trl{-ksp_type preonly} \trl{-pc_type lu} \trl{-pc_factor_mat_solver_type mumps} \trl{-mat_mumps_icntl_7 2}:
 \begin{lstlisting}
 KSPSetType(ksp,KSPPREONLY);
 KSPGetPC(ksp,&pc);
 PCSetType(pc,PCLU);
-PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);
 PCFactorGetMatrix(pc,&F);
 icntl=7; ival = 2;
 MatMumpsSetIcntl(F,icntl,ival);
@@ -9026,7 +9026,7 @@ stages
 can also be performed separately, by using the out-of-place mode, first
 one obtains that matrix object that will hold the factor
 \begin{lstlisting}
-MatGetFactor(Mat matrix,const MatSolverPackage package,MatFactorType ftype,Mat *factor);
+MatGetFactor(Mat matrix,const MatSolverType package,MatFactorType ftype,Mat *factor);
 \end{lstlisting}
 and then performs the factorization
 \begin{lstlisting}

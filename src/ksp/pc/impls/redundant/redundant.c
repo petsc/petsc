@@ -102,7 +102,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
           ierr = KSPSetType(red->ksp,KSPGMRES);CHKERRQ(ierr);
           ierr = PCSetType(red->pc,PCBJACOBI);CHKERRQ(ierr);
         } else {
-          ierr = PCFactorSetMatSolverPackage(red->pc,NULL);CHKERRQ(ierr);
+          ierr = PCFactorSetMatSolverType(red->pc,NULL);CHKERRQ(ierr);
         }
       }
 

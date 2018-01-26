@@ -196,7 +196,7 @@ int main(int argc,char **args)
 
     test:
       suffix: mumps
-      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -pc_factor_mat_solver_package mumps -pc_type lu 
+      args: -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -pc_factor_mat_solver_type mumps -pc_type lu 
       requires: datafilespath  mumps !complex double !define(PETSC_USE_64BIT_INDICES)
       nsize: 4
       output_file: output/ex37.out

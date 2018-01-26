@@ -228,13 +228,13 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     test:
       suffix: superlu_dist
       requires: superlu_dist complex
-      args: -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_colperm MMD_ATA 
+      args: -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_colperm MMD_ATA 
 
     test:
       suffix: superlu_dist_2
       requires: superlu_dist complex
       nsize: 3
       output_file: output/ex17_superlu_dist.out
-      args: -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_colperm MMD_ATA
+      args: -n 6 -p 5 -norandom -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_colperm MMD_ATA
 
 TEST*/

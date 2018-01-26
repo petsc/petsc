@@ -10,7 +10,7 @@ typedef struct {
   Mat              fact;              /* factored matrix */
   MatFactorInfo    info;
   MatOrderingType  ordering;          /* matrix reordering */
-  MatSolverPackage solvertype;
+  MatSolverType solvertype;
   MatFactorType    factortype;
   PetscReal        actualfill;
   PetscBool        inplace;            /* flag indicating in-place factorization */
@@ -35,9 +35,9 @@ PETSC_INTERN PetscErrorCode PCFactorSetLevels_Factor(PC,PetscInt);
 PETSC_INTERN PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC,PetscBool);
 PETSC_INTERN PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC,PetscBool*);
 PETSC_INTERN PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC,PetscBool);
-PETSC_INTERN PetscErrorCode PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
-PETSC_INTERN PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC);
-PETSC_INTERN PetscErrorCode PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPackage*);
+PETSC_INTERN PetscErrorCode PCFactorSetMatSolverType_Factor(PC,const MatSolverType);
+PETSC_INTERN PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC);
+PETSC_INTERN PetscErrorCode PCFactorGetMatSolverType_Factor(PC,const MatSolverType*);
 PETSC_INTERN PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC);
 PETSC_INTERN PetscErrorCode PCView_Factor(PC,PetscViewer);

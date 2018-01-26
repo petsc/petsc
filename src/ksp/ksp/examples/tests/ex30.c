@@ -11,13 +11,13 @@ It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c
    ex30 -f0 <datafile> -ksp_type preonly  \n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
-        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps \n\
+        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu or superlu_dist or mumps \n\
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps \n\
    mpiexec -n <np> ex30 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
 
-   ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_conditionnumber -ckerror -mat_superlu_diagpivotthresh 0
+   ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_type superlu -mat_superlu_conditionnumber -ckerror -mat_superlu_diagpivotthresh 0
    ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type hypre -pc_hypre_type boomeramg -ksp_type fgmres -ckError
-   ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_package petsc -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -ckerror
+   ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_type petsc -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -ckerror
  \n\n";
 */
 /*T

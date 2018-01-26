@@ -567,7 +567,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    MATSEQAIJCUSP - MATAIJCUSP = "aijcusp" = "seqaijcusp" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices are in CSR format by
@@ -583,15 +583,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 
 .seealso: MatCreateSeqAIJCUSP(), MATAIJCUSP, MatCreateAIJCUSP(), MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSP(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
