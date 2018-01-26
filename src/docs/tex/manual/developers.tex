@@ -1772,12 +1772,11 @@ build of this file but still maintain it in the source tree.
 
 A typical example for compiling for real/double only is:
 %
-\begin{lstlisting}
-      /*T
-        requires: !complex
-      T*/
-\end{lstlisting}
-
+\begin{outputlisting}
+/*T
+  requires: !complex
+T*/
+\end{outputlisting}
 
 \section{PETSC Test Harness%
   \label{petsc-test-harness}%
@@ -1831,24 +1830,20 @@ together easily.  There are libraries to enable the output to be used
 easily including sharness, which is used by the git team.  However, the
 simplicity of the petsc tests and TAP specification means that we use
 our own simple harness given by a single shell script that each file
-sources: \lstinline{petsc\_harness.sh}.
+sources: \lstinline{petsc_harness.sh}.
 
 As an example, consider this test input:
 %
-%\begin{lstlisting}
-\begin{verbatim}
-     test:
-         suffix: 2
-         output_file: output/ex138.out
-         args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
-         requires: datafilespath
-\end{verbatim}
-%\end{lstlisting}
+\begin{outputlisting}
+test:
+    suffix: 2
+    output_file: output/ex138.out
+    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
+    requires: datafilespath
+\end{outputlisting}
 
 A sample output would be:
-%
-%\begin{lstlisting}
-\begin{verbatim}
+\begin{outputlisting}
       ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
       ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
       ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
@@ -1859,12 +1854,7 @@ A sample output would be:
 
       ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
       ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-
-
-
-\end{verbatim}
-%\end{lstlisting}
-
+\end{outputlisting}
 
 \section{Test harness implementation%
   \label{test-harness-implementation}%
@@ -1874,55 +1864,50 @@ Most of the requirements for being TAP-compliant lie in the shell
 scripts so we focus on that description.
 
 A sample shell script is given by:
-%
-\begin{verbatim}
-      #!/bin/sh
-      . petsc_harness.sh
+\begin{outputlisting}
+#!/bin/sh
+. petsc_harness.sh
 
-      petsc_testrun ./ex1 ex1.tmp ex1.err
-      petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
+petsc_testrun ./ex1 ex1.tmp ex1.err
+petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
 
-      petsc_testend
-\end{verbatim}
+petsc_testend
+\end{outputlisting}
 
-\texttt{petsc\_harness.sh} is a small shell script that provides the logging and
-reporting functions \texttt{petsc\_testrun} and \texttt{petsc\_testend}.
+\trl{petsc_harness.sh} is a small shell script that provides the logging and
+reporting functions \lstinline{petsc_testrun} and \lstinline{petsc_testend}.
 
 A small sample of the output from the test harness would be:
-%
-%\begin{lstlisting}
-\begin{verbatim}
-
-      ok 1 ./ex1
-      ok 2 diff ex1.tmp output/ex1.out
-      not ok 4 ./ex2
-      #	ex2: Error: cannot read file
-      not ok 5 diff ex2.tmp output/ex2.out
-      ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
-      ok 8 diff ex3.tmp output/ex3.out
-      ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
-      ok 10 diff ex3.tmp output/ex3.out
-      ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
-      ok 12 diff ex3.tmp output/ex3.out
-      ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
-      ok 14 diff ex3.tmp output/ex3.out
-      ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
-      ok 16 diff ex3.tmp output/ex3.out
-      ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
-      ok 18 diff ex3.tmp output/ex3.out
-      # FAILED   4 5
-      # failed 2/16 tests; 87.500% ok
-\end{verbatim}
-%\end{lstlisting}
+\begin{outputlisting}
+ok 1 ./ex1
+ok 2 diff ex1.tmp output/ex1.out
+not ok 4 ./ex2
+#	ex2: Error: cannot read file
+not ok 5 diff ex2.tmp output/ex2.out
+ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
+ok 8 diff ex3.tmp output/ex3.out
+ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
+ok 10 diff ex3.tmp output/ex3.out
+ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
+ok 12 diff ex3.tmp output/ex3.out
+ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
+ok 14 diff ex3.tmp output/ex3.out
+ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
+ok 16 diff ex3.tmp output/ex3.out
+ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
+ok 18 diff ex3.tmp output/ex3.out
+# FAILED   4 5
+# failed 2/16 tests; 87.500% ok
+\end{outputlisting}
 
 For developers, modifying the lines that get written to the file can be
 done by modifying:
 \begin{bashlisting}
-   ${PETSC_DIR}/config/example_template.py
+${PETSC_DIR}/config/example_template.py
 \end{bashlisting}
 To modify the test harness,  one can modify this file
 \begin{bashlisting}
-   ${PETSC_DIR}/config/petsc_harness.sh
+${PETSC_DIR}/config/petsc_harness.sh
 \end{bashlisting}
 
 \bibliographystyle{plain}
