@@ -773,7 +773,7 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   if (shift == -1) shift = 0.0; /* negative shift indicates do not error on zero diagonal; this code never zeros on zero diagonal */
   ierr = PetscBLASIntCast(m,&bm);CHKERRQ(ierr);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    /* this is a hack fix, should have another version without the second BLASdot */
+    /* this is a hack fix, should have another version without the second BLASdotu */
     ierr = VecSet(xx,zero);CHKERRQ(ierr);
   }
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -783,13 +783,13 @@ static PetscErrorCode MatSOR_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType fl
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
-        PetscStackCallBLAS("BLASdot",xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o));
+        PetscStackCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i=m-1; i>=0; i--) {
-        PetscStackCallBLAS("BLASdot",xt   = b[i] - BLASdot_(&bm,v+i,&bm,x,&o));
+        PetscStackCallBLAS("BLASdotu",xt   = b[i] - BLASdotu_(&bm,v+i,&bm,x,&o));
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
