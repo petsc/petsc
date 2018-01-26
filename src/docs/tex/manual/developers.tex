@@ -1294,39 +1294,38 @@ describe tests and subtests required to run executables associated with
 compilation of that file.  The general skeleton of the file is:
 %
 \begin{lstlisting}
-      static char help[] = "A simple MOAB example\n\
+static char help[] = "A simple MOAB example\n\
 
-      ...
-      <source code>
-      ...
+...
+<source code>
+...
 
-      /*TEST
-         build:
-           requires: moab
-         testset:
-           suffix: 1
-           requires: !complex
-         testset:
-           suffix: 2
-           args: -debug -fields v1,v2,v3 
-           test:
-           test:
-             args: -foo bar
-      TEST*/
-
+/*TEST
+   build:
+     requires: moab
+   testset:
+     suffix: 1
+     requires: !complex
+   testset:
+     suffix: 2
+     args: -debug -fields v1,v2,v3 
+     test:
+     test:
+       args: -foo bar
+TEST*/
 \end{lstlisting}
 
-For our language, a \emph{test} is associated with a:
-\begin{itemize}
-  \item[] Single shell script
-  \item[] Single makefile 
-  \item[] Single output file that represents the \emph{expected
-        results}.
-  \item[] Two or more command tests.  Usually, one (or more) mpiexec
+For our language, a \emph{test} is associated with:
+\begin{tightitemize}
+  \item A single shell script
+  \item A single makefile 
+  \item A single output file that represents the \emph{expected
+       esults}.
+  \item Two or more command tests.  Usually, one (or more) mpiexec
         test that runs the executable, and one (or more) diff tests to
         compare output with the expected result.
-\end{itemize}
-Our language also supports that a \emph{testset} that specifies
+\end{tightitemize}
+Our language also supports a \emph{testset} that specifies
 specifies either a new test entirely, or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
@@ -1338,7 +1337,7 @@ will look something like this:
 
 In practice, we want to do various logging and counting by the test
 harness, but this is explained further below.  The input language
-supports a simple, yet flexible, tests control and we begin by
+supports simple, yet flexible, test control and we begin by
 describing this language.
 
 
@@ -1346,8 +1345,8 @@ describing this language.
   \label{runtime-language-options}%
 }
 
-At the end of each test, a marked comment block that uses YAML is
-inserted that describes the test to be run.  The elements of the
+At the end of each test file, a marked comment block, using YAML, is
+inserted to describe the test(s) to be run.  The elements of the
 test are done with a set of supported key words that sets up the test.
 %
 \begin{description}
@@ -1370,7 +1369,7 @@ without rewriting the tests
 \end{description}
 
 To enable the second bullet, the \emph{basestring} of the filename is defined
-as the filename without the extention; i.e., if the filename is \lstinline{ex1.c}
+as the filename without the extension; e.g., if the filename is \lstinline{ex1.c}
 then \lstinline{basestring=ex1}.f
 
 \noindent
@@ -1383,15 +1382,14 @@ With this background, these keywords are are:
     \begin{itemize}
 
       \item[] At the top level, either a single test, or a testset must
-            be specified.   All other are subsets of this keyword.
+            be specified.   All other keywords are sub-entries of this keyword.
 
     \end{itemize}
 
   \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
     \begin{itemize}
 
-      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and by \texttt{ testname=`run'+basestring+`\_'+suffix}
-
+      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and otherwise by \texttt{ testname=`run'+basestring+`\_'+suffix}
 
       \item This can only be specified for top level test nodes
 
@@ -1453,8 +1451,8 @@ With this background, these keywords are are:
       \item A skeleton example of the resultant commands to be run is:
       %
       \begin{lstlisting}
-                 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
-                 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
+diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
       \end{lstlisting}
 
       \item If the filter begins with \lstinline{Error:}, then the test is
@@ -1545,7 +1543,7 @@ supported:
 
 \item for loops:  Specifying $\{\{ ... \}shared output\} $ 
       or $\{\{ ... \}separate output\} $ 
-      will create for loops over enclosed space-delmited list.  
+      will create for loops over enclosed space-delimited list.  
       If the loop causes a different output, then separate output would
       be used.  If the loop does not cause separate output, then the
       shared (or $\{\{ ... \}\} $) syntax must be used.
@@ -1553,7 +1551,7 @@ supported:
 For loops are supported within nsize and args.  An example would be:
 %
 \begin{lstlisting}
-             args: -matload_block_size {{2,3}}
+args: -matload_block_size {{2,3}}
 \end{lstlisting}
 
 In this case, two execution lines would be addded with two different
@@ -1577,52 +1575,55 @@ See examples below for how it works in practice.
   \label{test-block-examples}%
 }
 
+% Note: we using outputlisting here, instead of lstlisting, 
+%  as it's smaller, and allows literal $ (which we use an an escape character for 
+%  C code)
+
 This is the simplest test block:
 %
-\begin{lstlisting}
-      /*TESTS
-        test: 
-      TESTS*/
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  test: 
+TESTS*/
+\end{outputlisting}
 which is equivalent to:
-\begin{lstlisting}
-      /*TESTS
-        testset: 
-          test: 
-      TESTS*/
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset: 
+    test: 
+TESTS*/
+\end{outputlisting}
 which is equivalent to:
-\begin{lstlisting}
-      /*TESTS
-        testset: 
-      TESTS*/
-\end{lstlisting}
-
+\begin{outputlisting}
+/*TESTS
+  testset: 
+TESTS*/
+\end{outputlisting}
 
 If this block is in ex1.c, then it will create a \lstinline{runex1} test that
 requires only one processor/thread, with no arguments, and diff the
 resultant output with \lstinline{output/ex1.out}.
 
-For fortran, the equivalent is:
+For Fortran, the equivalent is:
 %
 \begin{lstlisting}
-      !/*TESTS
-      !  test: 
-      !TESTS*/
+!/*TESTS
+!  test: 
+!TESTS*/
 \end{lstlisting}
 
 A fuller example would be:
 %
-\begin{lstlisting}
-      /*TESTS
-        test: 
-        test:
-          suffix: 1
-          nsize: 2
-          args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
-          requires: x
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  test: 
+  test:
+    suffix: 1
+    nsize: 2
+    args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+    requires: x
+*/TESTS
+\end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
 be \lstinline{runex1} and \lstinline{runex1\_1}.
@@ -1631,18 +1632,18 @@ be \lstinline{runex1} and \lstinline{runex1\_1}.
 An example of how one tests a permutuation of arguments against the same
 output file:
 %
-\begin{lstlisting}
-      /*TESTS
-        testset:
-            suffix: 19
-            requires: datafilespath
-            args: -f0 ${DATAFILESPATH}/matrices/poisson1
-            args: -ksp\_type cg -pc\_type icc -pc\_factor\_levels 2
-            test:
-            test:
-               args: -mat\_type seqsbaij 
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset:
+      suffix: 19
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp_type cg -pc_type icc -pc_factor_levels 2
+      test:
+      test:
+         args: -mat_type seqsbaij 
+*/TESTS
+\end{outputlisting}
 
 Assuming that this is \lstinline{ex10.c}, there would be two
 mpiexec/diff invocations in \lstinline{runex10_19.sh}.
@@ -1650,78 +1651,76 @@ mpiexec/diff invocations in \lstinline{runex10_19.sh}.
 Here is a similar example, but the permation of arguments create
 different output:
 
-\begin{lstlisting}
-      /*TESTS
-         testset:
-            requires: datafilespath
-            args: -f0 ${DATAFILESPATH}/matrices/medium
-            args: -ksp\_type bicg
-            test:
-               suffix: 4
-               args: -pc\_type lu
-            test:
-               suffix: 5 
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+   testset:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -ksp_type bicg
+      test:
+         suffix: 4
+         args: -pc_type lu
+      test:
+         suffix: 5 
+*/TESTS
+\end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, there would be two shell
 scripts created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
 
 An example using a for loop would be:
 %
-\begin{lstlisting}
-
-      /*TESTS
-        testset:
-             suffix: 1
-             args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
-             requires: datafilespath
-         testset:
-             suffix: 2
-             output\_file: output/ex138\_1.out
-             args: -f ${DATAFILESPATH}/matrices/small
-             args: -mat\_type baij -matload\_block\_size {{2,3}shared output}
-             requires: datafilespath
-      */TESTS
-
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset:
+       suffix: 1
+       args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
+       requires: datafilespath
+   testset:
+       suffix: 2
+       output\_file: output/ex138\_1.out
+       args: -f ${DATAFILESPATH}/matrices/small
+       args: -mat_type baij -matload_block_size {{2,3}shared output}
+       requires: datafilespath
+*/TESTS
+\end{outputlisting}
 
 In this example, runex138\_2 will invoke ex138 twice with two different
 arguments, but both are diffed with the same file.
 
-An example for showing the hierarchial nature of the test specification is:
+An example for showing the hierarchical nature of the test specification is:
 %
-\begin{lstlisting}
-      testset: 
-        suffix:2
-        output\_file: output/ex138\_1.out
-        args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
-        test:
-             args: -matload\_block\_size 2
-        test:
-             args: -matload\_block\_size 3
-\end{lstlisting}
+\begin{outputlisting} 
+testset: 
+  suffix:2
+  output_file: output/ex138_1.out
+  args: -f ${DATAFILESPATH}/matrices/small -mat_type baij
+  test:
+       args: -matload_block_size 2
+  test:
+       args: -matload_block_size 3
+\end{outputlisting}
 This is functionally equivalent to the for loop shown above.
 
 Here is a more complex example using for loops:
-\begin{lstlisting}
-   testset:
-      suffix: 19
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp\_type cg -pc\_type icc 
-      args: -pc\_factor\_levels {{0 2 4}separate output}
-      test:
-      test:
-         args: -mat\_type seqsbaij
-\end{lstlisting}
+\begin{outputlisting}
+testset:
+   suffix: 19
+   requires: datafilespath
+   args: -f0 ${DATAFILESPATH}/matrices/poisson1
+   args: -ksp_type cg -pc_type icc 
+   args: -pc_factor_levels {{0 2 4}separate output}
+   test:
+   test:
+      args: -mat_type seqsbaij
+\end{outputlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
 be:
-\begin{lstlisting}
-      runex10\_19\_pc\_factor\_levels-0.sh
-      runex10\_19\_pc\_factor\_levels-2.sh
-      runex10\_19\_pc\_factor\_levels-4.sh
-\end{lstlisting}
-Each shell script would invoke mpiexec twice.
+\begin{outputlisting}
+runex10_19_pc_factor_levels-0.sh
+runex10_19_pc_factor_levels-2.sh
+runex10_19_pc_factor_levels-4.sh
+\end{outputlisting}
+Each shell script would invoke \trl{mpiexec} twice.
  
 \subsection{Build language options%
   \label{build-language-options}%
