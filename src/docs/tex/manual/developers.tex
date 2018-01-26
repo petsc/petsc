@@ -1883,6 +1883,75 @@ To modify the test harness,  one can modify this file
 ${PETSC_DIR}/config/petsc_harness.sh
 \end{bashlisting}
 
+\section{Using the Test Harness for Regression Testing}
+The test system is primarily designed to to provide user-facing information and to be used in automated testing. However, it can also be helpful for contributing developers in regression testing, if one is willing to do a little investigation into the files that the test harness generates. A typical workflow might proceed as follows.
+Note that the exact syntax of all input and output in this section is subject to change.
+
+\begin{enumerate}
+\item Make changes to the code base, and prepare a branch to submit upstream.
+\item To protect against unintended regressions, run the full test suite on your branch. (For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein).
+\begin{bashlisting}
+make -f gmakefile.test test
+\end{bashlisting}
+\item Examine the output for any failed tests, for example
+\begin{outputlisting}
+# -------------
+#   Summary
+# -------------
+# FAILED ts_tutorials-ex11_adv_2d_quad_0 diff-sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad_1
+# success 3051/3915 tests (77.9%)
+# failed 3/3915 tests (0.1%)
+# todo 91/3915 tests (2.3%)
+# skip 770/3915 tests (19.7%)
+#
+# To rerun failed tests:
+#     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-runex11_adv_2d_quad_0 sys_classes_viewer_tests-runex4_4 ts_tutorials-runex11_adv_2d_quad'
+\end{outputlisting}
+The above indicates that three tests have failed and should be investigated. One would also probably check beforehand that no tests fail with an umodified version of PETSc on the development machine.
+\item Rerun one of the failed tests, with additional verbosity.
+\begin{bashlisting}
+/opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-runex4_4'
+\end{bashlisting}
+\item Examine the output
+\begin{outputlisting}
+arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/runex4_4.sh  -v
+ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
+not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
+#	2a3,14
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1 
+\end{outputlisting}
+This suggests that the output does not match the reference output.
+\item Take a look in the directory where the test was run from.
+\begin{outputlisting}
+cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
+\end{outputlisting}
+\item Examine the scripts and output files there. In this example, these are \trl{runex4_4.sh} and \trl{runex4_4/}, which contains \trl{sys_classes_viewer_tests-ex4_4.sh} along with various output files.
+\item By examining these files, one can determine that
+\begin{tightitemize}
+\item The command to run the test was 
+\begin{outputlisting}
+/Users/patrick/petsc-master/arch-darwin-master-double-debug/bin/mpiexec  -n 1 ../ex4 -myviewer ascii:ex4a1.tmp::append
+\end{outputlisting}
+\item The reference output is in
+\begin{outputlisting}
+/Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out
+\end{outputlisting}
+\end{tightitemize}
+\item This should provide enough information to iteratively debug the problem by making changes, recompiling, and re-running this example directly.
+\item Repeat with other errors.
+\end{enumerate}
+
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
 
