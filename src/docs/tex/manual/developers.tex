@@ -87,7 +87,7 @@ computation. This document provides useful information for PETSc
 developers and those wishing to contribute to PETSc. The text assumes
 that you are familiar with PETSc and have access to PETSc source code
 and documentation (available
-via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}).
+via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}) including the PETSc users manual \cite{petsc-user-ref}.
 
 Before contributing code to PETSc, please read Chapter \ref{chapter:styleguide}, which contains the source code style guide.
 \href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}
@@ -421,7 +421,7 @@ All entries below should be separated by blank lines.
 \chapter{The PETSc Kernel}
 \label{chapter:kernel}
 PETSc provides a variety of basic services for writing scalable, component
-based libraries; these are referred to as the PETSc kernel. The source
+based libraries; these are referred to as the PETSc kernel, \cite{bgms98}. The source
 code for the kernel is in \trl{src/sys}. It contains systematic support for
 \begin{tightitemize}
   \item PETSc types
@@ -429,6 +429,8 @@ code for the kernel is in \trl{src/sys}. It contains systematic support for
   \item memory management
   \item profiling
   \item object management
+  \item Fortran interfaces, see \cite{BalayBrownKnepleyMcInnesSmith2015}
+  \item mechanism for generating appropriate citations for algorithms and software used in PETSc, see \cite{knepley2013accurately}
   \item file IO
   \item an options database
   \item objects and code for viewing, drawing, and displaying data and solver objects.
