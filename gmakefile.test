@@ -173,7 +173,7 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 test: pre-clean report_tests
 
 pre-clean:
-	@$(RM) -r $(TESTDIR)/counts $(TESTLOGFILE)
+	@$(RM) -rf $(TESTDIR)/counts $(TESTLOGFILE)
 	@touch $(TESTLOGFILE)
 
 .PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
@@ -277,13 +277,16 @@ HASGMAKEFILE := $(filter gmakefile,$(MAKEFILE_LIST))
 ifeq ($(HASGMAKEFILE),gmakefile)
 helpdeps:=help-make help-targets
 makefile="gmakefile"
+other_help="To see full test help: make -f gmakefile.test help"
 else
 helpdeps:=help-make help-targets help-test
 makefile="gmakefile.test"
+other_help=""
 endif
 
 help: ${helpdeps}
 	-@echo "Above is from: ${helpdeps}"
+	-@echo "${other_help}"
 
 help-make:
 	-@echo
@@ -311,6 +314,9 @@ help-test:
 	-@echo "  ALT=1             Replace 'alt' output in PETSC_DIR source tree (-M to test scripts)"
 	-@echo "  DIFF_NUMBERS=1    Diff the numbers in the output (-j to test scripts and petscdiff)"
 	-@echo "  VALGRIND=1        Execute the tests using valgrind (-V to test scripts)"
+	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
+	-@echo "  FORCE=1           Force SKIP or TODO tests to run"
+	-@echo "  TIMEOUT=<time>    Test timeout limit in seconds (default in config/petsc_harness.sh)"
 	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
