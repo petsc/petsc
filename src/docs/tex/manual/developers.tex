@@ -679,7 +679,7 @@ and \lstinline{PetscFinalize()} routines when the option
 \trl{-log_view} is given.
 
 % -----------------------------------------------------------------------------------
-\chapter{Basic Object Design}
+\chapter{Basic Object Design and Implementation}
 \label{chapter:design}
 
 PETSc is designed using strong data encapsulation.  Hence,
@@ -690,14 +690,14 @@ does {\em not} ``know'' how the data is stored internally.
 
 \section{Introduction}
 
-PETSc is designed around several classes (e.g. \lstinline{Vec} (vectors),
+PETSc is designed around several classes including, for example, \lstinline{Vec} (vectors) and 
 \lstinline{Mat} (matrices, both dense and sparse)). Each class is 
 implemented using a C \lstinline{struct} that contains the data and function pointers
 for operations on the data (much like virtual functions in C++ classes).
 Each class consists of three parts:
 \begin{tightenumerate}
   \item A (small) common part shared by all PETSc classes (for example both \lstinline{KSP} and \lstinline{PC} have this same header),
-  \item another common part shared by all PETSc implementations of the class (for example both \lstinline{KSP_GMRES} and \lstinline{KSP_CG} have this common sub-header), and
+  \item another common part shared by all PETSc implementations of the class (for example both \lstinline{KSPGMRES} and \lstinline{KSPCG} have this common sub-header), and
   \item a private part used by only one particular implementation written in PETSc.
 \end{tightenumerate}
 For example, all matrix (\lstinline{Mat}) classes share a function table of operations that
@@ -705,7 +705,7 @@ may be performed on the matrix; all PETSc matrix implementations share some addi
 data fields, including matrix size, while a particular matrix implementation in PETSc
 (say compressed sparse row) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail
-in the following sections. People providing new class implementations {\em must}
+in the following sections. New class implementations {\em must}
 use the PETSc common part.
 
 
@@ -718,7 +718,7 @@ data structures used for a particular implementation of an object that has the
 Each class has
 \begin{tightitemize}
 \item Its own, application public, include file \trl{include/petsc<class>.h}
-\item Its own directory, \trl{src/<class>}
+\item Its own directory, \trl{src/<class>} or \trl{src/<package>/<class>} (see Chapter \ref{ch:packages}).
 \item A data structure defined in  the file
       \trl{include/petsc/private/<class>impl.h}.
       This data structure is shared by all the different PETSc implementations of the
@@ -844,11 +844,11 @@ Each PETSc object begins with a \lstinline{PetscClassId} which is used for error
 Each different class of objects has its value for \lstinline{classid}; these are used
 to distinguish between classes. When a new class is created one needs to call
 \begin{lstlisting}
-ierr = PetscClassIdRegister(const char *classname,PetscClassId *classid);CHKERRQ(ierr);
+PetscClassIdRegister(const char *classname,PetscClassId *classid);
 \end{lstlisting}
-For example,
+See Chapter \ref{ch:packages} for details on where and when these functions are called. For example,
 \begin{lstlisting}
-ierr = PetscClassIdRegister("index set",&IS_CLASSID);CHKERRQ(ierr);
+PetscClassIdRegister("index set",&IS_CLASSID);
 \end{lstlisting}
 One can verify that an object is valid of a particular class with \lstinline{PetscValidHeaderSpecific}, for example
 \begin{lstlisting}
@@ -865,16 +865,19 @@ PetscValidHeader(x,1);
 \section{Common Object Functions}
 
 Several routines are provided for manipulating data within the header.
-These include the specific functions in the PETSc common function table.
+These include the specific functions in the PETSc common function
+table. The function pointers are not called directly, rather one calls
+lstinline{PetscObjectFunctionName()} where lstinline{FunctionName} is
+one of the functions listed below with the first letter of each word
+capitalized.
 
 \begin{tightitemize}
 \item \lstinline{getcomm(PetscObject,MPI_Comm*)} obtains the MPI communicator associated
       with this object.
 
 \item \lstinline{view(PetscObject,Viewer)} allows one to store or visualize the data inside
-      an object. If the Viewer is null than should cause the object to print
-      information on the object to standard out. PETSc provides a variety of simple
-      viewers.
+      an object. If the Viewer is NULL than should cause the object to print
+      information on the object to lstinline{stdout}. 
 
 \item \lstinline{destroy(PetscObject)} causes the reference count of the object to be decreased
       by one or the object to be destroyed and all memory used by the object to be freed when
@@ -887,13 +890,13 @@ These include the specific functions in the PETSc common function table.
       object with the
       same name was previously composed, that object is dereferenced and replaced with
       the new object. If the
-      second object is null and an object with the same name has already been
+      second object is NULL and an object with the same name has already been
       composed that object is dereferenced (the \lstinline{destroy()} function is called on
       it, and that object is removed from the first object); i.e. this is a way to
       remove, by name, an object that was previously composed.
 
 \item \lstinline{query(PetscObject,const char *name,PetscObject*)} retrieves an object that was
-      previously composed with the first object. Retrieves a null if no object with
+      previously composed with the first object via \lstinline{PetscObjectCompose()}. Retrieves a NULL if no object with
       that name was previously composed.
 
 \item \lstinline{composefunction(PetscObject,const char *name,const char *fname,void *func)} associates a function
@@ -909,7 +912,7 @@ These include the specific functions in the PETSc common function table.
       \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate_LU}.
 
 \item \lstinline{queryfunction(PetscObject,const char *name,void **func)} retrieves a function pointer that
-      was associated with the object. If dynamic libraries are used, the function is loaded
+      was associated with the object via \lstinline{PetscObjectComposeFunction()}. If dynamic libraries are used, the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
       \lstinline{composefunction()} routine was called.
 
@@ -928,10 +931,10 @@ composed with a PETSc object.
 This section discusses how PETSc implements the \lstinline{compose()}, \lstinline{query()}, 
 \lstinline{composefunction()}, and \lstinline{queryfunction()} functions for its object implementations.
 Other PETSc compatible class implementations are free to manage these functions in any
-manner; but generally they would use the PETSc defaults so that the library writer does
+manner; but, unless there is a specific reason, they should use the PETSc defaults so that the library writer does
 not have to ``reinvent the wheel.''
 
-\subsection{Compose and Query}
+\subsection{Compose and Query Objects}
 In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{\trl{src/sys/objects/olist.c}}, PETSc defines a C \lstinline{struct}
 \begin{lstlisting}
   typedef struct _PetscObjectList* PetscObjectList;
@@ -950,9 +953,9 @@ int PetscObjectListFind(PetscObjectList fl,const char *name,PetscObject *obj)
 int PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl);
 \end{lstlisting}
 The function \lstinline{PetscObjectListAdd()} will create the initial PetscObjectList if the argument
-\trl{fl} points to a null.
+\trl{fl} points to a NULL.
 
-The PETSc object \lstinline{compose()} and \lstinline{query()} functions are then simply
+The PETSc object \lstinline{compose()} and \lstinline{query()} functions are
 (defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html}{\trl{src/sys/objects/inherit.c}})
 \begin{lstlisting}
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char *name,PetscObject ptr)
@@ -960,7 +963,7 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char *name,PetscOb
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
+  PetscObjectListAdd(&obj->olist,name,ptr);
   PetscFunctionReturn(0);
 }
 
@@ -969,12 +972,12 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char *name,PetscObje
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectListFind(obj->olist,name,ptr);CHKERRQ(ierr);
+  PetscObjectListFind(obj->olist,name,ptr);
   PetscFunctionReturn(0); 
 }
 \end{lstlisting}
 
-\subsection{Compose and Query Function}
+\subsection{Compose and Query Functions}
 
 PETSc allows one to compose functions by specifying a name and function pointer. 
 In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html}{\trl{src/sys/dll/reg.c}},
@@ -998,7 +1001,7 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  PetscFunctionListAdd(&obj->qlist,name,fname,ptr);
   PetscFunctionReturn(0);
 }
 
@@ -1007,7 +1010,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char *name,v
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(obj->qlist,name,ptr);CHKERRQ(ierr);
+  PetscFunctionListFind(obj->qlist,name,ptr);
   PetscFunctionReturn(0);
 }
 \end{lstlisting}
@@ -1022,30 +1025,32 @@ the associated functionality. These objects are internally named as
 vs \lstinline{_p_Vec}.
 
 % -----------------------------------------------------------------------------------
-\chapter{PetscObjects}
+\chapter{PETSc Packages}
 
-\section{Elementary Objects: IS, Vec, Mat}
+The PETSc source code is divided into the following
+library level packages: \trl{sys}, \trl{Vec}, \trl{Mat}, \trl{DM}, \trl{KSP}, \trl{SNES}, \trl{TS}, \trl{TAO}. Each
+of these has a directory under the \trl{src} directory in the PETSc
+true and, optionally, can be compiled into separate libraries. Each
+package defines one or more classes, for example the \trl{KSP} package
+defines the \trl{KSP} and \trl{PC} classes, as well as several utility
+classes. In addition each library level package may contain several class level packages associated with individual classes in the library level package. In general most ``important'' classes in PETSc have their own class level package.
+Each package provides a registration
+function \lstinline{XXXInitializePackage()}, for
+example, \trl{KSPInitializePackage()} which registers all the classes
+and events for that package. They also register a finalization
+routine, \lstinline{XXXFinalizePackage()} that releases all the
+resources used in registering the package,
+using \lstinline{PetscRegisterFinalize()}. The registration for each package is performed ``on demand'' the first time a class in the package is utilized. This is handled, for example, with the code such as
+\begin{lstlisting}
+PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
+{
+  Vec            v;
 
-\section{Solver Objects: PC, KSP, SNES, TS}
-
-\subsection{Preconditioners: PC}
-
-The base PETSc \lstinline{PC} object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/pcimpl.h.html}{\trl{include/petsc/private/pcimpl.h}} include file.
-A carefully commented implementation of a \lstinline{PC} object can be found in
-\href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/pc/impls/jacobi/jacobi.c.html}{\trl{src/ksp/pc/impls/jacobi/jacobi.c}}.
-
-\subsection{Krylov Solvers: KSP}
-The base PETSc \lstinline{KSP} object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/kspimpl.h.html}{\trl{include/petsc/private/kspimpl.h}} include file.
-A carefully commented implementation of a \lstinline{KSP} object can be found in
-\href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/impls/cg/cg.c.html}{\trl{src/ksp/ksp/impls/cg/cg.c}}.
-
-\subsection{ODE and DAE Solvers (Timesteppers): TS}
-The base PETSc \lstinline{TS} object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc/private/tsimpl.h.html}{\trl{include/petsc/private/tsimpl.h}} include file.
-
-\subsection{Registering New Methods}
-\label{sec:registeringnewmethods}
-
-See \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/examples/tutorials/ex12.c.html}{\trl{src/ksp/examples/tutorials/ex12.c}} for an example of registering a new preconditioning (\lstinline{PC}) method.
+  PetscFunctionBegin;
+  PetscValidPointer(vec,2);
+  *vec = NULL;
+  VecInitializePackage();
+\end{lstlisting}
 
 
 % -----------------------------------------------------------------------------------
@@ -1189,7 +1194,7 @@ and column indices begin at zero.
 The routine for creating a sequential block AIJ matrix with \trl{m}
 rows, \trl{n} columns, and a block size of \trl{nb} is
 \begin{lstlisting}
-ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
+MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
 \end{lstlisting}
 The arguments \lstinline{nz} and \lstinline{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
@@ -1208,8 +1213,7 @@ when using the block AIJ format.
 Parallel block AIJ matrices with block size {\t nb} can be created with
 the command \lstinline{MatCreateBAIJ()}
 \begin{lstlisting}
-ierr = MatCreateBAIJ(MPIComm comm,int nb,int m,int n,int M,int N,int d_nz,
-                     int *d_nnz,int o_nz,int *o_nnz,Mat *A);
+MatCreateBAIJ(MPIComm comm,int nb,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A);
 \end{lstlisting}
 \lstinline{A} is the newly created matrix, while the arguments \lstinline{m}, \lstinline{n},
 \lstinline{M}, and \lstinline{N}, indicate the number of local rows and columns and
