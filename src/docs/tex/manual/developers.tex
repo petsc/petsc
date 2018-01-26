@@ -1729,49 +1729,22 @@ Each shell script would invoke \trl{mpiexec} twice.
 It is possible to specify issues related to the compilation of the
 source file with the \lstinline{build:} block.  The language is:
 %
-\begin{quote}
-%
 \begin{itemize}
-
-\item %
-\begin{description}
-\item[{requires: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
-\begin{list}{\arabic{listcnt0}.}
-{
-\usecounter{listcnt0}
-\setlength{\rightmargin}{\leftmargin}
-}
-
-\item Same as the runtime requirements (e.g., can include requires: fftw)
+  \item \lstinline{requires:} (\textbf{Optional}; \emph{Default:} \lstinline{""}) 
+Same as the runtime requirements (e.g., can include requires: fftw)
 but also requirements related to types:
-A. Precision types: single, double, quad, int32
-B. Scalar types: complex  (and !complex)
-\end{list}
-In addition, \lstinline{TODO}  is available to allow one to skip the
+    \begin{tightitemize}
+      \item Precision types: \lstinline{single}, \lstinline{double}, \lstinline{quad}, \lstinline{int32}
+      \item Scalar types: \lstinline{complex}  (and \lstinline{!complex})
+    \end{tightitemize}
+\item In addition, \lstinline{TODO}  is available to allow one to skip the
 build of this file but still maintain it in the source tree.
 
-\end{description}
-
-\item %
-\begin{description}
-\item[{depends: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
-\begin{list}{\arabic{listcnt0}.}
-{
-\usecounter{listcnt0}
-\setlength{\rightmargin}{\leftmargin}
-}
-
-\item List any dependencies required to compile the file
-\end{list}
-
-\end{description}
-
+\item\lstinline{depends:} (\textbf{Optional}; \emph{Default:} \lstinline{""})
+List any dependencies required to compile the file
 \end{itemize}
 
-\end{quote}
-
 A typical example for compiling for real/double only is:
-%
 \begin{outputlisting}
 /*T
   requires: !complex
