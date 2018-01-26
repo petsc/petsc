@@ -394,7 +394,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       <h3><a name="complex">For complex numbers will I get better performance with C++?</a></h3>
 
       To use PETSc with complex numbers you either <code>./configure</code> with
-      the option <code>--with-scalar-type</code> complex and either
+      the option <code>--with-scalar-type=complex</code> and either
       <code>--with-clanguage=c++</code> or, the default,
       <code>--with-clanguage=c</code>. In our experience they will deliver very
       similar performance (speed), but if one is concerned they should just try
@@ -508,8 +508,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       <ol>
         <li>
           The directory ${PETSC_DIR}/docs contains a set of HTML manual pages in
-          for use with a browser. You can delete these pages to save about .8
-          Mbyte of space.
+          for use with a browser. You can delete these pages to save some disk space.
         </li>
 
         <li>
@@ -522,8 +521,7 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
           These are contained in the PETSc directories
           ${PETSC_DIR}/src/*/examples/tutorials/output and
           ${PETSC_DIR}/src/*/examples/tests/output. Once you have run the test
-          examples, you may remove all of these directories to save about 300
-          Kbytes of disk space.
+          examples, you may remove all of these directories to save some disk space.
         </li>
 
         <li>
@@ -604,12 +602,8 @@ See http://www.mcs.anl.gov/petsc/documentation/faq.html
       You can follow these steps
 
       <ol>
-        <li>grab petsc4py-dev repo [from hg]</li>
         <li>install Cython</li>
-        <li>make cython [in petsc4py-dev]</li>
-        <li>place petsc4py-dev in PETSC_DIR/externalpackages</li>
-        <li>export ARCHFLAGS=''</li>
-        <li>install PETSc with --download-petsc4py etc..</li>
+        <li>install PETSc with --download-petsc4py</li>
       </ol>
 
       <h3><a name="gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></h3>
@@ -1246,7 +1240,7 @@ PETSC_COMM_WORLD = NewComm;
 
       We find this annoying as well. On most machines PETSc can use shared
       libraries, so executables should be much smaller, run ./configure with the
-      additional option --with-shared-libraries. Also, if you have room,
+      additional option --with-shared-libraries (this is the default). Also, if you have room,
       compiling and linking PETSc on your machine's /tmp disk or similar local
       disk, rather than over the network will be much faster.
 
@@ -2036,7 +2030,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <h3><a name="link-regular-lib">What If I want to link to the regular .a library files?</a></h3>
 
-      You must run ./configure without the option --with-shared-libraries (you
+      You must run ./configure with the option --with-shared-libraries=0 (you
       can use a different PETSC_ARCH for this build so you can easily switch
       between the two).
 
