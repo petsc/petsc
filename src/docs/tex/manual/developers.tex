@@ -49,10 +49,11 @@
 
 \vspace*{0.5in}
 \noindent Prepared by \\
-{ S. Krugger\textsuperscript{1} and B. Smith\textsuperscript{2}}\\
+{ S. Krugger\textsuperscript{1}, P. Sanan\textsuperscript{2}, and B. Smith\textsuperscript{3}}\\
 \\
 \textsuperscript{1}TechX Corporation \\
-\textsuperscript{2}Mathematics and Computer Science Division, Argonne National Laboratory \\
+\textsuperscript{2}Institute of Geophysics, ETH Zurich\\
+\textsuperscript{3}Mathematics and Computer Science Division, Argonne National Laboratory \\
 
 \vspace*{30pt}
 \noindent January 2018
@@ -81,12 +82,12 @@ Office of Science, U.S. Department of Energy, under Contract DE-AC02-06CH11357.
 \noindent {\bf Abstract:}
 
 \medskip \medskip
-PETSc is
-an extensible software library for scientific computation. This documentation provides a variety of useful information for PETSc developers and those wishing to contribute to PETSc
-
-The text assumes
-that you are familiar with PETSc and have access to PETSc source code and documentation
-(available via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}).
+PETSc is an extensible software library for scientific
+computation. This document provides useful information for PETSc
+developers and those wishing to contribute to PETSc. The text assumes
+that you are familiar with PETSc and have access to PETSc source code
+and documentation (available
+via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}).
 
 Before contributing code to PETSc, please read Chapter \ref{chapter:styleguide}, which contains the source code style guide.
 \href{http://www.mcs.anl.gov/petsc/developers/index.html}{http://www.mcs.anl.gov/petsc/developers/index.html}
@@ -117,15 +118,19 @@ to be directed to \trl{petsc-maint@mcs.anl.gov}.
 \tableofcontents
 
 \pagestyle{fancy}
-\chapter{Answering petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov}
+\chapter{Responding to user requests and questions}
+
+PETSc users communicate to the PETSc team via two mailing lists:
+petsc-maint@mcs.anl.gov and petsc-users@mcs.anl.gov. When responding
+to such inquiries please follow the guidelines given below.
 
 \begin{tightitemize}
-\item Try to be polite. (This is not always easy.)
+\item Be polite.
 \item Address the person by name (when it is possible to determine their name).
 \item Apologize for the problem when it is appropriate (but not otherwise).
 \item Thank the person for their patience if it is more than six hours since the report came in.
 \item If the person drops the \trl{petsc-maint} or \trl{petsc-users} from the reply list, add it back in.
-\item Often, it pays to not ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them.
+\item Don't ask too many questions or give too many suggestions in the same email. The user often only responds to the first of them, or becomes confused.
 \end{tightitemize}
 
 \chapter{Style Guide}\label{chapter:styleguide}
