@@ -41,7 +41,7 @@
 \hfill {\large {\bf ANL-18/XX Rev 3.8}}
 
 \vspace*{2in}
-\noindent {\LARGE{\bf PETSc Devlopers Manual}}
+\noindent {\LARGE{\bf PETSc Developers Manual}}
 \vspace*{8pt}
 \hrule
 \vspace*{8pt}
@@ -49,9 +49,9 @@
 
 \vspace*{0.5in}
 \noindent Prepared by \\
-{ S. Krugger\textsuperscript{1}, P. Sanan\textsuperscript{2}, and B. Smith\textsuperscript{3}}\\
+{S. Kruger\textsuperscript{1}, P. Sanan\textsuperscript{2}, and B. Smith\textsuperscript{3}}\\
 \\
-\textsuperscript{1}TechX Corporation \\
+\textsuperscript{1}Tech-X Corporation \\
 \textsuperscript{2}Institute of Geophysics, ETH Zurich\\
 \textsuperscript{3}Mathematics and Computer Science Division, Argonne National Laboratory \\
 
@@ -165,7 +165,10 @@ We use several conventions:
 \item Function names in structures are the same as the base application
       function name without the object prefix, and are in small letters.
       For example, \lstinline{MatMultTranspose()} has a structure name of
-      \lstinline{multtranspose()}.
+      \lstinline{multtranspose}.
+\item Names of Implementations of class functions should begin with the function name, an underscore, and the name of the implementation, for example \lstinline{KSPSolve_GMRES()}.
+\item Each application usable function begins with the name of the class object, followed by any subclass name,
+  for example, \lstinline{ISInvertPermutation()}, \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
 \item Functions that PETSc provides as defaults for user providable functions end with \lstinline{Default} (for example, \lstinline{KSPMonitorDefault()} or \lstinline{PetscSignalHandlerDefault()})
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
   for example,  \lstinline{MatMult()} or \lstinline{KSPGMRESSetRestart()}.
@@ -302,8 +305,6 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should
 actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} cast in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
-\item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
-  call \lstinline{PetscLogFlops()} directly when needed.
 \item Do not use \lstinline{if (rank == 0)} or \lstinline{if (v == NULL)} or \lstinline{if (flg == PETSC_TRUE)} or \lstinline{if (flg == PETSC_FALSE)}.
 Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg)} or \lstinline{if (!flg)}.
 \item Do not use \lstinline{#ifdef} or \lstinline{#ifndef}. Rather, use \lstinline{#if defined(...} or \lstinline{#if !defined(...}
@@ -354,6 +355,8 @@ ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. 
   For example, one should not write a routine \lstinline{PetscGlobalSum()} that takes a scalar value and performs an \lstinline{MPI_Allreduce()} on it. 
   One should use \lstinline{MPI_Allreduce()} directly in the code.
+\item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
+  call \lstinline{PetscLogFlops()} directly when needed.
 \item \label{styleitem:petscextern} Library functions should be declared \lstinline{PETSC_INTERN} if they are intended to be visible only within a single shared library. 
 They should be declared \lstinline{PETSC_EXTERN} if intended to be visible across shared libraries. 
 Note that PETSc can be configured to build a separate shared library for each top-level class (\lstinline{Mat}, \lstinline{Vec}, \lstinline{KSP}, etc.) and that plugin implementations of these classes can be included as separate shared libraries; thus, private functions may be marked \lstinline{PETSC_EXTERN}.
@@ -367,7 +370,7 @@ For example,
 
 \section{Formatted Comments}
 
-PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing}, \cite{gropp1993sowing2} to generate documentation (manual pages) and the Fortran interfaces. 
+PETSc uses formatted comments and the Sowing packages \cite{gropp1993sowing,gropp1993sowing2} to generate documentation (manual pages) and the Fortran interfaces. 
 Documentation for Sowing and the formatting may be found at \href{http://wgropp.cs.illinois.edu/projects/software/sowing/}{http://wgropp.cs.illinois.edu/projects/software/sowing/}; in particular, see the documentation for \trl{doctext}.
 
 \begin{itemize}
@@ -408,9 +411,9 @@ All entries below should be separated by blank lines.
   \item If documenting a function with input parameters, a list of input parameter descriptions in an \trl{Input Parameters: } section
   \item If documenting a function with output parameters, a list of output parameter descriptions in an \trl{Output Parameters: } section
   \item If documenting a function which interacts with the options database, a list of options database keys in an \trl{Options Database Keys: } section
-  \item (Optional) a \trl{Notes: } section. In-depth discussion, technical caveats, special cases, and so on should be listed here. 
+  \item (Optional) a \trl{Notes: } section, with a newline after \trl{Notes:}. In-depth discussion, technical caveats, special cases, and so on should be listed here. 
     If it is ambiguous whether returned pointers need to be freed by the user or not, this information should be mentioned here.
-  \item (If applicable) a \trl{Fortran Notes: } section, detailing any relevant differences in calling or using the item from Fortran.
+  \item (If applicable) a \trl{Fortran Notes: } section, with a newline after \trl{Fortran Notes:}, detailing any relevant differences in calling or using the item from Fortran.
   \item \trl{Level: } followed by \trl{beginner}, \trl{intermediate}, \trl{advanced}, or \trl{developer}
   \item (Optional) a list of \trl{Concepts: }
   \item (Optional) a list of \trl{Keywords: }
@@ -1291,39 +1294,38 @@ describe tests and subtests required to run executables associated with
 compilation of that file.  The general skeleton of the file is:
 %
 \begin{lstlisting}
-      static char help[] = "A simple MOAB example\n\
+static char help[] = "A simple MOAB example\n\
 
-      ...
-      <source code>
-      ...
+...
+<source code>
+...
 
-      /*TEST
-         build:
-           requires: moab
-         testset:
-           suffix: 1
-           requires: !complex
-         testset:
-           suffix: 2
-           args: -debug -fields v1,v2,v3 
-           test:
-           test:
-             args: -foo bar
-      TEST*/
-
+/*TEST
+   build:
+     requires: moab
+   testset:
+     suffix: 1
+     requires: !complex
+   testset:
+     suffix: 2
+     args: -debug -fields v1,v2,v3 
+     test:
+     test:
+       args: -foo bar
+TEST*/
 \end{lstlisting}
 
-For our language, a \emph{test} is associated with a:
-\begin{itemize}
-  \item[] Single shell script
-  \item[] Single makefile 
-  \item[] Single output file that represents the \emph{expected
-        results}.
-  \item[] Two or more command tests.  Usually, one (or more) mpiexec
+For our language, a \emph{test} is associated with:
+\begin{tightitemize}
+  \item A single shell script
+  \item A single makefile 
+  \item A single output file that represents the \emph{expected
+       esults}.
+  \item Two or more command tests.  Usually, one (or more) mpiexec
         test that runs the executable, and one (or more) diff tests to
         compare output with the expected result.
-\end{itemize}
-Our language also supports that a \emph{testset} that specifies
+\end{tightitemize}
+Our language also supports a \emph{testset} that specifies
 specifies either a new test entirely, or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
@@ -1335,7 +1337,7 @@ will look something like this:
 
 In practice, we want to do various logging and counting by the test
 harness, but this is explained further below.  The input language
-supports a simple, yet flexible, tests control and we begin by
+supports simple, yet flexible, test control and we begin by
 describing this language.
 
 
@@ -1343,8 +1345,8 @@ describing this language.
   \label{runtime-language-options}%
 }
 
-At the end of each test, a marked comment block that uses YAML is
-inserted that describes the test to be run.  The elements of the
+At the end of each test file, a marked comment block, using YAML, is
+inserted to describe the test(s) to be run.  The elements of the
 test are done with a set of supported key words that sets up the test.
 %
 \begin{description}
@@ -1367,7 +1369,7 @@ without rewriting the tests
 \end{description}
 
 To enable the second bullet, the \emph{basestring} of the filename is defined
-as the filename without the extention; i.e., if the filename is \lstinline{ex1.c}
+as the filename without the extension; e.g., if the filename is \lstinline{ex1.c}
 then \lstinline{basestring=ex1}.f
 
 \noindent
@@ -1380,15 +1382,14 @@ With this background, these keywords are are:
     \begin{itemize}
 
       \item[] At the top level, either a single test, or a testset must
-            be specified.   All other are subsets of this keyword.
+            be specified.   All other keywords are sub-entries of this keyword.
 
     \end{itemize}
 
   \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
     \begin{itemize}
 
-      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and by \texttt{ testname=`run'+basestring+`\_'+suffix}
-
+      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and otherwise by \texttt{ testname=`run'+basestring+`\_'+suffix}
 
       \item This can only be specified for top level test nodes
 
@@ -1450,8 +1451,8 @@ With this background, these keywords are are:
       \item A skeleton example of the resultant commands to be run is:
       %
       \begin{lstlisting}
-                 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
-                 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
+diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
       \end{lstlisting}
 
       \item If the filter begins with \lstinline{Error:}, then the test is
@@ -1542,7 +1543,7 @@ supported:
 
 \item for loops:  Specifying $\{\{ ... \}shared output\} $ 
       or $\{\{ ... \}separate output\} $ 
-      will create for loops over enclosed space-delmited list.  
+      will create for loops over enclosed space-delimited list.  
       If the loop causes a different output, then separate output would
       be used.  If the loop does not cause separate output, then the
       shared (or $\{\{ ... \}\} $) syntax must be used.
@@ -1550,7 +1551,7 @@ supported:
 For loops are supported within nsize and args.  An example would be:
 %
 \begin{lstlisting}
-             args: -matload_block_size {{2,3}}
+args: -matload_block_size {{2,3}}
 \end{lstlisting}
 
 In this case, two execution lines would be addded with two different
@@ -1574,52 +1575,55 @@ See examples below for how it works in practice.
   \label{test-block-examples}%
 }
 
+% Note: we using outputlisting here, instead of lstlisting, 
+%  as it's smaller, and allows literal $ (which we use an an escape character for 
+%  C code)
+
 This is the simplest test block:
 %
-\begin{lstlisting}
-      /*TESTS
-        test: 
-      TESTS*/
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  test: 
+TESTS*/
+\end{outputlisting}
 which is equivalent to:
-\begin{lstlisting}
-      /*TESTS
-        testset: 
-          test: 
-      TESTS*/
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset: 
+    test: 
+TESTS*/
+\end{outputlisting}
 which is equivalent to:
-\begin{lstlisting}
-      /*TESTS
-        testset: 
-      TESTS*/
-\end{lstlisting}
-
+\begin{outputlisting}
+/*TESTS
+  testset: 
+TESTS*/
+\end{outputlisting}
 
 If this block is in ex1.c, then it will create a \lstinline{runex1} test that
 requires only one processor/thread, with no arguments, and diff the
 resultant output with \lstinline{output/ex1.out}.
 
-For fortran, the equivalent is:
+For Fortran, the equivalent is:
 %
 \begin{lstlisting}
-      !/*TESTS
-      !  test: 
-      !TESTS*/
+!/*TESTS
+!  test: 
+!TESTS*/
 \end{lstlisting}
 
 A fuller example would be:
 %
-\begin{lstlisting}
-      /*TESTS
-        test: 
-        test:
-          suffix: 1
-          nsize: 2
-          args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
-          requires: x
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  test: 
+  test:
+    suffix: 1
+    nsize: 2
+    args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+    requires: x
+*/TESTS
+\end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
 be \lstinline{runex1} and \lstinline{runex1\_1}.
@@ -1628,18 +1632,18 @@ be \lstinline{runex1} and \lstinline{runex1\_1}.
 An example of how one tests a permutuation of arguments against the same
 output file:
 %
-\begin{lstlisting}
-      /*TESTS
-        testset:
-            suffix: 19
-            requires: datafilespath
-            args: -f0 ${DATAFILESPATH}/matrices/poisson1
-            args: -ksp\_type cg -pc\_type icc -pc\_factor\_levels 2
-            test:
-            test:
-               args: -mat\_type seqsbaij 
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset:
+      suffix: 19
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp_type cg -pc_type icc -pc_factor_levels 2
+      test:
+      test:
+         args: -mat_type seqsbaij 
+*/TESTS
+\end{outputlisting}
 
 Assuming that this is \lstinline{ex10.c}, there would be two
 mpiexec/diff invocations in \lstinline{runex10_19.sh}.
@@ -1647,78 +1651,76 @@ mpiexec/diff invocations in \lstinline{runex10_19.sh}.
 Here is a similar example, but the permation of arguments create
 different output:
 
-\begin{lstlisting}
-      /*TESTS
-         testset:
-            requires: datafilespath
-            args: -f0 ${DATAFILESPATH}/matrices/medium
-            args: -ksp\_type bicg
-            test:
-               suffix: 4
-               args: -pc\_type lu
-            test:
-               suffix: 5 
-      */TESTS
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+   testset:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -ksp_type bicg
+      test:
+         suffix: 4
+         args: -pc_type lu
+      test:
+         suffix: 5 
+*/TESTS
+\end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, there would be two shell
 scripts created: \lstinline{runex10_4.sh} and \lstinline{runex10_5.sh}.
 
 An example using a for loop would be:
 %
-\begin{lstlisting}
-
-      /*TESTS
-        testset:
-             suffix: 1
-             args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
-             requires: datafilespath
-         testset:
-             suffix: 2
-             output\_file: output/ex138\_1.out
-             args: -f ${DATAFILESPATH}/matrices/small
-             args: -mat\_type baij -matload\_block\_size {{2,3}shared output}
-             requires: datafilespath
-      */TESTS
-
-\end{lstlisting}
+\begin{outputlisting}
+/*TESTS
+  testset:
+       suffix: 1
+       args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
+       requires: datafilespath
+   testset:
+       suffix: 2
+       output\_file: output/ex138\_1.out
+       args: -f ${DATAFILESPATH}/matrices/small
+       args: -mat_type baij -matload_block_size {{2,3}shared output}
+       requires: datafilespath
+*/TESTS
+\end{outputlisting}
 
 In this example, runex138\_2 will invoke ex138 twice with two different
 arguments, but both are diffed with the same file.
 
-An example for showing the hierarchial nature of the test specification is:
+An example for showing the hierarchical nature of the test specification is:
 %
-\begin{lstlisting}
-      testset: 
-        suffix:2
-        output\_file: output/ex138\_1.out
-        args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
-        test:
-             args: -matload\_block\_size 2
-        test:
-             args: -matload\_block\_size 3
-\end{lstlisting}
+\begin{outputlisting} 
+testset: 
+  suffix:2
+  output_file: output/ex138_1.out
+  args: -f ${DATAFILESPATH}/matrices/small -mat_type baij
+  test:
+       args: -matload_block_size 2
+  test:
+       args: -matload_block_size 3
+\end{outputlisting}
 This is functionally equivalent to the for loop shown above.
 
 Here is a more complex example using for loops:
-\begin{lstlisting}
-   testset:
-      suffix: 19
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp\_type cg -pc\_type icc 
-      args: -pc\_factor\_levels {{0 2 4}separate output}
-      test:
-      test:
-         args: -mat\_type seqsbaij
-\end{lstlisting}
+\begin{outputlisting}
+testset:
+   suffix: 19
+   requires: datafilespath
+   args: -f0 ${DATAFILESPATH}/matrices/poisson1
+   args: -ksp_type cg -pc_type icc 
+   args: -pc_factor_levels {{0 2 4}separate output}
+   test:
+   test:
+      args: -mat_type seqsbaij
+\end{outputlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
 be:
-\begin{lstlisting}
-      runex10\_19\_pc\_factor\_levels-0.sh
-      runex10\_19\_pc\_factor\_levels-2.sh
-      runex10\_19\_pc\_factor\_levels-4.sh
-\end{lstlisting}
-Each shell script would invoke mpiexec twice.
+\begin{outputlisting}
+runex10_19_pc_factor_levels-0.sh
+runex10_19_pc_factor_levels-2.sh
+runex10_19_pc_factor_levels-4.sh
+\end{outputlisting}
+Each shell script would invoke \trl{mpiexec} twice.
  
 \subsection{Build language options%
   \label{build-language-options}%
@@ -1727,55 +1729,27 @@ Each shell script would invoke mpiexec twice.
 It is possible to specify issues related to the compilation of the
 source file with the \lstinline{build:} block.  The language is:
 %
-\begin{quote}
-%
 \begin{itemize}
-
-\item %
-\begin{description}
-\item[{requires: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
-\begin{list}{\arabic{listcnt0}.}
-{
-\usecounter{listcnt0}
-\setlength{\rightmargin}{\leftmargin}
-}
-
-\item Same as the runtime requirements (e.g., can include requires: fftw)
+  \item \lstinline{requires:} (\textbf{Optional}; \emph{Default:} \lstinline{""}) 
+    Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
 but also requirements related to types:
-A. Precision types: single, double, quad, int32
-B. Scalar types: complex  (and !complex)
-\end{list}
-In addition, \lstinline{TODO}  is available to allow one to skip the
+    \begin{tightitemize}
+      \item Precision types: \lstinline{single}, \lstinline{double}, \lstinline{quad}, \lstinline{int32}
+      \item Scalar types: \lstinline{complex}  (and \lstinline{!complex})
+    \end{tightitemize}
+\item In addition, \lstinline{TODO}  is available to allow one to skip the
 build of this file but still maintain it in the source tree.
 
-\end{description}
-
-\item %
-\begin{description}
-\item[{depends: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
-\begin{list}{\arabic{listcnt0}.}
-{
-\usecounter{listcnt0}
-\setlength{\rightmargin}{\leftmargin}
-}
-
-\item List any dependencies required to compile the file
-\end{list}
-
-\end{description}
-
+\item\lstinline{depends:} (\textbf{Optional}; \emph{Default:} \lstinline{""})
+List any dependencies required to compile the file
 \end{itemize}
 
-\end{quote}
-
 A typical example for compiling for real/double only is:
-%
-\begin{lstlisting}
-      /*T
-        requires: !complex
-      T*/
-\end{lstlisting}
-
+\begin{outputlisting}
+/*T
+  requires: !complex
+T*/
+\end{outputlisting}
 
 \section{PETSC Test Harness%
   \label{petsc-test-harness}%
@@ -1829,24 +1803,20 @@ together easily.  There are libraries to enable the output to be used
 easily including sharness, which is used by the git team.  However, the
 simplicity of the petsc tests and TAP specification means that we use
 our own simple harness given by a single shell script that each file
-sources: \lstinline{petsc\_harness.sh}.
+sources: \lstinline{petsc_harness.sh}.
 
 As an example, consider this test input:
 %
-%\begin{lstlisting}
-\begin{verbatim}
-     test:
-         suffix: 2
-         output_file: output/ex138.out
-         args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
-         requires: datafilespath
-\end{verbatim}
-%\end{lstlisting}
+\begin{outputlisting}
+test:
+    suffix: 2
+    output_file: output/ex138.out
+    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
+    requires: datafilespath
+\end{outputlisting}
 
 A sample output would be:
-%
-%\begin{lstlisting}
-\begin{verbatim}
+\begin{outputlisting}
       ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
       ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
       ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
@@ -1857,12 +1827,7 @@ A sample output would be:
 
       ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
       ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-
-
-
-\end{verbatim}
-%\end{lstlisting}
-
+\end{outputlisting}
 
 \section{Test harness implementation%
   \label{test-harness-implementation}%
@@ -1872,56 +1837,120 @@ Most of the requirements for being TAP-compliant lie in the shell
 scripts so we focus on that description.
 
 A sample shell script is given by:
-%
-\begin{verbatim}
-      #!/bin/sh
-      . petsc_harness.sh
+\begin{outputlisting}
+#!/bin/sh
+. petsc_harness.sh
 
-      petsc_testrun ./ex1 ex1.tmp ex1.err
-      petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
+petsc_testrun ./ex1 ex1.tmp ex1.err
+petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
 
-      petsc_testend
-\end{verbatim}
+petsc_testend
+\end{outputlisting}
 
-\texttt{petsc\_harness.sh} is a small shell script that provides the logging and
-reporting functions \texttt{petsc\_testrun} and \texttt{petsc\_testend}.
+\trl{petsc_harness.sh} is a small shell script that provides the logging and
+reporting functions \lstinline{petsc_testrun} and \lstinline{petsc_testend}.
 
 A small sample of the output from the test harness would be:
-%
-%\begin{lstlisting}
-\begin{verbatim}
-
-      ok 1 ./ex1
-      ok 2 diff ex1.tmp output/ex1.out
-      not ok 4 ./ex2
-      #	ex2: Error: cannot read file
-      not ok 5 diff ex2.tmp output/ex2.out
-      ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
-      ok 8 diff ex3.tmp output/ex3.out
-      ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
-      ok 10 diff ex3.tmp output/ex3.out
-      ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
-      ok 12 diff ex3.tmp output/ex3.out
-      ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
-      ok 14 diff ex3.tmp output/ex3.out
-      ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
-      ok 16 diff ex3.tmp output/ex3.out
-      ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
-      ok 18 diff ex3.tmp output/ex3.out
-      # FAILED   4 5
-      # failed 2/16 tests; 87.500% ok
-\end{verbatim}
-%\end{lstlisting}
+\begin{outputlisting}
+ok 1 ./ex1
+ok 2 diff ex1.tmp output/ex1.out
+not ok 4 ./ex2
+#	ex2: Error: cannot read file
+not ok 5 diff ex2.tmp output/ex2.out
+ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
+ok 8 diff ex3.tmp output/ex3.out
+ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
+ok 10 diff ex3.tmp output/ex3.out
+ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
+ok 12 diff ex3.tmp output/ex3.out
+ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
+ok 14 diff ex3.tmp output/ex3.out
+ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
+ok 16 diff ex3.tmp output/ex3.out
+ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
+ok 18 diff ex3.tmp output/ex3.out
+# FAILED   4 5
+# failed 2/16 tests; 87.500% ok
+\end{outputlisting}
 
 For developers, modifying the lines that get written to the file can be
 done by modifying:
 \begin{bashlisting}
-   ${PETSC_DIR}/config/example_template.py
+${PETSC_DIR}/config/example_template.py
 \end{bashlisting}
 To modify the test harness,  one can modify this file
 \begin{bashlisting}
-   ${PETSC_DIR}/config/petsc_harness.sh
+${PETSC_DIR}/config/petsc_harness.sh
 \end{bashlisting}
+
+\section{Using the Test Harness for Regression Testing}
+The test system is primarily designed to to provide user-facing information and to be used in automated testing. However, it can also be helpful for contributing developers in regression testing, if one is willing to do a little investigation into the files that the test harness generates. A typical workflow might proceed as follows.
+Note that the exact syntax of all input and output in this section is subject to change.
+
+\begin{enumerate}
+\item Make changes to the code base, and prepare a branch to submit upstream.
+\item To protect against unintended regressions, run the full test suite on your branch. (For information on how to run a subset of tests, consult the Users Manual and other sources referenced therein).
+\begin{bashlisting}
+make -f gmakefile.test test
+\end{bashlisting}
+\item Examine the output for any failed tests, for example
+\begin{outputlisting}
+# -------------
+#   Summary
+# -------------
+# FAILED ts_tutorials-ex11_adv_2d_quad_0 diff-sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad_1
+# success 3051/3915 tests (77.9%)
+# failed 3/3915 tests (0.1%)
+# todo 91/3915 tests (2.3%)
+# skip 770/3915 tests (19.7%)
+#
+# To rerun failed tests:
+#     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-runex11_adv_2d_quad_0 sys_classes_viewer_tests-runex4_4 ts_tutorials-runex11_adv_2d_quad'
+\end{outputlisting}
+The above indicates that three tests have failed and should be investigated. One would also probably check beforehand that no tests fail with an umodified version of PETSc on the development machine.
+\item Rerun one of the failed tests, with additional verbosity.
+\begin{bashlisting}
+/opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-runex4_4'
+\end{bashlisting}
+\item Examine the output
+\begin{outputlisting}
+arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/runex4_4.sh  -v
+ok sys_classes_viewer_tests-ex4_4 cat ex4_4.tmp | > /dev/null; cat ex4a1.tmp > ex4_4.tmp.tmp 2>> runex4_4.err && mv ex4_4.tmp.tmp ex4_4.tmp
+not ok diff-sys_classes_viewer_tests-ex4_4 /Users/patrick/petsc-master/bin/petscdiff  /Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out ex4_4.tmp > diff-runex4_4.out 2> diff-runex4_4.out
+#	2a3,14
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1
+#	> Testing PetscViewerASCIIPrintf 0
+#	> Testing PetscViewerASCIIPrintf 1 
+\end{outputlisting}
+This suggests that the output does not match the reference output.
+\item Take a look in the directory where the test was run from.
+\begin{outputlisting}
+cd arch-darwin-master-double-debug/tests/src/sys/classes/viewer/examples/tests/
+\end{outputlisting}
+\item Examine the scripts and output files there. In this example, these are \trl{runex4_4.sh} and \trl{runex4_4/}, which contains \trl{sys_classes_viewer_tests-ex4_4.sh} along with various output files.
+\item By examining these files, one can determine that
+\begin{tightitemize}
+\item The command to run the test was 
+\begin{outputlisting}
+/Users/patrick/petsc-master/arch-darwin-master-double-debug/bin/mpiexec  -n 1 ../ex4 -myviewer ascii:ex4a1.tmp::append
+\end{outputlisting}
+\item The reference output is in
+\begin{outputlisting}
+/Users/patrick/petsc-master/src/sys/classes/viewer/examples/tests/output/ex4a.out
+\end{outputlisting}
+\end{tightitemize}
+\item This should provide enough information to iteratively debug the problem by making changes, recompiling, and re-running this example directly.
+\item Repeat with other errors.
+\end{enumerate}
 
 \bibliographystyle{plain}
 \bibliography{../petsc,../petscapp}
