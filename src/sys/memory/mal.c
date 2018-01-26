@@ -349,6 +349,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 
    Input Parameters:
 +  n - number of objects to allocate (at least 1)
+.  clear - use calloc() to allocate space initialized to zero
 .  lineno - line number to attribute allocation (typically __LINE__)
 .  function - function to attribute allocation (typically PETSC_FUNCTION_NAME)
 .  filename - file name to attribute allocation (typically __FILE__)
@@ -367,10 +368,10 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
 PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *function,const char *filename,size_t bytes0,void *ptr0,...)
 {
   PetscErrorCode ierr;
-  va_list Argp;
-  size_t bytes[8],sumbytes;
-  void **ptr[8];
-  int i;
+  va_list        Argp;
+  size_t         bytes[8],sumbytes;
+  void           **ptr[8];
+  int            i;
 
   PetscFunctionBegin;
   if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
@@ -419,6 +420,8 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
    Note:
    This function is not normally called directly by users, but rather via the macros PetscFree1(), PetscFree2(), etc.
 
+   The pointers are zeroed to prevent users from accidently reusing space that has been freed.
+
    Level: developer
 
 .seealso: PetscMallocAlign(), PetscMallocSet(), PetscMallocA(), PetscFree1(), PetscFree2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
@@ -426,12 +429,12 @@ PetscErrorCode PetscMallocA(int n,PetscBool clear,int lineno,const char *functio
 PetscErrorCode PetscFreeA(int n,int lineno,const char *function,const char *filename,void *ptr0,...)
 {
   PetscErrorCode ierr;
-  va_list Argp;
-  void **ptr[8];
-  int i;
+  va_list        Argp;
+  void           **ptr[8];
+  int            i;
 
   PetscFunctionBegin;
-  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only 8 supported",n);
+  if (n > 8) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to allocate %d objects but only up to 8 supported",n);
   ptr[0] = (void**)ptr0;
   va_start(Argp,ptr0);
   for (i=1; i<n; i++) {
