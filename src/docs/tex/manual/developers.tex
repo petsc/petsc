@@ -1555,7 +1555,7 @@ supported:
 For loops are supported within nsize and args.  An example would be:
 %
 \begin{lstlisting}
-args: -matload_block_size {{2,3}}
+args: -matload_block_size {{2 3}}
 \end{lstlisting}
 
 In this case, two execution lines would be addded with two different
@@ -1683,7 +1683,7 @@ An example using a for loop would be:
        suffix: 2
        output\_file: output/ex138\_1.out
        args: -f ${DATAFILESPATH}/matrices/small
-       args: -mat_type baij -matload_block_size {{2,3}shared output}
+       args: -mat_type baij -matload_block_size {{2 3}shared output}
        requires: datafilespath
 */TESTS
 \end{outputlisting}
@@ -1815,7 +1815,7 @@ As an example, consider this test input:
 test:
     suffix: 2
     output_file: output/ex138.out
-    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
+    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij baij sbaij}} -matload_block_size {{2 3}}
     requires: datafilespath
 \end{outputlisting}
 
