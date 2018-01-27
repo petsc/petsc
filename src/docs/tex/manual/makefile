@@ -2,6 +2,7 @@
 #clean is required - otherwise 'temporary file manual.pdf can upset the build
 ALL: clean manual.pdf
 
+#  Run make manual.pdf LOC=$PETSC_DIR GONULL="" to display all the error messages from running pdflatex on the manual
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
 
@@ -10,6 +11,17 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
 
 # Build the entire manual as well as the intro part
+
+chk:
+	@if [ ! -f ${LOC}/docs/manualpages/htmlmap ] ; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
+          echo "You must first run make alldocs in ${PETSC_DIR}"; \
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
+	@if [ ${PDFLATEX}foo = foo ] ; then \
+          printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR ************************\n" ; \
+          echo "You must have sowing installed, run ./configure again with the additional option"; \
+          echo " --download-sowing and make sure pdflatex is in your path"; \
+          printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
 rclean:
 	-@${RM} *.aux *.toc *.log *.bbl *.blg part1tmp.tex part2tmp.tex *.ilg *.idx *.ind *.out tmp anchors manual.pdf intro.pdf index.tex
@@ -25,7 +37,7 @@ MANUAL_LISTINGS_INCLUDE=\
                         listing_snesex1ftmp.tex \
                         listing_drawex3tmp.tex \
 
-manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex ${MANUAL_LISTINGS_INCLUDE}
+manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex ${MANUAL_LISTINGS_INCLUDE}
 # Generate a list of labels
 	-@${MAKE} rclean
 	-@sed "s?hyperbaseurl?\\\hyperbaseurl{${LOC}/docs/}?g" manual.tex > manual1.tex
@@ -128,7 +140,7 @@ listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cla
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > $@
 	-@$(RM) listing_tmp.tex
 
-developers.pdf: chk_loc developers.tex
+developers.pdf: chk_loc chk developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
 	${PDFLATEX} developerstmp.tex
