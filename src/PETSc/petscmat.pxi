@@ -312,7 +312,7 @@ cdef extern from * nogil:
     int MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
     int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
-    ctypedef char* PetscMatSolverPackage "const char*"
+    ctypedef char* PetscMatSolverType "const char*"
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":
         MAT_SHIFT_NONE
         MAT_SHIFT_NONZERO
