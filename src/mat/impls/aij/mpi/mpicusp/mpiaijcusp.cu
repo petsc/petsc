@@ -277,7 +277,7 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    MATAIJCUSP - MATMPIAIJCUSP= "aijcusp" = "mpiaijcusp" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format.

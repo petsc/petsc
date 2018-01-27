@@ -81,7 +81,7 @@ int main(int argc,char **args)
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);*/
   /*ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);*/
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_solver_type",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
@@ -240,44 +240,44 @@ int main(int argc,char **args)
 
    test:
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 10
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 10
       output_file: output/ex125.out
 
    test:
       suffix: mkl_pardiso
       requires: mkl_pardiso datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 3
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 3
 
    test:
       suffix: mumps
       requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
       output_file: output/ex125_mumps_seq.out
 
    test:
       suffix: mumps_2
       nsize: 3
       requires: mumps datafilespath !complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 2
       output_file: output/ex125_mumps_par.out
 
    test:
       suffix: superlu_dist
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1
 
    test:
       suffix: superlu_dist_2
       nsize: 3
       requires: datafilespath !complex double !define(PETSC_USE_64BIT_INDICES) superlu_dist
-      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_package 1
+      args: -f ${DATAFILESPATH}/matrices/small -mat_solver_type 1
       output_file: output/ex125_superlu_dist.out
 
    test:
       suffix: superlu_dist_complex
       nsize: 3
       requires: datafilespath superlu_dist complex double !define(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_package 1
+      args: -f ${DATAFILESPATH}/matrices/farzad_B_rhs -mat_solver_type 1
       output_file: output/ex125_superlu_dist.out
 
 TEST*/

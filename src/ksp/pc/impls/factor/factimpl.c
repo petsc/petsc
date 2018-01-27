@@ -4,7 +4,7 @@
 /* ------------------------------------------------------------------------------------------*/
 
 
-PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
+PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
 {
   PC_Factor      *icc = (PC_Factor*)pc->data;
   PetscErrorCode ierr;
@@ -183,16 +183,16 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage stype)
+PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,const MatSolverType stype)
 {
   PetscErrorCode ierr;
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
   if (lu->fact) { 
-    const MatSolverPackage ltype;
+    const MatSolverType ltype;
     PetscBool              flg;
-    ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
+    ierr = MatFactorGetSolverType(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
   } 
@@ -202,7 +202,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
+PetscErrorCode  PCFactorGetMatSolverType_Factor(PC pc,const MatSolverType *stype)
 {
   PC_Factor *lu = (PC_Factor*)pc->data;
 
@@ -269,9 +269,9 @@ PetscErrorCode  PCSetFromOptions_Factor(PetscOptionItems *PetscOptionsObject,PC 
   }
 
   /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-  ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-pc_factor_mat_solver_type","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

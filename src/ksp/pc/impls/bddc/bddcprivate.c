@@ -3570,9 +3570,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   /* determine if we can use a sparse right-hand side */
   sparserhs = PETSC_FALSE;
   if (F) {
-    const MatSolverPackage solver;
+    const MatSolverType solver;
 
-    ierr = MatFactorGetSolverPackage(F,&solver);CHKERRQ(ierr);
+    ierr = MatFactorGetSolverType(F,&solver);CHKERRQ(ierr);
     ierr = PetscStrcmp(solver,MATSOLVERMUMPS,&sparserhs);CHKERRQ(ierr);
   }
 

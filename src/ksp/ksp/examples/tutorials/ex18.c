@@ -278,7 +278,7 @@ int main(int argc,char **args)
 
    test:
       suffix: bas
-      args: -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_package bas -ksp_view -pc_factor_levels 1
+      args: -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_type bas -ksp_view -pc_factor_levels 1
       filter: grep -v "variant "
       requires: !single
 

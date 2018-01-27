@@ -35,7 +35,7 @@ const char *const MPChacoLocalTypes[] = {"","KERNIGHAN","NONE","MPChacoLocalType
 const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_CHACO_",0};
 
 extern PetscErrorCode  MatMFFDInitializePackage(void);
-extern PetscErrorCode  MatSolverPackageDestroy(void);
+extern PetscErrorCode  MatSolverTypeDestroy(void);
 static PetscBool MatPackageInitialized = PETSC_FALSE;
 /*@C
   MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
@@ -52,7 +52,7 @@ PetscErrorCode  MatFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageDestroy();CHKERRQ(ierr);
+  ierr = MatSolverTypeDestroy();CHKERRQ(ierr);
   while (names) {
     nnames = names->next;
     ierr   = PetscFree(names->bname);CHKERRQ(ierr);
@@ -80,52 +80,52 @@ PetscErrorCode  MatFinalizePackage(void)
 }
 
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #endif
 #if defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSP(void);
 #endif
 #if defined(PETSC_HAVE_VECCUDA)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void);
 #endif
 #if defined(PETSC_HAVE_PETSC_HAVE_ESSL)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Essl(void);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void);
 #endif
 #if defined(PETSC_HAVE_STRUMPACK)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SparseElemental(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void);
 #endif
 #if defined(PETSC_HAVE_MKL_CPARDISO)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_CPardiso(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void);
 #endif
 #if defined(PETSC_HAVE_SUITESPARSE)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void);
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
 #endif
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
@@ -299,102 +299,102 @@ PetscErrorCode  MatInitializePackage(void)
   }
 
   /* Register the PETSc built in factorization based solvers */
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJPERM,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MKL_SPARSE)
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJMKL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJMKL,    MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
 #endif
     /* Above, we register the PETSc built-in factorization solvers for MATSEQAIJMKL.  In the future, we may want to use 
      * some of the MKL-provided ones instead. */ 
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJCRL,     MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_LU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_CHOLESKY,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQBAIJ,       MAT_FACTOR_ICC,MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQSBAIJ,      MAT_FACTOR_ICC,MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_LU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_LU,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQDENSE,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
 
-  ierr = MatSolverPackageRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERBAS,   MATSEQAIJ,        MAT_FACTOR_ICC,MatGetFactor_seqaij_bas);CHKERRQ(ierr);
 
   /*
      Register the external package factorization based solvers
         Eventually we don't want to have these hardwired here at compile time of PETSc
   */
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = MatSolverPackageRegister_MUMPS();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_MUMPS();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CUSP)
-  ierr = MatSolverPackageRegister_CUSP();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_CUSP();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VECCUDA)
-  ierr = MatSolverPackageRegister_CUSPARSE();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_CUSPARSE();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  ierr = MatSolverPackageRegister_ViennaCL();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_ViennaCL();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = MatSolverPackageRegister_Elemental();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_Elemental();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = MatSolverPackageRegister_Matlab();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_Matlab();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PETSC_HAVE_ESSL)
-  ierr = MatSolverPackageRegister_Essl();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_Essl();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-  ierr = MatSolverPackageRegister_SuperLU();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_SuperLU();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_STRUMPACK)
-  ierr = MatSolverPackageRegister_STRUMPACK();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_STRUMPACK();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = MatSolverPackageRegister_Pastix();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_Pastix();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = MatSolverPackageRegister_SuperLU_DIST();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_SuperLU_DIST();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
-  ierr = MatSolverPackageRegister_MKL_Pardiso();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_MKL_Pardiso();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MKL_CPARDISO)
-  ierr = MatSolverPackageRegister_MKL_CPardiso();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_MKL_CPardiso();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUITESPARSE)
-  ierr = MatSolverPackageRegister_SuiteSparse();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_SuiteSparse();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-  ierr = MatSolverPackageRegister_Lusol();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_Lusol();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
-  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);

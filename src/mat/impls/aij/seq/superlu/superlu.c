@@ -415,7 +415,7 @@ static PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -505,7 +505,7 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU;
@@ -518,7 +518,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 
   Use ./configure --download-superlu to have PETSc installed with SuperLU
 
-  Use -pc_type lu -pc_factor_mat_solver_package superlu to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type superlu to use this direct solver
 
   Options Database Keys:
 + -mat_superlu_equil <FALSE>            - Equil (None)
@@ -543,7 +543,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
 
    Level: beginner
 
-.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
 M*/
 
 static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
@@ -672,7 +672,7 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
 #endif
 #endif
 
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_superlu);CHKERRQ(ierr);
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->data  = lu;
 
@@ -680,12 +680,12 @@ static PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_LU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_LU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

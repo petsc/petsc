@@ -322,7 +322,7 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_PardisoSetCntl_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -975,7 +975,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
   Works with MATSEQAIJ matrices
 
-  Use -pc_type lu -pc_factor_mat_solver_package mkl_pardiso to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type mkl_pardiso to use this direct solver
 
   Options Database Keys:
 + -mat_mkl_pardiso_65 - Number of threads to use within MKL_PARDISO
@@ -1007,10 +1007,10 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
   For more information please check  mkl_pardiso manual
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/
-static PetscErrorCode MatFactorGetSolverPackage_mkl_pardiso(Mat A, const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMKL_PARDISO;
@@ -1075,7 +1075,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMKL_PARDISO,&B->solvertype);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_pardiso);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mkl_pardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MKL_PARDISO);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_PardisoSetCntl_C",MatMkl_PardisoSetCntl_MKL_PARDISO);CHKERRQ(ierr);
 
@@ -1083,14 +1083,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_Pardiso(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_PARDISO,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMKL_PARDISO,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMKL_PARDISO,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

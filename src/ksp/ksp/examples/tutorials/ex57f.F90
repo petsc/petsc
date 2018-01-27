@@ -203,8 +203,8 @@
       call KSPGetPC(ksp,pc,ierr);
       call PCSetType(pc,PCCHOLESKY,ierr);
 #ifdef PETSC_HAVE_MUMPS
-      call PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS,ierr);
-      call PCFactorSetUpMatSolverPackage(pc,ierr);
+      call PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr);
+      call PCFactorSetUpMatSolverType(pc,ierr);
       call PCFactorGetMatrix(pc,F,ierr);
       call KSPSetFromOptions(ksp,ierr);
       icntl = 7; ival = 2;

@@ -283,7 +283,7 @@ int main(int argc,char **args)
   if (testnewC) {
     /*
      User may use a new matrix C with same nonzero pattern, e.g.
-      ./ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_package mumps -test_newMat
+      ./ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_type mumps -test_newMat
     */
     Mat Ctmp;
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&Ctmp);CHKERRQ(ierr);
@@ -392,20 +392,20 @@ int main(int argc,char **args)
       suffix: superlu_dist
       nsize: 15
       requires: superlu_dist
-      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat
+      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat
 
    test:
       suffix: superlu_dist_2
       nsize: 15
       requires: superlu_dist
-      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
+      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm
       output_file: output/ex5_superlu_dist.out
 
    test:
       suffix: superlu_dist_3
       nsize: 15
       requires: superlu_dist
-      args: -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
+      args: -pc_type lu -pc_factor_mat_solver_type superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT
       output_file: output/ex5_superlu_dist.out
 
 TEST*/

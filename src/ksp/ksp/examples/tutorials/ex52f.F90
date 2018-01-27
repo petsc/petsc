@@ -117,8 +117,8 @@
       call KSPSetType(ksp,KSPPREONLY,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCLU,ierr)
-      call PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS,ierr)
-      call PCFactorSetUpMatSolverPackage(pc,ierr)
+      call PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr)
+      call PCFactorSetUpMatSolverType(pc,ierr)
       call PCFactorGetMatrix(pc,F,ierr)
 
 !     sequential ordering

@@ -546,7 +546,7 @@ PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,char* name P
 {
   const char *tname;
 
-  *ierr = MatFactorGetSolverPackage(*mat,&tname);if (*ierr) return;
+  *ierr = MatFactorGetSolverType(*mat,&tname);if (*ierr) return;
   if (name != PETSC_NULL_CHARACTER_Fortran) {
     *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   }

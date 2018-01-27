@@ -448,7 +448,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 }
 
 
-/*M
+/*MC
    MATSEQAIJVIENNACL - MATAIJVIENNACL = "aijviennacl" = "seqaijviennacl" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on GPUs. These matrices are in CSR format by
@@ -465,15 +465,15 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 M*/
 
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

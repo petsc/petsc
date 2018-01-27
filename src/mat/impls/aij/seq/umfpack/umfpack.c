@@ -319,7 +319,7 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERUMFPACK;
@@ -333,7 +333,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 
   Use ./configure --download-suitesparse to install PETSc to use UMFPACK
 
-  Use -pc_type lu -pc_factor_mat_solver_package umfpack to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type umfpack to use this direct solver
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.
@@ -360,7 +360,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 
    Note: UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
-.seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverType(), MatSolverType
 M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
@@ -390,7 +390,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   B->ops->view             = MatView_UMFPACK;
   B->ops->matsolve         = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_seqaij_umfpack);CHKERRQ(ierr);
 
   B->factortype   = MAT_FACTOR_LU;
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
@@ -457,14 +457,14 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,     MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

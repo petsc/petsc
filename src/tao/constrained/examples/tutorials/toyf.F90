@@ -57,7 +57,7 @@
       call TaoGetKSP(tao,ksp,ierr);CHKERRA(ierr)
       call KSPGetPC(ksp,pc,ierr);CHKERRA(ierr)
       call PCSetType(pc,PCLU,ierr);CHKERRA(ierr)
-      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU,ierr);CHKERRA(ierr)
+      call PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU,ierr);CHKERRA(ierr)
       call KSPSetType(ksp,KSPPREONLY,ierr);CHKERRA(ierr)
       call KSPSetFromOptions(ksp,ierr);CHKERRA(ierr)
 

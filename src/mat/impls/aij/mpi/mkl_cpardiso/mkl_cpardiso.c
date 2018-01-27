@@ -240,7 +240,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMkl_CPardisoSetCntl_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -699,7 +699,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverPackage_mkl_cpardiso(Mat A, const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_mkl_cpardiso(Mat A, const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMKL_CPARDISO;
@@ -743,7 +743,7 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERMKL_CPARDISO,&B->solvertype);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mkl_cpardiso);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mkl_cpardiso);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMkl_CPardisoSetCntl_C",MatMkl_CPardisoSetCntl_MKL_CPARDISO);CHKERRQ(ierr);
   ierr = PetscInitialize_MKL_CPARDISO(A, mat_mkl_cpardiso);CHKERRQ(ierr);
 
@@ -751,12 +751,12 @@ static PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_CPardiso(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MKL_CPardiso(void)
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_CPARDISO,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMKL_CPARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMKL_CPARDISO,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMKL_CPARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

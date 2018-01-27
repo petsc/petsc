@@ -187,6 +187,6 @@ int main(int argc,char **args)
    test:
       nsize: 4
       requires: superlu_dist
-      args: -ksp_monitor -pc_gasm_overlap 1 -sub_pc_type lu -sub_pc_factor_mat_solver_package superlu_dist -pc_gasm_total_subdomains 2
+      args: -ksp_monitor -pc_gasm_overlap 1 -sub_pc_type lu -sub_pc_factor_mat_solver_type superlu_dist -pc_gasm_total_subdomains 2
 
 TEST*/

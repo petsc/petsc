@@ -16,8 +16,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
    ./ex10 -f0 <datafile> -ksp_type preonly  \n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
-        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps \n\
+        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu or superlu_dist or mumps \n\
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps \n\
    mpiexec -n <np> ./ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
@@ -545,7 +545,7 @@ int main(int argc,char **args)
    testset:
       suffix: 12
       requires: matlab
-      args: -pc_type lu -pc_factor_mat_solver_package matlab -f0 ${DATAFILESPATH}/matrices/arco1
+      args: -pc_type lu -pc_factor_mat_solver_type matlab -f0 ${DATAFILESPATH}/matrices/arco1
 
    testset:
       suffix: 13
@@ -598,7 +598,7 @@ int main(int argc,char **args)
    testset:
       suffix: aijcusparse
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) cusparse
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu
 
    testset:
       TODO: No output file. Need to determine if deprecated
@@ -689,7 +689,7 @@ int main(int argc,char **args)
       suffix: mumps_cholesky
       output_file: output/ex10_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
       test:
          args: -mat_type sbaij -mat_ignore_lower_triangular
@@ -703,7 +703,7 @@ int main(int argc,char **args)
       suffix: mumps_lu
       output_file: output/ex10_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
       test:
          args: -mat_type seqaij
       test:
@@ -728,19 +728,19 @@ int main(int argc,char **args)
       output_file: output/ex10_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) mumps
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: pastix_cholesky
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
       output_file: output/ex10_mumps.out
       nsize: {{1 2}}
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
 
    testset:
       suffix: pastix_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
       output_file: output/ex10_mumps.out
       test:
          args: -mat_type seqaij
@@ -753,14 +753,14 @@ int main(int argc,char **args)
       output_file: output/ex10_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) pastix
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
 
 
    testset:
       suffix: superlu_dist_lu
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu_dist
       output_file: output/ex10_mumps.out
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
 
    testset:
@@ -768,18 +768,18 @@ int main(int argc,char **args)
       nsize: 8
       output_file: output/ex10_mumps_redundant.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: superlu_lu
       output_file: output/ex10_mumps.out
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) superlu
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type superlu -num_numfac 2 -num_rhs 2
 
    testset:
       suffix: umfpack
       requires: datafilespath double !define(PETSC_USE_64BIT_INDICES) suitesparse
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package umfpack -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type umfpack -num_numfac 2 -num_rhs 2
 
 
    testset:

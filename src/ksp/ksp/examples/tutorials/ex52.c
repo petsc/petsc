@@ -154,7 +154,7 @@ int main(int argc,char **args)
   /*
     Example of how to use external package MUMPS
     Note: runtime options
-          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2 -mat_mumps_icntl_1 0.0'
+          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_7 2 -mat_mumps_icntl_1 0.0'
           are equivalent to these procedural calls
   */
 #if defined(PETSC_HAVE_MUMPS)
@@ -173,8 +173,8 @@ int main(int argc,char **args)
       ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
       ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 
     /* sequential ordering */
@@ -194,7 +194,7 @@ int main(int argc,char **args)
   /*
     Example of how to use external package SuperLU
     Note: runtime options
-          '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 1.e-8'
+          '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_type superlu -mat_superlu_ilu_droptol 1.e-8'
           are equivalent to these procedual calls
   */
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
@@ -214,14 +214,14 @@ int main(int argc,char **args)
 #if !defined(PETSC_HAVE_SUPERLU)
       SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU");
 #endif
-      ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
       SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU_DIST");
 #endif
-      ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUPERLU)
     if (size == 1) {
@@ -236,7 +236,7 @@ int main(int argc,char **args)
     Example of how to use external package STRUMPACK
     Note: runtime options
           '-pc_type lu/ilu \
-           -pc_factor_mat_solver_package strumpack \
+           -pc_factor_mat_solver_type strumpack \
            -mat_strumpack_reordering METIS \
            -mat_strumpack_colperm 0 \
            -mat_strumpack_hss_rel_tol 1.e-3 \
@@ -264,8 +264,8 @@ int main(int argc,char **args)
 #if !defined(PETSC_HAVE_STRUMPACK)
     SETERRQ(PETSC_COMM_WORLD,1,"This test requires STRUMPACK");
 #endif
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_STRUMPACK)
     /* Set the fill-reducing reordering.                              */
@@ -293,7 +293,7 @@ int main(int argc,char **args)
 
   /*
     Example of how to use procedural calls that are equivalent to
-          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_package petsc'
+          '-ksp_type preonly -pc_type lu/ilu -pc_factor_mat_solver_type petsc'
   */
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
@@ -311,8 +311,8 @@ int main(int argc,char **args)
     } else if (flg_ch) {
       ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
+    ierr = PCFactorSetMatSolverType(pc,MATSOLVERPETSC);CHKERRQ(ierr);
+    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
  
     /* Test MatGetDiagonal() */

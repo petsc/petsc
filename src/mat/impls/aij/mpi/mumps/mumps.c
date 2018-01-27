@@ -690,7 +690,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorSetSchurIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorCreateSchurComplement_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetIcntl_C",NULL);CHKERRQ(ierr);
@@ -2066,7 +2066,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 
   Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch  to have PETSc installed with MUMPS
 
-  Use -pc_type cholesky or lu -pc_factor_mat_solver_package mumps to use this direct solver
+  Use -pc_type cholesky or lu -pc_factor_mat_solver_type mumps to use this direct solver
 
   Options Database Keys:
 +  -mat_mumps_icntl_1 - ICNTL(1): output stream for error messages 
@@ -2107,11 +2107,11 @@ $          MatMumpsGetInfo(mat,....);
 $          MatMumpsGetInfog(mat,....); etc.
            Or you can run with -ksp_error_if_not_converged and the program will be stopped and the information printed in the error message.
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatMumpsSetICntl(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog(), KSPGetPC(), PCGetFactor(), PCFactorGetMatrix()
 
 M*/
 
-static PetscErrorCode MatFactorGetSolverPackage_mumps(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_mumps(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMUMPS;
@@ -2139,7 +2139,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->view        = MatView_MUMPS;
   B->ops->getinfo     = MatGetInfo_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
@@ -2213,7 +2213,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MUMPS;
   B->ops->view                   = MatView_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
@@ -2274,7 +2274,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   B->ops->getinfo     = MatGetInfo_External;
   B->ops->view        = MatView_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorSetSchurIS_C",MatFactorSetSchurIS_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorCreateSchurComplement_C",MatFactorCreateSchurComplement_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
@@ -2300,21 +2300,21 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATMPIAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATMPIBAIJ,MAT_FACTOR_LU,MatGetFactor_baij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATMPIBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_baij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATMPISBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_LU,MatGetFactor_baij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_baij_mumps);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERMUMPS,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATMPIAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATMPIBAIJ,MAT_FACTOR_LU,MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATMPIBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATMPISBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_LU,MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERMUMPS,MATSEQSBAIJ,MAT_FACTOR_CHOLESKY,MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

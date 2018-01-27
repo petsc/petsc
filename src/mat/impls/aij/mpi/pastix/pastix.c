@@ -483,7 +483,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
   Use ./configure --download-pastix --download-ptscotch  to have PETSc installed with PasTiX
 
-  Use -pc_type lu -pc_factor_mat_solver_package pastix to use this direct solver
+  Use -pc_type lu -pc_factor_mat_solver_type pastix to use this direct solver
 
   Options Database Keys:
 + -mat_pastix_verbose   <0,1,2>   - print level
@@ -494,7 +494,7 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+.seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/
 
@@ -517,7 +517,7 @@ PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPackage *type)
+static PetscErrorCode MatFactorGetSolverType_pastix(Mat A,const MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERPASTIX;
@@ -545,7 +545,7 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
   
@@ -583,7 +583,7 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
 
@@ -621,7 +621,7 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
   B->ops->getinfo                = MatGetInfo_PaStiX;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
@@ -661,7 +661,7 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat
   B->ops->view                   = MatView_PaStiX;
   B->ops->getinfo                = MatGetInfo_PaStiX;
   B->ops->destroy                = MatDestroy_Pastix;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverType_C",MatFactorGetSolverType_pastix);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
@@ -680,14 +680,14 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Pastix(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolverPackageRegister(MATSOLVERPASTIX,MATMPIAIJ,        MAT_FACTOR_LU,MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPASTIX,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPASTIX,MATMPISBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
-  ierr = MatSolverPackageRegister(MATSOLVERPASTIX,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPASTIX,MATMPIAIJ,        MAT_FACTOR_LU,MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPASTIX,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPASTIX,MATMPISBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
+  ierr = MatSolverTypeRegister(MATSOLVERPASTIX,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

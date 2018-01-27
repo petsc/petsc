@@ -214,7 +214,7 @@ int main(int argc,char **args)
    test:
       suffix: 2
       nsize: 6
-      args: -pc_type lu -pc_factor_mat_solver_package elemental
+      args: -pc_type lu -pc_factor_mat_solver_type elemental
       requires: elemental
 
 TEST*/

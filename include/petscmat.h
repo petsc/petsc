@@ -22,7 +22,7 @@ typedef struct _p_Mat*           Mat;
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverPackage, MatRegister()
+.seealso: MatSetType(), Mat, MatSolverType, MatRegister()
 J*/
 typedef const char* MatType;
 #define MATSAME            "same"
@@ -93,7 +93,7 @@ typedef const char* MatType;
 #define MATDUMMY           "dummy"
 
 /*J
-    MatSolverPackage - String with the name of a PETSc matrix solver type.
+    MatSolverType - String with the name of a PETSc matrix solver type.
 
     For example: "petsc" indicates what PETSc provides, "superlu_dist" the parallel SuperLU_DIST package etc
 
@@ -101,7 +101,7 @@ typedef const char* MatType;
 
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
 J*/
-#define MatSolverPackage char*
+#define MatSolverType char*
 #define MATSOLVERSUPERLU          "superlu"
 #define MATSOLVERSUPERLU_DIST     "superlu_dist"
 #define MATSOLVERSTRUMPACK        "strumpack"
@@ -128,17 +128,17 @@ J*/
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatSolverPackage, MatGetFactor()
+.seealso: MatSolverType, MatGetFactor()
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC,MAT_FACTOR_ILUDT} MatFactorType;
 PETSC_EXTERN const char *const MatFactorTypes[];
 
-PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
-PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscBool *);
-PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
+PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,const MatSolverType,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,const MatSolverType,MatFactorType,PetscBool *);
+PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat,const MatSolverType*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister(const MatSolverPackage,const MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
-PETSC_EXTERN PetscErrorCode MatSolverPackageGet(const MatSolverPackage,const MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(const MatSolverType,const MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverTypeGet(const MatSolverType,const MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
 
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */

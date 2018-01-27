@@ -303,12 +303,12 @@ int main(int argc,char **args)
    test:
       suffix: mkl_pardiso_cholesky
       requires: mkl_pardiso
-      args: -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mkl_pardiso
+      args: -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_type mkl_pardiso
 
    test:
       suffix: mkl_pardiso_lu
       requires: mkl_pardiso
-      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso
+      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mkl_pardiso
 
    test:
       suffix: pipebcgs
@@ -338,6 +338,6 @@ int main(int argc,char **args)
    test:
       suffix: umfpack
       requires: suitesparse
-      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack
+      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type umfpack
 
 TEST*/

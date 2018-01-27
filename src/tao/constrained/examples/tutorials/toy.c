@@ -86,7 +86,7 @@ PetscErrorCode main(int argc,char **argv)
       This algorithm produces matrices with zeros along the diagonal therefore we need to use
     SuperLU which does partial pivoting
   */
-  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
