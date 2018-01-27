@@ -419,8 +419,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter* c
   PetscFunctionReturn(0);
 }
 
-
-PetscErrorCode  DM_UMR_Moab_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
+static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
 {
   PetscErrorCode  ierr;
   PetscInt        i, dim;
@@ -536,7 +535,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-  ierr = DM_UMR_Moab_Private(dm, comm, PETSC_TRUE, dmf);CHKERRQ(ierr);
+  ierr = DMMoab_UMR_Private(dm, comm, PETSC_TRUE, dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -567,6 +566,6 @@ PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM* dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
-  ierr = DM_UMR_Moab_Private(dm, comm, PETSC_FALSE, dmc);CHKERRQ(ierr);
+  ierr = DMMoab_UMR_Private(dm, comm, PETSC_FALSE, dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

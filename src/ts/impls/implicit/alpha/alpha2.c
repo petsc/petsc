@@ -92,7 +92,7 @@ static PetscErrorCode TSAlpha_StageVecs(TS ts,Vec X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
+static PetscErrorCode TSAlpha_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
   PetscErrorCode ierr;
@@ -140,7 +140,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
   ierr = VecCopy(V0,th->V0);CHKERRQ(ierr);
   ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
   ierr = VecCopy(th->X0,X1);CHKERRQ(ierr);
-  ierr = TS_SNESSolve(ts,NULL,X1);CHKERRQ(ierr);
+  ierr = TSAlpha_SNESSolve(ts,NULL,X1);CHKERRQ(ierr);
   ierr = VecCopy(th->V1,V1);CHKERRQ(ierr);
   ierr = TSPostStage(ts,th->stage_time,0,&X1);CHKERRQ(ierr);
   ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
   ierr = VecCopy(V1,th->V0);CHKERRQ(ierr);
   ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
   ierr = VecCopy(th->X0,X2);CHKERRQ(ierr);
-  ierr = TS_SNESSolve(ts,NULL,X2);CHKERRQ(ierr);
+  ierr = TSAlpha_SNESSolve(ts,NULL,X2);CHKERRQ(ierr);
   ierr = VecCopy(th->V1,V2);CHKERRQ(ierr);
   ierr = TSPostStage(ts,th->stage_time,0,&X2);CHKERRQ(ierr);
   ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ierr = TSAlpha_StageTime(ts);CHKERRQ(ierr);
     ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
-    ierr = TS_SNESSolve(ts,NULL,th->X1);CHKERRQ(ierr);
+    ierr = TSAlpha_SNESSolve(ts,NULL,th->X1);CHKERRQ(ierr);
     ierr = TSPostStage(ts,th->stage_time,0,&th->Xa);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->Xa,&stageok);CHKERRQ(ierr);
     if (!stageok) goto reject_step;

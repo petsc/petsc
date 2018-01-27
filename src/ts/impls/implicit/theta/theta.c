@@ -167,7 +167,7 @@ static PetscErrorCode TSAdjointCostIntegral_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
+static PetscErrorCode TSTheta_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
   PetscErrorCode ierr;
@@ -213,7 +213,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
       ierr = VecZeroEntries(th->affine);CHKERRQ(ierr);
     }
     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
-    ierr = TS_SNESSolve(ts,th->affine,th->X);CHKERRQ(ierr);
+    ierr = TSTheta_SNESSolve(ts,th->affine,th->X);CHKERRQ(ierr);
     ierr = TSPostStage(ts,th->stage_time,0,&th->X);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->X,&stageok);CHKERRQ(ierr);
     if (!stageok) goto reject_step;

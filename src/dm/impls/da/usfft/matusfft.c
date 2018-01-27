@@ -81,7 +81,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
 } /* MatApply_USFFT_Private() */
 
 #if 0
-PetscErrorCode Mat_USFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
+PetscErrorCode MatUSFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 /* Project onto the Battle-Lemarie function centered around r */
 {
   PetscErrorCode ierr;
@@ -89,7 +89,7 @@ PetscErrorCode Mat_USFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
-} /* Mat_USFFT_ProjectOnBattleLemarie_Private() */
+} /* MatUSFFT_ProjectOnBattleLemarie_Private() */
 
 PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
 {

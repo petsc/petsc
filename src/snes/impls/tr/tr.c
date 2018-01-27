@@ -10,7 +10,7 @@ typedef struct {
    This convergence test determines if the two norm of the
    solution lies outside the trust region, if so it halts.
 */
-PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *cctx)
+static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *cctx)
 {
   SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx*)cctx;
   SNES                     snes = ctx->snes;
@@ -34,7 +34,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
+static PetscErrorCode SNESTR_KSPConverged_Destroy(void *cctx)
 {
   SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx*)cctx;
   PetscErrorCode           ierr;
@@ -47,11 +47,11 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 
 /* ---------------------------------------------------------------- */
 /*
-   SNES_TR_Converged_Private -test convergence JUST for
+   SNESTR_Converged_Private -test convergence JUST for
    the trust region tolerance.
 
 */
-static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+static PetscErrorCode SNESTR_Converged_Private(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_NEWTONTR  *neP = (SNES_NEWTONTR*)snes->data;
   PetscErrorCode ierr;
@@ -128,8 +128,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr      = PetscNew(&ctx);CHKERRQ(ierr);
     ctx->snes = snes;
     ierr      = KSPConvergedDefaultCreate(&ctx->ctx);CHKERRQ(ierr);
-    ierr      = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
-    ierr      = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
+    ierr      = KSPSetConvergenceTest(ksp,SNESTR_KSPConverged_Private,ctx,SNESTR_KSPConverged_Destroy);CHKERRQ(ierr);
+    ierr      = PetscInfo(snes,"Using Krylov convergence test SNESTR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
 
   for (i=0; i<maxits; i++) {
@@ -187,7 +187,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      ierr        = SNES_TR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr        = SNESTR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (!reason) { ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr); }
       if (reason) {
         /* We're not progressing, so return with the current iterate */
