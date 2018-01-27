@@ -19,7 +19,7 @@ static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
   PetscInt         i;
   PetscErrorCode   ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   for (i=0;i<lf->nr;i++) {
     ierr = ISDestroy(&lf->rf[i]);CHKERRQ(ierr);
   }
@@ -57,7 +57,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
   PetscInt               lc,dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
   PetscErrorCode         ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (!aij->garray) SETERRQ(comm,PETSC_ERR_SUP,"garray not present");
 
@@ -177,7 +177,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
   PetscBool              convert,lreuse,*istrans;
   PetscErrorCode         ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   ierr   = MatNestGetSubMats(A,&nr,&nc,&nest);CHKERRQ(ierr);
   lreuse = PETSC_FALSE;
   rnest  = NULL;
@@ -433,8 +433,10 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
         stl  += lc[i];
       }
       ierr = MatCreateNest(PETSC_COMM_SELF,nr,islrow,nc,islcol,snest,&lA);CHKERRQ(ierr);
-      if (istrans[i]) {
-        ierr = MatDestroy(&snest[i]);CHKERRQ(ierr);
+      for (i=0;i<nr*nc;i++) {
+        if (istrans[i]) {
+          ierr = MatDestroy(&snest[i]);CHKERRQ(ierr);
+        }
       }
       ierr = MatISSetLocalMat(*newmat,lA);CHKERRQ(ierr);
       ierr = MatDestroy(&lA);CHKERRQ(ierr);
@@ -837,11 +839,12 @@ static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse sca
     ierr = ISCreateGeneral(comm,newloc,lidxs,PETSC_OWN_POINTER,&newmatis->getsub_ris);CHKERRQ(ierr);
     if (mat->congruentlayouts == -1) { /* first time we compare rows and cols layouts */
       PetscBool cong;
+
       ierr = PetscLayoutCompare(mat->rmap,mat->cmap,&cong);CHKERRQ(ierr);
       if (cong) mat->congruentlayouts = 1;
       else      mat->congruentlayouts = 0;
     }
-    if (mat->congruentlayouts && irow == icol) {
+    if (mat->congruentlayouts && irow == icol && matis->csf == matis->sf) {
       ierr = MatSetLocalToGlobalMapping(*newmat,rl2g,rl2g);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)newmatis->getsub_ris);CHKERRQ(ierr);
       newmatis->getsub_cis = newmatis->getsub_ris;
@@ -1193,11 +1196,13 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   }
 
   /* Set preallocation */
+  ierr = MatSeqAIJSetPreallocation(B,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,dnz,0,onz);CHKERRQ(ierr);
   for (i=0;i<lrows/bs;i++) {
     dnz[i] = dnz[i*bs]/bs;
     onz[i] = onz[i*bs]/bs;
   }
+  ierr = MatSeqBAIJSetPreallocation(B,bs,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(B,bs,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1237,12 +1242,12 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = ISLocalToGlobalMappingGetIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->rmap->n,ridxs,PETSC_USE_POINTER,&rows);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->cmap->n,cidxs,PETSC_USE_POINTER,&cols);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
     ierr = ISSetPermutation(rows);CHKERRQ(ierr);
     ierr = ISSetPermutation(cols);CHKERRQ(ierr);
     ierr = ISInvertPermutation(rows,mat->rmap->n,&irows);CHKERRQ(ierr);
     ierr = ISInvertPermutation(cols,mat->cmap->n,&icols);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
     ierr = ISDestroy(&cols);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
@@ -1786,10 +1791,12 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A,PetscInt n,const Petsc
 #if defined(PETSC_USE_DEBUG)
   if (columns || diag != 0. || (x && b)) {
     PetscBool cong;
+
     ierr = PetscLayoutCompare(A->rmap,A->cmap,&cong);CHKERRQ(ierr);
-    if (!cong && columns) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Columns can be zeroed if and only if A->rmap and A->cmap are congruent for MATIS");
-    if (!cong && diag != 0.) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Nonzero diagonal value supported if and only if A->rmap and A->cmap are congruent for MATIS");
-    if (!cong && x && b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"A->rmap and A->cmap need to be congruent");
+    cong = (PetscBool)(cong && matis->sf == matis->csf);
+    if (!cong && columns) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Columns can be zeroed if and only if A->rmap and A->cmap are congruent and the l2g maps are the same for MATIS");
+    if (!cong && diag != 0.) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Nonzero diagonal value supported if and only if A->rmap and A->cmap are congruent and the l2g maps are the same for MATIS");
+    if (!cong && x && b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"A->rmap and A->cmap need to be congruent, and the l2g maps be the same");
   }
 #endif
   /* get locally owned rows */
