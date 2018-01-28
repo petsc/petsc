@@ -1254,13 +1254,8 @@ keys are \trl{-mat_no_inode} (do not use inodes) and \trl{
 Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
-By default, the internal data representation for the AIJ formats employs
-zero-based indexing.  For compatibility with standard Fortran storage,
-thus enabling use of external Fortran software packages such as
-SPARSKIT, \sindex{SPARSKIT} the option \trl{-mat_aij_oneindex},
-\findex{-mat_aij_oneindex} enables one-based indexing, where the stored
-row and column indices begin at one, not zero.  All user calls to
-PETSc routines, regardless of this option, use zero-based indexing.
+The internal data representation for the AIJ formats employs
+zero-based indexing. 
 
 \subsubsection{Preallocation of Memory for Sequential AIJ Sparse Matrices}
 
