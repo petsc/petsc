@@ -348,14 +348,14 @@ cdef class PC(Object):
 
     # --- Factor ---
 
-    def setFactorSolverPackage(self, solver):
-        cdef PetscMatSolverPackage cval = NULL
+    def setFactorSolverType(self, solver):
+        cdef PetscMatSolverType cval = NULL
         solver = str2bytes(solver, &cval)
-        CHKERR( PCFactorSetMatSolverPackage(self.pc, cval) )
+        CHKERR( PCFactorSetMatSolverType(self.pc, cval) )
 
-    def getFactorSolverPackage(self):
-        cdef PetscMatSolverPackage cval = NULL
-        CHKERR( PCFactorGetMatSolverPackage(self.pc, &cval) )
+    def getFactorSolverType(self):
+        cdef PetscMatSolverType cval = NULL
+        CHKERR( PCFactorGetMatSolverType(self.pc, &cval) )
         return bytes2str(cval)
 
     def setFactorOrdering(self, ord_type=None, nzdiag=None, reuse=None):
