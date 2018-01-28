@@ -2168,7 +2168,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General*,VecScatter_MP
 PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
 {
   VecScatter_MPI_General *from, *to;
-  PetscInt               sendSize,recvSize,bs_sendSize,bs_recvSize;
+  PetscInt               sendSize,recvSize,bs_sendSize = 0,bs_recvSize = 0;
   PetscInt               n, i;
   PetscErrorCode         ierr;
 
@@ -2248,7 +2248,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscInt               *source = NULL,*owners = NULL,nxr;
   PetscInt               *lowner = NULL,*start = NULL,lengthy,lengthx;
   PetscMPIInt            *nprocs = NULL,nrecvs;
-  PetscInt               i,j,idx,nsends;
+  PetscInt               i,j,idx = 0,nsends;
   PetscMPIInt            *owner = NULL;
   PetscInt               *starts = NULL,count,slen;
   PetscInt               *rvalues,*svalues,base,*values,nprocslocal,recvtotal,*rsvalues;
@@ -2559,7 +2559,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
-    PetscMPIInt temptag,winsize;
+    PetscMPIInt temptag,winsize = 0;
     MPI_Request *request;
     MPI_Status  *status;
 
