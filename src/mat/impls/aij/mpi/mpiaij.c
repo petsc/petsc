@@ -4198,10 +4198,8 @@ $     MatMPIAIJSetPreallocation(A,...);
 
    Options Database Keys:
 +  -mat_no_inode  - Do not use inodes
-.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
--  -mat_aij_oneindex - Internally use indexing starting at 1
-        rather than 0.  Note that when calling MatSetValues(),
-        the user still MUST index entries starting at 0!
+-  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
+
 
 
    Example usage:
