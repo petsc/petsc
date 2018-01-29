@@ -546,23 +546,24 @@ PETSC_EXTERN void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,s
   *ierr = MatDenseRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matdensegetarrayread_(Mat *mat,const PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdensegetarrayread_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscScalar *mm;
-  PetscInt    m,n;
+  const PetscScalar *mm;
+  PetscInt         m,n;
 
   *ierr = MatDenseGetArrayRead(*mat,&mm); if (*ierr) return;
   *ierr = MatGetSize(*mat,&m,&n);  if (*ierr) return;
-  *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
+  *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,(PetscScalar*)mm,m*n,ia); if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matdenserestorearrayread_(Mat *mat,const PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+
+PETSC_EXTERN void PETSC_STDCALL matdenserestorearrayread_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscScalar *lx;
-  PetscInt    m,n;
+  const PetscScalar *lx;
+  PetscInt          m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
-  *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
+  *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,(PetscScalar**)&lx);if (*ierr) return;
   *ierr = MatDenseRestoreArrayRead(*mat,&lx);if (*ierr) return;
 }
 
