@@ -187,7 +187,6 @@ int main(int argc,char **args)
 
    test:
       suffix: 2_aijcusparse_1
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda
       output_file: output/ex5_21.out
       requires: veccuda
@@ -195,7 +194,6 @@ int main(int argc,char **args)
    test:
       suffix: 2_aijcusparse_2
       nsize: 3
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda
       output_file: output/ex5_23.out
       requires: veccuda
@@ -222,7 +220,6 @@ int main(int argc,char **args)
 
    test:
       suffix: 3_aijcusparse_1
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
       output_file: output/ex5_31.out
       requires: veccuda
@@ -230,21 +227,18 @@ int main(int argc,char **args)
    test:
       suffix: 3_aijcusparse_2
       nsize: 3
-      requires: cusparse
       args: -mat_type mpiaijcusparse -vec_type cuda -test_diagonalscale
       output_file: output/ex5_33.out
       requires: veccuda
 
    test:
       suffix: aijcusparse_1
-      requires: cusparse
       args: -mat_type seqaijcusparse -vec_type cuda -rectA
       output_file: output/ex5_11_A.out
       requires: veccuda
 
    test:
       suffix: aijcusparse_2
-      requires: cusparse
       args: -mat_type seqaijcusparse -vec_type cuda -rectB
       output_file: output/ex5_11_B.out
       requires: veccuda

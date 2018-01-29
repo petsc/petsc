@@ -169,14 +169,14 @@ int main(int argc,char **argv)
       suffix: 2_aijcusparse_1
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23.out
-      requires: veccudaa
+      requires: veccuda
 
    test:
       suffix: 2_aijcusparse_2
       nsize: 3
       args: -mat_type mpiaijcusparse
       output_file: output/ex2_23_aijcusparse.out
-      requires: veccudaa
+      requires: veccuda
 
    test:
       suffix: 3
@@ -186,9 +186,8 @@ int main(int argc,char **argv)
    test:
       suffix: 3_aijcusparse
       nsize: 2
-      requires: cusparse
       args: -mat_type mpiaijcusparse -rectA
-      requires: veccudaa
+      requires: veccuda
 
    test:
       suffix: 4
@@ -197,18 +196,16 @@ int main(int argc,char **argv)
 
    test:
       suffix: aijcusparse_1
-      requires: cusparse
       args: -mat_type seqaijcusparse -rectA
       filter: grep -v "Mat Object"
       output_file: output/ex2_11_A_aijcusparse.out
-      requires: veccudaa
+      requires: veccuda
 
    test:
       suffix: aijcusparse_2
-      requires: cusparse
       args: -mat_type seqaijcusparse -rectB
       filter: grep -v "Mat Object"
       output_file: output/ex2_11_B_aijcusparse.out
-      requires: veccudaa
+      requires: veccuda
 
 TEST*/
