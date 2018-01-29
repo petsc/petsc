@@ -1334,10 +1334,10 @@ either a new test entirely, or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
 %
-\begin{lstlisting}
+\begin{outputlisting}
       mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
       diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-\end{lstlisting}
+\end{outputlisting}
 
 In practice, we want to do various logging and counting by the test
 harness, but this is explained further below.  The input language
@@ -1454,10 +1454,10 @@ With this background, these keywords are are:
 
       \item A skeleton example of the resultant commands to be run is:
       %
-      \begin{lstlisting}
+      \begin{outputlisting}
 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-      \end{lstlisting}
+      \end{outputlisting}
 
       \item If the filter begins with \lstinline{Error:}, then the test is
             assumed to be testing the error output, and the error code and
@@ -1554,9 +1554,9 @@ supported:
 
 For loops are supported within nsize and args.  An example would be:
 %
-\begin{lstlisting}
+\begin{outputlisting}
 args: -matload_block_size {{2 3}}
-\end{lstlisting}
+\end{outputlisting}
 
 In this case, two execution lines would be addded with two different
 arguments.  Associated \lstinline{diff} lines would be added as well
@@ -1610,11 +1610,11 @@ resultant output with \lstinline{output/ex1.out}.
 
 For Fortran, the equivalent is:
 %
-\begin{lstlisting}
+\begin{outputlisting}
 !/*TESTS
 !  test: 
 !TESTS*/
-\end{lstlisting}
+\end{outputlisting}
 
 A fuller example would be:
 %
@@ -1781,18 +1781,16 @@ understand the desired requirements for reporting and logging.
 After inserting the language into the file, one can test the parsing
 by executuing:
 %
-%\begin{lstlisting}
-\begin{verbatim}
+\begin{bashlisting}
      ${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
-\end{verbatim}
-%\end{lstlisting}
+\end{bashlisting}
 
 A dictionary will be pretty-printed out.  From this dictionary
 print-out, it is usually obvious if there is a problem in the parsing.
 This python file is used by 
-\begin{verbatim}
+\begin{bashlisting}
       ${PETSC_DIR}/config/gmakegentest.py
-\end{verbatim}
+\end{bashlisting}
 in generating the test harness.
 
 
