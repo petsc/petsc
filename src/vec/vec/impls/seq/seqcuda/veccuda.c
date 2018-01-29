@@ -309,6 +309,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   cudaError_t    err;
   Vec_CUDA       *veccuda;
   PetscMPIInt    size;
+  cublasStatus_t cberr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
@@ -361,6 +362,11 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
     }
     veccuda = (Vec_CUDA*)V->spptr;
     veccuda->GPUarray = (PetscScalar*)array;
+  }
+
+  /* initialize cublas if needed */
+  if (!cublasv2handle) {
+    cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
   }
   PetscFunctionReturn(0);
 }

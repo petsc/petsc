@@ -722,9 +722,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscMPIInt    flag, size;
   PetscBool      flg = PETSC_TRUE;
   char           hostname[256];
-#if defined(PETSC_HAVE_CUDA)
-  cublasStatus_t cberr;
-#endif
 #if defined(PETSC_HAVE_HWLOC)
   PetscViewer    viewer;
 #endif
@@ -975,20 +972,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if !defined(PETSC_WORDS_BIGENDIAN)
   ierr = MPI_Register_datarep((char*)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,NULL);CHKERRQ(ierr);
 #endif
-#endif
-
-#if defined(PETSC_HAVE_CUDA)
-  flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscMPIInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {
-        cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
-      }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-  }
 #endif
 
   ierr = PetscOptionsHasName(NULL,NULL,"-python",&flg);CHKERRQ(ierr);
@@ -1457,18 +1440,8 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
-  flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) {
-        if (cublasv2handle) {
-          cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
-        }
-      }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
+  if (cublasv2handle) {
+    cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
   }
 #endif
 
