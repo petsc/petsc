@@ -12,6 +12,10 @@ program  ex1f90
   PetscErrorCode      :: ierr
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+    if (ierr .ne. 0) then
+    print*,'Unable to initialize PETSc'
+    stop
+  endif
   call PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-i",filename,flg,ierr);CHKERRA(ierr)
   call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,"-interpolate",interpolate,flg,ierr);CHKERRA(ierr)
 
