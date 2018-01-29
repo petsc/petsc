@@ -1335,8 +1335,8 @@ within a single test.  At the core, the executable/diff test combination
 will look something like this:
 %
 \begin{outputlisting}
-      mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
-      diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
+diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
 \end{outputlisting}
 
 In practice, we want to do various logging and counting by the test
@@ -1641,13 +1641,13 @@ output file:
 \begin{outputlisting}
 /*TESTS
   testset:
-      suffix: 19
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp_type cg -pc_type icc -pc_factor_levels 2
-      test:
-      test:
-         args: -mat_type seqsbaij 
+    suffix: 19
+    requires: datafilespath
+    args: -f0 ${DATAFILESPATH}/matrices/poisson1
+    args: -ksp_type cg -pc_type icc -pc_factor_levels 2
+    test:
+    test:
+      args: -mat_type seqsbaij 
 */TESTS
 \end{outputlisting}
 
@@ -1659,15 +1659,15 @@ different output:
 
 \begin{outputlisting}
 /*TESTS
-   testset:
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -ksp_type bicg
-      test:
-         suffix: 4
-         args: -pc_type lu
-      test:
-         suffix: 5 
+  testset:
+    requires: datafilespath
+    args: -f0 ${DATAFILESPATH}/matrices/medium
+    args: -ksp_type bicg
+    test:
+      suffix: 4
+      args: -pc_type lu
+    test:
+      suffix: 5 
 */TESTS
 \end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, there would be two shell
@@ -1678,15 +1678,15 @@ An example using a for loop would be:
 \begin{outputlisting}
 /*TESTS
   testset:
-       suffix: 1
-       args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
-       requires: datafilespath
-   testset:
-       suffix: 2
-       output_file: output/ex138_1.out
-       args: -f ${DATAFILESPATH}/matrices/small
-       args: -mat_type baij -matload_block_size {{2 3}shared output}
-       requires: datafilespath
+    suffix: 1
+    args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
+    requires: datafilespath
+  testset:
+    suffix: 2
+    output_file: output/ex138_1.out
+    args: -f ${DATAFILESPATH}/matrices/small
+    args: -mat_type baij -matload_block_size {{2 3}shared output}
+    requires: datafilespath
 */TESTS
 \end{outputlisting}
 
@@ -1701,23 +1701,23 @@ testset:
   output_file: output/ex138_1.out
   args: -f ${DATAFILESPATH}/matrices/small -mat_type baij
   test:
-       args: -matload_block_size 2
+    args: -matload_block_size 2
   test:
-       args: -matload_block_size 3
+    args: -matload_block_size 3
 \end{outputlisting}
 This is functionally equivalent to the for loop shown above.
 
 Here is a more complex example using for loops:
 \begin{outputlisting}
 testset:
-   suffix: 19
-   requires: datafilespath
-   args: -f0 ${DATAFILESPATH}/matrices/poisson1
-   args: -ksp_type cg -pc_type icc 
-   args: -pc_factor_levels {{0 2 4}separate output}
-   test:
-   test:
-      args: -mat_type seqsbaij
+  suffix: 19
+  requires: datafilespath
+  args: -f0 ${DATAFILESPATH}/matrices/poisson1
+  args: -ksp_type cg -pc_type icc 
+  args: -pc_factor_levels {{0 2 4}separate output}
+  test:
+  test:
+    args: -mat_type seqsbaij
 \end{outputlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
 be:
@@ -1789,14 +1789,14 @@ After inserting the language into the file, one can test the parsing
 by executuing:
 %
 \begin{bashlisting}
-     ${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
 \end{bashlisting}
 
 A dictionary will be pretty-printed out.  From this dictionary
 print-out, it is usually obvious if there is a problem in the parsing.
 This python file is used by 
 \begin{bashlisting}
-      ${PETSC_DIR}/config/gmakegentest.py
+${PETSC_DIR}/config/gmakegentest.py
 \end{bashlisting}
 in generating the test harness.
 
@@ -1818,24 +1818,24 @@ As an example, consider this test input:
 %
 \begin{outputlisting}
 test:
-    suffix: 2
-    output_file: output/ex138.out
-    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij baij sbaij}} -matload_block_size {{2 3}}
-    requires: datafilespath
+  suffix: 2
+  output_file: output/ex138.out
+  args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij baij sbaij}} -matload_block_size {{2 3}}
+  requires: datafilespath
 \end{outputlisting}
 
 A sample output would be:
 \begin{outputlisting}
-      ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-      ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-      ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
-      ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
-      ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
-      ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
-      ...
+ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+...
 
-      ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
-      ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
+ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
 \end{outputlisting}
 
 \section{Test harness implementation%
