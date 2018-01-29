@@ -30,10 +30,30 @@ class logParse(object):
     dirpart=testnm.split("-")[0]
     namepart=testnm.split("-")[1].split("_")[0]
     # First figure out full directory to source file
-    filedir=re.sub("tests","examples_tests",dirpart)
-    filedir=re.sub("tutorials","examples_tutorials",filedir)
-    filedir=os.path.join(filedir.replace("_","/"))
-    filedir=os.path.join(self.petsc_dir,"src",filedir)
+    splt=(re.split("_tests",dirpart) if "_tests" in dirpart 
+          else re.split("_tutorials",dirpart))
+    tdir="tests" if "_tests" in dirpart else "tutorials"
+    filedir=os.path.join(self.petsc_dir,"src",
+                      splt[0].replace("_","/"),"examples",tdir)
+
+    # Directory names with "-" cause problems, so more work required
+    if testnm.count('-') > 2:
+       namepart=testnm.split("-")[-1].split("_")[0]
+       splitl=(re.split("_tests",testnm) if "_tests" in testnm 
+                else re.split("_tutorials",testnm))
+       subdir='-'.join(splitl[1].lstrip('_').split('-')[:-1])
+       filedir=os.path.join(filedir,subdir)
+
+    # Directory names with underscores cause problems, so more work required
+    subdir=""
+    if len(splt)>1:
+        for psub in splt[1].split("_"):
+            subdir+=psub
+            if os.path.isdir(os.path.join(filedir,subdir)):
+                filedir=os.path.join(filedir,subdir)
+                subdir=""
+                continue
+            subdir+="_"
 
     # See what files exists with guessing the extension
     base=namepart
@@ -55,8 +75,9 @@ class logParse(object):
       for ext in ['c','cxx']:
         guess=os.path.join(filedir,base+"."+ext)
         if os.path.exists(guess): return guess
-    raise Exception("Error: Cannot find file for "+testname)
-    return 
+    print filedir, namepart
+    print "Warning: Cannot find file for "+testname
+    return None
 
   def getGitPerson(self,fullFileName):
     """
@@ -85,6 +106,7 @@ class logParse(object):
       lfile=logfile.replace("examples_","").replace(".log","")
       for test in logDict[logfile]:
         filename=self.findSrcfile(test)
+        if not filename: continue
         fname=os.path.relpath(filename,self.petsc_dir).replace("src/","")
         testname=test.replace("diff-","") if test.startswith("diff-") else test
         error=logDict[logfile][test].strip()
