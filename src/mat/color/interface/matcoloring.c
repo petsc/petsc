@@ -58,9 +58,14 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
    Level: beginner
 
+   Notes: A distance one coloring is useful, for example, multi-color SOR. A distance two coloring is for the finite difference computation of Jacobians 
+          (see MatFDColoringCreate()).
+
+          Some coloring types only support distance two colorings
+
 .keywords: Coloring, Matrix
 
-.seealso: MatColoring, MatColoringApply()
+.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate()
 @*/
 PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 {
