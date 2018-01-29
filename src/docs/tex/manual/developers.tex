@@ -1390,10 +1390,10 @@ With this background, these keywords are are:
 
     \end{itemize}
 
-  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
+  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=""})
     \begin{itemize}
 
-      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and otherwise by \texttt{ testname=`run'+basestring+`\_'+suffix}
+      \item The testname is given by: \lstinline{testname = "run" + basestring} if suffix is set to an empty string, and by \lstinline{ testname = "run" + basestring + "_" + suffix}
 
       \item This can only be specified for top level test nodes
 
@@ -1401,7 +1401,7 @@ With this background, these keywords are are:
 
 
    \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
-                 \lstinline{output_file=testname+`.out'})
+                 \lstinline{output_file = testname + ".out"})
       \begin{itemize}
 
       \item The output of the test is to be compared to an \emph{expected result}
