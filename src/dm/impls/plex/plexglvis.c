@@ -108,7 +108,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
       if (len) {
         ierr = PetscStrcpy(name,fname);CHKERRQ(ierr);
       } else {
-        ierr = PetscSNPrintf(name,256,"Field%d",f);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(name,256,"Field%D",f);CHKERRQ(ierr);
       }
       ierr = PetscDSGetDiscretization(ds,f,&disc);CHKERRQ(ierr);
       if (disc) {
@@ -133,10 +133,10 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           if (!continuous) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported");
           ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
           if (continuous && order > 0) {
-            ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%dD_P1",dim);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
           } else {
             H1   = PETSC_FALSE;
-            ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%dD_P%d",dim,order);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P%D",dim,order);CHKERRQ(ierr);
           }
           ierr = PetscStrallocpy(name,&fieldname[ctx->nf]);CHKERRQ(ierr);
           bs[ctx->nf]   = Nc;
@@ -174,10 +174,10 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           PetscInt c;
 
           ierr = PetscFVGetNumComponents((PetscFV)disc,&Nc);CHKERRQ(ierr);
-          ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%dD_P0",dim);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P0",dim);CHKERRQ(ierr);
           for (c = 0; c < Nc; c++) {
             char comp[256];
-            ierr = PetscSNPrintf(comp,256,"%s-Comp%d",name,c);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(comp,256,"%s-Comp%D",name,c);CHKERRQ(ierr);
             ierr = PetscStrallocpy(comp,&fieldname[ctx->nf]);CHKERRQ(ierr);
             bs[ctx->nf] = 1; /* Does PetscFV support components with different block size? */
             nlocal[ctx->nf] = totc;
@@ -440,7 +440,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       int         *dof = NULL;
       PetscScalar *array,*ptr;
 
-      ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%dD_P1",dim);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: L2_T1_%DD_P1",dim);CHKERRQ(ierr);
       if (cEnd-cStart) {
         PetscInt fpc;
 
@@ -541,7 +541,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D",mid,cid);CHKERRQ(ierr);
     for (i=0;i<nv;i++) {
-      ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer," %D",(PetscInt)vids[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   }
@@ -874,7 +874,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               ierr = DMPlexInvertCell(dim,nv,vids);CHKERRQ(ierr);
               ierr = PetscViewerASCIIPrintf(viewer,"%D",p-vStart);CHKERRQ(ierr);
               for (i=0;i<nv;i++) {
-                ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]);CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer," %D",(PetscInt)vids[i]);CHKERRQ(ierr);
               }
               ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
               vp--;
@@ -928,7 +928,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                   }
                   ierr = PetscViewerASCIIPrintf(viewer,"%D",hv-vStart);CHKERRQ(ierr);
                   for (i=0;i<2;i++) {
-                    ierr = PetscViewerASCIIPrintf(viewer," %d",vids[i]-vStart);CHKERRQ(ierr);
+                    ierr = PetscViewerASCIIPrintf(viewer," %D",(PetscInt)(vids[i]-vStart));CHKERRQ(ierr);
                   }
                   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
                   vp--;
@@ -936,7 +936,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               }
               break;
             default:
-              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Don't know how to deal with support size %d",size);
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Don't know how to deal with support size %D",size);
           }
         }
       }

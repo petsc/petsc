@@ -225,7 +225,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
         if (degd == cdof) break;
         deg++;
       }
-      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%dD_P%d",dim,deg);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%DD_P%D",dim,deg);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)xcoorl,fecmesh);CHKERRQ(ierr);
     }
 
@@ -255,7 +255,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
     ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
     ierr = DMDAGetInfo(daview,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%dD_P1",dim);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
     ierr = PetscMalloc6(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname,dof,&Ufield);CHKERRQ(ierr);
     for (i=0;i<dof;i++) bss[i] = 1;
     nf = dof;
