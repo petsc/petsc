@@ -1333,11 +1333,10 @@ Our language also supports a \emph{testset} that specifies
 either a new test entirely, or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
-%
-\begin{outputlisting}
+\begin{bashlisting}
 mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-\end{outputlisting}
+\end{bashlisting}
 
 In practice, we want to do various logging and counting by the test
 harness, but this is explained further below.  The input language
@@ -1454,10 +1453,10 @@ With this background, these keywords are are:
 
       \item A skeleton example of the resultant commands to be run is:
       %
-      \begin{outputlisting}
+      \begin{bashlisting}
 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-      \end{outputlisting}
+      \end{bashlisting}
 
       \item If the filter begins with \lstinline{Error:}, then the test is
             assumed to be testing the error output, and the error code and
@@ -1846,7 +1845,7 @@ Most of the requirements for being TAP-compliant lie in the shell
 scripts so we focus on that description.
 
 A sample shell script is given by:
-\begin{outputlisting}
+\begin{bashlisting}
 #!/bin/sh
 . petsc_harness.sh
 
@@ -1854,7 +1853,7 @@ petsc_testrun ./ex1 ex1.tmp ex1.err
 petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
 
 petsc_testend
-\end{outputlisting}
+\end{bashlisting}
 
 \trl{petsc_harness.sh} is a small shell script that provides the logging and
 reporting functions \lstinline{petsc_testrun} and \lstinline{petsc_testend}.
