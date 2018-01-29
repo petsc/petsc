@@ -1323,15 +1323,26 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
               ierr = PetscFree(tdata);CHKERRQ(ierr);
               ierr = MatDestroy(&M);CHKERRQ(ierr);
             } else { /* we can factorize and invert just the activedofs */
-              Mat M;
+              Mat         M;
+              PetscScalar *aux;
 
+              ierr = PetscMalloc1(nd,&aux);CHKERRQ(ierr);
+              for (i=0;i<nd;i++) aux[i] = 1.0/data[(i+size_active_schur)*(size_schur+1)];
               ierr = MatCreateSeqDense(PETSC_COMM_SELF,size_active_schur,size_active_schur,data,&M);CHKERRQ(ierr);
               ierr = MatSeqDenseSetLDA(M,size_schur);CHKERRQ(ierr);
               ierr = MatSetOption(M,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
               ierr = MatCholeskyFactor(M,NULL,NULL);CHKERRQ(ierr);
               ierr = MatSeqDenseInvertFactors_Private(M);CHKERRQ(ierr);
               ierr = MatDestroy(&M);CHKERRQ(ierr);
-              for (i=0;i<nd;i++) data[(i+size_active_schur)*(size_schur+1)] = 1.0/data[(i+size_active_schur)*(size_schur+1)];
+              ierr = MatCreateSeqDense(PETSC_COMM_SELF,size_schur,nd,data+size_active_schur*size_schur,&M);CHKERRQ(ierr);
+              ierr = MatZeroEntries(M);CHKERRQ(ierr);
+              ierr = MatDestroy(&M);CHKERRQ(ierr);
+              ierr = MatCreateSeqDense(PETSC_COMM_SELF,nd,size_schur,data+size_active_schur,&M);CHKERRQ(ierr);
+              ierr = MatSeqDenseSetLDA(M,size_schur);CHKERRQ(ierr);
+              ierr = MatZeroEntries(M);CHKERRQ(ierr);
+              ierr = MatDestroy(&M);CHKERRQ(ierr);
+              for (i=0;i<nd;i++) data[(i+size_active_schur)*(size_schur+1)] = aux[i];
+              ierr = PetscFree(aux);CHKERRQ(ierr);
             }
             ierr = MatDenseRestoreArray(S_all_inv,&data);CHKERRQ(ierr);
           } else { /* use MatFactor calls to invert S */
