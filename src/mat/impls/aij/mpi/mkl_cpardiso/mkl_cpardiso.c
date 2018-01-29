@@ -699,7 +699,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_mkl_cpardiso(Mat A, const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_mkl_cpardiso(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMKL_CPARDISO;

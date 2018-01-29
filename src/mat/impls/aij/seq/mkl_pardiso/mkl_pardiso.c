@@ -1010,7 +1010,7 @@ PetscErrorCode MatMkl_PardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 .seealso: PCFactorSetMatSolverType(), MatSolverType
 
 M*/
-static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_mkl_pardiso(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMKL_PARDISO;

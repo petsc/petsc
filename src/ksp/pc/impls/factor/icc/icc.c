@@ -7,7 +7,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   IS                     perm,cperm;
   PetscErrorCode         ierr;
   MatInfo                info;
-  const MatSolverType stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -45,7 +45,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
 
   ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverType solverpackage;
+    MatSolverType solverpackage;
     ierr = MatFactorGetSolverType(((PC_Factor*)icc)->fact,&solverpackage);CHKERRQ(ierr);
     ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }

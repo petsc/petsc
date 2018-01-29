@@ -464,7 +464,7 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverType_aij_strumpack"
-static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSTRUMPACK;

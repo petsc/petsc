@@ -183,15 +183,15 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,const MatSolverType stype)
+PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,MatSolverType stype)
 {
   PetscErrorCode ierr;
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
   if (lu->fact) { 
-    const MatSolverType ltype;
-    PetscBool              flg;
+    MatSolverType ltype;
+    PetscBool     flg;
     ierr = MatFactorGetSolverType(lu->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
@@ -202,7 +202,7 @@ PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,const MatSolverType stype)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  PCFactorGetMatSolverType_Factor(PC pc,const MatSolverType *stype)
+PetscErrorCode  PCFactorGetMatSolverType_Factor(PC pc,MatSolverType *stype)
 {
   PC_Factor *lu = (PC_Factor*)pc->data;
 

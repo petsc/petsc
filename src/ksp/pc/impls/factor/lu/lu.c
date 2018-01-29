@@ -53,7 +53,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode         ierr;
   PC_LU                  *dir = (PC_LU*)pc->data;
-  const MatSolverType stype;
+  MatSolverType          stype;
   MatFactorError         err;
 
   PetscFunctionBegin;
@@ -138,7 +138,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 
   ierr = PCFactorGetMatSolverType(pc,&stype);CHKERRQ(ierr);
   if (!stype) {
-    const MatSolverType solverpackage;
+    MatSolverType solverpackage;
     ierr = MatFactorGetSolverType(((PC_Factor*)dir)->fact,&solverpackage);CHKERRQ(ierr);
     ierr = PCFactorSetMatSolverType(pc,solverpackage);CHKERRQ(ierr);
   }

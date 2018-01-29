@@ -177,7 +177,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_bas(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERBAS;

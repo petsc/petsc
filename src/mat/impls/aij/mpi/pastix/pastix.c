@@ -517,7 +517,7 @@ PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_pastix(Mat A,const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_pastix(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERPASTIX;

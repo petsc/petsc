@@ -256,7 +256,7 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERKLU;

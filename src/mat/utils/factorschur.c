@@ -4,18 +4,12 @@
 PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
 {
   Mat              St, S = F->schur;
-  MatSolverType solvertype;
   MatFactorInfo    info;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (S->solvertype) {
-    ierr = PetscStrallocpy(S->solvertype,&solvertype);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrallocpy(MATSOLVERPETSC,&solvertype);CHKERRQ(ierr);
-  }
   ierr = MatSetUnfactored(S);CHKERRQ(ierr);
-  ierr = MatGetFactor(S,solvertype,F->factortype,&St);CHKERRQ(ierr);
+  ierr = MatGetFactor(S,S->solvertype ? S->solvertype : MATSOLVERPETSC,F->factortype,&St);CHKERRQ(ierr);
   if (St->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
     ierr = MatCholeskyFactorSymbolic(St,S,NULL,&info);CHKERRQ(ierr);
   } else {
@@ -30,7 +24,6 @@ PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
   S->factortype             = St->factortype;
 
   ierr = MatDestroy(&St);CHKERRQ(ierr);
-  ierr = PetscFree(solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

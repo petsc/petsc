@@ -746,8 +746,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         ierr = ISGetSize(is_I,&n_internal);CHKERRQ(ierr);
         if (n_internal) { /* UMFPACK gives error with 0 sized problems */
-          MatSolverType solver=NULL;
-          ierr = PCFactorGetMatSolverType(origpc,(const MatSolverType*)&solver);CHKERRQ(ierr);
+          MatSolverType solver = NULL;
+          ierr = PCFactorGetMatSolverType(origpc,(MatSolverType*)&solver);CHKERRQ(ierr);
           if (solver) {
             ierr = PCFactorSetMatSolverType(schurpc,solver);CHKERRQ(ierr);
           }
