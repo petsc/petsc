@@ -1,6 +1,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
@@ -3671,7 +3672,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   /* Precompute stuffs needed for preprocessing and application of BDDC*/
   if (n_constraints) {
-    Mat         M1,M2,M3,C_B;
+    Mat         M3,C_B;
     IS          is_aux;
     PetscScalar *array,*array2;
 
@@ -3798,23 +3799,17 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
     /* Assemble explicitly S_CC = ( C_{CR} A_{RR}^{-1} C^T_{CR} )^{-1}  */
     ierr = MatScale(M3,m_one);CHKERRQ(ierr);
-    ierr = MatDuplicate(M3,MAT_DO_NOT_COPY_VALUES,&M1);CHKERRQ(ierr);
-    ierr = MatDuplicate(M3,MAT_DO_NOT_COPY_VALUES,&M2);CHKERRQ(ierr);
     if (isCHOL) {
       ierr = MatCholeskyFactor(M3,NULL,NULL);CHKERRQ(ierr);
     } else {
       ierr = MatLUFactor(M3,NULL,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = VecSet(pcbddc->vec1_C,one);CHKERRQ(ierr);
-    ierr = MatDiagonalSet(M2,pcbddc->vec1_C,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatMatSolve(M3,M2,M1);CHKERRQ(ierr);
-    ierr = MatDestroy(&M2);CHKERRQ(ierr);
-    ierr = MatDestroy(&M3);CHKERRQ(ierr);
+    ierr = MatSeqDenseInvertFactors_Private(M3);CHKERRQ(ierr);
     /* Assemble local_auxmat1 = S_CC*C_{CB} needed by BDDC application in KSP and in preproc */
-    ierr = MatMatMult(M1,C_B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->local_auxmat1);CHKERRQ(ierr);
+    ierr = MatMatMult(M3,C_B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pcbddc->local_auxmat1);CHKERRQ(ierr);
     ierr = MatDestroy(&C_B);CHKERRQ(ierr);
-    ierr = MatCopy(M1,S_CC,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* S_CC can have a different LDA, MatMatSolve doesn't support it */
-    ierr = MatDestroy(&M1);CHKERRQ(ierr);
+    ierr = MatCopy(M3,S_CC,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* S_CC can have a different LDA, MatMatSolve doesn't support it */
+    ierr = MatDestroy(&M3);CHKERRQ(ierr);
   }
 
   /* Get submatrices from subdomain matrix */
