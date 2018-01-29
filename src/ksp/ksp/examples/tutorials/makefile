@@ -346,8 +346,8 @@ testex100: ex100.PETSc
         elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/ksp/ksp/examples/tutorials/ex100 manually"; \
 	elif [ -f ex100 ]; then \
-           ${MPIEXEC} -n 1 ./ex100 -ksp_monitor_short  > ex100_1.tmp 2>&1; \
-	   if (${DIFF} output/ex100_1.out ex100_1.tmp > /dev/null 2>&1) then \
+           ${MPIEXEC} -n 1 ./ex100 -test  > ex100_1.tmp 2>&1; \
+	   if (${DIFF} output/ex100_1.testout ex100_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/ksp/ksp/examples/tutorials/ex100 run successfully with 1 MPI process"; \
 	   else echo "Possible error running C/C++ src/ksp/ksp/examples/tutorials/ex100 with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\

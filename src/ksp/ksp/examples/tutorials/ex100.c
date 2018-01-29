@@ -4,8 +4,8 @@
 
 PetscErrorCode RunTest(void)
 {
-  PetscInt       N    = 100;
-  PetscBool      draw = PETSC_FALSE;
+  PetscInt       N    = 100, its = 0;
+  PetscBool      draw = PETSC_FALSE, test = PETSC_FALSE;
   PetscReal      rnorm;
   Mat            A;
   Vec            b,x,r;
@@ -16,6 +16,7 @@ PetscErrorCode RunTest(void)
   PetscFunctionBegin;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test",&test,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-draw",&draw,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -39,11 +40,17 @@ PetscErrorCode RunTest(void)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = MatMult(A,x,r);CHKERRQ(ierr);
-  ierr = VecAYPX(r,-1,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"error norm = %g\n",rnorm);CHKERRQ(ierr);
+  if (test) {
+    ierr = KSPGetTotalIterations(ksp,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of KSP iterations = %D\n", its);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
+    ierr = MatMult(A,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1,b);CHKERRQ(ierr);
+    ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"error norm = %g\n",rnorm);CHKERRQ(ierr);
+    ierr = VecDestroy(&r);CHKERRQ(ierr);
+  }
 
   if (draw) {
     ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -52,7 +59,6 @@ PetscErrorCode RunTest(void)
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
