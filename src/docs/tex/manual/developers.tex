@@ -1734,18 +1734,22 @@ It is possible to specify issues related to the compilation of the
 source file with the \lstinline{build:} block.  The language is:
 %
 \begin{itemize}
-  \item \lstinline{requires:} (\textbf{Optional}; \emph{Default:} \lstinline{""}) 
-    Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
+  \item \textbf{requires:} (\emph{Optional}; \emph{Default:} \lstinline{""}) 
+      \begin{itemize}
+\item Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
 but also requirements related to types:
-    \begin{tightitemize}
+    \begin{enumerate}
       \item Precision types: \lstinline{single}, \lstinline{double}, \lstinline{quad}, \lstinline{int32}
       \item Scalar types: \lstinline{complex}  (and \lstinline{!complex})
-    \end{tightitemize}
+    \end{enumerate}
 \item In addition, \lstinline{TODO}  is available to allow one to skip the
 build of this file but still maintain it in the source tree.
+      \end{itemize}
 
-\item\lstinline{depends:} (\textbf{Optional}; \emph{Default:} \lstinline{""})
-List any dependencies required to compile the file
+\item \textbf{depends:} (\emph{Optional}; \emph{Default:} \lstinline{""})
+      \begin{itemize}
+\item List any dependencies required to compile the file
+      \end{itemize}
 \end{itemize}
 
 A typical example for compiling for real/double only is:
