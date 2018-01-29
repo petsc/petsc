@@ -1624,7 +1624,9 @@ A fuller example would be:
   test:
     suffix: 1
     nsize: 2
-    args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+    args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres
+    args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
+    args: -s2_pc_type jacobi -s2_ksp_monitor_short
     requires: x
 */TESTS
 \end{outputlisting}
