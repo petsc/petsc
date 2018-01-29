@@ -1509,7 +1509,7 @@ diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
         tests.
 
         \item Packages are specified with lower case specification; e.g.,
-        \lstinline{requires: superlu\_dist}
+        \lstinline{requires: superlu_dist}
 
         \item Any defined variable in petscconf.h can be specified with the
         \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
@@ -1630,7 +1630,7 @@ A fuller example would be:
 \end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
-be \lstinline{runex1} and \lstinline{runex1\_1}.
+be \lstinline{runex1} and \lstinline{runex1_1}.
 
 
 An example of how one tests a permutuation of arguments against the same
@@ -1677,18 +1677,18 @@ An example using a for loop would be:
 /*TESTS
   testset:
        suffix: 1
-       args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
+       args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
        requires: datafilespath
    testset:
        suffix: 2
-       output\_file: output/ex138\_1.out
+       output_file: output/ex138_1.out
        args: -f ${DATAFILESPATH}/matrices/small
        args: -mat_type baij -matload_block_size {{2 3}shared output}
        requires: datafilespath
 */TESTS
 \end{outputlisting}
 
-In this example, runex138\_2 will invoke ex138 twice with two different
+In this example, \lstinline{runex138_2} will invoke ex138 twice with two different
 arguments, but both are diffed with the same file.
 
 An example for showing the hierarchical nature of the test specification is:
