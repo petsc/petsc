@@ -193,7 +193,7 @@ class Configure(config.base.Configure):
     self.setCompilers.LIBS = obj1+' '+self.setCompilers.LIBS
     if extraObjs:
       self.setCompilers.LIBS = ' '.join(extraObjs)+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
-    found = self.checkLink(None, func2,codeBegin = " ", codeEnd = " ")
+    found = self.checkLink("", func2,codeBegin = " ", codeEnd = " ")
     self.setCompilers.LIBS = oldLIBS
     self.popLanguage()
     if os.path.isfile(obj1):
@@ -207,27 +207,32 @@ class Configure(config.base.Configure):
       self.setCompilers.saveLog()
       try:
         if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{printf("testing");}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
+          self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C libraries are not needed when using Fortran linker')
         else:
+          self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
           skipclibraries = 0
       except RuntimeError, e:
+        self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
         skipclibraries = 0
-      self.logWrite(self.setCompilers.restoreLog())
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        self.setCompilers.checkCompiler('C',linkLanguage='Cxx')
-        self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('C libraries are not needed when using C++ linker')
+        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{printf("testing");}\n',"int main(int argc,char **args)\n{return 0;}\n",language1='C',language2='C++'):
+          self.logWrite(self.setCompilers.restoreLog())
+          self.logPrint('C libraries are not needed when using C++ linker')
+        else:
+          self.logWrite(self.setCompilers.restoreLog())
+          self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
+          skipclibraries = 0
       except RuntimeError, e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C code cannot directly be linked with C++ linker, therefor will determine needed C libraries')
         skipclibraries = 0
-
     if skipclibraries == 1: return
 
     oldFlags = self.setCompilers.LDFLAGS
