@@ -170,20 +170,52 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkCrossLink(self, func1, func2, language1 = 'C', language2='FC',extraObjs = []):
+    '''Compiles C/C++ and Fortran code and tries to link them together; the C and Fortran code are independent so no name mangling is needed
+       language1 is used to compile the first code, language2 compiles the second and links them togetether'''
+    obj1 = os.path.join(self.tmpDir, 'confc.o')
+    found = 0
+    # Compile the C test object
+    self.pushLanguage(language1)
+    if not self.checkCompile(func1, None, cleanup = 0):
+      self.logPrint('Cannot compile C function: '+func1, 3, 'compilers')
+      self.popLanguage()
+      return found
+    if not os.path.isfile(self.compilerObj):
+      self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
+      self.popLanguage()
+      return found
+    os.rename(self.compilerObj, obj1)
+    self.popLanguage()
+    # Link the test object against a Fortran driver
+    self.pushLanguage(language2)
+    oldLIBS = self.setCompilers.LIBS
+    self.setCompilers.LIBS = obj1+' '+self.setCompilers.LIBS
+    if extraObjs:
+      self.setCompilers.LIBS = ' '.join(extraObjs)+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
+    found = self.checkLink(None, func2,codeBegin = " ", codeEnd = " ")
+    self.setCompilers.LIBS = oldLIBS
+    self.popLanguage()
+    if os.path.isfile(obj1):
+      os.remove(obj1)
+    return found
+
   def checkCLibraries(self):
     '''Determines the libraries needed to link with C compiled code'''
     skipclibraries = 1
     if hasattr(self.setCompilers, 'FC'):
       self.setCompilers.saveLog()
       try:
-        self.setCompilers.checkCompiler('C',linkLanguage='FC')
-        self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('C libraries are not needed when using Fortran linker')
+        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{printf("testing");}\n',"     program main\n      print*,'testing'\n      stop\n      end\n",language1='C',language2='FC'):
+          self.logPrint('C libraries are not needed when using Fortran linker')
+        else:
+          self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
+          skipclibraries = 0
       except RuntimeError, e:
-        self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
         self.logPrint('C code cannot directly be linked with Fortran linker, therefor will determine needed C libraries')
         skipclibraries = 0
+      self.logWrite(self.setCompilers.restoreLog())
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
