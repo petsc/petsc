@@ -642,7 +642,7 @@ int main(int argc, char **argv)
   test:
     suffix: glvis_3d_tet_per_mfem
     TODO: broken
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_plex_gmsh_enable_mfem -dm_view glvis: -interpolate
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
 
   test:
     suffix: glvis_3d_hex
