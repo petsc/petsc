@@ -117,8 +117,8 @@ PETSC_EXTERN PetscErrorCode PCFactorSetZeroPivot(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetShiftType(PC,MatFactorShiftType);
 PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal);
 
-PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC,const MatSolverType);
-PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC,const MatSolverType*);
+PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC,MatSolverType);
+PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC,MatSolverType*);
 PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetFill(PC,PetscReal);

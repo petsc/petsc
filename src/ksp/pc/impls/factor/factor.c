@@ -436,13 +436,13 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 .seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
 @*/
-PetscErrorCode  PCFactorSetMatSolverType(PC pc,const MatSolverType stype)
+PetscErrorCode  PCFactorSetMatSolverType(PC pc,MatSolverType stype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetMatSolverType_C",(PC,const MatSolverType),(pc,stype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetMatSolverType_C",(PC,MatSolverType),(pc,stype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -465,9 +465,9 @@ PetscErrorCode  PCFactorSetMatSolverType(PC pc,const MatSolverType stype)
 .seealso: MatGetFactor(), MatSolverType, PCFactorGetMatSolverType()
 
 @*/
-PetscErrorCode  PCFactorGetMatSolverType(PC pc,const MatSolverType *stype)
+PetscErrorCode  PCFactorGetMatSolverType(PC pc,MatSolverType *stype)
 {
-  PetscErrorCode ierr,(*f)(PC,const MatSolverType*);
+  PetscErrorCode ierr,(*f)(PC,MatSolverType*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

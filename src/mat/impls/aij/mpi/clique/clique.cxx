@@ -90,7 +90,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F,Mat A,IS r,const 
 
 M*/
 
-PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSPARSEELEMENTAL;

@@ -43,7 +43,7 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A,const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;

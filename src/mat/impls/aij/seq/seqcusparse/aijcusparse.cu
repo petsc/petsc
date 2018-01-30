@@ -74,7 +74,7 @@ PetscErrorCode MatCUSPARSEClearHandle(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCUSPARSE;

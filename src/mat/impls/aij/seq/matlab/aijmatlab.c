@@ -182,7 +182,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMATLAB;

@@ -342,7 +342,7 @@ PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A,const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_seqsbaij_cholmod(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;

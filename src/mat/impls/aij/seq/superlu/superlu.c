@@ -505,7 +505,7 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_superlu(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU;

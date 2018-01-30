@@ -740,7 +740,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,co
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_elemental_elemental(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERELEMENTAL;

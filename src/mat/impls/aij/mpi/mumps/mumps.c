@@ -2111,7 +2111,7 @@ $          MatMumpsGetInfog(mat,....); etc.
 
 M*/
 
-static PetscErrorCode MatFactorGetSolverType_mumps(Mat A,const MatSolverType *type)
+static PetscErrorCode MatFactorGetSolverType_mumps(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMUMPS;

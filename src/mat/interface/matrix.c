@@ -1016,7 +1016,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
       }
       if (mat->factortype) {
-        const MatSolverType solver;
+        MatSolverType solver;
         ierr = MatFactorGetSolverType(mat,&solver);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"package used to perform factorization: %s\n",solver);CHKERRQ(ierr);
       }
@@ -3038,7 +3038,7 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFacto
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!(fact)->ops->lufactorsymbolic) {
-    const MatSolverType spackage;
+    MatSolverType spackage;
     ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic LU using solver package %s",((PetscObject)mat)->type_name,spackage);
   }
@@ -3202,7 +3202,7 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFacto
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!(fact)->ops->choleskyfactorsymbolic) {
-    const MatSolverType spackage;
+    MatSolverType spackage;
     ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky using solver package %s",((PetscObject)mat)->type_name,spackage);
   }
@@ -4166,9 +4166,9 @@ foundconv:
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor()
 @*/
-PetscErrorCode MatFactorGetSolverType(Mat mat, const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType(Mat mat, MatSolverType *type)
 {
-  PetscErrorCode ierr, (*conv)(Mat,const MatSolverType*);
+  PetscErrorCode ierr, (*conv)(Mat,MatSolverType*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4212,7 +4212,7 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
-PetscErrorCode MatSolverTypeRegister(const MatSolverType package,const MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeRegister(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode                 ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
@@ -4275,7 +4275,7 @@ PetscErrorCode MatSolverTypeRegister(const MatSolverType package,const MatType m
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
-PetscErrorCode MatSolverTypeGet(const MatSolverType package,const MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
+PetscErrorCode MatSolverTypeGet(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscBool *foundpackage,PetscBool *foundmtype,PetscErrorCode (**getfactor)(Mat,MatFactorType,Mat*))
 {
   PetscErrorCode                 ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders;
@@ -4371,7 +4371,7 @@ PetscErrorCode MatSolverTypeDestroy(void)
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
-PetscErrorCode MatGetFactor(Mat mat, const MatSolverType type,MatFactorType ftype,Mat *f)
+PetscErrorCode MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
 {
   PetscErrorCode ierr,(*conv)(Mat,MatFactorType,Mat*);
   PetscBool      foundpackage,foundmtype;
@@ -4426,7 +4426,7 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverType type,MatFactorType ftyp
 
 .seealso: MatCopy(), MatDuplicate(), MatGetFactor()
 @*/
-PetscErrorCode MatGetFactorAvailable(Mat mat, const MatSolverType type,MatFactorType ftype,PetscBool  *flg)
+PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type,MatFactorType ftype,PetscBool  *flg)
 {
   PetscErrorCode ierr, (*gconv)(Mat,MatFactorType,Mat*);
 
@@ -6647,7 +6647,7 @@ PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!(fact)->ops->ilufactorsymbolic) {
-    const MatSolverType spackage;
+    MatSolverType spackage;
     ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ILU using solver package %s",((PetscObject)mat)->type_name,spackage);
   }
@@ -6709,7 +6709,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!(fact)->ops->iccfactorsymbolic) {
-    const MatSolverType spackage;
+    MatSolverType spackage;
     ierr = MatFactorGetSolverType(fact,&spackage);CHKERRQ(ierr);
     SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Matrix type %s symbolic ICC using solver package %s",((PetscObject)mat)->type_name,spackage);
   }

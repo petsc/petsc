@@ -283,7 +283,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   /*
   KSP                    kspnew;
   PC                     pcnew;
-  const MatSolverType stype;
+  MatSolverType          stype;
 
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&kspnew);CHKERRQ(ierr);

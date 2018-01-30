@@ -117,7 +117,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_essl(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_essl(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERESSL;

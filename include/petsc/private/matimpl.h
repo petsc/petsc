@@ -402,7 +402,7 @@ struct _p_Mat {
   PetscCUDAFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
-  MatSolverType       solvertype;
+  char                   *solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
   Mat                    schur;             /* Schur complement matrix */

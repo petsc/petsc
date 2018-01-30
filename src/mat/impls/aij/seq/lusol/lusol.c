@@ -414,7 +414,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A,const MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A,MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERLUSOL;
