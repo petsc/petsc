@@ -321,7 +321,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
 {
   DM                da,cda;
   Vec               xcoorl;
-  PetscMPIInt       commsize;
+  PetscMPIInt       size;
   const PetscScalar *array;
   PetscContainer    glvis_container;
   PetscInt          dim,sdim,i,vid[8],mid,cid,cdof;
@@ -336,8 +336,8 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&commsize);CHKERRQ(ierr);
-  if (commsize > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
 
   /* get container: determines if a process visualizes is portion of the data or not */
@@ -513,6 +513,7 @@ PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
     if (view) { /* in the socket case, it may happen that the connection failed */
       if (type == PETSC_VIEWER_GLVIS_SOCKET) {
         PetscMPIInt size,rank;
+
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nmesh\n",size,rank);CHKERRQ(ierr);
