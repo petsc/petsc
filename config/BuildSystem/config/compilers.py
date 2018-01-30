@@ -869,14 +869,13 @@ class Configure(config.base.Configure):
     skipfortranlibraries = 1
     self.setCompilers.saveLog()
     try:
-      import platform
-      if platform.system() == 'Darwin':
-        # on Apple with shared libraries the linker must be able to resolve the Fortran MPI_Init since it is in the shared library
-        self.setCompilers.checkCompiler('FC',linkLanguage='C',body='      integer a\n      call MPI_Init(a);')
+      if self.checkCrossLink("      subroutine asub()\n      print*,'testing'\n      return\n      end\n","int main(int argc,char **args)\n{return 0;}\n",language1='FC',language2='C'):
+        self.logWrite(self.setCompilers.restoreLog())
+        self.logPrint('Fortran libraries are not needed when using C linker')
       else:
-        self.setCompilers.checkCompiler('FC',linkLanguage='C')
-      self.logWrite(self.setCompilers.restoreLog())
-      self.logPrint('Fortran libraries are not needed when using C linker')
+        self.logWrite(self.setCompilers.restoreLog())
+        self.logPrint('Fortran code cannot directly be linked with C linker, therefor will determine needed Fortran libraries')
+        skipfortranlibraries = 0
     except RuntimeError, e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
@@ -885,13 +884,13 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        import platform
-        if platform.system() == 'Darwin':
-          self.setCompilers.checkCompiler('FC',linkLanguage='Cxx',body='      integer a\n      call MPI_Init(a);')
+        if self.checkCrossLink("      subroutine asub()\n      print*,'testing'\n      return\n      end\n","int main(int argc,char **args)\n{return 0;}\n",language1='FC',language2='C++'):
+          self.logWrite(self.setCompilers.restoreLog())
+          self.logPrint('Fortran libraries are not needed when using C++ linker')
         else:
-          self.setCompilers.checkCompiler('FC',linkLanguage='C')
-        self.logWrite(self.setCompilers.restoreLog())
-        self.logPrint('Fortran libraries are not needed when using CXX linker')
+          self.logWrite(self.setCompilers.restoreLog())
+          self.logPrint('Fortran code cannot directly be linked with C++ linker, therefor will determine needed Fortran libraries')
+          skipfortranlibraries = 0
       except RuntimeError, e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
