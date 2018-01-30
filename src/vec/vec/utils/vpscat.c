@@ -2675,7 +2675,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS_MPI3(VecScatter_MPI_General *from,Vec
     ierr = MPI_Waitall(to->n,request,status);CHKERRQ(ierr);
     ierr = PetscFree2(request,status);CHKERRQ(ierr);
 
-    ierr = PetscIntMultError((from->n ? from->starts[from->n] : 0),bs*sizeof(PetscScalar),&winsize);CHKERRQ(ierr);
+    ierr = PetscIntMultError((from->n ? from->starts[from->n] : 0),bs*sizeof(PetscScalar),&iwinsize);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(iwinsize,&winsize);CHKERRQ(ierr);
     ierr = MPI_Win_create(from->values ? from->values : MPI_BOTTOM,winsize,sizeof(PetscScalar),MPI_INFO_NULL,comm,&from->window);CHKERRQ(ierr);
     ierr = PetscMalloc1(from->n,&from->winstarts);CHKERRQ(ierr);
     ierr = PetscMalloc2(from->n,&request,from->n,&status);CHKERRQ(ierr);

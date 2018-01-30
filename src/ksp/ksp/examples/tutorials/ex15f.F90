@@ -17,14 +17,14 @@
 !
 !     Module contains diag needed by shell preconditioner
 !
-      module mymodule
+      module mymoduleex15f
 #include <petsc/finclude/petscksp.h>
       use petscksp
       Vec    diag
       end module
 
       program main
-      use mymodule
+      use mymoduleex15f
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -272,7 +272,7 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,ierr)
-      use mymodule
+      use mymoduleex15f
       use petscksp
       implicit none
 
@@ -306,7 +306,7 @@
 !   is already provided within PETSc.
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-      use mymodule
+      use mymoduleex15f
       implicit none
 
       PC      pc
@@ -333,7 +333,7 @@
 !
 
       subroutine SampleShellPCDestroy(pc,ierr)
-      use mymodule
+      use mymoduleex15f
       implicit none
 
       PC      pc
@@ -352,7 +352,5 @@
 !   test:
 !      nsize: 2
 !      args: -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always
-!      output_file: output/ex15f_1.out
-!      TODO: Need to determine if deprecated
 !
 !TEST*/
