@@ -103,6 +103,8 @@ PETSC_EXTERN PetscErrorCode SNESSetUseMatrixFree(SNES,PetscBool,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetUseMatrixFree(SNES,PetscBool*,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatCreateSNESMF(SNES,Mat*);
 PETSC_EXTERN PetscErrorCode MatSNESMFGetSNES(Mat,SNES*);
+PETSC_EXTERN PetscErrorCode MatSNESMFSetReuseBase(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSNESMFGetReuseBase(Mat,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);

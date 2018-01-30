@@ -99,6 +99,29 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 }
 
 /*
+   MatAssemblyEnd_SNESMF_UseBase - Calls MatAssemblyEnd_MFFD() and then sets the
+    base from the SNES context. This version will cause the base to be used for differencing
+    even if the func is not SNESComputeFunction. See: MatSNESMFUseBase()
+
+
+*/
+static PetscErrorCode MatAssemblyEnd_SNESMF_UseBase(Mat J,MatAssemblyType mt)
+{
+  PetscErrorCode ierr;
+  MatMFFD        j    = (MatMFFD)J->data;
+  SNES           snes = (SNES)j->ctx;
+  Vec            u,f;
+
+  PetscFunctionBegin;
+  ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
+
+  ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
@@ -108,8 +131,92 @@ static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 
   PetscFunctionBegin;
   ierr = MatMFFDSetBase_MFFD(J,U,F);CHKERRQ(ierr);
-
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  MatSNESMFSetReuseBase_SNESMF(Mat J,PetscBool use)
+{
+  PetscFunctionBegin;
+  if (use) {
+    J->ops->assemblyend = MatAssemblyEnd_SNESMF_UseBase;
+  } else {
+    J->ops->assemblyend = MatAssemblyEnd_SNESMF;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatSNESMFSetReuseBase - Causes the base vector to be used for differencing even if the function provided to SNESSetFunction() is not the
+                       same as that provided to MatMFFDSetFunction().
+
+    Logically Collective on Mat
+
+    Input Parameters:
++   J - the MatMFFD matrix
+-   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
+          not SNESComputeFunction()
+
+    Notes: Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
+           with that provided to SNESSetFunction(), call it F_SNES(). That is, (F_MF(u + h*d) - F_SNES(u))/h has to approximate the derivative
+
+    Developer Notes: This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
+                     to contacts while the function provided to MatMFFDSetFunction() cannot. Except for the possibility of changing the configuration
+                     both functions compute the same mathematical function so the differencing makes sense.
+
+    Level: advanced
+
+.seealso: MatCreateSNESMF(), MatSNESMFGetReuseBase()
+@*/
+PetscErrorCode  MatSNESMFSetReuseBase(Mat J,PetscBool use)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  ierr = PetscTryMethod(J,"MatSNESMFSetReuseBase_C",(Mat,PetscBool),(J,use));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode  MatSNESMFGetReuseBase_SNESMF(Mat J,PetscBool *use)
+{
+  PetscFunctionBegin;
+  if (J->ops->assemblyend == MatAssemblyEnd_SNESMF_UseBase) *use = PETSC_TRUE;
+  else *use = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatSNESMFGetReuseBase - Determines if the base vector is to be used for differencing even if the function provided to SNESSetFunction() is not the
+                       same as that provided to MatMFFDSetFunction().
+
+    Logically Collective on Mat
+
+    Input Parameter:
+.   J - the MatMFFD matrix
+
+    Output Parameter:
+.   use - if true always reuse the base vector instead of recomputing f(u) even if the function in the MatSNESMF is 
+          not SNESComputeFunction()
+
+    Notes: Care must be taken when using this routine to insure that the function provided to MatMFFDSetFunction(), call it F_MF() is compatible with
+           with that provided to SNESSetFunction(), call it F_SNES(). That is, (F_MF(u + h*d) - F_SNES(u))/h has to approximate the derivative
+
+    Developer Notes: This was provided for the MOOSE team who desired to have a SNESSetFunction() function that could change configurations due
+                     to contacts while the function provided to MatMFFDSetFunction() cannot. Except for the possibility of changing the configuration
+                     both functions compute the same mathematical function so the differencing makes sense.
+
+    Level: advanced
+
+.seealso: MatCreateSNESMF(), MatSNESMFSetReuseBase()
+@*/
+PetscErrorCode  MatSNESMFGetReuseBase(Mat J,PetscBool *use)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  ierr = PetscUseMethod(J,"MatSNESMFGetReuseBase_C",(Mat,PetscBool*),(J,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -152,7 +259,7 @@ static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 
 .seealso: MatDestroy(), MatMFFDSetFunction(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
-          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
+          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian(), MatSNESMFSetReuseBase(), MatSNESMFGetReuseBase()
 
 @*/
 PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
@@ -186,5 +293,7 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
 
   ierr = PetscObjectComposeFunction((PetscObject)*J,"MatMFFDSetBase_C",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)*J,"MatSNESMFSetReuseBase_C",MatSNESMFSetReuseBase_SNESMF);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)*J,"MatSNESMFGetReuseBase_C",MatSNESMFGetReuseBase_SNESMF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
