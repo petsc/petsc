@@ -310,7 +310,8 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
 {
   Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->data;
   PetscErrorCode    ierr;
-  PetscScalar       *barray, *xarray;
+  PetscScalar       *xarray;
+  const PetscScalar *barray
   PetscBool         flg;
 
   PetscFunctionBegin;
@@ -322,7 +323,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
   ierr = MatGetSize(B,NULL,(PetscInt*)&mat_mkl_cpardiso->nrhs);CHKERRQ(ierr);
 
   if(mat_mkl_cpardiso->nrhs > 0){
-    ierr = MatDenseGetArray(B,&barray);
+    ierr = MatDenseGetArrayRead(B,&barray);
     ierr = MatDenseGetArray(X,&xarray);
 
     /* solve phase */
@@ -347,6 +348,9 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       &mat_mkl_cpardiso->err);
     if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+    ierr = MatDenseRestoreArrayRead(B,&barray);
+    ierr = MatDenseRestoreArray(X,&xarray);
+
   }
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
