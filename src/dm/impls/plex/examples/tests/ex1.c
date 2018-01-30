@@ -141,7 +141,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->domainShape) {
     case BOX:
-      ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);break;
+      ierr = DMPlexCreateBoxMesh(comm, dim, cellSimplex, user->domainBoxSizes, NULL, NULL, user->periodicity, interpolate, dm);CHKERRQ(ierr);
+      break;
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
@@ -149,12 +150,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         ierr = DMPlexCreateWedgeCylinderMesh(comm, 6, PETSC_FALSE, dm);CHKERRQ(ierr);
       } else {
         ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
-        ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
       }
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
   }
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
@@ -334,7 +335,7 @@ static PetscErrorCode TestCellShape(DM dm)
     mean = globalStats.sum / globalStats.count;
     stdev = PetscSqrtReal(globalStats.squaresum / globalStats.count - mean * mean);
   }
-  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Mesh with %D cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
 
   ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
 
@@ -413,7 +414,7 @@ int main(int argc, char **argv)
     args: -dim 1 -domain_shape box -dm_refine 2 -dm_view ascii::ascii_info_detail
   test:
     suffix: 1d_2
-    args: -dim 1 -domain_box_sizes 5 -x_periodicity periodic -dm_view ascii::ascii_info_detail
+    args: -dim 1 -domain_box_sizes 5 -x_periodicity periodic -dm_view ascii::ascii_info_detail -test_shape
 
 
   # Parallel refinement tests with overlap
@@ -503,6 +504,21 @@ int main(int argc, char **argv)
     suffix: gmsh_6
     requires: !single
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_7
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_8
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_9
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_10
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape
+  test:
+    suffix: gmsh_11
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view ::ascii_info_detail -interpolate -test_shape -dm_refine 1
 
   # Fluent mesh reader tests
   test:
@@ -583,7 +599,61 @@ int main(int argc, char **argv)
     args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
+    suffix: box_2d_per_unint
+    args: -dim 2 -cell_simplex 0 -interpolate 0 -domain_shape box -domain_box_sizes 3,3 -test_shape -dm_view ::ascii_info_detail
+
+  test:
     suffix: box_3d
     args: -dim 3 -cell_simplex 0 -interpolate -domain_shape box -dm_refine 3 -test_shape -dm_view
+
+  # Test GLVis output
+  test:
+    suffix: glvis_2d_tet
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_tet_per
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
+
+  test:
+    suffix: glvis_2d_tet_per_mfem
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_2d_quad
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_quad_per
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis:
+
+  test:
+    suffix: glvis_2d_quad_per_mfem
+    args: -dim 2 -cell_simplex 0 -interpolate -domain_shape box -domain_box_sizes 3,3 -x_periodicity periodic -y_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem
+
+  test:
+    suffix: glvis_3d_tet
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_view glvis:
+
+  test:
+    suffix: glvis_3d_tet_per
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_3d_tet_per_mfem
+    TODO: broken
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_periodic_bin.msh -dm_plex_gmsh_periodic -viewer_glvis_dm_plex_enable_mfem -dm_view glvis: -interpolate
+
+  test:
+    suffix: glvis_3d_hex
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -dm_view glvis:
+
+  test:
+    suffix: glvis_3d_hex_per
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_boundary 0
+
+  test:
+    suffix: glvis_3d_hex_per_mfem
+    args: -dim 3 -cell_simplex 0 -domain_shape box -domain_box_sizes 3,3,3 -x_periodicity periodic -y_periodicity periodic -z_periodicity periodic -dm_view glvis: -viewer_glvis_dm_plex_enable_mfem -interpolate
 
 TEST*/

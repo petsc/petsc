@@ -72,8 +72,9 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v), &viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v), &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -118,6 +119,8 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 2);
   ierr = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   *values = &baseArray[s->atlasOff[p]];
   ierr = VecRestoreArray(v, &baseArray);CHKERRQ(ierr);
@@ -157,6 +160,8 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 2);
   ierr  = PetscSectionGetConstraintDof(s, point, &cDim);CHKERRQ(ierr);
   ierr  = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];

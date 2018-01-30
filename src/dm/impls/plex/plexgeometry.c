@@ -1100,13 +1100,16 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
-  PetscInt       numCoords, d, f, g;
+  PetscInt       numCoords, numSelfCoords = 0, d, f, g, pStart, pEnd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection,&pStart,&pEnd);CHKERRQ(ierr);
+  if (e >= pStart && e < pEnd) {ierr = PetscSectionGetDof(coordSection,e,&numSelfCoords);CHKERRQ(ierr);}
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  numCoords = numSelfCoords ? numSelfCoords : numCoords;
   *detJ = 0.0;
   if (numCoords == 9) {
     const PetscInt dim = 3;

@@ -1,115 +1,112 @@
-  0 SNES Function norm 12426.8 
-    0 KSP Residual norm 2.723261650222e+01 
-    1 KSP Residual norm 1.064601982102e+01 
-    2 KSP Residual norm 2.090634534404e+01 
-    3 KSP Residual norm 8.411235450850e+00 
-    4 KSP Residual norm 5.044600141478e-01 
-    5 KSP Residual norm 3.118598670704e-01 
-    6 KSP Residual norm 2.040239538505e-02 
-    7 KSP Residual norm 3.242370084626e-03 
-    8 KSP Residual norm 1.861309071216e-04 
-  1 SNES Function norm 3683.25 
-    0 KSP Residual norm 6.475820075549e+00 
-    1 KSP Residual norm 4.460074220374e+00 
-    2 KSP Residual norm 1.013458834496e+00 
-    3 KSP Residual norm 3.091509456358e-01 
-    4 KSP Residual norm 2.345696377821e-02 
-    5 KSP Residual norm 4.484519549107e-03 
-    6 KSP Residual norm 2.233298867798e-03 
-    7 KSP Residual norm 2.775398226215e-04 
-    8 KSP Residual norm 3.123342346211e-05 
-    9 KSP Residual norm 4.021688961204e-06 
-  2 SNES Function norm 1092.91 
-    0 KSP Residual norm 4.154564022734e+00 
-    1 KSP Residual norm 5.664605980992e-01 
-    2 KSP Residual norm 9.713703155028e-02 
-    3 KSP Residual norm 9.291831581887e-03 
-    4 KSP Residual norm 1.587954272084e-03 
-    5 KSP Residual norm 7.065604393504e-05 
-    6 KSP Residual norm 8.867486882735e-06 
-  3 SNES Function norm 324.246 
-    0 KSP Residual norm 2.787973989004e+00 
-    1 KSP Residual norm 2.157845314747e-01 
-    2 KSP Residual norm 3.207449991619e-02 
-    3 KSP Residual norm 1.123750588442e-03 
-    4 KSP Residual norm 1.699707784074e-04 
-    5 KSP Residual norm 1.234334695282e-05 
-    6 KSP Residual norm 2.148112923201e-06 
-  4 SNES Function norm 96.3443 
-    0 KSP Residual norm 1.137759091285e+00 
-    1 KSP Residual norm 1.340859252930e-01 
-    2 KSP Residual norm 8.455200990717e-03 
-    3 KSP Residual norm 5.890380591462e-04 
-    4 KSP Residual norm 8.505145648967e-05 
-    5 KSP Residual norm 6.698657652648e-06 
-    6 KSP Residual norm 1.490147923648e-07 
-  5 SNES Function norm 28.674 
-    0 KSP Residual norm 5.032803151966e-01 
-    1 KSP Residual norm 3.866481930841e-02 
-    2 KSP Residual norm 2.693545380860e-03 
-    3 KSP Residual norm 2.037485599148e-04 
-    4 KSP Residual norm 4.589610841911e-05 
-    5 KSP Residual norm 2.033385199471e-06 
-    6 KSP Residual norm 1.965245727890e-07 
-  6 SNES Function norm 8.47365 
-    0 KSP Residual norm 3.804066356961e-01 
-    1 KSP Residual norm 1.470816725316e-02 
-    2 KSP Residual norm 2.010163972415e-03 
-    3 KSP Residual norm 1.749950764211e-04 
-    4 KSP Residual norm 2.231805018514e-05 
-    5 KSP Residual norm 4.516606398513e-06 
-    6 KSP Residual norm 1.237236537728e-07 
-  7 SNES Function norm 2.48846 
-    0 KSP Residual norm 1.302058002646e-01 
-    1 KSP Residual norm 4.415404993553e-03 
-    2 KSP Residual norm 6.360652384920e-04 
-    3 KSP Residual norm 4.611487940732e-05 
-    4 KSP Residual norm 7.563584693747e-06 
-    5 KSP Residual norm 1.161117804322e-06 
-    6 KSP Residual norm 4.307673806029e-08 
-  8 SNES Function norm 0.703477 
-    0 KSP Residual norm 3.464447380719e-02 
-    1 KSP Residual norm 8.894825226266e-04 
-    2 KSP Residual norm 1.103488016523e-04 
-    3 KSP Residual norm 1.371814576694e-05 
-    4 KSP Residual norm 1.052780412853e-06 
-    5 KSP Residual norm 3.316385193297e-07 
-    6 KSP Residual norm 2.700678015980e-08 
-  9 SNES Function norm 0.185216 
-    0 KSP Residual norm 4.701277463828e-03 
-    1 KSP Residual norm 1.453947696028e-04 
-    2 KSP Residual norm 2.951773592824e-05 
-    3 KSP Residual norm 1.973675468649e-06 
-    4 KSP Residual norm 2.501994957251e-07 
-    5 KSP Residual norm 5.509291289828e-08 
-    6 KSP Residual norm 4.162601712539e-09 
-    7 KSP Residual norm 1.058176414466e-10 
- 10 SNES Function norm 0.0310499 
-    0 KSP Residual norm 3.810788990247e-04 
-    1 KSP Residual norm 9.649788581031e-06 
-    2 KSP Residual norm 1.233577436067e-06 
-    3 KSP Residual norm 1.133393612850e-07 
-    4 KSP Residual norm 1.166756291196e-08 
-    5 KSP Residual norm 3.367171929496e-09 
-    6 KSP Residual norm 1.607810054398e-10 
-    7 KSP Residual norm 7.235387288316e-12 
- 11 SNES Function norm 0.0011514 
-    0 KSP Residual norm 7.374911592771e-06 
-    1 KSP Residual norm 1.672916715145e-07 
-    2 KSP Residual norm 2.210809337226e-08 
-    3 KSP Residual norm 1.328894515269e-09 
-    4 KSP Residual norm 2.966682090222e-10 
-    5 KSP Residual norm 1.855242123098e-11 
-    6 KSP Residual norm 2.167050656725e-12 
-    7 KSP Residual norm 1.467295070638e-13 
-    8 KSP Residual norm 9.572491243800e-15 
- 12 SNES Function norm 1.35532e-06 
+  0 SNES Function norm 17621.4 
+    0 KSP Residual norm 7.477117570104e+00 
+    1 KSP Residual norm 1.363212831361e+00 
+    2 KSP Residual norm 1.659797269898e-01 
+    3 KSP Residual norm 1.974324169268e-03 
+    4 KSP Residual norm 3.057331000980e-04 
+    5 KSP Residual norm 1.661856225740e-05 
+    6 KSP Residual norm 1.374474145662e-06 
+  1 SNES Function norm 5222.44 
+    0 KSP Residual norm 4.186656837802e+00 
+    1 KSP Residual norm 1.497421032213e+00 
+    2 KSP Residual norm 1.159784254625e-01 
+    3 KSP Residual norm 1.776814363587e-02 
+    4 KSP Residual norm 4.697221420325e-03 
+    5 KSP Residual norm 8.892598100316e-04 
+    6 KSP Residual norm 1.548188482165e-04 
+    7 KSP Residual norm 2.376563368047e-05 
+    8 KSP Residual norm 3.076015087206e-06 
+  2 SNES Function norm 1549.16 
+    0 KSP Residual norm 4.047237413232e+00 
+    1 KSP Residual norm 7.091943348533e-01 
+    2 KSP Residual norm 1.383800140935e-01 
+    3 KSP Residual norm 2.818851565911e-02 
+    4 KSP Residual norm 1.135014300697e-03 
+    5 KSP Residual norm 8.602730382839e-05 
+    6 KSP Residual norm 2.436720983752e-05 
+    7 KSP Residual norm 1.744414777598e-06 
+  3 SNES Function norm 459.505 
+    0 KSP Residual norm 2.349173613550e+00 
+    1 KSP Residual norm 3.562004133514e-01 
+    2 KSP Residual norm 9.219933392250e-02 
+    3 KSP Residual norm 2.541794886905e-02 
+    4 KSP Residual norm 1.493550516954e-03 
+    5 KSP Residual norm 1.530342865754e-04 
+    6 KSP Residual norm 1.381105744801e-05 
+    7 KSP Residual norm 1.002357450613e-06 
+  4 SNES Function norm 136.479 
+    0 KSP Residual norm 9.641877600296e-01 
+    1 KSP Residual norm 9.115132801196e-02 
+    2 KSP Residual norm 2.968083729962e-02 
+    3 KSP Residual norm 4.679681289163e-03 
+    4 KSP Residual norm 3.733145372420e-04 
+    5 KSP Residual norm 3.622056522400e-05 
+    6 KSP Residual norm 1.253417815321e-06 
+  5 SNES Function norm 40.624 
+    0 KSP Residual norm 4.369671056170e-01 
+    1 KSP Residual norm 3.318718830011e-02 
+    2 KSP Residual norm 1.129836237575e-02 
+    3 KSP Residual norm 7.564461357953e-04 
+    4 KSP Residual norm 3.397426325281e-05 
+    5 KSP Residual norm 5.729067873386e-06 
+    6 KSP Residual norm 2.156460571429e-07 
+  6 SNES Function norm 12.1062 
+    0 KSP Residual norm 2.449604026619e-01 
+    1 KSP Residual norm 1.347242196290e-02 
+    2 KSP Residual norm 3.991463724921e-03 
+    3 KSP Residual norm 2.054798449406e-04 
+    4 KSP Residual norm 1.449038925626e-05 
+    5 KSP Residual norm 1.930335185590e-06 
+    6 KSP Residual norm 8.704448632163e-08 
+  7 SNES Function norm 3.56967 
+    0 KSP Residual norm 1.061875207367e-01 
+    1 KSP Residual norm 6.429351665173e-03 
+    2 KSP Residual norm 1.789376045197e-03 
+    3 KSP Residual norm 6.966931668307e-05 
+    4 KSP Residual norm 4.745627278118e-06 
+    5 KSP Residual norm 2.683494039464e-07 
+    6 KSP Residual norm 3.334745568194e-08 
+  8 SNES Function norm 0.948696 
+    0 KSP Residual norm 4.463099272352e-02 
+    1 KSP Residual norm 1.737226038197e-03 
+    2 KSP Residual norm 5.496736462990e-04 
+    3 KSP Residual norm 3.347755426400e-05 
+    4 KSP Residual norm 1.707089122787e-06 
+    5 KSP Residual norm 1.741686818889e-07 
+    6 KSP Residual norm 1.484992433070e-08 
+  9 SNES Function norm 0.224801 
+    0 KSP Residual norm 7.564025867911e-03 
+    1 KSP Residual norm 2.184217862800e-04 
+    2 KSP Residual norm 4.397434115495e-05 
+    3 KSP Residual norm 2.915282951316e-06 
+    4 KSP Residual norm 3.405363857805e-07 
+    5 KSP Residual norm 6.289446019643e-08 
+    6 KSP Residual norm 1.376116313902e-09 
+ 10 SNES Function norm 0.0400413 
+    0 KSP Residual norm 5.841690034566e-04 
+    1 KSP Residual norm 1.749857574737e-05 
+    2 KSP Residual norm 1.633564527612e-06 
+    3 KSP Residual norm 9.351740731429e-08 
+    4 KSP Residual norm 1.490066930569e-08 
+    5 KSP Residual norm 2.649701413943e-09 
+    6 KSP Residual norm 5.980076856743e-11 
+    7 KSP Residual norm 6.200530053267e-12 
+ 11 SNES Function norm 0.00166356 
+    0 KSP Residual norm 1.527549805881e-05 
+    1 KSP Residual norm 6.785830395777e-07 
+    2 KSP Residual norm 9.565037271235e-08 
+    3 KSP Residual norm 4.419692418032e-09 
+    4 KSP Residual norm 5.478575491675e-10 
+    5 KSP Residual norm 2.676787536249e-11 
+    6 KSP Residual norm 9.463943817290e-13 
+    7 KSP Residual norm 7.360639752160e-14 
+ 12 SNES Function norm 2.78359e-06 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12
 SNES Object: 4 MPI processes
   type: newtonls
   maximum iterations=20, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=81
+  total number of linear solver iterations=78
   total number of function evaluations=13
   norm schedule ALWAYS
   SNESLineSearch Object: 4 MPI processes
@@ -159,21 +156,21 @@ SNES Object: 4 MPI processes
       Symmetric computation of primal basis functions: 1
       Num. Procs. to map coarse adjacency list: 0
       Coarse eqs per proc (significant at the coarsest level): 1
-      Detect disconnected: 0
+      Detect disconnected: 1
       Benign subspace trick: 0 (change explicit 0)
       Benign subspace trick is active: 0
       Algebraic computation of no-net-flux 0
       ********************************** STATISTICS AT LEVEL 0 **********************************
-      Global dofs sizes: all 1507 interface 86 coarse 6
-      Coarsening ratios: all/coarse 251 interface/coarse 14
+      Global dofs sizes: all 1485 interface 92 coarse 10
+      Coarsening ratios: all/coarse 148 interface/coarse 9
       Active processes : 4
-      Total subdomains : 4
+      Total subdomains : 5
       Dofs type        :	MIN	MAX	MEAN
-      Interior  dofs   :	342	361	355
-      Interface dofs   :	31	56	43
-      Primal    dofs   :	3	4	3
-      Local     dofs   :	384	415	398
-      Local     subs   :	1	1
+      Interior  dofs   :	343	361	348
+      Interface dofs   :	33	61	46
+      Primal    dofs   :	3	8	5
+      Local     dofs   :	376	422	395
+      Local     subs   :	1	2
       ********************************** COARSE PROBLEM DETAILS *********************************
     KSP Object: (pc_bddc_coarse_) 4 MPI processes
       type: preonly
@@ -187,8 +184,8 @@ SNES Object: 4 MPI processes
       linear system matrix = precond matrix:
       Mat Object: 4 MPI processes
         type: mpiaij
-        rows=6, cols=6
-        total: nonzeros=32, allocated nonzeros=35
+        rows=10, cols=10
+        total: nonzeros=94, allocated nonzeros=97
         total number of mallocs used during MatSetValues calls =0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
             KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
@@ -203,25 +200,25 @@ SNES Object: 4 MPI processes
                 Reusing fill from past factorization
                 tolerance for zero pivot 2.22045e-14
                 matrix ordering: nd
-                factor fill ratio given 5., needed 1.0625
+                factor fill ratio given 5., needed 1.02128
                   Factored matrix follows:
                     Mat Object:     1 MPI processes
                       type: seqaij
-                      rows=6, cols=6
+                      rows=10, cols=10
                       package used to perform factorization: petsc
-                      total: nonzeros=34, allocated nonzeros=34
+                      total: nonzeros=96, allocated nonzeros=96
                       total number of mallocs used during MatSetValues calls =0
-                        using I-node routines: found 3 nodes, limit used is 5
+                        using I-node routines: found 4 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object:     1 MPI processes
                 type: seqaij
-                rows=6, cols=6
-                total: nonzeros=32, allocated nonzeros=32
+                rows=10, cols=10
+                total: nonzeros=94, allocated nonzeros=94
                 total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
+                  using I-node routines: found 6 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 4 MPI processes
       type: is
-      rows=1507, cols=1507
-      total: nonzeros=23377, allocated nonzeros=25021
+      rows=1485, cols=1485
+      total: nonzeros=23046, allocated nonzeros=24772
       total number of mallocs used during MatSetValues calls =0

@@ -110,6 +110,7 @@ struct _n_User {
   char outputBasename[PETSC_MAX_PATH_LEN]; /* Basename for output files */
   PetscInt monitorStepOffset;
   Model    model;
+  PetscBool vtkmon;
 };
 
 PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
@@ -1468,7 +1469,9 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   ierr = TSCreate(PetscObjectComm((PetscObject)dm), ts);CHKERRQ(ierr);
   ierr = TSSetType(*ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(*ts, dm);CHKERRQ(ierr);
-  ierr = TSMonitorSet(*ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  if (user->vtkmon) {
+    ierr = TSMonitorSet(*ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  }
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user);CHKERRQ(ierr);
   ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user);CHKERRQ(ierr);
   ierr = TSSetMaxTime(*ts,2.0);CHKERRQ(ierr);
@@ -1634,6 +1637,8 @@ int main(int argc, char **argv)
     ierr = PetscOptionsInt("-ufv_mesh_overlap","Number of cells to overlap partitions","",overlap,&overlap,NULL);CHKERRQ(ierr);
     user->vtkInterval = 1;
     ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,NULL);CHKERRQ(ierr);
+    user->vtkmon = PETSC_TRUE;
+    ierr = PetscOptionsBool("-ufv_vtk_monitor","Use VTKMonitor routine","",user->vtkmon,&user->vtkmon,NULL);CHKERRQ(ierr);
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscStrcpy(user->outputBasename, "ex11");CHKERRQ(ierr);
     ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
@@ -2623,5 +2628,12 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     requires: p4est !single
     args: -ufv_vtk_interval 0 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -ufv_use_amr -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -petscfv_type leastsquares -petsclimiter_type minmod -petscfv_compute_gradients 0 -ts_final_time 0.5 -ts_ssp_type rks2 -ts_ssp_nstages 10 -ufv_vtk_basename ${wPETSC_DIR}/ex11
     timeoutfactor: 3
+  # Test GLVis visualization of PetscFV fields
+  test:
+    suffix: glvis_adv_2d_tet
+    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+  test:
+    suffix: glvis_adv_2d_quad
+    args: -ufv_vtk_interval 0 -ts_monitor_solution glvis: -ts_max_steps 0 -ufv_vtk_monitor 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
 
 TEST*/

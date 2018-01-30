@@ -225,7 +225,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
         if (degd == cdof) break;
         deg++;
       }
-      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%dD_P%d",dim,deg);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(fecmesh,sizeof(fecmesh),"FiniteElementCollection: L2_T1_%DD_P%D",dim,deg);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)xcoorl,fecmesh);CHKERRQ(ierr);
     }
 
@@ -255,7 +255,7 @@ PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer
     ierr = DMDAGetFieldNames(da,(const char * const **)&dafieldname);CHKERRQ(ierr);
     ierr = DMDAGetNumVerticesGhosted(daview,&M,&N,&P);CHKERRQ(ierr);
     ierr = DMDAGetInfo(daview,&dim,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%dD_P1",dim);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(fec,sizeof(fec),"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
     ierr = PetscMalloc6(dof,&fec_type,dof,&nlocal,dof,&bss,dof,&dims,dof,&fieldname,dof,&Ufield);CHKERRQ(ierr);
     for (i=0;i<dof;i++) bss[i] = 1;
     nf = dof;
@@ -321,7 +321,7 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
 {
   DM                da,cda;
   Vec               xcoorl;
-  PetscMPIInt       commsize;
+  PetscMPIInt       size;
   const PetscScalar *array;
   PetscContainer    glvis_container;
   PetscInt          dim,sdim,i,vid[8],mid,cid,cdof;
@@ -336,8 +336,8 @@ static PetscErrorCode DMDAView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&commsize);CHKERRQ(ierr);
-  if (commsize > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
 
   /* get container: determines if a process visualizes is portion of the data or not */
@@ -513,6 +513,7 @@ PETSC_INTERN PetscErrorCode DMView_DA_GLVis(DM dm, PetscViewer viewer)
     if (view) { /* in the socket case, it may happen that the connection failed */
       if (type == PETSC_VIEWER_GLVIS_SOCKET) {
         PetscMPIInt size,rank;
+
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nmesh\n",size,rank);CHKERRQ(ierr);

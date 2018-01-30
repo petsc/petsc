@@ -1,6 +1,4 @@
-
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
-
 /*
   Solves the equation
 
@@ -24,7 +22,6 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-
 /*
    User-defined routines
 */
@@ -41,12 +38,14 @@ int main(int argc,char **argv)
   DM                   da;
   PetscReal            ftime;
   SNES                 ts_snes;
+  PetscBool            usemonitor = PETSC_TRUE;
   PetscViewerAndFormat *vf;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-usemonitor",&usemonitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -73,16 +72,19 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,FormFunction,da);CHKERRQ(ierr);
 
   ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
+  if (usemonitor) {
+    ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);CHKERRQ(ierr);
-  ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
-  ierr = SNESMonitorSet(ts_snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void *))MySNESMonitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
-
+  if (usemonitor) {
+    ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(ts_snes,(PetscErrorCode (*)(SNES,PetscInt,PetscReal,void *))MySNESMonitor,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -102,6 +104,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(x,NULL,"-final_sol");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -284,6 +287,16 @@ PetscErrorCode MySNESMonitor(SNES snes,PetscInt its,PetscReal fnorm,PetscViewerA
     test:
       suffix: 2
       args: -da_grid_x 20 -ts_final_time 0.11 -ts_dt 1e-1 -ts_type glle -ts_monitor -ksp_monitor_short
+      requires: !single
+
+    test:
+      suffix: glvis_da_2d_vect
+      args: -usemonitor 0 -da_grid_x 20 -ts_final_time 0.3 -ts_dt 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0
+      requires: !single
+
+    test:
+      suffix: glvis_da_2d_vect_ll
+      args: -usemonitor 0 -da_grid_x 20 -ts_final_time 0.3 -ts_dt 1e-1 -ts_type glle -final_sol glvis: -viewer_glvis_dm_da_bs 2,0 viewer_glvis_dm_da_ll
       requires: !single
 
 TEST*/

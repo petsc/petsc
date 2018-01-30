@@ -6497,18 +6497,28 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, NULL);CHKERRQ(ierr);
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, NULL, NULL, &vStartNew);CHKERRQ(ierr);
   ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, NULL, NULL, &vEndNew);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm, &isperiodic, &maxCell, &L, &bd);CHKERRQ(ierr);
-  ierr = DMSetPeriodicity(rdm, isperiodic,  maxCell,  L,  bd);CHKERRQ(ierr);
   /* Determine if we need to localize coordinates when generating them */
   if (isperiodic && !maxCell) {
     ierr = DMGetCoordinatesLocalized(dm, &localize);CHKERRQ(ierr);
     if (!localize) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot refine if coordinates have not been localized");
   }
+  if (isperiodic) {
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,"DMPlex coords refinement options","DM");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_plex_refine_localize","Automatically localize from parent cells",NULL,localize,&localize,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (localize) {
+      ierr = DMLocalizeCoordinates(dm);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMSetPeriodicity(rdm, isperiodic,  maxCell,  L,  bd);CHKERRQ(ierr);
+
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
+
   if (localize) {
     PetscInt p, r, newp, *pi;
 
