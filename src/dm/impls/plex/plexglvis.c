@@ -796,7 +796,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           /* vertex ids */
           ierr = DMPlexGetPointMFEMVertexIDs_Internal(dm,cell,(localized && !hovec) ? coordSection : NULL,&nv,vids);CHKERRQ(ierr);
           for (i=0;i<vpf;i++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %D",vids[faces[cl*vpf+i]]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %d",vids[faces[cl*vpf+i]]);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
@@ -1014,7 +1014,7 @@ PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer)
 
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(view,"parallel %D %D\nmesh\n",size,rank);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"parallel %d %d\nmesh\n",size,rank);CHKERRQ(ierr);
       }
       ierr = DMPlexView_GLVis_ASCII(dm,view);CHKERRQ(ierr);
       ierr = PetscViewerFlush(view);CHKERRQ(ierr);
