@@ -501,6 +501,7 @@ M*/
 */
 
 #define SETERRQ(c,ierr,s)
+#define SETERRMPI(comm,ierr,s)
 #define SETERRQ1(c,ierr,s,a1)
 #define SETERRQ2(c,ierr,s,a1,a2)
 #define SETERRQ3(c,ierr,s,a1,a2,a3)
@@ -515,6 +516,7 @@ M*/
 #define CHKERRV(ierr)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(ierr) ;
+#define CHKERRMPI(ierr) ;
 #define CHKMEMQ        ;
 #define CHKERRCUDA(err) ;
 #define CHKERRCUBLAS(err) ;

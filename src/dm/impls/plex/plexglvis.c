@@ -287,14 +287,14 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
     ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
     for (i=0,q=0;i<numPoints*2;i+= 2)
       if ((points[i] >= vStart) && (points[i] < vEnd))
-        vids[q++] = points[i]-vStart+off;
+        vids[q++] = (int)(points[i]-vStart+off);
     ierr = DMPlexRestoreTransitiveClosure(dm,p,PETSC_TRUE,&numPoints,&points);CHKERRQ(ierr);
   } else {
     ierr = PetscSectionGetOffset(csec,p,&off);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(csec,p,&dof);CHKERRQ(ierr);
-    for (q=0;q<dof/sdim;q++) vids[q] = off/sdim + q;
+    for (q=0;q<dof/sdim;q++) vids[q] = (int)(off/sdim + q);
   }
-  *nv  = q;
+  *nv = q;
   PetscFunctionReturn(0);
 }
 
