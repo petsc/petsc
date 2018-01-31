@@ -818,8 +818,38 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   } else {
     if (!flg) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   }
-  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+
+  if (mumps->id.ICNTL(30)) {
+    if (mumps->size == 1 && Bt) {
+      PetscBool   done;
+      PetscScalar *aa;
+      PetscInt    spnr,*ia,*ja;
+
+      ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
+      ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+      if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      mumps->id.irhs_ptr    = ia;
+      mumps->id.irhs_sparse = ja;
+      mumps->id.nz_rhs      = ia[spnr] - 1;
+      mumps->id.rhs_sparse  = (MumpsScalar*)aa;
+      mumps->id.ICNTL(20)   = 1; /* rhs is sparse */
+
+      /* solve phase */
+      /*-------------*/
+      mumps->id.job = JOB_SOLVE;
+      PetscMUMPS_c(&mumps->id);
+      if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
+
+      printf("not done yet\n");
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"not done yet");
+    }
+    PetscFunctionReturn(0);
+  } else {
+    ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+  }
+
   if (B->rmap->n != X->rmap->n) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
 
   ierr = MatGetSize(B,&M,&nrhs);CHKERRQ(ierr);
