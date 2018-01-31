@@ -136,7 +136,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       try:
         files = os.listdir(base)
         files.sort()
-        except: pass
+      except: pass
       for dir in files:
         if re.match(nextDirs[0], dir):
           if nextDirs[1:]:
