@@ -669,7 +669,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -log_exclude: <vec,mat,pc.ksp,snes> - excludes subset of object classes from logging
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
--  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+.  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+-  -check_pointer_intensity 0,1,2 - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
     Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
 
