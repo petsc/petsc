@@ -156,9 +156,12 @@ class Configure(config.package.GNUPackage):
     return
 
   def compute_make_test_np(self,i):
+    f32 = 0.35
+    f99 = 0.20
     if (i<=2):    return 1
     elif (i<=4):  return 2
-    else:         return 4
+    elif (i<=32): return int(2+(i-4)*f32)
+    else:         return int(2+28*f32+(i-32)*f99)
     return
 
   def configureMakeNP(self):
