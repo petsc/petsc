@@ -41,7 +41,7 @@
 % This is hardcoded into bin/maint/mapnameslatex.py
 \lstset{
   language=C,
-  basicstyle=\ttfamily,
+  basicstyle=\normalsize\ttfamily,
   escapechar=\$,        % Also hardcoded in bin/maint/mapnameslatex.py
   commentstyle=\color{somewhatdarkgray}\ttfamily,
   showstringspaces=false,
@@ -56,20 +56,19 @@
 }
 
 % Some special listing environments for various code types
-% These must reset to the default settings above
 % We could consider using a dedicated clisting (but be careful with the inline listings)
 
 \lstnewenvironment{outputlisting}[1][\footnotesize\ttfamily]
 {\lstset{escapechar=,language=,basicstyle=#1,breakatwhitespace=false}}
-{\lstset{escapechar=\$,language=C,basicstyle=\ttfamily,breakatwhitespace=true}}
+{}
 
 \lstnewenvironment{bashlisting}
 {\lstset{escapechar=,language=bash,basicstyle=\ttfamily}}
-{\lstset{escapechar=\$,language=C,basicstyle=\ttfamily}}
+{}
 
 \lstnewenvironment{makelisting}
 {\lstset{escapechar=,language=make,basicstyle=\ttfamily}}
-{\lstset{escapechar=\$,language=C,basicstyle=\ttfamily}}
+{}
 
 % Set all nested itemize labels to be the same
 \renewcommand{\labelitemi}{$\bullet$}

@@ -2383,13 +2383,13 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
 }
 
 /*@
-   MatMultTranspose - Computes matrix transpose times a vector.
+   MatMultTranspose - Computes matrix transpose times a vector y = A^T * x.
 
    Neighbor-wise Collective on Mat and Vec
 
    Input Parameters:
 +  mat - the matrix
--  x   - the vector to be multilplied
+-  x   - the vector to be multiplied
 
    Output Parameters:
 .  y - the result
