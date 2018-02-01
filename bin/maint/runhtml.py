@@ -242,7 +242,9 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       #
       ### Configure section
       #
-      #if not os.path.isfile(logfile_configure_full): ??
+      if not os.path.isfile(logfile_configure_full):
+        outfile.write("<td class=\"red\" colspan=\"2\"><a href=\"" + logfile_build + "\">[build.log]</a></td>")
+        continue
 
       # Checking for successful completion
       configure_success = False
