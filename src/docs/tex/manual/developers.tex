@@ -1333,11 +1333,10 @@ Our language also supports a \emph{testset} that specifies
 either a new test entirely, or multiple executable/diff tests
 within a single test.  At the core, the executable/diff test combination
 will look something like this:
-%
-\begin{lstlisting}
-      mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
-      diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-\end{lstlisting}
+\begin{bashlisting}
+mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
+diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+\end{bashlisting}
 
 In practice, we want to do various logging and counting by the test
 harness, but this is explained further below.  The input language
@@ -1390,10 +1389,10 @@ With this background, these keywords are are:
 
     \end{itemize}
 
-  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
+  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=""})
     \begin{itemize}
 
-      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and otherwise by \texttt{ testname=`run'+basestring+`\_'+suffix}
+      \item The testname is given by: \lstinline{testname = "run" + basestring} if suffix is set to an empty string, and by \lstinline{ testname = "run" + basestring + "_" + suffix}
 
       \item This can only be specified for top level test nodes
 
@@ -1401,11 +1400,11 @@ With this background, these keywords are are:
 
 
    \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
-                 \lstinline{output_file=testname+`.out'})
+                 \lstinline{output_file = testname + ".out"})
       \begin{itemize}
 
       \item The output of the test is to be compared to an \emph{expected result}
-      whose name is given by output\_file.
+      whose name is given by \lstinline{output_file}.
 
       \item This file is described relative to the source directory of the
       source file and should be in the output subdirectory (e.g.,
@@ -1447,17 +1446,17 @@ With this background, these keywords are are:
       \item Sometimes only a subset of the output is meant to be tested
       against the expected result.  If this keyword is used, it
       processes the executable output and puts it into the file
-      to be actually compared with output\_file.
+      to be actually compared with \lstinline{output_file}.
 
       \item The value of this is the command to be run; e.g., \lstinline{grep foo} or
       \lstinline{sort -nr}
 
       \item A skeleton example of the resultant commands to be run is:
       %
-      \begin{lstlisting}
+      \begin{bashlisting}
 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
-      \end{lstlisting}
+      \end{bashlisting}
 
       \item If the filter begins with \lstinline{Error:}, then the test is
             assumed to be testing the error output, and the error code and
@@ -1509,7 +1508,7 @@ diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
         tests.
 
         \item Packages are specified with lower case specification; e.g.,
-        \lstinline{requires: superlu\_dist}
+        \lstinline{requires: superlu_dist}
 
         \item Any defined variable in petscconf.h can be specified with the
         \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
@@ -1545,18 +1544,18 @@ supported:
 %
 \begin{itemize}
 
-\item for loops:  Specifying $\{\{ ... \}shared output\} $ 
-      or $\{\{ ... \}separate output\} $ 
-      will create for loops over enclosed space-delimited list.  
+\item for loops:  Specifying \lstinline!{{ ... }shared output}!
+      or \lstinline!{{ ... }separate output}!
+      will create for loops over enclosed space-delmited list.
       If the loop causes a different output, then separate output would
       be used.  If the loop does not cause separate output, then the
-      shared (or $\{\{ ... \}\} $) syntax must be used.
+      shared (or \lstinline!{{ ... }}!) syntax must be used.
 
 For loops are supported within nsize and args.  An example would be:
 %
-\begin{lstlisting}
-args: -matload_block_size {{2,3}}
-\end{lstlisting}
+\begin{outputlisting}
+args: -matload_block_size {{2 3}}
+\end{outputlisting}
 
 In this case, two execution lines would be addded with two different
 arguments.  Associated \lstinline{diff} lines would be added as well
@@ -1610,11 +1609,11 @@ resultant output with \lstinline{output/ex1.out}.
 
 For Fortran, the equivalent is:
 %
-\begin{lstlisting}
+\begin{outputlisting}
 !/*TESTS
 !  test: 
 !TESTS*/
-\end{lstlisting}
+\end{outputlisting}
 
 A fuller example would be:
 %
@@ -1624,13 +1623,15 @@ A fuller example would be:
   test:
     suffix: 1
     nsize: 2
-    args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+    args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres
+    args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
+    args: -s2_pc_type jacobi -s2_ksp_monitor_short
     requires: x
 */TESTS
 \end{outputlisting}
 
 This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
-be \lstinline{runex1} and \lstinline{runex1\_1}.
+be \lstinline{runex1} and \lstinline{runex1_1}.
 
 
 An example of how one tests a permutuation of arguments against the same
@@ -1639,13 +1640,13 @@ output file:
 \begin{outputlisting}
 /*TESTS
   testset:
-      suffix: 19
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson1
-      args: -ksp_type cg -pc_type icc -pc_factor_levels 2
-      test:
-      test:
-         args: -mat_type seqsbaij 
+    suffix: 19
+    requires: datafilespath
+    args: -f0 ${DATAFILESPATH}/matrices/poisson1
+    args: -ksp_type cg -pc_type icc -pc_factor_levels 2
+    test:
+    test:
+      args: -mat_type seqsbaij 
 */TESTS
 \end{outputlisting}
 
@@ -1657,15 +1658,15 @@ different output:
 
 \begin{outputlisting}
 /*TESTS
-   testset:
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -ksp_type bicg
-      test:
-         suffix: 4
-         args: -pc_type lu
-      test:
-         suffix: 5 
+  testset:
+    requires: datafilespath
+    args: -f0 ${DATAFILESPATH}/matrices/medium
+    args: -ksp_type bicg
+    test:
+      suffix: 4
+      args: -pc_type lu
+    test:
+      suffix: 5 
 */TESTS
 \end{outputlisting}
 Assuming that this is \lstinline{ex10.c}, there would be two shell
@@ -1676,19 +1677,19 @@ An example using a for loop would be:
 \begin{outputlisting}
 /*TESTS
   testset:
-       suffix: 1
-       args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
-       requires: datafilespath
-   testset:
-       suffix: 2
-       output\_file: output/ex138\_1.out
-       args: -f ${DATAFILESPATH}/matrices/small
-       args: -mat_type baij -matload_block_size {{2,3}shared output}
-       requires: datafilespath
+    suffix: 1
+    args:   -f ${DATAFILESPATH}/matrices/small -mat_type aij
+    requires: datafilespath
+  testset:
+    suffix: 2
+    output_file: output/ex138_1.out
+    args: -f ${DATAFILESPATH}/matrices/small
+    args: -mat_type baij -matload_block_size {{2 3}shared output}
+    requires: datafilespath
 */TESTS
 \end{outputlisting}
 
-In this example, runex138\_2 will invoke ex138 twice with two different
+In this example, \lstinline{runex138_2} will invoke ex138 twice with two different
 arguments, but both are diffed with the same file.
 
 An example for showing the hierarchical nature of the test specification is:
@@ -1699,23 +1700,23 @@ testset:
   output_file: output/ex138_1.out
   args: -f ${DATAFILESPATH}/matrices/small -mat_type baij
   test:
-       args: -matload_block_size 2
+    args: -matload_block_size 2
   test:
-       args: -matload_block_size 3
+    args: -matload_block_size 3
 \end{outputlisting}
 This is functionally equivalent to the for loop shown above.
 
 Here is a more complex example using for loops:
 \begin{outputlisting}
 testset:
-   suffix: 19
-   requires: datafilespath
-   args: -f0 ${DATAFILESPATH}/matrices/poisson1
-   args: -ksp_type cg -pc_type icc 
-   args: -pc_factor_levels {{0 2 4}separate output}
-   test:
-   test:
-      args: -mat_type seqsbaij
+  suffix: 19
+  requires: datafilespath
+  args: -f0 ${DATAFILESPATH}/matrices/poisson1
+  args: -ksp_type cg -pc_type icc 
+  args: -pc_factor_levels {{0 2 4}separate output}
+  test:
+  test:
+    args: -mat_type seqsbaij
 \end{outputlisting}
 If this is in \lstinline{ex10.c}, then the shell scripts generated would
 be:
@@ -1734,23 +1735,28 @@ It is possible to specify issues related to the compilation of the
 source file with the \lstinline{build:} block.  The language is:
 %
 \begin{itemize}
-  \item \lstinline{requires:} (\textbf{Optional}; \emph{Default:} \lstinline{""}) 
-    Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
+  \item \textbf{requires:} (\emph{Optional}; \emph{Default:} \lstinline{""}) 
+      \begin{itemize}
+\item Same as the runtime requirements (e.g., can include \lstinline{requires: fftw})
 but also requirements related to types:
-    \begin{tightitemize}
+    \begin{enumerate}
       \item Precision types: \lstinline{single}, \lstinline{double}, \lstinline{quad}, \lstinline{int32}
       \item Scalar types: \lstinline{complex}  (and \lstinline{!complex})
-    \end{tightitemize}
+    \end{enumerate}
 \item In addition, \lstinline{TODO}  is available to allow one to skip the
 build of this file but still maintain it in the source tree.
+      \end{itemize}
 
-\item\lstinline{depends:} (\textbf{Optional}; \emph{Default:} \lstinline{""})
-List any dependencies required to compile the file
+\item \textbf{depends:} (\emph{Optional}; \emph{Default:} \lstinline{""})
+      \begin{itemize}
+\item List any dependencies required to compile the file
+      \end{itemize}
 \end{itemize}
 
 A typical example for compiling for real/double only is:
 \begin{outputlisting}
 /*T
+build:
   requires: !complex
 T*/
 \end{outputlisting}
@@ -1781,18 +1787,16 @@ understand the desired requirements for reporting and logging.
 After inserting the language into the file, one can test the parsing
 by executuing:
 %
-%\begin{lstlisting}
-\begin{verbatim}
-     ${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
-\end{verbatim}
-%\end{lstlisting}
+\begin{bashlisting}
+${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+\end{bashlisting}
 
 A dictionary will be pretty-printed out.  From this dictionary
 print-out, it is usually obvious if there is a problem in the parsing.
 This python file is used by 
-\begin{verbatim}
-      ${PETSC_DIR}/config/gmakegentest.py
-\end{verbatim}
+\begin{bashlisting}
+${PETSC_DIR}/config/gmakegentest.py
+\end{bashlisting}
 in generating the test harness.
 
 
@@ -1813,24 +1817,24 @@ As an example, consider this test input:
 %
 \begin{outputlisting}
 test:
-    suffix: 2
-    output_file: output/ex138.out
-    args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
-    requires: datafilespath
+  suffix: 2
+  output_file: output/ex138.out
+  args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij baij sbaij}} -matload_block_size {{2 3}}
+  requires: datafilespath
 \end{outputlisting}
 
 A sample output would be:
-\begin{outputlisting}
-      ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-      ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
-      ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
-      ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
-      ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
-      ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
-      ...
+\begin{outputlisting}[\scriptsize\ttfamily]
+ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+...
 
-      ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
-      ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
+ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
 \end{outputlisting}
 
 \section{Test harness implementation%
@@ -1841,7 +1845,7 @@ Most of the requirements for being TAP-compliant lie in the shell
 scripts so we focus on that description.
 
 A sample shell script is given by:
-\begin{outputlisting}
+\begin{bashlisting}
 #!/bin/sh
 . petsc_harness.sh
 
@@ -1849,13 +1853,13 @@ petsc_testrun ./ex1 ex1.tmp ex1.err
 petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
 
 petsc_testend
-\end{outputlisting}
+\end{bashlisting}
 
 \trl{petsc_harness.sh} is a small shell script that provides the logging and
 reporting functions \lstinline{petsc_testrun} and \lstinline{petsc_testend}.
 
 A small sample of the output from the test harness would be:
-\begin{outputlisting}
+\begin{outputlisting}[\scriptsize\ttfamily]
 ok 1 ./ex1
 ok 2 diff ex1.tmp output/ex1.out
 not ok 4 ./ex2
