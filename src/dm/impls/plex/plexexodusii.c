@@ -237,7 +237,7 @@ PetscErrorCode DMPlexView_ExodusII_Internal(DM dm, int exoid, PetscInt degree)
       else if (degree == 2) elem_type = elem_type_hex27;
     }
     connectSize = nodes[cs][0] + nodes[cs][1] + nodes[cs][2] + nodes[cs][3];
-    ierr = PetscMalloc1(connectSize, &connect);CHKERRQ(ierr);
+    ierr = PetscMalloc1(PetscMax(27,connectSize), &connect);CHKERRQ(ierr);
     PetscStackCallStandard(ex_put_block,(exoid, EX_ELEM_BLOCK, cs, elem_type, csSize, connectSize, 0, 0, 1));
     /* Find number of vertices, edges, and faces in the closure */
     verticesInClosure = nodes[cs][0];
