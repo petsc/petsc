@@ -143,13 +143,12 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(Smat,MAT_CLASSID,3);
   ts->forward_solve  = PETSC_TRUE;
   ts->num_parameters = nump;
-  if (Smat) {
-	  ierr = PetscObjectReference((PetscObject)Smat);CHKERRQ(ierr);
-	  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
-	  ts->mat_sensip = Smat;
-  }
+  ierr = PetscObjectReference((PetscObject)Smat);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->mat_sensip);CHKERRQ(ierr);
+  ts->mat_sensip = Smat;
   PetscFunctionReturn(0);
 }
 
@@ -172,6 +171,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts,PetscInt nump,Mat Smat)
 PetscErrorCode TSForwardGetSensitivities(TS ts,PetscInt *nump,Mat *Smat)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (nump) *nump = ts->num_parameters;
   if (Smat) *Smat = ts->mat_sensip;
   PetscFunctionReturn(0);
