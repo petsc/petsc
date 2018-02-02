@@ -602,6 +602,7 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
       self.has64bitindices = 1
       self.log.write('Checking for 64 bit blas indices: program did not return therefor assuming 64 bit blas indices\n')
+    if not self.defaultPrecision == 'single': return
     self.log.write('Checking if sdot() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
