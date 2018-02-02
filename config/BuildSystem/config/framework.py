@@ -933,35 +933,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
-  def runTimeTestBatch(self,name,includes,body,lib = None):
-    '''Either runs a test or adds it to the batch of runtime tests'''
-    if name in self.argDB: return self.argDB[name]
-    if self.argDB['with-batch']:
-      self.framework.addBatchInclude(includes)
-      self.framework.addBatchBody(body)
-      if lib: self.framework.addBatchLib(lib)
-      if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
-      return None
-    else:
-      result = None
-      self.pushLanguage('C')
-      filename = 'runtimetestoutput'
-      body = '''FILE *output = fopen("'''+filename+'''","w");\n'''+body
-      if lib:
-        if not isinstance(lib, list): lib = [lib]
-        oldLibs  = self.compilers.LIBS
-        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-      if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
-        out  = f.read()
-        f.close()
-        os.remove(filename)
-        result = out.split("=")[1].split("'")[0]
-      self.popLanguage()
-      if lib:
-        self.compilers.LIBS = oldLibs
-      return result
-
   def parallelQueueEvaluation(self, depGraph, numThreads = 1):
     import graph
     import Queue

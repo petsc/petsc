@@ -535,11 +535,18 @@ class Configure(config.package.Package):
     self.logWrite(self.libraries.restoreLog())
     return ret
 
-  def runTimeTest(self,name,includes,body,lib = None):
-    '''Either runs a test or tells user to provide value; since cannot be handled in batch mode'''
+  def runTimeTest(self,name,includes,body,lib = None,nobatch=0):
+    '''Either runs a test or adds it to the batch of runtime tests'''
     if name in self.argDB: return self.argDB[name]
     if self.argDB['with-batch']:
-      raise RuntimeError('In batch mode you must provide the value for --'+name)
+      if nobatch:
+        raise RuntimeError('In batch mode you must provide the value for --'+name)
+      else:
+        self.framework.addBatchInclude(includes)
+        self.framework.addBatchBody(body)
+        if lib: self.framework.addBatchLib(lib)
+        if self.include: self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
+        return None
     else:
       result = None
       self.pushLanguage('C')
@@ -548,12 +555,13 @@ class Configure(config.package.Package):
       if lib:
         if not isinstance(lib, list): lib = [lib]
         oldLibs  = self.compilers.LIBS
-        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.libraries.toString(lib)+' '+self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
-        result  = f.read()
+        out  = f.read()
         f.close()
         os.remove(filename)
+        result = out.split("=")[1].split("'")[0]
       self.popLanguage()
       if lib:
         self.compilers.LIBS = oldLibs
@@ -569,12 +577,12 @@ class Configure(config.package.Package):
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
-                  fprintf(output, "%g",(double)dotresultmkl);'''
-    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
+                  fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
+    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
     if result:
-      self.log.write('Checking for 64 bit blas indices: result' +str(result)+'\n')
+      self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
       result = int(result)
-      if not result == 34:
+      if result:
         if self.defaultPrecision == 'single':
           self.log.write('Checking for 64 bit blas indices: special check for Apple single precision\n')
           # On Apple single precision sdot() returns a double so we need to test that case
@@ -583,13 +591,13 @@ class Configure(config.package.Package):
                   int one1mkl = 1,nmkl = 2;
                   double dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
-                  fprintf(output, "%g",(double)dotresultmkl);'''
-          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib)
+                  fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
+          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
           result = int(result)
-      if not result == 34:
+      if result:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
         self.has64bitindices = 1
-        self.log.write('Checking for 64 bit blas indices: result not equal to 34 so assuming 64 bit blas indices\n')
+        self.log.write('Checking for 64 bit blas indices: result not equal to 1 so assuming 64 bit blas indices\n')
     else:
       self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
       self.has64bitindices = 1
@@ -607,14 +615,14 @@ class Configure(config.package.Package):
                      } else {
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
-                  fprintf(output, "%g",(double)sdotresult);\n'''
-    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
+                  fprintf(output, "--known-sdot-returns-doubl=%d",sdotresult != 9);\n'''
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
       self.log.write('Checking for sdot return double: result' +str(result)+'\n')
       result = int(result)
-      if not result == 9:
+      if result:
         self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
-        self.log.write('Checking sdot(): Program did return with not 9 for output so assume returns double\n')
+        self.log.write('Checking sdot(): Program did return with not 1 for output so assume returns double\n')
     else:
       self.log.write('Checking sdot(): Program did not return with output so assume returns single\n')
     self.log.write('Checking if snrm() returns a float or a double\n')
@@ -630,13 +638,13 @@ class Configure(config.package.Package):
                      } else {
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
-                  fprintf(output, "%g",(double)normresult);\n'''
-    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
+                  fprintf(output, "--known-snrm2-returns-double=%d",normresult != 3);\n'''
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
       self.log.write('Checking for snrm2 return double: result' +str(result)+'\n')
       result = int(result)
-      if not result == 3:
-        self.log.write('Checking sdot(): Program did not return with 9 for output so assume returns double\n')
+      if result:
+        self.log.write('Checking sdot(): Program did eturn with 1 for output so assume returns double\n')
         self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
     else:
       self.log.write('Checking snrm(): Program did not return with output so assume returns single\n')

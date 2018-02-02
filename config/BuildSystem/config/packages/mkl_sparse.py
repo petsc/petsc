@@ -31,12 +31,15 @@ class Configure(config.package.Package):
     temp2 = self.compilers.CPPFLAGS
     self.compilers.LIBS = self.libraries.toString(self.dlib)+' -lm '+self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.dinclude)
-    result = self.framework.runTimeTestBatch('known-mklspblas-supports-zero-based',includes,body)
+    result = self.blasLapack.runTimeTest('known-mklspblas-supports-zero-based',includes,body,self.dlib)
     self.compilers.LIBS = temp1
     self.compilers.CPPFLAGS = temp2
     if result:
+      self.log.write('Checking for MKL spblas supports zero based indexing: result ' +str(result)+'\n')
       result = int(result)
-      if result: self.addDefine('MKL_SUPPORTS_BAIJ_ZERO_BASED', 1)
+      if result:
+        self.addDefine('MKL_SUPPORTS_BAIJ_ZERO_BASED', 1)
+        self.log.write('Found MKL spblas supports zero based indexing: result\n')
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
