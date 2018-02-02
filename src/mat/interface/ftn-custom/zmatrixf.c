@@ -748,6 +748,8 @@ PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col,const Mat
 
 PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col,const MatFactorInfo *info, int *ierr)
 {
+  CHKFORTRANNULLOBJECTDEREFERENCE(row);
+  CHKFORTRANNULLOBJECTDEREFERENCE(col);
   *ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
