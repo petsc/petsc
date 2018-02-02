@@ -23,7 +23,7 @@
       name = 'matt'
       call PetscObjectCompose(o1,name,o2,ierr);CHKERRA(ierr)
       call PetscObjectQuery(o1,name,o3,ierr);CHKERRA(ierr)
-      if (o2 .ne. o3) then SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'PetscObjectQuery failed')
+      if (o2 .ne. o3) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'PetscObjectQuery failed'); endif
 
       call PetscViewerDestroy(o1,ierr);CHKERRA(ierr)
       call PetscViewerDestroy(o2,ierr);CHKERRA(ierr)

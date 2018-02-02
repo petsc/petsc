@@ -25,15 +25,15 @@
       first = 2
       call ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr)
       call ISGetLocalSize(is,n,ierr)
-      if (n .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISCreateStride')
+      if (n .ne. 0) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISCreateStride'); endif
 
       call ISStrideGetInfo(is,start,stride,ierr)
-      if (start .ne. 0) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo')
+      if (start .ne. 0) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo'); endif
 
-      if (stride .ne. 2) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo') 
+      if (stride .ne. 2) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISStrideGetInfo') ; endif
 
       call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr)
-      if (.not. flag) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from PetscObjectTypeCompare')
+      if (.not. flag) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from PetscObjectTypeCompare'); endif
       call ISGetIndices(is,ii,iis,ierr)
       call ISRestoreIndices(is,ii,iis,ierr)
       call ISDestroy(is,ierr)
@@ -47,7 +47,7 @@
       call ISGetLocalSize(is,n,ierr)
       call ISGetIndices(is,ii,iis,ierr)
       do 10, i=1,10000
-        if (ii(i+iis) .ne. -11 + 3*i) then SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISGetIndices')
+        if (ii(i+iis) .ne. -11 + 3*i) then; SETERRA(PETSC_COMM_SELF,1,'Wrong result from ISGetIndices'); endif
  10   continue
       call ISRestoreIndices(is,ii,iis,ierr)
       call ISDestroy(is,ierr)

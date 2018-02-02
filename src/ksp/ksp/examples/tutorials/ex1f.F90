@@ -47,7 +47,7 @@
         stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only')
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'This is a uniprocessor example only'); endif
       none = -1.0
       one  = 1.0
       n    = 10

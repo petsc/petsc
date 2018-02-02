@@ -1,7 +1,7 @@
 
 
       program main
-#include <petsc/finclude/petscs.h>
+#include <petsc/finclude/petsc.h>
       use petsc
       implicit none
 
@@ -62,7 +62,7 @@
          stop
       endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      if (size .ne. 1) then SETERRA(PETSC_COMM_WORLD,1,'requires one process')
+      if (size .ne. 1) then; SETERRA(PETSC_COMM_WORLD,1,'requires one process'); endif
 
       big  = 2.88
       big  = PETSC_INFINITY
@@ -108,7 +108,7 @@
 
       call SNESGetLineSearch(snes,ls,ierr)
       call SNESLineSearchSetPostCheck(ls,ShashiPostCheck,                 &
-     ,                                0,ierr)
+     &                                0,ierr)
       call SNESSetType(snes,SNESVINEWTONRSLS,ierr)
 
       call SNESSetFromOptions(snes,ierr)
@@ -147,12 +147,9 @@
 !  f - function vector
 !
       subroutine FormFunction(snes,x,f,dummy,ierr)
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscsnes.h>
-
+      use petscsnes
+      implicit none
       SNES     snes
       Vec      x,f
       PetscErrorCode ierr
@@ -195,15 +192,9 @@
 !  flag - flag indicating matrix structure
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscmat.h90>
-      
+      use petscsnes
+      implicit none
       SNES         snes
       Vec          X
       Mat          jac,B
@@ -446,27 +437,27 @@
          an_t = an_t + an_r(i)
       enddo
 
-        f_eq(1) = atom_h_init 
-     ,          - (an_h(1)*an_r(1) + an_h_additive*an_r(2)
-     ,              + 2*an_r(5) + an_r(10) + an_r(11) + 2*an_r(14) 
-     ,              + an_r(16)+ 2*an_r(17) + an_r(19)
-     ,              +an_r(20) + 3*an_r(22)+an_r(26)) 
+        f_eq(1) = atom_h_init                                           &
+     &          - (an_h(1)*an_r(1) + an_h_additive*an_r(2)              &
+     &              + 2*an_r(5) + an_r(10) + an_r(11) + 2*an_r(14)      &
+     &              + an_r(16)+ 2*an_r(17) + an_r(19)                   &
+     &              +an_r(20) + 3*an_r(22)+an_r(26)) 
 
 
-        f_eq(2) = atom_o_init 
-     ,          - (an_o_additive*an_r(2) + 2*an_r(3) 
-     ,             + 2*an_r(4) + an_r(5)
-     ,             + an_r(8) + an_r(9) + an_r(10) + an_r(12) + an_r(13)
-     ,             + 2*an_r(15) + 2*an_r(16)+ an_r(20) + an_r(22)
-     ,             + an_r(23) + 2*an_r(24) + 1*an_r(25)+an_r(26))
+        f_eq(2) = atom_o_init                                           &
+     &          - (an_o_additive*an_r(2) + 2*an_r(3)                    &
+     &             + 2*an_r(4) + an_r(5)                                &
+     &             + an_r(8) + an_r(9) + an_r(10) + an_r(12) + an_r(13) &
+     &             + 2*an_r(15) + 2*an_r(16)+ an_r(20) + an_r(22)       &
+     &             + an_r(23) + 2*an_r(24) + 1*an_r(25)+an_r(26))
 
 
         f_eq(3) = an_r(2)-1.0d-150
 
-        f_eq(4) = atom_c_init
-     ,          - (an_c(1)*an_r(1) + an_c_additive * an_r(2) 
-     ,          + an_r(4) + an_r(13)+ 2*an_r(17) + an_r(18) 
-     ,          + an_r(19) + an_r(20))
+        f_eq(4) = atom_c_init                                           &
+     &          - (an_c(1)*an_r(1) + an_c_additive * an_r(2)            &
+     &          + an_r(4) + an_r(13)+ 2*an_r(17) + an_r(18)             &
+     &          + an_r(19) + an_r(20))
 
 
 
@@ -481,58 +472,58 @@
         i_h2o     = i_hh/2
         idiff     = (i_cc + i_h2o) - (a_io2 + 1)
 
-        f_eq(5) = k_eq(11)*an_r(1)*an_r(3)**a_io2 
-     ,          - (an_r(4)**i_cc)*(an_r(5)**i_h2o)*((pt/an_t)**idiff)
+        f_eq(5) = k_eq(11)*an_r(1)*an_r(3)**a_io2                       &
+     &          - (an_r(4)**i_cc)*(an_r(5)**i_h2o)*((pt/an_t)**idiff)
 !           write(6,*)f_eq(5),an_r(1), an_r(3), an_r(4),an_r(5),' II'
 !          stop
-        f_eq(6) = atom_n_init
-     ,          - (2*an_r(6) + an_r(7) + an_r(9) + 2*an_r(12)
-     ,              + an_r(15)
-     ,              + an_r(23))
+        f_eq(6) = atom_n_init                                           &
+     &          - (2*an_r(6) + an_r(7) + an_r(9) + 2*an_r(12)           &
+     &              + an_r(15)                                          &
+     &              + an_r(23))
 
 
 
 
-      f_eq( 7) = part_p(11)
-     ,         - (k_eq( 1) * sqrt(part_p(14)+1d-23))
-      f_eq( 8) = part_p( 8)
-     ,         - (k_eq( 2) * sqrt(part_p( 3)+1d-23))
+      f_eq( 7) = part_p(11)                                             &
+     &         - (k_eq( 1) * sqrt(part_p(14)+1d-23))
+      f_eq( 8) = part_p( 8)                                             &
+     &         - (k_eq( 2) * sqrt(part_p( 3)+1d-23))
 
-      f_eq( 9) = part_p( 7)
-     ,         - (k_eq( 3) * sqrt(part_p( 6)+1d-23))
+      f_eq( 9) = part_p( 7)                                             &
+     &         - (k_eq( 3) * sqrt(part_p( 6)+1d-23))
 
-      f_eq(10) = part_p(10)
-     ,         - (k_eq( 4) * sqrt(part_p( 3)+1d-23))
-     ,         * sqrt(part_p(14))
+      f_eq(10) = part_p(10)                                             &
+     &         - (k_eq( 4) * sqrt(part_p( 3)+1d-23))                    &
+     &         * sqrt(part_p(14))
 
-      f_eq(11) = part_p( 9)
-     ,         - (k_eq( 5) * sqrt(part_p( 3)+1d-23))
-     ,         * sqrt(part_p( 6)+1d-23)
-      f_eq(12) = part_p( 5)
-     ,         - (k_eq( 6) * sqrt(part_p( 3)+1d-23))
-     ,         * (part_p(14))
+      f_eq(11) = part_p( 9)                                             &
+     &         - (k_eq( 5) * sqrt(part_p( 3)+1d-23))                    &
+     &         * sqrt(part_p( 6)+1d-23)
+      f_eq(12) = part_p( 5)                                             &
+     &         - (k_eq( 6) * sqrt(part_p( 3)+1d-23))                    &
+     &         * (part_p(14))
 
 
-      f_eq(13) = part_p( 4)
-     ,         - (k_eq( 7) * sqrt(part_p(3)+1.0d-23))
-     ,         * (part_p(13))
+      f_eq(13) = part_p( 4)                                             &
+     &         - (k_eq( 7) * sqrt(part_p(3)+1.0d-23))                   &
+     &         * (part_p(13))
 
-      f_eq(14) = part_p(15)
-     ,         - (k_eq( 8) * sqrt(part_p(3)+1.0d-50))
-     ,         * (part_p( 9))
-      f_eq(15) = part_p(16)
-     ,         - (k_eq( 9) * part_p( 3))
-     ,         * sqrt(part_p(14)+1d-23)
+      f_eq(14) = part_p(15)                                             &
+     &         - (k_eq( 8) * sqrt(part_p(3)+1.0d-50))                   &
+     &         * (part_p( 9))
+      f_eq(15) = part_p(16)                                             &
+     &         - (k_eq( 9) * part_p( 3))                                &
+     &         * sqrt(part_p(14)+1d-23)
 
-      f_eq(16) = part_p(12)
-     ,         - (k_eq(10) * sqrt(part_p( 3)+1d-23))
-     ,         * (part_p( 6))
+      f_eq(16) = part_p(12)                                             &
+     &         - (k_eq(10) * sqrt(part_p( 3)+1d-23))                    &
+     &         * (part_p( 6))
 
-      f_eq(17) = part_p(14)*part_p(18)**2
-     ,         - (k_eq(15) * part_p(17))
+      f_eq(17) = part_p(14)*part_p(18)**2                               &
+     &         - (k_eq(15) * part_p(17))
 
-      f_eq(18) = (part_p(13)**2)
-     ,     - (k_eq(16) * part_p(3)*part_p(18)**2)
+      f_eq(18) = (part_p(13)**2)                                        &
+     &     - (k_eq(16) * part_p(3)*part_p(18)**2)
       print*,f_eq(18),part_p(3),part_p(18),part_p(13),k_eq(16)
 
       f_eq(19) = part_p(19)*part_p(3) - k_eq(17)*part_p(13)*part_p(10)
@@ -551,8 +542,8 @@
 
       f_eq(25) =  part_p(26) - k_eq(23)*part_p(21)*part_p(10)
 
-      f_eq(26) = -(an_r(20) + an_r(22) + an_r(23)) 
-     ,          +(an_r(21) + an_r(24) + an_r(25) + an_r(26))
+      f_eq(26) = -(an_r(20) + an_r(22) + an_r(23))                      &
+     &          +(an_r(21) + an_r(24) + an_r(25) + an_r(26))
 
              do i = 1,26
                  write(44,*)i,f_eq(i)
@@ -763,9 +754,9 @@
            an_tot2_d = an_tot2*an_t
 
 
-           d_eq(5,1) = 
-     ,           -(an_r(4)**i_cc)*(an_r(5)**i_h2o)
-     ,           *((pt/an_t)**idiff) *(-idiff/an_t)
+           d_eq(5,1) =                                                  &
+     &           -(an_r(4)**i_cc)*(an_r(5)**i_h2o)                      &
+     &           *((pt/an_t)**idiff) *(-idiff/an_t)
 
 
            do jj = 2,26
@@ -774,14 +765,14 @@
 
            d_eq(5,1) = d_eq(5,1) + k_eq(11)* (an_r(3) **ai_o2)
 
-           d_eq(5,3) = d_eq(5,3) + k_eq(11)* (ai_o2*an_r(3)**(ai_o2-1)) 
-     ,                           * an_r(1)
+           d_eq(5,3) = d_eq(5,3) + k_eq(11)* (ai_o2*an_r(3)**(ai_o2-1)) &
+     &                           * an_r(1)
 
-           d_eq(5,4) = d_eq(5,4) - (i_cc*an_r(4)**(i_cc-1))*
-     ,                           (an_r(5)**i_h2o)* ((pt/an_t)**idiff)
-           d_eq(5,5) = d_eq(5,5) 
-     ,               - (i_h2o*(an_r(5)**(i_h2o-1)))
-     ,               * (an_r(4)**i_cc)* ((pt/an_t)**idiff)
+           d_eq(5,4) = d_eq(5,4) - (i_cc*an_r(4)**(i_cc-1))*            &
+     &                           (an_r(5)**i_h2o)* ((pt/an_t)**idiff)
+           d_eq(5,5) = d_eq(5,5)                                        &
+     &               - (i_h2o*(an_r(5)**(i_h2o-1)))                     &
+     &               * (an_r(4)**i_cc)* ((pt/an_t)**idiff)
 
 
 
@@ -801,7 +792,7 @@
 
 
            d_eq(3,5) = d_eq(3,5) - 3*(an_r(5)**2)*(an_r(4)**2)*(pt/an_t)
-!     ,                           *(pt_five/const_five)
+!     &                           *(pt_five/const_five)
 
            do ii3 = 1,26
               d_eq(3,ii3) = 0.0d0
@@ -810,159 +801,159 @@
 
 
 
-        d_eq(7,1) = pt*an_r(11)*(-1.0)/const2
-     ,            -k_eq(1)*sqrt(pt)*sqrt(an_r(14)+1d-50)*(-0.5/const3)
+        d_eq(7,1) = pt*an_r(11)*(-1.0)/const2                           &
+     &            -k_eq(1)*sqrt(pt)*sqrt(an_r(14)+1d-50)*(-0.5/const3)
 
         do jj = 2,26
            d_eq(7,jj) = d_eq(7,1)
         enddo
 
         d_eq(7,11) = d_eq(7,11) + pt/an_t
-        d_eq(7,14) = d_eq(7,14) 
-     ,            - k_eq(1)*sqrt(pt)*(0.5/(sqrt((an_r(14)+1d-50)*an_t)))
+        d_eq(7,14) = d_eq(7,14)                                         &
+     &            - k_eq(1)*sqrt(pt)*(0.5/(sqrt((an_r(14)+1d-50)*an_t)))
 
 
-        d_eq(8,1) = pt*an_r(8)*(-1.0)/const2
-     ,            -k_eq(2)*sqrt(pt)*sqrt(an_r(3)+1.0d-50)*(-0.5/const3)
+        d_eq(8,1) = pt*an_r(8)*(-1.0)/const2                            &
+     &            -k_eq(2)*sqrt(pt)*sqrt(an_r(3)+1.0d-50)*(-0.5/const3)
 
         do jj = 2,26
            d_eq(8,jj) = d_eq(8,1)
         enddo
 
-        d_eq(8,3) = d_eq(8,3) 
-     ,            -k_eq(2)*sqrt(pt)*(0.5/(sqrt((an_r(3)+1.0d-50)*an_t)))
+        d_eq(8,3) = d_eq(8,3)                                           &
+     &            -k_eq(2)*sqrt(pt)*(0.5/(sqrt((an_r(3)+1.0d-50)*an_t)))
         d_eq(8,8) = d_eq(8,8) + pt/an_t
 
 
-        d_eq(9,1) = pt*an_r(7)*(-1.0)/const2
-     ,            -k_eq(3)*sqrt(pt)*sqrt(an_r(6))*(-0.5/const3)
+        d_eq(9,1) = pt*an_r(7)*(-1.0)/const2                            &
+     &            -k_eq(3)*sqrt(pt)*sqrt(an_r(6))*(-0.5/const3)
 
         do jj = 2,26
            d_eq(9,jj) = d_eq(9,1)
         enddo
 
         d_eq(9,7) = d_eq(9,7) + pt/an_t
-        d_eq(9,6) = d_eq(9,6)
-     ,             -k_eq(3)*sqrt(pt)*(0.5/(sqrt(an_r(6)*an_t)))
+        d_eq(9,6) = d_eq(9,6)                                           &
+     &             -k_eq(3)*sqrt(pt)*(0.5/(sqrt(an_r(6)*an_t)))
 
 
-        d_eq(10,1) = pt*an_r(10)*(-1.0)/const2
-     ,             -k_eq(4)*(pt)*sqrt((an_r(3)+1.0d-50)
-     ,       *an_r(14))*(-1.0/const2)
+        d_eq(10,1) = pt*an_r(10)*(-1.0)/const2                          &
+     &             -k_eq(4)*(pt)*sqrt((an_r(3)+1.0d-50)                 &
+     &       *an_r(14))*(-1.0/const2)
         do jj = 2,26
            d_eq(10,jj) = d_eq(10,1)
         enddo
 
-        d_eq(10,3) = d_eq(10,3) 
-     ,           -k_eq(4)*(pt)*sqrt(an_r(14))
-     ,           *(0.5/(sqrt(an_r(3)+1.0d-50)*an_t))
+        d_eq(10,3) = d_eq(10,3)                                         &
+     &           -k_eq(4)*(pt)*sqrt(an_r(14))                           &
+     &           *(0.5/(sqrt(an_r(3)+1.0d-50)*an_t))
         d_eq(10,10) = d_eq(10,10) + pt/an_t
-        d_eq(10,14) = d_eq(10,14)  
-     ,           -k_eq(4)*(pt)*sqrt(an_r(3)+1.0d-50)
-     ,            *(0.5/(sqrt(an_r(14)+1.0d-50)*an_t))
+        d_eq(10,14) = d_eq(10,14)                                       &
+     &           -k_eq(4)*(pt)*sqrt(an_r(3)+1.0d-50)                    &
+     &            *(0.5/(sqrt(an_r(14)+1.0d-50)*an_t))
 
-        d_eq(11,1) = pt*an_r(9)*(-1.0)/const2
-     ,             -k_eq(5)*(pt)*sqrt((an_r(3)+1.0d-50)*an_r(6))
-     ,             *(-1.0/const2)
+        d_eq(11,1) = pt*an_r(9)*(-1.0)/const2                           &
+     &             -k_eq(5)*(pt)*sqrt((an_r(3)+1.0d-50)*an_r(6))        &
+     &             *(-1.0/const2)
 
         do jj = 2,26
            d_eq(11,jj) = d_eq(11,1)
         enddo
 
-        d_eq(11,3) = d_eq(11,3)
-     ,            -k_eq(5)*(pt)*sqrt(an_r(6))*(0.5/
-     ,       (sqrt(an_r(3)+1.0d-50)*an_t))
-        d_eq(11,6) = d_eq(11,6)
-     ,            -k_eq(5)*(pt)*sqrt(an_r(3)+1.0d-50)
-     ,       *(0.5/(sqrt(an_r(6))*an_t))
+        d_eq(11,3) = d_eq(11,3)                                         &
+     &            -k_eq(5)*(pt)*sqrt(an_r(6))*(0.5/                     &
+     &       (sqrt(an_r(3)+1.0d-50)*an_t))
+        d_eq(11,6) = d_eq(11,6)                                         &
+     &            -k_eq(5)*(pt)*sqrt(an_r(3)+1.0d-50)                   &
+     &       *(0.5/(sqrt(an_r(6))*an_t))
         d_eq(11,9) = d_eq(11,9) + pt/an_t
 
 
 
-        d_eq(12,1) = pt*an_r(5)*(-1.0)/const2
-     ,             -k_eq(6)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)
-     ,             *(an_r(14))*(-1.5/const5)
+        d_eq(12,1) = pt*an_r(5)*(-1.0)/const2                           &
+     &             -k_eq(6)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)             &
+     &             *(an_r(14))*(-1.5/const5)
 
 
         do jj = 2,26
            d_eq(12,jj) = d_eq(12,1)
         enddo
 
-        d_eq(12,3) = d_eq(12,3)
-     ,            -k_eq(6)*(pt**1.5)*((an_r(14)+1.0d-50)/const3)
-     ,            *(0.5/sqrt(an_r(3)+1.0d-50))
+        d_eq(12,3) = d_eq(12,3)                                         &
+     &            -k_eq(6)*(pt**1.5)*((an_r(14)+1.0d-50)/const3)        &
+     &            *(0.5/sqrt(an_r(3)+1.0d-50))
 
         d_eq(12,5) = d_eq(12,5) + pt/an_t
-        d_eq(12,14) = d_eq(12,14)
-     ,            -k_eq(6)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
+        d_eq(12,14) = d_eq(12,14)                                       &
+     &            -k_eq(6)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
 
 
-        d_eq(13,1) = pt*an_r(4)*(-1.0)/const2
-     ,             -k_eq(7)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)
-     ,             *(an_r(13))*(-1.5/const5)
+        d_eq(13,1) = pt*an_r(4)*(-1.0)/const2                           &
+     &             -k_eq(7)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)             &
+     &             *(an_r(13))*(-1.5/const5)
 
         do jj = 2,26
            d_eq(13,jj) = d_eq(13,1)
         enddo
 
-        d_eq(13,3) = d_eq(13,3)
-     ,            -k_eq(7)*(pt**1.5)*(an_r(13)/const3)
-     ,            *(0.5/sqrt(an_r(3)+1.0d-50))
+        d_eq(13,3) = d_eq(13,3)                                         &
+     &            -k_eq(7)*(pt**1.5)*(an_r(13)/const3)                  &
+     &            *(0.5/sqrt(an_r(3)+1.0d-50))
 
         d_eq(13,4) = d_eq(13,4) + pt/an_t
-        d_eq(13,13) = d_eq(13,13) 
-     ,            -k_eq(7)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
+        d_eq(13,13) = d_eq(13,13)                                       &
+     &            -k_eq(7)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
 
  
 
 
-        d_eq(14,1) = pt*an_r(15)*(-1.0)/const2
-     ,             -k_eq(8)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)
-     ,             *(an_r(9))*(-1.5/const5)
+        d_eq(14,1) = pt*an_r(15)*(-1.0)/const2                          &
+     &             -k_eq(8)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)             &
+     &             *(an_r(9))*(-1.5/const5)
 
         do jj = 2,26
            d_eq(14,jj) = d_eq(14,1)
         enddo
 
-        d_eq(14,3) = d_eq(14,3)
-     ,            -k_eq(8)*(pt**1.5)*(an_r(9)/const3)
-     ,            *(0.5/sqrt(an_r(3)+1.0d-50))
-        d_eq(14,9) = d_eq(14,9)
-     ,            -k_eq(8)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
+        d_eq(14,3) = d_eq(14,3)                                         &
+     &            -k_eq(8)*(pt**1.5)*(an_r(9)/const3)                   &
+     &            *(0.5/sqrt(an_r(3)+1.0d-50))
+        d_eq(14,9) = d_eq(14,9)                                         &
+     &            -k_eq(8)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
         d_eq(14,15) = d_eq(14,15)+ pt/an_t
 
 
 
-        d_eq(15,1) = pt*an_r(16)*(-1.0)/const2
-     ,             -k_eq(9)*(pt**1.5)*sqrt(an_r(14)+1.0d-50)
-     ,             *(an_r(3))*(-1.5/const5)
+        d_eq(15,1) = pt*an_r(16)*(-1.0)/const2                          &
+     &             -k_eq(9)*(pt**1.5)*sqrt(an_r(14)+1.0d-50)            &
+     &             *(an_r(3))*(-1.5/const5)
 
         do jj = 2,26
            d_eq(15,jj) = d_eq(15,1)
         enddo
 
-        d_eq(15,3) = d_eq(15,3)
-     ,            -k_eq(9)*(pt**1.5)*(sqrt(an_r(14)+1.0d-50)/const3)
-        d_eq(15,14) = d_eq(15,14)
-     ,            -k_eq(9)*(pt**1.5)*(an_r(3)/const3)
-     ,            *(0.5/sqrt(an_r(14)+1.0d-50))  
+        d_eq(15,3) = d_eq(15,3)                                         &
+     &            -k_eq(9)*(pt**1.5)*(sqrt(an_r(14)+1.0d-50)/const3)
+        d_eq(15,14) = d_eq(15,14)                                       &
+     &            -k_eq(9)*(pt**1.5)*(an_r(3)/const3)                   &
+     &            *(0.5/sqrt(an_r(14)+1.0d-50))  
         d_eq(15,16) = d_eq(15,16) + pt/an_t  
 
 
-        d_eq(16,1) = pt*an_r(12)*(-1.0)/const2
-     ,             -k_eq(10)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)
-     ,             *(an_r(6))*(-1.5/const5)
+        d_eq(16,1) = pt*an_r(12)*(-1.0)/const2                          &
+     &             -k_eq(10)*(pt**1.5)*sqrt(an_r(3)+1.0d-50)            &
+     &             *(an_r(6))*(-1.5/const5)
 
         do jj = 2,26
            d_eq(16,jj) = d_eq(16,1)
         enddo
 
-        d_eq(16,3) = d_eq(16,3)
-     ,             -k_eq(10)*(pt**1.5)*(an_r(6)/const3)
-     ,             *(0.5/sqrt(an_r(3)+1.0d-50))
+        d_eq(16,3) = d_eq(16,3)                                         &
+     &             -k_eq(10)*(pt**1.5)*(an_r(6)/const3)                 &
+     &             *(0.5/sqrt(an_r(3)+1.0d-50))
 
-        d_eq(16,6) = d_eq(16,6)
-     ,             -k_eq(10)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
+        d_eq(16,6) = d_eq(16,6)                                         &
+     &             -k_eq(10)*(pt**1.5)*(sqrt(an_r(3)+1.0d-50)/const3)
         d_eq(16,12) = d_eq(16,12) + pt/an_t
 
 
@@ -973,85 +964,85 @@
         const_four =  const2*const2
 
 
-        d_eq(17,1) = an_r(14)*an_r(18)*an_r(18)*(pt**3)*(-3/const_four)
-     ,             - k_eq(15) * an_r(17)*pt * (-1/const2)
+        d_eq(17,1) = an_r(14)*an_r(18)*an_r(18)*(pt**3)*(-3/const_four) &
+     &             - k_eq(15) * an_r(17)*pt * (-1/const2)
         do jj = 2,26
            d_eq(17,jj) = d_eq(17,1)
         enddo
         d_eq(17,14) = d_eq(17,14) + an_r(18)*an_r(18)*(pt**3)/const_cube
         d_eq(17,17) = d_eq(17,17) - k_eq(15)*pt/an_t
-        d_eq(17,18) = d_eq(17,18) + 2*an_r(18)*an_r(14)
-     ,                            *(pt**3)/const_cube
+        d_eq(17,18) = d_eq(17,18) + 2*an_r(18)*an_r(14)                 &
+     &                            *(pt**3)/const_cube
 
 
-        d_eq(18,1) = an_r(13)*an_r(13)*(pt**2)*(-2/const_cube)
-     ,             - k_eq(16) * an_r(3)*an_r(18)*an_r(18)
-     ,              * (pt*pt*pt) * (-3/const_four)
+        d_eq(18,1) = an_r(13)*an_r(13)*(pt**2)*(-2/const_cube)          &
+     &             - k_eq(16) * an_r(3)*an_r(18)*an_r(18)               &
+     &              * (pt*pt*pt) * (-3/const_four)
         do jj = 2,26
            d_eq(18,jj) = d_eq(18,1)
         enddo
-        d_eq(18,3) = d_eq(18,3) 
-     ,             - k_eq(16) *an_r(18)* an_r(18)*pt*pt*pt /const_cube
-        d_eq(18,13) = d_eq(18,13) 
-     ,              + 2* an_r(13)*pt*pt /const2
-        d_eq(18,18) = d_eq(18,18) -k_eq(16)*an_r(3)
-     ,              * 2*an_r(18)*pt*pt*pt/const_cube
+        d_eq(18,3) = d_eq(18,3)                                         &
+     &             - k_eq(16) *an_r(18)* an_r(18)*pt*pt*pt /const_cube
+        d_eq(18,13) = d_eq(18,13)                                       &
+     &              + 2* an_r(13)*pt*pt /const2
+        d_eq(18,18) = d_eq(18,18) -k_eq(16)*an_r(3)                     &
+     &              * 2*an_r(18)*pt*pt*pt/const_cube
 
 
 
 !====for eq 19 
 
-        d_eq(19,1) = an_r(3)*an_r(19)*(pt**2)*(-2/const_cube)
-     ,             - k_eq(17)*an_r(13)*an_r(10)*pt*pt * (-2/const_cube)
+        d_eq(19,1) = an_r(3)*an_r(19)*(pt**2)*(-2/const_cube)           &
+     &             - k_eq(17)*an_r(13)*an_r(10)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(19,jj) = d_eq(19,1)
         enddo
-        d_eq(19,13) = d_eq(19,13) 
-     ,             - k_eq(17) *an_r(10)*pt*pt /const2
-        d_eq(19,10) = d_eq(19,10) 
-     ,             - k_eq(17) *an_r(13)*pt*pt /const2
+        d_eq(19,13) = d_eq(19,13)                                       &
+     &             - k_eq(17) *an_r(10)*pt*pt /const2
+        d_eq(19,10) = d_eq(19,10)                                       &
+     &             - k_eq(17) *an_r(13)*pt*pt /const2
         d_eq(19,3) = d_eq(19,3) + an_r(19)*pt*pt/const2
         d_eq(19,19) = d_eq(19,19) + an_r(3)*pt*pt/const2
 !====for eq 20 
 
-        d_eq(20,1) = an_r(21)*an_r(20)*(pt**2)*(-2/const_cube)
-     ,             - k_eq(18) * an_r(19)*an_r(8)*pt*pt * (-2/const_cube)
+        d_eq(20,1) = an_r(21)*an_r(20)*(pt**2)*(-2/const_cube)          &
+     &             - k_eq(18) * an_r(19)*an_r(8)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(20,jj) = d_eq(20,1)
         enddo
-        d_eq(20,8) = d_eq(20,8) 
-     ,             - k_eq(18) *an_r(19)*pt*pt /const2
-        d_eq(20,19) = d_eq(20,19) 
-     ,             - k_eq(18) *an_r(8)*pt*pt /const2
+        d_eq(20,8) = d_eq(20,8)                                         &
+     &             - k_eq(18) *an_r(19)*pt*pt /const2
+        d_eq(20,19) = d_eq(20,19)                                       &
+     &             - k_eq(18) *an_r(8)*pt*pt /const2 
         d_eq(20,20) = d_eq(20,20) + an_r(21)*pt*pt/const2
         d_eq(20,21) = d_eq(20,21) + an_r(20)*pt*pt/const2
 
 !========
 !====for eq 21 
 
-        d_eq(21,1) = an_r(21)*an_r(23)*(pt**2)*(-2/const_cube)
-     ,             - k_eq(19)*an_r(7)*an_r(8)*pt*pt * (-2/const_cube)
+        d_eq(21,1) = an_r(21)*an_r(23)*(pt**2)*(-2/const_cube)          &
+     &             - k_eq(19)*an_r(7)*an_r(8)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(21,jj) = d_eq(21,1)
         enddo
-        d_eq(21,7) = d_eq(21,7) 
-     ,             - k_eq(19) *an_r(8)*pt*pt /const2
-        d_eq(21,8) = d_eq(21,8) 
-     ,             - k_eq(19) *an_r(7)*pt*pt /const2
+        d_eq(21,7) = d_eq(21,7)                                         &
+     &             - k_eq(19) *an_r(8)*pt*pt /const2
+        d_eq(21,8) = d_eq(21,8)                                         &
+     &             - k_eq(19) *an_r(7)*pt*pt /const2
         d_eq(21,21) = d_eq(21,21) + an_r(23)*pt*pt/const2
         d_eq(21,23) = d_eq(21,23) + an_r(21)*pt*pt/const2
 
 !======== 
 !  for 22  
-        d_eq(22,1) = an_r(5)*an_r(11)*(pt**2)*(-2/const_cube)
-     ,         -k_eq(20)*an_r(21)*an_r(22)*pt*pt * (-2/const_cube)
+        d_eq(22,1) = an_r(5)*an_r(11)*(pt**2)*(-2/const_cube)           &
+     &         -k_eq(20)*an_r(21)*an_r(22)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(22,jj) = d_eq(22,1)
         enddo
-        d_eq(22,21) = d_eq(22,21) 
-     ,             - k_eq(20) *an_r(22)*pt*pt /const2
-        d_eq(22,22) = d_eq(22,22) 
-     ,             - k_eq(20) *an_r(21)*pt*pt /const2
+        d_eq(22,21) = d_eq(22,21)                                       &
+     &             - k_eq(20) *an_r(22)*pt*pt /const2
+        d_eq(22,22) = d_eq(22,22)                                       &
+     &             - k_eq(20) *an_r(21)*pt*pt /const2
         d_eq(22,11) = d_eq(22,11) + an_r(5)*pt*pt/(const2)
         d_eq(22,5) = d_eq(22,5) + an_r(11)*pt*pt/(const2)
 
@@ -1060,43 +1051,43 @@
 !======== 
 !  for 23 
 
-        d_eq(23,1) = an_r(24)*(pt)*(-1/const2)
-     ,             - k_eq(21)*an_r(21)*an_r(3)*pt*pt * (-2/const_cube)
+        d_eq(23,1) = an_r(24)*(pt)*(-1/const2)                          &
+     &             - k_eq(21)*an_r(21)*an_r(3)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(23,jj) = d_eq(23,1)
         enddo
-        d_eq(23,3) = d_eq(23,3) 
-     ,             - k_eq(21) *an_r(21)*pt*pt /const2
-        d_eq(23,21) = d_eq(23,21) 
-     ,             - k_eq(21) *an_r(3)*pt*pt /const2
+        d_eq(23,3) = d_eq(23,3)                                         &
+     &             - k_eq(21) *an_r(21)*pt*pt /const2
+        d_eq(23,21) = d_eq(23,21)                                       &
+     &             - k_eq(21) *an_r(3)*pt*pt /const2
         d_eq(23,24) = d_eq(23,24) + pt/(an_t)
 
 !======== 
 !  for 24 
-        d_eq(24,1) = an_r(3)*an_r(25)*(pt**2)*(-2/const_cube)
-     ,             - k_eq(22)*an_r(24)*an_r(8)*pt*pt * (-2/const_cube)
+        d_eq(24,1) = an_r(3)*an_r(25)*(pt**2)*(-2/const_cube)           &
+     &             - k_eq(22)*an_r(24)*an_r(8)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(24,jj) = d_eq(24,1)
         enddo
-        d_eq(24,8) = d_eq(24,8) 
-     ,             - k_eq(22) *an_r(24)*pt*pt /const2
-        d_eq(24,24) = d_eq(24,24) 
-     ,             - k_eq(22) *an_r(8)*pt*pt /const2
+        d_eq(24,8) = d_eq(24,8)                                         &
+     &             - k_eq(22) *an_r(24)*pt*pt /const2
+        d_eq(24,24) = d_eq(24,24)                                       &
+     &             - k_eq(22) *an_r(8)*pt*pt /const2
         d_eq(24,3) = d_eq(24,3) + an_r(25)*pt*pt/const2
         d_eq(24,25) = d_eq(24,25) + an_r(3)*pt*pt/const2
 
 !======== 
 !for 25 
         
-        d_eq(25,1) = an_r(26)*(pt)*(-1/const2)
-     ,       - k_eq(23)*an_r(21)*an_r(10)*pt*pt * (-2/const_cube)
+        d_eq(25,1) = an_r(26)*(pt)*(-1/const2)                          &
+     &       - k_eq(23)*an_r(21)*an_r(10)*pt*pt * (-2/const_cube)
         do jj = 2,26
            d_eq(25,jj) = d_eq(25,1)
         enddo
-        d_eq(25,10) = d_eq(25,10) 
-     ,             - k_eq(23) *an_r(21)*pt*pt /const2
-        d_eq(25,21) = d_eq(25,21) 
-     ,             - k_eq(23) *an_r(10)*pt*pt /const2
+        d_eq(25,10) = d_eq(25,10)                                       &
+     &             - k_eq(23) *an_r(21)*pt*pt /const2
+        d_eq(25,21) = d_eq(25,21)                                       &
+     &             - k_eq(23) *an_r(10)*pt*pt /const2
         d_eq(25,26) = d_eq(25,26) + pt/(an_t)
 
 !============
@@ -1121,12 +1112,9 @@
         end
 
       subroutine ShashiPostCheck(ls,X,Y,W,c_Y,c_W,dummy)
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscvec.h90>
+      use petscsnes
+      implicit none
       SNESLineSearch ls
       PetscErrorCode ierr
       Vec X,Y,W
