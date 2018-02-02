@@ -887,8 +887,15 @@ class Configure(config.base.Configure):
       return
     skipfortranlibraries = 1
     self.setCompilers.saveLog()
+    cbody = "int main(int argc,char **args)\n{return 0;}\n";
+    self.pushLanguage('FC')
+    if self.checkLink(includes='#include <mpif.h>',body='      call MPI_Allreduce()\n'):
+      fbody = "subroutine asub()\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"
+    else:
+      fbody = "subroutine asub()\n      print*,'testing'\n      return\n      end\n"
+    self.popLanguage()
     try:
-      if self.checkCrossLink("      subroutine asub()\n      print*,'testing'\n      return\n      end\n","int main(int argc,char **args)\n{return 0;}\n",language1='FC',language2='C'):
+      if self.checkCrossLink(fbody,cbody,language1='FC',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Fortran libraries are not needed when using C linker')
       else:
@@ -903,7 +910,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink("      subroutine asub()\n      print*,'testing'\n      return\n      end\n","int main(int argc,char **args)\n{return 0;}\n",language1='FC',language2='C++'):
+        if self.checkCrossLink(fbody,cbody,language1='FC',language2='C++'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('Fortran libraries are not needed when using C++ linker')
         else:

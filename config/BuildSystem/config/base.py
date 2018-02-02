@@ -406,13 +406,15 @@ class Configure(script.Script):
           codeEnd   = ';\n  return 0;\n}\n'
         codeStr += codeBegin+body+codeEnd
     elif language == 'FC':
-      if not includes is None:
+      if not includes is None and body is None:
         codeStr = includes
       else:
         codeStr = ''
       if not body is None:
         if codeBegin is None:
           codeBegin = '      program main\n'
+          if not includes is None:
+            codeBegin = codeBegin+includes
         if codeEnd is None:
           codeEnd   = '\n      end\n'
         codeStr += codeBegin+body+codeEnd
