@@ -7378,25 +7378,24 @@ PetscErrorCode MatResidual(Mat mat,Vec b,Vec x,Vec r)
 
     Level: developer
 
-    Notes: You CANNOT change any of the ia[] or ja[] values.
+    Notes:
+    You CANNOT change any of the ia[] or ja[] values.
 
-           Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values
+    Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values.
 
-    Fortran Node
-
-           In Fortran use
-$           PetscInt ia(1), ja(1)
-$           PetscOffset iia, jja
+    Fortran Notes:
+    In Fortran use
+$
+$      PetscInt ia(1), ja(1)
+$      PetscOffset iia, jja
 $      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
-$      Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
-$
-$          or
-$
-$           PetscInt, pointer :: ia(:),ja(:)
-$    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
-$      Acess the ith and jth entries via ia(i) and ja(j)
+$      ! Access the ith and jth entries via ia(iia + i) and ja(jja + j)
 
-
+     or
+$
+$    PetscInt, pointer :: ia(:),ja(:)
+$    call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
+$    ! Access the ith and jth entries via ia(i) and ja(j)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatSeqAIJGetArray()
 @*/
