@@ -1069,7 +1069,7 @@ class Configure(config.base.Configure):
         acceptedPIC = 1
         try:
           self.addCompilerFlag(testFlag, compilerOnly = 1)
-          acceptedPIC = self.checkLink(includes = includeLine, codeBegin = '', codeEnd = '', cleanup = 1, shared = 1, linkLanguage = myLanguage)
+          acceptedPIC = self.checkLink(includes = includeLine, body = None, codeBegin = '', codeEnd = '', cleanup = 1, shared = 1, linkLanguage = myLanguage)
         except RuntimeError:
           acceptedPIC = 0
         if not acceptedPIC:
