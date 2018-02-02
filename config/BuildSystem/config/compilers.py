@@ -501,7 +501,7 @@ class Configure(config.base.Configure):
     '''Determines the libraries needed to link with C++'''
     skipcxxlibraries = 1
     self.setCompilers.saveLog()
-    body   = '''#include <iostream>\nvoid asub(void)\n{try  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }}'''
+    body   = '''#include <iostream>\n#include <vector>\nvoid asub(void)\n{std::vector<int> v;\ntry  { throw 20;  }  catch (int e)  { std::cout << "An exception occurred";  }}'''
     try:
       if self.checkCrossLink(body,"int main(int argc,char **args)\n{return 0;}\n",language1='C++',language2='C'):
         self.logWrite(self.setCompilers.restoreLog())
@@ -515,7 +515,7 @@ class Configure(config.base.Configure):
         else:
           self.setCompilers.LIBS = oldLibs
           self.logPrint('C++ code cannot directly be linked with C linker, therefor will determine needed C++ libraries')
-          skipclibraries = 0
+          skipcxxlibraries = 0
     except RuntimeError, e:
       self.logWrite(self.setCompilers.restoreLog())
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
@@ -536,7 +536,7 @@ class Configure(config.base.Configure):
           else:
             self.setCompilers.LIBS = oldLibs
             self.logPrint('C++ code cannot directly be linked with FC linker, therefor will determine needed C++ libraries')
-            skipclibraries = 0
+            skipcxxlibraries = 0
       except RuntimeError, e:
         self.logWrite(self.setCompilers.restoreLog())
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
