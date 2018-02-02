@@ -5,6 +5,7 @@ ALL: clean manual.pdf
 #  Run make manual.pdf LOC=$PETSC_DIR GONULL="" to display all the error messages from running pdflatex on the manual
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
+PDFLATEXOPTS = -interaction=nonstopmode -halt-on-error
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -49,20 +50,20 @@ manual.pdf: chk_loc chk intro.tex abstract.tex acknowl.tex manual.tex part1.tex 
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat acknowl.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > acknowltmp.tex
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	-bibtex manual1 ${GONULL}
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	makeindex manual1  ${GONULL}
 	${MV} part2tmp.tex tmp
 	grep -v "end{theindex}" tmp > part2tmp.tex
 	sed -e 's/_/\\_/g' manual1.ind | grep -v "begin{theindex}" >>  part2tmp.tex
-	${PDFLATEX} -halt-on-error manual1  ${GONULL}
-	${PDFLATEX} -halt-on-error manual1
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} manual1  ${GONULL}
 	${MV} manual1.pdf ${LOC}/docs/manual.pdf
 # Now make the intro part ... note that this depends on latexing the manual
 	${CP} manual1.aux intro.aux
-	${PDFLATEX} -halt-on-error intro
+	${PDFLATEX} ${PDFLATEXOPTS} intro  ${GONULL}
 	${RM} part1tmp.tex part2tmp.tex acknowltemp.tex tmp ${MANUAL_LISTINGS_INCLUDE}
 #	${MAKE} rclean
 
@@ -143,9 +144,9 @@ listing_drawex3tmp.tex : ${LOC}/docs/manualpages/htmlmap ../../../../src/sys/cla
 developers.pdf: chk_loc chk developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
-	${PDFLATEX} developerstmp.tex
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
 	bibtex developerstmp ${GONULL}
-	${PDFLATEX} developerstmp.tex
-	${PDFLATEX} developerstmp.tex
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
+	${PDFLATEX} ${PDFLATEXOPTS} developerstmp.tex ${GONULL}
 	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
 
