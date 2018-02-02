@@ -13,9 +13,12 @@ static PetscInt petsc_checkpointer_intensity = 1;
    Input Arguments:
 .  intensity - how much to check pointers for validity
 
+   Options Database Keys:
+.  -check_pointer_intensity - intensity (0, 1, or 2)
+
    Level: advanced
 
-.seealso: PetscCheckPointer(), PetscFunctionBeginHot
+.seealso: PetscCheckPointer(), PetscFunctionBeginHot()
 @*/
 PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 {
@@ -50,6 +53,7 @@ PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 
    Level: developer
 
+.seealso: PetscCheckPointerSetIntensity()
 @*/
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
