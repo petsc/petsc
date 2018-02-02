@@ -63,10 +63,12 @@ if ( -f /usr/bin/cygcheck.exe ) then
   mkdir -p $TMP
 endif
 
+set PETSC_OPTIONS=""
 # Run initialization script
 if ( -f ./config/examples/${CONFIGURE_FILE}.csh ) then
   source ./config/examples/${CONFIGURE_FILE}.csh
 endif
+set PETSC_OPTIONS="${PETSC_OPTIONS} -check_pointer_intensity 0"
 
 # Run Configure
 ./config/examples/${CONFIGURE_FILE}.py --with-no-output PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
