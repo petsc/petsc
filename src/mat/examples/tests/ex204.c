@@ -90,6 +90,7 @@ int main(int argc,char **args)
     ierr = VecDestroy(&r);CHKERRQ(ierr);
     ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
     ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
+    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&A_vcl);CHKERRQ(ierr);
   }
@@ -142,6 +143,7 @@ int main(int argc,char **args)
     ierr = VecDestroy(&r);CHKERRQ(ierr);
     ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
     ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
+    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 
