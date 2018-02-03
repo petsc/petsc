@@ -660,7 +660,7 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
       DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
         processes neighbors.
 
