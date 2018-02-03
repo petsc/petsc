@@ -311,7 +311,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
   Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->data;
   PetscErrorCode    ierr;
   PetscScalar       *xarray;
-  const PetscScalar *barray
+  const PetscScalar *barray;
   PetscBool         flg;
 
   PetscFunctionBegin;
