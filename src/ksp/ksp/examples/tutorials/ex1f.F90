@@ -187,6 +187,5 @@
 !
 !     test:
 !       args: -ksp_monitor_short
-!       requires: petsc4py
 !
 !TEST*/

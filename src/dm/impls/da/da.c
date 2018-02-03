@@ -660,7 +660,7 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
       DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
         processes neighbors.
 
@@ -716,6 +716,8 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
     DMDA they came from still exists (has not been destroyed).
 
     These numbers are NOT multiplied by the number of dof per node.
+
+     Not available from Fortran
 
 .seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
 @*/
@@ -813,6 +815,8 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 
    Notes: See DMDASetBlockFills() that provides a simple way to provide the nonzero structure for
        the diagonal and off-diagonal blocks of the matrix
+
+   Not supported from Fortran
 
 .seealso: DMCreateMatrix(), DMDASetBlockFills()
 @*/
@@ -1320,7 +1324,7 @@ PetscErrorCode DMDASetGLLCoordinates_1d(DM dm,PetscGLL *gll)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
 
      DMDASetGLLCoordinates - Sets the global coordinates from -1 to 1 to the GLL points of as many GLL elements that fit the number of grid points
 

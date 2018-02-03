@@ -1734,7 +1734,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     DMCompositeCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
 

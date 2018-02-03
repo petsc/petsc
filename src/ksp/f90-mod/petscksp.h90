@@ -9,3 +9,20 @@
         end subroutine
       end interface
 
+      Interface
+      subroutine KSPSetType(a,b,z)
+      use petsckspdef
+       KSP a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine KSPView(a,b,z)
+      use petsckspdef
+       KSP a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface

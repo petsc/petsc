@@ -210,7 +210,7 @@ struct _n_PetscLayout{
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
 };
 
-/*@C
+/*@
      PetscLayoutFindOwner - Find the owning rank for a global index
 
     Not Collective

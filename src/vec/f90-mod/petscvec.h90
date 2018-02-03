@@ -209,3 +209,20 @@
         End Subroutine
       End Interface
 
+      Interface
+      subroutine VecSetType(a,b,z)
+      use petscvecdef
+       Vec a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecView(a,b,z)
+      use petscvecdef
+       Vec a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface
