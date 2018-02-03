@@ -21,7 +21,9 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&y);CHKERRQ(ierr);
+  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
 
   /* create two index sets */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
@@ -56,6 +58,7 @@ int main(int argc,char **argv)
       suffix: cuda
       args: -vec_type cuda
       output_file: output/ex4_1.out
+      filter: grep -v type
       requires: veccuda
 
    test:
@@ -63,18 +66,21 @@ int main(int argc,char **argv)
       nsize: 2
       args: -vec_type cuda
       output_file: output/ex4_1.out
+      filter: grep -v type
       requires: veccuda
 
    test:
       suffix: cusp
       args: -vec_type cusp
       output_file: output/ex4_1.out
+      filter: grep -v type
       requires: cusp
 
    test:
       suffix: cusp2
       nsize: 2
       args: -vec_type cusp
+      filter: grep -v type
       output_file: output/ex4_1.out
       requires: cusp
 
