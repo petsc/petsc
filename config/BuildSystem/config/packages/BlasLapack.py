@@ -578,7 +578,7 @@ class Configure(config.package.Package):
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
     if result:
       self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
       result = int(result)
@@ -592,7 +592,7 @@ class Configure(config.package.Package):
                   double dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.mathlib.lib,nobatch=1)
+          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
           result = int(result)
       if result:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
@@ -617,7 +617,7 @@ class Configure(config.package.Package):
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
                   fprintf(output, "--known-sdot-returns-doubl=%d",sdotresult != 9);\n'''
-    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
     if result:
       self.log.write('Checking for sdot return double: result' +str(result)+'\n')
       result = int(result)
@@ -640,7 +640,7 @@ class Configure(config.package.Package):
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
                   fprintf(output, "--known-snrm2-returns-double=%d",normresult != 3);\n'''
-    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
     if result:
       self.log.write('Checking for snrm2 return double: result' +str(result)+'\n')
       result = int(result)
