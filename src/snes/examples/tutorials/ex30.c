@@ -1464,6 +1464,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
       requires: !complex erf
 
    test:
+      args: -ni 18
       filter: grep -v Destination
       requires: !single
 
