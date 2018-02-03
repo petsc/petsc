@@ -134,14 +134,14 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatReuse re
 {
   const PetscInt    *ai, *aj, *bi, *bj,*garray,m=A->rmap->n,*ajj,*bjj;
   PetscErrorCode    ierr;
-  PetscInt          rstart,nz,i,j,jj,irow,countA,countB;
+  PetscInt          rstart,nz,i,j,countA,countB;
   PetscInt          *row,*col;
-  const PetscScalar *av, *bv,*v1,*v2;
+  const PetscScalar *av, *bv;
   PetscScalar       *val;
   Mat_MPIAIJ        *mat = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ        *aa  = (Mat_SeqAIJ*)(mat->A)->data;
   Mat_SeqAIJ        *bb  = (Mat_SeqAIJ*)(mat->B)->data;
-  PetscInt          nn, colA_start,jB,jcol;
+  PetscInt          colA_start,jB,jcol;
 
   PetscFunctionBegin;
   ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap->rstart;
@@ -230,7 +230,7 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
       NULL,
       NULL,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
-      &mat_mkl_cpardiso->err);
+      (int*)&mat_mkl_cpardiso->err);
   }
 
   if (mat_mkl_cpardiso->ConvertToTriples == MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO) {
@@ -280,7 +280,7 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
     (void*)barray,
     (void*)xarray,
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
-    &mat_mkl_cpardiso->err);
+    (int*)&mat_mkl_cpardiso->err);
 
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
@@ -346,7 +346,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
       (void*)barray,
       (void*)xarray,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
-      &mat_mkl_cpardiso->err);
+      (int*)&mat_mkl_cpardiso->err);
     if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
     ierr = MatDenseRestoreArrayRead(B,&barray);
     ierr = MatDenseRestoreArray(X,&xarray);
@@ -402,7 +402,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
   PetscErrorCode      ierr;
   PetscInt            icntl;
   PetscBool           flg;
-  int                 pt[IPARM_SIZE], threads;
+  int                 threads;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MKL_CPARDISO Options","Mat");CHKERRQ(ierr);
@@ -495,7 +495,6 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
 PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpardiso)
 {
   PetscErrorCode  ierr;
-  PetscInt        i;
   PetscMPIInt     size;
 
   PetscFunctionBegin;
@@ -584,7 +583,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
     NULL,
     NULL,
     &mat_mkl_cpardiso->comm_mkl_cpardiso,
-    &mat_mkl_cpardiso->err);
+    (int*)&mat_mkl_cpardiso->err);
 
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\".Check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
@@ -658,7 +657,6 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
     else if(icntl == 67) mat_mkl_cpardiso->mnum = ival;
     else if(icntl == 68) mat_mkl_cpardiso->msglvl = ival;
     else if(icntl == 69){
-      int pt[IPARM_SIZE];
       mat_mkl_cpardiso->mtype = ival;
 #if defined(PETSC_USE_REAL_SINGLE)
       mat_mkl_cpardiso->iparm[27] = 1;
