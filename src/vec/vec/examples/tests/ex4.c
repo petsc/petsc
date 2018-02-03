@@ -52,7 +52,7 @@ int main(int argc,char **argv)
 
    test:
       nsize: 2
-
+      filter: grep -v type
 
    test:
       suffix: cuda
