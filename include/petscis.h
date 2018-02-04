@@ -6,7 +6,7 @@
 #define __PETSCIS_H
 #include <petscsys.h>
 #include <petscsftypes.h>
-#include <petscistypes.h>
+#include <petscistypes.h>    /*I  "petscis.h" I*/
 
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
