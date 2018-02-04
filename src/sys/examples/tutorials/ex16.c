@@ -39,10 +39,10 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       nsize: 2
       args: -options_view -get_total_flops
-      filter: egrep -v \(malloc\|display\|nox\|"Total flops"\|saws_port_auto_select\|vecscatter_mpi1\|options_left\)
+      filter: egrep -v "(malloc|display|nox|Total flops|saws_port_auto_select|vecscatter_mpi1|options_left|error_output_stdout|check_pointer_intensity)"
 
 TEST*/
