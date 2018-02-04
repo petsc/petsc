@@ -34,6 +34,8 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
+   Not available from Fortran
+
 .keywords: PetscDS, register
 .seealso: PetscDSRegisterAll(), PetscDSRegisterDestroy()
 
@@ -60,6 +62,8 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 . -petscds_type <type> - Sets the PetscDS type; use -help for a list of available types
 
   Level: intermediate
+
+   Not available from Fortran
 
 .keywords: PetscDS, set, type
 .seealso: PetscDSGetType(), PetscDSCreate()
@@ -100,6 +104,8 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 . name - The PetscDS type name
 
   Level: intermediate
+
+   Not available from Fortran
 
 .keywords: PetscDS, get, type, name
 .seealso: PetscDSSetType(), PetscDSCreate()

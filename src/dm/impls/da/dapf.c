@@ -16,6 +16,7 @@
 
    Level: advanced
 
+   Not supported from Fortran
 
 .keywords:  distributed array, grid function
 

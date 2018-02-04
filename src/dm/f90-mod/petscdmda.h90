@@ -171,3 +171,69 @@
           PetscErrorCode z
         End Subroutine
       End Interface DMDACreate3d
+
+      Interface DMDAGetNeighbors
+        Subroutine DMDAGetNeighbors(a,b,z)
+          use petscdmdef
+          DM a
+          PetscMPIInt b(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetNeighbors
+
+      Interface DMDAGetOwnershipRange
+        Subroutine DMDAGetOwnershipRange(a,b,c,d,z)
+          use petscdmdef
+          DM a
+          PetscInt b(*), c(*), d(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetOwnershipRange
+
+      Interface DMDAGetRefinementFactor
+        Subroutine DMDAGetRefinementFactor(a,b,c,d,z)
+          use petscdmdef
+          DM a
+          PetscInt b(*), c(*), d(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetRefinementFactor
+
+      Interface DMDASetFieldName
+        Subroutine DMDASetFieldName(a,b,c,z)
+          use petscdmdef
+          DM a
+          PetscInt b
+          character(*) c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDASetFieldName
+
+      Interface DMDAGetFieldName
+        Subroutine DMDAGetFieldName(a,b,c,z)
+          use petscdmdef
+          DM a
+          PetscInt b
+          character(*) c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetFieldName
+
+      Interface DMDASetAOType
+        Subroutine DMDASetAOType(a,b,z)
+          use petscdmdef
+          DM a
+          character(*) b
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDASetAOType
+
+      Interface DMDAGetScatter
+        Subroutine DMDAGetScatter(a,b,c,z)
+          use petscdmdef
+          DM a
+          VecScatter b,c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetScatter
+

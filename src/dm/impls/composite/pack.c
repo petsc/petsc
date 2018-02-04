@@ -17,6 +17,8 @@
 
     Level: advanced
 
+    Not available from Fortran
+
     Notes: See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
         this routine
 
@@ -607,6 +609,8 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
 
     Level: advanced
 
+    Not available from Fortran, Fortran users can use DMCompositeGatherArray()
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
@@ -703,14 +707,14 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     DMCompositeAddDM - adds a DM vector to a DMComposite
 
     Collective on DMComposite
 
     Input Parameter:
 +    dmc - the DMComposite (packer) object
--    dm - the DM object; if the DM is a DMDA you will need to cast it with a (DM)
+-    dm - the DM object
 
     Level: advanced
 
@@ -854,6 +858,8 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
     Notes:
        Each entry of ltogs should be destroyed with ISLocalToGlobalMappingDestroy(), the ltogs array should be freed with PetscFree().
 
+    Not available from Fortran
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
@@ -936,6 +942,8 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
    To get index sets for pieces of the composite global vector, use DMCompositeGetGlobalISs().
 
    Each returned IS should be destroyed with ISDestroy(), the array should be freed with PetscFree().
+
+   Not available from Fortran
 
 .seealso: DMCompositeGetGlobalISs(), DMCompositeGetISLocalToGlobalMappings(), MatGetLocalSubMatrix(), MatCreateLocalRef()
 @*/
@@ -1114,6 +1122,8 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
 
     Level: advanced
 
+    Not available from Fortran
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeRestoreLocalVectors(), DMCompositeScatter(), DMCompositeGetEntries()
@@ -1153,6 +1163,8 @@ PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
 .   Vec ... - the individual sequential Vecs
 
     Level: advanced
+
+    Not available from Fortran
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
@@ -1194,6 +1206,8 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
 .   DM ... - the individual entries (DMs)
 
     Level: advanced
+
+    Fortran Notes: Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(), DMCompositeGetEntriesArray()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),

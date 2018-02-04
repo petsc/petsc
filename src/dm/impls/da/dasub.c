@@ -190,6 +190,8 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
    or other application-specific calculations that require manipulating
    sets of data throughout a logical plane of grid points.
 
+   Not supported from Fortran
+
 .keywords: distributed array, get, processor subset
 @*/
 PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_Comm *comm)
@@ -258,6 +260,8 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
    This routine is useful for distributing one-dimensional data in a tensor product grid.
 
    After use, comm should be freed with MPI_Comm_free()
+
+   Not supported from Fortran
 
 .keywords: distributed array, get, processor subset
 @*/

@@ -365,6 +365,8 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 
   Note: Together v0 and jac define an affine mapping from the original reference element to each subelement
 
+ Not available from Fortran
+
   Level: intermediate
 
 .seealso: PetscFECreate(), PetscSpaceGetDimension(), PetscDualSpaceGetDimension()
@@ -738,7 +740,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscDTGaussJacobiQuadrature - create Gauss-Jacobi quadrature for a simplex
 
   Not Collective
@@ -822,7 +824,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscDTTanhSinhTensorQuadrature - create tanh-sinh quadrature for a tensor product cell
 
   Not Collective

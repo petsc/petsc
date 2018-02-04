@@ -67,16 +67,6 @@ PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DM *da1,DM *da2,D
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4,da5);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
-{
-  *ierr = DMCompositeAddDM(*dm,*da);
-}
-
-PETSC_EXTERN void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
-{
-  *ierr = DMDestroy(dm);
-}
-
 PETSC_EXTERN void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;

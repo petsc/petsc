@@ -430,15 +430,17 @@ PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 -  y - the second vector
 
-   Output Parameter:
+   Output Parameters:
 +  xv - location to put pointer to the first array
 -  yv - location to put pointer to the second array
 
    Level: developer
+
+   Not available from Fortran
 
 .seealso: VecGetArray(), VecGetArrayRead(), VecRestoreArrayPair()
 
@@ -462,15 +464,17 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  x - the vector
 -  y - the second vector
 
-   Output Parameter:
+   Output Parameters:
 +  xv - location to put pointer to the first array
 -  yv - location to put pointer to the second array
 
    Level: developer
+
+   Not available from Fortran
 
 .seealso: VecGetArray(), VecGetArrayRead(), VecGetArrayPair()
 
