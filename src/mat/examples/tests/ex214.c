@@ -6,7 +6,7 @@ Example: mpiexec -n 1 ./ex214 -f <matrix binary file> -nrhs 4 \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X,S;
+  Mat            A,RHS,C,F,X;//,S;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -125,8 +125,12 @@ int main(int argc,char **args)
 
   ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
   ierr = MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
+
+  /* MUMPS requres spRHS in compressed column format, which PETSc does not support.
+     PETSc can create a new matrix object that shares same data structure with A and behaves like A^T */
   ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
   ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+  ierr = MatView(X,0);CHKERRQ(ierr);
 
   /* Check the residual */
   ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
@@ -138,34 +142,25 @@ int main(int argc,char **args)
   ierr = MatDestroy(&AX);CHKERRQ(ierr);
 
   /* (4) Test MatMatSolve() for inv(A) with selected entries:
-   spRHS gives selected indices, sparse spX selected entries of inv(A) */
-  Mat spX,spXT;
-  ierr = MatDuplicate(spRHST,MAT_COPY_VALUES,&spX);CHKERRQ(ierr);
-  ierr = MatTranspose(spX,MAT_INITIAL_MATRIX,&spXT);CHKERRQ(ierr);
-  MatView(spX,0);
+   input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
 
-  /* set mumps flag for computing user-specified set of entries in inv(A) */
+  /* first, set mumps flag for computing user-specified set of entries in inv(A) */
   ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
 
-  ierr = MatMatSolve(F,spRHS,spXT);CHKERRQ(ierr);
+  ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr); /* X is not being used here, but PETSc MatMatSolve() does not allow NULL as an input */
+  printf("Transpose of sparse solution matrix:\n");
+  ierr = MatView(spRHST,0);CHKERRQ(ierr); /* spRHST shares same data structure as spRHS */
 
-  ierr = MatDestroy(&spX);CHKERRQ(ierr);
+  Mat spRHSTT;
+  ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
+  printf("\nSparse solution matrix:\n");
+  ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
 
-#if 0
-        /* Check the error */
-        ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-        if (norm > tol) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"sparse MatMatSolve: Norm of error %g\n",norm);CHKERRQ(ierr);
-        }
-        //}
-#endif
-        ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-      ierr = MatDestroy(&RHST);CHKERRQ(ierr);
-    
-    ierr = MatDestroy(&S);CHKERRQ(ierr);
-    
+  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+  ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+  ierr = MatDestroy(&RHST);CHKERRQ(ierr);
+
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

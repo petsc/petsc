@@ -819,6 +819,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!flg) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   }
 
+  ierr = MatGetSize(B,&M,&nrhs);CHKERRQ(ierr);
+  mumps->id.nrhs = nrhs;
+  mumps->id.lrhs = M;
+
   if (mumps->id.ICNTL(30)) {
     if (mumps->size == 1 && Bt) {
       PetscBool   done;
@@ -828,6 +832,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
       ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
       if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+
       mumps->id.irhs_ptr    = ia;
       mumps->id.irhs_sparse = ja;
       mumps->id.nz_rhs      = ia[spnr] - 1;
@@ -838,9 +843,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       /*-------------*/
       mumps->id.job = JOB_SOLVE;
       PetscMUMPS_c(&mumps->id);
-      if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
-
-      printf("not done yet\n");
+      if (mumps->id.INFOG(1) < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFOG(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFOG(2));
     } else {
       SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"not done yet");
     }
@@ -851,10 +854,6 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   }
 
   if (B->rmap->n != X->rmap->n) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
-
-  ierr = MatGetSize(B,&M,&nrhs);CHKERRQ(ierr);
-  mumps->id.nrhs = nrhs;
-  mumps->id.lrhs = M;
 
   if (mumps->size == 1) {
     PetscScalar *aa;
@@ -978,13 +977,13 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     /* scatter mumps distributed solution to petsc vector v_mpi, which shares local arrays with solution matrix X */
     ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
     ierr = VecPlaceArray(v_mpi,array);CHKERRQ(ierr);
-    
+
     /* create scatter scat_sol */
     ierr = PetscMalloc1(nlsol_loc,&idxx);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,nlsol_loc,0,1,&is_from);CHKERRQ(ierr); 
     for (i=0; i<lsol_loc; i++) {
       isol_loc[i] -= 1; /* change Fortran style to C style */
-      idxx[i] = iidx[isol_loc[i]]; 
+      idxx[i] = iidx[isol_loc[i]];
       for (j=1; j<nrhs; j++){
         idxx[j*lsol_loc+i] = iidx[isol_loc[i]+j*M];
       }
