@@ -893,7 +893,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatScale(C,-1.);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject)C);CHKERRQ(ierr);
         ierr = MatDestroy(&C);CHKERRQ(ierr);
-      } else if (A != Ap) { /* user has provided a different Pmat, use it to extract the pressure preconditioner */
+      }
+      if (A != Ap) { /* user has provided a different Pmat, use it to extract the pressure preconditioner */
         Mat C;
 
         ierr = MatCreateSubMatrix(Ap,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
@@ -1207,7 +1208,8 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
    will use GMRES for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric PCBDDC.
 
    For saddle point problems with continuous pressures, the preconditioned operator for the pressure solver can be specified with KSPFETIDPSetPressureOperator().
-   If it's not provided, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
+   Alternatively, the pressure operator is extracted from the precondioned matrix (if it is different from the linear solver matrix).
+   If none of the above, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
    Options for the pressure solver can be prefixed with -fetidp_fielsplit_p_, E.g.
 .vb
       -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
