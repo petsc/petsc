@@ -4119,11 +4119,12 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatMatMult(local_auxmat2_R,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
     if (n_vertices) {
-      if (isCHOL) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
+      if (isCHOL || pcbddc->symmetric_primal) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
         ierr = MatTranspose(S_CV,MAT_REUSE_MATRIX,&S_VC);CHKERRQ(ierr);
       } else {
         Mat S_VCt;
 
+        if (need_benign_correction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
         if (lda_rhs != n_R) {
           ierr = MatDestroy(&B);CHKERRQ(ierr);
           ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work,&B);CHKERRQ(ierr);
@@ -4395,18 +4396,12 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     char filename[256];
     sprintf(filename,"details_local_coarse_mat%d_level%d.m",PetscGlobalRank,pcbddc->current_level);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)coarse_sub_mat,"computed");CHKERRQ(ierr);
     ierr = MatView(coarse_sub_mat,viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)TM1,"projected");CHKERRQ(ierr);
     ierr = MatView(TM1,viewer);CHKERRQ(ierr);
-    if (save_change) {
-      Mat phi_B;
-      ierr = MatMatMult(save_change,pcbddc->coarse_phi_B,MAT_INITIAL_MATRIX,1.0,&phi_B);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)phi_B,"phi_B");CHKERRQ(ierr);
-      ierr = MatView(phi_B,viewer);CHKERRQ(ierr);
-      ierr = MatDestroy(&phi_B);CHKERRQ(ierr);
-    } else {
+    if (pcbddc->coarse_phi_B) {
       ierr = PetscObjectSetName((PetscObject)pcbddc->coarse_phi_B,"phi_B");CHKERRQ(ierr);
       ierr = MatView(pcbddc->coarse_phi_B,viewer);CHKERRQ(ierr);
     }

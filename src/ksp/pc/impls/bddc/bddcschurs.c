@@ -1013,7 +1013,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           ierr = ISRestoreIndices(is_p_r[i],&idxs);CHKERRQ(ierr);
           ierr = VecDestroy(&benign_AIIm1_ones);CHKERRQ(ierr);
         }
-  /* restore defaults */
+        if (!S_lower_triangular) { /* I need to expand the upper triangular data (column oriented) */
+          PetscInt k,j;
+          for (k=0;k<size_schur;k++) {
+            for (j=k;j<size_schur;j++) {
+              S_data[j*size_schur+k] = PetscConj(S_data[k*size_schur+j]);
+            }
+          }
+        }
+
+        /* restore defaults */
 #if defined(PETSC_HAVE_MUMPS)
         ierr = MatMumpsSetIcntl(F,26,-1);CHKERRQ(ierr);
 #endif
