@@ -20,7 +20,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor test");
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor test");
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
-  nrhs = 2;
+  nrhs = n;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
@@ -143,19 +143,18 @@ int main(int argc,char **args)
 
   /* (4) Test MatMatSolve() for inv(A) with selected entries:
    input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
+  if (nrhs == n) { /* mumps requires nrhs = n */
+    ierr = MatMumpsGetMatInverse(F,spRHS);CHKERRQ(ierr);
 
-  /* first, set mumps flag for computing user-specified set of entries in inv(A) */
-  ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
+    printf("Transpose of sparse solution matrix:\n");
+    ierr = MatView(spRHST,0);CHKERRQ(ierr); /* spRHST shares same data structure as spRHS */
 
-  ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr); /* X is not being used here, but PETSc MatMatSolve() does not allow NULL as an input */
-  printf("Transpose of sparse solution matrix:\n");
-  ierr = MatView(spRHST,0);CHKERRQ(ierr); /* spRHST shares same data structure as spRHS */
-
-  Mat spRHSTT;
-  ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
-  printf("\nSparse solution matrix:\n");
-  ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
-  ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
+    Mat spRHSTT;
+    ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
+    printf("\nSparse solution matrix:\n");
+    ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
+    ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
+  }
 
   ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
   ierr = MatDestroy(&spRHS);CHKERRQ(ierr);

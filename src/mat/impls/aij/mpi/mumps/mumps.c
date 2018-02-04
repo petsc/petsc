@@ -701,6 +701,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetInfog_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfo_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRinfog_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetMatInverse_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -823,6 +824,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.nrhs = nrhs;
   mumps->id.lrhs = M;
 
+#if 0
   if (mumps->id.ICNTL(30)) {
     if (mumps->size == 1 && Bt) {
       PetscBool   done;
@@ -848,10 +850,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"not done yet");
     }
     PetscFunctionReturn(0);
-  } else {
-    ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
-  }
+  } 
+#endif
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
   if (B->rmap->n != X->rmap->n) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
 
@@ -1959,7 +1961,77 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
   Mat_MUMPS *mumps =(Mat_MUMPS*)F->data;
 
   PetscFunctionBegin;
-  *rinfog = mumps->id.RINFOG(icntl); 
+  *rinfog = mumps->id.RINFOG(icntl);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMumpsGetMatInverse_MUMPS(Mat F,Mat spRHS)
+{
+  PetscErrorCode ierr;
+  Mat            Bt = NULL;
+  PetscBool      flgT;
+  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
+  PetscBool      done;
+  PetscScalar    *aa;
+  PetscInt       spnr,*ia,*ja;
+
+  PetscFunctionBegin;
+  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"No support for parallel runs yet");
+  ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
+  if (flgT) {
+    ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)spRHS),PETSC_ERR_ARG_WRONG,"Matrix spRHS must be type MATTRANSPOSEMAT matrix");
+  }
+
+  ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
+
+  ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+  if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+
+  mumps->id.irhs_ptr    = ia;
+  mumps->id.irhs_sparse = ja;
+  mumps->id.nz_rhs      = ia[spnr] - 1;
+  mumps->id.rhs_sparse  = (MumpsScalar*)aa;
+  mumps->id.ICNTL(20)   = 1; /* rhs is sparse */
+
+  /* solve phase */
+  /*-------------*/
+  mumps->id.job = JOB_SOLVE;
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFOG(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFOG(2));
+  PetscFunctionReturn(0);
+}
+
+/*@
+  MatMumpsGetMatInverse - Get user-specified set of entries in inverse of A
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  spRHS - sequential sparse matrix in MATTRANSPOSEMAT format holding specified indices
+
+  Output Parameter:
+.   - spRHS - requested entries of inverse of A
+
+   Level: beginner
+
+   References:
+.      MUMPS Users' Guide
+
+.seealso: MatGetFactor(), MatCreateTranspose()
+@*/
+PetscErrorCode MatMumpsGetMatInverse(Mat F,Mat spRHS)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidType(F,1);
+  if (!F->factortype) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscValidIntPointer(spRHS,2);
+  ierr = PetscUseMethod(F,"MatMumpsGetMatInverse_C",(Mat,Mat),(F,spRHS));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2179,6 +2251,7 @@ static PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInfog_C",MatMumpsGetInfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetMatInverse_C",MatMumpsGetMatInverse_MUMPS);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
@@ -2253,6 +2326,7 @@ static PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInfog_C",MatMumpsGetInfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetMatInverse_C",MatMumpsGetMatInverse_MUMPS);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 #if defined(PETSC_USE_COMPLEX)
@@ -2314,6 +2388,7 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetInfog_C",MatMumpsGetInfog_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfo_C",MatMumpsGetRinfo_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRinfog_C",MatMumpsGetRinfog_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetMatInverse_C",MatMumpsGetMatInverse_MUMPS);CHKERRQ(ierr);
 
   /* set solvertype */
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
