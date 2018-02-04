@@ -555,7 +555,7 @@ class Configure(config.package.Package):
       if lib:
         if not isinstance(lib, list): lib = [lib]
         oldLibs  = self.compilers.LIBS
-        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(lib)+' '+self.compilers.LIBS
       if not self.checkCompile(includes, body):
         raise RuntimeError('Error in compiling submitted code for testing')
       if self.checkRun(includes, body) and os.path.exists(filename):
@@ -580,7 +580,7 @@ class Configure(config.package.Package):
                   '''+t+''' dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
     if result:
       self.log.write('Checking for 64 bit blas indices: result ' +str(result)+'\n')
       result = int(result)
@@ -594,7 +594,7 @@ class Configure(config.package.Package):
                   double dotresultmkl = 0;
                   dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
-          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
+          result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
           result = int(result)
       if result:
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
@@ -619,9 +619,9 @@ class Configure(config.package.Package):
                        sdotresult = '''+self.mangleBlasNoPrefix('sdot')+'''((const int*)&ione1,x1,(const int*)&ione1,x1,(const int*)&ione1);
                      }
                   fprintf(output, "--known-sdot-returns-doubl=%d",sdotresult != 9);\n'''
-    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
-      self.log.write('Checking for sdot return double: result' +str(result)+'\n')
+      self.log.write('Checking for sdot return double: result ' +str(result)+'\n')
       result = int(result)
       if result:
         self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
@@ -642,9 +642,9 @@ class Configure(config.package.Package):
                        normresult = '''+self.mangleBlasNoPrefix('snrm2')+'''((const int*)&ione2,x2,(const int*)&ione2);
                      }
                   fprintf(output, "--known-snrm2-returns-double=%d",normresult != 3);\n'''
-    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib+self.flibs.lib+self.mathlib.lib,nobatch=1)
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib,nobatch=1)
     if result:
-      self.log.write('Checking for snrm2 return double: result' +str(result)+'\n')
+      self.log.write('Checking for snrm2 return double: result ' +str(result)+'\n')
       result = int(result)
       if result:
         self.log.write('Checking sdot(): Program did eturn with 1 for output so assume returns double\n')
