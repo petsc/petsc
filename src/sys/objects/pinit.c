@@ -931,6 +931,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
   ierr = PetscOptionsInsert(NULL,argc,args,file);CHKERRQ(ierr);
 
+  /* call a second time so it can look in the options database */
+  ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
 
   /*
      Print main application help message

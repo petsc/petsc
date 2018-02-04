@@ -460,6 +460,9 @@ static void petscinitialize_internal(char* filename, PetscInt len, PetscBool rea
   }
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
+  /* call a second time to check options database */
+  *ierr = PetscErrorPrintfInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()\n");return;}
   *ierr = PetscCitationsInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
 #if defined(PETSC_HAVE_SAWS)
