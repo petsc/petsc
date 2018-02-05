@@ -1603,9 +1603,9 @@ which is equivalent to:
 TESTS*/
 \end{outputlisting}
 
-If this block is in ex1.c, then it will create a \lstinline{ex1} test that
+If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
 requires only one processor/thread, with no arguments, and diff the
-resultant output with \lstinline{output/ex1.out}.
+resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
 
 For Fortran, the equivalent is:
 %
@@ -1630,8 +1630,8 @@ A fuller example would be:
 */TESTS
 \end{outputlisting}
 
-This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
-be \lstinline{ex1} and \lstinline{ex1_1}.
+This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutorials/ex1.c}, the tests would
+be \lstinline{a_b_tutorials-ex1} and \lstinline{a_b_tutorials-ex1_1}.
 
 
 An example of how one tests a permutuation of arguments against the same
