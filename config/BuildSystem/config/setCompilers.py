@@ -989,6 +989,7 @@ class Configure(config.base.Configure):
         output.find('linker input file unused because linking not done') >= 0 or
         output.find('PETSc Error') >= 0 or
         output.find('Unbekannte Option') >= 0 or
+        output.find('warning: // comments are not allowed in this language') >= 0 or
         output.find('no se reconoce la opci') >= 0) or output.find('non reconnue') >= 0:
       return 1
     return 0
