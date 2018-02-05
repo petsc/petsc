@@ -1392,7 +1392,7 @@ With this background, these keywords are are:
   \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=""})
     \begin{itemize}
 
-      \item The testname is given by: \lstinline{testname = "run" + basestring} if suffix is set to an empty string, and by \lstinline{ testname = "run" + basestring + "_" + suffix}
+      \item The testname is given by: \lstinline{testname = basestring} if suffix is set to an empty string, and by \lstinline{ testname = basestring + "_" + suffix}
 
       \item This can only be specified for top level test nodes
 
