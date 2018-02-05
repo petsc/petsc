@@ -302,6 +302,8 @@ int main(int argc,char **args)
   ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
   ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ch",&flg_ch,NULL);CHKERRQ(ierr);
   if (flg || flg_ilu || flg_ch) {
+    Vec diag;
+
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg) {
@@ -316,7 +318,6 @@ int main(int argc,char **args)
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
  
     /* Test MatGetDiagonal() */
-    Vec diag;
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
     ierr = MatGetDiagonal(F,diag);CHKERRQ(ierr);
