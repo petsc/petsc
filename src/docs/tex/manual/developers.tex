@@ -1392,7 +1392,7 @@ With this background, these keywords are are:
   \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=""})
     \begin{itemize}
 
-      \item The testname is given by: \lstinline{testname = "run" + basestring} if suffix is set to an empty string, and by \lstinline{ testname = "run" + basestring + "_" + suffix}
+      \item The testname is given by: \lstinline{testname = basestring} if suffix is set to an empty string, and by \lstinline{ testname = basestring + "_" + suffix}
 
       \item This can only be specified for top level test nodes
 
@@ -1400,7 +1400,7 @@ With this background, these keywords are are:
 
 
    \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
-                 \lstinline{output_file = testname + ".out"})
+                 \lstinline{output_file = "output/" + testname + ".out"})
       \begin{itemize}
 
       \item The output of the test is to be compared to an \emph{expected result}
@@ -1603,9 +1603,9 @@ which is equivalent to:
 TESTS*/
 \end{outputlisting}
 
-If this block is in ex1.c, then it will create a \lstinline{runex1} test that
+If this block is in \lstinline{src/a/b/examples/tutorials/ex1.c}, then it will create \lstinline{a_b_tutorials-ex1} test that
 requires only one processor/thread, with no arguments, and diff the
-resultant output with \lstinline{output/ex1.out}.
+resultant output with \lstinline{src/a/b/examples/tutorials/output/ex1.out}.
 
 For Fortran, the equivalent is:
 %
@@ -1630,8 +1630,8 @@ A fuller example would be:
 */TESTS
 \end{outputlisting}
 
-This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
-be \lstinline{runex1} and \lstinline{runex1_1}.
+This creates two tests.  Assuming that this is \lstinline{src/a/b/examples/tutorials/ex1.c}, the tests would
+be \lstinline{a_b_tutorials-ex1} and \lstinline{a_b_tutorials-ex1_1}.
 
 
 An example of how one tests a permutuation of arguments against the same
@@ -1689,7 +1689,7 @@ An example using a for loop would be:
 */TESTS
 \end{outputlisting}
 
-In this example, \lstinline{runex138_2} will invoke ex138 twice with two different
+In this example, \lstinline{ex138_2} will invoke \lstinline{runex138_2.sh} twice with two different
 arguments, but both are diffed with the same file.
 
 An example for showing the hierarchical nature of the test specification is:
@@ -1913,12 +1913,12 @@ make -f gmakefile.test test
 # skip 770/3915 tests (19.7%)
 #
 # To rerun failed tests:
-#     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-runex11_adv_2d_quad_0 sys_classes_viewer_tests-runex4_4 ts_tutorials-runex11_adv_2d_quad'
+#     /opt/local/bin/gmake -f gmakefile test search='ts_tutorials-ex11_adv_2d_quad_0 sys_classes_viewer_tests-ex4_4 ts_tutorials-ex11_adv_2d_quad'
 \end{outputlisting}
 The above indicates that three tests have failed and should be investigated. One would also probably check beforehand that no tests fail with an umodified version of PETSc on the development machine.
 \item Rerun one of the failed tests, with additional verbosity.
 \begin{bashlisting}
-/opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-runex4_4'
+/opt/local/bin/gmake V=1 -f gmakefile test search='sys_classes_viewer_tests-ex4_4'
 \end{bashlisting}
 \item Examine the output
 \begin{outputlisting}
