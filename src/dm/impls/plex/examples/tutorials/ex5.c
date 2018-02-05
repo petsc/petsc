@@ -42,7 +42,6 @@ int main(int argc, char **argv)
   ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.interpolate, &dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part, "orig_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
   if (dmdist) {
@@ -96,11 +95,28 @@ int main(int argc, char **argv)
     requires: exodusii broken
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/Rect-tri3.exo -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 2
+    requires: hdf5 exodusii chaco
+    nsize: {{1 2 4 8}separate output}
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -petscpartitioner_type chaco
+    args: -new_dm_view ascii::ascii_info_detail
+    args: -format {{default hdf5_petsc}separate output}
+    args: -interpolate {{0 1}separate output}
+  test:
+    suffix: 2a
+    requires: hdf5 exodusii chaco
+    nsize: {{1 2 4 8}separate output}
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    args: -petscpartitioner_type chaco
+    args: -new_dm_view ascii::ascii_info_detail
+    args: -format {{hdf5_xdmf hdf5_viz}separate output}
+
   # reproduce PetscSFView() crash - fixed, left as regression test
   test:
     suffix: new_dm_view
     requires: exodusii
     nsize: 2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/TwoQuads.exo -new_dm_view ascii::ascii_info_detail
-
 TEST*/
