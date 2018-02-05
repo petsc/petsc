@@ -5,6 +5,7 @@ static char help[] = "Load and save the mesh and fields to HDF5 and ExodusII\n\n
 #include <petscsf.h>
 
 typedef struct {
+  PetscBool compare;                      /* Compare the meshes using DMPlexEqual() */
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
 } AppCtx;
@@ -14,10 +15,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  options->compare = PETSC_FALSE;
   options->interpolate = PETSC_FALSE;
   options->filename[0] = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex5.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex5.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex5.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -58,11 +61,15 @@ int main(int argc, char **argv)
   ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dmnew, NULL, "-new_dm_view");CHKERRQ(ierr);
-
+  /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
-  ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);}
-  else     {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs are not equal\n");CHKERRQ(ierr);}
+
+  /* This currently makes sense only for sequential meshes. */
+  if (user.compare) {
+    ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);}
+    else     {ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs are not equal\n");CHKERRQ(ierr);}
+  }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dmnew);CHKERRQ(ierr);
