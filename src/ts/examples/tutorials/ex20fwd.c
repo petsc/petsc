@@ -241,13 +241,12 @@ int main(int argc,char **argv)
 /*TEST
 
     test:
-      requires: !complex !single
-      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
+      requires:  !complex !single
 
     test:
       suffix: 2
-      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -combined
-      requires:  !complex !single
-      output_file: output/ex20fwd_1.out
+      requires: !complex !single
+      args: -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5
 
 TEST*/
