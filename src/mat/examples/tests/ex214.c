@@ -6,21 +6,23 @@ Example: mpiexec -n 1 ./ex214 -f <matrix binary file> -nrhs 4 \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X;//,S;
+  Mat            A,RHS,C,F,X,AX;
   Vec            u,x,b;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       m,n,nrhs;
+  PetscMPIInt    size,rank;
+  PetscInt       m,n,nrhs,M,N,i;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
-  PetscBool      data_provided;
-  PetscViewer    fd;              /* viewer */
+  PetscBool      data_provided,displ=PETSC_FALSE;
+  PetscViewer    fd;                       /* viewer */
   char           solver[256];
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor test");
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
@@ -50,11 +52,12 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical colums */
-  nrhs = n;
+  nrhs = N;
   ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
@@ -75,7 +78,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, size mat %D\n",solver,nrhs,m);CHKERRQ(ierr);
+  if (!rank && displ) {ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %D, size mat %D x %D\n",solver,nrhs,M,N);CHKERRQ(ierr);}
 
   /* Test LU Factorization */
   ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
@@ -101,7 +104,6 @@ int main(int argc,char **args)
   /* (2) Test MatMatSolve() for inv(A) with dense RHS:
    RHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
   ierr = MatZeroEntries(RHS);CHKERRQ(ierr);
-  PetscInt i;
   for (i=0; i<nrhs; i++) {
     PetscScalar one = 1.0;
     ierr = MatSetValues(RHS,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
@@ -110,8 +112,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
+
   /* Check the residual */
-  Mat AX;
   ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,2.0,&AX);CHKERRQ(ierr);
   ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
@@ -119,48 +121,54 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
-  /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
-   spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
-  Mat spRHS,spRHST,RHST;
+  if (size == 1) {
+    /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
+     spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
+    Mat spRHS,spRHST,RHST,spRHSTT;
 
-  ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
-  ierr = MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
+    ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
+    ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
 
-  /* MUMPS requres spRHS in compressed column format, which PETSc does not support.
+    /* MUMPS requres spRHS in compressed column format, which PETSc does not support.
      PETSc can create a new matrix object that shares same data structure with A and behaves like A^T */
-  ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
-  ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
-  ierr = MatView(X,0);CHKERRQ(ierr);
+    ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+    ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+    if (displ) {
+      ierr = PetscPrintf(PETSC_COMM_SELF," (3) first %D columns of inv(A):\n",nrhs);
+      ierr = MatView(X,0);CHKERRQ(ierr);
+    }
 
-  /* Check the residual */
-  ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
-  ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
+    /* Check the residual */
+    ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,2.0,&AX);CHKERRQ(ierr);
+    ierr = MatAXPY(AX,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(AX,NORM_INFINITY,&norm);CHKERRQ(ierr);
+    if (norm > tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"(3) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
+    }
+
+    /* (4) Test MatMatSolve() for inv(A) with selected entries:
+     input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
+    if (nrhs == N) { /* mumps requires nrhs = n */
+      ierr = MatMumpsGetMatInverse(F,spRHS);CHKERRQ(ierr);
+
+      if (displ) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Transpose of sparse solution matrix:\n");CHKERRQ(ierr);
+        ierr = MatView(spRHST,0);CHKERRQ(ierr); /* spRHST shares same data structure as spRHS */
+
+        ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"\nSparse solution matrix:\n");CHKERRQ(ierr);
+        ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
+    }
+
+    ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+    ierr = MatDestroy(&RHST);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&AX);CHKERRQ(ierr);
-
-  /* (4) Test MatMatSolve() for inv(A) with selected entries:
-   input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
-  if (nrhs == n) { /* mumps requires nrhs = n */
-    ierr = MatMumpsGetMatInverse(F,spRHS);CHKERRQ(ierr);
-
-    printf("Transpose of sparse solution matrix:\n");
-    ierr = MatView(spRHST,0);CHKERRQ(ierr); /* spRHST shares same data structure as spRHS */
-
-    Mat spRHSTT;
-    ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
-    printf("\nSparse solution matrix:\n");
-    ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
-    ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
-  }
-
-  ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-  ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-  ierr = MatDestroy(&RHST);CHKERRQ(ierr);
 
   /* Free data structures */
+  ierr = MatDestroy(&AX);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);

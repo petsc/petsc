@@ -824,34 +824,6 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.nrhs = nrhs;
   mumps->id.lrhs = M;
 
-#if 0
-  if (mumps->id.ICNTL(30)) {
-    if (mumps->size == 1 && Bt) {
-      PetscBool   done;
-      PetscScalar *aa;
-      PetscInt    spnr,*ia,*ja;
-
-      ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
-      ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
-      if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
-
-      mumps->id.irhs_ptr    = ia;
-      mumps->id.irhs_sparse = ja;
-      mumps->id.nz_rhs      = ia[spnr] - 1;
-      mumps->id.rhs_sparse  = (MumpsScalar*)aa;
-      mumps->id.ICNTL(20)   = 1; /* rhs is sparse */
-
-      /* solve phase */
-      /*-------------*/
-      mumps->id.job = JOB_SOLVE;
-      PetscMUMPS_c(&mumps->id);
-      if (mumps->id.INFOG(1) < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFOG(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFOG(2));
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"not done yet");
-    }
-    PetscFunctionReturn(0);
-  } 
-#endif
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
@@ -920,7 +892,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
     sol_loc_save  = mumps->id.sol_loc;
 
-    lsol_loc  = mumps->id.INFO(23); 
+    lsol_loc  = mumps->id.INFO(23);
     nlsol_loc = nrhs*lsol_loc;     /* length of sol_loc */
     ierr = PetscMalloc2(nlsol_loc,&sol_loc,nlsol_loc,&isol_loc);CHKERRQ(ierr);
     mumps->id.sol_loc = (MumpsScalar*)sol_loc;
@@ -944,7 +916,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       for (j=0; j<nrhs; j++){
         for (i=rstart[proc]; i<rstart[proc+1]; i++){
           iidx[j*M + i] = k;
-          idx[k++]      = j*M + i; 
+          idx[k++]      = j*M + i;
         }
       }
     }
@@ -1054,7 +1026,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   if (mumps->id.INFOG(1) < 0) {
     if (mumps->id.INFOG(1) == -6) {
       ierr = PetscInfo2(A,"MatFactorNumeric is called with singular matrix structure, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
-    } 
+    }
     ierr = PetscInfo2(A,"MatFactorNumeric is called after analysis phase fails, INFOG(1)=%d, INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -1184,7 +1156,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr);
+  /* ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr); */ /* call MatMumpsGetMatInverse() directly */
   ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): indicates which factors may be discarded during factorization","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),NULL);CHKERRQ(ierr);
   /* ierr = PetscOptionsInt("-mat_mumps_icntl_32","ICNTL(32): performs the forward elemination of the right-hand sides during factorization","None",mumps->id.ICNTL(32),&mumps->id.ICNTL(32),NULL);CHKERRQ(ierr);  -- not supported by PETSc API */
   ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),NULL);CHKERRQ(ierr);
@@ -2001,6 +1973,9 @@ PetscErrorCode MatMumpsGetMatInverse_MUMPS(Mat F,Mat spRHS)
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFOG(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFOG(2));
+
+  ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
