@@ -368,7 +368,12 @@ For testing installs, the default location is
 \trl{${PREFIX_DIR}/tests} but this can be changed with the \trl{TESTDIR} location.
 (See Section~\ref{sec_directory}).  
 A label is used to denote where it can be found within the source tree.
-For example, test \trl{vec_vec_tutorials_runex6} denotes the shell
+For example, test \trl{vec_vec_tutorials-ex6},
+which can be run e.g. with
+\begin{bashlisting}
+make -f gmakefile.test test search='vec_vec_tutorials-ex6'
+\end{bashlisting}
+(see the discussion of \trl{search} below), denotes the shell
 script:
 \begin{bashlisting}
 ${PETSC_DIR}/${PETSC_ARCH}/tests/src/vec/vec/examples/tutorials/runex6.sh 
