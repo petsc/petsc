@@ -47,9 +47,6 @@ ex3opt_fd: ex3opt_fd.o  chkopts
 	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_LIB}
 	${RM} ex3opt_fd.o
 
-ex3opt_fwd: ex3opt_fwd.o  chkopts
-	-${CLINKER} -o ex3opt_fwd ex3opt_fwd.o  ${PETSC_LIB}
-
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}
 	${RM} ex4.o
