@@ -49,29 +49,6 @@ PetscErrorCode DMPlexCreateHDF5VizFromFile(MPI_Comm comm, const char filename[],
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   numVertices /= spatialDim;
 
-  /* sequentialize for now */
-  {
-    IS seqis;
-    Vec seqvec;
-
-    ierr = ISOnComm(cells, PETSC_COMM_SELF, PETSC_COPY_VALUES, &seqis);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF, coordinates->map->n, &seqvec);CHKERRQ(ierr);
-    ierr = VecCopy(coordinates, seqvec);CHKERRQ(ierr);
-    ierr = ISDestroy(&cells);CHKERRQ(ierr);
-    ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-    if (!rank) {
-      cells = seqis;
-      coordinates = seqvec;
-    } else {
-      ierr = ISDestroy(&seqis);CHKERRQ(ierr);
-      ierr = VecDestroy(&seqvec);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF, 0, 0, 0, &cells);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF, 0, &coordinates);CHKERRQ(ierr);
-      numVertices = 0;
-      numCells = 0;
-    }
-  }
-
   /* TODO: check that maximum in cells is <= number of vertices */
 
   {
@@ -80,8 +57,7 @@ PetscErrorCode DMPlexCreateHDF5VizFromFile(MPI_Comm comm, const char filename[],
 
     ierr = VecGetArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISGetIndices(cells, &cells_arr);CHKERRQ(ierr);
-    /* TODO: replace by DMPlexCreateFromCellListParallel */
-    ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells_arr, spatialDim, coordinates_arr, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromCellListParallel(comm, dim, numCells, numVertices, numCorners, interpolate, cells_arr, spatialDim, coordinates_arr, NULL, &dm);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coordinates, &coordinates_arr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(cells, &cells_arr);CHKERRQ(ierr);
 
