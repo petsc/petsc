@@ -1,3 +1,4 @@
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for lstat() with c89 */
 #include <petscsys.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_DIRECT_H)
