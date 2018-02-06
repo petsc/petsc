@@ -183,8 +183,7 @@ int main(int argc,char **args)
 }
 
 /*TEST
-    build:
-      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+
 
    test:
      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
