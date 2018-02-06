@@ -1948,34 +1948,47 @@ PetscErrorCode MatMumpsGetMatInverse_MUMPS(Mat F,Mat spRHS)
   PetscInt       spnr,*ia,*ja;
 
   PetscFunctionBegin;
-  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"No support for parallel runs yet");
-  ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
-  if (flgT) {
-    ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)spRHS),PETSC_ERR_ARG_WRONG,"Matrix spRHS must be type MATTRANSPOSEMAT matrix");
+  if (!mumps->myid) {
+    PetscValidIntPointer(spRHS,2);
+    ierr = PetscObjectTypeCompare((PetscObject)spRHS,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
+    if (flgT) {
+      ierr = MatTransposeGetMat(spRHS,&Bt);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)spRHS),PETSC_ERR_ARG_WRONG,"Matrix spRHS must be type MATTRANSPOSEMAT matrix");
+    }
   }
 
   ierr = MatMumpsSetIcntl(F,30,1);CHKERRQ(ierr);
 
-  ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+  if (!mumps->myid) {
+    ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
 
-  mumps->id.irhs_ptr    = ia;
-  mumps->id.irhs_sparse = ja;
-  mumps->id.nz_rhs      = ia[spnr] - 1;
-  mumps->id.rhs_sparse  = (MumpsScalar*)aa;
+    mumps->id.irhs_ptr    = ia;
+    mumps->id.irhs_sparse = ja;
+    mumps->id.nz_rhs      = ia[spnr] - 1;
+    mumps->id.rhs_sparse  = (MumpsScalar*)aa;
+  } else {
+    mumps->id.irhs_ptr    = NULL;
+    mumps->id.irhs_sparse = NULL;
+    mumps->id.nz_rhs      = 0;
+    mumps->id.rhs_sparse  = NULL;
+  }
   mumps->id.ICNTL(20)   = 1; /* rhs is sparse */
+  mumps->id.ICNTL(21)   = 0; /* solution is in assembled centralized format */
 
   /* solve phase */
   /*-------------*/
   mumps->id.job = JOB_SOLVE;
   PetscMUMPS_c(&mumps->id);
-  if (mumps->id.INFOG(1) < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFOG(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFOG(2));
+  if (mumps->id.INFOG(1) < 0)
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d INFO(2)=%d\n",mumps->id.INFOG(1),mumps->id.INFO(2));
 
-  ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+  if (!mumps->myid) {
+    ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1986,10 +1999,10 @@ PetscErrorCode MatMumpsGetMatInverse_MUMPS(Mat F,Mat spRHS)
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
--  spRHS - sequential sparse matrix in MATTRANSPOSEMAT format holding specified indices
+-  spRHS - sequential sparse matrix in MATTRANSPOSEMAT format holding specified indices in processor[0]
 
   Output Parameter:
-.   - spRHS - requested entries of inverse of A
+. spRHS - requested entries of inverse of A
 
    Level: beginner
 
@@ -2005,7 +2018,6 @@ PetscErrorCode MatMumpsGetMatInverse(Mat F,Mat spRHS)
   PetscFunctionBegin;
   PetscValidType(F,1);
   if (!F->factortype) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
-  PetscValidIntPointer(spRHS,2);
   ierr = PetscUseMethod(F,"MatMumpsGetMatInverse_C",(Mat,Mat),(F,spRHS));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
