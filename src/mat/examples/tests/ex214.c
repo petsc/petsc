@@ -181,3 +181,17 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+    build:
+      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+
+   test:
+     suffix: 2
+     nsize: 2
+     requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+
+TEST*/
