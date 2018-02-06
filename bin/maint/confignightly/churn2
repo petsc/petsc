@@ -2,5 +2,5 @@
 #
 set MACH=churn
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-2
-set CONF=arch-linux-cxx-cmplx-pkgs-64idx
+set PETSC_DIR=/sandbox/petsc/${RNAME}-2
+set PETSC_ARCH=arch-linux-cxx-cmplx-pkgs-64idx

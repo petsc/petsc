@@ -2,5 +2,5 @@
 
 set MACH=crank
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-pkgs-opt
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-pkgs-opt

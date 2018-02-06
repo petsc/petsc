@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+#
+#    See startnightly for the context of how this script is used
+#
 import os
 import sys
 import time

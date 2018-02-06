@@ -2,5 +2,5 @@
 
 set MACH=el6
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-opt-misc
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-opt-misc

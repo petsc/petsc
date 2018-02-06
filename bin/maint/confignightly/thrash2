@@ -2,5 +2,5 @@
 
 set MACH=thrash
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-2
-set CONF=arch-linux-IPL64
+set PETSC_DIR=/sandbox/petsc/${RNAME}-2
+set PETSC_ARCH=arch-linux-IPL64

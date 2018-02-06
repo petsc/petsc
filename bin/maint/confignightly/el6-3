@@ -2,5 +2,5 @@
 
 set MACH=el6
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-3
-set CONF=arch-linux-pkgs-cxx-mlib
+set PETSC_DIR=/sandbox/petsc/${RNAME}-3
+set PETSC_ARCH=arch-linux-pkgs-cxx-mlib

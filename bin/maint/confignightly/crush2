@@ -2,5 +2,5 @@
 #
 set MACH=crush
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}-2
-set CONF=arch-linux-uni
+set PETSC_DIR=/sandbox/petsc/${RNAME}-2
+set PETSC_ARCH=arch-linux-uni

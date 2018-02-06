@@ -2,5 +2,5 @@
 #
 set MACH=wii
 set USR=balay
-set LOC=/home/balay/${RNAME}
-set CONF=arch-freebsd-cxx-cmplx-pkgs-dbg
+set PETSC_DIR=/home/balay/${RNAME}
+set PETSC_ARCH=arch-freebsd-cxx-cmplx-pkgs-dbg

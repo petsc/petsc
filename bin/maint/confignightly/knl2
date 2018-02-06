@@ -2,5 +2,5 @@
 #
 set MACH=knl
 set USR=petsc
-set LOC=/home/petsc/${RNAME}-2
-set CONF=arch-linux-clang-avx
+set PETSC_DIR=/home/petsc/${RNAME}-2
+set PETSC_ARCH=arch-linux-clang-avx

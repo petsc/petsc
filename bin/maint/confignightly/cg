@@ -2,5 +2,5 @@
 #
 set MACH=cg
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-xsdk-dbg
+set PETSC_DIR=/sandbox/petsc/${RNAME}
+set PETSC_ARCH=arch-linux-xsdk-dbg

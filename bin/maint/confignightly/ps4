@@ -2,5 +2,5 @@
 #
 set MACH=ps4
 set USR=petsc
-set LOC=/home/petsc/${RNAME}
-set CONF=arch-mswin-intel-cxx-cmplx
+set PETSC_DIR=/home/petsc/${RNAME}
+set PETSC_ARCH=arch-mswin-intel-cxx-cmplx
