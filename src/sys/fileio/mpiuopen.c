@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for popen */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for popen() */
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */

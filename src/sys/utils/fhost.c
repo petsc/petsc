@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for getdomainname */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for getdomainname() */
 /*
       Code for manipulating files.
 */

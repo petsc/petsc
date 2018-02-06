@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen() */
 
 #include <petsc/private/viewerimpl.h> /*I   "petscviewer.h" I*/
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/

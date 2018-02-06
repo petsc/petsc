@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() with c89 */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 

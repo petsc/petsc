@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for realpath() */
 #include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>

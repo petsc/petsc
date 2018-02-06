@@ -1,6 +1,6 @@
 
 /* Define Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
-#define PETSC_DESIRE_FEATURE_TEST_MACROS
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for atoll() */
 
 /*
    These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.
