@@ -2,7 +2,7 @@ PTScotch Graph Partitioner:
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
 MatPartitioning Graph Partitioner:
-  MatPartitioning Object: (p2_) 3 MPI processes
+  MatPartitioning Object: (p2_) 4 MPI processes
     type: ptscotch
       Strategy=Default behavior
       Load imbalance ratio=0.01
@@ -10,7 +10,7 @@ PTScotch Graph Partitioner:
   using partitioning strategy DEFAULT
   using load imbalance ratio 0.01
 MatPartitioning Graph Partitioner:
-  MatPartitioning Object: (dp2_) 3 MPI processes
+  MatPartitioning Object: (dp2_) 4 MPI processes
     type: ptscotch
       Strategy=Default behavior
       Load imbalance ratio=0.01
