@@ -124,8 +124,8 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Partial information available: preconditioner has not been setup yet\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Use verbose output: %D\n",pcbddc->dbg_flag);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Use user-defined CSR: %D\n",!!pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Use local mat graph: %D\n",pcbddc->use_local_adj && !pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Use user-defined CSR: %d\n",!!pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Use local mat graph: %d\n",pcbddc->use_local_adj && !pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
     if (pcbddc->mat_graph->twodim) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Connectivity graph topological dimension: 2\n");CHKERRQ(ierr);
     } else {

@@ -1137,8 +1137,8 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  fully redundant: %D\n",fetidp->fully_redundant);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  saddle point:    %D\n",fetidp->saddlepoint);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  fully redundant: %d\n",fetidp->fully_redundant);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  saddle point:    %d\n",fetidp->saddlepoint);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  inner solver details\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
   }
