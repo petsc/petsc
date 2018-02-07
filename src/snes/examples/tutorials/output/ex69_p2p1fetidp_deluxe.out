@@ -335,9 +335,20 @@ SNES Object: 5 MPI processes
                           left preconditioning
                           using NONE norm type for convergence test
                         PC Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
-                          type: svd
-                            All singular values smaller than 1e-12 treated as zero
-                            Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
+                          type: cholesky
+                            out-of-place factorization
+                            Reusing fill from past factorization
+                            tolerance for zero pivot 2.22045e-14
+                            matrix ordering: natural
+                            factor fill ratio given 5., needed 1.
+                              Factored matrix follows:
+                                Mat Object:           1 MPI processes
+                                  type: seqsbaij
+                                  rows=9, cols=9
+                                  package used to perform factorization: petsc
+                                  total: nonzeros=39, allocated nonzeros=39
+                                  total number of mallocs used during MatSetValues calls =0
+                                      block size is 1
                           linear system matrix = precond matrix:
                           Mat Object:           1 MPI processes
                             type: seqaij
