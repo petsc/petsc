@@ -48,7 +48,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building libmesh ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' configure --prefix='+prefix+' && \\\n\
+           '+newdir+' ./configure --prefix='+prefix+' && \\\n\
            '+newdir+' '+self.make.make_jnp+' ) > ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\

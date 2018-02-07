@@ -48,7 +48,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building slepc ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' configure --prefix='+prefix+' && \\\n\
+           '+newdir+' ./configure --prefix='+prefix+' && \\\n\
            '+newdir+' '+self.make.make+' ) > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
