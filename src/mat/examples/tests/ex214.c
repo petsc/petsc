@@ -6,7 +6,7 @@ Example: mpiexec -n 1 ./ex214 -f <matrix binary file> -nrhs 4 \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X,AX,spRHST,spRHS;
+  Mat            A,RHS,C,F,X,AX;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -135,7 +135,7 @@ int main(int argc,char **args)
   if (size == 1) {
     /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
      spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
-    Mat spRHS,spRHST,RHST;
+    Mat RHST,spRHST,spRHS;
 
     ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
     ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
@@ -166,19 +166,27 @@ int main(int argc,char **args)
    input: spRHS gives selected indices; output: spRHS holds selected entries of inv(A) */
   if (nrhs == N) { /* mumps requires nrhs = n */
     /* Create spRHS on proc[0] */
-    spRHS = NULL;
+    Mat spRHS = NULL,spRHST;
     if (!rank) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,1,NULL,&spRHST);CHKERRQ(ierr);
+      PetscScalar zero = 0.0;
+      PetscInt    col;
+      /* Create spRHST = spRHS^T in compressed row format (aij) and set its nonzero structure */
+      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,2,NULL,&spRHST);CHKERRQ(ierr);
       for (i=0; i<N; i++) {
-        PetscScalar one = 1.0;
-        ierr = MatSetValues(spRHST,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(spRHST,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      for (i=1; i<N; i++) {
+        col = i - 1;
+        ierr = MatSetValues(spRHST,1,&i,1,&col,&zero,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+      /* Create spRHS = spRHST^T. Two matrices share internal matrix data structure */
       ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
     }
 
-    ierr = MatMumpsGetMatInverse(F,spRHS);CHKERRQ(ierr);
+    ierr = MatMumpsGetInverse(F,spRHS);CHKERRQ(ierr);
 
     if (!rank && displ) {
       /* spRHST and spRHS share same internal data structure */
@@ -190,7 +198,7 @@ int main(int argc,char **args)
     }
 
     ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-    ierr = MatDestroy(&spRHS);CHKERRQ(ierr); 
+    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
   }
 #endif
 

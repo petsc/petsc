@@ -1672,7 +1672,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
 PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode MatMumpsGetMatInverse(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat,Mat);
 #endif
 
 /*
