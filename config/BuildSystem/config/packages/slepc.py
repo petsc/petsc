@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.gitcommit              = 'master'  #master+
-    self.download               = ['git://https://github.com/libMesh/libmesh.git']
+    self.download               = ['git://https://bitbucket.com/slepc/slepc.git']
     self.functions              = []
     self.includes               = []
     self.skippackagewithoptions = 1
@@ -36,44 +36,49 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '
+       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' SLEPC_DIR='+self.packageDir+' '
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
-       newdir = ' '
+       newdir = ' SLEPC_DIR='+self.packageDir+' '
        prefix = os.path.join(self.petscdir.dir,self.arch)
 
-    self.addDefine('HAVE_LIBMESH',1)
-    self.addMakeMacro('LIBMESH','yes')
-    self.addMakeRule('libmeshbuild','', \
-                       ['@echo "*** Building libmesh ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg',\
+    self.addDefine('HAVE_SLEPC',1)
+    self.addMakeMacro('SLEPC','yes')
+    self.addMakeRule('slepcbuild','', \
+                       ['@echo "*** Building slepc ***"',\
+                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newdir+' configure --prefix='+prefix+' && \\\n\
-           '+newdir+' '+self.make.make_jnp+' ) > ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
+           '+newdir+' '+self.make.make+' ) > ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
+             echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\
-             touch ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg && \\\n\
+             touch ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg && \\\n\
              exit 1)'])
-    self.addMakeRule('libmeshinstall','', \
-                       ['@echo "*** Installing libmesh ***"',\
+    self.addMakeRule('slepcinstall','', \
+                       ['@echo "*** Installing slepc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
+           '+newuser+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/slepc.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
+             echo "Error building slepc. Check ${PETSC_ARCH}/lib/petsc/conf/slepc.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)'])
     if self.argDB['prefix']:
-      self.addMakeRule('libmesh-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building libmesh
-      self.addMakeRule('libmesh-install','libmeshbuild libmeshinstall')
+      self.addMakeRule('slepc-build','')
+      # the build must be done at install time because PETSc shared libraries must be in final location before building slepc
+      self.addMakeRule('slepc-install','slepcbuild slepcinstall')
     else:
-      self.addMakeRule('libmesh-build','libmeshbuild libmeshinstall')
-      self.addMakeRule('libmesh-install','')
+      self.addMakeRule('slepc-build','slepcbuild slepcinstall')
+      self.addMakeRule('slepc-install','')
+
+    if self.argDB['prefix']:
+      self.logPrintBox('Slepc does not support --prefix installs yet with PETSc')
+    else:
+      self.logPrintBox('Slepc is available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+os.path.join('${PETSC_DIR}',self.arch))
 
     return self.installDir
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('libmesh-build','')
-    self.addMakeRule('libmesh-install','')
+    self.addMakeRule('slepc-build','')
+    self.addMakeRule('slepc-install','')
 
