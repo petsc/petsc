@@ -4948,7 +4948,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
-      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
     if (sub_schurs && sub_schurs->reuse_solver) {
@@ -5068,7 +5067,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
       /* Allow user's customization */
       ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
-      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
     /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
     if (!n_R) {
@@ -7879,7 +7877,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
       isbddc = PETSC_TRUE;
     }
-    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
     if (isredundant) {
       KSP inner_ksp;
@@ -7887,7 +7884,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
       ierr = PCRedundantGetKSP(pc_temp,&inner_ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);
-      ierr = PCFactorSetReuseFill(inner_pc,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /* parameters which miss an API */

@@ -337,7 +337,6 @@ SNES Object: 5 MPI processes
                         PC Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
                           type: cholesky
                             out-of-place factorization
-                            Reusing fill from past factorization
                             tolerance for zero pivot 2.22045e-14
                             matrix ordering: natural
                             factor fill ratio given 5., needed 1.
