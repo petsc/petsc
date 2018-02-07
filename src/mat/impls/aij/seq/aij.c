@@ -11,11 +11,25 @@
 #include <petsc/private/kernels/blocktranspose.h>
 
 #if defined(PETSC_HAVE_IMMINTRIN_H)
-#include <immintrin.h>
+  #include <immintrin.h>
 
-#if !defined(_MM_SCALE_8)
-#define _MM_SCALE_8    8
-#endif
+  #if !defined(_MM_SCALE_8)
+  #define _MM_SCALE_8    8
+  #endif
+
+  #if defined(__AVX512F__)
+    #define AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
+    vec_idx  = _mm256_load_si256((__m256i const*)aj); \
+    vec_vals = _mm512_load_pd(aa); \
+    vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8); \
+    vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y)
+  #elif defined(__AVX2__)
+    #define AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
+    vec_idx  = _mm_load_si128((__m128i const*)aj); /* SSE2 */ \
+    vec_vals = _mm256_load_pd(aa); \
+    vec_x    = _mm256_i32gather_pd(x,vec_idx,_MM_SCALE_8); \
+    vec_y    = _mm256_fmadd_pd(vec_x,vec_vals,vec_y)
+  #endif
 #endif
 
 PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
@@ -1305,6 +1319,14 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   __m256i           vec_idx;
   __mmask8          mask;
   PetscInt          j;
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  __m128i           vec_idx;
+  __m256d           vec_x,vec_y,vec_y2,vec_vals;
+  PetscInt          j;
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  __m128d           vec_x_tmp;
+  __m256d           vec_x,vec_y,vec_y2,vec_vals;
+  PetscInt          j;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -1343,10 +1365,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
       vec_y       = _mm512_setzero_pd();
       for (j=0; j<(n>>3); j++) {
-        vec_idx  = _mm256_load_si256((__m256i const*)aj);
-        vec_vals = _mm512_load_pd(aa);
-        vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-        vec_y    = _mm512_fmadd_pd(vec_x,vec_vals,vec_y);
+        AVX512_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
         aj += 8; aa += 8;
       }
 /* masked load does not work on KNL, it requires avx512vl */
@@ -1366,6 +1385,49 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 /*
       for(j=0;j<(n&0x07);j++) sum += aa[j]*x[aj[j]];
 */
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+      vec_y  = _mm256_setzero_pd();
+      for (j=0; j<(n>>2); j++) {
+        AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y);
+        aj += 4; aa += 4;
+      }
+      vec_y2 = _mm256_add_pd(vec_y, _mm256_permute2f128_pd(vec_y,vec_y,0x1) );
+      _mm_store_sd(&sum, _mm_hadd_pd( _mm256_castpd256_pd128(vec_y2), _mm256_castpd256_pd128(vec_y2) ) );
+      if ((n&0x03)==3) {
+        sum += aa[0]*x[aj[0]];
+        sum += aa[1]*x[aj[1]];
+        sum += aa[2]*x[aj[2]];
+      } else if ((n&0x03)==2) {
+        sum += aa[0]*x[aj[0]];
+        sum += aa[1]*x[aj[1]];
+      } else if ((n&0x03)==1) {
+        sum += aa[0]*x[aj[0]];
+      }
+#elif defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+      vec_y  = _mm256_setzero_pd();
+      for (j=0; j<(n>>2); j++) {
+        vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *aj++);
+        vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *aj++);
+        vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,0);
+        vec_x_tmp = _mm_loadl_pd(vec_x_tmp, x + *aj++);
+        vec_x_tmp = _mm_loadh_pd(vec_x_tmp, x + *aj++);
+        vec_x     = _mm256_insertf128_pd(vec_x,vec_x_tmp,1);
+        vec_vals  = _mm256_loadu_pd(aa);
+        vec_y     = _mm256_add_pd(_mm256_mul_pd(vec_x,vec_vals),vec_y);
+        aa += 4;
+      }
+      vec_y2 = _mm256_add_pd(vec_y, _mm256_permute2f128_pd(vec_y,vec_y,0x1) );
+      _mm_store_sd(&sum, _mm_hadd_pd( _mm256_castpd256_pd128(vec_y2), _mm256_castpd256_pd128(vec_y2) ) );
+      if ((n&0x03)==3) {
+        sum += aa[0]*x[aj[0]];
+        sum += aa[1]*x[aj[1]];
+        sum += aa[2]*x[aj[2]];
+      } else if ((n&0x03)==2) {
+        sum += aa[0]*x[aj[0]];
+        sum += aa[1]*x[aj[1]];
+      } else if ((n&0x03)==1) {
+        sum += aa[0]*x[aj[0]];
+      }
 #else
       PetscSparseDensePlusDot(sum,x,aa,aj,n);
 #endif
