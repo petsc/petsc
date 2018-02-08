@@ -237,6 +237,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   Mat                      mat  = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj*)mat->data;
   PetscBool                flg,distributed;
+  PetscBool                proc_weight_flg;
   PetscInt                 i,j,p,wgtflag=0,bs=1,nold;
   PetscReal                *vwgttab,deltval;
   SCOTCH_Num               *locals,*velotab,*veloloctab,*edloloctab,vertlocnbr,edgelocnbr,nparts=part->n;
@@ -253,7 +254,14 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
+  proc_weight_flg = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL, NULL, "-mat_partitioning_ptscotch_proc_weight", &proc_weight_flg, NULL);CHKERRQ(ierr);
+
   ierr = PetscMalloc1(mat->rmap->n+1,&locals);CHKERRQ(ierr);
+
+  velotab = NULL;
+  if (proc_weight_flg)
+  {
   ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
   ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
   for (j=0; j<nparts; j++) {
@@ -268,6 +276,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   }
   for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
   ierr = PetscFree(vwgttab);CHKERRQ(ierr);
+  }
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
@@ -296,7 +305,11 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
     ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
 
-    ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+    if (velotab) {
+      ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+    } else {
+      ierr = SCOTCH_archCmplt( &archdat,nparts);CHKERRQ(ierr);
+    }
     ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
     ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
 
