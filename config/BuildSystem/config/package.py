@@ -397,7 +397,7 @@ class Package(config.base.Configure):
         if not os.path.isdir(libdirpath):
           self.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
           continue
-        for l in self.LibList(libdirpath):
+        for l in self.generateLibList(libdirpath):
           yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
 
       if 'with-'+self.package+'-include' in self.argDB:
