@@ -15,6 +15,7 @@ typedef struct {
   PetscInt  faces[3];                     /* Number of faces per dimension */
   PetscBool simplex;                      /* Use simplices or hexes */
   PetscBool interpolate;                  /* Interpolate mesh */
+  PetscBool compare_is;                   /* Compare ISs and PetscSections */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   char      partitioning[64];
   char      repartitioning[64];
@@ -28,11 +29,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  options->compare_is   = PETSC_FALSE;
   options->dim          = 3;
   options->simplex      = PETSC_TRUE;
   options->interpolate  = PETSC_FALSE;
   options->filename[0]  = '\0';
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compare_is", "Compare ISs and PetscSections?", FILENAME, options->compare_is, &options->compare_is, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", FILENAME, options->dim, &options->dim, NULL);CHKERRQ(ierr);
   if (options->dim > 3) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "dimension set to %d, must be <= 3", options->dim);
   ierr = PetscOptionsBool("-simplex", "Use simplices if true, otherwise hexes", FILENAME, options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
@@ -43,7 +46,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
   ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,64,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-repartition", "Whether or not to partition again after the first partition", FILENAME, repartition, &repartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-repartition", "Partition again after the first partition?", FILENAME, repartition, &repartition, NULL);CHKERRQ(ierr);
   if (repartition) {
     ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
     ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None", options->repartitioning, options->repartitioning,64,NULL);CHKERRQ(ierr);
@@ -52,8 +55,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
   if (dim) options->dim = dim;
   /* Currently this is here only to always consume this option. It is actually queried in PTScotch_PartGraph_{Seq,MPI} functions. */
-  ierr = PetscOptionsBool("-petscpartititoner_ptscotch_vertex_weight", "Whether or not should PetscPartitionerPTScotch specify the vertex  weights to Scotch (0 to yield the same results as MatPartitioningPTScotch)",  FILENAME, flg, &flg, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_partitioning_ptscotch_proc_weight",    "Whether or not should MatPartitioningPTScotch  specify the process weights to Scotch (0 to yield the same results as PetscPartitionerPTScotch)", FILENAME, flg, &flg, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscpartititoner_ptscotch_vertex_weight", "Should PetscPartitionerPTScotch specify the vertex  weights to Scotch (0 to yield the same results as MatPartitioningPTScotch)?",  FILENAME, flg, &flg, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_partitioning_ptscotch_proc_weight",    "Should MatPartitioningPTScotch  specify the process weights to Scotch (0 to yield the same results as PetscPartitionerPTScotch)?", FILENAME, flg, &flg, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -97,8 +100,8 @@ int main(int argc, char **argv)
   MatPartitioning mp;
   PetscPartitioner part1, part2;
   AppCtx         user;
-  IS             is1, is2;
-  PetscSection   s1, s2;
+  IS             is1=NULL, is2=NULL;
+  PetscSection   s1=NULL, s2=NULL;
   PetscBool      flg;
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -116,8 +119,10 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part1, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
+  if (user.compare_is) {
+    ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
+    ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
+  }
 
   /* partition dm2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -127,11 +132,13 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(mp, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(part2, dm2, s2, &is2);CHKERRQ(ierr);
+  if (user.compare_is) {
+    ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
+    ierr = PetscPartitionerPartition(part2, dm2, s2, &is2);CHKERRQ(ierr);
+  }
 
   /* compare the two ISs */
-  {
+  if (user.compare_is) {
     IS is1g, is2g;
     ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
     ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
@@ -142,8 +149,10 @@ int main(int argc, char **argv)
   }
 
   /* compare the two PetscSections */
-  ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);
+  if (user.compare_is) {
+    ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
+    if (!flg) PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);
+  }
 
   /* distribute both DMs */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -175,8 +184,10 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"dp1_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part1, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(part1, dmdist1, s1, &is1);CHKERRQ(ierr);
+  if (user.compare_is) {
+    ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
+    ierr = PetscPartitionerPartition(part1, dmdist1, s1, &is1);CHKERRQ(ierr);
+  }
 
   /* repartition distributed DM dmdist2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -186,11 +197,13 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(mp, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(part2, dmdist2, s2, &is2);CHKERRQ(ierr);
+  if (user.compare_is) {
+    ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
+    ierr = PetscPartitionerPartition(part2, dmdist2, s2, &is2);CHKERRQ(ierr);
+  }
 
   /* compare the two ISs */
-  {
+  if (user.compare_is) {
     IS is1g, is2g;
     ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
     ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
@@ -201,8 +214,10 @@ int main(int argc, char **argv)
   }
 
   /* compare the two PetscSections */
-  ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-  if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);
+  if (user.compare_is) {
+    ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
+    if (!flg) PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);
+  }
 
   /* redistribute both distributed DMs */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
