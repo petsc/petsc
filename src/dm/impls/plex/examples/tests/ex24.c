@@ -23,6 +23,7 @@ typedef struct {
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt dim;
+  PetscBool repartition = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -40,9 +41,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   dim = options->dim;
   ierr = PetscOptionsIntArray("-faces", "Number of faces per dimension", FILENAME, options->faces, &dim, NULL);CHKERRQ(ierr);
   ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
-  ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,64,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None",options->repartitioning, options->repartitioning,64,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-repartition", "Whether or not to partition again after the first partition", FILENAME, repartition, &repartition, NULL);CHKERRQ(ierr);
+  if (repartition) {
+    ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None", options->repartitioning, options->repartitioning,64,NULL);CHKERRQ(ierr);
+  } else {
+    options->repartitioning[0] = '\0';
+  }
   if (dim) options->dim = dim;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -148,6 +154,9 @@ int main(int argc, char **argv)
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
   ierr = DMDestroy(&dm1);CHKERRQ(ierr);
   ierr = DMDestroy(&dm2);CHKERRQ(ierr);
+
+  /* if repartitioning is disabled, then quit */
+  if (user.repartitioning[0] == '\0') return ierr;
 
   /* if distributed DMs are NULL (sequential case), then quit */
   if (!dmdist1 && !dmdist2) return ierr;
