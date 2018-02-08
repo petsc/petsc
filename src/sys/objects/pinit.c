@@ -14,10 +14,6 @@ extern PetscErrorCode PetscLogInitialize(void);
 PetscFPT PetscFPTData = 0;
 #endif
 
-#if defined(PETSC_HAVE_CUDA)
-cublasHandle_t cublasv2handle = NULL;
-#endif
-
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
@@ -1084,9 +1080,6 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
 #endif
-#if defined(PETSC_HAVE_CUDA)
-  cublasStatus_t cberr;
-#endif
 
   if (!PetscInitializeCalled) {
     printf("PetscInitialize() must be called before PetscFinalize()\n");
@@ -1438,12 +1431,6 @@ PetscErrorCode  PetscFinalize(void)
      Close any open dynamic libraries
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUDA)
-  if (cublasv2handle) {
-    cberr = cublasDestroy(cublasv2handle);CHKERRCUBLAS(cberr);
-  }
-#endif
 
   /* Can be destroyed only after all the options are used */
   ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);

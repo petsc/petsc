@@ -248,7 +248,6 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
   PetscErrorCode ierr;
   cudaError_t    err;
   Vec_CUDA       *veccuda;
-  cublasStatus_t cberr;
 
   PetscFunctionBegin;
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,0);CHKERRQ(ierr);
@@ -301,9 +300,5 @@ PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,
     veccuda->GPUarray = (PetscScalar*)array;
   }
 
-  /* initialize cublas if needed */
-  if (!cublasv2handle) {
-    cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
-  }
   PetscFunctionReturn(0);
 }
