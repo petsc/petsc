@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
+    self.builtafterpetsc        = 1
     return
 
   def setupHelp(self, help):
@@ -36,7 +37,7 @@ class Configure(config.package.Package):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
-       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' SLEPC_DIR='+self.packageDir+' '
+       newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=" " SLEPC_DIR='+self.packageDir+' '
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
        newdir = ' SLEPC_DIR='+self.packageDir+' '
@@ -72,9 +73,9 @@ class Configure(config.package.Package):
       self.addMakeRule('slepc-install','')
 
     if self.argDB['prefix']:
-      self.logPrintBox('Slepc does not support --prefix installs yet with PETSc')
+      self.logPrintBox('Slepc examples are available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+prefix)
     else:
-      self.logPrintBox('Slepc is available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+os.path.join('${PETSC_DIR}',self.arch))
+      self.logPrintBox('Slepc examples are available at '+os.path.join('${PETSC_DIR}',self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+os.path.join('${PETSC_DIR}',self.arch))
 
     return self.installDir
 

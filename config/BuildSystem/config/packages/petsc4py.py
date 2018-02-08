@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.skippackagewithoptions = 1
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
+    self.builtafterpetsc        = 1
     self.downloaddirnames       = ['petsc-petsc4py','petsc4py']
     return
 
