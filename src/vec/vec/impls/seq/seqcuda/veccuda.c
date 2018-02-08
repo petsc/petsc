@@ -13,15 +13,17 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
+static PetscErrorCode PetscCUBLASDestroyHandle();
+
 /*
    Implementation for obtaining read-write access to the cuBLAS handle.
    Required to properly deal with repeated calls of PetscInitizalize()/PetscFinalize().
  */
-PetscErrorCode PetscCUBLASGetHandle_Private(cublasHandle_t **handle)
+static PetscErrorCode PetscCUBLASGetHandle_Private(cublasHandle_t **handle)
 {
   static cublasHandle_t cublasv2handle = NULL;
-  cublasStatus_t cberr;
-  PetscErrorCode ierr;
+  cublasStatus_t        cberr;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (!cublasv2handle) {
