@@ -546,6 +546,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
+  PetscMPIInt       size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
@@ -554,11 +555,13 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  /* PetscCheckSameComm(vec,1,viewer,2); Viewing a SELF vec on a parallel viewer should be acceptable */
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRQ(ierr);
+  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
+
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscInt rows,bs;
@@ -577,7 +580,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     }
   }
   ierr = VecLockPush(vec);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_NATIVE && vec->ops->viewnative) {
+  if ((format == PETSC_VIEWER_NATIVE || format == PETSC_VIEWER_LOAD_BALANCE) && vec->ops->viewnative) {
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);

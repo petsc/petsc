@@ -54,7 +54,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       nmin = PetscMin(nmin,xin->map->range[i+1] - xin->map->range[i]);
     }
     navg = xin->map->N/size;
-    ierr = PetscViewerASCIIPrintf(viewer,"Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Local vector size Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

@@ -942,6 +942,7 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
   PetscInt          rows,cols,rbs,cbs;
   PetscBool         iascii,ibinary;
   PetscViewerFormat format;
+  PetscMPIInt       size;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool         issaws;
 #endif
@@ -949,6 +950,9 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mat),&viewer);CHKERRQ(ierr);
   }
@@ -964,7 +968,6 @@ PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 
   ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if ((!iascii || (format != PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) && mat->factortype) {
     SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"No viewers for factored matrix except ASCII info or info_detailed");
   }

@@ -1284,7 +1284,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       }
       ierr = PetscFree(nz);CHKERRQ(ierr);
       navg = navg/size;
-      ierr = PetscViewerASCIIPrintf(viewer,"Nonzeros: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Load Balance - Nonzeros: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
