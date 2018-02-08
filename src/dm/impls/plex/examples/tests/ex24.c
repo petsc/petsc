@@ -119,10 +119,8 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part1, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  if (user.compare_is) {
-    ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-    ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
+  ierr = PetscPartitionerPartition(part1, dm1, s1, &is1);CHKERRQ(ierr);
 
   /* partition dm2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -132,10 +130,8 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(mp, user.partitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  if (user.compare_is) {
-    ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-    ierr = PetscPartitionerPartition(part2, dm2, s2, &is2);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
+  ierr = PetscPartitionerPartition(part2, dm2, s2, &is2);CHKERRQ(ierr);
 
   /* compare the two ISs */
   if (user.compare_is) {
@@ -184,10 +180,8 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"dp1_");CHKERRQ(ierr);
   ierr = PetscPartitionerSetType(part1, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  if (user.compare_is) {
-    ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-    ierr = PetscPartitionerPartition(part1, dmdist1, s1, &is1);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
+  ierr = PetscPartitionerPartition(part1, dmdist1, s1, &is1);CHKERRQ(ierr);
 
   /* repartition distributed DM dmdist2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
@@ -197,10 +191,8 @@ int main(int argc, char **argv)
   ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
   ierr = MatPartitioningSetType(mp, user.repartitioning);CHKERRQ(ierr);
   ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  if (user.compare_is) {
-    ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-    ierr = PetscPartitionerPartition(part2, dmdist2, s2, &is2);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
+  ierr = PetscPartitionerPartition(part2, dmdist2, s2, &is2);CHKERRQ(ierr);
 
   /* compare the two ISs */
   if (user.compare_is) {
