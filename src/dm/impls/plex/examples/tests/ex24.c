@@ -159,15 +159,15 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dm1);CHKERRQ(ierr);
   ierr = DMDestroy(&dm2);CHKERRQ(ierr);
 
-  /* if repartitioning is disabled, then quit */
-  if (user.repartitioning[0] == '\0') return ierr;
-
   /* if distributed DMs are NULL (sequential case), then quit */
   if (!dmdist1 && !dmdist2) return ierr;
 
   /* compare the two distributed DMs */
   ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
   if (!flg) PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);
+
+  /* if repartitioning is disabled, then quit */
+  if (user.repartitioning[0] == '\0') return ierr;
 
   /* repartition distributed DM dmdist1 using PETSCPARTITIONERPARMETIS */
   ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
