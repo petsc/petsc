@@ -1,6 +1,6 @@
 
 static char help[] = "Tests MatMatSolve() for computing inv(A) with MUMPS.\n\
-Example: mpiexec -n 1 ./ex214 -f <matrix binary file> -nrhs 4 \n\n";
+Example: mpiexec -n <np> ./ex214 -displ \n\n";
 
 #include <petscmat.h>
 
@@ -10,54 +10,48 @@ int main(int argc,char **args)
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscInt       m,n,nrhs,M,N,i;
+  PetscInt       m,n,nrhs,M,N,i,Istart,Iend,Ii,j,J;
+  PetscScalar    v;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
-  PetscBool      data_provided,displ=PETSC_FALSE;
-  PetscViewer    fd;                       /* viewer */
+  PetscBool      displ=PETSC_FALSE;
   char           solver[256];
-  char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_MUMPS)
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");}
+  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr)}
   ierr = PetscFinalize();
   return ierr;
 #endif
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
 
-  /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,PETSC_MAX_PATH_LEN,&data_provided);CHKERRQ(ierr);
-  if (!data_provided) { /* get matrices from PETSc distribution */
-    ierr = PetscStrcpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/");CHKERRQ(ierr);
+  /* Create matrix A */
+  m = 4; n = 4;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
-#if defined (PETSC_USE_COMPLEX)
-      ierr = PetscStrcat(file,"nh-complex-");CHKERRQ(ierr);
-#else
-      ierr = PetscStrcat(file,"ns-real-");CHKERRQ(ierr);
-#endif
-
-#if defined(PETSC_USE_64BIT_INDICES)
-    ierr = PetscStrcat(file,"int64-");CHKERRQ(ierr);
-#else
-    ierr = PetscStrcat(file,"int32-");CHKERRQ(ierr);
-#endif
-#if defined (PETSC_USE_REAL_SINGLE)
-    ierr = PetscStrcat(file,"float32");CHKERRQ(ierr);
-#else
-    ierr = PetscStrcat(file,"float64");CHKERRQ(ierr);
-#endif
-  }
-
-  /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
+
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
@@ -111,8 +105,8 @@ int main(int argc,char **args)
    RHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
   ierr = MatZeroEntries(RHS);CHKERRQ(ierr);
   for (i=0; i<nrhs; i++) {
-    PetscScalar one = 1.0;
-    ierr = MatSetValues(RHS,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    v = 1.0;
+    ierr = MatSetValues(RHS,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -131,7 +125,6 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_MUMPS)
   if (size == 1) {
     /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
      spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
@@ -168,16 +161,15 @@ int main(int argc,char **args)
     /* Create spRHS on proc[0] */
     Mat spRHS = NULL,spRHST;
     if (!rank) {
-      PetscScalar zero = 0.0;
-      PetscInt    col;
       /* Create spRHST = spRHS^T in compressed row format (aij) and set its nonzero structure */
       ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,2,NULL,&spRHST);CHKERRQ(ierr);
+      v = 0.0;
       for (i=0; i<N; i++) {
-        ierr = MatSetValues(spRHST,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(spRHST,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       for (i=1; i<N; i++) {
-        col = i - 1;
-        ierr = MatSetValues(spRHST,1,&i,1,&col,&zero,INSERT_VALUES);CHKERRQ(ierr);
+        j = i - 1;
+        ierr = MatSetValues(spRHST,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(spRHST,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -188,19 +180,20 @@ int main(int argc,char **args)
 
     ierr = MatMumpsGetInverse(F,spRHS);CHKERRQ(ierr);
 
-    if (!rank && displ) {
+    if (!rank) {
+      if (displ) {
       /* spRHST and spRHS share same internal data structure */
       Mat spRHSTT;
       ierr = MatTranspose(spRHST,MAT_INITIAL_MATRIX,&spRHSTT);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"\nSelected entries of inv(A):\n");CHKERRQ(ierr);
       ierr = MatView(spRHSTT,0);CHKERRQ(ierr);
       ierr = MatDestroy(&spRHSTT);CHKERRQ(ierr);
-    }
+      }
 
-    ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-    ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+    }
   }
-#endif
 
   /* Free data structures */
   ierr = MatDestroy(&AX);CHKERRQ(ierr);
