@@ -80,6 +80,7 @@ class Package(config.base.Configure):
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
     self.installedpetsc         = 0
     self.installwithbatch       = 0  # install the package even though configure is running in the initial batch mode; f2blaslapack and fblaslapack for example
+    self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
     return
 
   def __str__(self):
@@ -353,7 +354,7 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     d = self.checkDownload()
     if d:
-      if not self.liblist:
+      if not self.liblist or self.builtafterpetsc :
         yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
@@ -749,6 +750,10 @@ class Package(config.base.Configure):
     foundHeader  = 0
 
     for location, directory, lib, incl in self.generateGuesses():
+      if self.builtafterpetsc:
+        self.found = 1
+        return
+
       if directory and not os.path.isdir(directory):
         self.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
         continue
@@ -766,6 +771,7 @@ class Package(config.base.Configure):
         if directory: self.logPrint('Contents: '+str(os.listdir(directory)))
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
+
       self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
