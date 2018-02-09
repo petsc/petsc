@@ -30,7 +30,7 @@
 
       call PetscObjectCompose(r,'test',r2,ierr);
       call PetscObjectQuery(r,'test',q,ierr);
-      if (q .ne. r2) then SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Object compose/query failed')
+      if (q .ne. r2) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Object compose/query failed'); endif
 
       call PetscRandomDestroy(r,ierr)
       call PetscRandomDestroy(r2,ierr)

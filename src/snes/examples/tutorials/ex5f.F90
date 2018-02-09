@@ -91,7 +91,7 @@
       lambda_min = 0.0
       lambda     = 6.0
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then SETERRA(PETSC_COMM_WORLD,1,'Lambda out of range')
+      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then; SETERRA(PETSC_COMM_WORLD,1,'Lambda out of range'); endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
