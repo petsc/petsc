@@ -1273,6 +1273,21 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_LOAD_BALANCE) {
+      PetscInt i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal = ((Mat_SeqAIJ*) (aij->A->data))->nz + ((Mat_SeqAIJ*) (aij->B->data))->nz;
+      ierr = PetscMalloc1(size,&nz);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+      for (i=0; i<(PetscInt)size; i++) {
+        nmax = PetscMax(nmax,nz[i]);
+        nmin = PetscMin(nmin,nz[i]);
+        navg += nz[i];
+      }
+      ierr = PetscFree(nz);CHKERRQ(ierr);
+      navg = navg/size;
+      ierr = PetscViewerASCIIPrintf(viewer,"Load Balance - Nonzeros: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo   info;
       PetscBool inodes;
