@@ -1913,12 +1913,14 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
    Note:
    This routine is analogous to memcpy().
 
+   Not available from Fortran
+
    Developer Note: this is inlined for fastest performance
 
   Concepts: memory^copying
   Concepts: copying^memory
 
-.seealso: PetscMemmove()
+.seealso: PetscMemmove(), PetscStrallocpy()
 
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
@@ -1977,6 +1979,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
    Compile Option:
    PETSC_PREFER_BZERO - on certain machines (the IBM RS6000) the bzero() routine happens
   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
+
+   Not available from Fortran
 
    Developer Note: this is inlined for fastest performance
 
@@ -2261,6 +2265,8 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
    Level: advanced
 
+   Not available from Fortran
+
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
@@ -2286,6 +2292,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 .     b - the resulting PetscMPIInt value
 
    Level: advanced
+
+   Not available from Fortran
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast()
 @*/
@@ -2323,6 +2331,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
+   Not available from Fortran
+
    Level: advanced
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
@@ -2352,6 +2362,8 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
    Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
    Use PetscIntMultError() to compute the product of two PetscInt if you wish to generate an error if the result will not fit in a PetscInt
+
+   Not available from Fortran
 
    Developers Note: We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
 
@@ -2389,6 +2401,8 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 
    This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
+   Not available from Fortran
+
    Level: advanced
 
 .seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
@@ -2417,6 +2431,8 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
+
+   Not available from Fortran
 
    Developers Note: We currently assume that PetscInt addition does not overflow, this is obviously wrong but requires many more checks.
 
@@ -2452,6 +2468,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
+
+   Not available from Fortran
 
    Level: advanced
 
@@ -2928,6 +2946,8 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 -      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
 
    Level: intermediate
+
+   Not available from Fortran
 
      Options Database:
 .     -citations [filename]   - print out the bibtex entries for the given computation

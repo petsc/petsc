@@ -6,7 +6,7 @@
 #define __PETSCIS_H
 #include <petscsys.h>
 #include <petscsftypes.h>
-#include <petscistypes.h>
+#include <petscistypes.h>    /*I  "petscis.h" I*/
 
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
@@ -210,7 +210,7 @@ struct _n_PetscLayout{
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
 };
 
-/*@C
+/*@
      PetscLayoutFindOwner - Find the owning rank for a global index
 
     Not Collective

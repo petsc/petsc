@@ -156,6 +156,8 @@ nativeptr TSMonitorSPEigCtx
 nativeptr VecScatterCUSPIndices_PtoP
 nativeptr VecScatterCUSPIndices_StoS
 nativeptr PetscSFNode
+nativeptr PetscGLL
+
 # the following are old PETSc types - they might be requird for older versions
 # of PETSc
 nativeptr AOData

@@ -123,3 +123,21 @@
           PetscErrorCode ierr
         End Subroutine
       End Interface
+
+      Interface
+      subroutine PetscRandomSetType(a,b,z)
+      use petscsysdef
+       PetscRandom a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine PetscRandomView(a,b,z)
+      use petscsysdef
+       PetscRandom a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface

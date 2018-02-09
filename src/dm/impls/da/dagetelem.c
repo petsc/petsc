@@ -127,7 +127,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
       DMDASetElementType - Sets the element type to be returned by DMDAGetElements()
 
     Not Collective
@@ -160,7 +160,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
       DMDAGetElementType - Gets the element type to be returned by DMDAGetElements()
 
     Not Collective
@@ -209,6 +209,8 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
      If on each process you integrate over its owned elements and use ADD_VALUES in Vec/MatSetValuesLocal() then you'll obtain the correct result.
 
+     Not supported in Fortran
+
 .seealso: DMDAElementType, DMDASetElementType(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
@@ -248,6 +250,8 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
    Note: You should not access these values after you have called this routine.
 
          This restore signals the DMDA object that you no longer need access to the array information.
+
+         Not supported in Fortran
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
 @*/

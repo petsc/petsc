@@ -92,3 +92,21 @@
           PetscSection       s
         End Subroutine
       End Interface
+
+      Interface
+      subroutine ISSetType(a,b,z)
+      use petscisdef
+       IS a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine ISView(a,b,z)
+      use petscisdef
+       IS a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface

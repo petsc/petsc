@@ -135,3 +135,105 @@
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecRestoreArrayReadF90
+
+      Interface DMDACreate1d
+        Subroutine DMDACreate1d(a,b,c,d,e,f,g,z)
+          use petscdmdef
+          MPI_Comm a
+          DMBoundaryType b
+          PetscInt c,d,e,f(*)
+          DM g
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDACreate1d
+
+      Interface DMDACreate2d
+        Subroutine DMDACreate2d(a,b,c,d,e,f,g,h,i,j,k,l,m,z)
+          use petscdmdef
+          MPI_Comm a
+          DMBoundaryType b,c
+          DMDAStencilType d
+          PetscInt e,f,g,h,i,j,k(*),l(*)
+          DM m
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDACreate2d
+
+      Interface DMDACreate3d
+      Subroutine DMDACreate3d(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,z)
+          use petscdmdef
+          MPI_Comm a
+          DMBoundaryType b,c,d
+          DMDAStencilType e
+          PetscInt f,g,h,i,j,k,l,m,n(*)
+          PetscInt o(*),p(*)
+          DM q
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDACreate3d
+
+      Interface DMDAGetNeighbors
+        Subroutine DMDAGetNeighbors(a,b,z)
+          use petscdmdef
+          DM a
+          PetscMPIInt b(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetNeighbors
+
+      Interface DMDAGetOwnershipRange
+        Subroutine DMDAGetOwnershipRange(a,b,c,d,z)
+          use petscdmdef
+          DM a
+          PetscInt b(*), c(*), d(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetOwnershipRange
+
+      Interface DMDAGetRefinementFactor
+        Subroutine DMDAGetRefinementFactor(a,b,c,d,z)
+          use petscdmdef
+          DM a
+          PetscInt b(*), c(*), d(*)
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetRefinementFactor
+
+      Interface DMDASetFieldName
+        Subroutine DMDASetFieldName(a,b,c,z)
+          use petscdmdef
+          DM a
+          PetscInt b
+          character(*) c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDASetFieldName
+
+      Interface DMDAGetFieldName
+        Subroutine DMDAGetFieldName(a,b,c,z)
+          use petscdmdef
+          DM a
+          PetscInt b
+          character(*) c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetFieldName
+
+      Interface DMDASetAOType
+        Subroutine DMDASetAOType(a,b,z)
+          use petscdmdef
+          DM a
+          character(*) b
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDASetAOType
+
+      Interface DMDAGetScatter
+        Subroutine DMDAGetScatter(a,b,c,z)
+          use petscdmdef
+          DM a
+          VecScatter b,c
+          PetscErrorCode z
+        End Subroutine
+      End Interface DMDAGetScatter
+

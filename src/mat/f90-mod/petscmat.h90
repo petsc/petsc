@@ -684,6 +684,24 @@
          end subroutine
       End Interface
 
+      Interface
+      subroutine MatSetType(a,b,z)
+      use petscmatdef
+       Mat a
+       character(*) b
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine MatView(a,b,z)
+      use petscmatdef
+       Mat a
+       PetscViewer b
+       integer z
+       end subroutine
+      end Interface
+
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines
 #undef MAT_INFO_SIZE
 #undef MAT_FACTORINFO_SIZE
