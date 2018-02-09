@@ -1,5 +1,5 @@
 
-static char help[] ="Solves a simple data assimilation problem with one dimensional advection diffusion equation using TSAdjoint\n\n";
+static char help[] ="Solves a simple data assimilation problem with one dimensional Burger's equation using TSAdjoint\n\n";
 
 /*
 
@@ -7,17 +7,16 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
 
 */
 /*
-   Concepts: TS^time-dependent linear problems
-   Concepts: TS^heat equation
-   Concepts: TS^diffusion equation
+   Concepts: TS^time-dependent nonlinear problems
+   Concepts: TS^Burger's equation
    Concepts: adjoints
    Processors: n
 */
 
 /* ------------------------------------------------------------------------
 
-   This program uses the one-dimensional advection-diffusion equation),
-       u_t = mu*u_xx - a u_x,
+   This program uses the one-dimensional Burger's equation
+       u_t = mu*u_xx - u u_x,
    on the domain 0 <= x <= 1, with periodic boundary conditions
 
    to demonstrate solving a data assimilation problem of finding the initial conditions
@@ -235,10 +234,9 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
   /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
   ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
-  //ierr = TSSetRHSFunction(appctx.ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
+  //ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
-  //ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
   ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   /* Set Objective and Initial conditions for the problem and compute Objective function (evolution of true_solution to final time */
@@ -326,15 +324,13 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   ierr = DMDAVecGetArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
   lenglob  = appctx->param.E*(appctx->param.N-1);
-    
-  for (i=0; i<lenglob; i++) {
-      s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]))+0.25*PetscExpReal(-4.0*PetscPowReal(xg[i]-2.0,2.0));
-      } 
 
-  
+  for (i=0; i<lenglob; i++) {
+    s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]))+0.25*PetscExpReal(-4.0*PetscPowReal(xg[i]-2.0,2.0));
+  }
+
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
-   //  ierr = VecView(u,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   return 0;
 }
 
@@ -361,14 +357,13 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
   ierr = DMDAVecGetArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
   lenglob  = appctx->param.E*(appctx->param.N-1);
-  
+
   for (i=0; i<lenglob; i++) {
       s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]));
       } 
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
-  /* make sure initial conditions do not contain the constant functions, since with periodic boundary conditions the constant functions introduce a null space */
-   return 0;
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*
@@ -392,12 +387,11 @@ PetscErrorCode ComputeObjective(PetscReal t,Vec obj,AppCtx *appctx)
   lenglob  = appctx->param.E*(appctx->param.N-1);
   
   for (i=0; i<lenglob; i++) {
-      s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])*PetscExpScalar(-PETSC_PI*PETSC_PI*t*appctx->param.mu)\
+    s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])*PetscExpScalar(-PETSC_PI*PETSC_PI*t*appctx->param.mu)\
               /(2.0+PetscExpScalar(-PETSC_PI*PETSC_PI*t*appctx->param.mu)*PetscCosScalar(PETSC_PI*xg[i]));
-      } 
+  } 
   ierr = DMDAVecRestoreArray(appctx->da,obj,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
-  //ierr = VecView(obj,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   return 0;
 }
 
@@ -409,12 +403,10 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   AppCtx          *appctx = (AppCtx*)ctx;  
 
   PetscFunctionBegin;
-
-  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); //grad u
-  ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); // u grad u
+  ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); /* grad u */
+  ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); /* u grad u */
   VecScale(globalout, -1.0);
   ierr = MatMultAdd(appctx->SEMop.stiff,globalin,globalout,globalout);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -613,17 +605,16 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 {
-  AppCtx           *appctx = (AppCtx*)ctx;     /* user-defined application context */
-  PetscErrorCode    ierr;
-  Vec               temp;
-  PetscInt          its;
-  PetscReal         ff, gnorm, cnorm, xdiff,errex; 
-  TaoConvergedReason reason;    
+  AppCtx             *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  PetscErrorCode     ierr;
+  Vec                temp;
+  PetscInt           its;
+  PetscReal          ff, gnorm, cnorm, xdiff,errex;
+  TaoConvergedReason reason;
   PetscViewer        viewfile;
-  static int counter=0;
-  char filename[24] ;
-  char data[80] ;
-  
+  char               filename[24] ;
+  char               data[80];
+
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
   ierr = TSSetTimeStep(appctx->ts,appctx->initial_dt);CHKERRQ(ierr);
@@ -641,17 +632,17 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = VecDot(temp,appctx->SEMop.mass,f);CHKERRQ(ierr);
   ierr = VecDestroy(&temp);CHKERRQ(ierr);
 
-  //local error evaluation   
+  /* local error evaluation   */
   ierr = VecDuplicate(G,&temp);CHKERRQ(ierr);
   ierr = VecDuplicate(appctx->dat.ic,&temp);CHKERRQ(ierr);
   ierr = VecWAXPY(temp,-1.0,appctx->dat.ic,appctx->dat.true_solution);CHKERRQ(ierr);
   ierr = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
-  //for error evaluation
+  /* for error evaluation */
   ierr = VecDot(temp,appctx->SEMop.mass,&errex);CHKERRQ(ierr);
   ierr = VecDestroy(&temp);CHKERRQ(ierr);
-  errex  = PetscSqrtReal(errex); 
+  errex  = PetscSqrtReal(errex);
 
-/*
+  /*
      Compute initial conditions for the adjoint integration. See Notes above
   */
 
@@ -663,7 +654,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
   ierr=  TaoGetSolutionStatus(tao, &its, &ff, &gnorm, &cnorm, &xdiff, &reason);
 
-  //counter++; // this was for storing the error accross line searches
   PetscPrintf(PETSC_COMM_WORLD,"iteration=%D\t cost function (TAO)=%g, cost function (L2 %g), ic error %g\n",its,(double)ff,*f,errex);
   PetscSNPrintf(filename,sizeof(filename),"PDEadjoint/optimize%02d.m",its);
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,filename,&viewfile);CHKERRQ(ierr);
@@ -688,7 +678,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   //ierr = MatView(appctx->SEMop.grad,viewfile);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewfile);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
