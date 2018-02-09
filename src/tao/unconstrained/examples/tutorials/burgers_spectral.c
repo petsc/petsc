@@ -112,6 +112,7 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscMkdir("PDEadjoint");CHKERRQ(ierr);
 
   /*initialize parameters */
   appctx.param.N    = 10;  /* order of the spectral element */
@@ -710,3 +711,13 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
 }
 
 
+/*TEST
+
+    build:
+      requires: !complex
+
+    test:
+      args: -ts_monitor -ts_adjoint_monitor -tao_max_it 5
+      requires: !single
+
+TEST*/

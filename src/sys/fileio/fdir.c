@@ -27,8 +27,13 @@ PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char
 
 PetscErrorCode PetscMkdir(const char dir[])
 {
-  int err;
+  int            err;
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
   PetscFunctionBegin;
+  ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
+  if (flg) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
   err = _mkdir(dir);
 #else
