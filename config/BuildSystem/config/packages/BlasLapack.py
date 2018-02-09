@@ -556,8 +556,6 @@ class Configure(config.package.Package):
         if not isinstance(lib, list): lib = [lib]
         oldLibs  = self.compilers.LIBS
         self.compilers.LIBS = self.libraries.toString(lib)+' '+self.compilers.LIBS
-      if not self.checkCompile(includes, body):
-        raise RuntimeError('Error in compiling submitted code for testing')
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
         out  = f.read()
