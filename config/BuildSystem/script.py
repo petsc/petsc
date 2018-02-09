@@ -109,7 +109,6 @@ class Script(logger.Logger):
       self.help.output(sections = sections)
       sys.exit()
     if self.hasListFlag():
-      self.argDB.readonly = True
       self.help.outputDownload()
     return
 
