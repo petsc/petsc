@@ -45,12 +45,23 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_LOAD_BALANCE) {
+    PetscInt nmax = 0,nmin = xin->map->n,navg;
+    for (i=0; i<(PetscInt)size; i++) {
+      nmax = PetscMax(nmax,xin->map->range[i+1] - xin->map->range[i]);
+      nmin = PetscMin(nmin,xin->map->range[i+1] - xin->map->range[i]);
+    }
+    navg = xin->map->N/size;
+    ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Local vector size Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_GLVIS) { rank = 0, len = 0; } /* no parallel distributed write support from GLVis */
   if (!rank) {
     ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);

@@ -32,6 +32,25 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_LOAD_BALANCE) {
+      PetscInt      i,nmax = 0,nmin = PETSC_MAX_INT,navg = 0,*nz,nzlocal;
+      DMDALocalInfo info;
+      PetscMPIInt   size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+      ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      nzlocal = info.xm*info.ym*info.zm;
+      ierr = PetscMalloc1(size,&nz);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nzlocal,1,MPIU_INT,nz,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+      for (i=0; i<(PetscInt)size; i++) {
+        nmax = PetscMax(nmax,nz[i]);
+        nmin = PetscMin(nmin,nz[i]);
+        navg += nz[i];
+      }
+      ierr = PetscFree(nz);CHKERRQ(ierr);
+      navg = navg/size;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Load Balance - Grid Points: Min %D  avg %D  max %D\n",nmin,navg,nmax);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);

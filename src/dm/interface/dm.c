@@ -795,14 +795,19 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 @*/
 PetscErrorCode  DMView(DM dm,PetscViewer v)
 {
-  PetscErrorCode ierr;
-  PetscBool      isbinary;
+  PetscErrorCode    ierr;
+  PetscBool         isbinary;
+  PetscMPIInt       size;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (!v) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)dm),&v);CHKERRQ(ierr);
   }
+  ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRQ(ierr);
+  if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(0);  
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)dm,v);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {

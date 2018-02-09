@@ -8017,6 +8017,25 @@ See the \lstinline{PetscOptionsGetViewer()} man page for full details,
 as well as the \lstinline{XXXViewFromOptions()} man pages (for instance, \lstinline{PetscDrawSetFromOptions()})
 for many other convenient command-line options.
 
+\subsection{Using Viewers to Check Load Imbalance}
+
+The PetscViewer format \lstinline{PETSC_VIEWER_LOAD_BALANCE} will cause certain objects to display simple measures of their imbalance. For example
+\begin{lstlisting}
+-n 4 ./ex32 -ksp_view_mat ::load_balance
+\end{lstlisting}
+will display
+\begin{lstlisting}
+  Nonzeros: Min 162  avg 168  max 174
+\end{lstlisting}
+indicating that one process has 162 nonzero entries in the matrix, the average number of nonzeros per process is 168 and the maximum number of nonzeros is 174.
+Similar for vectors one can see the load balancing with, for example, 
+\begin{lstlisting}
+-n 4 ./ex32 -ksp_view_rhs ::load_balance
+\end{lstlisting}
+The measurements of load balancing can also be done within the program with calls to the appropriate object viewer with the viewer format \lstinline{PETSC_VIEWER_LOAD_BALANCE}.
+
+
+
 \section{Using SAWs with PETSc} \label{sec_saws}
 \sindex{saws}
 The Scientific Application Web server, 

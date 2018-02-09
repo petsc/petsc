@@ -154,7 +154,7 @@ struct _MatOps {
   PetscErrorCode (*placeholder_100)(Mat);
   PetscErrorCode (*placeholder_101)(Mat);
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
-  PetscErrorCode (*placeholder_103)(void);
+  PetscErrorCode (*viewnative)(Mat,PetscViewer);
   /*104*/
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);

@@ -868,6 +868,9 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     }
     break;
   case MATOP_VIEW:
+    if (!mat->ops->viewnative) {
+      mat->ops->viewnative = mat->ops->view;
+    }
     mat->ops->view = (PetscErrorCode (*)(Mat,PetscViewer))f;
     break;
   case MATOP_MULT:
