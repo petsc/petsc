@@ -24,6 +24,10 @@ static char help[] ="Solves a simple data assimilation problem with one dimensio
 
    The operators are discretized with the spectral element method
 
+   See the paper PDE-CONSTRAINED OPTIMIZATION WITH SPECTRAL ELEMENTS USING PETSC AND TAO
+   by OANA MARIN, EMIL CONSTANTINESCU, AND BARRY SMITH for details on the exact solution 
+   used
+
   ------------------------------------------------------------------------- */
 
 #include <petsctao.h>
@@ -359,8 +363,8 @@ PetscErrorCode TrueSolution(Vec u,AppCtx *appctx)
   lenglob  = appctx->param.E*(appctx->param.N-1);
 
   for (i=0; i<lenglob; i++) {
-      s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]));
-      } 
+    s[i]=2.0*appctx->param.mu*PETSC_PI*PetscSinScalar(PETSC_PI*xg[i])/(2.0+PetscCosScalar(PETSC_PI*xg[i]));
+  } 
   ierr = DMDAVecRestoreArray(appctx->da,u,&s);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayRead(appctx->da,appctx->SEMop.grid,&xg);CHKERRQ(ierr);
   return 0;
