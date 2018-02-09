@@ -3238,7 +3238,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     if (sub_schurs->change) {
       Mat change,phi,phit;
 
-      if (pcbddc->dbg_flag > 1) {
+      if (pcbddc->dbg_flag > 2) {
         PetscInt ii;
         for (ii=0;ii<B_neigs;ii++) {
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Eigenvector (old basis) %d/%d (%d)\n",ii,B_neigs,B_N);CHKERRQ(ierr);
@@ -4119,12 +4119,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatMatMult(local_auxmat2_R,S_CC,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
     ierr = MatScale(S_CC,m_one);CHKERRQ(ierr);
     if (n_vertices) {
-      if (isCHOL || pcbddc->symmetric_primal) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
+      if (isCHOL || need_benign_correction) { /* if we can solve the interior problem with cholesky, we should also be fine with transposing here */
         ierr = MatTranspose(S_CV,MAT_REUSE_MATRIX,&S_VC);CHKERRQ(ierr);
       } else {
         Mat S_VCt;
 
-        if (need_benign_correction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
         if (lda_rhs != n_R) {
           ierr = MatDestroy(&B);CHKERRQ(ierr);
           ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_R,n_constraints,work,&B);CHKERRQ(ierr);

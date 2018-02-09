@@ -963,6 +963,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* we can reuse the solvers if we are not using the economic version */
       reuse_solvers = (PetscBool)(reuse_solvers && !economic);
       factor_workaround = (PetscBool)(reuse_solvers && factor_workaround);
+      if (!sub_schurs->is_posdef && factor_workaround && compute_Stilda && size_active_schur)
+        reuse_solvers = factor_workaround = PETSC_FALSE;
+
       solver_S = PETSC_TRUE;
 
       /* update the Schur complement with the change of basis on the pressures */
@@ -1189,7 +1192,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* insert S_E values */
       for (j=0;j<subset_size;j++) dummy_idx[j] = cum+j;
       if (sub_schurs->change) {
-        Mat            change_sub,SEj,T;
+        Mat change_sub,SEj,T;
 
         /* change basis */
         ierr = KSPGetOperators(sub_schurs->change[i],&change_sub,NULL);CHKERRQ(ierr);

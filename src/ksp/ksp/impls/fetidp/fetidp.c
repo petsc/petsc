@@ -800,6 +800,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         list[0] = plP;
         list[1] = pcbddc->DirichletBoundariesLocal;
         ierr = ISConcatenate(PetscObjectComm((PetscObject)ksp),2,list,&isout);CHKERRQ(ierr);
+        ierr = ISSortRemoveDups(isout);CHKERRQ(ierr);
         ierr = ISDestroy(&plP);CHKERRQ(ierr);
         ierr = ISRestoreIndices(lP,&idxs);CHKERRQ(ierr);
         ierr = PCBDDCSetDirichletBoundariesLocal(fetidp->innerbddc,isout);CHKERRQ(ierr);
@@ -810,6 +811,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         list[0] = pP;
         list[1] = pcbddc->DirichletBoundaries;
         ierr = ISConcatenate(PetscObjectComm((PetscObject)ksp),2,list,&isout);CHKERRQ(ierr);
+        ierr = ISSortRemoveDups(isout);CHKERRQ(ierr);
         ierr = PCBDDCSetDirichletBoundaries(fetidp->innerbddc,isout);CHKERRQ(ierr);
         ierr = ISDestroy(&isout);CHKERRQ(ierr);
       } else {

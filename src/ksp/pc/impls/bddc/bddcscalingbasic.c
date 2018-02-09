@@ -544,7 +544,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
     }
     if (pcbddc->deluxe_singlemat) {
       Mat X,Y;
-
       if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
         ierr = MatTranspose(deluxe_ctx->seq_mat[i],MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
       } else {
@@ -569,9 +568,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
         ierr = MatMatMult(C,Y,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CY);CHKERRQ(ierr);
         ierr = MatMatTransposeMult(CY,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y);CHKERRQ(ierr);
         ierr = MatDestroy(&CY);CHKERRQ(ierr);
-      } else {
-        ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
       }
+      ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
       deluxe_ctx->seq_mat[i] = Y;
     }
     cum += subset_size;
