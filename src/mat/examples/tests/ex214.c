@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
 #if !defined(PETSC_HAVE_MUMPS)
-  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr)}
+  if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return ierr;
 #endif
@@ -125,6 +125,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_HAVE_MUMPS)
   if (size == 1) {
     /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
      spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
@@ -194,6 +195,7 @@ int main(int argc,char **args)
       ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
     }
   }
+#endif
 
   /* Free data structures */
   ierr = MatDestroy(&AX);CHKERRQ(ierr);
@@ -218,7 +220,7 @@ int main(int argc,char **args)
 
    test:
      suffix: 2
-     nsize: 2
      requires: mumps double !complex !define(PETSC_USE_64BIT_INDICES)
+     nsize: 2
 
 TEST*/
