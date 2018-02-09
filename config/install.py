@@ -165,23 +165,16 @@ class Installer(script.Script):
     newlines+='PETSC_DIR='+self.installDir+'\n'
     newlines+='PETSC_ARCH=\n'
     for line in alllines.split('\n')[1:]:
-      if line.startswith('#'):
-        newlines+=line+'\n'
-      elif line.startswith('TESTLOGFILE'):
+      if line.startswith('TESTLOGFILE'):
         newlines+='TESTLOGFILE = $(TESTDIR)/examples-install.log\n'
       elif line.startswith('CONFIGDIR'):
         newlines+='CONFIGDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples/config\n'
+      elif line.startswith('EXAMPLESDIR'):
         newlines+='EXAMPLESDIR:=$(PETSC_DIR)/$(PETSC_ARCH)/share/petsc/examples\n'
       elif line.startswith('$(generatedtest)') and 'petscvariables' in line:
         newlines+='all: test\n\n'+line+'\n'
-      elif line.startswith('$(TESTDIR)/'):
-        newlines+=re.sub(' %.',' $(EXAMPLESDIR)/%.',line)+'\n'
-      elif line.startswith('include ./lib/petsc/conf/variables'):
-        newlines+=re.sub('include ./lib/petsc/conf/variables',
-                         'include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/variables',
-                         line)+'\n'
       else:
-        newlines+=re.sub('PETSC_ARCH','PETSC_DIR)/$(PETSC_ARCH',line)+'\n'
+        newlines+=line+'\n'
     newFile = open(src, 'w')
     newFile.write(newlines)
     newFile.close()
@@ -204,30 +197,15 @@ class Installer(script.Script):
     return
 
   def copyExamples(self, src, dst):
-    """Recursively copy the examples directories
+    """copy the examples directories
     """
-    if not os.path.isdir(dst):
-      raise shutil.Error, 'Destination is not a directory'
+    top=os.path.relpath(src,os.path.abspath(os.curdir))
+    for root, dirs, files in os.walk(top, topdown=False):
+        if not os.path.basename(root) == "examples": continue
+        shutil.copytree(root, os.path.join(dst,root), 
+                        ignore=shutil.ignore_patterns('*.dSYM'))
 
-    names  = os.listdir(src)
-    nret2 = 0
-    for name in names:
-      srcname = os.path.join(src, name)
-      dstname = os.path.join(dst, name)
-      if os.path.isdir(srcname) and os.path.isfile(os.path.join(srcname,'makefile')):
-        os.mkdir(dstname)
-        nret = self.copyExamples(srcname,dstname)
-        if 'examples' in srcname:
-          self.copyexamplefiles(srcname,dstname)
-          if os.path.isdir(os.path.join(srcname,'output')):
-            os.mkdir(os.path.join(dstname,'output'))
-            self.copyexamplefiles(os.path.join(srcname,'output'),os.path.join(dstname,'output'))
-          nret = 1
-        if not nret:
-          # prune directory branches that don't have examples under them
-          os.rmdir(dstname)
-        nret2 = nret + nret2
-    return nret2
+    return
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
@@ -368,7 +346,7 @@ for dir in dirs:
       shutil.rmtree(examplesdir)
     os.mkdir(examplesdir)
     os.mkdir(os.path.join(examplesdir,'src'))
-    self.copyExamples(self.rootSrcDir,os.path.join(examplesdir,'src'))
+    self.copyExamples(self.rootSrcDir,examplesdir)
     self.copyConfig(self.rootDir,examplesdir)
     self.fixExamplesMakefile(os.path.join(examplesdir,'gmakefile.test'))
     return

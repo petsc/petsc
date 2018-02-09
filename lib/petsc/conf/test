@@ -364,10 +364,10 @@ alltests:
           fi;
 
 allgtest-tap:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile.test -j ${MAKE_TEST_NP} test V=0
+	-@${OMAKE} -f gmakefile.test -j ${MAKE_TEST_NP} test V=0
 
 allgtest:
-	-@cd ${PETSC_DIR}; ${OMAKE} -k -f gmakefile.test -j ${MAKE_TEST_NP} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
+	-@${OMAKE} -k -f gmakefile.test -j ${MAKE_TEST_NP} test V=0 2>&1 | egrep -v '^(ok [^#]*(# SKIP|# TODO|$$)|[A-Za-z][A-Za-z0-9_]*\.(c|F|cxx|F90).$$)|warning: linker scope was specified more than once'
 
 
 
