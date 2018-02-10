@@ -12,6 +12,61 @@
 
 #include <cuda_runtime.h>
 
+static PetscErrorCode PetscCUBLASDestroyHandle();
+
+/*
+   Implementation for obtaining read-write access to the cuBLAS handle.
+   Required to properly deal with repeated calls of PetscInitizalize()/PetscFinalize().
+ */
+static PetscErrorCode PetscCUBLASGetHandle_Private(cublasHandle_t **handle)
+{
+  static cublasHandle_t cublasv2handle = NULL;
+  cublasStatus_t        cberr;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  if (!cublasv2handle) {
+    cberr = cublasCreate(&cublasv2handle);CHKERRCUBLAS(cberr);
+    /* Make sure that the handle will be destroyed properly */
+    ierr = PetscRegisterFinalize(PetscCUBLASDestroyHandle);CHKERRQ(ierr);
+  }
+  *handle = &cublasv2handle;
+  PetscFunctionReturn(0);
+}
+
+/*
+   Singleton for obtaining a handle to cuBLAS.
+   The handle is required for calls to routines in cuBLAS.
+ */
+PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
+{
+  cublasHandle_t *p_cublasv2handle;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle_Private(&p_cublasv2handle);CHKERRQ(ierr);
+  *handle = *p_cublasv2handle;
+  PetscFunctionReturn(0);
+}
+
+
+/*
+   Destroys the CUBLAS handle.
+   This function is intended and registered for PetscFinalize - do not call manually!
+ */
+PetscErrorCode PetscCUBLASDestroyHandle()
+{
+  cublasHandle_t *p_cublasv2handle;
+  cublasStatus_t cberr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle_Private(&p_cublasv2handle);CHKERRQ(ierr);
+  cberr = cublasDestroy(*p_cublasv2handle);CHKERRCUBLAS(cberr);
+  *p_cublasv2handle = NULL;  /* Ensures proper reinitialization */
+  PetscFunctionReturn(0);
+}
+
 /*
     Allocates space for the vector array on the GPU if it does not exist.
     Does NOT change the PetscCUSPFlag for the vector
@@ -1166,9 +1221,11 @@ PetscErrorCode VecSwap_SeqCUSP(Vec xin,Vec yin)
   PetscErrorCode ierr;
   PetscBLASInt   one = 1,bn;
   CUSPARRAY      *xarray,*yarray;
+  cublasHandle_t cublasv2handle;
   cublasStatus_t cberr;
 
   PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
   if (xin != yin) {
     ierr = VecCUSPGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
@@ -1381,9 +1438,11 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal *z)
   PetscInt          n = xin->map->n;
   PetscBLASInt      one = 1, bn;
   CUSPARRAY         *xarray;
+  cublasHandle_t    cublasv2handle;
   cublasStatus_t    cberr;
 
   PetscFunctionBegin;
+  ierr = PetscCUBLASGetHandle(&cublasv2handle);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -1640,7 +1699,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec w)
 
    Output Parameter:
 .  a - the CUSP device vector
-   
+
    Fortran note: This function is not currently available from Fortran.
 
    Fortran note:
