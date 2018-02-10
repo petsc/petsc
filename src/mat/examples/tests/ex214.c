@@ -25,7 +25,7 @@ int main(int argc,char **args)
   if (!rank) {ierr = PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n");CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return ierr;
-#endif
+#else
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-displ",&displ,NULL);CHKERRQ(ierr);
 
@@ -125,7 +125,6 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"(2) MatMatSolve: Norm of residual %g\n",norm);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_MUMPS)
   if (size == 1) {
     /* (3) Test MatMatSolve() for inv(A) with sparse RHS:
      spRHS = [e[0],...,e[nrhs-1], dense X holds first nrhs columns of inv(A) */
@@ -195,7 +194,6 @@ int main(int argc,char **args)
       ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
     }
   }
-#endif
 
   /* Free data structures */
   ierr = MatDestroy(&AX);CHKERRQ(ierr);
@@ -210,6 +208,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
+#endif
 }
 
 /*TEST
