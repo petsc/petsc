@@ -694,7 +694,7 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
       requires: !complex
 
     test:
-      args: -ts_monitor -ts_adjoint_monitor -tao_max_it 5
+      args: -tao_max_it 5
       requires: !single
 
 TEST*/
