@@ -284,7 +284,7 @@ PetscErrorCode PetscViewerGLVisGetDMWindow_Private(PetscViewer viewer,PetscViewe
       ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
       ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
       if (!socket->name || !len || isstdout) {
-        ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)viewer),"stdout",&socket->meshwindow);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->meshwindow);CHKERRQ(ierr);
       } else {
         PetscMPIInt rank;
         char        filename[PETSC_MAX_PATH_LEN];
@@ -388,7 +388,7 @@ PetscErrorCode PetscViewerGLVisGetWindow_Private(PetscViewer viewer,PetscInt wid
         ierr = PetscStrlen(socket->name,&len);CHKERRQ(ierr);
         ierr = PetscStrcmp(socket->name,"stdout",&isstdout);CHKERRQ(ierr);
         if (!socket->name || !len || isstdout) {
-          ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)viewer),"stdout",&socket->window[wid]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&socket->window[wid]);CHKERRQ(ierr);
         } else {
           PetscMPIInt rank;
           char        filename[PETSC_MAX_PATH_LEN];
