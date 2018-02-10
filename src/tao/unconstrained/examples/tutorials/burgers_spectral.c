@@ -216,6 +216,7 @@ int main(int argc,char **argv)
   /* attach the null space to the matrix, this probably is not needed but does no harm */
   ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
   ierr = MatSetNullSpace(appctx.SEMop.stiff,nsp);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(appctx.SEMop.keptstiff,nsp);CHKERRQ(ierr);  
   ierr = MatNullSpaceTest(nsp,appctx.SEMop.stiff,NULL);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
   /* attach the null space to the matrix, this probably is not needed but does no harm */
@@ -226,7 +227,7 @@ int main(int argc,char **argv)
 
   /* Create the TS solver that solves the ODE and its adjoint; set its options */
   ierr = TSCreate(PETSC_COMM_WORLD,&appctx.ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(appctx.ts,TS_LINEAR);CHKERRQ(ierr);
+  ierr = TSSetProblemType(appctx.ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(appctx.ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetDM(appctx.ts,appctx.da);CHKERRQ(ierr);
   ierr = TSSetTime(appctx.ts,0.0);CHKERRQ(ierr);
@@ -235,13 +236,12 @@ int main(int argc,char **argv)
   ierr = TSSetMaxTime(appctx.ts,appctx.param.Tend);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(appctx.ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   ierr = TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
+  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
   ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
   /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
   ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
-  //ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
-  ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
 
   /* Set Objective and Initial conditions for the problem and compute Objective function (evolution of true_solution to final time */
   ierr = ComputeSolutionCoefficients(&appctx);CHKERRQ(ierr);
@@ -409,33 +409,44 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscFunctionBegin;
   ierr = MatMult(appctx->SEMop.grad,globalin,globalout);CHKERRQ(ierr); /* grad u */
   ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); /* u grad u */
-  VecScale(globalout, -1.0);
-  ierr = MatMultAdd(appctx->SEMop.stiff,globalin,globalout,globalout);CHKERRQ(ierr);
+  ierr = VecScale(globalout, -1.0);CHKERRQ(ierr);
+  ierr = MatMultAdd(appctx->SEMop.keptstiff,globalin,globalout,globalout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
+/*
+
+      K is the discretiziation of the Laplacian
+      G is the discretization of the gradient
+
+      Computes Jacobian of      K u + diag(u) G u   which is given by
+              K   + diag(u)G + diag(Gu)
+*/
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx)
 {
-  //PetscErrorCode ierr;
-  //AppCtx         *appctx = (AppCtx*)ctx;  
+  PetscErrorCode ierr;
+  AppCtx         *appctx = (AppCtx*)ctx;
+  Vec            Gglobalin;
 
   PetscFunctionBegin;
-//  ierr = MatCopy(appctx->SEMop.keptstiff,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
- 
-  /*new.. needs thinking and testing
-  MatCopy(appctx->SEMop.grad,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatScale(appctx->SEMop.grad,NULL,globalin);CHKERRQ(ierr); //grad u
-  ierr = VecPointwiseMult(globalout,globalin,globalout);CHKERRQ(ierr); // u grad u
- */
+  /*    A = diag(u) G */
 
- /* old jac something is wrong
-  MatCopy(appctx->SEMop.grad,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  MatDiagonalScale(A,globalin,NULL);
+  ierr = MatCopy(appctx->SEMop.grad,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(A,globalin,NULL);CHKERRQ(ierr);
+
+  /*    A  = A + diag(Gu) */
+  ierr = VecDuplicate(globalin,&Gglobalin);CHKERRQ(ierr);
+  ierr = MatMult(appctx->SEMop.grad,globalin,Gglobalin);CHKERRQ(ierr);
+  ierr = MatDiagonalSet(A,Gglobalin,ADD_VALUES);CHKERRQ(ierr);
+  ierr = VecDestroy(&Gglobalin);CHKERRQ(ierr);
+
+  /*   A  = K - A    */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,DIFFERENT_NONZERO_PATTERN);
-  */
+  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);
+
+  /*  ierr = MatCopy(appctx->SEMop.keptstiff,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -615,9 +626,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscInt           its;
   PetscReal          ff, gnorm, cnorm, xdiff,errex;
   TaoConvergedReason reason;
-  PetscViewer        viewfile;
-  char               filename[24] ;
-  char               data[80];
 
   ierr = TSSetTime(appctx->ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx->ts,0);CHKERRQ(ierr);
@@ -656,32 +664,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
 
-  ierr=  TaoGetSolutionStatus(tao, &its, &ff, &gnorm, &cnorm, &xdiff, &reason);
+  ierr = TaoGetSolutionStatus(tao, &its, &ff, &gnorm, &cnorm, &xdiff, &reason);
 
-  PetscPrintf(PETSC_COMM_WORLD,"iteration=%D\t cost function (TAO)=%g, cost function (L2 %g), ic error %g\n",its,(double)ff,*f,errex);
-  PetscSNPrintf(filename,sizeof(filename),"PDEadjoint/optimize%02d.m",its);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,filename,&viewfile);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-  PetscSNPrintf(data,sizeof(data),"TAO(%D)=%g; L2(%D)= %g ; Err(%D)=%g\n",its+1,(double)ff,its+1,*f,its+1,errex);
-  PetscViewerASCIIPrintf(viewfile,data);
-  ierr = PetscObjectSetName((PetscObject)appctx->SEMop.grid,"grid");
-  ierr = VecView(appctx->SEMop.grid,viewfile);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)appctx->dat.obj,"obj");
-  ierr = VecView(appctx->dat.obj,viewfile);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)G,"Init_adj");
-  ierr = VecView(G,viewfile);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)IC,  "Init_ts");
-  ierr = VecView(IC,viewfile);CHKERRQ(ierr);
-  //ierr = PetscObjectSetName((PetscObject)appctx->dat.senmask,  "senmask");
-  //ierr = VecView(appctx->dat.senmask,viewfile);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)appctx->dat.curr_sol,"Curr_sol");
-  ierr = VecView(appctx->dat.curr_sol,viewfile);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)appctx->dat.true_solution, "exact");
-  ierr = VecView(appctx->dat.true_solution,viewfile);CHKERRQ(ierr);
-  //ierr = PetscObjectSetName((PetscObject)appctx->SEMop.grad, "A");
-  //ierr = MatView(appctx->SEMop.grad,viewfile);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewfile);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
