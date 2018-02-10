@@ -79,23 +79,18 @@ typedef struct {
   PetscData         dat;
   TS                ts;
   PetscReal         initial_dt;
-  PetscReal         *solutioncoefficients;
-  PetscInt          ncoeff;
 } AppCtx;
 
 /*
    User-defined routines
 */
 extern PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-extern PetscErrorCode RHSMatrixHeatgllDM(TS,PetscReal,Vec,Mat,Mat,void*);
+extern PetscErrorCode RHSMatrixLaplaciangllDM(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode RHSMatrixAdvectiongllDM(TS,PetscReal,Vec,Mat,Mat,void*);
-extern PetscErrorCode RHSAdjointgllDM(TS,PetscReal,Vec,Mat,Mat,void*);
-extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode TrueSolution(Vec,AppCtx*);
 extern PetscErrorCode ComputeObjective(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode MonitorError(Tao,void*);
-extern PetscErrorCode ComputeSolutionCoefficients(AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 
@@ -115,7 +110,6 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscMkdir("PDEadjoint");CHKERRQ(ierr);
 
   /*initialize parameters */
   appctx.param.N    = 10;  /* order of the spectral element */
@@ -125,11 +119,9 @@ int main(int argc,char **argv)
   appctx.initial_dt = 5e-3;
   appctx.param.steps = PETSC_MAX_INT;
   appctx.param.Tend  = 4;
-  appctx.ncoeff      = 2;
 
   ierr = PetscOptionsGetInt(NULL,NULL,"-N",&appctx.param.N,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-E",&appctx.param.E,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ncoeff",&appctx.ncoeff,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-Tend",&appctx.param.Tend,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&appctx.param.mu,NULL);CHKERRQ(ierr);
   appctx.param.Le = appctx.param.L/appctx.param.E;
@@ -203,7 +195,7 @@ int main(int argc,char **argv)
    u_t = f(u,t), the user provides the discretized right-hand-side
    as a time-dependent matrix.
    */
-  ierr = RHSMatrixHeatgllDM(appctx.ts,0.0,u,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx);CHKERRQ(ierr);
+  ierr = RHSMatrixLaplaciangllDM(appctx.ts,0.0,u,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx);CHKERRQ(ierr);
   ierr = RHSMatrixAdvectiongllDM(appctx.ts,0.0,u,appctx.SEMop.grad,appctx.SEMop.grad,&appctx);CHKERRQ(ierr);
    /*
        For linear problems with a time-dependent f(u,t) in the equation
@@ -244,7 +236,6 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
 
   /* Set Objective and Initial conditions for the problem and compute Objective function (evolution of true_solution to final time */
-  ierr = ComputeSolutionCoefficients(&appctx);CHKERRQ(ierr);
   ierr = InitialConditions(appctx.dat.ic,&appctx);CHKERRQ(ierr);
   ierr = TrueSolution(appctx.dat.true_solution,&appctx);CHKERRQ(ierr);
   ierr = ComputeObjective(appctx.param.Tend,appctx.dat.obj,&appctx);CHKERRQ(ierr);
@@ -262,7 +253,6 @@ int main(int argc,char **argv)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  ierr = PetscFree(appctx.solutioncoefficients);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.SEMop.stiff);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.SEMop.keptstiff);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -284,25 +274,6 @@ int main(int argc,char **argv)
   */
     ierr = PetscFinalize();
     return ierr;
-}
-
-/*
-    Computes the coefficients for the analytic solution to the PDE
-*/
-PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx)
-{
-  PetscErrorCode    ierr;
-  PetscRandom       rand;
-  PetscInt          i;
-
-  ierr = PetscMalloc1(appctx->ncoeff,&appctx->solutioncoefficients);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rand,.9,1.0);CHKERRQ(ierr);
-  for (i=0; i<appctx->ncoeff; i++) {
-    ierr = PetscRandomGetValue(rand,&appctx->solutioncoefficients[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  return 0;
 }
 
 /* --------------------------------------------------------------------- */
@@ -453,7 +424,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 /* --------------------------------------------------------------------- */
 
 /*
-   RHSMatrixHeat - User-provided routine to compute the right-hand-side
+   RHSMatrixLaplacian - User-provided routine to compute the right-hand-side
    matrix for the heat equation.
 
    Input Parameters:
@@ -468,7 +439,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
    str - flag indicating matrix structure
 
 */
-PetscErrorCode RHSMatrixHeatgllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
+PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
 {
   PetscReal      **temp;
   PetscReal      vv;
@@ -543,44 +514,36 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   PetscErrorCode ierr;
   PetscInt       xs,xn,l,j;
   PetscInt       *rowsDM;
-  PetscViewer    viewfile;
-  
-     /*
-       Creates the advection matrix for the given gll
-    */
-    ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
-    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
-    ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+  /*
+   Creates the advection matrix for the given gll
+   */
+  ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
-    xs   = xs/(appctx->param.N-1);
-    xn   = xn/(appctx->param.N-1);
+  ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
-    ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
-  
-    for (j=xs; j<xs+xn; j++) {
-      for (l=0; l<appctx->param.N; l++) 
-      {rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;}
-      ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
-      }
+  xs   = xs/(appctx->param.N-1);
+  xn   = xn/(appctx->param.N-1);
 
-   MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-   MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
 
-   ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
-   ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
-   ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
-  
-   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"convection.m",&viewfile);CHKERRQ(ierr);
-   ierr = PetscViewerPushFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-   ierr = PetscObjectSetName((PetscObject)A,"grad");
-   ierr = MatView(A,viewfile);CHKERRQ(ierr);
-   ierr = PetscViewerPopFormat(viewfile);
-   
-   ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
-   ierr=  MatDuplicate(A,MAT_COPY_VALUES,&appctx->SEMop.grad);CHKERRQ(ierr);
-     
-   return 0;
+  for (j=xs; j<xs+xn; j++) {
+    for (l=0; l<appctx->param.N; l++) {
+      rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
+    }
+    ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
+  }
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
+  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+  ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr =  MatDuplicate(A,MAT_COPY_VALUES,&appctx->SEMop.grad);CHKERRQ(ierr);
+  return 0;
 }
 /* ------------------------------------------------------------------ */
 /*
