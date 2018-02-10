@@ -79,8 +79,8 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->blocktype   = MPI_DATATYPE_NULL;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_bts",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL);CHKERRQ(ierr);
+  if (!flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
     stash->ScatterGetMesg = MatStashScatterGetMesg_BTS;
     stash->ScatterEnd     = MatStashScatterEnd_BTS;
