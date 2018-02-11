@@ -205,6 +205,7 @@
       call VecCreateSeq(PETSC_COMM_SELF, i12, y, ierr)
       call VecCreateSeq(PETSC_COMM_SELF, i12, z, ierr)
       call MatCreateShell(PETSC_COMM_SELF,i12,i12,i12,i12,i0,m,ierr)
+      call MatShellSetManageScalingShifts(m,ierr)
       call MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr)
       call MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr)
 
