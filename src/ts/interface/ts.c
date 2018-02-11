@@ -275,11 +275,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,400,300,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   }
-
-  ierr = PetscOptionsName("-ts_monitor_error","Monitor error","TSMonitorError",&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = TSMonitorSet(ts,TSMonitorError,NULL,NULL);CHKERRQ(ierr);
-  }
+  ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_error","View the error at each timestep","TSMonitorError",TSMonitorError,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
   if (opt) {
@@ -7634,18 +7630,27 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
 {
   PetscErrorCode    ierr;
   Vec               y;
   PetscReal         nrm;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
   ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);  
+  if (flg) {
+    ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

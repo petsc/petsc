@@ -552,7 +552,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx,PetscError
 PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,PetscViewerAndFormat *);
 
 typedef struct _n_TSMonitorEnvelopeCtx*  TSMonitorEnvelopeCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorEnvelopeCtxCreate(TS,TSMonitorEnvelopeCtx*);
