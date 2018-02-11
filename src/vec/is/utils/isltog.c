@@ -777,6 +777,8 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
+.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+           IS_GTOLM_DROP - drops the indices with no local value from the output list
 -   is - index set in global numbering
 
     Output Parameters:
@@ -789,7 +791,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 .seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type, IS is,IS *newis)
+PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,IS is,IS *newis)
 {
   PetscErrorCode ierr;
   PetscInt       n,nout,*idxout;
