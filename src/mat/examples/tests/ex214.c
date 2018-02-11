@@ -6,16 +6,18 @@ Example: mpiexec -n <np> ./ex214 -displ \n\n";
 
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X,AX;
-  Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
+#if defined(PETSC_HAVE_MUMPS)
+  Mat            A,RHS,C,F,X,AX;
+  Vec            u,x,b;
   PetscInt       m,n,nrhs,M,N,i,Istart,Iend,Ii,j,J;
   PetscScalar    v;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom    rand;
   PetscBool      displ=PETSC_FALSE;
   char           solver[256];
+#endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
