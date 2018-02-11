@@ -51,12 +51,8 @@ typedef struct {
 } PetscParam;
 
 typedef struct {
-  Vec         obj;               /* desired end state */
   Vec         grid;              /* total grid */   
-  Vec         grad;
-  Vec         ic;
   Vec         curr_sol;
-  Vec         true_solution;     /* actual initial conditions for the final solution */
 } PetscData;
 
 typedef struct {
@@ -89,7 +85,6 @@ extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
-  Vec            u;                      /* approximate solution vector */
   PetscErrorCode ierr;
   PetscInt       i, xs, xm, ind, j, lenglob;
   PetscReal      x, *wrk_ptr1, *wrk_ptr2;
@@ -143,14 +138,10 @@ int main(int argc,char **argv)
      have the same types.
   */
 
-  ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.dat.ic);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.dat.true_solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.dat.obj);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.SEMop.grid);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.SEMop.mass);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.dat.curr_sol);CHKERRQ(ierr);
- 
+  ierr = DMCreateGlobalVector(appctx.da,&appctx.dat.curr_sol);CHKERRQ(ierr);
+  ierr = VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.grid);CHKERRQ(ierr);
+  ierr = VecDuplicate(appctx.dat.curr_sol,&appctx.SEMop.mass);CHKERRQ(ierr);
+
   ierr = DMDAGetCorners(appctx.da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
@@ -176,7 +167,6 @@ int main(int argc,char **argv)
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.grid,&wrk_ptr1);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx.da,appctx.SEMop.mass,&wrk_ptr2);CHKERRQ(ierr);
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create matrix data structure; set matrix evaluation routine.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -188,8 +178,8 @@ int main(int argc,char **argv)
    u_t = f(u,t), the user provides the discretized right-hand-side
    as a time-dependent matrix.
    */
-  ierr = RHSMatrixLaplaciangllDM(appctx.ts,0.0,u,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx);CHKERRQ(ierr);
-  ierr = RHSMatrixAdvectiongllDM(appctx.ts,0.0,u,appctx.SEMop.grad,appctx.SEMop.grad,&appctx);CHKERRQ(ierr);
+  ierr = RHSMatrixLaplaciangllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.stiff,appctx.SEMop.stiff,&appctx);CHKERRQ(ierr);
+  ierr = RHSMatrixAdvectiongllDM(appctx.ts,0.0,appctx.dat.curr_sol,appctx.SEMop.grad,appctx.SEMop.grad,&appctx);CHKERRQ(ierr);
    /*
        For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
@@ -223,29 +213,21 @@ int main(int argc,char **argv)
   ierr = TSSetTolerances(appctx.ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
   ierr = TSSetSaveTrajectory(appctx.ts);CHKERRQ(ierr);
   ierr = TSSetFromOptions(appctx.ts);CHKERRQ(ierr);
-  /* Need to save initial timestep user may have set with -ts_dt so it can be reset for each new TSSolve() */
-  ierr = TSGetTimeStep(appctx.ts,&appctx.initial_dt);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(appctx.ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(appctx.ts,appctx.SEMop.stiff,appctx.SEMop.stiff,RHSJacobian,&appctx);CHKERRQ(ierr);
 
   /* Set Initial conditions for the problem  */
-  ierr = TrueSolution(appctx.ts,0,appctx.dat.ic,&appctx);CHKERRQ(ierr);
+  ierr = TrueSolution(appctx.ts,0,appctx.dat.curr_sol,&appctx);CHKERRQ(ierr);
 
   ierr = TSSetSolutionFunction(appctx.ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void *))TrueSolution,&appctx);CHKERRQ(ierr);
   ierr = TSSetTime(appctx.ts,0.0);CHKERRQ(ierr);
   ierr = TSSetStepNumber(appctx.ts,0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(appctx.ts,appctx.initial_dt);CHKERRQ(ierr);
-  ierr = VecCopy(appctx.dat.ic,appctx.dat.curr_sol);CHKERRQ(ierr);
 
   ierr = TSSolve(appctx.ts,appctx.dat.curr_sol);CHKERRQ(ierr);
 
   ierr = MatDestroy(&appctx.SEMop.stiff);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.SEMop.keptstiff);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.SEMop.grad);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.dat.ic);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.dat.true_solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.dat.obj);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.grid);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.SEMop.mass);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.dat.curr_sol);CHKERRQ(ierr);
@@ -346,7 +328,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 
 /*
    RHSMatrixLaplacian - User-provided routine to compute the right-hand-side
-   matrix for the heat equation.
+   matrix for the Laplacian operator
 
    Input Parameters:
    ts - the TS context
@@ -412,7 +394,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
 
 /*
    RHSMatrixAdvection - User-provided routine to compute the right-hand-side
-   matrix for the Advection equation.
+   matrix for the Advection (gradient) operator.
 
    Input Parameters:
    ts - the TS context
