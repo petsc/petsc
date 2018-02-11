@@ -255,19 +255,20 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
 PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
 {
   Mat_Shell       *shellA = (Mat_Shell*)A->data,*shellB = (Mat_Shell*)B->data;
-  PetscBool       matflg,shellflg;
   PetscErrorCode  ierr;
+  PetscBool       matflg;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)B,MATSHELL,&matflg);CHKERRQ(ierr);
-  if(!matflg) { SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_NOTSAMETYPE,"Output matrix must be a MATSHELL"); }
+  if (!matflg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_NOTSAMETYPE,"Output matrix must be a MATSHELL");
 
   ierr = MatShellUseScaledMethods(B);CHKERRQ(ierr);
-  ierr = PetscMemcmp(A->ops,B->ops,sizeof(struct _MatOps),&matflg);CHKERRQ(ierr);
-  ierr = PetscMemcmp(shellA->ops,shellB->ops,sizeof(struct _MatShellOps),&shellflg);CHKERRQ(ierr);
-  if (!matflg || !shellflg) { SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Matrices cannot be copied because they have different operations"); }
+  ierr = PetscMemcpy(B->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr = PetscMemcpy(shellB->ops,shellA->ops,sizeof(struct _MatShellOps));CHKERRQ(ierr);
 
-  ierr = (*shellA->ops->copy)(A,B,str);CHKERRQ(ierr);
+  if (shellA->ops->copy) {
+    ierr = (*shellA->ops->copy)(A,B,str);CHKERRQ(ierr);
+  }
   shellB->vscale = shellA->vscale;
   shellB->vshift = shellA->vshift;
   if (shellA->dshift_owned) {
@@ -297,6 +298,18 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
   } else {
     shellB->right = NULL;
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDuplicate_Shell(Mat mat,MatDuplicateOption op,Mat *M)
+{
+  PetscErrorCode ierr;
+  void           *ctx;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
+  ierr = MatCreateShell(PetscObjectComm((PetscObject)mat),mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N,ctx,M);CHKERRQ(ierr);
+  ierr = MatCopy(mat,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -548,7 +561,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                /*34*/ 0,
+                                /*34*/ MatDuplicate_Shell,
                                        0,
                                        0,
                                        0,
@@ -557,7 +570,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatCopy_Shell,
                                 /*44*/ 0,
                                        MatScale_Shell,
                                        MatShift_Shell,

@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (appctx.param.N % size) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
+  if (appctx.param.E % size) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
@@ -326,6 +326,91 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 
 /* --------------------------------------------------------------------- */
 
+#include "petscblaslapack.h"
+/*
+     Matrix free operation of 1d Laplacian and Grad for GLL spectral elements
+*/
+PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
+{
+  AppCtx            *appctx;
+  PetscErrorCode    ierr;
+  PetscReal         **temp,vv;
+  PetscInt          i,j,xs,xn;
+  Vec               xlocal,ylocal;
+  const PetscScalar *xl;
+  PetscScalar       *yl;
+  PetscMPIInt       _One = 1,n;
+  PetscScalar       _DOne = 1;  
+
+  ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(appctx->da,&xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
+  ierr = VecSet(ylocal,0.0);CHKERRQ(ierr);
+  ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  for (i=0; i<appctx->param.N; i++) {
+    vv =-appctx->param.mu*2.0/appctx->param.Le;
+    for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
+  }
+  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(appctx->param.N,&n);CHKERRQ(ierr);
+  for (j=xs; j<xs+xn; j += appctx->param.N-1) {
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
+  }
+  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
+  ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(appctx->da,&xlocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(y,y,appctx->SEMop.mass);CHKERRQ(ierr);
+  return 0;
+}
+
+PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
+{
+  AppCtx            *appctx;
+  PetscErrorCode    ierr;
+  PetscReal         **temp;
+  PetscInt          j,xs,xn;
+  Vec               xlocal,ylocal;
+  const PetscScalar *xl;
+  PetscScalar       *yl;
+  PetscMPIInt       _One = 1,n;
+  PetscScalar       _DOne = 1;  
+
+  ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(appctx->da,&xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(appctx->da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
+  ierr = VecSet(ylocal,0.0);CHKERRQ(ierr);
+  ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(appctx->param.N,&n);CHKERRQ(ierr);
+  for (j=xs; j<xs+xn; j += appctx->param.N-1) {
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
+  }
+  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
+  ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(appctx->da,ylocal,ADD_VALUES,y);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(appctx->da,&xlocal);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(y,y,appctx->SEMop.mass);CHKERRQ(ierr);
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  return 0;
+}
+
 /*
    RHSMatrixLaplacian - User-provided routine to compute the right-hand-side
    matrix for the Laplacian operator
@@ -350,42 +435,52 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   PetscErrorCode ierr;
   PetscInt       i,xs,xn,l,j;
   PetscInt       *rowsDM;
+  PetscBool      flg = PETSC_FALSE;
 
-  /*
-   Creates the element stiffness matrix for the given gll
-   */
-  ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL);CHKERRQ(ierr);
 
-  /* scale by the size of the element */
-  for (i=0; i<appctx->param.N; i++) {
-    vv=-appctx->param.mu*2.0/appctx->param.Le;
-    for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
-  }
+  if (!flg) {
+    /*
+     Creates the element stiffness matrix for the given gll
+     */
+    ierr = PetscGLLElementLaplacianCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
 
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
-
-  xs   = xs/(appctx->param.N-1);
-  xn   = xn/(appctx->param.N-1);
-
-  ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
-  /*
-   loop over local elements
-   */
-  for (j=xs; j<xs+xn; j++) {
-    for (l=0; l<appctx->param.N; l++) {
-      rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
+    /* scale by the size of the element */
+    for (i=0; i<appctx->param.N; i++) {
+      vv=-appctx->param.mu*2.0/appctx->param.Le;
+      for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
     }
-    ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(rowsDM);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
-  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
 
-  ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+
+    xs   = xs/(appctx->param.N-1);
+    xn   = xn/(appctx->param.N-1);
+
+    ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
+    /*
+     loop over local elements
+     */
+    for (j=xs; j<xs+xn; j++) {
+      for (l=0; l<appctx->param.N; l++) {
+        rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
+      }
+      ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rowsDM);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
+    ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+
+    ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATSHELL);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
+    ierr = MatShellSetContext(A,appctx);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Laplacian);CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -415,34 +510,42 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
   PetscErrorCode ierr;
   PetscInt       xs,xn,l,j;
   PetscInt       *rowsDM;
-  
-  /*
-   Creates the advection matrix for the given gll
-   */
-  ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+  PetscBool      flg = PETSC_FALSE;
 
-  ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-gll_mf",&flg,NULL);CHKERRQ(ierr);
 
-  xs   = xs/(appctx->param.N-1);
-  xn   = xn/(appctx->param.N-1);
+  if (!flg) {
+    /*
+     Creates the advection matrix for the given gll
+     */
+    ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
+    xs   = xs/(appctx->param.N-1);
+    xn   = xn/(appctx->param.N-1);
 
-  ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
-  for (j=xs; j<xs+xn; j++) {
-    for (l=0; l<appctx->param.N; l++) {
-      rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
+    ierr = PetscMalloc1(appctx->param.N,&rowsDM);CHKERRQ(ierr);
+    for (j=xs; j<xs+xn; j++) {
+      for (l=0; l<appctx->param.N; l++) {
+        rowsDM[l] = 1+(j-xs)*(appctx->param.N-1)+l;
+      }
+      ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatSetValuesLocal(A,appctx->param.N,rowsDM,appctx->param.N,rowsDM,&temp[0][0],ADD_VALUES);CHKERRQ(ierr);
+    ierr = PetscFree(rowsDM);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
+    ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
+
+    ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATSHELL);CHKERRQ(ierr);
+    ierr = MatSetUp(A);CHKERRQ(ierr);
+    ierr = MatShellSetContext(A,appctx);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void (*)(void))MatMult_Advection);CHKERRQ(ierr);
   }
-  ierr = PetscFree(rowsDM);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(A,appctx->SEMop.mass,0);CHKERRQ(ierr);
-  ierr = VecReciprocal(appctx->SEMop.mass);CHKERRQ(ierr);
-
-  ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
   return 0;
 }
 
@@ -455,6 +558,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
       requires: !single
 
     test:
+      suffix: 2
       nsize: 5
       requires: !single
 

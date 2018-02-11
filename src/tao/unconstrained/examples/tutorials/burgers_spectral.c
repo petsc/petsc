@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (appctx.param.N % size) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
+  if (appctx.param.E % size) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -652,6 +652,7 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
       requires: !single
 
     test:
+      suffix: 2
       nsize: 2
       args: -tao_max_it 5
       requires: !single
