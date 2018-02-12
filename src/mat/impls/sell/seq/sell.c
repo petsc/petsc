@@ -26,7 +26,7 @@
   #elif defined(__AVX2__)
     #define AVX2_Mult_Private(vec_idx,vec_x,vec_vals,vec_y) \
     vec_vals = _mm256_load_pd(aval); \
-    vec_idx  =  _mm_load_si128((__m128i const*)acolidx); /* SSE2 */ \
+    vec_idx  = _mm_load_si128((__m128i const*)acolidx); /* SSE2 */ \
     vec_x    = _mm256_i32gather_pd(x,vec_idx,_MM_SCALE_8); \
     vec_y    = _mm256_fmadd_pd(vec_x,vec_vals,vec_y)
   #endif
@@ -851,7 +851,6 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
-  ierr = PetscFree(a->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree(a->rlen);CHKERRQ(ierr);
   ierr = PetscFree(a->sliidx);CHKERRQ(ierr);
   ierr = PetscFree3(a->idiag,a->mdiag,a->ssor_work);CHKERRQ(ierr);
@@ -1968,7 +1967,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
   b->omega              = 1.0;
   b->fshift             = 0.0;
   b->idiagvalid         = PETSC_FALSE;
-  b->ibdiagvalid        = PETSC_FALSE;
   b->keepnonzeropattern = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSELL);CHKERRQ(ierr);
@@ -2148,7 +2146,6 @@ PetscErrorCode MatSeqSELLInvalidateDiagonal(Mat A)
 
   PetscFunctionBegin;
   a->idiagvalid  = PETSC_FALSE;
-  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
