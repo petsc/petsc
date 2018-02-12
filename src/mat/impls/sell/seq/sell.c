@@ -679,6 +679,10 @@ PetscErrorCode MatMultTransposeAdd_SeqSELL(Mat A,Vec xx,Vec zz,Vec yy)
 #endif
 
   PetscFunctionBegin;
+  if (A->symmetric) {
+    ierr = MatMultAdd_SeqSELL(A,xx,zz,yy);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (zz != yy) { ierr = VecCopy(zz,yy);CHKERRQ(ierr); }
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -713,8 +717,12 @@ PetscErrorCode MatMultTranspose_SeqSELL(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecSet(yy,0.0);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd_SeqSELL(A,xx,yy,yy);CHKERRQ(ierr);
+  if (A->symmetric) {
+    ierr = MatMult_SeqSELL(A,xx,yy);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(yy,0.0);CHKERRQ(ierr);
+    ierr = MatMultTransposeAdd_SeqSELL(A,xx,yy,yy);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
