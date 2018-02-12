@@ -1,9 +1,9 @@
 #! /bin/csh
 #
-#  usage: startnightly tname1[:branch1] tname2[:branch2] ...
+#  usage: copylognightly tname1[:branch1] tname2[:branch2] ...
 #
-#  tname1 is the name of a file in $PETSC_DIR/bin/maint/configurenightly that defines
-#  a machine from which the results of job started with startnightly/builddist should be copied
+#  tname1 is the name of a file in $PETSC_DIR/bin/maint/confignightly that defines
+#  a machine from which the results of job started with startnightly/buildtest should be copied
 #  over to a central common directory
 
 set dir=`dirname $0`

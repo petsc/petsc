@@ -1,9 +1,9 @@
 #! /bin/csh
 #
-#  usage: startnightly tname1[:branch1] tname2[:branch2] ...
+#  usage: killnightly tname1[:branch1] tname2[:branch2] ...
 #
-#  tname1 is the name of a file in $PETSC_DIR/bin/maint/configurenightly that defines
-#  a machine on which a job started with startnightly/builddist should be killed.
+#  tname1 is the name of a file in $PETSC_DIR/bin/maint/confignightly that defines
+#  a machine on which a job started with startnightly/buildtest should be killed.
 #
 set dir=`dirname $0`
 

@@ -17,7 +17,8 @@ set day=`date | cut -f1 -d" "`
 set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
   set maintdir=`dirname $0`
-  set nPETSC_DIR=`dirname $maintdir`
+  set bindir=`dirname $maintdir`
+  set nPETSC_DIR=`dirname $bindir`
   if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petscsys.h )) then
     if (${?PETSC_DIR}) then 
       set nPETSC_DIR=${PETSC_DIR}

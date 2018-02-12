@@ -2,7 +2,7 @@
 #
 # usage: startnightly tname1[:branch1] tname2[:branch2] ...
 #
-#  tname1 is the name of a file in $PETSC_DIR/bin/maint/configurenightly that defines
+#  tname1 is the name of a file in $PETSC_DIR/bin/maint/confignightly that defines
 #  a machine, a PETSC_DIR on that machine, and PETSC_ARCH on which the script buildtest
 #  should be run.
 #
