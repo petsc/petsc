@@ -278,8 +278,6 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
     ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-
   for (row=0; row<m; row++) {
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
     ierr = MatSetValues(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
@@ -991,7 +989,7 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
   MatScalar   *vp;
 
   PetscFunctionBegin;
-  for (k=0; k<m; k++) { /* loop over added rows */
+  for (k=0; k<m; k++) { /* loop over requested rows */
     row = im[k];
     if (row<0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -1000,7 +998,7 @@ PetscErrorCode MatGetValues_SeqSELL(Mat A,PetscInt m,const PetscInt im[],PetscIn
     shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp = a->colidx+shift; /* pointer to the row */
     vp = a->val+shift; /* pointer to the row */
-    for (l=0; l<n; l++) { /* loop over added rows */
+    for (l=0; l<n; l++) { /* loop over requested columns */
       col = in[l];
       if (col<0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -1155,6 +1153,24 @@ PetscErrorCode MatView_SeqSELL_ASCII(Mat A,PetscViewer viewer)
       }
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_NATIVE) {
+    for (i=0; i<a->totalslices; i++) { /* loop over slices */
+      PetscInt row;
+      ierr = PetscViewerASCIIPrintf(viewer,"slice %D: %D %D\n",i,a->sliidx[i],a->sliidx[i+1]);CHKERRQ(ierr);
+      for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(a->val[j]) > 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"  %D %D %g + %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),(double)PetscImaginaryPart(a->val[j]));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(a->val[j]) < 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"  %D %D %g - %g i\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]),-(double)PetscImaginaryPart(a->val[j]));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"  %D %D %g\n",8*i+row,a->colidx[j],(double)PetscRealPart(a->val[j]));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"  %D %D %g\n",8*i+row,a->colidx[j],(double)a->val[j]);CHKERRQ(ierr);
+#endif
+      }
+    }
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     if (A->factortype) {
