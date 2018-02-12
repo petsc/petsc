@@ -69,7 +69,6 @@ SNES Object: 5 MPI processes
                             PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
                               type: lu
                                 out-of-place factorization
-                                Reusing fill from past factorization
                                 tolerance for zero pivot 2.22045e-14
                                 matrix ordering: nd
                                 factor fill ratio given 0., needed 0.
@@ -243,7 +242,6 @@ SNES Object: 5 MPI processes
                                     PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
                                       type: lu
                                         out-of-place factorization
-                                        Reusing fill from past factorization
                                         tolerance for zero pivot 2.22045e-14
                                         matrix ordering: nd
                                         factor fill ratio given 0., needed 0.
@@ -445,7 +443,6 @@ SNES Object: 5 MPI processes
                         PC Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
                           type: lu
                             out-of-place factorization
-                            Reusing fill from past factorization
                             tolerance for zero pivot 2.22045e-14
                             matrix ordering: nd
                             factor fill ratio given 5., needed 1.1
@@ -484,4 +481,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 4.73815e-09 [3.58609e-10, 4.72456e-09]
+L_2 Error: 4.73816e-09 [3.58621e-10, 4.72457e-09]

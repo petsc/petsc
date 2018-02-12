@@ -109,7 +109,6 @@ SNES Object: 7 MPI processes
                     PC Object:         (fas_coarse_pc_bddc_coarse_redundant_)         1 MPI processes
                       type: lu
                         out-of-place factorization
-                        Reusing fill from past factorization
                         tolerance for zero pivot 1.19209e-05
                         matrix ordering: nd
                         factor fill ratio given 5., needed 1.2246
@@ -230,7 +229,6 @@ SNES Object: 7 MPI processes
                     PC Object:         (fas_levels_1_pc_bddc_coarse_redundant_)         1 MPI processes
                       type: lu
                         out-of-place factorization
-                        Reusing fill from past factorization
                         tolerance for zero pivot 1.19209e-05
                         matrix ordering: nd
                         factor fill ratio given 5., needed 1.25455
@@ -352,7 +350,6 @@ SNES Object: 7 MPI processes
                     PC Object:         (fas_levels_2_pc_bddc_coarse_redundant_)         1 MPI processes
                       type: lu
                         out-of-place factorization
-                        Reusing fill from past factorization
                         tolerance for zero pivot 1.19209e-05
                         matrix ordering: nd
                         factor fill ratio given 5., needed 1.35955
