@@ -29,7 +29,14 @@ int main(int argc,char **args)
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr     = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,n,n,n,n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,3,NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(mat,1,3,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(mat,1,3,NULL);CHKERRQ(ierr);
+  ierr = MatSeqSELLSetPreallocation(mat,3,NULL);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -79,13 +86,21 @@ int main(int argc,char **args)
   return ierr;
 }
 
-
-
-
-
 /*TEST
 
-   test:
-      args: -ksp_type gmres -ksp_monitor_short -pc_type sor -pc_sor_symmetric
+   testset:
+     args: -ksp_type gmres -ksp_monitor_short -pc_type sor -pc_sor_symmetric
+     output_file: output/ex3_1.out
+     test:
+       suffix: sor_aij
+     test:
+       suffix: sor_seqbaij
+       args: -mat_type seqbaij
+     test:
+       suffix: sor_seqsbaij
+       args: -mat_type seqbaij
+     test:
+       suffix: sor_seqsell
+       args: -mat_type seqsell
 
 TEST*/
