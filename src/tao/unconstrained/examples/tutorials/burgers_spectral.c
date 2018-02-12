@@ -413,9 +413,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 
   /*   A  = K - A    */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);
-
-  /*  ierr = MatCopy(appctx->SEMop.keptstiff,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
+  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,8 +616,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSAdjointSolve(appctx->ts);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(G,G,appctx->SEMop.mass);CHKERRQ(ierr);
 
-  ierr = TaoGetSolutionStatus(tao, &its, &ff, &gnorm, &cnorm, &xdiff, &reason);
-
+  ierr = TaoGetSolutionStatus(tao, &its, &ff, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
