@@ -209,30 +209,30 @@ PetscErrorCode MatRestoreRow_SeqSELL(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqSELL     *a=(Mat_SeqSELL*)A->data;
-  PetscInt       i,j,row;
-  PetscBool      isnonzero;
+  Mat_SeqSELL    *a=(Mat_SeqSELL*)A->data;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
-    B = *newmat;
+    B    = *newmat;
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
   } else {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(B,0,a->rlen);CHKERRQ(ierr);
-    ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   }
 
-  for (i=0; i<a->totalslices; i++) { /* loop over slices */
-    for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
-      isnonzero = (PetscBool)((j-a->sliidx[i])/8 < a->rlen[8*i+row]);
-      if (isnonzero) {
-        ierr = MatSetValue(B,8*i+row,a->colidx[j],a->val[j],INSERT_VALUES);CHKERRQ(ierr);
-      }
-    }
+  for (i=0; i<A->rmap->n; i++) {
+    PetscInt    nz,*cols;
+    PetscScalar *vals;
+
+    ierr = MatGetRow_SeqSELL(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatSetValues(B,1,&i,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqSELL(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
+
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   B->rmap->bs = A->rmap->bs;
