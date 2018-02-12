@@ -173,6 +173,39 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B,PetscInt maxallocrow,con
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatGetRow_SeqSELL(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+{
+  Mat_SeqSELL *a = (Mat_SeqSELL*)A->data;
+  PetscInt    shift;
+
+  PetscFunctionBegin;
+  if (row < 0 || row >= A->rmap->n) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range",row);
+  if (nz) *nz = a->rlen[row];
+  shift = a->sliidx[row>>3]+(row&0x07);
+  if (!a->getrowcols) {
+    PetscErrorCode ierr;
+
+    ierr = PetscMalloc2(a->rlenmax,&a->getrowcols,a->rlenmax,&a->getrowvals);CHKERRQ(ierr);
+  }
+  if (idx) {
+    PetscInt j;
+    for (j=0; j<a->rlen[row]; j++) a->getrowcols[j] = a->colidx[shift+8*j];
+    *idx = a->getrowcols;
+  }
+  if (v) {
+    PetscInt j;
+    for (j=0; j<a->rlen[row]; j++) a->getrowvals[j] = a->val[shift+8*j];
+    *v = a->getrowvals;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatRestoreRow_SeqSELL(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatConvert_SeqSELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
@@ -819,6 +852,7 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
+  ierr = PetscFree2(a->getrowcols,a->getrowvals);CHKERRQ(ierr);
 
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
@@ -1677,8 +1711,8 @@ PetscErrorCode MatSOR_SeqSELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
-                                       0,
-                                       0,
+                                       MatGetRow_SeqSELL,
+                                       MatRestoreRow_SeqSELL,
                                        MatMult_SeqSELL,
                                /* 4*/  MatMultAdd_SeqSELL,
                                        MatMultTranspose_SeqSELL,

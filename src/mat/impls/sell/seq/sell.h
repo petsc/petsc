@@ -36,7 +36,9 @@ PetscBool   pivotinblocks;     /* pivot inside factorization of each diagonal bl
 Mat         parent;            /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
 means that this shares some data structures with the parent including diag, ilen, imax, i, j */ \
 PetscInt    *sliidx;           /* slice index */ \
-PetscInt    totalslices       /* total number of slices */ \
+PetscInt    totalslices;       /* total number of slices */ \
+PetscInt    *getrowcols;       /* workarray for MatGetRow_SeqSELL */ \
+PetscScalar *getrowvals        /* workarray for MatGetRow_SeqSELL */ \
 
 typedef struct {
   SEQSELLHEADER(MatScalar);
