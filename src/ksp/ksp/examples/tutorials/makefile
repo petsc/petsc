@@ -331,6 +331,10 @@ ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o  ${PETSC_KSP_LIB}
 	${RM} ex70.o
 
+ex71: ex71.o  chkopts
+	-${CLINKER} -o ex71 ex71.o  ${PETSC_KSP_LIB}
+	${RM} ex71.o
+
 ex100: ex100.o  chkopts
 	-${CLINKER} -o ex100 ex100.o  ${PETSC_KSP_LIB}
 	${RM} ex100.o
