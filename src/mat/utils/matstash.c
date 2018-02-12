@@ -79,6 +79,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->blocktype   = MPI_DATATYPE_NULL;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_MPIUNI)
   ierr = PetscOptionsGetBool(NULL,NULL,"-matstash_legacy",&flg,NULL);CHKERRQ(ierr);
   if (!flg) {
     stash->ScatterBegin   = MatStashScatterBegin_BTS;
@@ -86,11 +87,14 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
     stash->ScatterEnd     = MatStashScatterEnd_BTS;
     stash->ScatterDestroy = MatStashScatterDestroy_BTS;
   } else {
+#endif
     stash->ScatterBegin   = MatStashScatterBegin_Ref;
     stash->ScatterGetMesg = MatStashScatterGetMesg_Ref;
     stash->ScatterEnd     = MatStashScatterEnd_Ref;
     stash->ScatterDestroy = NULL;
+#if !defined(PETSC_HAVE_MPIUNI)
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -819,6 +823,7 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_HAVE_MPIUNI)
 /*
  * owners[] contains the ownership ranges; may be indexed by either blocks or scalars
  */
@@ -1034,3 +1039,4 @@ static PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
   ierr = PetscFree2(stash->some_indices,stash->some_statuses);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif

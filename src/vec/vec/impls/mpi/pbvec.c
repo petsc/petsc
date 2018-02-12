@@ -379,6 +379,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
 
 static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject,Vec X)
 {
+#if !defined(PETSC_HAVE_MPIUNI)
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE,set;
 
@@ -390,6 +391,10 @@ static PetscErrorCode VecSetFromOptions_MPI(PetscOptionItems *PetscOptionsObject
     X->ops->assemblyend   = flg ? VecAssemblyEnd_MPI   : VecAssemblyEnd_MPI_BTS;
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+#else
+  X->ops->assemblybegin =  VecAssemblyBegin_MPI;
+  X->ops->assemblyend   =  VecAssemblyEnd_MPI;
+#endif
   PetscFunctionReturn(0);
 }
 
