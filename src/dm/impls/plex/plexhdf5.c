@@ -339,7 +339,7 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel label, PetscInt labelId, PetscViewer viewer)
+static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
   DMLabel         cutLabel;
   PetscSection    cSection;
@@ -365,11 +365,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     PetscInt *closure = NULL;
     PetscInt  closureSize, v, Nc = 0;
 
-    if (label) {
-      PetscInt value;
-      ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
-      if (value == labelId) continue;
-    }
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++Nc;
@@ -401,11 +396,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     PetscInt  closureSize, Nc = 0, p;
     PetscBool replace = PETSC_FALSE;
 
-    if (label) {
-      PetscInt value;
-      ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
-      if (value == labelId) continue;
-    }
     if (cutLabel) {
       PetscInt value;
       ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);
@@ -620,8 +610,6 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
 /* We only write cells and vertices. Does this screw up parallel reading? */
 PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
 {
-  DMLabel           label   = NULL;
-  PetscInt          labelId = 0;
   IS                globalPointNumbers;
   const PetscInt   *gpoint;
   PetscInt          numLabels, l;
@@ -635,7 +623,7 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
   ierr = DMPlexWriteCoordinates_HDF5_Static(dm, viewer);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
   ierr = DMPlexWriteTopology_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, label, labelId, viewer);CHKERRQ(ierr);}
+  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
   /* Write Labels*/
   ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
