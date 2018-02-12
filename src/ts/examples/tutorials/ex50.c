@@ -318,9 +318,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec globalin,Mat A, Mat B,void *ctx
 
   /*   A  = K - A    */
   ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);
-
-  /*  ierr = MatCopy(appctx->SEMop.keptstiff,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
+  ierr = MatAXPY(A,1.0,appctx->SEMop.keptstiff,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
