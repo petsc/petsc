@@ -16,6 +16,9 @@
 #
 #  Question: why does this script do the git fetch/git checkout, seems better to have
 #            buildtest do that?
+#  Answer: The repo could be in the wrong state [i.e a different branch - or a prior snapshot] - so the buildtest script
+#          and the datafiles that get used can be out-of-sync with the 'latest' state of the branch.
+#
 set dir=`dirname $0`
 set bdir=`dirname $dir`
 set pdir=`dirname $bdir`
