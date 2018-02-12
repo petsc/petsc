@@ -7,7 +7,7 @@
 
 PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
-  PetscScalar    awork[128],*work = awork;
+  PetscScalar    awork[128] PETSC_ATTRIBUTEALIGNED(32),*work = awork;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

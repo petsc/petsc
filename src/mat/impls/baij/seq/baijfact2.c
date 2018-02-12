@@ -236,6 +236,9 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   both_identity = (PetscBool) (row_identity && col_identity);
   if (both_identity) {
     switch (bs) {
+    case  9:
+      C->ops->solve = MatSolve_SeqBAIJ_9_NaturalOrdering;
+      break;
     case 11:
       C->ops->solve = MatSolve_SeqBAIJ_11_NaturalOrdering;
       break;

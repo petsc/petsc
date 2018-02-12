@@ -2872,6 +2872,15 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
       B->ops->mult    = MatMult_SeqBAIJ_7;
       B->ops->multadd = MatMultAdd_SeqBAIJ_7;
       break;
+    case 9:
+#if defined(__INTEL_COMPILER) && (defined(__AVX2__) || defined (__AVX512F__))
+      B->ops->mult    = MatMult_SeqBAIJ_9_AVX2;
+      B->ops->multadd = MatMultAdd_SeqBAIJ_9_AVX2;
+#else
+      B->ops->mult    = MatMult_SeqBAIJ_N;
+      B->ops->multadd = MatMultAdd_SeqBAIJ_N;
+#endif
+      break;
     case 11:
       B->ops->mult    = MatMult_SeqBAIJ_11;
       B->ops->multadd = MatMultAdd_SeqBAIJ_11;

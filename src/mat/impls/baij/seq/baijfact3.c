@@ -34,6 +34,9 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscBool natural)
     case 7:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
       break;
+    case 9:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering;
+      break;
     case 15:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering;
       break;
