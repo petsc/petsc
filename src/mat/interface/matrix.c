@@ -4221,9 +4221,9 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 @*/
 PetscErrorCode MatSolverTypeRegister(MatSolverType package,const MatType mtype,MatFactorType ftype,PetscErrorCode (*getfactor)(Mat,MatFactorType,Mat*))
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
-  PetscBool                      flg;
+  PetscBool                   flg;
   MatSolverTypeForSpecifcType inext,iprev = NULL;
 
   PetscFunctionBegin;
@@ -4333,7 +4333,7 @@ PetscErrorCode MatSolverTypeGet(MatSolverType package,const MatType mtype,MatFac
 
 PetscErrorCode MatSolverTypeDestroy(void)
 {
-  PetscErrorCode                 ierr;
+  PetscErrorCode              ierr;
   MatSolverTypeHolder         next = MatSolverTypeHolders,prev;
   MatSolverTypeForSpecifcType inext,iprev;
 
