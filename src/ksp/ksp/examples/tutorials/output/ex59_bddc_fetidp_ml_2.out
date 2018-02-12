@@ -136,7 +136,6 @@ PC Object: (physical_) 4 MPI processes
               PC Object:       (physical_pc_bddc_coarse_l1_redundant_)       1 MPI processes
                 type: lu
                   out-of-place factorization
-                  Reusing fill from past factorization
                   tolerance for zero pivot 2.22045e-14
                   matrix ordering: nd
                   factor fill ratio given 5., needed 1.

@@ -1,9 +1,21 @@
+DM Object: Distributed Mesh 5 MPI processes
+  type: plex
+Distributed Mesh in 2 dimensions:
+  0-cells: 15 25 29 15 25
+  1-cells: 30 56 60 30 56
+  2-cells: 16 32 32 16 32
+Labels:
+  markerLeft: 0 strata with value/size ()
+  markerTop: 0 strata with value/size ()
+  markerRight: 1 strata with value/size (1 (9))
+  markerBottom: 0 strata with value/size ()
+  Face Sets: 1 strata with value/size (2 (7))
+  marker: 1 strata with value/size (2 (9))
+  depth: 3 strata with value/size (0 (15), 1 (30), 2 (16))
+Integral of pressure: 0.
 SNES Object: 5 MPI processes
   type: newtonls
-  maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=68
-  total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 5 MPI processes
     type: bt
@@ -20,9 +32,9 @@ SNES Object: 5 MPI processes
         KSP Object: (fetidp_) 5 MPI processes
           type: cg
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+          tolerances:  relative=1e-12, absolute=1e-10, divergence=10000.
           left preconditioning
-          using PRECONDITIONED norm type for convergence test
+          using NATURAL norm type for convergence test
         PC Object: (fetidp_) 5 MPI processes
           type: fieldsplit
             FieldSplit with Schur preconditioner, factorization DIAG
@@ -43,22 +55,22 @@ SNES Object: 5 MPI processes
                     FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                       Mat Object: 1 MPI processes
                         type: schurcomplement
-                        rows=412, cols=412
+                        rows=40, cols=40
                           Schur complement A11 - A10 inv(A00) A01
                           A11
                             Mat Object: 1 MPI processes
                               type: seqaij
-                              rows=412, cols=412
-                              total: nonzeros=21918, allocated nonzeros=21918
+                              rows=40, cols=40
+                              total: nonzeros=456, allocated nonzeros=456
                               total number of mallocs used during MatSetValues calls =0
-                                using I-node routines: found 145 nodes, limit used is 5
+                                using I-node routines: found 17 nodes, limit used is 5
                           A10
                             Mat Object: 1 MPI processes
                               type: seqaij
-                              rows=412, cols=693
-                              total: nonzeros=26028, allocated nonzeros=26028
+                              rows=40, cols=49
+                              total: nonzeros=306, allocated nonzeros=306
                               total number of mallocs used during MatSetValues calls =0
-                                using I-node routines: found 145 nodes, limit used is 5
+                                using I-node routines: found 17 nodes, limit used is 5
                           KSP of A00
                             KSP Object: (fetidp_harmonic_) 1 MPI processes
                               type: preonly
@@ -71,88 +83,55 @@ SNES Object: 5 MPI processes
                                 out-of-place factorization
                                 tolerance for zero pivot 2.22045e-14
                                 matrix ordering: natural
-                                factor fill ratio given 0., needed 0.
+                                factor fill ratio given 5., needed 3.03804
                                   Factored matrix follows:
                                     Mat Object: 1 MPI processes
-                                      type: cholmod
-                                      rows=693, cols=693
-                                      package used to perform factorization: cholmod
-                                      total: nonzeros=0, allocated nonzeros=0
+                                      type: seqsbaij
+                                      rows=49, cols=49
+                                      package used to perform factorization: petsc
+                                      total: nonzeros=1118, allocated nonzeros=1118
                                       total number of mallocs used during MatSetValues calls =0
-                                        CHOLMOD run parameters:
-                                          Pack factors after symbolic factorization: TRUE
-                                          Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
-                                          Common.grow0             1.2
-                                          Common.grow1             1.2
-                                          Common.grow2             5
-                                          Common.maxrank           8
-                                          Common.supernodal_switch 40.
-                                          Common.supernodal        1
-                                          Common.final_asis        1
-                                          Common.final_super       1
-                                          Common.final_ll          0
-                                          Common.final_pack        1
-                                          Common.final_monotonic   1
-                                          Common.final_resymbol    0
-                                          Common.zrelax            [0.8,0.1,0.05]
-                                          Common.nrelax            [4,16,48]
-                                          Common.prefer_upper      1
-                                          Common.print             3
-                                          Common.postorder         1
-                                          Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-                                          Common.fl                3.6763e+06 (flop count from most recent analysis)
-                                          Common.lnz               46404. (fundamental nz in L)
-                                          Common.anz               28602.
-                                          Common.modfl             -1. (flop count from most recent update)
-                                          Common.malloc_count      12. (number of live objects)
-                                          Common.memory_usage      980024. (peak memory usage in bytes)
-                                          Common.memory_inuse      555472. (current memory usage in bytes)
-                                          Common.nrealloc_col      0. (number of column reallocations)
-                                          Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
-                                          Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
-                                          Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
-                                          Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
+                                          block size is 1
                               linear system matrix = precond matrix:
                               Mat Object: 1 MPI processes
                                 type: seqaij
-                                rows=693, cols=693
-                                total: nonzeros=56511, allocated nonzeros=56511
+                                rows=49, cols=49
+                                total: nonzeros=687, allocated nonzeros=687
                                 total number of mallocs used during MatSetValues calls =0
-                                  using I-node routines: found 231 nodes, limit used is 5
+                                  using I-node routines: found 28 nodes, limit used is 5
                           A01
                             Mat Object: 1 MPI processes
                               type: seqaij
-                              rows=693, cols=412
-                              total: nonzeros=26028, allocated nonzeros=26028
+                              rows=49, cols=40
+                              total: nonzeros=306, allocated nonzeros=306
                               total number of mallocs used during MatSetValues calls =0
-                                using I-node routines: found 225 nodes, limit used is 5
+                                using I-node routines: found 26 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                   type: submatrix
-                  rows=1308, cols=1308
+                  rows=87, cols=87
             KSP solver for S = A11 - A10 inv(A00) A01 
               KSP Object: (fetidp_fieldsplit_p_) 5 MPI processes
-                type: richardson
-                  damping factor=2000.
-                maximum iterations=1, initial guess is zero
+                type: preonly
+                maximum iterations=10000, initial guess is zero
                 tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                 left preconditioning
-                using PRECONDITIONED norm type for convergence test
+                using NONE norm type for convergence test
               PC Object: (fetidp_fieldsplit_p_) 5 MPI processes
-                type: none
+                type: jacobi
                 linear system matrix followed by preconditioner matrix:
                 Mat Object: (fetidp_fieldsplit_p_) 5 MPI processes
                   type: schurcomplement
-                  rows=142, cols=142
+                  rows=25, cols=25
                     Schur complement A11 - A10 inv(A00) A01
                     A11
                       Mat Object: (fetidp_fieldsplit_p_) 5 MPI processes
                         type: submatrix
-                        rows=142, cols=142
+                        rows=25, cols=25
                     A10
                       Mat Object: 5 MPI processes
                         type: submatrix
-                        rows=142, cols=1308
+                        rows=25, cols=87
                     KSP of A00
                       KSP Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                         type: preonly
@@ -166,22 +145,22 @@ SNES Object: 5 MPI processes
                             FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                               Mat Object: 1 MPI processes
                                 type: schurcomplement
-                                rows=412, cols=412
+                                rows=40, cols=40
                                   Schur complement A11 - A10 inv(A00) A01
                                   A11
                                     Mat Object: 1 MPI processes
                                       type: seqaij
-                                      rows=412, cols=412
-                                      total: nonzeros=21918, allocated nonzeros=21918
+                                      rows=40, cols=40
+                                      total: nonzeros=456, allocated nonzeros=456
                                       total number of mallocs used during MatSetValues calls =0
-                                        using I-node routines: found 145 nodes, limit used is 5
+                                        using I-node routines: found 17 nodes, limit used is 5
                                   A10
                                     Mat Object: 1 MPI processes
                                       type: seqaij
-                                      rows=412, cols=693
-                                      total: nonzeros=26028, allocated nonzeros=26028
+                                      rows=40, cols=49
+                                      total: nonzeros=306, allocated nonzeros=306
                                       total number of mallocs used during MatSetValues calls =0
-                                        using I-node routines: found 145 nodes, limit used is 5
+                                        using I-node routines: found 17 nodes, limit used is 5
                                   KSP of A00
                                     KSP Object: (fetidp_harmonic_) 1 MPI processes
                                       type: preonly
@@ -194,86 +173,55 @@ SNES Object: 5 MPI processes
                                         out-of-place factorization
                                         tolerance for zero pivot 2.22045e-14
                                         matrix ordering: natural
-                                        factor fill ratio given 0., needed 0.
+                                        factor fill ratio given 5., needed 3.03804
                                           Factored matrix follows:
                                             Mat Object: 1 MPI processes
-                                              type: cholmod
-                                              rows=693, cols=693
-                                              package used to perform factorization: cholmod
-                                              total: nonzeros=0, allocated nonzeros=0
+                                              type: seqsbaij
+                                              rows=49, cols=49
+                                              package used to perform factorization: petsc
+                                              total: nonzeros=1118, allocated nonzeros=1118
                                               total number of mallocs used during MatSetValues calls =0
-                                                CHOLMOD run parameters:
-                                                  Pack factors after symbolic factorization: TRUE
-                                                  Common.dbound            0.  (Smallest absolute value of diagonal entries of D)
-                                                  Common.grow0             1.2
-                                                  Common.grow1             1.2
-                                                  Common.grow2             5
-                                                  Common.maxrank           8
-                                                  Common.supernodal_switch 40.
-                                                  Common.supernodal        1
-                                                  Common.final_asis        1
-                                                  Common.final_super       1
-                                                  Common.final_ll          0
-                                                  Common.final_pack        1
-                                                  Common.final_monotonic   1
-                                                  Common.final_resymbol    0
-                                                  Common.zrelax            [0.8,0.1,0.05]
-                                                  Common.nrelax            [4,16,48]
-                                                  Common.prefer_upper      1
-                                                  Common.print             3
-                                                  Common.postorder         1
-                                                  Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-                                                  Common.fl                3.6763e+06 (flop count from most recent analysis)
-                                                  Common.lnz               46404. (fundamental nz in L)
-                                                  Common.anz               28602.
-                                                  Common.modfl             -1. (flop count from most recent update)
-                                                  Common.malloc_count      12. (number of live objects)
-                                                  Common.memory_usage      980024. (peak memory usage in bytes)
-                                                  Common.memory_inuse      555472. (current memory usage in bytes)
-                                                  Common.nrealloc_col      0. (number of column reallocations)
-                                                  Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
-                                                  Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
-                                                  Common.rowfacfl          0. (number of flops in last call to cholmod_rowfac)
-                                                  Common.aatfl             0. (number of flops to compute A(:,f)*A(:,f)')
+                                                  block size is 1
                                       linear system matrix = precond matrix:
                                       Mat Object: 1 MPI processes
                                         type: seqaij
-                                        rows=693, cols=693
-                                        total: nonzeros=56511, allocated nonzeros=56511
+                                        rows=49, cols=49
+                                        total: nonzeros=687, allocated nonzeros=687
                                         total number of mallocs used during MatSetValues calls =0
-                                          using I-node routines: found 231 nodes, limit used is 5
+                                          using I-node routines: found 28 nodes, limit used is 5
                                   A01
                                     Mat Object: 1 MPI processes
                                       type: seqaij
-                                      rows=693, cols=412
-                                      total: nonzeros=26028, allocated nonzeros=26028
+                                      rows=49, cols=40
+                                      total: nonzeros=306, allocated nonzeros=306
                                       total number of mallocs used during MatSetValues calls =0
-                                        using I-node routines: found 225 nodes, limit used is 5
+                                        using I-node routines: found 26 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                           type: submatrix
-                          rows=1308, cols=1308
+                          rows=87, cols=87
                     A01
                       Mat Object: 5 MPI processes
                         type: submatrix
-                        rows=1308, cols=142
+                        rows=87, cols=25
                 Mat Object: 5 MPI processes
                   type: mpiaij
-                  rows=142, cols=142
-                  total: nonzeros=142, allocated nonzeros=142
+                  rows=25, cols=25
+                  total: nonzeros=83, allocated nonzeros=155
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node (on process 0) routines
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
-            rows=1450, cols=1450
+            rows=112, cols=112
       BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
             Use verbose output: 0
             Use user-defined CSR: 0
             Use local mat graph: 1
-            Connectivity graph topological dimension: 3
+            Connectivity graph topological dimension: 2
+            Graph max count: 2
             Use vertices: 1 (vertex size 3)
             Use edges: 1
             Use faces: 0
@@ -299,24 +247,24 @@ SNES Object: 5 MPI processes
             Min constraints / connected component: 0
             Max constraints / connected component: 0
             Invert exact Schur complement for adaptive selection: 0
-            Symmetric computation of primal basis functions: 0
+            Symmetric computation of primal basis functions: 1
             Num. Procs. to map coarse adjacency list: 0
             Coarse eqs per proc (significant at the coarsest level): 1
-            Detect disconnected: 0
+            Detect disconnected: 1
             Benign subspace trick: 0 (change explicit 0)
             Benign subspace trick is active: 0
             Algebraic computation of no-net-flux 0
             ********************************** STATISTICS AT LEVEL 0 **********************************
-            Global dofs sizes: all 4336 interface 1264 coarse 8
-            Coarsening ratios: all/coarse 542 interface/coarse 158
+            Global dofs sizes: all 591 interface 115 coarse 9
+            Coarsening ratios: all/coarse 65 interface/coarse 12
             Active processes : 5
-            Total subdomains : 5
+            Total subdomains : 6
             Dofs type        :	MIN	MAX	MEAN
-            Interior  dofs   :	526	749	614
-            Interface dofs   :	412	710	550
-            Primal    dofs   :	3	8	5
-            Local     dofs   :	1005	1314	1165
-            Local     subs   :	1	1
+            Interior  dofs   :	55	128	95
+            Interface dofs   :	21	77	47
+            Primal    dofs   :	2	7	4
+            Local     dofs   :	87	187	142
+            Local     subs   :	1	2
             ********************************** COARSE PROBLEM DETAILS *********************************
           KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: preonly
@@ -330,8 +278,8 @@ SNES Object: 5 MPI processes
             linear system matrix = precond matrix:
             Mat Object: 5 MPI processes
               type: mpiaij
-              rows=8, cols=8
-              total: nonzeros=64, allocated nonzeros=64
+              rows=9, cols=9
+              total: nonzeros=69, allocated nonzeros=77
               total number of mallocs used during MatSetValues calls =0
                 using I-node (on process 0) routines: found 1 nodes, limit used is 5
                         KSP Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
@@ -341,44 +289,49 @@ SNES Object: 5 MPI processes
                           left preconditioning
                           using NONE norm type for convergence test
                         PC Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
-                          type: lu
+                          type: cholesky
                             out-of-place factorization
                             tolerance for zero pivot 2.22045e-14
-                            matrix ordering: nd
+                            matrix ordering: natural
                             factor fill ratio given 5., needed 1.
                               Factored matrix follows:
                                 Mat Object:           1 MPI processes
-                                  type: seqaij
-                                  rows=8, cols=8
+                                  type: seqsbaij
+                                  rows=9, cols=9
                                   package used to perform factorization: petsc
-                                  total: nonzeros=64, allocated nonzeros=64
+                                  total: nonzeros=39, allocated nonzeros=39
                                   total number of mallocs used during MatSetValues calls =0
-                                    using I-node routines: found 2 nodes, limit used is 5
+                                      block size is 1
                           linear system matrix = precond matrix:
                           Mat Object:           1 MPI processes
                             type: seqaij
-                            rows=8, cols=8
-                            total: nonzeros=64, allocated nonzeros=64
+                            rows=9, cols=9
+                            total: nonzeros=69, allocated nonzeros=69
                             total number of mallocs used during MatSetValues calls =0
-                              using I-node routines: found 2 nodes, limit used is 5
+                              using I-node routines: found 6 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: 5 MPI processes
             type: is
-            rows=4336, cols=4336
-            total: nonzeros=722206, allocated nonzeros=722206
+            rows=591, cols=591
+            total: nonzeros=16638, allocated nonzeros=16638
             total number of mallocs used during MatSetValues calls =0
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
+    tolerances:  relative=1e-12, absolute=1e-10, divergence=10000.
     left preconditioning
     using NONE norm type for convergence test
   PC Object: 5 MPI processes
     type: none
-    linear system matrix = precond matrix:
+    linear system matrix followed by preconditioner matrix:
     Mat Object: 5 MPI processes
       type: is
-      rows=4336, cols=4336
-      total: nonzeros=722206, allocated nonzeros=983974
+      rows=591, cols=591
+      total: nonzeros=16638, allocated nonzeros=19441
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-Number of SNES iterations = 1
-L_2 Error: 2.12832e-08 [7.0686e-10, 2.12715e-08]
+    Mat Object: 5 MPI processes
+      type: is
+      rows=591, cols=591
+      total: nonzeros=16638, allocated nonzeros=19441
+      total number of mallocs used during MatSetValues calls =0
+L_2 Error: 0.00151 [9.32e-06, 0.00151]
+Integral of pressure: 0.
