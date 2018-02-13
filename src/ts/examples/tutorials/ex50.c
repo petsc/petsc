@@ -337,7 +337,7 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
   Vec               xlocal,ylocal;
   const PetscScalar *xl;
   PetscScalar       *yl;
-  PetscMPIInt       _One = 1,n;
+  PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;  
 
   ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
@@ -351,14 +351,14 @@ PetscErrorCode MatMult_Laplacian(Mat A,Vec x,Vec y)
     vv =-appctx->param.mu*2.0/appctx->param.Le;
     for (j=0; j<appctx->param.N; j++) temp[i][j]=temp[i][j]*vv;
   }
-  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(appctx->param.N,&n);CHKERRQ(ierr);
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
-  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
   ierr = PetscGLLElementLaplacianDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
@@ -379,7 +379,7 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   Vec               xlocal,ylocal;
   const PetscScalar *xl;
   PetscScalar       *yl;
-  PetscMPIInt       _One = 1,n;
+  PetscBLASInt      _One = 1,n;
   PetscScalar       _DOne = 1;  
 
   ierr = MatShellGetContext(A,&appctx);CHKERRQ(ierr);
@@ -389,14 +389,14 @@ PetscErrorCode MatMult_Advection(Mat A,Vec x,Vec y)
   ierr = DMGetLocalVector(appctx->da,&ylocal);CHKERRQ(ierr);
   ierr = VecSet(ylocal,0.0);CHKERRQ(ierr);
   ierr = PetscGLLElementAdvectionCreate(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(appctx->param.N,&n);CHKERRQ(ierr);
   for (j=xs; j<xs+xn; j += appctx->param.N-1) {
     PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&n,&n,&_DOne,&temp[0][0],&n,&xl[j],&_One,&_DOne,&yl[j],&_One));
   }
-  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,&xl);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(appctx->da,xlocal,(void*)&xl);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(appctx->da,ylocal,&yl);CHKERRQ(ierr);
   ierr = PetscGLLElementAdvectionDestroy(&appctx->SEMop.gll,&temp);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
