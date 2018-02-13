@@ -813,6 +813,143 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
 }
 
 /*@C
+    MatShellTestMult - Compares the multiply routine provided to the MATSHELL with differencing on a given function.
+
+   Logically Collective on Mat
+
+    Input Parameters:
++   mat - the shell matrix
+.   f - the function
+.   base - differences are computed around this vector, see MatMFFDSetBase(), for Jacobians this is the point at which the Jacobian is being evaluated
+-   ctx - an optional context for the function
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+.   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
+
+   Level: advanced
+
+   Fortran Notes: Not supported from Fortran
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMultTranspose()
+@*/
+PetscErrorCode  MatShellTestMult(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec base,void *ctx,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,n;
+  Mat            mf,Dmf,Dmat,Ddiff;
+  PetscReal      Diffnorm,Dmfnorm;
+  PetscBool      v = 0, flag = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscOptionsHasName(NULL,((PetscObject)mat)->prefix,"-mat_shell_test_mult_view",&v);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(PetscObjectComm((PetscObject)mat),m,n,PETSC_DECIDE,PETSC_DECIDE,&mf);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(mf,f,ctx);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(mf,base,NULL);CHKERRQ(ierr);
+
+  ierr = MatComputeExplicitOperator(mf,&Dmf);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(mat,&Dmat);CHKERRQ(ierr);
+
+  ierr = MatDuplicate(Dmat,MAT_COPY_VALUES,&Ddiff);CHKERRQ(ierr);
+  ierr = MatAXPY(Ddiff,-1.0,Dmf,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(Ddiff,NORM_FROBENIUS,&Diffnorm);CHKERRQ(ierr);
+  ierr = MatNorm(Dmf,NORM_FROBENIUS,&Dmfnorm);CHKERRQ(ierr);
+  if (Diffnorm/Dmfnorm > 10*PETSC_SQRT_MACHINE_EPSILON) {
+    flag = PETSC_FALSE;
+    if (v) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"MATSHELL and matrix free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n",(double)(Diffnorm/Dmfnorm));
+      ierr = MatViewFromOptions(Ddiff,(PetscObject)mat,"-mat_shell_test_mult_view");CHKERRQ(ierr);
+      ierr = MatViewFromOptions(Dmf,(PetscObject)mat,"-mat_shell_test_mult_view");CHKERRQ(ierr);
+      ierr = MatViewFromOptions(Dmat,(PetscObject)mat,"-mat_shell_test_mult_view");CHKERRQ(ierr);
+    }
+  } else if (v) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"MATSHELL and matrix free multiple appear to produce the same results\n");
+  }
+  if (flg) *flg = flag;
+  ierr = MatDestroy(&Ddiff);CHKERRQ(ierr);
+  ierr = MatDestroy(&mf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Dmf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Dmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    MatShellTestMultTranpose - Compares the multiply transpose routine provided to the MATSHELL with differencing on a given function.
+
+   Logically Collective on Mat
+
+    Input Parameters:
++   mat - the shell matrix
+.   f - the function
+.   base - differences are computed around this vector, see MatMFFDSetBase(), for Jacobians this is the point at which the Jacobian is being evaluated
+-   ctx - an optional context for the function
+
+   Output Parameter:
+.   flg - PETSC_TRUE if the multiply is likely correct
+
+   Options Database:
+.   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
+
+   Level: advanced
+
+   Fortran Notes: Not supported from Fortran
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellTestMult()
+@*/
+PetscErrorCode  MatShellTestMultTranspose(Mat mat,PetscErrorCode (*f)(void*,Vec,Vec),Vec base,void *ctx,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  Vec            x,y,z;
+  PetscInt       m,n,M,N;
+  Mat            mf,Dmf,Dmat,Ddiff;
+  PetscReal      Diffnorm,Dmfnorm;
+  PetscBool      v = 0, flag = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  ierr = PetscOptionsHasName(NULL,((PetscObject)mat)->prefix,"-mat_shell_test_mult_transpose_view",&v);CHKERRQ(ierr);
+  ierr = MatCreateVecs(mat,&x,&y);CHKERRQ(ierr);
+  ierr = VecDuplicate(y,&z);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(PetscObjectComm((PetscObject)mat),m,n,M,N,&mf);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(mf,f,ctx);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(mf,base,NULL);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(mf,&Dmf);CHKERRQ(ierr);
+  ierr = MatTranspose(Dmf,MAT_INPLACE_MATRIX,&Dmf);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperatorTranspose(mat,&Dmat);CHKERRQ(ierr);
+
+  ierr = MatDuplicate(Dmat,MAT_COPY_VALUES,&Ddiff);CHKERRQ(ierr);
+  ierr = MatAXPY(Ddiff,-1.0,Dmf,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(Ddiff,NORM_FROBENIUS,&Diffnorm);CHKERRQ(ierr);
+  ierr = MatNorm(Dmf,NORM_FROBENIUS,&Dmfnorm);CHKERRQ(ierr);
+  if (Diffnorm/Dmfnorm > 10*PETSC_SQRT_MACHINE_EPSILON) {
+    flag = PETSC_FALSE;
+    if (v) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"MATSHELL and matrix free multiple appear to produce different results.\n Norm Ratio %g Difference results followed by finite difference one\n",(double)(Diffnorm/Dmfnorm));
+      ierr = MatViewFromOptions(Ddiff,(PetscObject)mat,"-mat_shell_test_mult_transpose_view");CHKERRQ(ierr);
+      ierr = MatViewFromOptions(Dmf,(PetscObject)mat,"-mat_shell_test_mult_transpose_view");CHKERRQ(ierr);
+      ierr = MatViewFromOptions(Dmat,(PetscObject)mat,"-mat_shell_test_mult_transpose_view");CHKERRQ(ierr);
+    }
+  } else if (v) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"MATSHELL transpose and matrix free multiple appear to produce the same results\n");
+  }
+  if (flg) *flg = flag;
+  ierr = MatDestroy(&mf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Dmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ddiff);CHKERRQ(ierr);
+  ierr = MatDestroy(&Dmf);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&z);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
 

@@ -194,6 +194,8 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
+  /*   Set RHS Jacobian for the adjoint integration */
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   if (monitor) {
@@ -251,8 +253,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetCostGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
-  /*   Set RHS Jacobian for the adjoint integration */
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);

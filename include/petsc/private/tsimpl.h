@@ -217,6 +217,8 @@ struct _p_TS {
   Vec       vatol,vrtol;            /* Relative and absolute tolerance in vector form */
   PetscReal cfltime,cfltime_local;
 
+  PetscBool testjacobian;
+  PetscBool testjacobiantranspose;
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;
   Vec      *work;

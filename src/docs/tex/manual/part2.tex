@@ -4319,6 +4319,15 @@ matrix. \sindex{Jacobian, debugging}
 See the note in Section \ref{sec_snesjacobian} about assembling your Jabobian
 in the ``preconditioner'' slot \lstinline{B}.
 
+The correctness of user provided MATSHELL Jacobians in general can be checked with
+MatShellTestMultTranspose and MatShellTestMult.
+
+The correctness of user provided MATSHELL Jacobians via TSSetRHSJacobian can be checked with
+TSRHSJacobianTestTranspose and TSRHSJacobianTest that check the correction of the matrix-transpose vector product and the matrix-product. From
+the command line these can be checked with \trl{-ts_rhs_jacobian_test_mult_transpose} \trl{-mat_shell_test_mult_transpose_view}  and \trl{-ts_rhs_jacobian_test_mult} \trl{-mat_shell_test_mult_view}.
+
+
+
 \section{Inexact Newton-like Methods}
 
 \sindex{inexact Newton methods}

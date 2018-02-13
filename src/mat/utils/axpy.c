@@ -291,7 +291,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 .   inmat - the matrix
 
     Output Parameter:
-.   mat - the explict preconditioned operator
+.   mat - the explict  operator
 
     Notes:
     This computation is done by applying the operators to columns of the
@@ -347,6 +347,86 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     ierr = MatMult(inmat,in,out);CHKERRQ(ierr);
+
+    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
+
+  }
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatComputeExplicitOperatorTranspose - Computes the explicit matrix representation of
+        a give matrix that can apply MatMultTranspose()
+
+    Collective on Mat
+
+    Input Parameter:
+.   inmat - the matrix
+
+    Output Parameter:
+.   mat - the explict  operator transposed
+
+    Notes:
+    This computation is done by applying the transpose of the operator to columns of the
+    identity matrix.
+
+    Currently, this routine uses a dense matrix format when 1 processor
+    is used and a sparse format otherwise.  This routine is costly in general,
+    and is recommended for use only with relatively small systems.
+
+    Level: advanced
+
+.keywords: Mat, compute, explicit, operator
+@*/
+PetscErrorCode  MatComputeExplicitOperatorTranspose(Mat inmat,Mat *mat)
+{
+  Vec            in,out;
+  PetscErrorCode ierr;
+  PetscInt       i,m,n,M,N,*rows,start,end;
+  MPI_Comm       comm;
+  PetscScalar    *array,zero = 0.0,one = 1.0;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
+  PetscValidPointer(mat,2);
+
+  ierr = PetscObjectGetComm((PetscObject)inmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
+  ierr = MatCreateVecs(inmat,&in,&out);CHKERRQ(ierr);
+  ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
+  for (i=0; i<m; i++) rows[i] = start + i;
+
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,n,NULL,N-n,NULL);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<N; i++) {
+
+    ierr = VecSet(in,zero);CHKERRQ(ierr);
+    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
+
+    ierr = MatMultTranspose(inmat,in,out);CHKERRQ(ierr);
 
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);

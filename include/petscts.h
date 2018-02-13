@@ -880,4 +880,6 @@ PETSC_EXTERN PetscErrorCode TSGetDM(TS,DM*);
 PETSC_EXTERN PetscErrorCode SNESTSFormFunction(SNES,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode SNESTSFormJacobian(SNES,Vec,Mat,Mat,void*);
 
+PETSC_EXTERN PetscErrorCode TSRHSJacobianTest(TS,PetscBool*);
+PETSC_EXTERN PetscErrorCode TSRHSJacobianTestTranspose(TS,PetscBool*);
 #endif

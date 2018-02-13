@@ -1549,6 +1549,8 @@ PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat,MatOperation,void(**)(void));
 PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
+PETSC_EXTERN PetscErrorCode MatShellTestMult(Mat,PetscErrorCode (*)(void*,Vec,Vec),Vec,void*,PetscBool*);
+PETSC_EXTERN PetscErrorCode MatShellTestMultTranspose(Mat,PetscErrorCode (*)(void*,Vec,Vec),Vec,void*,PetscBool*);
 
 /*
    Codes for matrices stored on disk. By default they are
@@ -1606,6 +1608,7 @@ PETSC_EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMAIJGetAIJ(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatComputeExplicitOperator(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatComputeExplicitOperatorTranspose(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 
