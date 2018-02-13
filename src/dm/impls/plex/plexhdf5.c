@@ -690,16 +690,40 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   IS                globalPointNumbers;
   PetscViewerFormat format;
+  PetscBool         viz_geom=PETSC_FALSE, xdmf_topo=PETSC_FALSE, petsc_topo=PETSC_FALSE;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = DMPlexWriteCoordinates_HDF5_Static(dm, viewer);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
-  ierr = DMPlexWriteTopology_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_HDF5_VIZ) {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
   ierr = DMPlexWriteLabels_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);
+
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  switch (format) {
+    case PETSC_VIEWER_HDF5_VIZ:
+      viz_geom    = PETSC_TRUE;
+      xdmf_topo   = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_HDF5_XDMF:
+      xdmf_topo   = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_HDF5_PETSC: 
+      petsc_topo  = PETSC_TRUE;
+      break;
+    case PETSC_VIEWER_DEFAULT:
+    case PETSC_VIEWER_NATIVE:
+      viz_geom    = PETSC_TRUE;
+      xdmf_topo   = PETSC_TRUE;
+      petsc_topo  = PETSC_TRUE;
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+  }
+
+  if (viz_geom)   {ierr = DMPlexWriteCoordinates_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
+  if (xdmf_topo)  {ierr = DMPlexWriteTopology_Vertices_HDF5_Static(dm, viewer);CHKERRQ(ierr);}
+  if (petsc_topo) {ierr = DMPlexWriteTopology_HDF5_Static(dm, globalPointNumbers, viewer);CHKERRQ(ierr);}
+
   ierr = ISDestroy(&globalPointNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
